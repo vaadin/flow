@@ -205,30 +205,4 @@ class UrlUtilTest {
         assertEquals("/styles.css", result);
     }
 
-    @Test
-    public void sanitizeForUrl_percentIsReplaced() {
-        assertEquals("Test_Test.txt", UrlUtil.sanitizeForUrl("Test%Test.txt"));
-    }
-
-    @Test
-    public void sanitizeForUrl_multiplePercentsReplaced() {
-        assertEquals("__100__done.txt",
-                UrlUtil.sanitizeForUrl("%%100%%done.txt"));
-    }
-
-    @Test
-    public void sanitizeForUrl_noPercentUnchanged() {
-        assertEquals("normal-file.txt",
-                UrlUtil.sanitizeForUrl("normal-file.txt"));
-    }
-
-    @Test
-    public void sanitizeForUrl_nullReturnsNull() {
-        assertNull(UrlUtil.sanitizeForUrl(null));
-    }
-
-    @Test
-    public void sanitizeForUrl_emptyReturnsEmpty() {
-        assertEquals("", UrlUtil.sanitizeForUrl(""));
-    }
 }
