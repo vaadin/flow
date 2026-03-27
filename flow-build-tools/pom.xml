@@ -94,6 +94,7 @@
                   <include>commons-io:commons-io</include>
                   <include>commons-codec:commons-codec</include>
                   <include>org.apache.commons:commons-lang3</include>
+                  <include>org.ow2.asm</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -112,6 +113,10 @@
                 <relocation>
                   <pattern>org.apache.commons.lang3</pattern>
                   <shadedPattern>com.vaadin.frontendtools.internal.commons.lang3</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.asm</shadedPattern>
                 </relocation>
               </relocations>
               <filters>
