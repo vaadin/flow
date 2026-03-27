@@ -159,15 +159,13 @@ class StreamRequestHandlerTest {
     @Test
     public void streamResourceNameContainsPercent_streamFactory_resourceIsStreamed()
             throws IOException {
-        testStreamResourceInputStreamFactory("percent in name",
-                "file%.txt");
+        testStreamResourceInputStreamFactory("percent in name", "file%.txt");
     }
 
     @Test
     public void streamResourceNameContainsPercent_resourceWriter_resourceIsStreamed()
             throws IOException {
-        testStreamResourceStreamResourceWriter("percent in name",
-                "file%.txt");
+        testStreamResourceStreamResourceWriter("percent in name", "file%.txt");
     }
 
     @Test
