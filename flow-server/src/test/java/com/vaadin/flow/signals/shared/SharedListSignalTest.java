@@ -28,6 +28,7 @@ import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.operations.BulkInsertOperation;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
@@ -462,6 +463,69 @@ class SharedListSignalTest extends SignalTestBase {
         Stream<String> stream = Signal.untracked(() -> signal.getValues());
 
         assertThrows(IllegalStateException.class, () -> stream.toList());
+    }
+
+    @Test
+    void insertAllAt_valuesInsertedAtPosition() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertLast("first").signal();
+        signal.insertLast("last");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of("a", "b"), ListPosition.after(first));
+
+        assertSuccess(op);
+        assertEquals(2, op.signals().size());
+        assertChildren(signal, "first", "a", "b", "last");
+    }
+
+    @Test
+    void insertAllAt_emptyCollection_noChange() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of(), ListPosition.last());
+
+        assertSuccess(op);
+        assertTrue(op.signals().isEmpty());
+        assertChildren(signal, "existing");
+    }
+
+    @Test
+    void insertAllAt_invalidPosition_operationFails() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> child = signal.insertLast("child").signal();
+        signal.remove(child);
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of("a", "b"), ListPosition.after(child));
+
+        assertFailure(op);
+    }
+
+    @Test
+    void insertAllLast_multipleValues_valuesAppended() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(3, op.signals().size());
+        assertChildren(signal, "existing", "a", "b", "c");
+    }
+
+    @Test
+    void insertAllFirst_multipleValues_valuesAtStart() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllFirst(List.of("a", "b", "c"));
+
+        assertEquals(3, op.signals().size());
+        assertChildren(signal, "a", "b", "c", "existing");
     }
 
     static void assertChildren(SharedListSignal<String> signal,

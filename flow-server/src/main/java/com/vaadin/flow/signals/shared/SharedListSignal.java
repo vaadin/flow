@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -30,8 +33,11 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
+import com.vaadin.flow.signals.operations.BulkInsertOperation;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.operations.SignalOperation.Result;
+import com.vaadin.flow.signals.operations.TransactionOperation;
 import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -297,6 +303,88 @@ public class SharedListSignal<T extends @Nullable Object>
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
                         toJson(value), Objects.requireNonNull(at)),
                 this::child);
+    }
+
+    /**
+     * Inserts all values as the last entries in this list. All inserts are
+     * performed within a single transaction for atomicity.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return a bulk insert operation containing the inserted signals and a
+     *         single result future for the entire batch
+     */
+    public BulkInsertOperation<SharedValueSignal<T>> insertAllLast(
+            Collection<? extends T> values) {
+        return insertAllAt(values, ListPosition.last());
+    }
+
+    /**
+     * Inserts all values as the first entries in this list, preserving the
+     * order of the provided collection. All inserts are performed within a
+     * single transaction for atomicity.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return a bulk insert operation containing the inserted signals and a
+     *         single result future for the entire batch
+     */
+    public BulkInsertOperation<SharedValueSignal<T>> insertAllFirst(
+            Collection<? extends T> values) {
+        return insertAllAt(values, ListPosition.first());
+    }
+
+    /**
+     * Inserts all values at the given position in this list, preserving the
+     * order of the provided collection. All inserts are performed within a
+     * single transaction for atomicity.
+     * <p>
+     * Each element is inserted immediately after the previously inserted
+     * element, so the final order matches the iteration order of the provided
+     * collection.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @param at
+     *            the position at which to insert the first value, not
+     *            <code>null</code>
+     * @return a bulk insert operation containing the inserted signals and a
+     *         single result future for the entire batch
+     */
+    public BulkInsertOperation<SharedValueSignal<T>> insertAllAt(
+            Collection<? extends T> values, ListPosition at) {
+        Objects.requireNonNull(values, "Values must not be null");
+        Objects.requireNonNull(at, "Position must not be null");
+        if (values.isEmpty()) {
+            BulkInsertOperation<SharedValueSignal<T>> op = new BulkInsertOperation<>(
+                    List.of());
+            op.result().complete(new Result<>(null));
+            return op;
+        }
+        TransactionOperation<List<SharedValueSignal<T>>> txOp = Signal
+                .runInTransaction(() -> {
+                    List<SharedValueSignal<T>> signals = new ArrayList<>(
+                            values.size());
+                    ListPosition currentPos = at;
+                    for (T value : values) {
+                        InsertOperation<SharedValueSignal<T>> insertOp = insertAt(
+                                value, currentPos);
+                        signals.add(insertOp.signal());
+                        currentPos = ListPosition.after(insertOp.signal());
+                    }
+                    return Collections.unmodifiableList(signals);
+                });
+        BulkInsertOperation<SharedValueSignal<T>> bulkOp = new BulkInsertOperation<>(
+                Objects.requireNonNull(txOp.returnValue()));
+        txOp.result().thenAccept(
+                resultOrError -> bulkOp.result().complete(resultOrError));
+        return bulkOp;
     }
 
     /**
