@@ -99,7 +99,11 @@ public class ResourceContentHash {
             String resourceUrl) {
         String resolved = service.resolveResource(resourceUrl);
         if (!resolved.startsWith("/") && !resolved.contains("://")) {
-            resolved = "/" + resolved;
+            if (resolved.startsWith("./")) {
+                resolved = resolved.substring(1);
+            } else {
+                resolved = "/" + resolved;
+            }
         }
         URL url = service.getStaticResource(resolved);
         if (url == null) {
