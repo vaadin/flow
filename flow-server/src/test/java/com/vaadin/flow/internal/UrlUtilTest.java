@@ -204,5 +204,4 @@ class UrlUtilTest {
                 null);
         assertEquals("/styles.css", result);
     }
-
 }
