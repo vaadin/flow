@@ -40,6 +40,7 @@ import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -505,6 +506,11 @@ public class JacksonUtilsTest {
         BaseJsonNode result = JacksonUtils.writeValue(null);
         assertTrue(result.isNull(), "Expected NullNode");
         assertEquals(mapper.nullNode(), result);
+    }
+
+    @Test
+    public void checkJacksonCompatibility_compatibleVersion_noException() {
+        assertDoesNotThrow(JacksonUtils::checkJacksonCompatibility);
     }
 
 }
