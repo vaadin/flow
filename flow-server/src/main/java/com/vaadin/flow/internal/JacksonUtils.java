@@ -110,9 +110,11 @@ public final class JacksonUtils {
                             + " Vaadin. If you are using Spring Boot, make"
                             + " sure it is version 4.0.4 or newer (using"
                             + " Jackson 3.1). If you have a Jackson 3.0"
-                            + " dependency, upgrade it to 3.1. In other"
-                            + " cases, check https://github.com/vaadin/"
-                            + "platform/releases/tag/25.1.0 for more details.",
+                            + " dependency, upgrade it to 3.1. If you have"
+                            + " a Jackson 2 dependency, upgrade it to 2.21"
+                            + " or later. In other cases, check"
+                            + " https://github.com/vaadin/platform/"
+                            + "releases/tag/25.1.0 for more details.",
                     e);
         }
     }
