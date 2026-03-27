@@ -298,16 +298,15 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private @Nullable Reject attachAs(Id parentId, String key, Id childId) {
-            return attach(parentId, childId, (parentNode, resolvedChildId) -> {
-                return updateMapChildren(parentNode, map -> {
-                    Id previous = map.putIfAbsent(key, resolvedChildId);
-                    if (previous != null) {
-                        return fail("Key is in use");
-                    } else {
-                        return null;
-                    }
-                });
-            });
+            return attach(parentId, childId, (parentNode,
+                    resolvedChildId) -> updateMapChildren(parentNode, map -> {
+                        Id previous = map.putIfAbsent(key, resolvedChildId);
+                        if (previous != null) {
+                            return fail("Key is in use");
+                        } else {
+                            return null;
+                        }
+                    }));
         }
 
         private int findInsertIndex(List<Id> children,
