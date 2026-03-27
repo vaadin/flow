@@ -223,6 +223,13 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void getDynamicDownloadHandlerPercentResource() throws IOException {
+        open();
+
+        assertDownloadedContent("download-handler-percent", "file_.jpg");
+    }
+
+    @Test
     public void detach_attachALink_getDynamicVaadinResource()
             throws IOException {
         open();
