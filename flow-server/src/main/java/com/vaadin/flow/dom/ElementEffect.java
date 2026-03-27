@@ -317,6 +317,7 @@ public final class ElementEffect implements Serializable {
             effect.setDispatcher(uiDispatcher);
             effect.activate();
         }
+        effect.setOwnerUI(ui);
     }
 
     private void disableEffect() {
