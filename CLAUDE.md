@@ -30,13 +30,22 @@ Vaadin Flow is the Java framework of Vaadin Platform for building modern web app
 - Theme system with CSS custom properties
 
 **Multi-Module Structure**:
-- `flow-server`: Core server-side framework
+- `flow-server`: Core server-side framework Java code
 - `flow-client`: Client-side TypeScript/JavaScript code
 - `flow-data`: Data binding and validation
-- `flow-router`: Navigation and routing
+- `flow-dnd`: Drag and drop features
+- `flow-jandex`: Jandex index for using in Quarkus environments
+- `flow-plugins`: Maven and Gradle plugins for Flow
+- `flow-lit-template`: Java components for Lit elements
+- `flow-polymer-template`: Java components for Polymer elements
 - `flow-html-components`: Basic HTML component wrappers
+- `flow-push`: Asynchronous UI updates using Atmosphere/WebSockets
+- `flow-react`: Java components for React elements
+- `flow-webpush`: WebPush notifications
+- `signals`: Java library for reactive UI updates
 - `flow-tests/`: Extensive integration test suite
 - `vaadin-spring`: Spring Framework integration
+- `vaadin-dev-server`: Development tools
 
 ## Development Commands
 
