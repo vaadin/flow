@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "vite build",
-    "install-deps": "node node_modules/esbuild/install.js && playwright install",
+    "install-deps": "playwright install",
     "start": "npm run install-deps && web-dev-server --node-resolve",
     "patch-app": "node patch-application.js",
     "prettier": "prettier --write frontend"
@@ -16,7 +16,7 @@
     "prettier": "^3.6.2",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2"
+    "vite": "8.0.3"
   },
   "dependencies": {
     "lit": "^3.3.1"
