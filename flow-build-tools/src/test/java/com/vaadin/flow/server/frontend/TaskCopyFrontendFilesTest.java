@@ -85,7 +85,8 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Options options = new MockOptions(getClassFinder(), npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
 
-        TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(null,
+                options);
         task.execute();
         assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());

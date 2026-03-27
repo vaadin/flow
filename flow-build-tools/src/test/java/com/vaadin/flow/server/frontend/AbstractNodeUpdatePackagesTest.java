@@ -49,6 +49,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -86,7 +87,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         classFinder = Mockito.spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
-        packageCreator = new TaskGeneratePackageJson(options);
+        packageCreator = new TaskGeneratePackageJson(null, options);
         versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
                 .toFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
@@ -829,6 +830,74 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     void writePackageJson(File packageJsonFile, JsonNode packageJson)
             throws IOException {
         FileIOUtils.writeIfChanged(packageJsonFile, packageJson.toString());
+    }
+
+    @Test
+    void generatePackageJson_overridesChanged_updaterIsModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Run again to establish baseline (not modified)
+        packageUpdater.execute();
+        assertFalse(packageUpdater.modified,
+                "Modification flag should be false after second run.");
+
+        // Add an override to package.json
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("some-dep", "$some-dep");
+        json.set(OVERRIDES, overrides);
+        writePackageJson(packageJson, json);
+
+        // Run again - should detect change due to overrides
+        packageUpdater.execute();
+
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true when overrides are added.");
+    }
+
+    @Test
+    void generatePackageJson_sameOverrides_updaterIsNotModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Add an override to package.json
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("some-dep", "$some-dep");
+        json.set(OVERRIDES, overrides);
+        writePackageJson(packageJson, json);
+
+        // Run to register the override
+        packageUpdater.execute();
+        assertTrue(packageUpdater.modified,
+                "First run after adding overrides should be modified.");
+
+        // Run again with same overrides - should not be modified
+        packageUpdater.execute();
+
+        assertFalse(packageUpdater.modified,
+                "Modification flag should be false when overrides are unchanged.");
     }
 
 }

@@ -92,6 +92,14 @@ public class TaskUpdatePackages extends NodeUpdater {
             generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
+            // Recompute hash after lockVersionForNpm may have modified
+            // overrides
+            if (npmVersionLockingUpdated) {
+                String finalHash = generatePackageJsonHash(packageJson);
+                ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
+                        finalHash);
+            }
+
             if (modified || npmVersionLockingUpdated) {
                 if (!packageJson.has("type") || !packageJson.get("type")
                         .asString().equals("module")) {
@@ -113,17 +121,89 @@ public class TaskUpdatePackages extends NodeUpdater {
     boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
         boolean versionLockingUpdated = false;
 
-        ObjectNode overridesSection = getOverridesSection(packageJson);
+        final ObjectNode overridesSection = getOverridesSection(packageJson);
+        final ObjectNode vaadinOverridesSection = Objects.requireNonNullElseGet(
+                (ObjectNode) packageJson.get(VAADIN_DEP_KEY).get(OVERRIDES),
+                () -> {
+                    final ObjectNode empty = JacksonUtils.createObjectNode();
+                    ((ObjectNode) packageJson.get(VAADIN_DEP_KEY))
+                            .set(OVERRIDES, empty);
+                    return empty;
+                });
+
+        final ObjectNode defaultOverrides = getDefaultOverrides();
+        // Add default overrides that are not yet in Vaadin overrides
+        for (String key : JacksonUtils.getKeys(defaultOverrides)) {
+            final JsonNode value = defaultOverrides.get(key);
+            if (!value.equals(vaadinOverridesSection.get(key))) {
+                // Store original nested format in vaadin.overrides for tracking
+                vaadinOverridesSection.set(key, value);
+                // For pnpm, flatten nested overrides before adding to overrides
+                // section
+                if (enablePnpm && value.isObject()) {
+                    ObjectNode nested = JacksonUtils.createObjectNode();
+                    nested.set(key, value);
+                    ObjectNode flattened = flattenOverridesForPnpm(nested);
+                    for (String flatKey : JacksonUtils.getKeys(flattened)) {
+                        overridesSection.set(flatKey, flattened.get(flatKey));
+                    }
+                } else {
+                    overridesSection.set(key, value);
+                }
+                versionLockingUpdated = true;
+            }
+        }
+        // Remove Vaadin overrides that are no longer enabled by default
+        for (String key : JacksonUtils.getKeys(vaadinOverridesSection)) {
+            final JsonNode value = vaadinOverridesSection.get(key);
+            if (!defaultOverrides.has(key)) {
+                // For pnpm with nested overrides, check against flattened keys
+                if (enablePnpm && value.isObject()) {
+                    ObjectNode nested = JacksonUtils.createObjectNode();
+                    nested.set(key, value);
+                    ObjectNode flattened = flattenOverridesForPnpm(nested);
+                    boolean allMatch = true;
+                    for (String flatKey : JacksonUtils.getKeys(flattened)) {
+                        if (!flattened.get(flatKey)
+                                .equals(overridesSection.get(flatKey))) {
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                    if (allMatch) {
+                        vaadinOverridesSection.remove(key);
+                        for (String flatKey : JacksonUtils.getKeys(flattened)) {
+                            overridesSection.remove(flatKey);
+                        }
+                        versionLockingUpdated = true;
+                    }
+                } else if (value.equals(overridesSection.get(key))) {
+                    vaadinOverridesSection.remove(key);
+                    overridesSection.remove(key);
+                    versionLockingUpdated = true;
+                }
+            }
+        }
+        // Clean up empty vaadin.overrides section
+        if (vaadinOverridesSection.isEmpty()) {
+            ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).remove(OVERRIDES);
+        }
+
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
         // Clean platform overrides if override version less than new version.
         for (String key : JacksonUtils.getKeys(fullPlatformDependencies)) {
-            if (overridesSection.has(key)
-                    && !overridesSection.get(key).asString().startsWith("$")
-                    && new FrontendVersion(overridesSection.get(key).asString())
-                            .isOlderThan(
-                                    new FrontendVersion(fullPlatformDependencies
-                                            .get(key).asString()))) {
+            if (!overridesSection.has(key)) {
+                continue;
+            }
+            JsonNode value = overridesSection.get(key);
+            if (!value.isString()) {
+                continue;
+            }
+            String stringValue = value.asString();
+            if (!stringValue.startsWith("$") && new FrontendVersion(stringValue)
+                    .isOlderThan(new FrontendVersion(
+                            fullPlatformDependencies.get(key).asString()))) {
                 overridesSection.remove(key);
             }
         }
@@ -139,8 +219,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .get(DEV_DEPENDENCIES);
         for (String dependency : JacksonUtils.getKeys(overridesSection)) {
             if (!dependencies.has(dependency)
-                    && !devDependencies.has(dependency) && overridesSection
-                            .get(dependency).asString().startsWith("$")) {
+                    && !devDependencies.has(dependency)
+                    && overridesSection.get(dependency).isString()
+                    && overridesSection.get(dependency).asString()
+                            .startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
             }
@@ -308,6 +390,35 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
         return overridesSection;
+    }
+
+    /**
+     * Converts npm nested overrides to pnpm flat format. pnpm uses a different
+     * syntax for nested dependency overrides, using '&gt;' as a separator.
+     * <p>
+     * Example: {"workbox-build": {"dep": "1.0"}} becomes
+     * {"workbox-build&gt;dep": "1.0"}
+     *
+     * @param nestedOverrides
+     *            the nested override structure (npm format)
+     * @return flattened override structure (pnpm format)
+     */
+    ObjectNode flattenOverridesForPnpm(ObjectNode nestedOverrides) {
+        ObjectNode flatOverrides = JacksonUtils.createObjectNode();
+        for (String parentKey : JacksonUtils.getKeys(nestedOverrides)) {
+            JsonNode value = nestedOverrides.get(parentKey);
+            if (value.isObject()) {
+                // Nested override: {"workbox-build": {"dep": "1.0"}}
+                for (String childKey : JacksonUtils.getKeys(value)) {
+                    String flatKey = parentKey + ">" + childKey;
+                    flatOverrides.set(flatKey, value.get(childKey));
+                }
+            } else {
+                // Already flat, keep as-is
+                flatOverrides.set(parentKey, value);
+            }
+        }
+        return flatOverrides;
     }
 
     @Override
@@ -631,6 +742,42 @@ public class TaskUpdatePackages extends NodeUpdater {
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");
+        }
+        // Include npm overrides in hash
+        if (packageJson.has(OVERRIDES)) {
+            JsonNode overrides = packageJson.get(OVERRIDES);
+            // Only include overrides in hash if section has actual content
+            if (overrides.isObject() && !overrides.isEmpty()
+                    && !hashContent.isEmpty()) {
+                hashContent.append(",\n");
+                hashContent.append("\"overrides\": ");
+                final ObjectNode sortedOverrides = JacksonUtils
+                        .createObjectNode();
+                JacksonUtils.getKeys(overrides).stream()
+                        .sorted(String::compareToIgnoreCase)
+                        .forEachOrdered(key -> {
+                            sortedOverrides.set(key, overrides.get(key));
+                        });
+                hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
+            }
+        }
+        // Include pnpm overrides in hash
+        if (packageJson.has(PNPM) && packageJson.get(PNPM).has(OVERRIDES)) {
+            JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
+            // Only include overrides in hash if section has actual content
+            if (overrides.isObject() && !overrides.isEmpty()
+                    && !hashContent.isEmpty()) {
+                hashContent.append(",\n");
+                hashContent.append("\"pnpm.overrides\": ");
+                final ObjectNode sortedOverrides = JacksonUtils
+                        .createObjectNode();
+                JacksonUtils.getKeys(overrides).stream()
+                        .sorted(String::compareToIgnoreCase)
+                        .forEachOrdered(key -> {
+                            sortedOverrides.set(key, overrides.get(key));
+                        });
+                hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
+            }
         }
         return StringUtil.getHash(hashContent.toString());
     }
