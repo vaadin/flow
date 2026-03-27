@@ -7,7 +7,7 @@ on:
   merge_group:
 
 concurrency:
-  group: sonar-pr-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
