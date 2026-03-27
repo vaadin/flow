@@ -353,11 +353,11 @@ class UidlWriterTest {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
-        // Add resources so hash can be computed. Paths must match what
-        // resolveResource() produces for the @StyleSheet annotation values.
-        mocks.getServlet().addServletContextResource("eager.css",
+        // Add resources so hash can be computed. Paths use leading '/' as
+        // required by ServletContext.getResource() per the servlet spec.
+        mocks.getServlet().addServletContextResource("/eager.css",
                 "body { color: red; }");
-        mocks.getServlet().addServletContextResource("lazy.css",
+        mocks.getServlet().addServletContextResource("/lazy.css",
                 "body { color: blue; }");
 
         UidlWriter uidlWriter = new UidlWriter();

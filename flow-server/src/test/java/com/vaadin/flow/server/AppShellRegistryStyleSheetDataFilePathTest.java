@@ -104,14 +104,12 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
         // Register stylesheet resources so the hash can be computed.
-        // Paths must match what resolveResource() produces for each
-        // annotation value.
+        // Paths use leading '/' as required by ServletContext.getResource().
         mocks.getServlet().addServletContextResource("/absolute.css",
                 "body { color: red; }");
         mocks.getServlet().addServletContextResource("/from-context.css",
                 "body { color: blue; }");
-        // ./relative/path.css is passed through resolveResource unchanged
-        mocks.getServlet().addServletContextResource("./relative/path.css",
+        mocks.getServlet().addServletContextResource("/relative/path.css",
                 "body { color: green; }");
 
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
