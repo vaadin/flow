@@ -142,8 +142,7 @@ public class DownloadHandlerView extends Div {
             }
         };
 
-        Anchor percentDownload = new Anchor("",
-                "Percent DownloadHandler");
+        Anchor percentDownload = new Anchor("", "Percent DownloadHandler");
         percentDownload.setHref(percentDownloadHandler);
         percentDownload.setId("download-handler-percent");
 
