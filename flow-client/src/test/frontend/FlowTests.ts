@@ -14,6 +14,39 @@ import sinon from 'sinon';
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
+/**
+ * Defines window.Vaadin.Flow.whenReady in tests.
+ * In production this is defined by the inline bootstrap script before
+ * the Flow.ts module loads, so tests must set it up manually.
+ */
+function defineWhenReady() {
+  $wnd.Vaadin = $wnd.Vaadin || {};
+  $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+  $wnd.Vaadin.Flow.whenReady = function (callback: () => void) {
+    function check() {
+      if (document.readyState !== 'complete') {
+        setTimeout(check, 50);
+        return;
+      }
+      if ($wnd.Vaadin.Flow.devServerIsNotLoaded) {
+        setTimeout(check, 50);
+        return;
+      }
+      const clients = $wnd.Vaadin.Flow.clients;
+      if (clients) {
+        for (const key in clients) {
+          if (clients.hasOwnProperty(key) && typeof clients[key].isActive === 'function' && clients[key].isActive()) {
+            setTimeout(check, 50);
+            return;
+          }
+        }
+      }
+      callback();
+    }
+    check();
+  };
+}
+
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 let server: MockXhrServer;
 // A `changes` array that adds a div with 'Foo' text to body
@@ -655,6 +688,59 @@ describe('Flow', () => {
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
+  });
+
+  it('should preserve whenReady defined by inline script after construction', () => {
+    defineWhenReady();
+    new Flow({ imports: () => {} });
+    expect($wnd.Vaadin.Flow.whenReady).to.be.a('function');
+  });
+
+  it('whenReady should call callback immediately when app is idle', (done) => {
+    defineWhenReady();
+    new Flow({ imports: () => {} });
+    // Mark TypeScript client as inactive
+    $wnd.Vaadin.Flow.clients.TypeScript.isActive = () => false;
+    $wnd.Vaadin.Flow.whenReady(() => {
+      done();
+    });
+  });
+
+  it('whenReady should wait when a client isActive returns true', (done) => {
+    defineWhenReady();
+    new Flow({ imports: () => {} });
+    let active = true;
+    $wnd.Vaadin.Flow.clients.TypeScript.isActive = () => active;
+    let callbackCalled = false;
+    $wnd.Vaadin.Flow.whenReady(() => {
+      callbackCalled = true;
+      done();
+    });
+    // Callback should not have been called synchronously
+    expect(callbackCalled).to.be.false;
+    // Make client inactive after a short delay
+    setTimeout(() => {
+      expect(callbackCalled).to.be.false;
+      active = false;
+    }, 60);
+  });
+
+  it('whenReady should wait when devServerIsNotLoaded is true', (done) => {
+    defineWhenReady();
+    new Flow({ imports: () => {} });
+    $wnd.Vaadin.Flow.clients.TypeScript.isActive = () => false;
+    $wnd.Vaadin.Flow.devServerIsNotLoaded = true;
+    let callbackCalled = false;
+    $wnd.Vaadin.Flow.whenReady(() => {
+      callbackCalled = true;
+      done();
+    });
+    expect(callbackCalled).to.be.false;
+    // Clear the flag after a short delay
+    setTimeout(() => {
+      expect(callbackCalled).to.be.false;
+      delete $wnd.Vaadin.Flow.devServerIsNotLoaded;
+    }, 60);
   });
 
   it('should pre-attach container element on every navigation', async () => {

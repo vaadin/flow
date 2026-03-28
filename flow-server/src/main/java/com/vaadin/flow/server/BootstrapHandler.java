@@ -133,6 +133,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
+    public static final String WHEN_READY_JS = readResource("whenReady.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
     private static final String CAPTION = "caption";
@@ -1194,6 +1195,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 result = result.replace("{{GWT_STAT_EVENTS}}", "");
             }
 
+            result = result.replace("{{WHEN_READY}}", WHEN_READY_JS);
             result = result.replace("{{APP_ID}}", context.getAppId());
             result = result.replace("{{CONFIG_JSON}}", appConfigString);
             // {{INITIAL_UIDL}} should be the last replaced so that it may have
