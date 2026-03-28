@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class FutureAccess extends FutureTask<Void> {
+public class FutureAccess extends AbstractFutureAccess {
     private final VaadinSession session;
     private final Command command;
 
