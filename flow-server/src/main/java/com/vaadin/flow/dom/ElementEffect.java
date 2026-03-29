@@ -296,6 +296,11 @@ public final class ElementEffect implements Serializable {
                     try {
                         // Guard against detach while waiting for lock
                         if (effect != null) {
+                            // In test environments, the effect dispatcher
+                            // may run tasks on the test thread where
+                            // UI.getCurrent() is already set. In that case
+                            // run directly instead of ui.access() which
+                            // would only enqueue without executing.
                             if (UI.getCurrent() == ui) {
                                 command.run();
                             } else {
