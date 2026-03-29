@@ -296,7 +296,11 @@ public final class ElementEffect implements Serializable {
                     try {
                         // Guard against detach while waiting for lock
                         if (effect != null) {
-                            ui.access(command::run);
+                            if (UI.getCurrent() == ui) {
+                                command.run();
+                            } else {
+                                ui.access(command::run);
+                            }
                         }
                     } catch (UIDetachedException e) {
                         // Effect was concurrently disabled -> nothing do to
