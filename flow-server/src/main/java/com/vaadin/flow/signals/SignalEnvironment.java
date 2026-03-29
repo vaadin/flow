@@ -98,10 +98,10 @@ public abstract class SignalEnvironment {
     }
 
     /**
-     * Registers a signal environment at the beginning of the list so that it
-     * is resolved before any previously registered environments. This is
-     * intended for test environments that need to intercept all signal
-     * operations regardless of other active environments.
+     * Registers a signal environment at the beginning of the list so that it is
+     * resolved before any previously registered environments. This is intended
+     * for test environments that need to intercept all signal operations
+     * regardless of other active environments.
      *
      * @param environment
      *            the environment to register, not <code>null</code>
