@@ -401,7 +401,7 @@ public class IndexHtmlRequestHandlerTest {
         assertTrue(
                 scriptContent.startsWith("window.Vaadin = window.Vaadin || {};"
                         + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
-                        + "window.Vaadin.Flow.whenReady="));
+                        + "window.Vaadin.Flow.whenReady = "));
         assertTrue(scriptContent.endsWith("window.Vaadin.TypeScript= {};"));
         assertEquals("", initialUidlScript.attr("initial"));
     }
@@ -455,7 +455,7 @@ public class IndexHtmlRequestHandlerTest {
         assertTrue(
                 scriptContent.startsWith("window.Vaadin = window.Vaadin || {};"
                         + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
-                        + "window.Vaadin.Flow.whenReady="));
+                        + "window.Vaadin.Flow.whenReady = "));
         assertTrue(scriptContent.endsWith("window.Vaadin.TypeScript= {};"));
         assertEquals("", initialUidlScript.attr("initial"));
         assertNull(UI.getCurrent());
