@@ -27,7 +27,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class InvisibleSlotAttributeIT extends ChromeBrowserTest {
 
     @Test
-    public void initiallyInvisibleElement_slotAttributeIsPreserved() {
+    public void initiallyInvisibleElement_slotAttributeImmediatelyPropagated() {
         open();
 
         // Find the element by the "slot" attribute, since "id" property
@@ -38,17 +38,8 @@ public class InvisibleSlotAttributeIT extends ChromeBrowserTest {
         Assert.assertEquals(Boolean.TRUE.toString(),
                 target.getAttribute("hidden"));
         Assert.assertEquals("drawer", target.getAttribute("slot"));
-
         // Non-structural attributes must NOT be sent for invisible elements
         Assert.assertNull(target.getAttribute("data-info"));
-    }
-
-    @Test
-    public void initiallyInvisibleElement_slotAttributeSurvivesBecomingVisible() {
-        open();
-
-        WebElement target = findElement(By.cssSelector("[slot='drawer']"));
-        Assert.assertEquals("drawer", target.getAttribute("slot"));
 
         $(NativeButtonElement.class).id("show-button").click();
 
