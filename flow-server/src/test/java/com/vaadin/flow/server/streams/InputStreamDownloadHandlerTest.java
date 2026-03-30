@@ -446,6 +446,32 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
+    void handleSetToInline_contentDispositionIsInlineWithFilenameOverride()
+            throws IOException {
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(stream,
+                        "download", "application/octet-stream", 0),
+                        "download_file")
+                .inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"download_file\"");
+    }
+
+    @Test
     void contentLengthProvided_contentLengthHeaderSet() throws IOException {
         long expectedContentLength = 12345L;
         InputStream stream = Mockito.mock(InputStream.class);
