@@ -1611,6 +1611,35 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(element.getAttribute("hidden"));
     }
 
+    public void testBindInvisibleNode_slotAttributeIsPreserved() {
+        node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+
+        attributes.getProperty("slot").setValue("drawer");
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("drawer", element.getAttribute("slot"));
+    }
+
+    public void testBindInvisibleNode_nonStructuralAttributesAreNotApplied() {
+        node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+
+        attributes.getProperty("data-info").setValue("secret");
+        attributes.getProperty("slot").setValue("drawer");
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals("drawer", element.getAttribute("slot"));
+        assertNull(element.getAttribute("data-info"));
+    }
+
     /**
      * The StateNode is visible (the visibility is true).
      *
