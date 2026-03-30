@@ -1909,9 +1909,10 @@ public class StateNodeTest {
                 .collect(Collectors.toList());
 
         // Only "slot" should be sent, not "data-secret"
-        assertEquals(1, attributeChanges.size(),
-                "Only structural attributes should be collected for invisible nodes");
-        assertEquals("slot", attributeChanges.get(0).getKey());
-        assertEquals("drawer", attributeChanges.get(0).getValue());
+        Assert.assertEquals(
+                "Only structural attributes should be collected for invisible nodes",
+                1, attributeChanges.size());
+        Assert.assertEquals("slot", attributeChanges.get(0).getKey());
+        Assert.assertEquals("drawer", attributeChanges.get(0).getValue());
     }
 }
