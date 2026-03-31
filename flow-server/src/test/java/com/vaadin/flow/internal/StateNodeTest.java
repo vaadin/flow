@@ -1881,4 +1881,33 @@ public class StateNodeTest {
 
         assertEquals(0, changes.size());
     }
+
+    @Test
+    public void collectChanges_invisibleNode_slotAttributeCollected() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("slot", "drawer");
+        element.setAttribute("data-secret", "sensitive");
+        element.setVisible(false);
+
+        ui.getElement().appendChild(element);
+
+        StateNode stateNode = element.getNode();
+
+        List<NodeChange> changes = new ArrayList<>();
+        stateNode.collectChanges(changes::add);
+
+        List<MapPutChange> attributeChanges = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> change
+                        .getFeature() == ElementAttributeMap.class)
+                .collect(Collectors.toList());
+
+        // Only "slot" should be sent, not "data-secret"
+        assertEquals(1, attributeChanges.size(),
+                "Only structural attributes should be collected for invisible nodes");
+        assertEquals("slot", attributeChanges.get(0).getKey());
+        assertEquals("drawer", attributeChanges.get(0).getValue());
+    }
 }
