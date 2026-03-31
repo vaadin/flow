@@ -231,6 +231,7 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        JacksonUtils.checkJacksonCompatibility();
         doSetClassLoader();
         instantiator = createInstantiator();
 

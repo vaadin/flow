@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
@@ -60,18 +60,6 @@ export enum MessageType {
   INFORMATION = 'information',
   WARNING = 'warning',
   ERROR = 'error'
-}
-
-interface Message {
-  id: number;
-  type: MessageType;
-  message: string;
-  details?: string;
-  link?: string;
-  persistentId?: string;
-  dontShowAgain: boolean;
-  dontShowAgainMessage?: string;
-  deleted: boolean;
 }
 
 type DevToolsConf = {
@@ -615,18 +603,11 @@ export class VaadinDevTools extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
-  @query('.window')
-  private root!: HTMLElement;
-
   @state()
   componentPickActive: boolean = false;
 
   private javaConnection?: LiveReloadConnection;
   private frontendConnection?: WebSocketConnection;
-
-  private nextMessageId: number = 1;
-
-  private transitionDuration: number = 0;
 
   elementTelemetry() {
     let data = {};
@@ -701,7 +682,11 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
+    const wsUrl = this.getDedicatedWebSocketUrl();
+    if (!wsUrl) {
+      return;
+    }
+    const frontendConnection = new WebSocketConnection(wsUrl);
     frontendConnection.onHandshake = () => {
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
@@ -816,14 +801,10 @@ export class VaadinDevTools extends LitElement {
     this.bodyShadowRoot = document.body.attachShadow({ mode: 'closed' });
     this.bodyShadowRoot.innerHTML = '<slot></slot>';
 
-    this.conf = (window.Vaadin as any).devToolsConf || this.conf;
+    this.conf = (window as any).Vaadin?.devToolsConf || this.conf;
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
-      const now = new Date();
-      const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
-        -2
-      )}:${`0${now.getSeconds()}`.slice(-2)}`;
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
@@ -835,16 +816,11 @@ export class VaadinDevTools extends LitElement {
 
     registerRefreshUIHandler();
 
-    this.transitionDuration = parseInt(
-      window.getComputedStyle(this).getPropertyValue('--dev-tools-transition-duration'),
-      10
-    );
-
     const windowAny = window as any;
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    const anyVaadin = window.Vaadin as any;
+    const anyVaadin = (window as any).Vaadin;
     if (anyVaadin.devToolsPlugins) {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
       anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
