@@ -378,6 +378,10 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <p>
      * File name override is appended to the download url as the logical name of
      * the target file.
+     * <p>
+     * The {@link DownloadEvent#getFileName()} of the
+     * {@link InputStreamDownloadCallback} returns the given
+     * {@code fileNameOverride}.
      *
      * @param callback
      *            a function that will be called on download
@@ -423,6 +427,10 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <p>
      * File name override is appended to the download url as the logical name of
      * the target file.
+     * <p>
+     * The {@link DownloadEvent#getFileName()} of the
+     * {@link InputStreamDownloadCallback} returns the given
+     * {@code fileNameOverride}.
      *
      * @param callback
      *            a function that will be called on download
