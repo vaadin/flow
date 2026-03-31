@@ -140,6 +140,50 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
+    void transferProgressListener_withFileNameOverride_listenersInvoked()
+            throws URISyntaxException, IOException {
+        List<String> invocations = new ArrayList<>();
+        DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
+            byte[] data = getBytes();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            return new DownloadResponse(inputStream, request.getFileName(),
+                    "application/octet-stream", data.length);
+        }, "downloadOverride", new TransferProgressListener() {
+            @Override
+            public void onStart(TransferContext context) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onStart");
+            }
+
+            @Override
+            public void onProgress(TransferContext context,
+                    long transferredBytes, long totalBytes) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onProgress");
+            }
+
+            @Override
+            public void onComplete(TransferContext context,
+                    long transferredBytes) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onComplete");
+            }
+
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                invocations.add("onError");
+            }
+        });
+
+        handler.handleDownloadRequest(downloadEvent);
+
+        assertEquals(
+                List.of("onStart", "onProgress", "onProgress", "onComplete"),
+                invocations);
+        Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
+    @Test
     void transferProgressListener_addListener_errorOccurred_errorListenerInvoked()
             throws IOException {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
