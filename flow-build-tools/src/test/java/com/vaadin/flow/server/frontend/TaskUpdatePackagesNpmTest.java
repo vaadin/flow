@@ -777,9 +777,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final ObjectNode newPackageJson = getOrCreatePackageJson();
@@ -810,9 +810,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -842,9 +842,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(new HashMap<>());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -873,9 +873,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(false);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -1035,8 +1035,9 @@ class TaskUpdatePackagesNpmTest {
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(scannedApplicationDependencies);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        options = options
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
     }
@@ -1126,9 +1127,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(applicationDependencies);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
-                .withBundleBuild(true).withReact(false);
-
-        return new TaskUpdatePackages(frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        return new TaskUpdatePackages(options) {
         };
     }
 
@@ -1613,9 +1614,10 @@ class TaskUpdatePackagesNpmTest {
 
         Options options = new MockOptions(realFinder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
-                .withBundleBuild(true).withReact(false);
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
 
-        return new TaskUpdatePackages(frontendDependenciesScanner, options) {
+        return new TaskUpdatePackages(options) {
         };
     }
 

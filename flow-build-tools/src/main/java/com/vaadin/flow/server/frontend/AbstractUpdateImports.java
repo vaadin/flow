@@ -113,8 +113,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
 
-    private FrontendDependenciesScanner scanner;
-
     private ClassFinder classFinder;
 
     final File generatedFlowImports;
@@ -126,19 +124,17 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final GeneratedFilesSupport generatedFilesSupport;
 
-    AbstractUpdateImports(Options options,
-            FrontendDependenciesScanner scanner) {
-        this(options, scanner, new GeneratedFilesSupport());
+    AbstractUpdateImports(Options options) {
+        this(options, new GeneratedFilesSupport());
     }
 
-    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+    AbstractUpdateImports(Options options,
             GeneratedFilesSupport generatedFilesSupport) {
         this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
-        this.scanner = scanner;
         this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
-                scanner.getTheme());
+                options.getFrontendDependenciesScanner().getTheme());
 
         generatedFlowImports = FrontendUtils
                 .getFlowGeneratedImports(options.getFrontendDirectory());
@@ -165,7 +161,8 @@ abstract class AbstractUpdateImports implements Runnable {
         getLogger().debug("Start updating imports file and chunk files.");
         long start = System.nanoTime();
 
-        Map<ChunkInfo, List<CssData>> css = scanner.getCss();
+        Map<ChunkInfo, List<CssData>> css = options
+                .getFrontendDependenciesScanner().getCss();
         Map<ChunkInfo, List<String>> javascript = getMergedJavascript();
 
         Map<File, List<String>> output = process(css, javascript);
@@ -182,6 +179,8 @@ abstract class AbstractUpdateImports implements Runnable {
         long start = System.nanoTime();
 
         Map<ChunkInfo, List<String>> javascript;
+        final FrontendDependenciesScanner scanner = options
+                .getFrontendDependenciesScanner();
         Map<ChunkInfo, List<String>> modules = scanner.getModules();
         Map<ChunkInfo, List<String>> scripts = scanner.getScripts();
 
@@ -644,7 +643,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
-        AbstractTheme theme = scanner.getTheme();
+        AbstractTheme theme = options.getFrontendDependenciesScanner()
+                .getTheme();
 
         Set<String> visited = new HashSet<>();
 

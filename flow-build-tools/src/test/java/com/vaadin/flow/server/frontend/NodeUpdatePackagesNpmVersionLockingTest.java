@@ -193,9 +193,10 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withFrontendDependenciesScanner(scanner);
 
-        return new TaskUpdatePackages(scanner, options);
+        return new TaskUpdatePackages(options);
     }
 
     private TaskUpdatePackages createPackageUpdater() {

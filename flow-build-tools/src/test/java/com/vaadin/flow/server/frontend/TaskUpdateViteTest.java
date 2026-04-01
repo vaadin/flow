@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
@@ -57,12 +58,13 @@ class TaskUpdateViteTest {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, temporaryFolder)
-                .withBuildDirectory("build");
+                .withBuildDirectory("build").withFrontendDependenciesScanner(
+                        Mockito.mock(FrontendDependenciesScanner.class));
     }
 
     @Test
     void generatedTemplate_correctSettingsPath() throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -81,7 +83,7 @@ class TaskUpdateViteTest {
         final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(options, null, null).execute();
+        new TaskUpdateVite(options, null).execute();
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -98,7 +100,7 @@ class TaskUpdateViteTest {
         FileUtils.write(generatedConfigFile, importString,
                 StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(options, null, null).execute();
+        new TaskUpdateVite(options, null).execute();
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -109,7 +111,7 @@ class TaskUpdateViteTest {
 
     @Test
     void usedSettings_matchThoseCreatedToSettingsFile() throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File generatedConfigFile = new File(temporaryFolder,
@@ -147,8 +149,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null,
-                null);
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
         try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
                 FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
@@ -175,7 +176,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_reactDisabled_correctFileRouterImport()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options.withReact(false), null,
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(false),
                 null);
         task.execute();
 
@@ -199,7 +200,7 @@ class TaskUpdateViteTest {
             throws IOException {
         options.withFrontendExtraFileExtensions(
                 Arrays.asList(".svg", ".ico", "png"));
-        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -220,7 +221,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_noEraFrontendExtension_viteConfigurationWithoutExtraSelections()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -243,8 +244,11 @@ class TaskUpdateViteTest {
             throws IOException {
         PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
         Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        final FrontendDependenciesScanner frontendDeps = options
+                .getFrontendDependenciesScanner();
+        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
 
-        TaskUpdateVite task = new TaskUpdateVite(options, null, pwaConfig);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -265,8 +269,11 @@ class TaskUpdateViteTest {
             throws IOException {
         PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
         Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        final FrontendDependenciesScanner frontendDeps = options
+                .getFrontendDependenciesScanner();
+        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
 
-        TaskUpdateVite task = new TaskUpdateVite(options, null, pwaConfig);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -283,7 +290,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_pwaNull_serviceWorkerPluginNotIncluded()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,

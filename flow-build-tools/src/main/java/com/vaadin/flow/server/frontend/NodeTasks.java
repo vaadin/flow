@@ -203,8 +203,7 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(frontendDependencies,
-                        options);
+                packageUpdater = new TaskUpdatePackages(options);
                 commands.add(packageUpdater);
             }
 
@@ -222,7 +221,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCreateMissingPackageJson()) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    frontendDependencies, options);
+                    options);
             commands.add(packageCreator);
         }
 
@@ -241,7 +240,7 @@ public class NodeTasks implements FallibleCommand {
         // available)
         addEndpointServicesTasks(options);
 
-        commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
+        commands.add(new TaskGenerateBootstrap(options));
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
@@ -275,11 +274,11 @@ public class NodeTasks implements FallibleCommand {
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
-            commands.add(new TaskUpdateVite(options, webComponentTags, pwa));
+            commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(frontendDependencies, options));
+            commands.add(new TaskUpdateImports(options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));

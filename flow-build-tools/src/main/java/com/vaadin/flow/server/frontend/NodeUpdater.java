@@ -46,9 +46,8 @@ import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
@@ -94,12 +93,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_VERSION = "vaadinVersion";
     static final String PROJECT_FOLDER = "projectFolder";
 
-    /**
-     * The {@link FrontendDependencies} object representing the application
-     * dependencies.
-     */
-    protected final FrontendDependenciesScanner frontDeps;
-
     final ClassFinder finder;
 
     boolean modified;
@@ -111,15 +104,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Constructor.
      *
-     * @param frontendDependencies
-     *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    protected NodeUpdater(FrontendDependenciesScanner frontendDependencies,
-            Options options) {
+    protected NodeUpdater(Options options) {
         this.finder = options.getClassFinder();
-        this.frontDeps = frontendDependencies;
         this.options = options;
     }
 
@@ -406,8 +395,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         // Add workbox dependencies only when PWA is enabled
-        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
-                && frontDeps.getPwaConfiguration().isOfflineEnabled()) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
             defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
@@ -417,12 +407,17 @@ public abstract class NodeUpdater implements FallibleCommand {
     ObjectNode getDefaultOverrides() {
         var overrides = JacksonUtils.createObjectNode();
 
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
         // Currently, we only have overrides for workbox uses overrides, and
         // only when PWA is enabled
-        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
-                && frontDeps.getPwaConfiguration().isOfflineEnabled()) {
-            overrides = overrides.setAll((ObjectNode) Objects.requireNonNull(
-                    readPackageJsonKey("workbox", "overrides")));
+        final ObjectNode workboxOverrides = pwaConfiguration != null
+                && pwaConfiguration.isOfflineEnabled()
+                        ? (ObjectNode) readPackageJsonKey("workbox",
+                                "overrides")
+                        : null;
+        if (workboxOverrides != null) {
+            overrides = overrides.setAll(workboxOverrides);
         }
         return overrides;
     }

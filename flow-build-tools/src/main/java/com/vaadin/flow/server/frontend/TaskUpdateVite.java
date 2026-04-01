@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,13 +52,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
 
-    private final PwaConfiguration pwaConfiguration;
-
-    TaskUpdateVite(Options options, Set<String> webComponentTags,
-            @Nullable PwaConfiguration pwaConfiguration) {
+    TaskUpdateVite(Options options, Set<String> webComponentTags) {
         this.options = options;
         this.webComponentTags = webComponentTags;
-        this.pwaConfiguration = pwaConfiguration;
     }
 
     private static String getSimplifiedTemplate(String string) {
@@ -170,6 +165,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateServiceWorkerVitePlugin(String template) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
         if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
             return template.replace("//#serviceWorkerPluginImport#",
                     "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")

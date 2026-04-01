@@ -86,8 +86,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
         classFinder = Mockito.spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
-        packageCreator = new TaskGeneratePackageJson(null, options);
+                .withBuildDirectory(TARGET).withBundleBuild(true)
+                .withFrontendDependenciesScanner(getScanner(classFinder));
+        packageCreator = new TaskGeneratePackageJson(options);
         versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
                 .toFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
@@ -95,8 +96,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -136,8 +136,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -151,8 +150,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -162,8 +160,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     void pnpmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -177,8 +174,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -187,8 +183,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void pnpmIsInUse_packageLockExists_removePackageLock() throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -197,8 +192,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
         assertFalse(packageLock.exists(),
                 "npm package-lock should be removed for pnpm");
@@ -334,9 +328,10 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void versionsDoNotMatch_inVaadinJson_cleanUpPnpm() throws IOException {
         options.withEnablePnpm(true);
+        options = options.withFrontendDependenciesScanner(
+                Mockito.mock(FrontendDependencies.class));
 
-        packageUpdater = new TaskUpdatePackages(
-                Mockito.mock(FrontendDependencies.class), options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -373,8 +368,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // packages.put(VAADIN_CORE, "1.1.1");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -402,8 +398,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         options.enableNpmFileCleaning(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         // clean up happened
@@ -423,8 +418,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -451,8 +447,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -494,8 +491,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -523,8 +521,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -544,8 +543,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -567,8 +567,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -592,8 +593,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         JsonNode json = getPackageJson(packageJson);
@@ -617,8 +619,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 Collections.singletonList(legacyPackageContent));
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -631,8 +632,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Files.write(packageJson.toPath(),
                 Collections.singletonList(legacyPackageContent));
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -651,8 +651,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -694,8 +695,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -841,8 +843,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -875,8 +878,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();

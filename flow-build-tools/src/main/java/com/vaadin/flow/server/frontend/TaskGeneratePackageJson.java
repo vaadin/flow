@@ -20,8 +20,6 @@ import java.io.UncheckedIOException;
 
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
 /**
  * Creates the <code>package.json</code> if missing.
  * <p>
@@ -34,14 +32,11 @@ public class TaskGeneratePackageJson extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param frontendDependencies
-     *            frontend dependencies scanner
      * @param options
      *            build options
      */
-    TaskGeneratePackageJson(FrontendDependenciesScanner frontendDependencies,
-            Options options) {
-        super(frontendDependencies, options);
+    TaskGeneratePackageJson(Options options) {
+        super(options);
     }
 
     @Override

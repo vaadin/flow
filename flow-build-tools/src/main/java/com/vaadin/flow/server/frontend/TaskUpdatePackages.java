@@ -65,14 +65,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param frontendDependencies
-     *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    TaskUpdatePackages(FrontendDependenciesScanner frontendDependencies,
-            Options options) {
-        super(frontendDependencies, options);
+    TaskUpdatePackages(Options options) {
+        super(options);
         this.jarResourcesFolder = options.getJarFrontendResourcesFolder();
         this.forceCleanUp = options.isCleanNpmFiles();
         this.enablePnpm = options.isEnablePnpm();
@@ -81,6 +78,8 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
+            final FrontendDependenciesScanner frontDeps = options
+                    .getFrontendDependenciesScanner();
             Map<String, String> scannedApplicationDependencies = frontDeps
                     .getPackages();
             Map<String, String> scannedApplicationDevDependencies = frontDeps
