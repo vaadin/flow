@@ -25,6 +25,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -88,7 +90,12 @@ public class PageIT extends ChromeBrowserTest {
         InputTextElement input = $(InputTextElement.class).id("input");
         input.setValue("foo");
         Assert.assertEquals("foo", input.getPropertyString("value"));
+        WebElement oldInput = findElement(By.id("input"));
         $(DivElement.class).id("reload").click();
+        // Wait for the old element to become stale (page unloads)
+        waitUntil(ExpectedConditions.stalenessOf(oldInput));
+        // Wait for the new page to load and the input element to reappear
+        waitForElementPresent(By.id("input"));
         input = $(InputTextElement.class).id("input");
         Assert.assertEquals("", input.getValue());
     }
