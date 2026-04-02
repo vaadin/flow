@@ -26,8 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -57,7 +55,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -288,7 +285,7 @@ class TaskRunNpmInstallTest {
 
         final File localHashFile = new File(options.getNodeModulesFolder(),
                 ".vaadin/vaadin.json");
-        FileUtils.forceMkdirParent(localHashFile);
+        Files.createDirectories(localHashFile.toPath().getParent());
         getNodeUpdater().writePackageFile(localHash, localHashFile);
     }
 
@@ -332,8 +329,7 @@ class TaskRunNpmInstallTest {
         assertTrue(localHashFile.exists(),
                 "Local has file was not created after install.");
 
-        String fileContent = FileUtils.readFileToString(localHashFile,
-                UTF_8.name());
+        String fileContent = Files.readString(localHashFile.toPath());
         JsonNode localHash = JacksonUtils.readTree(fileContent);
         assertNotEquals("", localHash.get(HASH_KEY).asString(),
                 "We should have a non empty hash key");
@@ -362,39 +358,48 @@ class TaskRunNpmInstallTest {
         nodeModules.mkdir();
         getNodeUpdater().modified = false;
 
-        // Fake that we have installed "@vaadin/vaadin-usage-statistics"
-        // (in the default postinstall list)
+        // Pre-populate node_modules/@vaadin/vaadin-usage-statistics/ so that
+        // shouldRunNpmInstall() sees a non-empty node_modules directory.
+        // Note: cleanUp() deletes node_modules before the actual install runs,
+        // so this copy won't survive — the install source is fake-stats/ below.
         File statsDir = new File(nodeModules,
                 "@vaadin/vaadin-usage-statistics");
         statsDir.mkdirs();
         File statsPackageJson = new File(statsDir, "package.json");
-        String statsPackageJsonContents = IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall.json"),
-                StandardCharsets.UTF_8);
-        FileUtils.write(statsPackageJson, statsPackageJsonContents,
-                StandardCharsets.UTF_8);
+        String statsPackageJsonContents = new String(getClass()
+                .getResourceAsStream("fake-package-with-postinstall.json")
+                .readAllBytes(), StandardCharsets.UTF_8);
+        Files.writeString(statsPackageJson.toPath(), statsPackageJsonContents);
+
+        // Local install source for "@vaadin/vaadin-usage-statistics".
+        // Must live outside node_modules/ because cleanUp() deletes it
+        // before npm/pnpm install. Using a local path avoids fetching a
+        // non-existent version from the registry.
+        File fakeStatsPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-stats"),
+                "package.json");
+        fakeStatsPackageJson.getParentFile().mkdirs();
+        Files.writeString(fakeStatsPackageJson.toPath(),
+                statsPackageJsonContents);
 
         // Fake that we have installed "foo" (not in the default postinstall
         // list unless explicitly added)
         File fooPackageJson = new File(
                 new File(nodeModules.getParentFile(), "fake-foo"),
                 "package.json");
-        String fooPackageJsonContents = IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall.json"),
-                StandardCharsets.UTF_8);
-        FileUtils.write(fooPackageJson, fooPackageJsonContents,
-                StandardCharsets.UTF_8);
+        String fooPackageJsonContents = new String(getClass()
+                .getResourceAsStream("fake-package-with-postinstall.json")
+                .readAllBytes(), StandardCharsets.UTF_8);
+        fooPackageJson.getParentFile().mkdirs();
+        Files.writeString(fooPackageJson.toPath(), fooPackageJsonContents);
 
         File packageJsonFile = ensurePackageJson();
         JsonNode packageJson = getNodeUpdater().getPackageJson();
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
-                .put("@vaadin/vaadin-usage-statistics", "0.0.1");
+                .put("@vaadin/vaadin-usage-statistics", "./fake-stats");
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES)).put("foo",
                 "./fake-foo");
-        FileUtils.write(packageJsonFile, packageJson.toString(),
-                StandardCharsets.UTF_8);
+        Files.writeString(packageJsonFile.toPath(), packageJson.toString());
 
     }
 
@@ -404,19 +409,28 @@ class TaskRunNpmInstallTest {
         setupPostinstallPackages();
 
         // Remove postinstall script from "@vaadin/vaadin-usage-statistics"
-        File statsPackageJson = new File(
+        // in both the source directory and the node_modules copy, so that
+        // even after npm/pnpm re-installs from source, no postinstall exists
+        JsonNode statsPackageJsonContents = JacksonUtils
+                .readTree(new String(getClass()
+                        .getResourceAsStream(
+                                "fake-package-with-postinstall.json")
+                        .readAllBytes(), StandardCharsets.UTF_8));
+        ((ObjectNode) statsPackageJsonContents.get("scripts"))
+                .remove("postinstall");
+        String noPostinstallContent = statsPackageJsonContents.toString();
+
+        File statsSourcePackageJson = new File(
+                new File(options.getNpmFolder(), "fake-stats"), "package.json");
+        Files.writeString(statsSourcePackageJson.toPath(),
+                noPostinstallContent);
+
+        File statsNodeModulesPackageJson = new File(
                 new File(options.getNodeModulesFolder(),
                         "@vaadin/vaadin-usage-statistics"),
                 "package.json");
-        JsonNode statsPackageJsonContents = JacksonUtils
-                .readTree(IOUtils.toString(
-                        getClass().getResourceAsStream(
-                                "fake-package-with-postinstall.json"),
-                        StandardCharsets.UTF_8));
-        ((ObjectNode) statsPackageJsonContents.get("scripts"))
-                .remove("postinstall");
-        FileUtils.write(statsPackageJson, statsPackageJsonContents.toString(),
-                StandardCharsets.UTF_8);
+        Files.writeString(statsNodeModulesPackageJson.toPath(),
+                noPostinstallContent);
 
         logger = new MockLogger();
         assertTrue(logger.isDebugEnabled());
@@ -475,12 +489,11 @@ class TaskRunNpmInstallTest {
         File fooPackageJson = new File(
                 new File(nodeModules.getParentFile(), "fake-foo"),
                 "package.json");
-        String fooPackageJsonContents = IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall-writing-to-console.json"),
-                StandardCharsets.UTF_8);
-        FileUtils.write(fooPackageJson, fooPackageJsonContents,
-                StandardCharsets.UTF_8);
+        String fooPackageJsonContents = new String(getClass()
+                .getResourceAsStream(
+                        "fake-package-with-postinstall-writing-to-console.json")
+                .readAllBytes(), StandardCharsets.UTF_8);
+        Files.writeString(fooPackageJson.toPath(), fooPackageJsonContents);
 
         task = createTask(List.of("foo"));
         task.execute();
@@ -501,14 +514,12 @@ class TaskRunNpmInstallTest {
         vaadinJson.put(HASH_KEY, packageJsonHash);
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath());
         File vaadinJsonFile = getNodeUpdater().getVaadinJsonFile();
-
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toString(),
-                UTF_8);
+        Files.createDirectories(vaadinJsonFile.toPath().getParent());
+        Files.writeString(vaadinJsonFile.toPath(), vaadinJson.toString());
 
         assertFalse(task.isVaadinHashOrProjectFolderUpdated());
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath() + "foo");
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toString(),
-                UTF_8);
+        Files.writeString(vaadinJsonFile.toPath(), vaadinJson.toString());
         assertTrue(task.isVaadinHashOrProjectFolderUpdated());
     }
 
@@ -560,7 +571,7 @@ class TaskRunNpmInstallTest {
                                     + "/node.exe"
                             : "node-" + FrontendTools.DEFAULT_NODE_VERSION
                                     + "/bin/node");
-            FileUtils.forceMkdir(node);
+            Files.createDirectories(node.toPath());
 
             assertTrue(node.isDirectory(),
                     "node executable should be a directory");
@@ -638,8 +649,7 @@ class TaskRunNpmInstallTest {
                   "packages": {}
                 }
                 """;
-        FileUtils.write(packageLockFile, packageLockContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageLockFile.toPath(), packageLockContent);
 
         task.verifyPackageLockAndClean();
 
@@ -662,8 +672,7 @@ class TaskRunNpmInstallTest {
                   "packages": {}
                 }
                 """;
-        FileUtils.write(packageLockFile, packageLockContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageLockFile.toPath(), packageLockContent);
 
         task.verifyPackageLockAndClean();
 
@@ -686,8 +695,7 @@ class TaskRunNpmInstallTest {
                   "dependencies": {}
                 }
                 """;
-        FileUtils.write(packageLockFile, packageLockContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageLockFile.toPath(), packageLockContent);
 
         task.verifyPackageLockAndClean();
 
@@ -708,8 +716,7 @@ class TaskRunNpmInstallTest {
                   "packages": {}
                 }
                 """;
-        FileUtils.write(packageLockFile, packageLockContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageLockFile.toPath(), packageLockContent);
 
         task.verifyPackageLockAndClean();
 
@@ -733,8 +740,7 @@ class TaskRunNpmInstallTest {
                   "packages": {}
                 }
                 """;
-        FileUtils.write(packageLockFile, packageLockContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageLockFile.toPath(), packageLockContent);
 
         task.verifyPackageLockAndClean();
 
