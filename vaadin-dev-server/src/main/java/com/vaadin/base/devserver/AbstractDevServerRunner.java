@@ -658,7 +658,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         if (failureMessage != null) {
             response.setContentType("text/html;charset=utf-8");
             response.setHeader("Cache-Control", "no-cache");
-            response.getWriter().write(failureMessage);
+            response.getWriter().write("<pre>" + failureMessage + "</pre>");
             return true;
         }
         if (devServerStartFuture.isDone()) {
