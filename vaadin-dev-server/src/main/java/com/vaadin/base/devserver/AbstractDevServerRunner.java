@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
@@ -107,7 +106,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private final boolean reuseDevServer;
     private final File devServerPortFile;
 
-    private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
+    private AtomicReference<String> devServerFailure = new AtomicReference<>();
 
     private final CompletableFuture<Void> devServerStartFuture;
 
@@ -217,8 +216,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             Process process = doStartDevServer();
             devServerProcess.set(process);
             if (!isRunning()) {
-                throw new IllegalStateException("Startup of " + getServerName()
-                        + " failed. Output was:\n" + getFailedOutput());
+                IllegalStateException exception = new IllegalStateException(
+                        "Startup of " + getServerName()
+                                + " failed. Output was:\n" + getFailedOutput());
+                getLogger().error("Dev server failed to start", exception);
+                throw exception;
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -648,22 +650,30 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         return handleRequestInternal(session, request, response,
-                devServerStartFuture, isDevServerFailedToStart);
+                devServerStartFuture, devServerFailure);
     }
 
     static boolean handleRequestInternal(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
             CompletableFuture<?> devServerStartFuture,
-            AtomicBoolean isDevServerFailedToStart) throws IOException {
-        if (devServerStartFuture.isDone()) {
-            // The server has started, check for any exceptions in the startup
-            // process
+            AtomicReference<String> devServerFailure) throws IOException {
+        if (devServerFailure.get() == null && devServerStartFuture.isDone()) {
             try {
                 devServerStartFuture.getNow(null);
             } catch (CompletionException exception) {
-                isDevServerFailedToStart.set(true);
-                throw getCause(exception);
+                RuntimeException cause = getCause(exception);
+                devServerFailure.set("The Vite dev server failed to start: "
+                        + cause.getMessage());
             }
+        }
+        String failureMessage = devServerFailure.get();
+        if (failureMessage != null) {
+            response.setContentType("text/html;charset=utf-8");
+            response.setHeader("Cache-Control", "no-cache");
+            response.getWriter().write("<pre>" + failureMessage + "</pre>");
+            return true;
+        }
+        if (devServerStartFuture.isDone()) {
             if (request.getHeader("X-DevModePoll") != null) {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
@@ -721,7 +731,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+        if (devServerFailure.get() != null || !devServerStartFuture.isDone()
                 || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
