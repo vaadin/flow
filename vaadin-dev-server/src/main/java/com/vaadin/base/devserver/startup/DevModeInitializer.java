@@ -390,7 +390,7 @@ public class DevModeInitializer implements Serializable {
         try {
             tasks.execute();
         } catch (ExecutionFailedException exception) {
-            log().debug(
+            log().error(
                     "Could not initialize dev mode handler. One of the node tasks failed",
                     exception);
             throw new CompletionException(exception);
