@@ -212,7 +212,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                         toolOutput);
                 throw new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
-                                + " build exited with a non zero status");
+                                + " build exited with a non zero status:\n"
+                                + toolOutput);
             } else {
                 logger.info("Development frontend bundle built");
             }
