@@ -68,7 +68,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -389,7 +388,7 @@ public class DevModeInitializer implements Serializable {
     private static void runNodeTasks(NodeTasks tasks) {
         try {
             tasks.execute();
-        } catch (ExecutionFailedException exception) {
+        } catch (Exception exception) {
             log().error(
                     "Could not initialize dev mode handler. One of the node tasks failed",
                     exception);
