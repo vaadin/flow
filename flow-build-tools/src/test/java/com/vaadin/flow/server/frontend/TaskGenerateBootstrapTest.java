@@ -63,8 +63,7 @@ class TaskGenerateBootstrapTest {
 
     public static class CustomModifier implements TypeScriptBootstrapModifier {
         @Override
-        public void modify(List<String> lines, Options options,
-                FrontendDependenciesScanner scanner) {
+        public void modify(List<String> lines, Options options) {
             lines.add(0, CUSTOM_MODIFIER_CONTENT);
         }
     }
