@@ -654,6 +654,15 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             VaadinRequest request, VaadinResponse response,
             CompletableFuture<?> devServerStartFuture,
             AtomicReference<String> devServerFailure) throws IOException {
+        if (devServerFailure.get() == null && devServerStartFuture.isDone()) {
+            try {
+                devServerStartFuture.getNow(null);
+            } catch (CompletionException exception) {
+                RuntimeException cause = getCause(exception);
+                devServerFailure.set("The Vite dev server failed to start: "
+                        + cause.getMessage());
+            }
+        }
         String failureMessage = devServerFailure.get();
         if (failureMessage != null) {
             response.setContentType("text/html;charset=utf-8");
@@ -662,16 +671,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             return true;
         }
         if (devServerStartFuture.isDone()) {
-            // The server has started, check for any exceptions in the startup
-            // process
-            try {
-                devServerStartFuture.getNow(null);
-            } catch (CompletionException exception) {
-                RuntimeException cause = getCause(exception);
-                devServerFailure.set("The Vite dev server failed to start: "
-                        + cause.getMessage());
-                throw cause;
-            }
             if (request.getHeader("X-DevModePoll") != null) {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
