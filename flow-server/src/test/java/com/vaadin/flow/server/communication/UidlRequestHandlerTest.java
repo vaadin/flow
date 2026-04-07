@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -32,10 +31,12 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -49,15 +50,15 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class UidlRequestHandlerTest {
+class UidlRequestHandlerTest {
 
     private VaadinRequest request;
     private VaadinResponse response;
@@ -65,8 +66,8 @@ public class UidlRequestHandlerTest {
 
     private UidlRequestHandler handler;
 
-    @Before
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         outputStream = Mockito.mock(OutputStream.class);
@@ -76,7 +77,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void writeSessionExpired() throws Exception {
+    void writeSessionExpired() throws Exception {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
@@ -93,19 +94,18 @@ public class UidlRequestHandlerTest {
                 .thenReturn(RequestType.UIDL.getIdentifier());
 
         boolean result = handler.handleSessionExpired(request, response);
-        Assert.assertTrue("Result should be true", result);
+        assertTrue(result, "Result should be true");
 
         String responseContent = CommunicationUtil
                 .getStringWhenWriteBytesOffsetLength(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}", responseContent,
+                "Invalid response");
     }
 
     @Test
-    public void writeSessionExpired_whenUINotFound() throws IOException {
+    void writeSessionExpired_whenUINotFound() throws IOException {
 
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -115,20 +115,18 @@ public class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, null);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}", responseContent,
+                "Invalid response");
     }
 
     @Test
-    public void clientRequestsPreviousIdAndPayload_resendPreviousResponse()
+    void clientRequestsPreviousIdAndPayload_resendPreviousResponse()
             throws IOException {
 
         UI ui = getUi();
@@ -167,8 +165,7 @@ public class UidlRequestHandlerTest {
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response,
                         requestBody);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -180,19 +177,18 @@ public class UidlRequestHandlerTest {
 
         result = handler.synchronizedHandleRequest(session, request, response,
                 requestBody);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String resendResponseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Server should send same content again",
-                responseContent, resendResponseContent);
+        assertEquals(responseContent, resendResponseContent,
+                "Server should send same content again");
     }
 
     @Test
-    public void should_modifyUidl_when_MPR() throws Exception {
+    void should_modifyUidl_when_MPR() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -204,7 +200,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String v7Uidl = uidl.get("execute").get(2).get(1).textValue();
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
@@ -213,7 +209,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_changeURL_when_v7LocationProvided() throws Exception {
+    void should_changeURL_when_v7LocationProvided() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -225,7 +221,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
@@ -233,8 +229,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_updateHash_when_v7LocationNotProvided()
-            throws Exception {
+    void should_updateHash_when_v7LocationNotProvided() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -246,7 +241,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -254,7 +249,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_modify_non_MPR_Uidl() throws Exception {
+    void should_not_modify_non_MPR_Uidl() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -270,7 +265,7 @@ public class UidlRequestHandlerTest {
         String expected = uidl.toString();
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String actual = uidl.toString();
 
@@ -278,7 +273,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_update_browser_history_if_no_hash_in_location()
+    void should_not_update_browser_history_if_no_hash_in_location()
             throws Exception {
         UI ui = getUi();
 
@@ -292,11 +287,11 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        Assert.assertFalse(out.contains("history.pushState"));
+        assertFalse(out.contains("history.pushState"));
     }
 
     @Test
-    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
+    void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -324,6 +319,146 @@ public class UidlRequestHandlerTest {
         handler.synchronizedHandleRequest(session, request, response, "");
 
         Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
+    }
+
+    @Test
+    void synchronizedHandleRequest_MessageIdSyncException_returnsSyncErrorResponse()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        SystemMessages systemMessages = new CustomizedSystemMessages();
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(systemMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request)
+                    throws ServerRpcHandler.MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify sync error notification is returned
+        assertTrue(responseContent.contains("Synchronization Error"),
+                "Response should contain caption");
+        assertTrue(
+                responseContent.contains("Your session needs to be refreshed"),
+                "Response should contain message");
+    }
+
+    @Test
+    void synchronizedHandleRequest_MessageIdSyncException_usesCustomMessages()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        CustomizedSystemMessages customMessages = new CustomizedSystemMessages();
+        customMessages.setSyncErrorCaption("Custom Sync Caption");
+        customMessages.setSyncErrorMessage("Custom sync error message");
+        customMessages.setSyncErrorURL("/custom-redirect");
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(customMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request) throws MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify custom sync error notification is returned
+        assertTrue(responseContent.contains("Custom Sync Caption"),
+                "Response should contain custom caption");
+        assertTrue(responseContent.contains("Custom sync error message"),
+                "Response should contain custom message");
+        assertTrue(responseContent.contains("/custom-redirect"),
+                "Response should contain custom URL");
+    }
+
+    @Test
+    void synchronizedHandleRequest_MessageIdSyncException_notificationDisabled_silentRefresh()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        CustomizedSystemMessages customMessages = new CustomizedSystemMessages();
+        customMessages.setSyncErrorNotificationEnabled(false);
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(customMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request) throws MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify caption and message are null (triggers silent refresh)
+        assertTrue(responseContent.contains("\"caption\":null"),
+                "Response should have null caption");
+        assertTrue(responseContent.contains("\"message\":null"),
+                "Response should have null message");
     }
 
     private ObjectNode generateUidl(boolean withLocation, boolean withHash) {

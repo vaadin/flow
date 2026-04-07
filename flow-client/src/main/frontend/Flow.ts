@@ -1,8 +1,8 @@
 import {
   ConnectionIndicator,
   ConnectionState,
-  ConnectionStateChangeListener,
-  ConnectionStateStore
+  type ConnectionStateChangeListener,
+  type ConnectionStateStore
 } from '@vaadin/common-frontend';
 
 export interface FlowConfig {
@@ -128,9 +128,7 @@ export class Flow {
     this.baseRegex = new RegExp(
       `^${
         // IE11 does not support document.baseURI
-        escapeRegExp(
-          decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
-        )
+        escapeRegExp((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
       }`
     );
     this.appShellTitle = document.title;
@@ -179,13 +177,9 @@ export class Flow {
       'click',
       (_e) => {
         if (_e.target) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          if (_e.target.hasAttribute('router-link')) {
+          if (_e.composedPath().some((node) => node instanceof HTMLElement && node.hasAttribute('router-link'))) {
             this.navigation = 'link';
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+          } else if (_e.composedPath().some((node) => (node as Element).nodeName === 'A')) {
             this.navigation = 'client';
           }
         }
@@ -250,7 +244,7 @@ export class Flow {
     });
   }
 
-  // Send the remote call to `JavaScriptBootstrapUI` to render the flow
+  // Send the remote call to `UI` to render the flow
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
@@ -293,7 +287,10 @@ export class Flow {
   }
 
   private getFlowRoutePath(context: NavigationParameters | Location): string {
-    return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
+    // Don't decode the pathname here - let the server handle decoding
+    // individual path segments. This preserves the distinction between
+    // literal slashes (path separators) and encoded slashes (%2F, data).
+    return context.pathname.replace(this.baseRegex, '');
   }
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
     return (context.search && context.search.substring(1)) || '';
@@ -434,9 +431,9 @@ export class Flow {
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
 
-      const requestPath = `?v-r=init&location=${encodeURIComponent(
-        this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      const requestPath = `?v-r=init&location=${this.getFlowRoutePath(location)}&query=${encodeURIComponent(
+        this.getFlowRouteQuery(location)
+      )}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 

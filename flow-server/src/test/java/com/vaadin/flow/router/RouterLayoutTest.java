@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,56 +15,58 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest;
 import com.vaadin.flow.dom.Element;
 
-public class RouterLayoutTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class RouterLayoutTest {
 
     private static final String NEW_ID = "newId";
     private TestRouterLayout testRouterLayout;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         testRouterLayout = new TestRouterLayout();
     }
 
     @Test
-    public void show_nonNull_childrenUpdated() {
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+    void show_nonNull_childrenUpdated() {
+        assertEquals(0, testRouterLayout.getElement().getChildCount());
 
         ComponentTest.TestDiv content = new ComponentTest.TestDiv();
         testRouterLayout.showRouterLayoutContent(content);
 
-        Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
+        assertEquals(1, testRouterLayout.getElement().getChildCount());
 
         ComponentTest.TestDiv newContent = new ComponentTest.TestDiv();
         newContent.setId(NEW_ID);
         content.getElement().removeFromParent();
         testRouterLayout.showRouterLayoutContent(newContent);
 
-        Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
-        Assert.assertSame(NEW_ID,
+        assertEquals(1, testRouterLayout.getElement().getChildCount());
+        assertSame(NEW_ID,
                 testRouterLayout.getElement().getChild(0).getAttribute("id"));
     }
 
     @Test
-    public void show_null_noChildren() {
+    void show_null_noChildren() {
         testRouterLayout.showRouterLayoutContent(null);
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+        assertEquals(0, testRouterLayout.getElement().getChildCount());
     }
 
     @Test
-    public void remove_removesContent() {
+    void remove_removesContent() {
         ComponentTest.TestDiv content = new ComponentTest.TestDiv();
         testRouterLayout.element.appendChild(content.getElement());
 
         testRouterLayout.removeRouterLayoutContent(content);
 
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+        assertEquals(0, testRouterLayout.getElement().getChildCount());
     }
 
     private static class TestRouterLayout implements RouterLayout {

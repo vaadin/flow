@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.spring;
 import java.util.Set;
 
 import org.atmosphere.cpr.ApplicationConfig;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,9 +26,12 @@ import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.server.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 // @ContextConfiguration(SpringBootAutoConfiguration.class)
-public class SpringBootAutoConfigurationRootMappedTest {
+class SpringBootAutoConfigurationRootMappedTest {
 
     // private SpringBootAutoConfiguration autoConfiguration;
     @Autowired
@@ -38,13 +40,12 @@ public class SpringBootAutoConfigurationRootMappedTest {
     private Environment environment;
 
     @Test
-    public void urlMappingPassedToAtmosphere() {
-        Assert.assertTrue(RootMappedCondition
+    void urlMappingPassedToAtmosphere() {
+        assertTrue(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(
-                Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
+        assertEquals(Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("/" + Constants.PUSH_MAPPING,
+        assertEquals("/" + Constants.PUSH_MAPPING,
                 servletRegistrationBean.getInitParameters()
                         .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -74,6 +74,27 @@ public interface BlurNotifier<T extends Component> extends Serializable {
          */
         public BlurEvent(C source, boolean fromClient) {
             super(source, fromClient);
+        }
+
+        /**
+         * BlurEvent constructor with event data for tracking whether the blur
+         * originated from a client-side interaction.
+         *
+         * @param source
+         *            the source component
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise
+         * @param eventFromClient
+         *            value read from
+         *            {@code event.target._nextBlurIsFromClient}, overrides
+         *            {@code fromClient} when non-null
+         * @see ComponentEvent
+         */
+        public BlurEvent(C source, boolean fromClient,
+                @EventData("event.target._nextBlurIsFromClient") Boolean eventFromClient) {
+            this(source,
+                    eventFromClient != null ? eventFromClient : fromClient);
         }
     }
 }

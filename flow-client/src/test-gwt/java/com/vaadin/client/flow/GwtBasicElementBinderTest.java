@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1609,6 +1609,35 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         // If the listener had been called then the attribute value would have
         // been "true".
         assertNull(element.getAttribute("hidden"));
+    }
+
+    public void testBindInvisibleNode_slotAttributeIsPreserved() {
+        node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+
+        attributes.getProperty("slot").setValue("drawer");
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("drawer", element.getAttribute("slot"));
+    }
+
+    public void testBindInvisibleNode_nonStructuralAttributesAreNotApplied() {
+        node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+
+        attributes.getProperty("data-info").setValue("secret");
+        attributes.getProperty("slot").setValue("drawer");
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals("drawer", element.getAttribute("slot"));
+        assertNull(element.getAttribute("data-info"));
     }
 
     /**

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2025 Vaadin Ltd.
+ *    Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,13 +76,16 @@ public abstract class VaadinPrepareFrontendTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinPrepareFrontend() {
-        //val adapter = GradlePluginAdapter(this, config, true)
-        // Remove Frontend/generated folder to get clean files copied/generated
-        logger.debug("Running the vaadinPrepareFrontend task with effective configuration ${adapter.get().config}")
-        val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter.get())
+        try {
+            // Remove Frontend/generated folder to get clean files copied/generated
+            logger.debug("Running the vaadinPrepareFrontend task with effective configuration ${adapter.get().config}")
+            val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter.get())
 
-        logger.info("Generated token file $tokenFile")
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
-        BuildFrontendUtil.prepareFrontend(adapter.get())
+            logger.info("Generated token file $tokenFile")
+            check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+            BuildFrontendUtil.prepareFrontend(adapter.get())
+        } finally {
+            adapter.get().closeClassFinder()
+        }
     }
 }

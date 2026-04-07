@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,21 @@
  */
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class AssertionsEnabledTest extends TestCase {
-    public void testAssertionsEnabled() {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AssertionsEnabledTest {
+    @Test
+    void testAssertionsEnabled() {
         boolean assertFailed = false;
         try {
             assert false;
         } catch (AssertionError e) {
             assertFailed = true;
         } finally {
-            assertTrue("Unit tests should be run with assertions enabled",
-                    assertFailed);
+            assertTrue(assertFailed,
+                    "Unit tests should be run with assertions enabled");
         }
     }
 }

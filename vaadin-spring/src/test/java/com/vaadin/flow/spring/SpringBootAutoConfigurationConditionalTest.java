@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -25,10 +25,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SpringBootAutoConfigurationConditionalTest {
+class SpringBootAutoConfigurationConditionalTest {
 
     @Test
-    public void customServletRegistrationBean() {
+    void customServletRegistrationBean() {
         new WebApplicationContextRunner()
                 .withConfiguration(AutoConfigurations
                         .of(SpringBootAutoConfiguration.class))

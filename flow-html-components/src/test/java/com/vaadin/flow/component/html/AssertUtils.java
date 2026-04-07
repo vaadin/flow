@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Assert utility class.
@@ -32,19 +32,18 @@ class AssertUtils {
      *
      * If both <code>expected</code> and <code>actual</code> are arrays or are
      * <code>Optional</code>s wrapping arrays,
-     * <code>Assert#assertArrayEquals</code> is used to assert that the arrays
-     * content is equal.
+     * <code>Assertions#assertArrayEquals</code> is used to assert that the
+     * arrays content is equal.
      *
-     * @param message
-     *            the identifying message for the {@link AssertionError}
-     *            (<code>null</code> okay)
      * @param expected
      *            expected value
      * @param actual
      *            actual value
+     * @param message
+     *            the identifying message for the {@link AssertionError}
+     *            (<code>null</code> okay)
      */
-    static public void assertEquals(String message, Object expected,
-            Object actual) {
+    static void assertEquals(Object expected, Object actual, String message) {
 
         if (expected instanceof Optional && actual instanceof Optional) {
             expected = ((Optional) expected).orElseGet(() -> null);
@@ -56,15 +55,15 @@ class AssertUtils {
             return;
 
         } else if (expected == null || actual == null) {
-            Assert.assertEquals(message, expected, actual);
+            Assertions.assertEquals(expected, actual, message);
         }
 
         if (expected.getClass().isArray() && actual.getClass().isArray()) {
-            Assert.assertArrayEquals(message, (Object[]) expected,
-                    (Object[]) actual);
+            Assertions.assertArrayEquals((Object[]) expected, (Object[]) actual,
+                    message);
 
         } else {
-            Assert.assertEquals(message, expected, actual);
+            Assertions.assertEquals(expected, actual, message);
         }
     }
 

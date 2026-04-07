@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -42,7 +41,13 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
-public class PendingJavaScriptInvocationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
             .createNode("foo");
 
@@ -55,8 +60,8 @@ public class PendingJavaScriptInvocationTest {
     private BiConsumer<JsonNode, Throwable> jsonFutureHandler;
     private BiConsumer<String, Throwable> stringFutureHandler;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         invocation = new PendingJavaScriptInvocation(
                 new Element("dummy").getNode(), new JavaScriptInvocation(""));
 
@@ -73,8 +78,7 @@ public class PendingJavaScriptInvocationTest {
             Consumer<T> successConsumer, Consumer<String> errorConsumer) {
         return (successValue, error) -> {
             if (error != null) {
-                Assert.assertEquals(JavaScriptException.class,
-                        error.getClass());
+                assertEquals(JavaScriptException.class, error.getClass());
                 errorConsumer.accept(error.getMessage());
             } else {
                 successConsumer.accept(successValue);
@@ -83,7 +87,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedIgnoreErrors_success() {
+    void untypedIgnoreErrors_success() {
         invocation.then(jsonSuccessConsumer);
 
         invocation.complete(fooJsonString);
@@ -92,7 +96,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedIgnoreErrors_fail() {
+    void untypedIgnoreErrors_fail() {
         invocation.then(jsonSuccessConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -101,7 +105,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedCaptureErrors_success() {
+    void untypedCaptureErrors_success() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.complete(fooJsonString);
@@ -110,7 +114,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedCaptureErrors_fail() {
+    void untypedCaptureErrors_fail() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -119,7 +123,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedFuture_success() {
+    void untypedFuture_success() {
         invocation.toCompletableFuture().whenComplete(jsonFutureHandler);
 
         invocation.complete(fooJsonString);
@@ -128,7 +132,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedFuture_fail() {
+    void untypedFuture_fail() {
         invocation.toCompletableFuture().whenComplete(jsonFutureHandler);
 
         invocation.completeExceptionally(fooJsonString);
@@ -137,7 +141,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedIgnoreErrors_success() {
+    void typedIgnoreErrors_success() {
         invocation.then(String.class, stringSuccessConsumer);
 
         invocation.complete(fooJsonString);
@@ -146,7 +150,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedCaptureErrors_fail() {
+    void typedCaptureErrors_fail() {
         invocation.then(String.class, stringSuccessConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -155,7 +159,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedCaptureErrors_success() {
+    void typedCaptureErrors_success() {
         invocation.then(String.class, stringSuccessConsumer, errorConsumer);
 
         invocation.complete(fooJsonString);
@@ -164,7 +168,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedIgnoreErrors_fail() {
+    void typedIgnoreErrors_fail() {
         invocation.then(String.class, stringSuccessConsumer, errorConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -173,7 +177,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedFuture_success() {
+    void typedFuture_success() {
         invocation.toCompletableFuture(String.class)
                 .whenComplete(stringFutureHandler);
 
@@ -183,7 +187,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedFuture_fail() {
+    void typedFuture_fail() {
         invocation.toCompletableFuture(String.class)
                 .whenComplete(stringFutureHandler);
 
@@ -193,20 +197,19 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void multipleSuccessHandlers() {
+    void multipleSuccessHandlers() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
         invocation.then(String.class, stringSuccessConsumer);
 
         invocation.complete(fooJsonString);
 
-        Assert.assertSame(fooJsonString,
-                jsonSuccessConsumer.getCapturedValue());
-        Assert.assertEquals("foo", stringSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
+        assertEquals("foo", stringSuccessConsumer.getCapturedValue());
         assertNoErrorValue();
     }
 
     @Test
-    public void multipleErrorHandlers() {
+    void multipleErrorHandlers() {
         SingleCaptureConsumer<String> extraErrorHandler = new SingleCaptureConsumer<>();
 
         invocation.then(jsonSuccessConsumer, errorConsumer);
@@ -217,19 +220,20 @@ public class PendingJavaScriptInvocationTest {
         assertNoStringSuccessValue();
         assertNoJsonSuccessValue();
 
-        Assert.assertSame("foo", errorConsumer.getCapturedValue());
-        Assert.assertSame("foo", extraErrorHandler.getCapturedValue());
+        assertSame("foo", errorConsumer.getCapturedValue());
+        assertSame("foo", extraErrorHandler.getCapturedValue());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void thenAfterSend_throws() {
+    @Test
+    void thenAfterSend_throws() {
         invocation.setSentToBrowser();
 
-        invocation.then(jsonSuccessConsumer);
+        assertThrows(IllegalStateException.class,
+                () -> invocation.then(jsonSuccessConsumer));
     }
 
     @Test
-    public void subscribeAfterCancel_callFailHandler() {
+    void subscribeAfterCancel_callFailHandler() {
         invocation.cancelExecution();
 
         invocation.then(jsonSuccessConsumer, errorConsumer);
@@ -238,7 +242,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void susbscribeBeforeCancel_callFailHandler() {
+    void susbscribeBeforeCancel_callFailHandler() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.cancelExecution();
@@ -247,7 +251,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromInvokingThread_throws() throws Exception {
+    void blockFromInvokingThread_throws() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -257,8 +261,7 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture)) {
                 try {
                     action.call();
-                    Assert.fail(
-                            "Blocking on a pending invocation while holding the session lock should throw");
+                    fail("Blocking on a pending invocation while holding the session lock should throw");
                 } catch (IllegalStateException e) {
                     // This is expected
                 }
@@ -269,8 +272,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromSessionThreadAfterCompleting_doesNotThrow()
-            throws Exception {
+    void blockFromSessionThreadAfterCompleting_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -282,7 +284,7 @@ public class PendingJavaScriptInvocationTest {
             for (Callable<JsonNode> action : createBlockingActions(
                     completableFuture)) {
                 JsonNode actionValue = action.call();
-                Assert.assertSame(value, actionValue);
+                assertSame(value, actionValue);
             }
 
             return null;
@@ -290,8 +292,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromSessionThreadAfterFailing_doesNotThrow()
-            throws Exception {
+    void blockFromSessionThreadAfterFailing_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -305,11 +306,11 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture)) {
                 try {
                     action.call();
-                    Assert.fail("Execution should have failed");
+                    fail("Execution should have failed");
                 } catch (ExecutionException | CompletionException e) {
                     JavaScriptException cause = (JavaScriptException) e
                             .getCause();
-                    Assert.assertEquals(errorMessage, cause.getMessage());
+                    assertEquals(errorMessage, cause.getMessage());
                 }
             }
             return null;
@@ -317,7 +318,7 @@ public class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromOtherThread_doesNotThrow() throws Exception {
+    void blockFromOtherThread_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         VaadinSession.setCurrent(session);
 
@@ -332,8 +333,8 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture).stream().map(executor::submit)
                     .collect(Collectors.toList());
 
-            Assert.assertEquals("All futures should be pending", 0,
-                    futures.stream().filter(Future::isDone).count());
+            assertEquals(0, futures.stream().filter(Future::isDone).count(),
+                    "All futures should be pending");
 
             JsonNode value = JacksonUtils.createObjectNode();
             invocation.complete(value);
@@ -341,13 +342,14 @@ public class PendingJavaScriptInvocationTest {
             executor.shutdown();
             executor.awaitTermination(100, TimeUnit.MILLISECONDS);
 
-            Assert.assertEquals("All futures should be done", futures.size(),
-                    futures.stream().filter(Future::isDone).count());
+            assertEquals(futures.size(),
+                    futures.stream().filter(Future::isDone).count(),
+                    "All futures should be done");
 
             futures.forEach(future -> {
                 try {
                     JsonNode futureValue = future.get();
-                    Assert.assertSame(value, futureValue);
+                    assertSame(value, futureValue);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -368,13 +370,12 @@ public class PendingJavaScriptInvocationTest {
 
     private void assertStringSuccess() {
         assertNoJsonSuccessValue();
-        Assert.assertEquals("foo", stringSuccessConsumer.getCapturedValue());
+        assertEquals("foo", stringSuccessConsumer.getCapturedValue());
         assertNoErrorValue();
     }
 
     private void assertJsonSuccess() {
-        Assert.assertSame(fooJsonString,
-                jsonSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
         assertNoStringSuccessValue();
         assertNoErrorValue();
     }
@@ -386,7 +387,7 @@ public class PendingJavaScriptInvocationTest {
     private void assertFail(String expectedMessage) {
         assertNoJsonSuccessValue();
         assertNoStringSuccessValue();
-        Assert.assertSame(expectedMessage, errorConsumer.getCapturedValue());
+        assertSame(expectedMessage, errorConsumer.getCapturedValue());
     }
 
     private void assertNoUpdate() {
@@ -396,17 +397,17 @@ public class PendingJavaScriptInvocationTest {
     }
 
     private void assertNoJsonSuccessValue() {
-        Assert.assertFalse("Json success consumer should not be invoked",
-                jsonSuccessConsumer.isCaptured());
+        assertFalse(jsonSuccessConsumer.isCaptured(),
+                "Json success consumer should not be invoked");
     }
 
     private void assertNoStringSuccessValue() {
-        Assert.assertFalse("String success consumer should not be invoked",
-                stringSuccessConsumer.isCaptured());
+        assertFalse(stringSuccessConsumer.isCaptured(),
+                "String success consumer should not be invoked");
     }
 
     private void assertNoErrorValue() {
-        Assert.assertFalse("Error consumer should not be invoked",
-                errorConsumer.isCaptured());
+        assertFalse(errorConsumer.isCaptured(),
+                "Error consumer should not be invoked");
     }
 }

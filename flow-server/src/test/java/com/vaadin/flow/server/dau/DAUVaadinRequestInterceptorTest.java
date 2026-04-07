@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -50,7 +50,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static com.vaadin.flow.server.dau.DAUUtils.DAU_MIN_ACTIVITY_IN_SECONDS;
 import static com.vaadin.flow.server.dau.DAUVaadinRequestInterceptorTest.FakeAppShell.BASE_ICON_PATH;
 
-public class DAUVaadinRequestInterceptorTest {
+class DAUVaadinRequestInterceptorTest {
 
     public static final String APP_ID = "MY-APP";
     private MockDeploymentConfiguration configuration;
@@ -58,8 +58,8 @@ public class DAUVaadinRequestInterceptorTest {
     private DAUVaadinRequestInterceptor interceptor;
     private String originalSubscriptionKey;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
                 InitParameters.APPLICATION_IDENTIFIER, APP_ID);
@@ -70,8 +70,8 @@ public class DAUVaadinRequestInterceptorTest {
         System.setProperty("vaadin.subscriptionKey", "sub-123");
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (originalSubscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey",
                     originalSubscriptionKey);
@@ -81,7 +81,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_initRequest_dauCookieAbsent_createCookie() {
+    void requestStart_initRequest_dauCookieAbsent_createCookie() {
         assertCookieCreated(request -> {
             Mockito.when(request.getPathInfo()).thenReturn("");
             Mockito.when(request.getMethod()).thenReturn("GET");
@@ -92,7 +92,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_uidlRequest_dauCookieAbsent_createCookie() {
+    void requestStart_uidlRequest_dauCookieAbsent_createCookie() {
         assertCookieCreated(request -> {
             Mockito.when(request.getPathInfo()).thenReturn("");
             Mockito.when(request.getMethod()).thenReturn("POST");
@@ -103,7 +103,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_indexHtmlRequest_dauCookieAbsent_createCookie() {
+    void requestStart_indexHtmlRequest_dauCookieAbsent_createCookie() {
         assertCookieCreated(request -> {
             Mockito.when(request.getPathInfo()).thenReturn("");
             Mockito.when(request.getMethod()).thenReturn("GET");
@@ -119,7 +119,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_trackableRequest_dauCookieAbsent_pushWebsocket_doNotCreateCookie() {
+    void requestStart_trackableRequest_dauCookieAbsent_pushWebsocket_doNotCreateCookie() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request
@@ -140,7 +140,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_notTrackableRequest_dauCookieAbsent_doNotCreateCookie() {
+    void requestStart_notTrackableRequest_dauCookieAbsent_doNotCreateCookie() {
         assertCookieNotCreated(request -> {
             Mockito.when(request
                     .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -164,7 +164,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_notTrackableInternalRequests_dauCookieAbsent_doNotCreateCookie() {
+    void requestStart_notTrackableInternalRequests_dauCookieAbsent_doNotCreateCookie() {
         assertCookieNotCreated(request -> {
             Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/something");
             Mockito.when(request.getMethod()).thenReturn("GET");
@@ -186,7 +186,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_notTrackableStaticResourceRequest_dauCookieAbsent_doNotCreateCookie() {
+    void requestStart_notTrackableStaticResourceRequest_dauCookieAbsent_doNotCreateCookie() {
         for (String resourcePath : HandlerHelper.getPublicResources()) {
             assertCookieNotCreated(request -> {
                 Mockito.when(request.getPathInfo()).thenReturn(resourcePath);
@@ -208,7 +208,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_notTrackablePWAIconsRequests_dauCookieAbsent_doNotCreateCookie() {
+    void requestStart_notTrackablePWAIconsRequests_dauCookieAbsent_doNotCreateCookie() {
         Lookup lookup = Mockito.mock(Lookup.class);
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -239,7 +239,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void serviceInit_shouldStartDauTracking() {
+    void serviceInit_shouldStartDauTracking() {
         try (MockedStatic<DauIntegration> dauIntegration = Mockito
                 .mockStatic(DauIntegration.class)) {
             interceptor.serviceInit(new ServiceInitEvent(vaadinService));
@@ -248,7 +248,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void serviceDestroy_shouldStopDauTracking() {
+    void serviceDestroy_shouldStopDauTracking() {
         try (MockedStatic<DauIntegration> dauIntegration = Mockito
                 .mockStatic(DauIntegration.class)) {
             interceptor.serviceDestroy(new ServiceDestroyEvent(vaadinService));
@@ -257,7 +257,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void serviceInit_shouldInstallServiceDestroyListenerToStopDauTrackingOnShutdown() {
+    void serviceInit_shouldInstallServiceDestroyListenerToStopDauTrackingOnShutdown() {
         try (MockedStatic<DauIntegration> dauIntegration = Mockito
                 .mockStatic(DauIntegration.class)) {
             interceptor.serviceInit(new ServiceInitEvent(vaadinService));
@@ -268,7 +268,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_dauCookiePresent_activeUser_trackUser() {
+    void requestStart_dauCookiePresent_activeUser_trackUser() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request
@@ -292,7 +292,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_dauCookiePresent_activeUser_identitySupplier_trackUser() {
+    void requestStart_dauCookiePresent_activeUser_identitySupplier_trackUser() {
         String userIdentity = "user";
         UserIdentitySupplier identitySupplier = userIdentityContext -> Optional
                 .of(userIdentity);
@@ -328,7 +328,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_dauCookiePresent_notActiveUser_trackUser() {
+    void requestStart_dauCookiePresent_notActiveUser_trackUser() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request
@@ -353,7 +353,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_invalidCookie_doNotTrack() {
+    void requestStart_invalidCookie_doNotTrack() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request
@@ -379,7 +379,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_dauCookiePresent_notActiveUser_enforcement_tracksUser() {
+    void requestStart_dauCookiePresent_notActiveUser_enforcement_tracksUser() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request
@@ -408,7 +408,7 @@ public class DAUVaadinRequestInterceptorTest {
     }
 
     @Test
-    public void requestStart_noDauCookie_notActiveUser_enforcement_tracksUser() {
+    void requestStart_noDauCookie_notActiveUser_enforcement_tracksUser() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         Mockito.when(request

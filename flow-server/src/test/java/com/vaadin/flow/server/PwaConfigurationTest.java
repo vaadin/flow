@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.server;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PwaConfigurationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class PwaConfigurationTest {
     @Test
     // For https://github.com/vaadin/flow/issues/10148
-    public void pwaDefaultStartUrl_should_BeDotInsteadOfEmptyString() {
+    void pwaDefaultStartUrl_should_BeDotInsteadOfEmptyString() {
         PwaConfiguration pwaConfiguration = new PwaConfiguration();
-        Assert.assertEquals(PwaConfiguration.DEFAULT_START_URL,
+        assertEquals(PwaConfiguration.DEFAULT_START_URL,
                 pwaConfiguration.getStartUrl());
     }
 
@@ -32,10 +34,10 @@ public class PwaConfigurationTest {
     }
 
     @Test
-    public void pwaOfflinePathEmpty_should_beDisabled() {
+    void pwaOfflinePathEmpty_should_beDisabled() {
         PwaConfiguration pwaConfiguration = new PwaConfiguration(
                 App.class.getAnnotation(PWA.class));
-        Assert.assertFalse(pwaConfiguration.isOfflinePathEnabled());
-        Assert.assertEquals("", pwaConfiguration.getOfflinePath());
+        assertFalse(pwaConfiguration.isOfflinePathEnabled());
+        assertEquals("", pwaConfiguration.getOfflinePath());
     }
 }

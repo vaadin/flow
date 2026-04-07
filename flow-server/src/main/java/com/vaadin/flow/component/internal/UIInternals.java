@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -1051,6 +1052,13 @@ public class UIInternals implements Serializable {
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
 
+        VaadinService service = session.getService();
+        if (!service.getDeploymentConfiguration().isProductionMode()) {
+            dependencies.getStyleSheets()
+                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(styleSheet.value()));
+        }
+
         warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
@@ -1203,6 +1211,21 @@ public class UIInternals implements Serializable {
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
                     refreshRouteChain || hasModalComponent());
         }
+    }
+
+    /**
+     * Checks if an error view is currently being displayed. An error view is a
+     * component that implements HasErrorParameter.
+     *
+     * @return true if showing an error view, false otherwise
+     */
+    public boolean isShowingErrorView() {
+        if (routerTargetChain.isEmpty()) {
+            return false;
+        }
+        // The first element in the chain is the actual view component
+        HasElement target = routerTargetChain.get(0);
+        return target instanceof com.vaadin.flow.router.HasErrorParameter;
     }
 
     /**
@@ -1519,8 +1542,9 @@ public class UIInternals implements Serializable {
      * generated.
      */
     public void createWrapperElement() {
-        if (wrapperElement == null) {
+        if (this.wrapperElement == null) {
             this.wrapperElement = new Element(getContainerTag());
+            getUI().wrapperElement = this.wrapperElement;
         }
     }
 

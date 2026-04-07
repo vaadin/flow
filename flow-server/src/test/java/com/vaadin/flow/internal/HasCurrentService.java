@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Helper for test classes that need to have {@code VaadinService.getCurrent()}
@@ -34,7 +34,7 @@ public abstract class HasCurrentService {
     // test is running
     private VaadinService service;
 
-    @Before
+    @BeforeEach
     public void setUpCurrentService() {
         clearCurrentService();
         assertNull(VaadinService.getCurrent());
@@ -45,7 +45,7 @@ public abstract class HasCurrentService {
 
     protected abstract VaadinService createService();
 
-    @After
+    @AfterEach
     public void clearCurrentService() {
         VaadinService.setCurrent(null);
         service = null;

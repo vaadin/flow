@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,9 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -139,13 +139,11 @@ public class QueryParameters implements Serializable {
     }
 
     private static Map<String, List<String>> parseQueryString(String query) {
-        Map<String, List<String>> parsedParams = Arrays
-                .stream(query.split(PARAMETERS_SEPARATOR))
+        return Arrays.stream(query.split(PARAMETERS_SEPARATOR))
                 .map(QueryParameters::makeQueryParamList)
-                .collect(Collectors.toMap(list -> list.get(0),
+                .collect(Collectors.toMap(List::getFirst,
                         QueryParameters::getParameterValues,
                         QueryParameters::mergeLists));
-        return parsedParams;
     }
 
     private static List<String> makeQueryParamList(String paramAndValue) {
@@ -254,9 +252,8 @@ public class QueryParameters implements Serializable {
         if (keys == null || keys.length == 0) {
             return this;
         }
-        Set<String> excludedKeys = Set.of(keys);
         Map<String, List<String>> newParameters = new HashMap<>(parameters);
-        Stream.of(keys).forEach(key -> newParameters.remove(key));
+        Stream.of(keys).forEach(newParameters::remove);
         return new QueryParameters(newParameters);
     }
 
@@ -274,8 +271,7 @@ public class QueryParameters implements Serializable {
         Set<String> includedKeys = Set.of(keys);
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
                 .filter(entry -> includedKeys.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Entry::getValue));
         return new QueryParameters(newParameters);
     }
 
@@ -321,7 +317,7 @@ public class QueryParameters implements Serializable {
             Entry<String, List<String>> entry) {
         String param = entry.getKey();
         List<String> values = entry.getValue();
-        if (values.size() == 1 && "".equals(values.get(0))) {
+        if (values.size() == 1 && "".equals(values.getFirst())) {
             return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
         }
         return values.stream()
@@ -333,12 +329,7 @@ public class QueryParameters implements Serializable {
     }
 
     private static String decode(String parameter) {
-        try {
-            return URLDecoder.decode(parameter, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(
-                    "Unable to decode parameter: " + parameter, e);
-        }
+        return URLDecoder.decode(parameter, StandardCharsets.UTF_8);
     }
 
     @Override
@@ -352,12 +343,10 @@ public class QueryParameters implements Serializable {
             return true;
         }
 
-        if (obj instanceof QueryParameters) {
-            QueryParameters o = (QueryParameters) obj;
+        if (obj instanceof QueryParameters o) {
             return parameters.equals(o.parameters);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

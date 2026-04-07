@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,48 +17,48 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class DoubleToBigDecimalConverterTest {
+class DoubleToBigDecimalConverterTest {
 
     DoubleToBigDecimalConverter converter = new DoubleToBigDecimalConverter();
 
     @Test
-    public void testNullConversionToModel() {
+    void testNullConversionToModel() {
         assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
-    public void testNullConversionToPresentation() {
+    void testNullConversionToPresentation() {
         assertNull(converter.convertToPresentation(null, null));
     }
 
     @Test
-    public void testConvertToModel() {
+    void testConvertToModel() {
         Result<BigDecimal> result = converter.convertToModel(42.42, null);
         assertEquals(Result.ok(BigDecimal.valueOf(42.42)), result);
     }
 
     @Test
-    public void testConvertToPresentation() {
+    void testConvertToPresentation() {
         Double value = converter.convertToPresentation(new BigDecimal("42.42"),
                 null);
         assertEquals(Double.valueOf(42.42), value);
     }
 
     @Test
-    public void testConvertToModelWithDifferentScales() {
+    void testConvertToModelWithDifferentScales() {
         Result<BigDecimal> result = converter.convertToModel(42.420, null);
         assertEquals(Result.ok(new BigDecimal("42.42")), result);
     }
 
     @Test
-    public void testConvertToPresentationWithDifferentScales() {
+    void testConvertToPresentationWithDifferentScales() {
         Double value = converter.convertToPresentation(new BigDecimal("42.420"),
                 null);
         assertEquals(Double.valueOf(42.42), value);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-public class EnumDecoderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class EnumDecoderTest {
 
     private StringToEnumDecoder decoder = new StringToEnumDecoder();
 
@@ -29,42 +33,44 @@ public class EnumDecoderTest {
     }
 
     @Test
-    public void isApplicable_applicableToStringAndEnum() {
-        Assert.assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_applicableToStringAndEnum() {
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Title.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToBooleanAndEnum() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
+    void isApplicable_notApplicableToBooleanAndEnum() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
                 Enum.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndString() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_notApplicableToStringAndString() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 String.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndAbstractEnum() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_notApplicableToStringAndAbstractEnum() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Enum.class));
     }
 
     @Test
-    public void stringToEnum_convertableString_valueIsConverted()
+    void stringToEnum_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Title title = Title.MRS;
         Title decoded = decoder.decode(JacksonUtils.createNode(title.name()),
                 Title.class);
-        Assert.assertEquals(title, decoded);
+        assertEquals(title, decoded);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void stringToEnum_nonConvertableString_valueIsConverted()
+    @Test
+    void stringToEnum_nonConvertableString_valueIsConverted()
             throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("foo"), Title.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("foo"), Title.class);
+        });
     }
 
 }

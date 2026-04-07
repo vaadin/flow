@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -278,18 +278,18 @@ public class NavigationIT extends ChromeBrowserTest {
                 $(SpanElement.class).first().getText());
 
         $(NativeButtonElement.class).id(NavigationView.REACT_ID).click();
-        Assert.assertEquals("This is a simple view for a React route",
-                $(ParagraphElement.class).id("react").getText());
+        waitUntil(driver -> "This is a simple view for a React route"
+                .equals($(ParagraphElement.class).id("react").getText()));
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
-                $(SpanElement.class).first().getText());
+        waitUntil(driver -> "NavigationView"
+                .equals($(SpanElement.class).first().getText()));
 
         $(NativeButtonElement.class).id(NavigationView.REACT_ID).click();
-        Assert.assertEquals("This is a simple view for a React route",
-                $(ParagraphElement.class).id("react").getText());
+        waitUntil(driver -> "This is a simple view for a React route"
+                .equals($(ParagraphElement.class).id("react").getText()));
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
-                $(SpanElement.class).first().getText());
+        waitUntil(driver -> "NavigationView"
+                .equals($(SpanElement.class).first().getText()));
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,15 @@
  */
 package com.vaadin.flow.component;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class DefaultWebComponentExporterFactoryTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+class DefaultWebComponentExporterFactoryTest {
 
     private class InnerClass extends WebComponentExporter<Component> {
 
@@ -55,34 +52,34 @@ public class DefaultWebComponentExporterFactoryTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
-    public void ctor_nullArg_throws() {
-        new DefaultWebComponentExporterFactory<Component>(null);
+    @Test
+    void ctor_nullArg_throws() {
+        assertThrows(NullPointerException.class, () -> {
+            new DefaultWebComponentExporterFactory<Component>(null);
+        });
     }
 
     @Test
-    public void createInnerClass_throws() {
-        exception.expect(RuntimeException.class);
-        exception.expectCause(
-                CoreMatchers.instanceOf(IllegalArgumentException.class));
-        exception.expectMessage(
-                CoreMatchers.containsString(InnerClass.class.getName()));
-        exception.expectMessage(CoreMatchers.containsString("inner"));
+    void createInnerClass_throws() {
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 InnerClass.class);
 
-        factory.create();
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> factory.create());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+        assertTrue(ex.getMessage().contains(InnerClass.class.getName()));
+        assertTrue(ex.getMessage().contains("inner"));
     }
 
     @Test
-    public void create_exporterHasNoTag_throws() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers
-                .containsString(NoSpecifiedTagClass.class.getCanonicalName()));
-        exception.expectMessage(CoreMatchers
-                .containsString("give null value to super(String)"));
+    void create_exporterHasNoTag_throws() {
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 NoSpecifiedTagClass.class);
-        factory.create();
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class, () -> factory.create());
+        assertTrue(ex.getMessage()
+                .contains(NoSpecifiedTagClass.class.getCanonicalName()));
+        assertTrue(
+                ex.getMessage().contains("give null value to super(String)"));
     }
 }

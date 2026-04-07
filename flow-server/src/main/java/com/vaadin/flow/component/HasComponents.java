@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,22 +18,32 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 
 /**
  * A component to which the user can add and remove child components.
  * {@link Component} in itself provides basic support for child components that
  * are manually added as children of an element belonging to the component. This
- * interface provides an explicit API for components that explicitly supports
+ * interface provides an explicit API for components that explicitly support
  * adding and removing arbitrary child components.
  * <p>
  * {@link HasComponents} is generally implemented by layouts or components whose
- * primary function is to host child components. It isn't for example
+ * primary function is to host child components. It isn't, for example,
  * implemented by non-layout components such as fields.
  * <p>
  * The default implementations assume that children are attached to
@@ -69,6 +79,17 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("add");
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to add cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "add is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         components.stream()
                 .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
@@ -82,7 +103,24 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the text to add, not <code>null</code>
      */
     default void add(String text) {
+        throwIfTextBindingIsActive("add");
+        throwIfChildrenBindingIsActive("add");
         add(new Text(text));
+    }
+
+    /**
+     * Checks whether a children binding is currently active on this component's
+     * element.
+     *
+     * @return {@code true} if a children binding is active, {@code false}
+     *         otherwise
+     */
+    private boolean hasChildrenBinding() {
+        return getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .map(feature -> feature
+                        .hasBinding(SignalBindingFeature.CHILDREN))
+                .orElse(false);
     }
 
     /**
@@ -110,6 +148,17 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("remove");
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to remove cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "remove is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
@@ -132,17 +181,19 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Removes all contents from this component, this includes child components,
+     * Removes all contents from this component, including child components,
      * text content as well as child elements that have been added directly to
-     * this component using the {@link Element} API. it also removes the
-     * children that were added only at the client-side.
+     * this component using the {@link Element} API. It also removes the
+     * children added only at the client-side.
      */
     default void removeAll() {
+        throwIfTextBindingIsActive("removeAll");
+        throwIfChildrenBindingIsActive("removeAll");
         getElement().removeAllChildren();
     }
 
     /**
-     * Adds the given component as child of this component at the specific
+     * Adds the given component as a child of this component at the specific
      * index.
      * <p>
      * In case the specified component has already been added to another parent,
@@ -156,6 +207,12 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void addComponentAtIndex(int index, Component component) {
         Objects.requireNonNull(component, "Component should not be null");
+        throwIfTextBindingIsActive("addComponentAtIndex");
+        if (hasChildrenBinding()
+                && component.getElement().getAttribute("slot") == null) {
+            throw new BindingActiveException(
+                    "addComponentAtIndex is not allowed for default-slot components while a binding for children exists.");
+        }
         if (index < 0) {
             throw new IllegalArgumentException(
                     "Cannot add a component with a negative index");
@@ -176,5 +233,238 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void addComponentAsFirst(Component component) {
         addComponentAtIndex(0, component);
+    }
+
+    /**
+     * Binds a list {@link Signal} to this component using a child component
+     * factory. Each item {@link Signal} in the list corresponds to a child
+     * component within this component.
+     * <p>
+     * This component is automatically updated to reflect the structure of the
+     * list. Changes to the list, such as additions, removals, or reordering,
+     * will update this component's children accordingly.
+     * <p>
+     * This component must not contain any children in the default slot (i.e.
+     * without a {@code slot} attribute) that are not part of the list. If this
+     * component has existing default-slot children when this method is called,
+     * or if it contains unrelated default-slot children after the list changes,
+     * an {@link IllegalStateException} will be thrown. Named-slot children are
+     * allowed and can be added or removed freely while the binding is active.
+     * <p>
+     * New child components are created using the provided
+     * <code>childFactory</code> function. This function takes a {@link Signal}
+     * from the list and returns a corresponding {@link Component}. It shouldn't
+     * return <code>null</code>. The {@link Signal} can be further bound to the
+     * returned component as needed. Note that <code>childFactory</code> is run
+     * inside a {@link Effect}, and therefore {@link Signal#get()} calls makes
+     * effect re-run automatically on signal value change.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * SharedListSignal&lt;String&gt; taskList = new SharedListSignal&lt;&gt;(String.class);
+     *
+     * UnorderedList component = new UnorderedList();
+     *
+     * component.bindChildren(taskList, ListItem::new);
+     * </pre>
+     * <p>
+     * Note: The default implementation adds children directly to the
+     * component’s element using the Element API and does not invoke
+     * {@link #add(Component...)}. Components that override {@code add} or
+     * manage children indirectly must override this method to provide a
+     * suitable implementation or explicitly disable it.
+     *
+     * @param list
+     *            list signal to bind to the parent, must not be
+     *            <code>null</code>
+     * @param childFactory
+     *            factory to create new component, must not be <code>null</code>
+     * @param <T>
+     *            the value type of the {@link Signal}s in the list
+     * @param <S>
+     *            the type of the {@link Signal}s in the list
+     * @throws IllegalStateException
+     *             thrown if this component has default-slot children, or if the
+     *             child factory produces elements with a {@code slot} attribute
+     * @throws BindingActiveException
+     *             thrown if a binding for children already exists
+     */
+    default <T extends @Nullable Object, S extends Signal<T>> void bindChildren(
+            Signal<List<S>> list,
+            SerializableFunction<S, Component> childFactory) {
+        throwIfTextBindingIsActive("bindChildren");
+        var self = (Component & HasComponents) this;
+        var node = self.getElement().getNode();
+        var feature = node.getFeature(SignalBindingFeature.class);
+        if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+            throw new BindingActiveException();
+        }
+        Objects.requireNonNull(list, "Signal cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child component factory cannot be null");
+        ElementEffect.bindChildren(self.getElement(), list,
+                // wrap childFactory to convert Component to Element
+                signalValue -> Optional
+                        .ofNullable(childFactory.apply(signalValue))
+                        .map(Component::getElement)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "HasComponents.bindChildren childFactory must not return null")));
+
+        feature.setBinding(SignalBindingFeature.CHILDREN, list);
+    }
+
+    private void throwIfTextBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.TEXT)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for text exists.");
+                    }
+                });
+    }
+
+    private void throwIfChildrenBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for children exists.");
+                    }
+                });
+    }
+
+    /**
+     * Replaces the component in the container with another one without changing
+     * position. This method replaces a component with another one is such a way
+     * that the new component overtakes the position of the old component. If
+     * the old component is not in the container, the new component is added to
+     * the container. If both components are already in the container, their
+     * positions are swapped. Component attach and detach events should be taken
+     * care as with add and remove.
+     *
+     * @param oldComponent
+     *            the old component that will be replaced. Can be
+     *            <code>null</code>, which will make the newComponent to be
+     *            added to the layout without replacing any other
+     *
+     * @param newComponent
+     *            the new component to be replaced. Can be <code>null</code>,
+     *            which will make the oldComponent to be removed from the layout
+     *            without adding any other
+     */
+    default void replace(Component oldComponent, Component newComponent) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        boolean oldIsDefaultSlot = oldComponent != null
+                                && oldComponent.getElement()
+                                        .getAttribute("slot") == null;
+                        boolean newIsDefaultSlot = newComponent != null
+                                && newComponent.getElement()
+                                        .getAttribute("slot") == null;
+                        if (oldIsDefaultSlot || newIsDefaultSlot) {
+                            throw new BindingActiveException(
+                                    "replace is not allowed for default-slot components while a binding for children exists.");
+                        }
+                    }
+                });
+        if (oldComponent == null && newComponent == null) {
+            // NO-OP
+            return;
+        }
+        if (oldComponent == null) {
+            add(newComponent);
+        } else if (newComponent == null) {
+            remove(oldComponent);
+        } else {
+            Element element = getElement();
+            int oldIndex = element.indexOfChild(oldComponent.getElement());
+            int newIndex = element.indexOfChild(newComponent.getElement());
+            if (oldIndex >= 0 && newIndex >= 0) {
+                element.insertChild(oldIndex, newComponent.getElement());
+                element.insertChild(newIndex, oldComponent.getElement());
+            } else if (oldIndex >= 0) {
+                element.setChild(oldIndex, newComponent.getElement());
+            } else {
+                add(newComponent);
+            }
+        }
+    }
+
+    /**
+     * Returns the index of the given component.
+     *
+     * @param component
+     *            the component to look up, cannot be <code>null</code>
+     * @return the index of the component or -1 if the component is not a child
+     */
+    default int indexOf(Component component) {
+        if (component == null) {
+            throw new IllegalArgumentException(
+                    "The 'component' parameter cannot be null");
+        }
+        Iterator<Component> it = getChildren().sequential().iterator();
+        int index = 0;
+        while (it.hasNext()) {
+            Component next = it.next();
+            if (component.equals(next)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    /**
+     * Gets the number of children components.
+     *
+     * @return the number of components
+     */
+    default int getComponentCount() {
+        return (int) getChildren().count();
+    }
+
+    /**
+     * Returns the component at the given position.
+     *
+     * @param index
+     *            the position of the component must be greater than or equals
+     *            to 0 and less than the number of children components
+     * @return The component at the given index
+     * @throws IllegalArgumentException
+     *             if the index is less than 0 or greater than or equals to the
+     *             number of children components
+     * @see #getComponentCount()
+     */
+    default Component getComponentAt(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException(
+                    "The 'index' argument should be greater than or equal to 0. It was: "
+                            + index);
+        }
+        return getChildren().sequential().skip(index).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "The 'index' argument should not be greater than or equals to the number of children components. It was: "
+                                + index));
+    }
+
+    /**
+     * Gets the children components of this component.
+     *
+     * @see Component#getChildren()
+     *
+     * @return the children components of this component
+     */
+    default Stream<Component> getChildren() {
+        if (this instanceof Component parent) {
+            return ComponentUtil.getChildren(parent);
+        } else {
+            throw new UnsupportedOperationException(
+                    "getChildren is not supported for non-Component HasComponents");
+        }
     }
 }

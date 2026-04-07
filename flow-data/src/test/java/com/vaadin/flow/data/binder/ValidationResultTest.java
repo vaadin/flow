@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.data.binder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class ValidationResultTest {
+class ValidationResultTest {
 
     @Test
-    public void toStringValidation() {
+    void toStringValidation() {
         String toString = ValidationResult.ok().toString();
         assertEquals("ValidationResult{ok}", toString);
 
@@ -46,7 +46,7 @@ public class ValidationResultTest {
     }
 
     @Test
-    public void equalsAndHashCode() {
+    void equalsAndHashCode() {
         ValidationResult ok1 = ValidationResult.ok();
         ValidationResult ok2 = ValidationResult.ok();
         ValidationResult error1 = ValidationResult.error("Msg1");

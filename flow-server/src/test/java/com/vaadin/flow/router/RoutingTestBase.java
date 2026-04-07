@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -27,7 +27,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-public class RoutingTestBase {
+class RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
@@ -107,8 +107,8 @@ public class RoutingTestBase {
 
     protected Router router;
 
-    @Before
-    public void init() throws NoSuchFieldException, SecurityException,
+    @BeforeEach
+    void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         router = new Router(new TestRouteRegistry());
     }

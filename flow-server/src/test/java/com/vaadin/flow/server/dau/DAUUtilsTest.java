@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,10 +21,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -46,25 +45,27 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class DAUUtilsTest {
+class DAUUtilsTest {
 
     private String subscriptionKey;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (subscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey", subscriptionKey);
         } else {
@@ -73,7 +74,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void trackUser_uidlRequest_deferTracking() {
+    void trackUser_uidlRequest_deferTracking() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -94,9 +95,8 @@ public class DAUUtilsTest {
             FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verifyNoInteractions();
 
-            Assert.assertThrows(DauEnforcementException.class,
-                    () -> FlowDauIntegration.applyEnforcement(request,
-                            unused -> true));
+            assertThrows(DauEnforcementException.class, () -> FlowDauIntegration
+                    .applyEnforcement(request, unused -> true));
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
         } finally {
@@ -105,7 +105,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void trackUser_notUidlRequest_track() {
+    void trackUser_notUidlRequest_track() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -127,9 +127,8 @@ public class DAUUtilsTest {
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
 
-            Assert.assertThrows(DauEnforcementException.class,
-                    () -> FlowDauIntegration.applyEnforcement(request,
-                            unused -> true));
+            assertThrows(DauEnforcementException.class, () -> FlowDauIntegration
+                    .applyEnforcement(request, unused -> true));
 
         } finally {
             VaadinSession.setCurrent(null);
@@ -137,7 +136,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
+    void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
         try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
                 .mockStatic(DauIntegration.class)) {
             VaadinService service = VaadinServiceDauTest
@@ -148,8 +147,6 @@ public class DAUUtilsTest {
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
 
-            // remove JSON wrap
-            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
             JsonNode json = JacksonUtils.readTree(response).get("meta")
                     .get("appError");
 
@@ -165,7 +162,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void jsonEnforcementResponse_customMessages() {
+    void jsonEnforcementResponse_customMessages() {
         try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
                 .mockStatic(DauIntegration.class)) {
             EnforcementNotificationMessages expectedMessages = new EnforcementNotificationMessages(
@@ -185,7 +182,6 @@ public class DAUUtilsTest {
             String response = DAUUtils.jsonEnforcementResponse(request,
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
-            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
             JsonNode json = JacksonUtils.readTree(response).get("meta")
                     .get("appError");
 
@@ -200,7 +196,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void trackDAU_trackingIntegratedWithRequest_noEnforcement() {
+    void trackDAU_trackingIntegratedWithRequest_noEnforcement() {
         MocksForTrackDAU mocks = new MocksForTrackDAU();
         VaadinService service = mocks.service;
         HttpServletRequest request = mocks.request;
@@ -224,7 +220,7 @@ public class DAUUtilsTest {
     }
 
     @Test
-    public void trackDAU_trackingIntegratedWithRequest_enforcement() {
+    void trackDAU_trackingIntegratedWithRequest_enforcement() {
         MocksForTrackDAU mocks = new MocksForTrackDAU();
         VaadinService service = mocks.service;
         HttpServletRequest request = mocks.request;
@@ -255,11 +251,11 @@ public class DAUUtilsTest {
     private void assertJsonErrorProperty(String expectedKey,
             String expectedValue, JsonNode json) {
         if (expectedValue != null) {
-            Assert.assertEquals(expectedKey, expectedValue,
-                    json.get(expectedKey).asString());
+            assertEquals(expectedValue, json.get(expectedKey).asString(),
+                    expectedKey);
         } else {
-            Assert.assertEquals("expected key " + expectedKey + " to be null",
-                    JsonNodeType.NULL, json.get(expectedKey).getNodeType());
+            assertEquals(JsonNodeType.NULL, json.get(expectedKey).getNodeType(),
+                    "expected key " + expectedKey + " to be null");
         }
 
     }

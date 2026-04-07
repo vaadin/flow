@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,11 +31,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -44,11 +43,15 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnectionTest {
+class AtmospherePushConnectionTest {
 
     private static ExecutorService executor;
     private MockVaadinSession vaadinSession;
@@ -56,18 +59,18 @@ public class AtmospherePushConnectionTest {
     private AtmosphereResource resource;
     private AtmospherePushConnection connection;
 
-    @BeforeClass
-    public static void initExecutor() {
+    @BeforeAll
+    static void initExecutor() {
         executor = Executors.newSingleThreadExecutor();
     }
 
-    @AfterClass
-    public static void stopExecutor() {
+    @AfterAll
+    static void stopExecutor() {
         executor.shutdown();
     }
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         vaadinSession = new MockVaadinSession();
         vaadinSession.lock();
         UI ui = new MockUI(vaadinSession);
@@ -92,7 +95,7 @@ public class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void testSerialization() throws Exception {
+    void testSerialization() throws Exception {
 
         UI ui = Mockito.mock(UI.class);
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
@@ -100,7 +103,7 @@ public class AtmospherePushConnectionTest {
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
 
-        Assert.assertEquals(State.CONNECTED, connection.getState());
+        assertEquals(State.CONNECTED, connection.getState());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -109,11 +112,11 @@ public class AtmospherePushConnectionTest {
         connection = (AtmospherePushConnection) new ObjectInputStream(
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
-        Assert.assertEquals(State.DISCONNECTED, connection.getState());
+        assertEquals(State.DISCONNECTED, connection.getState());
     }
 
     @Test
-    public void pushWhileDisconnect_disconnectedWithoutSendingMessage()
+    void pushWhileDisconnect_disconnectedWithoutSendingMessage()
             throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
@@ -132,15 +135,14 @@ public class AtmospherePushConnectionTest {
                     return null;
                 });
         connection.disconnect();
-        Assert.assertTrue("AtmospherePushConnection not disconnected",
-                latch.await(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.PUSH_PENDING, connection.getState());
+        assertTrue(latch.await(2, TimeUnit.SECONDS),
+                "AtmospherePushConnection not disconnected");
+        assertEquals(State.PUSH_PENDING, connection.getState());
         Mockito.verifyNoInteractions(broadcaster);
     }
 
     @Test
-    public void disconnectWhilePush_messageSentAndThenDisconnected()
-            throws Exception {
+    void disconnectWhilePush_messageSentAndThenDisconnected() throws Exception {
         CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture.runAsync(() -> {
             try {
@@ -166,15 +168,13 @@ public class AtmospherePushConnectionTest {
             return null;
         });
 
-        Assert.assertTrue("Push not completed",
-                latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }
 
     @Test
-    public void disconnect_concurrentRequests_preventDeadlocks()
-            throws Exception {
+    void disconnect_concurrentRequests_preventDeadlocks() throws Exception {
         // A deadlock may happen when an HTTP session is invalidated in a
         // thread, causing VaadinSession and UIs to be closed and push
         // connections to be disconnected, but a push disconnection is
@@ -242,15 +242,16 @@ public class AtmospherePushConnectionTest {
         if (threadError != null) {
             StringWriter sw = new StringWriter();
             threadError.printStackTrace(new PrintWriter(sw));
-            Assert.fail("Disconnection on spawned thread failed: " + sw);
+            fail("Disconnection on spawned thread failed: " + sw);
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 
     @Test
-    public void pushWhileDisconnect_preventDeadlocks() throws Exception {
+    void pushWhileDisconnect_preventDeadlocks() throws Exception {
         // Similar motivation exposed in
         // disconnect_concurrentRequests_preventDeadlocks
         // but when a Vaadin session is unlocked as a consequence of HTTP
@@ -300,11 +301,12 @@ public class AtmospherePushConnectionTest {
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
         if (threadError != null) {
-            Assert.fail("Disconnection on spawned thread failed: "
+            fail("Disconnection on spawned thread failed: "
                     + threadError.getMessage());
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 

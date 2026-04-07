@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,46 +15,47 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ErrorParameterTest {
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class ErrorParameterTest {
     @Test
-    public void matchingExceptionType() {
+    void matchingExceptionType() {
         NullPointerException exception = new NullPointerException();
 
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(exception, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(exception, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
-    public void superExceptionType() {
+    void superExceptionType() {
         NullPointerException exception = new NullPointerException();
 
         ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(
                 RuntimeException.class, exception);
 
-        Assert.assertSame(exception, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(exception, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
-    public void matchingCauseType() {
+    void matchingCauseType() {
         NullPointerException cause = new NullPointerException();
         IllegalStateException exception = new IllegalStateException(cause);
 
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(cause, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(cause, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
-    public void superMatchingCauseType() {
+    void superMatchingCauseType() {
         NullPointerException cause = new NullPointerException() {
 
         };
@@ -63,8 +64,8 @@ public class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(cause, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(cause, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,20 +15,20 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ElementBindVisibleTest extends SignalsUnitTest {
+class ElementBindVisibleTest extends SignalsUnitTest {
 
     @Test
-    public void bindVisible_elementAttachedBefore_bindingActive() {
+    void bindVisible_elementAttachedBefore_bindingActive() {
         Element element = new Element("foo");
         // attach before bindVisible
         UI.getCurrent().getElement().appendChild(element);
@@ -41,7 +41,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementAttachedAfter_bindingActive() {
+    void bindVisible_elementAttachedAfter_bindingActive() {
         Element element = new Element("foo");
         assertTrue(element.isVisible());
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -54,7 +54,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementAttached_bindingActive() {
+    void bindVisible_elementAttached_bindingActive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -64,46 +64,46 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         assertFalse(element.isVisible());
 
         // false -> true
-        signal.value(true);
+        signal.set(true);
         assertTrue(element.isVisible());
 
         // null transforms to false
-        signal.value(null);
+        signal.set(null);
         assertFalse(element.isVisible());
         assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindVisible_elementNotAttached_bindingInactive() {
+    void bindVisible_elementNotAttached_bindingInactive() {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
-        signal.value(false); // ignored
+        signal.set(false); // ignored
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindVisible_elementDetached_bindingInactive() {
+    void bindVisible_elementDetached_bindingInactive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
-        signal.value(false); // ignored
+        signal.set(false); // ignored
 
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindVisible_elementReAttached_bindingActivate() {
+    void bindVisible_elementReAttached_bindingActivate() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
-        signal.value(false);
+        signal.set(false);
         UI.getCurrent().getElement().appendChild(element);
 
         assertFalse(element.isVisible());
@@ -111,7 +111,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_setVisibleAndBindVisibleWhileBindingIsActive_throwException() {
+    void bindVisible_setVisibleAndBindVisibleWhileBindingIsActive_throwException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         element.bindVisible(new ValueSignal<>(true));
@@ -125,43 +125,11 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_withNullBinding_removesBinding() {
+    void bindVisible_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindVisible(signal);
-        assertTrue(element.isVisible());
 
-        element.bindVisible(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(element.isVisible());
-        assertTrue(events.isEmpty());
-    }
-
-    @Test
-    public void bindVisible_withNullBinding_removesBindingPreserveState() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(false);
-        element.bindVisible(signal);
-        assertFalse(element.isVisible());
-
-        element.bindVisible(null); // remove binding
-        assertFalse(element.isVisible());
-        assertTrue(events.isEmpty());
-    }
-
-    @Test
-    public void bindVisible_withNullBinding_allowsSetVisible() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindVisible(signal);
-        assertTrue(element.isVisible());
-
-        element.bindVisible(null); // remove binding
-
-        element.setVisible(false);
-        assertFalse(element.isVisible());
+        assertThrows(NullPointerException.class,
+                () -> element.bindVisible(null));
     }
 }

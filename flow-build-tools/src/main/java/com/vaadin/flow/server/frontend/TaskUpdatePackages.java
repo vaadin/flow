@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -569,7 +569,21 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
+        try {
+            FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
+        } catch (IOException exception) {
+            File nodeModules = options.getNodeModulesFolder();
+            log().debug("Exception removing node_modules", exception);
+            StringBuilder messageWithReason = new StringBuilder(
+                    "Removal of '{}'");
+            if (!forceCleanUp) {
+                messageWithReason.append(", due to platform version update,");
+            }
+            messageWithReason.append(
+                    " failed. Remove it manually if there are problems with the build.");
+            log().error(messageWithReason.toString(),
+                    nodeModules.getAbsolutePath());
+        }
 
         if (jarResourcesFolder != null && jarResourcesFolder.exists()) {
             // This feels like cleanup done in the wrong place but is left here

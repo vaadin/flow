@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,10 +27,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SplitPackagesTest {
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SplitPackagesTest {
     /*
      * Modules that contain known split packages that we don't care about
      */
@@ -45,13 +46,13 @@ public class SplitPackagesTest {
      * package contains classes from multiple modules.
      */
     @Test
-    public void findSplitPackages() throws IOException {
+    void findSplitPackages() throws IOException {
         Collection<File> modules = findModules();
         Map<String, Set<File>> packageToModules = mapPackagesToModules(modules);
         String errors = collectErrors(packageToModules);
 
         if (!errors.isEmpty()) {
-            Assert.fail(errors);
+            fail(errors);
         }
     }
 

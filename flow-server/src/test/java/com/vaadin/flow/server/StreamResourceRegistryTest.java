@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,10 +22,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -33,14 +32,21 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 
-public class StreamResourceRegistryTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class StreamResourceRegistryTest {
 
     private UI ui;
     private VaadinServletService service;
     private VaadinSession session;
 
-    @Before
-    public void setUp() throws ServletException, ServiceException {
+    @BeforeEach
+    void setUp() throws ServletException, ServiceException {
         service = new MockVaadinServletService();
         session = new VaadinSession(service) {
             @Override
@@ -54,35 +60,33 @@ public class StreamResourceRegistryTest {
         UI.setCurrent(ui);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void registerResource_registrationResultCanBeFound() {
+    void registerResource_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
         StreamRegistration registration = registry.registerResource(resource);
-        Assert.assertNotNull(registration);
+        assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
         Optional<StreamResource> stored = registry
                 .getResource(StreamResource.class, uri);
-        Assert.assertSame(
-                "Unexpected stored resource is returned for registered URI",
-                resource, stored.get());
+        assertSame(resource, stored.get(),
+                "Unexpected stored resource is returned for registered URI");
 
-        Assert.assertSame(
-                "Unexpected resource is returned by the registration instance",
-                resource, registration.getResource());
+        assertSame(resource, registration.getResource(),
+                "Unexpected resource is returned by the registration instance");
     }
 
     @Test
-    public void registerElementResourceHandler_registrationResultCanBeFound() {
+    void registerElementResourceHandler_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         ElementRequestHandler handler = (request, response, session, owner) -> {
@@ -91,25 +95,24 @@ public class StreamResourceRegistryTest {
         Element owner = Mockito.mock(Element.class);
         StreamRegistration registration = registry.registerResource(handler,
                 owner);
-        Assert.assertNotNull(registration);
+        assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
         AbstractStreamResource generatedResource = registration.getResource();
 
         Optional<AbstractStreamResource> stored = registry.getResource(uri);
-        Assert.assertSame(
-                "Unexpected stored resource is returned for registered URI",
-                generatedResource, stored.get());
+        assertSame(generatedResource, stored.get(),
+                "Unexpected stored resource is returned for registered URI");
     }
 
     @Test
-    public void unregisterResource_resourceIsRemoved() {
+    void unregisterResource_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
         StreamRegistration registration = registry.registerResource(resource);
-        Assert.assertNotNull(registration);
+        assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
@@ -117,16 +120,14 @@ public class StreamResourceRegistryTest {
 
         Optional<StreamResource> stored = registry
                 .getResource(StreamResource.class, uri);
-        Assert.assertFalse(
-                "Unexpected stored resource is found after unregister()",
-                stored.isPresent());
-        Assert.assertNull(
-                "Unexpected resource is returned by the registration instance",
-                registration.getResource());
+        assertFalse(stored.isPresent(),
+                "Unexpected stored resource is found after unregister()");
+        assertNull(registration.getResource(),
+                "Unexpected resource is returned by the registration instance");
     }
 
     @Test
-    public void unregisterElementResourceHandler_resourceIsRemoved() {
+    void unregisterElementResourceHandler_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         ElementRequestHandler handler = (request, response, session, owner) -> {
@@ -136,23 +137,21 @@ public class StreamResourceRegistryTest {
         StreamRegistration registration = registry.registerResource(handler,
                 owner);
 
-        Assert.assertNotNull(registration);
+        assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
         registration.unregister();
 
         Optional<AbstractStreamResource> stored = registry.getResource(uri);
-        Assert.assertFalse(
-                "Unexpected stored resource is found after unregister()",
-                stored.isPresent());
-        Assert.assertNull(
-                "Unexpected resource is returned by the registration instance",
-                registration.getResource());
+        assertFalse(stored.isPresent(),
+                "Unexpected stored resource is found after unregister()");
+        assertNull(registration.getResource(),
+                "Unexpected resource is returned by the registration instance");
     }
 
     @Test
-    public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
+    void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource1 = new StreamResource("name",
@@ -163,30 +162,30 @@ public class StreamResourceRegistryTest {
                 () -> makeEmptyStream());
         StreamRegistration registration2 = registry.registerResource(resource2);
 
-        Assert.assertNotEquals(
-                "Two different resource are registered to the same URI",
-                registration1.getResourceUri(), registration2.getResourceUri());
+        assertNotEquals(registration1.getResourceUri(),
+                registration2.getResourceUri(),
+                "Two different resource are registered to the same URI");
 
         registration1.unregister();
 
-        Assert.assertTrue(
-                "Second resource is not found after first resource has been unregistered",
+        assertTrue(
                 registry.getResource(registration2.getResourceUri())
-                        .isPresent());
+                        .isPresent(),
+                "Second resource is not found after first resource has been unregistered");
     }
 
     @Test
-    public void getResourceUriIsEncoded_withQueryParams() {
+    void getResourceUriIsEncoded_withQueryParams() {
         assertResourceUriIsEncoded("a?b=c d&e", "a%3Fb%3Dc%20d%26e");
     }
 
     @Test
-    public void getResourceUriIsEncoded_withContainingPlus() {
+    void getResourceUriIsEncoded_withContainingPlus() {
         assertResourceUriIsEncoded("image++.svg", "image%2B%2B.svg");
     }
 
     @Test
-    public void getResourceUriIsEncoded_withSimpleSpace() {
+    void getResourceUriIsEncoded_withSimpleSpace() {
         assertResourceUriIsEncoded("my file.png", "my%20file.png");
     }
 
@@ -199,8 +198,8 @@ public class StreamResourceRegistryTest {
         StreamRegistration registration = registry.registerResource(resource);
 
         URI uri = registration.getResourceUri();
-        Assert.assertTrue("Resource URI is not properly encoded",
-                uri.toString().endsWith(suffix));
+        assertTrue(uri.toString().endsWith(suffix),
+                "Resource URI is not properly encoded");
     }
 
     private InputStream makeEmptyStream() {

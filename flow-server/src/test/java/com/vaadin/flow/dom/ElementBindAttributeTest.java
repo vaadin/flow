@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,90 +15,25 @@
  */
 package com.vaadin.flow.dom;
 
-import java.util.LinkedList;
+import org.junit.jupiter.api.Test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.MockedStatic;
-
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
-import com.vaadin.tests.util.MockUI;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ElementBindAttributeTest {
-
-    private static MockVaadinServletService service;
-
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeClass
-    public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
-    }
-
-    @AfterClass
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @Before
-    public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @After
-    public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
-    }
+class ElementBindAttributeTest extends SignalsUnitTest {
 
     @Test
-    public void bindAttribute_nullAttribute_throwException() {
+    void bindAttribute_nullAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -106,7 +41,7 @@ public class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_illegalAttribute_throwException() {
+    void bindAttribute_illegalAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -114,29 +49,34 @@ public class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_notComponent_doNotThrowException() {
+    void bindAttribute_notComponent_doNotThrowException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         element.bindAttribute("foobar", signal);
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_componentNotAttached_bindingIgnored() {
+    void bindAttribute_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
-        assertNull(component.getElement().getAttribute("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("bar", component.getElement().getAttribute("foo"));
+
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("changed");
+        assertEquals("bar", component.getElement().getAttribute("foo"));
     }
 
     @Test
-    public void bindAttribute_componentDetached_bindingIgnored() {
+    void bindAttribute_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -146,14 +86,14 @@ public class ElementBindAttributeTest {
 
         component.removeFromParent();
 
-        signal.value("baz");
+        signal.set("baz");
 
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
         assertEquals("bar", component.getElement().getAttribute("foo"));
     }
 
     @Test
-    public void bindAttribute_componentAttached_bindingActive() {
+    void bindAttribute_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -162,11 +102,11 @@ public class ElementBindAttributeTest {
         component.getElement().bindAttribute("foo", signal);
 
         assertEquals("bar", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_componentReAttached_bindingSynced() {
+    void bindAttribute_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -176,7 +116,7 @@ public class ElementBindAttributeTest {
         assertEquals("bar", component.getElement().getAttribute("foo"));
 
         component.removeFromParent();
-        signal.value("baz");
+        signal.set("baz");
 
         assertEquals("baz", signal.peek());
         assertEquals("bar", component.getElement().getAttribute("foo"));
@@ -184,11 +124,11 @@ public class ElementBindAttributeTest {
         UI.getCurrent().add(component);
         assertEquals("baz", component.getElement().getAttribute("foo"));
 
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -198,11 +138,11 @@ public class ElementBindAttributeTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setAttribute("foo", "baz"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -212,44 +152,34 @@ public class ElementBindAttributeTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_updateSignal_attributeChanged() {
+    void bindAttribute_updateSignal_attributeChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
-        signal.value("baz");
+        signal.set("baz");
 
         assertEquals("baz", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_withNullBinding_removesBinding() {
+    void bindAttribute_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
-        component.getElement().bindAttribute("foo", signal);
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-
-        component.getElement().bindAttribute("foo", null);
-
-        signal.value("baz");
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertThrows(NullPointerException.class,
+                () -> component.getElement().bindAttribute("foo", null));
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
+    void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -261,15 +191,15 @@ public class ElementBindAttributeTest {
         assertEquals("foo", component.getElement().getAttribute("attr1"));
         assertEquals("foo", component.getElement().getAttribute("attr2"));
 
-        signal.value("foobar");
+        signal.set("foobar");
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("foobar", component.getElement().getAttribute("attr2"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
+    void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -282,16 +212,16 @@ public class ElementBindAttributeTest {
         assertEquals("foo", component.getElement().getAttribute("attr1"));
         assertEquals("bar", component.getElement().getAttribute("attr2"));
 
-        signal1.value("foobar");
-        signal2.value("barfoo");
+        signal1.set("foobar");
+        signal2.set("barfoo");
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("barfoo", component.getElement().getAttribute("attr2"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_simpleComputedSignal_bindingActive() {
+    void bindAttribute_simpleComputedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -301,27 +231,31 @@ public class ElementBindAttributeTest {
                 signal.map(v -> "mapped-" + v));
 
         assertEquals("mapped-bar", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_computedSignal_bindingActive() {
+    void bindAttribute_computedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Signal<String> signal = Signal.computed(() -> "bar");
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal<String> signal = Signal.computed(() -> {
+            dependency.get();
+            return "bar";
+        });
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
 
         component.getElement().bindAttribute("foo", computedSignal);
 
         assertEquals("computed-bar",
                 component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_nullAttributeValue_attributeRemoved() {
+    void bindAttribute_nullAttributeValue_attributeRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -332,25 +266,12 @@ public class ElementBindAttributeTest {
 
         assertEquals("", component.getElement().getAttribute("foo"));
 
-        signal.value(false);
+        signal.set(false);
 
         assertNull(component.getElement().getAttribute("foo"));
         // expecting whole attribute to be removed
-        Assert.assertFalse(component.getElement().hasAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        var ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
+        assertFalse(component.getElement().hasAttribute("foo"));
+        assertTrue(events.isEmpty());
     }
 
     @Tag("div")

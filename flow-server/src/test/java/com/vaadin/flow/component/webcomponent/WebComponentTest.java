@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -31,56 +29,51 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-public class WebComponentTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+class WebComponentTest {
 
     private WebComponent<Component> webComponent;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         WebComponentBinding<Component> componentBinding = new WebComponentBinding<>(
                 mock(Component.class));
         webComponent = new WebComponent<>(componentBinding, new Element("tag"));
     }
 
     @Test
-    public void fireEvent_throwsWhenNameIsNull() {
-        exception.expect(NullPointerException.class);
-        exception.expectMessage("eventName");
-        webComponent.fireEvent(null);
+    void fireEvent_throwsWhenNameIsNull() {
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> webComponent.fireEvent(null));
+        assertTrue(ex.getMessage().contains("eventName"));
     }
 
     @Test
-    public void fireEvent_doesNotThrowOnNullObjectData() {
+    void fireEvent_doesNotThrowOnNullObjectData() {
         webComponent.fireEvent("name", (JsonNode) null);
     }
 
     @Test
-    public void fireEvent_throwsWhenOptionsIsNull() {
-        exception.expect(NullPointerException.class);
-        exception.expectMessage("options");
-        webComponent.fireEvent("name", (JsonNode) null, null);
+    void fireEvent_throwsWhenOptionsIsNull() {
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> webComponent.fireEvent("name", (JsonNode) null, null));
+        assertTrue(ex.getMessage().contains("options"));
     }
 
     @Test
-    public void setProperty_throwsOnNullPropertyConfiguration() {
-        exception.expect(NullPointerException.class);
-        exception.expectMessage("propertyConfiguration");
-        webComponent.setProperty(null, "value");
+    void setProperty_throwsOnNullPropertyConfiguration() {
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> webComponent.setProperty(null, "value"));
+        assertTrue(ex.getMessage().contains("propertyConfiguration"));
     }
 
     @Test
-    public void setProperty_throwsOnUnknownProperty() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "WebComponent does not have a property identified");
-
+    void setProperty_throwsOnUnknownProperty() {
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
                 mock(Component.class));
 
@@ -90,16 +83,15 @@ public class WebComponentTest {
         PropertyConfigurationImpl<Component, String> configuration = new PropertyConfigurationImpl<>(
                 Component.class, "property", String.class, "value");
 
-        webComponent.setProperty(configuration, "newValue");
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> webComponent.setProperty(configuration, "newValue"));
+        assertTrue(ex.getMessage()
+                .contains("WebComponent does not have a property identified"));
     }
 
     @Test
-    public void setProperty_throwsWhenGivenWrongPropertyTypeAsParameter() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Property 'property' of type "
-                + "'java.lang.Integer' cannot be assigned value of type "
-                + "'java.lang.String'!");
-
+    void setProperty_throwsWhenGivenWrongPropertyTypeAsParameter() {
         PropertyConfigurationImpl<Component, Integer> intConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", Integer.class, 0);
 
@@ -113,11 +105,16 @@ public class WebComponentTest {
         PropertyConfigurationImpl<Component, String> stringConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", String.class, "value");
 
-        webComponent.setProperty(stringConfiguration, "newValue");
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class, () -> webComponent
+                        .setProperty(stringConfiguration, "newValue"));
+        assertTrue(ex.getMessage().contains("Property 'property' of type "
+                + "'java.lang.Integer' cannot be assigned value of type "
+                + "'java.lang.String'!"));
     }
 
     @Test
-    public void setProperty_attemptsToWriteSupportedTypes() {
+    void setProperty_attemptsToWriteSupportedTypes() {
         Element element = spy(new Element("tag"));
 
         // configurations

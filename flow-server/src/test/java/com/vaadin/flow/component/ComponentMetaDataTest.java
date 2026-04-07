@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,14 +19,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
-public class ComponentMetaDataTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ComponentMetaDataTest {
 
     @Tag(Tag.A)
     public static class Sample extends Component {
@@ -99,67 +101,67 @@ public class ComponentMetaDataTest {
     }
 
     @Test
-    public void synchronizedProperties_methodInClass() {
+    void synchronizedProperties_methodInClass() {
         assertFooProperty(Sample.class);
     }
 
     @Test
-    public void synchronizedProperties_methodInInterface() {
+    void synchronizedProperties_methodInInterface() {
         assertFooProperty(HasFooImpl.class, DisabledUpdateMode.ALWAYS);
     }
 
     @Test
-    public void synchronizedProperties_protectedMethod() {
+    void synchronizedProperties_protectedMethod() {
         assertFooProperty(HasFooProtected.class);
     }
 
     @Test
-    public void synchronizedProperties_packagePrivateMethod() {
+    void synchronizedProperties_packagePrivateMethod() {
         assertFooProperty(HasFooPackagePrivate.class);
     }
 
     @Test
-    public void synchronizedProperties_privateMethod() {
+    void synchronizedProperties_privateMethod() {
         assertFooProperty(HasFooPrivate.class);
     }
 
     @Test
-    public void synchronizedProperties_hasOverriddenMethod() {
+    void synchronizedProperties_hasOverriddenMethod() {
         ComponentMetaData data = new ComponentMetaData(SubClass.class);
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(2, props.size());
+        assertEquals(2, props.size());
 
         List<SynchronizedPropertyInfo> bazProps = props.stream()
                 .filter(prop -> prop.getProperty().equals("baz"))
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, bazProps.size());
+        assertEquals(1, bazProps.size());
         SynchronizedPropertyInfo info = bazProps.get(0);
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("bar", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("bar", events.get(0));
 
-        Assert.assertTrue(props.stream()
+        assertTrue(props.stream()
                 .anyMatch(prop -> prop.getProperty().equals("bar")));
     }
 
     @Test
-    public void synchronizedProperties_overridesMethodAndProperty() {
+    void synchronizedProperties_overridesMethodAndProperty() {
         ComponentMetaData data = new ComponentMetaData(
                 ChangeSyncProperty.class);
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(1, props.size());
+        assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();
-        Assert.assertEquals("foo", info.getProperty());
+        assertEquals("foo", info.getProperty());
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("baz", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("baz", events.get(0));
     }
 
     private void assertFooProperty(Class<? extends Component> clazz) {
@@ -172,15 +174,15 @@ public class ComponentMetaDataTest {
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(1, props.size());
+        assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();
-        Assert.assertEquals("baz", info.getProperty());
+        assertEquals("baz", info.getProperty());
 
-        Assert.assertEquals(mode, info.getUpdateMode());
+        assertEquals(mode, info.getUpdateMode());
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("bar", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("bar", events.get(0));
     }
 }

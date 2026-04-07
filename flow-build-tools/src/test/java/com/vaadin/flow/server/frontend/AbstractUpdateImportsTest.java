@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,22 +38,21 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.router.Route;
@@ -70,16 +71,17 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
+abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    @TempDir
+    File temporaryFolder;
 
     @Route(value = "simplecss")
     @CssImport("./foo.css")
@@ -108,6 +110,38 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Theme(themeClass = LumoTest.class)
     @CssImport("./foo.css")
     public static class ThemeCssImport implements AppShellConfigurator {
+    }
+
+    @CssImport("./foo.css")
+    @CssImport("./bar.css")
+    public static class MultiCssImportAppShell implements AppShellConfigurator {
+    }
+
+    @CssImport("./foo.css")
+    public static class CssImportExporter
+            extends WebComponentExporter<FooCssImport> {
+        public CssImportExporter() {
+            super("css-import-exporter");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<FooCssImport> webComponent,
+                FooCssImport component) {
+        }
+    }
+
+    @CssImport(value = "./foo.css", themeFor = "something")
+    public static class ThemeForCssImportExporter
+            extends WebComponentExporter<ThemeForCssImport> {
+        public ThemeForCssImportExporter() {
+            super("themefor-css-import-exporter");
+        }
+
+        @Override
+        public void configureInstance(
+                WebComponent<ThemeForCssImport> webComponent,
+                ThemeForCssImport component) {
+        }
     }
 
     protected File tmpRoot;
@@ -170,9 +204,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    @Before
-    public void setup() throws Exception {
-        tmpRoot = temporaryFolder.getRoot();
+    @BeforeEach
+    void setup() throws Exception {
+        tmpRoot = temporaryFolder;
 
         logger = new MockLogger();
 
@@ -201,14 +235,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             ClassFinder finder);
 
     @Test
-    public void importsFilesAreNotFound_throws() {
+    void importsFilesAreNotFound_throws() {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
-        exception.expect(IllegalStateException.class);
-        updater.run();
+        assertThrows(IllegalStateException.class, () -> updater.run());
     }
 
     @Test
-    public void generatedResources_relativeImport_dotSlash_notStripped()
+    void generatedResources_relativeImport_dotSlash_notStripped()
             throws IOException {
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./generated/jar-resources/foo.js");
@@ -227,7 +260,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void copiedJarResources_containsImport_importFollowedAndAdded()
+    void copiedJarResources_containsImport_importFollowedAndAdded()
             throws IOException {
         // No theme annotation should be available for this
         Class<?>[] testClasses = { UI.class, AllEagerAppConf.class,
@@ -247,15 +280,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> flowImports = new ArrayList<>(
                 updater.getOutput().get(updater.generatedFlowImports));
 
-        Assert.assertTrue(flowImports.contains(
+        assertTrue(flowImports.contains(
                 "import 'Frontend/generated/jar-resources/ExampleConnector.js';"));
-        Assert.assertTrue(flowImports.contains(
+        assertTrue(flowImports.contains(
                 "import 'Frontend/generated/jar-resources/sub/example-import.js';"));
 
     }
 
     @Test
-    public void getModuleLines_npmPackagesDontExist_logExplanation() {
+    void getModuleLines_npmPackagesDontExist_logExplanation() {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
             if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
@@ -275,13 +308,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+    void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
         String fooFileName = "./foo.js";
         assertFileRemoved(fooFileName, frontendDirectory);
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with missing file");
+            fail("Execute should have failed with missing file");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.allOf(
                     CoreMatchers.containsString(
@@ -293,7 +326,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
+    void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         options.withTokenFile(null);
@@ -304,8 +337,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         try {
             updater.run();
-            Assert.fail(
-                    "Execute should have failed with advice to run `prepare-frontend`");
+            fail("Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.containsString(
                     "Unable to locate frontend resources and missing token file. "
@@ -314,7 +346,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+    void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
         String localTemplateFileName = "./local-template.js";
         String fooFileName = "./foo.js";
 
@@ -323,7 +355,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with missing files");
+            fail("Execute should have failed with missing files");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.allOf(
                     CoreMatchers.containsString(
@@ -336,10 +368,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertFileRemoved(String fileName, File directory) {
-        assertTrue(String.format(
-                "File `%s` was not removed from, or does not exist in, `%s`",
-                fileName, directory),
-                resolveImportFile(directory, directory, fileName).delete());
+        assertTrue(resolveImportFile(directory, directory, fileName).delete(),
+                String.format(
+                        "File `%s` was not removed from, or does not exist in, `%s`",
+                        fileName, directory));
     }
 
     private String getFrontendErrorMessageSuffix() {
@@ -359,7 +391,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
+    void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
             throws Exception {
         List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
@@ -405,6 +437,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // AppShell and @Theme CSS imports are expected to be generated in
         // the dedicated file.
         List<String> expectedAppShellImports = List.of(
+                "import \\{ injectGlobalCss \\}.*",
+                "import \\{ css, unsafeCSS, registerStyles \\}.*",
                 "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';",
                 "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
 
@@ -414,17 +448,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .get(updater.appShellImports);
         String appShellOutput = String.join("\n", appShellImports);
         for (String line : expectedAppShellImports) {
-            Assert.assertTrue(
-                    "\n" + line + " IS NOT FOUND IN: \n" + appShellImports,
-                    Pattern.compile(line).matcher(appShellOutput).find());
+            assertTrue(Pattern.compile(line).matcher(appShellOutput).find(),
+                    "\n" + line + " IS NOT FOUND IN: \n" + appShellImports);
         }
 
         List<String> mergedOutput = updater.getMergedOutput();
         String outputString = String.join("\n", mergedOutput);
         for (String line : expectedLines) {
-            Assert.assertTrue(
-                    "\n" + line + " IS NOT FOUND IN: \n" + mergedOutput,
-                    Pattern.compile(line).matcher(outputString).find());
+            assertTrue(Pattern.compile(line).matcher(outputString).find(),
+                    "\n" + line + " IS NOT FOUND IN: \n" + mergedOutput);
         }
 
         // All generated module ids are distinct
@@ -434,9 +466,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .map(moduleIdPattern::matcher).filter(Matcher::matches)
                 .map(m -> m.group(1)).collect(Collectors.toList());
         long uniqueModuleIds = moduleIds.stream().distinct().count();
-        Assert.assertTrue("expected modules", moduleIds.size() > 0);
-        Assert.assertEquals("duplicates in generated " + moduleIds,
-                moduleIds.size(), uniqueModuleIds);
+        assertTrue(moduleIds.size() > 0, "expected modules");
+        assertEquals(moduleIds.size(), uniqueModuleIds,
+                "duplicates in generated " + moduleIds);
 
         String output = logger.getLogs();
 
@@ -459,7 +491,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void cssFileNotFound_loggerReports() {
+    void cssFileNotFound_loggerReports() {
         assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
         updater.run();
@@ -471,7 +503,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generate_containsLumoThemeFiles() {
+    void generate_containsLumoThemeFiles() {
         updater.run();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
@@ -485,7 +517,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
+    void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
             throws IOException {
         updater.run();
 
@@ -498,28 +530,44 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
 
         assertTrue(
-                "Import for web-components should not contain lumo global imports",
                 updater.webComponentImports.stream()
-                        .noneMatch(lumoGlobalsMatcher));
+                        .noneMatch(lumoGlobalsMatcher),
+                "Import for web-components should not contain lumo global imports");
 
-        // Check that imports other than lumo globals are the same
-        flowImports.removeAll(updater.webComponentImports);
+        // Compare lines ignoring CSS variable index differences caused
+        // by deduplication across merged output files
+        Set<String> flowNormalized = normalizeCssIndices(flowImports);
+        Set<String> wcNormalized = normalizeCssIndices(
+                updater.webComponentImports);
 
-        // webComponent only has injectGlobalWebcomponentCss and not
-        // injectGlobalCss'
-        Predicate<String> injectGlobal = Pattern.compile("injectGlobalCss.*")
-                .asPredicate();
-        flowImports.removeIf(injectGlobal);
+        Set<String> difference = new LinkedHashSet<>(flowNormalized);
+        difference.removeAll(wcNormalized);
+        // Remove injectGlobalCss (webComponent uses
+        // injectGlobalWebcomponentCss instead)
+        difference.removeIf(Pattern.compile("injectGlobalCss.*").asPredicate());
 
-        assertTrue(
-                "Flow and web-component imports must be the same, except for lumo globals",
-                flowImports.stream().allMatch(lumoGlobalsMatcher));
+        List<String> unexpected = difference.stream()
+                .filter(lumoGlobalsMatcher.negate()).toList();
+        assertTrue(unexpected.isEmpty(),
+                "Flow and web-component imports must be the same, except for lumo globals. Unexpected: "
+                        + unexpected);
+    }
 
+    private Set<String> normalizeCssIndices(List<String> lines) {
+        Set<String> normalized = new LinkedHashSet<>();
+        for (String line : lines) {
+            if (!line.isBlank()) {
+                normalized.add(line
+                        .replaceAll("\\$cssFromFile_\\d+", "\\$cssFromFile_N")
+                        .replaceAll("\\$css_\\d+", "\\$css_N")
+                        .replaceAll("flow_css_mod_\\d+", "flow_css_mod_N"));
+            }
+        }
+        return normalized;
     }
 
     @Test
-    public void generate_embeddedImports_addAlsoGlobalStyles()
-            throws IOException {
+    void generate_embeddedImports_addAlsoGlobalStyles() throws IOException {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -540,19 +588,20 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 }).collect(Collectors.toList());
 
         assertTrue(
-                "Should contain function to import global CSS into embedded component",
-                updater.webComponentImports.stream().anyMatch(line -> line
-                        .contains("import { injectGlobalWebcomponentCss }")));
-        globalCss.forEach(css -> assertTrue(
-                "Should register global CSS " + css + " for webcomponent",
                 updater.webComponentImports.stream()
                         .anyMatch(line -> line.contains(
-                                "injectGlobalWebcomponentCss(" + css + ");"))));
+                                "import { injectGlobalWebcomponentCss }")),
+                "Should contain function to import global CSS into embedded component");
+        globalCss.forEach(css -> assertTrue(
+                updater.webComponentImports.stream()
+                        .anyMatch(line -> line.contains(
+                                "injectGlobalWebcomponentCss(" + css + ");")),
+                "Should register global CSS " + css + " for webcomponent"));
 
     }
 
     @Test
-    public void jsModulesOrderIsPreservedAnsAfterJsModules() {
+    void jsModulesOrderIsPreservedAnsAfterJsModules() {
         updater.run();
 
         assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
@@ -560,7 +609,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void duplicateEagerCssOnlyImportedOnce() throws Exception {
+    void duplicateEagerCssOnlyImportedOnce() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -581,7 +630,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void eagerCssImportsMerged() throws Exception {
+    void eagerCssImportsMerged() throws Exception {
         createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
                 UI.class, AllEagerAppConf.class };
@@ -609,7 +658,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void themeForCssImports_eagerLoaded() throws Exception {
+    void themeForCssImports_eagerLoaded() throws Exception {
         Class<?>[] testClasses = { ThemeForCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(getScanner(classFinder), options);
@@ -637,11 +686,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 found++;
             }
         }
-        Assert.assertEquals("Expected one instance of '" + key + "'", 1, found);
+        assertEquals(1, found, "Expected one instance of '" + key + "'");
     }
 
     @Test
-    public void importingBinaryFile_importVisitorShouldNotFail()
+    void importingBinaryFile_importVisitorShouldNotFail()
             throws IOException, URISyntaxException {
         // Add a binary image import to 'commmon-js-file.js' which should not
         // fail the import visitor and should be ignored
@@ -668,7 +717,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void developmentDependencies_includedInDevelopmentMode()
+    void developmentDependencies_includedInDevelopmentMode()
             throws IOException, URISyntaxException {
         createAndLoadDependencies(false);
 
@@ -677,11 +726,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row.contains(
-                        "@vaadin/common-frontend/ConnectionIndicator"))
-                .toList();
+                .filter(row -> !DepsTests.isUiImport(row)).toList();
 
-        Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
+        assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
                 "import 'Frontend/jsm-dev.js';", "import 'Frontend/js-all.js';",
                 "import 'Frontend/js-all2.js';",
@@ -690,7 +737,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void developmentDependencies_notIncludedInProductionMode()
+    void developmentDependencies_notIncludedInProductionMode()
             throws IOException, URISyntaxException {
         createAndLoadDependencies(true);
 
@@ -699,10 +746,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row.contains(
-                        "@vaadin/common-frontend/ConnectionIndicator"))
-                .toList();
-        Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
+                .filter(row -> !DepsTests.isUiImport(row)).toList();
+        assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
                 "import 'Frontend/js-all.js';",
                 "import 'Frontend/js-all2.js';"), out);
@@ -762,7 +807,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void multipleThemes_importsOnlyFromActiveTheme() throws Exception {
+    void multipleThemes_importsOnlyFromActiveTheme() throws Exception {
         // The active theme comes from NodeTestComponents.MainLayout
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./fake-material-theme.js");
@@ -775,17 +820,17 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         String output = String.join("\n", updater.getMergedOutput());
 
         // Lumo is the active theme so its imports should be included
-        Assert.assertTrue(output
+        assertTrue(output
                 .contains("import '@vaadin/vaadin-lumo-styles/color.js';"));
 
         // FakeMaterialTheme is inactive and its JS module annotation value
         // should not be there
-        Assert.assertFalse(output.contains("Frontend/fake-material-theme.js"));
+        assertFalse(output.contains("Frontend/fake-material-theme.js"));
 
     }
 
-    public void assertFullSortOrder(boolean uiImportSeparated,
-            List<String> expectedJsModuleImports) throws MalformedURLException {
+    void assertFullSortOrder(List<String> expectedJsModuleImports)
+            throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
@@ -812,13 +857,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .map(JavaScript::value).map(this::updateToImport)
                 .forEach(expectedImports::add);
 
-        if (uiImportSeparated) {
-            String uiImport = expectedImports.stream()
-                    .filter(dep -> dep.contains(DepsTests.UI_IMPORT))
-                    .findFirst().get();
-            expectedImports.remove(uiImport);
-            uiAndGeneratedImports.add(uiImport);
-        }
         updater.getGeneratedModules().stream()
                 .map(updater::resolveGeneratedModule).map(this::updateToImport)
                 .forEach(uiAndGeneratedImports::add);
@@ -829,9 +867,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         result.removeIf(line -> line.isBlank());
         result.removeIf(line -> line.contains("loadOnDemand"));
         result.removeIf(line -> line.contains("window.Vaadin"));
+        result.removeIf(DepsTests::isUiImport);
 
         expectedImports.addAll(uiAndGeneratedImports);
-        Assert.assertEquals(expectedImports, result);
+        assertEquals(expectedImports, result);
     }
 
     private <T extends Annotation> Stream<T> getAnntotationsAsStream(
@@ -858,9 +897,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
                     + line + " IN: \n" + updater.getMergedOutput();
             if (contains) {
-                assertTrue(message, result);
+                assertTrue(result, message);
             } else {
-                assertFalse(message, result);
+                assertFalse(result, message);
             }
         }
     }
@@ -871,10 +910,110 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             String prefixed = addFrontendAlias(line);
             int nextIndex = updater.getMergedOutput()
                     .indexOf("import '" + prefixed + "';");
-            assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
-            assertTrue("import '" + prefixed + "' appears in the wrong order",
-                    curIndex <= nextIndex);
+            assertTrue(nextIndex != -1, "import '" + prefixed + "' not found");
+            assertTrue(curIndex <= nextIndex,
+                    "import '" + prefixed + "' appears in the wrong order");
             curIndex = nextIndex;
+        }
+    }
+
+    @Test
+    void generatedFlowImports_importsAreOnTopBeforeOtherInstructions() {
+        updater.run();
+
+        List<String> lines = updater.getOutput()
+                .get(updater.generatedFlowImports);
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    void generatedFlowWebComponentImports_importsAreOnTopBeforeOtherInstructions()
+            throws Exception {
+        Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        assertNotNull(lines,
+                "Web component imports should have been generated");
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    void generatedAppShellImports_importsAreOnTopBeforeOtherInstructions()
+            throws Exception {
+        Class<?>[] testClasses = { MultiCssImportAppShell.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.getOutput().get(updater.appShellImports);
+        assertNotNull(lines, "App shell imports should have been generated");
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    void duplicateCssImportInWebComponentAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        assertNotNull(lines,
+                "Web component imports should have been generated");
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
+    }
+
+    @Test
+    void duplicateThemeForCssImportInWebComponentAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { ThemeForCssImportExporter.class,
+                ThemeForCssImport.class, UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        assertNotNull(lines,
+                "Web component imports should have been generated");
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
+        assertOnce("registerStyles('something'", lines);
+    }
+
+    @Test
+    void duplicateCssImportInAppShellAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { ThemeCssImport.class, FooCssImport.class,
+                CssImportExporter.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        assertNotNull(lines,
+                "Web component imports should have been generated");
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
+    }
+
+    private void assertImportsBeforeNonImportLines(List<String> lines) {
+        boolean seenNonImport = false;
+        for (String line : lines) {
+            if (line.isBlank()) {
+                continue;
+            }
+            if (!line.startsWith("import ")) {
+                seenNonImport = true;
+            } else if (seenNonImport) {
+                fail("Import line found after non-import line. "
+                        + "All import lines should be at the top.\n"
+                        + "Offending line: " + line + "\n" + "Full output:\n"
+                        + String.join("\n", lines));
+            }
         }
     }
 

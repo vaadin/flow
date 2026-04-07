@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,22 +24,23 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public class Jsr303Test {
+class Jsr303Test {
 
     private static class TestClassLoader extends URLClassLoader {
 
@@ -85,7 +86,7 @@ public class Jsr303Test {
 
         @Override
         public void execute() {
-            Assert.assertFalse(BeanUtil.checkBeanValidationAvailable());
+            assertFalse(BeanUtil.checkBeanValidationAvailable());
 
             Binder<BeanToValidate> binder = new Binder<>(BeanToValidate.class);
             BeanToValidate item = new BeanToValidate();
@@ -105,7 +106,7 @@ public class Jsr303Test {
             try {
                 BeanValidationBinder<BeanToValidate> beanValidationBinder = new BeanValidationBinder<>(
                         BeanToValidate.class);
-                Assert.fail();
+                fail();
             } catch (IllegalStateException ignore) {
                 // an exception has to be thrown
             }
@@ -114,7 +115,7 @@ public class Jsr303Test {
     }
 
     @Test
-    public void beanBinderWithoutJsr303()
+    void beanBinderWithoutJsr303()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, IOException {

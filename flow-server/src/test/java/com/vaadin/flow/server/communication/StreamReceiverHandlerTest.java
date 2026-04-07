@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,9 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -57,10 +56,11 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StreamReceiverHandlerTest {
+class StreamReceiverHandlerTest {
 
     private StreamReceiverHandler handler;
     @Mock
@@ -105,8 +105,8 @@ public class StreamReceiverHandlerTest {
     private String requestCharacterEncoding;
     private String xFilenameHeader;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         contentLength = "6";
         inputStream = createInputStream("foobar");
         outputStream = mock(OutputStream.class);
@@ -270,7 +270,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
+    void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
             throws IOException {
         Mockito.doThrow(RuntimeException.class).when(streamVariable)
                 .getOutputStream();
@@ -283,7 +283,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
+    void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
             throws IOException {
 
         Mockito.doThrow(RuntimeException.class).when(outputStream)
@@ -297,7 +297,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus()
+    void doHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus()
             throws IOException {
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
@@ -308,7 +308,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
+    void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
             throws IOException {
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
@@ -318,7 +318,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_hasParts_uploadFailed_responseStatusIs500()
+    void doHandleMultipartFileUpload_hasParts_uploadFailed_responseStatusIs500()
             throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
@@ -346,7 +346,7 @@ public class StreamReceiverHandlerTest {
      * (#10096)
      */
     @Test
-    public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
+    void exceptionIsThrownOnUnexpectedEnd() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
                 "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
@@ -363,7 +363,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsSentOnCorrectSecurityKey() throws IOException {
+    void responseIsSentOnCorrectSecurityKey() throws IOException {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
@@ -371,7 +371,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsNotSentOnIncorrectSecurityKey() throws IOException {
+    void responseIsNotSentOnIncorrectSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn("another key expected");
 
         handler.handleRequest(session, request, response, streamReceiver,
@@ -381,7 +381,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsNotSentOnMissingSecurityKey() throws IOException {
+    void responseIsNotSentOnMissingSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn(null);
 
         handler.handleRequest(session, request, response, streamReceiver,
@@ -391,8 +391,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test // Vaadin Spring #381
-    public void partsAreUsedDirectlyIfPresentWithoutParsingInput()
-            throws IOException {
+    void partsAreUsedDirectlyIfPresentWithoutParsingInput() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
                 "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
@@ -416,11 +415,10 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventArgumentCaptor.capture());
-        Assert.assertEquals("foobar", new String(
+        assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
-        Assert.assertEquals(fileName,
-                endEventArgumentCaptor.getValue().getFileName());
-        Assert.assertEquals(contentType,
+        assertEquals(fileName, endEventArgumentCaptor.getValue().getFileName());
+        assertEquals(contentType,
                 endEventArgumentCaptor.getValue().getMimeType());
 
         Mockito.verify(response).setContentType(
@@ -429,7 +427,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws UploadException {
         InputStream inputStream = new InputStream() {
 
@@ -446,7 +444,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws UploadException {
         InputStream inputStream = new InputStream() {
             @Override
@@ -466,7 +464,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws IOException, ServletException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.doThrow(IOException.class).when(request).getParts();
@@ -476,7 +474,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_filenameFromHeader_extractedCorrectly()
+    void doHandleXhrFilePost_filenameFromHeader_extractedCorrectly()
             throws IOException {
         xFilenameHeader = "test.txt";
         outputStream = new ByteArrayOutputStream();
@@ -488,12 +486,11 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("test.txt",
-                endEventCaptor.getValue().getFileName());
+        assertEquals("test.txt", endEventCaptor.getValue().getFileName());
     }
 
     @Test
-    public void doHandleXhrFilePost_encodedFilename_decodedCorrectly()
+    void doHandleXhrFilePost_encodedFilename_decodedCorrectly()
             throws IOException {
         // encodeURIComponent("my file åäö.txt") in JavaScript
         xFilenameHeader = "my%20file%20%C3%A5%C3%A4%C3%B6.txt";
@@ -506,12 +503,12 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("my file åäö.txt",
+        assertEquals("my file åäö.txt",
                 endEventCaptor.getValue().getFileName());
     }
 
     @Test
-    public void doHandleXhrFilePost_contentTypeFromHeader_extractedCorrectly()
+    void doHandleXhrFilePost_contentTypeFromHeader_extractedCorrectly()
             throws IOException {
         xFilenameHeader = "test.txt";
         contentType = "text/plain";
@@ -524,12 +521,11 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("text/plain",
-                endEventCaptor.getValue().getMimeType());
+        assertEquals("text/plain", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
-    public void doHandleXhrFilePost_missingContentTypeHeader_defaultsToUnknown()
+    void doHandleXhrFilePost_missingContentTypeHeader_defaultsToUnknown()
             throws IOException {
         xFilenameHeader = "test.txt";
         contentType = null;
@@ -542,11 +538,11 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("unknown", endEventCaptor.getValue().getMimeType());
+        assertEquals("unknown", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
-    public void doHandleXhrFilePost_missingFilenameHeader_defaultsToUnknown()
+    void doHandleXhrFilePost_missingFilenameHeader_defaultsToUnknown()
             throws IOException {
         xFilenameHeader = null;
         outputStream = new ByteArrayOutputStream();
@@ -558,7 +554,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("unknown", endEventCaptor.getValue().getFileName());
+        assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 
 }

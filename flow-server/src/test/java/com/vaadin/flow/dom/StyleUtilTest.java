@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,11 @@ package com.vaadin.flow.dom;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StyleUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class StyleUtilTest {
     private static final Map<String, String> stylepPropertyToAttribute = new java.util.HashMap<>();
     static {
         stylepPropertyToAttribute.put("width", "width");
@@ -33,22 +34,22 @@ public class StyleUtilTest {
     }
 
     @Test
-    public void attributeToProperty() {
+    void attributeToProperty() {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(property,
+            assertEquals(property,
                     StyleUtil.styleAttributeToProperty(attribute));
 
         });
     }
 
     @Test
-    public void propertyToAttribute() {
+    void propertyToAttribute() {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(attribute,
+            assertEquals(attribute,
                     StyleUtil.stylePropertyToAttribute(property));
 
         });

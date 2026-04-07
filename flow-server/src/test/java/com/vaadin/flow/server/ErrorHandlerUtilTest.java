@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,9 @@ import java.util.Collections;
 import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -44,8 +43,12 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public class ErrorHandlerUtilTest {
+class ErrorHandlerUtilTest {
 
     @Mock
     UI ui;
@@ -112,8 +115,8 @@ public class ErrorHandlerUtilTest {
         }
     }
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         ErrorView.setError = false;
@@ -160,18 +163,18 @@ public class ErrorHandlerUtilTest {
         UI.setCurrent(ui);
     }
 
-    @After
-    public void cleanup() {
+    @AfterEach
+    void cleanup() {
         VaadinService.setCurrent(null);
         UI.setCurrent(null);
     }
 
     @Test
-    public void nullPointerException_executesErrorView() {
+    void nullPointerException_executesErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -179,17 +182,17 @@ public class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new NullPointerException("NPE")));
 
-        Assert.assertTrue(ErrorView.initialized);
-        Assert.assertTrue(ErrorView.setError);
-        Assert.assertEquals(1, ui.getElement().getChildren().count());
+        assertTrue(ErrorView.initialized);
+        assertTrue(ErrorView.setError);
+        assertEquals(1, ui.getElement().getChildren().count());
     }
 
     @Test
-    public void illegalArgumentException_doesNotExecuteErrorView() {
+    void illegalArgumentException_doesNotExecuteErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -197,17 +200,17 @@ public class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new IllegalArgumentException("IAE")));
 
-        Assert.assertFalse(ErrorView.initialized);
-        Assert.assertFalse(ErrorView.setError);
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
+        assertFalse(ErrorView.initialized);
+        assertFalse(ErrorView.setError);
+        assertEquals(0, ui.getElement().getChildren().count());
     }
 
     @Test
-    public void redrawnExceptionView_alsoInitializesParent() {
+    void redrawnExceptionView_alsoInitializesParent() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorWithParentView.class));
 
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -215,11 +218,11 @@ public class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new NullPointerException("NPE")));
 
-        Assert.assertTrue(ErrorWithParentView.initialized);
-        Assert.assertTrue(ErrorWithParentView.setError);
+        assertTrue(ErrorWithParentView.initialized);
+        assertTrue(ErrorWithParentView.setError);
 
-        Assert.assertTrue(ParentView.initialized);
+        assertTrue(ParentView.initialized);
 
-        Assert.assertEquals(1, ui.getElement().getChildren().count());
+        assertEquals(1, ui.getElement().getChildren().count());
     }
 }

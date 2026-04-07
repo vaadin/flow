@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,20 +17,20 @@ package com.vaadin.flow.internal;
 
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ActiveStyleSheetTrackerTest {
+class ActiveStyleSheetTrackerTest {
 
     @Test
-    public void singletonPerContext() {
+    void singletonPerContext() {
         VaadinService service = new MockVaadinServletService();
         ActiveStyleSheetTracker t1 = ActiveStyleSheetTracker.get(service);
         ActiveStyleSheetTracker t2 = ActiveStyleSheetTracker.get(service);
@@ -38,7 +38,7 @@ public class ActiveStyleSheetTrackerTest {
     }
 
     @Test
-    public void addRemoveAndAppShellMerge() {
+    void addRemoveAndAppShellMerge() {
         VaadinService service = new MockVaadinServletService();
 
         ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker.get(service);

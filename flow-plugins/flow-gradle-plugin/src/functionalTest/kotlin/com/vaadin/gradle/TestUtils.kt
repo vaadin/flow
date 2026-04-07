@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,18 @@ private fun ZipInputStream.fileNameSequence(): Sequence<String> =
 private fun File.zipListAllFiles(): List<String> =
         ZipInputStream(this.inputStream().buffered()).use { zin: ZipInputStream ->
             zin.fileNameSequence().toList()
+        }
+
+/**
+ * Reads the content of a single entry from this zip archive.
+ * @param entryPath the path inside the archive, e.g. `META-INF/VAADIN/config/flow-build-info.json`
+ * @return the entry content as a String, or null if not found
+ */
+fun File.zipReadEntry(entryPath: String): String? =
+        ZipInputStream(this.inputStream().buffered()).use { zin ->
+            generateSequence { zin.nextEntry }
+                .firstOrNull { it.name == entryPath }
+                ?.let { zin.readBytes().toString(Charsets.UTF_8) }
         }
 
 /**

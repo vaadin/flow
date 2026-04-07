@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,17 +22,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for VaadinServletContext attribute storage and property delegation.
  *
  * @since 2.0.0
  */
-public class VaadinServletContextTest {
+class VaadinServletContextTest {
 
     private static String testAttributeProvider() {
         return "RELAX_THIS_IS_A_TEST";
@@ -43,8 +47,8 @@ public class VaadinServletContextTest {
     private final Map<String, Object> attributeMap = new HashMap<>();
     private Map<String, String> properties;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
@@ -72,97 +76,98 @@ public class VaadinServletContextTest {
     }
 
     @Test
-    public void getAttributeWithProvider() {
-        Assert.assertNull(context.getAttribute(String.class));
+    void getAttributeWithProvider() {
+        assertNull(context.getAttribute(String.class));
 
         String value = context.getAttribute(String.class,
                 VaadinServletContextTest::testAttributeProvider);
-        Assert.assertEquals(testAttributeProvider(), value);
+        assertEquals(testAttributeProvider(), value);
 
-        Assert.assertEquals("Value from provider should be persisted",
-                testAttributeProvider(), context.getAttribute(String.class));
-    }
-
-    @Test(expected = AssertionError.class)
-    public void setNullAttributeNotAllowed() {
-        context.setAttribute(null);
+        assertEquals(testAttributeProvider(),
+                context.getAttribute(String.class),
+                "Value from provider should be persisted");
     }
 
     @Test
-    public void getMissingAttributeWithoutProvider() {
+    void setNullAttributeNotAllowed() {
+        assertThrows(AssertionError.class, () -> {
+            context.setAttribute(null);
+        });
+    }
+
+    @Test
+    void getMissingAttributeWithoutProvider() {
         String value = context.getAttribute(String.class);
-        Assert.assertNull(value);
+        assertNull(value);
     }
 
     @Test
-    public void setAndGetAttribute() {
+    void setAndGetAttribute() {
         String value = testAttributeProvider();
         context.setAttribute(value);
         String result = context.getAttribute(String.class);
-        Assert.assertEquals(value, result);
+        assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
         context.setAttribute(newValue);
         result = context.getAttribute(String.class);
-        Assert.assertEquals(newValue, result);
+        assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
         result = context.getAttribute(String.class, () -> {
             throw new AssertionError("Should not be called");
         });
-        Assert.assertEquals(newValue, result);
+        assertEquals(newValue, result);
     }
 
     @Test
-    public void setValueBasedOnSuperType_implicitClass_notFound() {
+    void setValueBasedOnSuperType_implicitClass_notFound() {
         String value = testAttributeProvider();
         context.setAttribute(value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assert.assertNull(
-                "Value set base on its own type should not be found based on a super type",
-                retrieved);
+        assertNull(retrieved,
+                "Value set base on its own type should not be found based on a super type");
     }
 
     @Test
-    public void setValueBasedOnSuperType_explicitClass_found() {
+    void setValueBasedOnSuperType_explicitClass_found() {
         String value = testAttributeProvider();
         context.setAttribute(CharSequence.class, value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assert.assertSame(
-                "Value should be found based on the type used when setting",
-                value, retrieved);
+        assertSame(value, retrieved,
+                "Value should be found based on the type used when setting");
     }
 
     @Test
-    public void removeValue_removeMethod_valueIsRemoved() {
+    void removeValue_removeMethod_valueIsRemoved() {
         context.setAttribute(testAttributeProvider());
         context.removeAttribute(String.class);
 
-        Assert.assertNull("Value should be removed",
-                context.getAttribute(String.class));
+        assertNull(context.getAttribute(String.class),
+                "Value should be removed");
     }
 
     @Test
-    public void removeValue_setWithClass_valueIsRemoved() {
+    void removeValue_setWithClass_valueIsRemoved() {
         context.setAttribute(testAttributeProvider());
         context.setAttribute(String.class, null);
 
-        Assert.assertNull("Value should be removed",
-                context.getAttribute(String.class));
+        assertNull(context.getAttribute(String.class),
+                "Value should be removed");
     }
 
     @Test
-    public void getPropertyNames_returnsExpectedProperties() {
+    void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections
                 .list(context.getContextParameterNames());
-        Assert.assertEquals(
-                "Context should return only keys defined in ServletContext",
-                properties.size(), list.size());
+        assertEquals(properties.size(), list.size(),
+                "Context should return only keys defined in ServletContext");
         for (String key : properties.keySet()) {
-            Assert.assertEquals(String.format(
-                    "Value should be same from context for key '%s'", key),
-                    properties.get(key), context.getContextParameter(key));
+            assertEquals(properties.get(key), context.getContextParameter(key),
+                    String.format(
+                            "Value should be same from context for key '%s'",
+                            key));
         }
     }
 }

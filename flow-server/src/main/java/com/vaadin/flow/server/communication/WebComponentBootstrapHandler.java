@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -639,7 +639,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
                 context.getUI().getSession().getPushId());
-        String responseString = "for(;;);[" + json + "]";
+        String responseString = json.toString();
 
         try {
             VaadinService service = request.getService();

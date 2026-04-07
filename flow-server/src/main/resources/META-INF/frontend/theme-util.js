@@ -31,7 +31,7 @@ const createLinkReferences = (css, target) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = match[2] || match[4];
-    const media = match[1] || match[5];
+    const media = (match[1] || match[5] || '').trim();
     if (media) {
       link.media = media;
     }

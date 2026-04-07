@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,8 @@ import jakarta.servlet.ServletOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.HttpStatusCode;
@@ -39,15 +38,17 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-public class StreamResourceHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class StreamResourceHandlerTest {
 
     private StreamResourceHandler handler = new StreamResourceHandler();
     private MockVaadinSession session;
     private VaadinServletRequest request;
     private VaadinServletResponse response;
 
-    @Before
-    public void setUp() throws ServletException, ServiceException {
+    @BeforeEach
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service);
@@ -58,7 +59,7 @@ public class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamFactoryThrowsException_responseStatusIs500()
+    void inputStreamFactoryThrowsException_responseStatusIs500()
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (InputStreamFactory) () -> {
@@ -68,14 +69,14 @@ public class StreamResourceHandlerTest {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
             // Exception is expected; verify it's the same one we threw.
-            Assert.assertEquals("Simulated-1", exception.getMessage());
+            assertEquals("Simulated-1", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceWriterThrows_responseStatusIs500()
+    void inputStreamResourceWriterThrows_responseStatusIs500()
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (StreamResourceWriter) (stream, session) -> {
@@ -85,14 +86,14 @@ public class StreamResourceHandlerTest {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
             // Exception is expected; verify it's the same one we threw.
-            Assert.assertEquals("Simulated-2", exception.getMessage());
+            assertEquals("Simulated-2", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceWriterIsNull_responseStatusIs500()
+    void inputStreamResourceWriterIsNull_responseStatusIs500()
             throws IOException {
         @SuppressWarnings("serial")
         StreamResource res = new StreamResource("readme.md",
@@ -112,7 +113,7 @@ public class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
+    void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
             throws IOException {
         ServletOutputStream servletOutputStream = Mockito
                 .mock(ServletOutputStream.class);
@@ -127,15 +128,14 @@ public class StreamResourceHandlerTest {
         try {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
-            Assert.assertEquals("Simulated-3", exception.getMessage());
+            assertEquals("Simulated-3", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceHasHeader_headerIsWritten()
-            throws IOException {
+    void inputStreamResourceHasHeader_headerIsWritten() throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 () -> new ByteArrayInputStream(new byte[0]));
 

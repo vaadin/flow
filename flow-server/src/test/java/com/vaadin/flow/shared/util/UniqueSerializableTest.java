@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,28 +18,30 @@ package com.vaadin.flow.shared.util;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UniqueSerializableTest implements Serializable {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class UniqueSerializableTest implements Serializable {
 
     @Test
-    public void testUniqueness() {
+    void testUniqueness() {
         UniqueSerializable o1 = new UniqueSerializable() {
         };
         UniqueSerializable o2 = new UniqueSerializable() {
         };
-        Assert.assertFalse(o1 == o2);
-        Assert.assertFalse(o1.equals(o2));
+        assertFalse(o1 == o2);
+        assertFalse(o1.equals(o2));
     }
 
     @Test
-    public void testSerialization() {
+    void testSerialization() {
         UniqueSerializable o1 = new UniqueSerializable() {
         };
         UniqueSerializable d1 = (UniqueSerializable) SerializationUtils
                 .deserialize(SerializationUtils.serialize(o1));
-        Assert.assertTrue(d1.equals(o1));
+        assertTrue(d1.equals(o1));
     }
 
 }

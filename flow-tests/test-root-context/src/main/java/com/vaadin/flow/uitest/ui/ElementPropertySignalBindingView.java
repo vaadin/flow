@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,11 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ElementPropertySignalBindingView", layout = ViewTestLayout.class)
 public class ElementPropertySignalBindingView extends AbstractDivView {
@@ -46,11 +45,10 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Div signalValue = createAndAddDiv(SIGNAL_VALUE_DIV_ID);
         Div listenerCountDiv = createAndAddDiv(LISTENER_COUNT_DIV_ID);
 
-        Signal<String> signal = new ValueSignal<>("foo");
-        ComponentEffect.effect(this, () -> {
-            signalValue.setText("Signal value: " + signal.value());
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        Signal.effect(this, () -> {
+            signalValue.setText("Signal value: " + signal.get());
         });
-        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal);
 
         target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
                 "change", event -> {
@@ -61,13 +59,16 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
                             .valueOf(listenerCallCounter.incrementAndGet()));
                 });
 
+        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
+                signal::set);
+
         // Attempt to update a property value from client to a computed signal
         // should throw an exception
         Div shouldThrowTarget = createAndAddDiv(SHOULD_THROW_TARGET_DIV_ID);
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
         shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
-                computedSignal);
+                computedSignal, null);
         shouldThrowTarget.getElement().addPropertyChangeListener(
                 TEST_PROPERTY_NAME, "change", event -> {
                     // NOP; listener is needed to synchronize the property

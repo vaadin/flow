@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -429,8 +429,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return Reflector.of(mavenProject, null, null).getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
+        try (Reflector reflector = Reflector.of(mavenProject, null, null)) {
+            return reflector.getResource(
+                    "com/vaadin/hilla/EndpointController.class") != null;
+        }
     }
 
     /**

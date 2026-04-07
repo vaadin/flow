@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,7 +82,7 @@ public class Heartbeat {
 
         Console.debug("Sending heartbeat request...");
 
-        Xhr.post(uri, null, "text/plain; charset=utf-8", new Xhr.Callback() {
+        Xhr.post(uri, null, null, new Xhr.Callback() {
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {

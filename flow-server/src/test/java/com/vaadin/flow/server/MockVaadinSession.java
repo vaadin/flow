@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,12 +31,14 @@ public class MockVaadinSession extends VaadinSession {
     /*
      * Used to make sure there's at least one reference to the mock session
      * while it's locked. This is used to prevent the session from being eaten
-     * by GC in tests where @Before creates a session and sets it as the current
-     * instance without keeping any direct reference to it. This pattern has a
-     * chance of leaking memory if the session is not unlocked in the right way,
-     * but it should be acceptable for testing use.
+     * by GC in tests where @BeforeEach creates a session and sets it as the
+     * current instance without keeping any direct reference to it. This pattern
+     * has a chance of leaking memory if the session is not unlocked in the
+     * right way, but it should be acceptable for testing use.
      */
     private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
+
+    public int writeObjectCallCount = 0;
 
     public MockVaadinSession(VaadinService service) {
         super(service);
@@ -87,5 +89,11 @@ public class MockVaadinSession extends VaadinSession {
             unlock();
             CurrentInstance.restoreInstances(previous);
         }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws java.io.IOException {
+        writeObjectCallCount++;
+        out.defaultWriteObject();
     }
 }

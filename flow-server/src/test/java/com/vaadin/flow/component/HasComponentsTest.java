@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,66 +15,102 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class HasComponentsTest {
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class HasComponentsTest {
+
+    private static MockVaadinServletService service;
 
     @Tag("div")
     private static class TestComponent extends Component
             implements HasComponents {
+        public TestComponent() {
+            super();
+        }
 
+        public TestComponent(String id) {
+            super();
+            setId(id);
+        }
+    }
+
+    @BeforeAll
+    static void init() {
+        service = new MockVaadinServletService();
+    }
+
+    @AfterAll
+    static void clean() {
+        CurrentInstance.clearAll();
+        service.destroy();
     }
 
     @Test
-    public void addStringToComponent() {
+    void addStringToComponent() {
         String text = "Add text";
         TestComponent component = new TestComponent();
         component.add(text);
 
-        Assert.assertEquals(text, component.getElement().getText());
+        assertEquals(text, component.getElement().getText());
     }
 
     @Test
-    public void insertComponentAtFirst() {
+    void insertComponentAtFirst() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-first");
         component.addComponentAsFirst(innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
+        assertEquals(innerComponent.getId(),
                 component.getChildren().findFirst().get().getId());
     }
 
     @Test
-    public void insertComponentAtIndex() {
+    void insertComponentAtIndex() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(2).getComponent().get().getId());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void insertComponentIndexLessThanZero() {
-        TestComponent component = createTestStructure();
-        TestComponent innerComponent = new TestComponent();
-        innerComponent.setId("insert-component-index-less");
-        component.addComponentAtIndex(-5, innerComponent);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void insertComponentIndexGreaterThanChildrenNumber() {
-        TestComponent component = createTestStructure();
-        TestComponent innerComponent = new TestComponent();
-        innerComponent.setId("insert-component-index-greater");
-        component.addComponentAtIndex(100, innerComponent);
+        assertEquals(innerComponent.getId(), component.getElement().getChild(2)
+                .getComponent().get().getId());
     }
 
     @Test
-    public void remove_removeComponentWithNoParent() {
+    void insertComponentIndexLessThanZero() {
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        innerComponent.setId("insert-component-index-less");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(-5, innerComponent));
+    }
+
+    @Test
+    void insertComponentIndexGreaterThanChildrenNumber() {
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        innerComponent.setId("insert-component-index-greater");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(100, innerComponent));
+    }
+
+    @Test
+    void remove_removeComponentWithNoParent() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
 
@@ -83,7 +119,7 @@ public class HasComponentsTest {
     }
 
     @Test
-    public void remove_removeSeveralComponents_oneHasParent_nothingRemovedAndThrows() {
+    void remove_removeSeveralComponents_oneHasParent_nothingRemovedAndThrows() {
         TestComponent component = createTestStructure();
 
         TestComponent child = new TestComponent();
@@ -95,14 +131,14 @@ public class HasComponentsTest {
 
         try {
             component.remove(child, innerComponent);
-            Assert.fail();
+            fail();
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals(component, child.getParent().get());
+            assertEquals(component, child.getParent().get());
         }
     }
 
     @Test
-    public void remove_removeSeveralComponents_oneHasNoParent_childIsRemoved() {
+    void remove_removeSeveralComponents_oneHasNoParent_childIsRemoved() {
         TestComponent component = createTestStructure();
 
         TestComponent child = new TestComponent();
@@ -111,13 +147,13 @@ public class HasComponentsTest {
         TestComponent notAChild = new TestComponent();
 
         component.remove(notAChild, child);
-        Assert.assertFalse(child.getParent().isPresent());
-        Assert.assertFalse(component.getChildren()
-                .filter(comp -> comp.equals(child)).findAny().isPresent());
+        assertFalse(child.getParent().isPresent());
+        assertFalse(component.getChildren().filter(comp -> comp.equals(child))
+                .findAny().isPresent());
     }
 
     @Test
-    public void remove_removeComponentWithCorrectParent() {
+    void remove_removeComponentWithCorrectParent() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
 
@@ -127,11 +163,11 @@ public class HasComponentsTest {
 
         component.remove(innerComponent);
 
-        Assert.assertEquals(size, component.getChildren().count());
+        assertEquals(size, component.getChildren().count());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void remove_removeComponentWithDifferentParent() {
+    @Test
+    void remove_removeComponentWithDifferentParent() {
         TestComponent component = createTestStructure();
 
         TestComponent another = createTestStructure();
@@ -139,7 +175,8 @@ public class HasComponentsTest {
 
         another.add(innerComponent);
 
-        component.remove(innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.remove(innerComponent));
     }
 
     private TestComponent createTestStructure() {
@@ -152,7 +189,255 @@ public class HasComponentsTest {
     }
 
     private void checkChildren(int number, TestComponent component) {
-        Assert.assertEquals(number, component.getChildren().count());
+        assertEquals(number, component.getChildren().count());
+    }
+
+    @Test
+    void bindChildren_addsChildrenFromListSignal() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+        items.insertLast("second");
+        items.insertLast("third");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        assertEquals(3, container.getChildren().count());
+        assertEquals("first",
+                container.getChildren().toList().get(0).getId().orElse(null));
+        assertEquals("second",
+                container.getChildren().toList().get(1).getId().orElse(null));
+        assertEquals("third",
+                container.getChildren().toList().get(2).getId().orElse(null));
+    }
+
+    @Test
+    void bindChildren_updatesChildrenOnListChange() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        assertEquals(1, container.getChildren().count());
+
+        items.insertLast("second");
+        assertEquals(2, container.getChildren().count());
+        assertEquals("second",
+                container.getChildren().toList().get(1).getId().orElse(null));
+
+        items.remove(items.peek().get(0));
+        assertEquals(1, container.getChildren().count());
+        assertEquals("second",
+                container.getChildren().toList().get(0).getId().orElse(null));
+    }
+
+    @Test
+    void bindChildren_throwsIfContainerNotEmpty() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+        container.add(new TestComponent("existing"));
+
+        ListSignal<String> items = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> container
+                .bindChildren(items, item -> new TestComponent(item.peek())));
+    }
+
+    @Test
+    void bindChildren_throwsIfBindingAlreadyExists() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        ListSignal<String> otherItems = new ListSignal<>();
+        assertThrows(BindingActiveException.class,
+                () -> container.bindChildren(otherItems,
+                        item -> new TestComponent(item.peek())));
+    }
+
+    @Test
+    void bindChildren_addSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        // signal child + slotted child
+        assertEquals(2, container.getElement().getChildCount());
+    }
+
+    @Test
+    void bindChildren_removeSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        // Add a slotted child before binding
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        // Remove slotted child - should succeed
+        container.remove(slotted);
+
+        // Only signal child remains
+        assertEquals(1, container.getElement().getChildCount());
+    }
+
+    @Test
+    void bindChildren_parentHasOnlySlottedChildren_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+
+        // Should not throw even though container has a child
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+    }
+
+    @Test
+    void bindChildren_removeAllThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        assertThrows(BindingActiveException.class, () -> container.removeAll(),
+                "removeAll should throw while binding is active");
+    }
+
+    @Test
+    void bindChildren_addThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent("manual")),
+                "add should throw while binding is active");
+    }
+
+    @Test
+    void bindChildren_removeThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
+
+        Component child = container.getChildren().toList().get(0);
+
+        assertThrows(BindingActiveException.class,
+                () -> container.remove(child),
+                "remove should throw while binding is active");
+    }
+
+    @Test
+    void textBindingActive_addThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent()),
+                "add should throw while text binding is active");
+    }
+
+    @Test
+    void textBindingActive_removeThrows() {
+        TestComponent container = new TestComponent();
+        TestComponent child = new TestComponent();
+        container.add(child);
+
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> container.remove(child),
+                "remove should throw while text binding is active");
+    }
+
+    @Test
+    void textBindingActive_removeAllThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class, container::removeAll,
+                "removeAll should throw while text binding is active");
+    }
+
+    @Test
+    void textBindingActive_addComponentAtIndexThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.addComponentAtIndex(0, new TestComponent()),
+                "addComponentAtIndex should throw while text binding is active");
+    }
+
+    @Test
+    void textBindingActive_bindChildrenThrows() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
+
+        ListSignal<String> items = new ListSignal<>();
+        assertThrows(BindingActiveException.class,
+                () -> container.bindChildren(items,
+                        item -> new TestComponent(item.peek())),
+                "bindChildren should throw while text binding is active");
+    }
+
+    private TestComponent createContainerWithTextBinding() {
+        TestComponent container = new TestComponent();
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
+        return container;
     }
 
 }

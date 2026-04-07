@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,21 +15,22 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PollConfigurationMapTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PollConfigurationMapTest
         extends AbstractMapFeatureTest<PollConfigurationMap> {
 
     private final PollConfigurationMap map = createFeature();
 
     @Test
-    public void setDefaultPollInterval() {
-        Assert.assertEquals(-1, map.getPollInterval());
+    void setDefaultPollInterval() {
+        assertEquals(-1, map.getPollInterval());
     }
 
     @Test
-    public void setGetPollInterval() {
+    void setGetPollInterval() {
         super.testInt(map, PollConfigurationMap.POLL_INTERVAL_KEY,
                 map::setPollInterval, map::getPollInterval);
     }

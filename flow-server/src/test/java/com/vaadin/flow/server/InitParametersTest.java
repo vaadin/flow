@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,23 +18,23 @@ package com.vaadin.flow.server;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InitParametersTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InitParametersTest {
     @Test
-    public void publicMembersAreStringConstants() {
+    void publicMembersAreStringConstants() {
         for (Field field : InitParameters.class.getDeclaredFields()) {
             int modifiers = field.getModifiers();
             if (Modifier.isPublic(modifiers)) {
-                Assert.assertEquals(
-                        String.format("field '%s' expected String",
-                                field.getName()),
-                        String.class, field.getType());
-                Assert.assertTrue(String.format("field '%s' expected static",
-                        field.getName()), Modifier.isStatic(modifiers));
-                Assert.assertTrue(String.format("field '%s' expected final",
-                        field.getName()), Modifier.isFinal(modifiers));
+                assertEquals(String.class, field.getType(), String
+                        .format("field '%s' expected String", field.getName()));
+                assertTrue(Modifier.isStatic(modifiers), String
+                        .format("field '%s' expected static", field.getName()));
+                assertTrue(Modifier.isFinal(modifiers), String
+                        .format("field '%s' expected final", field.getName()));
             }
         }
     }

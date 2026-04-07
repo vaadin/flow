@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
@@ -27,12 +28,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -68,12 +67,18 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class MenuRegistryTest {
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
-
+class MenuRegistryTest {
+    @TempDir
+    Path tmpDir;
     private ApplicationRouteRegistry registry;
     @Mock
     private MockService vaadinService;
@@ -89,8 +94,8 @@ public class MenuRegistryTest {
 
     private MockedStatic<FrontendUtils> frontendUtils;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
@@ -106,9 +111,9 @@ public class MenuRegistryTest {
                 .thenReturn(deploymentConfiguration);
 
         Mockito.when(deploymentConfiguration.getFrontendFolder())
-                .thenReturn(tmpDir.getRoot());
+                .thenReturn(tmpDir.toFile());
         Mockito.when(deploymentConfiguration.getProjectFolder())
-                .thenReturn(tmpDir.getRoot());
+                .thenReturn(tmpDir.toFile());
         Mockito.when(deploymentConfiguration.getBuildFolder())
                 .thenReturn("build");
 
@@ -131,58 +136,60 @@ public class MenuRegistryTest {
         CurrentInstance.set(VaadinRequest.class, request);
     }
 
-    @After
-    public void cleanup() throws Exception {
+    @AfterEach
+    void cleanup() throws Exception {
         frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void getMenuItemsContainsExpectedClientPaths() throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void getMenuItemsContainsExpectedClientPaths() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(10, menuItems.size());
+        assertEquals(10, menuItems.size());
         assertClientRoutes(menuItems);
     }
 
     @Test
-    public void getMenuItemsWithNestedFiltering_doesNotThrow()
-            throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void getMenuItemsWithNestedFiltering_doesNotThrow() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), nestedLoginRequiredRouteFile);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(0, menuItems.size());
+        assertEquals(0, menuItems.size());
     }
 
     @Test
-    public void getMenuItemsNoFilteringContainsAllClientPaths()
-            throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void getMenuItemsNoFilteringContainsAllClientPaths() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
 
-        Assert.assertEquals(13, menuItems.size());
+        assertEquals(13, menuItems.size());
         // Validate as if logged in as all routes should be available
         assertClientRoutes(menuItems, true, true, false);
     }
 
     @Test
-    public void testNonCollidingServerAndClientRoutesDoesNotThrow()
+    void testNonCollidingServerAndClientRoutesDoesNotThrow()
             throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
@@ -193,36 +200,38 @@ public class MenuRegistryTest {
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
-        Assert.assertEquals(15, menuItems.size());
+        assertEquals(15, menuItems.size());
 
         RouteUtil.checkForClientRouteCollisions(vaadinService,
                 routeConfiguration.getAvailableRoutes());
     }
 
-    @Test(expected = InvalidRouteConfigurationException.class)
-    public void testCollidingServerAndClientRouteDoesThrow()
-            throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
-        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
-        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+    @Test
+    void testCollidingServerAndClientRouteDoesThrow() throws IOException {
+        assertThrows(InvalidRouteConfigurationException.class, () -> {
+            File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                    .toFile();
+            File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+            Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(registry);
-        Arrays.asList(MyRoute.class, MyInfo.class)
-                .forEach(routeConfiguration::setAnnotatedRoute);
-        routeConfiguration.setAnnotatedRoute(ConflictRoute.class);
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(registry);
+            Arrays.asList(MyRoute.class, MyInfo.class)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
+            routeConfiguration.setAnnotatedRoute(ConflictRoute.class);
+        });
     }
 
     @Test
-    public void productionMode_getMenuItemsContainsExpectedClientPaths()
+    void productionMode_getMenuItemsContainsExpectedClientPaths()
             throws IOException {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(true);
         // Clear any production mode execution route contents
         MenuRegistry.clearFileRoutesCache();
 
-        tmpDir.newFolder("META-INF", "VAADIN");
-        File clientFiles = new File(tmpDir.getRoot(),
+        Files.createDirectories(tmpDir.resolve("META-INF/VAADIN"));
+        File clientFiles = new File(tmpDir.toFile(),
                 FILE_ROUTES_JSON_PROD_PATH);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
@@ -237,7 +246,7 @@ public class MenuRegistryTest {
             Map<String, AvailableViewInfo> menuItems = MenuRegistry
                     .getMenuItems(true);
 
-            Assert.assertEquals(10, menuItems.size());
+            assertEquals(10, menuItems.size());
             assertClientRoutes(menuItems);
         } finally {
             // Clear our routes from production mode cache
@@ -246,7 +255,7 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsContainsExpectedServerPaths() {
+    void getMenuItemsContainsExpectedServerPaths() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(MyRoute.class, MyInfo.class)
@@ -255,14 +264,14 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(2, menuItems.size());
+        assertEquals(2, menuItems.size());
         assertServerRoutes(menuItems);
     }
 
     @Test
-    public void getMenuItemsContainBothClientAndServerPaths()
-            throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void getMenuItemsContainBothClientAndServerPaths() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
@@ -274,14 +283,15 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(12, menuItems.size());
+        assertEquals(12, menuItems.size());
         assertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
     }
 
     @Test
-    public void collectMenuItems_returnsCorrectPaths() throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void collectMenuItems_returnsCorrectPaths() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
@@ -295,35 +305,35 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(8, menuItems.size());
+        assertEquals(8, menuItems.size());
         assertClientRoutes(menuItems, false, false, true);
         assertServerRoutes(menuItems);
         assertServerRoutesWithParameters(menuItems, true);
     }
 
     @Test
-    public void testWithLoggedInUser_userHasRoles() throws IOException {
+    void testWithLoggedInUser_userHasRoles() throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
         Mockito.when(request.isUserInRole(Mockito.anyString()))
                 .thenReturn(true);
 
-        File generated = tmpDir.newFolder(GENERATED);
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(13, menuItems.size());
+        assertEquals(13, menuItems.size());
         assertClientRoutes(menuItems, true, true, false);
 
         // Verify that getMenuItemsList returns the same data
         List<AvailableViewInfo> menuItemsList = MenuRegistry
                 .collectMenuItemsList();
-        Assert.assertEquals(
-                "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
-                7, menuItemsList.size());
+        assertEquals(7, menuItemsList.size(),
+                "List of menu items has incorrect size. Excluded menu item like /login is not expected.");
         assertOrder(menuItemsList,
                 new String[] { "/", "/about", "/hilla", "/hilla/sub",
                         "/opt_params", "/params_with_opt_children",
@@ -331,26 +341,28 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void testWithLoggedInUser_noMatchingRoles() throws IOException {
+    void testWithLoggedInUser_noMatchingRoles() throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
         Mockito.when(request.isUserInRole(Mockito.anyString()))
                 .thenReturn(false);
 
-        File generated = tmpDir.newFolder(GENERATED);
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
-        Assert.assertEquals(11, menuItems.size());
+        assertEquals(11, menuItems.size());
         assertClientRoutes(menuItems, true, false, false);
     }
 
     @Test
-    public void getMenuItemsList_returnsCorrectPaths() throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+    void getMenuItemsList_returnsCorrectPaths() throws IOException {
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
@@ -362,7 +374,7 @@ public class MenuRegistryTest {
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
-        Assert.assertEquals(8, menuItems.size());
+        assertEquals(8, menuItems.size());
         assertOrder(menuItems,
                 new String[] { "/", "/home", "/info", "/opt_params", "/param",
                         "/param/varargs", "/params_with_opt_children",
@@ -377,7 +389,7 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsList_assertOrder() {
+    void getMenuItemsList_assertOrder() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(TestRouteA.class, TestRouteB.class, TestRouteC.class,
@@ -385,71 +397,72 @@ public class MenuRegistryTest {
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
-        Assert.assertEquals(4, menuItems.size());
+        assertEquals(4, menuItems.size());
         assertOrder(menuItems,
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
+    void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
                 .readTree(testClientRouteFile);
         JsonNode layout = fileRoutes.get(0);
         ArrayNode children = (ArrayNode) layout.get("children");
-        Assert.assertNotNull(children);
+        assertNotNull(children);
 
         assertHasHillaMainLayout(testClientRouteFile, true);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
+    void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
                 .readTree(emptyChildren);
         JsonNode layout = fileRoutes.get(0);
         ArrayNode children = (ArrayNode) layout.get("children");
-        Assert.assertNotNull(children);
-        Assert.assertEquals(0, children.size());
+        assertNotNull(children);
+        assertEquals(0, children.size());
 
         assertHasHillaMainLayout(emptyChildren, true);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
+    void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
             throws IOException {
-        Assert.assertFalse(singleRoute.contains("\"children\""));
+        assertFalse(singleRoute.contains("\"children\""));
 
         assertHasHillaMainLayout(singleRoute, false);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
+    void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
             throws IOException {
         assertHasHillaMainLayout(multipleRootRoutes, false);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
+    void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
             throws IOException {
         assertHasHillaMainLayout(nonEmptyRoute, false);
     }
 
     private void assertHasHillaMainLayout(String fileRoutes, boolean expected)
             throws IOException {
-        File generated = tmpDir.newFolder(GENERATED);
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), fileRoutes);
 
         boolean hasHillaMainLayout = MenuRegistry
                 .hasHillaMainLayout(vaadinService.getDeploymentConfiguration());
-        Assert.assertEquals(expected, hasHillaMainLayout);
+        assertEquals(expected, hasHillaMainLayout);
     }
 
     private void assertOrder(List<AvailableViewInfo> menuItems,
             String[] expectedOrder) {
         for (int i = 0; i < menuItems.size(); i++) {
-            Assert.assertEquals(expectedOrder[i], menuItems.get(i).route());
+            assertEquals(expectedOrder[i], menuItems.get(i).route());
         }
     }
 
@@ -466,74 +479,70 @@ public class MenuRegistryTest {
     private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems,
             boolean authenticated, boolean hasRole, boolean excludeExpected,
             String expectedRootPath) {
-        Assert.assertTrue("Client route '" + expectedRootPath + "' missing",
-                menuItems.containsKey(expectedRootPath));
-        Assert.assertEquals("Public", menuItems.get(expectedRootPath).title());
-        Assert.assertNotNull("Public should contain default menu data",
-                menuItems.get(expectedRootPath).menu());
+        assertTrue(menuItems.containsKey(expectedRootPath),
+                "Client route '" + expectedRootPath + "' missing");
+        assertEquals("Public", menuItems.get(expectedRootPath).title());
+        assertNotNull(menuItems.get(expectedRootPath).menu(),
+                "Public should contain default menu data");
 
         if (authenticated) {
-            Assert.assertTrue("Client route 'about' missing",
-                    menuItems.containsKey("/about"));
-            Assert.assertEquals("About", menuItems.get("/about").title());
-            Assert.assertTrue("Login should be required",
-                    menuItems.get("/about").loginRequired());
-            Assert.assertNotNull("About should contain default menu data",
-                    menuItems.get("/about").menu());
+            assertTrue(menuItems.containsKey("/about"),
+                    "Client route 'about' missing");
+            assertEquals("About", menuItems.get("/about").title());
+            assertTrue(menuItems.get("/about").loginRequired(),
+                    "Login should be required");
+            assertNotNull(menuItems.get("/about").menu(),
+                    "About should contain default menu data");
 
             if (hasRole) {
-                Assert.assertTrue("Client route 'hilla' missing",
-                        menuItems.containsKey("/hilla"));
-                Assert.assertEquals("Hilla", menuItems.get("/hilla").title());
-                Assert.assertTrue("Login should be required",
-                        menuItems.get("/hilla").loginRequired());
-                Assert.assertArrayEquals("Faulty roles fo hilla",
-                        new String[] { "ROLE_USER" },
-                        menuItems.get("/hilla").rolesAllowed());
-                Assert.assertNotNull("Hilla should contain default menu data",
-                        menuItems.get("/hilla").menu());
+                assertTrue(menuItems.containsKey("/hilla"),
+                        "Client route 'hilla' missing");
+                assertEquals("Hilla", menuItems.get("/hilla").title());
+                assertTrue(menuItems.get("/hilla").loginRequired(),
+                        "Login should be required");
+                assertArrayEquals(new String[] { "ROLE_USER" },
+                        menuItems.get("/hilla").rolesAllowed(),
+                        "Faulty roles fo hilla");
+                assertNotNull(menuItems.get("/hilla").menu(),
+                        "Hilla should contain default menu data");
 
-                Assert.assertTrue("Client child route 'hilla/sub' missing",
-                        menuItems.containsKey("/hilla/sub"));
-                Assert.assertEquals("Hilla Sub",
-                        menuItems.get("/hilla/sub").title());
+                assertTrue(menuItems.containsKey("/hilla/sub"),
+                        "Client child route 'hilla/sub' missing");
+                assertEquals("Hilla Sub", menuItems.get("/hilla/sub").title());
             } else {
-                Assert.assertFalse(
-                        "Roles do not match no hilla should be available",
-                        menuItems.containsKey("/hilla"));
+                assertFalse(menuItems.containsKey("/hilla"),
+                        "Roles do not match no hilla should be available");
             }
         } else {
-            Assert.assertFalse(
-                    "Not authenticated about view should not be available",
-                    menuItems.containsKey("/about"));
-            Assert.assertFalse(
-                    "Not authenticated hilla view should not be available",
-                    menuItems.containsKey("/hilla"));
+            assertFalse(menuItems.containsKey("/about"),
+                    "Not authenticated about view should not be available");
+            assertFalse(menuItems.containsKey("/hilla"),
+                    "Not authenticated hilla view should not be available");
         }
 
         if (excludeExpected) {
-            Assert.assertFalse("Client route 'login' should be excluded",
-                    menuItems.containsKey("/login"));
+            assertFalse(menuItems.containsKey("/login"),
+                    "Client route 'login' should be excluded");
         } else {
-            Assert.assertTrue("Client route 'login' missing",
-                    menuItems.containsKey("/login"));
-            Assert.assertEquals("Login", menuItems.get("/login").title());
-            Assert.assertNull(menuItems.get("/login").menu().title());
-            Assert.assertTrue("Login view should be excluded",
-                    menuItems.get("/login").menu().exclude());
+            assertTrue(menuItems.containsKey("/login"),
+                    "Client route 'login' missing");
+            assertEquals("Login", menuItems.get("/login").title());
+            assertNull(menuItems.get("/login").menu().title());
+            assertTrue(menuItems.get("/login").menu().exclude(),
+                    "Login view should be excluded");
         }
     }
 
     private void assertServerRoutes(Map<String, AvailableViewInfo> menuItems) {
-        Assert.assertTrue("Server route 'home' missing",
-                menuItems.containsKey("/home"));
-        Assert.assertEquals("MyRoute", menuItems.get("/home").title());
-        Assert.assertEquals("Home", menuItems.get("/home").menu().title());
+        assertTrue(menuItems.containsKey("/home"),
+                "Server route 'home' missing");
+        assertEquals("MyRoute", menuItems.get("/home").title());
+        assertEquals("Home", menuItems.get("/home").menu().title());
 
-        Assert.assertTrue("Server route 'info' missing",
-                menuItems.containsKey("/info"));
-        Assert.assertEquals("MyInfo", menuItems.get("/info").title());
-        Assert.assertEquals("MyInfo", menuItems.get("/info").menu().title());
+        assertTrue(menuItems.containsKey("/info"),
+                "Server route 'info' missing");
+        assertEquals("MyInfo", menuItems.get("/info").title());
+        assertEquals("MyInfo", menuItems.get("/info").menu().title());
     }
 
     private void assertServerRoutesWithParameters(
@@ -544,39 +553,31 @@ public class MenuRegistryTest {
     private void assertServerRoutesWithParameters(
             Map<String, AvailableViewInfo> menuItems, boolean excludeExpected) {
         if (excludeExpected) {
-            Assert.assertFalse(
-                    "Server route '/param/:param' should be excluded",
-                    menuItems.containsKey("/param/:param"));
-            Assert.assertFalse(
-                    "Server route '/param/:param1' should be excluded",
-                    menuItems.containsKey("/param/:param1"));
+            assertFalse(menuItems.containsKey("/param/:param"),
+                    "Server route '/param/:param' should be excluded");
+            assertFalse(menuItems.containsKey("/param/:param1"),
+                    "Server route '/param/:param1' should be excluded");
         } else {
-            Assert.assertTrue("Server route '/param/:param' missing",
-                    menuItems.containsKey("/param/:param"));
-            Assert.assertTrue(
-                    "Server route '/param/:param' should be excluded from menu",
-                    menuItems.get("/param/:param").menu().exclude());
+            assertTrue(menuItems.containsKey("/param/:param"),
+                    "Server route '/param/:param' missing");
+            assertTrue(menuItems.get("/param/:param").menu().exclude(),
+                    "Server route '/param/:param' should be excluded from menu");
 
-            Assert.assertTrue("Server route '/param/:param1' missing",
-                    menuItems.containsKey("/param/:param1"));
-            Assert.assertTrue(
-                    "Server route '/param/:param1' should be excluded from menu",
-                    menuItems.get("/param/:param1").menu().exclude());
+            assertTrue(menuItems.containsKey("/param/:param1"),
+                    "Server route '/param/:param1' missing");
+            assertTrue(menuItems.get("/param/:param1").menu().exclude(),
+                    "Server route '/param/:param1' should be excluded from menu");
         }
 
-        Assert.assertTrue(
-                "Server route with optional parameters '/param' missing",
-                menuItems.containsKey("/param"));
-        Assert.assertFalse(
-                "Server route '/param' should be included in the menu",
-                menuItems.get("/param").menu().exclude());
+        assertTrue(menuItems.containsKey("/param"),
+                "Server route with optional parameters '/param' missing");
+        assertFalse(menuItems.get("/param").menu().exclude(),
+                "Server route '/param' should be included in the menu");
 
-        Assert.assertTrue(
-                "Server route with optional parameters '/param/varargs' missing",
-                menuItems.containsKey("/param/varargs"));
-        Assert.assertFalse(
-                "Server route '/param/varargs' should be included in the menu",
-                menuItems.get("/param/varargs").menu().exclude());
+        assertTrue(menuItems.containsKey("/param/varargs"),
+                "Server route with optional parameters '/param/varargs' missing");
+        assertFalse(menuItems.get("/param/varargs").menu().exclude(),
+                "Server route '/param/varargs' should be included in the menu");
     }
 
     @Tag("div")

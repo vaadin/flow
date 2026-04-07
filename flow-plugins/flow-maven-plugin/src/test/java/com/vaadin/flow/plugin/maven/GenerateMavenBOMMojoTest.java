@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,36 +17,37 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GenerateMavenBOMMojoTest {
+class GenerateMavenBOMMojoTest {
 
     private String bomFilename;
 
     private File resourceOutputDirectory;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path tempDir;
 
     private GenerateMavenBOMMojo mojo;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         this.mojo = new GenerateMavenBOMMojo();
 
         MavenProject project = Mockito.mock(MavenProject.class);
-        File projectBase = temporaryFolder.getRoot();
+        File projectBase = tempDir.toFile();
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
@@ -86,10 +87,10 @@ public class GenerateMavenBOMMojoTest {
     }
 
     @Test
-    public void shouldGenerateSBOM() throws Exception {
-        Assert.assertFalse(Files.exists(Paths.get(bomFilename)));
+    void shouldGenerateSBOM() throws Exception {
+        assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
-        Assert.assertTrue(Files.exists(Paths.get(bomFilename)));
+        assertTrue(Files.exists(Paths.get(bomFilename)));
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,27 +19,29 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.FileIOUtils;
 
-public class AbstractTaskClientGeneratorTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AbstractTaskClientGeneratorTest {
 
     private static final String TEST_STRING = "Hello world";
 
     @Test
-    public void writeIfChanged_writesWithChanges() throws Exception {
+    void writeIfChanged_writesWithChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
 
-        Assert.assertTrue(FileIOUtils.writeIfChanged(f, TEST_STRING + "2"));
+        assertTrue(FileIOUtils.writeIfChanged(f, TEST_STRING + "2"));
     }
 
     @Test
-    public void writeIfChanged_doesNotWriteWithoutChanges() throws Exception {
+    void writeIfChanged_doesNotWriteWithoutChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
-        Assert.assertFalse(FileIOUtils.writeIfChanged(f, TEST_STRING));
+        assertFalse(FileIOUtils.writeIfChanged(f, TEST_STRING));
     }
 }

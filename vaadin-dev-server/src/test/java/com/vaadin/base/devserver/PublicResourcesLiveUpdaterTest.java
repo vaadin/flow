@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,14 +25,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -40,7 +40,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,16 +49,16 @@ import static org.mockito.ArgumentMatchers.eq;
  * Verifies that PublicResourcesLiveUpdater reacts to a CSS change and bundles
  * imported files, pushing the merged result via BrowserLiveReload.update.
  */
-public class PublicResourcesLiveUpdaterTest {
+class PublicResourcesLiveUpdaterTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private MockedStatic<ApplicationConfiguration> appConfigStatic;
     private MockedStatic<BrowserLiveReloadAccessor> liveReloadAccessorStatic;
 
-    @After
-    public void cleanupStatics() {
+    @AfterEach
+    void cleanupStatics() {
         if (appConfigStatic != null) {
             appConfigStatic.close();
         }
@@ -68,10 +68,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_triggersBundlingAndUpdate_forActiveUrl()
-            throws Exception {
+    void cssChange_triggersBundlingAndUpdate_forActiveUrl() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project");
+        File project = new File(temporaryFolder, "project");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -138,10 +138,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_triggersUpdates_forMultipleActiveUrls()
-            throws Exception {
+    void cssChange_triggersUpdates_forMultipleActiveUrls() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project2");
+        File project = new File(temporaryFolder, "project2");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -200,10 +200,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssTempFiles_areIgnored_noLiveReloadInteractions()
-            throws Exception {
+    void cssTempFiles_areIgnored_noLiveReloadInteractions() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project3");
+        File project = new File(temporaryFolder, "project3");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -246,10 +246,11 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_ignoresVaadinThemeUrls_noLiveReloadUpdates()
+    void cssChange_ignoresVaadinThemeUrls_noLiveReloadUpdates()
             throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project4");
+        File project = new File(temporaryFolder, "project4");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -300,10 +301,270 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void vaadinThemeUrls_areNotBundled_whenCssChangesDetected()
+    void cssChange_skipsUpdateForClasspathStylesheet() throws Exception {
+        // Arrange a project with one local CSS, and a stylesheet that only
+        // exists on the classpath (e.g. from an addon JAR)
+        File project = new File(temporaryFolder, "project-cp");
+        project.mkdirs();
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        File localCss = new File(publicRoot, "styles.css");
+        Files.writeString(localCss.toPath(), "body{margin:0;}",
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        // Mock ResourceProvider to report the classpath stylesheet exists
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                "META-INF/resources/frontend/addon.styles.css"))
+                .thenReturn(getClass().getResource("/"));
+        Lookup lookup = context.getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        // Register both a local and a classpath-only stylesheet
+        ActiveStyleSheetTracker.get(context).trackForAppShell(Set.of(
+                "context://styles.css", "context://frontend/addon.styles.css"));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath()), context)) {
+            // Modify local CSS to trigger the watcher
+            Files.writeString(localCss.toPath(), "body{margin:8px;}",
+                    StandardCharsets.UTF_8);
+
+            // The local stylesheet should be updated with content
+            Awaitility.await().untilAsserted(() -> Mockito
+                    .verify(liveReload, Mockito.atLeastOnce())
+                    .update(eq("context://styles.css"), argThat(c -> c != null
+                            && c.contains("body{margin:8px;}"))));
+
+            // The classpath stylesheet must NOT be updated with null
+            Mockito.verify(liveReload, Mockito.never()).update(
+                    eq("context://frontend/addon.styles.css"),
+                    Mockito.isNull());
+        }
+    }
+
+    @Test
+    void cssChange_updatesStylesheetFromJarResources() throws Exception {
+        // When the CSS exists in jar-resources (passed as a source root),
+        // the bundler finds it and pushes content for both local and
+        // jar-resources stylesheets.
+        File project = new File(temporaryFolder, "project-jar-res");
+        project.mkdirs();
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        // Simulate the jar-resources folder at its real location inside the
+        // project's frontend generated directory
+        File jarResources = new File(project,
+                "src/main/frontend/generated/jar-resources");
+        assertTrue(jarResources.mkdirs());
+
+        File localCss = new File(publicRoot, "app.css");
+        Files.writeString(localCss.toPath(), ".app{display:block;}",
+                StandardCharsets.UTF_8);
+
+        File addonCss = new File(jarResources, "addon.css");
+        Files.writeString(addonCss.toPath(), ".addon{color:blue;}",
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        // Both local and jar-resources CSS are active
+        ActiveStyleSheetTracker.get(context).trackForAppShell(
+                Set.of("context://app.css", "context://addon.css"));
+
+        // Pass both the publicRoot and jar-resources as source roots
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath(),
+                        jarResources.getAbsolutePath()),
+                context)) {
+            // Trigger watcher by modifying the local CSS
+            Files.writeString(localCss.toPath(), ".app{display:flex;}",
+                    StandardCharsets.UTF_8);
+
+            // Both stylesheets should be updated with content
+            Awaitility.await().untilAsserted(() -> {
+                Mockito.verify(liveReload, Mockito.atLeastOnce())
+                        .update(eq("context://app.css"), argThat(c -> c != null
+                                && c.contains(".app{display:flex;}")));
+                Mockito.verify(liveReload, Mockito.atLeastOnce()).update(
+                        eq("context://addon.css"), argThat(c -> c != null
+                                && c.contains(".addon{color:blue;}")));
+            });
+        }
+    }
+
+    @Test
+    void cssChange_updatesJarResourceStylesheetWithFrontendPrefix()
+            throws Exception {
+        // Addon stylesheets are referenced with frontend/ prefix in
+        // @StyleSheet but TaskCopyFrontendFiles strips it when copying
+        // to jar-resources. The bundler should find the file without the
+        // prefix.
+        File project = new File(temporaryFolder, "project-frontend-prefix");
+        project.mkdirs();
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        File jarResources = new File(project,
+                "src/main/frontend/generated/jar-resources");
+        assertTrue(jarResources.mkdirs());
+
+        File localCss = new File(publicRoot, "local.css");
+        Files.writeString(localCss.toPath(), ".local{display:block;}",
+                StandardCharsets.UTF_8);
+
+        // The addon CSS sits at jar-resources/addon.css (no frontend/ prefix)
+        File addonCss = new File(jarResources, "addon.css");
+        Files.writeString(addonCss.toPath(), ".addon{color:teal;}",
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        // Active URL uses frontend/ prefix, but file is at jar-resources root
+        ActiveStyleSheetTracker.get(context).trackForAppShell(
+                Set.of("context://local.css", "context://frontend/addon.css"));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath(),
+                        jarResources.getAbsolutePath()),
+                context)) {
+            // Trigger watcher by modifying the local CSS
+            Files.writeString(localCss.toPath(), ".local{display:flex;}",
+                    StandardCharsets.UTF_8);
+
+            // Both stylesheets should be updated with content
+            Awaitility.await().untilAsserted(() -> {
+                Mockito.verify(liveReload, Mockito.atLeastOnce()).update(
+                        eq("context://local.css"), argThat(c -> c != null
+                                && c.contains(".local{display:flex;}")));
+                Mockito.verify(liveReload, Mockito.atLeastOnce()).update(
+                        eq("context://frontend/addon.css"),
+                        argThat(c -> c != null
+                                && c.contains(".addon{color:teal;}")));
+            });
+        }
+    }
+
+    @Test
+    void cssChange_removesDeletedStylesheet() throws Exception {
+        // When a CSS file is deleted and does not exist on the classpath,
+        // the updater should push null content (removal).
+        File project = new File(temporaryFolder, "project-deleted");
+        project.mkdirs();
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        File localCss = new File(publicRoot, "keep.css");
+        Files.writeString(localCss.toPath(), ".keep{color:red;}",
+                StandardCharsets.UTF_8);
+
+        // Create a CSS file that will be "deleted" — it exists initially so
+        // that the bundler can find it, but we delete it before triggering
+        File deletedCss = new File(publicRoot, "gone.css");
+        Files.writeString(deletedCss.toPath(), ".gone{color:gray;}",
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        ActiveStyleSheetTracker.get(context).trackForAppShell(
+                Set.of("context://keep.css", "context://gone.css"));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath()), context)) {
+            // Delete the file, then trigger watcher with a change to keep.css
+            assertTrue(deletedCss.delete());
+            Files.writeString(localCss.toPath(), ".keep{color:blue;}",
+                    StandardCharsets.UTF_8);
+
+            // keep.css should be updated with content
+            Awaitility.await().untilAsserted(() -> Mockito
+                    .verify(liveReload, Mockito.atLeastOnce())
+                    .update(eq("context://keep.css"), argThat(c -> c != null
+                            && c.contains(".keep{color:blue;}"))));
+
+            // gone.css should be updated with null (removal) since it's
+            // not on classpath either
+            Mockito.verify(liveReload, Mockito.atLeastOnce())
+                    .update(eq("context://gone.css"), Mockito.isNull());
+        }
+    }
+
+    @Test
+    void vaadinThemeUrls_areNotBundled_whenCssChangesDetected()
             throws Exception {
         // Prepare a temp directory to watch
-        File root = temporaryFolder.newFolder("watched-root");
+        File root = new File(temporaryFolder, "watched-root");
+        root.mkdirs();
 
         // Mocks for Vaadin context and configuration (dev mode)
         VaadinContext ctx = Mockito.mock(VaadinContext.class);
@@ -369,11 +630,11 @@ public class PublicResourcesLiveUpdaterTest {
                 // Wait until the non-Lumo URL is processed (bundled at least
                 // once)
                 Awaitility.await().untilAsserted(() -> {
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("/css/app.css"), anyString());
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("context://css/app.css"), anyString());
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("base://css/app.css"), anyString());
                 });
 

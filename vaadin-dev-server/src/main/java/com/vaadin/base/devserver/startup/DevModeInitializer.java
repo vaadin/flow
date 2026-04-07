@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -83,6 +83,7 @@ import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TO
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
@@ -224,7 +225,8 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
                         new File(frontendFolder + FrontendUtils.GENERATED))
-                .withBuildDirectory(config.getBuildFolder());
+                .withBuildDirectory(config.getBuildFolder())
+                .setJavaResourceFolder(config.getJavaResourceFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
@@ -310,6 +312,7 @@ public class DevModeInitializer implements Serializable {
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
                         DEFAULT_NODE_VERSION))
+                .withNodeFolder(config.getStringProperty(NODE_FOLDER, null))
                 .withNodeDownloadRoot(
                         URI.create(config.getStringProperty(NODE_DOWNLOAD_ROOT,
                                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));

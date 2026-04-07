@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,27 +72,6 @@ public class StyleBindIT extends ChromeBrowserTest {
 
         manualRemove.click();
         waitUntil(d -> "BindingActiveException".equals(status.getText()));
-    }
-
-    @Test
-    public void manualSetRemove_bindingRemoved_setsAndRemoves() {
-        open("com.vaadin.flow.uitest.ui.StyleBindView");
-
-        SpanElement status = $(SpanElement.class).id("status");
-        NativeButtonElement manualSet = $(NativeButtonElement.class)
-                .id("manual-set");
-        NativeButtonElement manualRemove = $(NativeButtonElement.class)
-                .id("manual-remove");
-        NativeButtonElement removeBinding = $(NativeButtonElement.class)
-                .id("remove-binding");
-
-        removeBinding.click();
-
-        manualSet.click();
-        waitUntil(d -> "manual-set-ok".equals(status.getText()));
-
-        manualRemove.click();
-        waitUntil(d -> "manual-remove-ok".equals(status.getText()));
     }
 
     @Test

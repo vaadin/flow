@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,7 @@ package com.vaadin.flow.tests.data;
 import java.io.Serializable;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -26,9 +26,9 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DataSerializableTest extends ClassesSerializableTest {
+class DataSerializableTest extends ClassesSerializableTest {
 
     /*
      * AbstractDataProvider.addDataProviderListener may return a Registration
@@ -39,7 +39,7 @@ public class DataSerializableTest extends ClassesSerializableTest {
      * dataprovider itself that is already referenced by the outer component
      */
     @Test
-    public void selfReferenceSerialization() throws Throwable {
+    void selfReferenceSerialization() throws Throwable {
         Outer outer = new Outer();
         Outer out = serializeAndDeserialize(outer);
         assertNotNull(out);

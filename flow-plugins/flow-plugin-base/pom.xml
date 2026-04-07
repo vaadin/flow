@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-plugins</artifactId>
-    <version>25.1-SNAPSHOT</version>
+    <version>25.2-SNAPSHOT</version>
   </parent>
   <artifactId>flow-plugin-base</artifactId>
   <name>Flow Plugin Base</name>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>4.0.2</version>
+      <version>4.0.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

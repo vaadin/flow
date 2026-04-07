@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -449,6 +449,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (isAllowedDevToolsHost(config, request)) {
             devToolsConf.put("token", DevToolsToken.getToken());
         }
+        devToolsConf.put("usageStatisticsEnabled",
+                config.isUsageStatisticsEnabled());
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
@@ -470,13 +472,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 && !hostsAllowedFromCfg.isBlank()) ? hostsAllowedFromCfg : null;
 
         if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed, true)) {
+            getLogger().debug(
+                    "Dev tools access denied for remote address '{}'. Allowed hosts: [{}]",
+                    remoteAddress, hostsAllowed);
             return false;
         }
         String remoteHeaderIp = configuration.getStringProperty(
                 SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER, null);
         if (remoteHeaderIp != null) {
-            return isAllowedDevToolsHost(request.getHeader(remoteHeaderIp),
-                    hostsAllowed, false);
+            String headerValue = request.getHeader(remoteHeaderIp);
+            boolean allowed = isAllowedDevToolsHost(headerValue, hostsAllowed,
+                    false);
+            if (!allowed) {
+                getLogger().debug(
+                        "Dev tools access denied for address '{}' from header '{}'. Allowed hosts: [{}]",
+                        headerValue, remoteHeaderIp, hostsAllowed);
+            }
+            return allowed;
         }
 
         Enumeration<String> allForwardedForHeaders = request
@@ -493,18 +505,35 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 // Validate all hops
                 String[] hops = forwardedFor.split(",");
                 if (hops.length > 0) {
-                    return Stream.of(hops).map(String::trim)
+                    boolean allAllowed = Stream.of(hops).map(String::trim)
                             .allMatch(ip -> isAllowedDevToolsHost(ip,
                                     hostsAllowed, false));
+                    if (!allAllowed) {
+                        getLogger().debug(
+                                "Dev tools access denied. Not all X-Forwarded-For addresses are allowed."
+                                        + " X-Forwarded-For: '{}'. Allowed hosts: [{}]",
+                                forwardedFor, hostsAllowed);
+                    }
+                    return allAllowed;
                 } else {
                     // Potential fake header with no addresses, e.g.
                     // 'X-Forwarded-For: ,,,'
+                    getLogger().debug(
+                            "Dev tools access denied because of empty or invalid X-Forwarded-For header");
                     return false;
                 }
 
             } else {
-                return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed,
-                        false);
+                String trimmedForwardedFor = forwardedFor.trim();
+                boolean allowed = isAllowedDevToolsHost(trimmedForwardedFor,
+                        hostsAllowed, false);
+                if (!allowed) {
+                    getLogger().debug(
+                            "Dev tools access denied for X-Forwarded-For address '{}'."
+                                    + " Allowed hosts: [{}]",
+                            trimmedForwardedFor, hostsAllowed);
+                }
+                return allowed;
             }
         }
 

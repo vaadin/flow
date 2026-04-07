@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,7 +40,7 @@ import com.vaadin.flow.function.ValueProvider;
  * @param <T>
  *            data type
  */
-public class TreeData<T> implements Serializable {
+public class TreeData<T> implements HierarchicalData<T> {
 
     private static class HierarchyWrapper<T> implements Serializable {
         private T parent;
@@ -333,17 +333,7 @@ public class TreeData<T> implements Serializable {
         return getChildren(null);
     }
 
-    /**
-     * Get the immediate child items for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve child items for, null to
-     *            retrieve all root items
-     * @return an unmodifiable list of child items for the given item
-     *
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public List<T> getChildren(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -353,16 +343,7 @@ public class TreeData<T> implements Serializable {
                 .unmodifiableList(itemToWrapperMap.get(item).getChildren());
     }
 
-    /**
-     * Get the parent item for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve the parent item for
-     * @return parent item for the given item or {@code null} if the item is a
-     *         root item.
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public T getParent(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -398,6 +379,14 @@ public class TreeData<T> implements Serializable {
         if (item.equals(parent)) {
             throw new IllegalArgumentException(
                     "Item cannot be the parent of itself");
+        }
+
+        // Check for cyclic reference - item cannot become descendant of its
+        // own descendant
+        if (parent != null && isAncestorOf(item, parent)) {
+            throw new IllegalArgumentException(
+                    "Setting '" + parent + "' as parent of '" + item
+                            + "' would create a cycle in the tree hierarchy");
         }
 
         T oldParent = itemToWrapperMap.get(item).getParent();
@@ -460,14 +449,7 @@ public class TreeData<T> implements Serializable {
         }
     }
 
-    /**
-     * Check whether the given item is in this hierarchy.
-     *
-     * @param item
-     *            the item to check
-     * @return {@code true} if the item is in this hierarchy, {@code false} if
-     *         not
-     */
+    @Override
     public boolean contains(T item) {
         return itemToWrapperMap.containsKey(item);
     }
@@ -487,5 +469,30 @@ public class TreeData<T> implements Serializable {
             addItems(item, childItems);
             addItemsRecursively(childItems, childItemProvider);
         });
+    }
+
+    /**
+     * Checks if the potential ancestor is an ancestor of the potential
+     * descendant by walking up the ancestor chain from the descendant.
+     *
+     * @param potentialAncestor
+     *            the item to check as a potential ancestor
+     * @param potentialDescendant
+     *            the item to check as a potential descendant
+     * @return true if {@code potentialAncestor} is an ancestor of
+     *         {@code potentialDescendant}
+     */
+    private boolean isAncestorOf(T potentialAncestor, T potentialDescendant) {
+        if (potentialDescendant == null) {
+            return false;
+        }
+        T current = itemToWrapperMap.get(potentialDescendant).getParent();
+        while (current != null) {
+            if (current.equals(potentialAncestor)) {
+                return true;
+            }
+            current = itemToWrapperMap.get(current).getParent();
+        }
+        return false;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -83,6 +83,40 @@ public final class JacksonUtils {
 
     public static ObjectMapper getMapper() {
         return objectMapper;
+    }
+
+    /**
+     * Checks that the Jackson version on the classpath is compatible with this
+     * version of Vaadin by verifying that expected API methods are available.
+     *
+     * @throws IllegalStateException
+     *             if the Jackson version is not compatible
+     */
+    public static void checkJacksonCompatibility() {
+        try {
+            ObjectMapper.class.getMethod("treeToValue", JsonNode.class,
+                    Class.class);
+        } catch (NoSuchMethodException e) {
+            String jacksonVersion = "unknown";
+            try {
+                jacksonVersion = ObjectMapper.class.getPackage()
+                        .getImplementationVersion();
+            } catch (Exception ignored) {
+                // ignore, we'll report "unknown"
+            }
+            throw new IllegalStateException(
+                    "The Jackson version on the classpath (" + jacksonVersion
+                            + ") is not compatible with this version of"
+                            + " Vaadin. If you are using Spring Boot, make"
+                            + " sure it is version 4.0.4 or newer (using"
+                            + " Jackson 3.1). If you have a Jackson 3.0"
+                            + " dependency, upgrade it to 3.1. If you have"
+                            + " a Jackson 2 dependency, upgrade it to 2.21"
+                            + " or later. In other cases, check"
+                            + " https://github.com/vaadin/platform/"
+                            + "releases/tag/25.1.0 for more details.",
+                    e);
+        }
     }
 
     /**
@@ -519,6 +553,9 @@ public final class JacksonUtils {
      * @return converted JSON value
      */
     public static BaseJsonNode writeValue(Object object) {
+        if (object == null) {
+            return (BaseJsonNode) objectMapper.nullNode();
+        }
         return objectMapper.valueToTree(object);
     }
 

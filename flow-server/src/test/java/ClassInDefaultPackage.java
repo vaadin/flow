@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.junit.Ignore;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@Ignore
+@Disabled
 public class ClassInDefaultPackage {
 
 }

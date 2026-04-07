@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
-public class BasicTextElementStateProviderTest {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BasicTextElementStateProviderTest {
 
     @Test
-    public void createStateNode_stateNodeHasRequiredElementDataFeature() {
+    void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicTextElementStateProvider
                 .createStateNode("foo");
-        Assert.assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
+        assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
     }
 }

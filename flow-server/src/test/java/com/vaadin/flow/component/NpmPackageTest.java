@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,14 @@ package com.vaadin.flow.component;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
-public class NpmPackageTest {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class NpmPackageTest {
 
     // Keep this here just to make sure the @NpmPackage annotation exists, since
     // it's used outside of the flow-server module, and it has no other use
@@ -36,12 +37,12 @@ public class NpmPackageTest {
     }
 
     @Test
-    public void testDummy() {
+    void testDummy() {
         Annotation[] annotations = TestComponent.class.getAnnotations();
 
         boolean found = Arrays.stream(annotations)
                 .anyMatch(a -> a.annotationType().equals(NpmPackage.class));
-        Assert.assertTrue("NpmPackage is missing", found);
+        assertTrue(found, "NpmPackage is missing");
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.HashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -28,31 +28,43 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class AttachTemplateChildRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    @Test(expected = IllegalStateException.class)
-    public void handleNode_attachById_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
+class AttachTemplateChildRpcHandlerTest {
+
+    @Test
+    void handleNode_attachById_elementNotFound() {
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void handleNode_attachCustomElement_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
+    @Test
+    void handleNode_attachCustomElement_elementNotFound() {
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void handleNode_attachByIdExistingRequest_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
+    @Test
+    void handleNode_attachByIdExistingRequest_throwReservedId() {
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void handleNode_attachCustonElementCustomId_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
+    @Test
+    void handleNode_attachCustonElementCustomId_throwReservedId() {
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void handleNode_success_throwIllegalInvocation() {
-        assertHandleNode(1, JacksonUtils.createNode("id"));
+    @Test
+    void handleNode_success_throwIllegalInvocation() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            assertHandleNode(1, JacksonUtils.createNode("id"));
+        });
     }
 
     private void doHandleNode_attach_elementNotFound(JsonNode id) {

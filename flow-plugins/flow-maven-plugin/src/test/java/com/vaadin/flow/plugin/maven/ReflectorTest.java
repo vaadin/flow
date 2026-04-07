@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,24 +41,28 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getClassPath;
 import static com.vaadin.flow.utils.FlowFileUtils.convertToUrl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReflectorTest {
+class ReflectorTest {
 
     private static final String FLAT_MAVEN_REPO_PATH = "/some/flat/maven-repo/";
     public static final String PROJECT_TARGET_FOLDER = "/my/project/target";
 
     Reflector reflector;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         URLClassLoader urlClassLoader = new URLClassLoader(
                 getClassPath(Path.of(".")).stream().distinct().map(File::new)
@@ -78,7 +83,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void createMojo_createInstanceAndCopyFields() throws Exception {
+    void createMojo_createInstanceAndCopyFields() throws Exception {
         MyMojo source = new MyMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
@@ -99,8 +104,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void createMojo_subclass_createInstanceAndCopyFields()
-            throws Exception {
+    void createMojo_subclass_createInstanceAndCopyFields() throws Exception {
         SubClassMojo source = new SubClassMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
@@ -124,19 +128,19 @@ public class ReflectorTest {
     }
 
     @Test
-    public void createMojo_incompatibleFields_fails() {
+    void createMojo_incompatibleFields_fails() {
         IncompatibleFieldsMojo source = new IncompatibleFieldsMojo();
         source.fillFields();
-        NoSuchFieldException exception = Assert.assertThrows(
+        NoSuchFieldException exception = assertThrows(
                 NoSuchFieldException.class, () -> reflector.createMojo(source));
-        Assert.assertTrue(
-                "Expected exception to be thrown because of class loader mismatch",
+        assertTrue(
                 exception.getMessage()
-                        .contains("loaded from different class loaders"));
+                        .contains("loaded from different class loaders"),
+                "Expected exception to be thrown because of class loader mismatch");
     }
 
     @Test
-    public void createMojo_cloneableFields_createInstanceAndCopyFields()
+    void createMojo_cloneableFields_createInstanceAndCopyFields()
             throws Exception {
         CloneableFieldsMojo source = new CloneableFieldsMojo();
         source.fillFields();
@@ -154,8 +158,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_fromProject_getsIsolatedClassLoader()
-            throws Exception {
+    void reflector_fromProject_getsIsolatedClassLoader() throws Exception {
         String outputDirectory = PROJECT_TARGET_FOLDER;
 
         MavenProject project = new MavenProject();
@@ -199,29 +202,28 @@ public class ReflectorTest {
 
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(5, urlSet.size());
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
-        Assert.assertTrue(urlSet.contains(
+        assertEquals(5, urlSet.size());
+        assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
+        assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-compile-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-provided-1.0.jar")));
-        Assert.assertTrue(urlSet
+        assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin.test-system-1.0.jar")));
-        Assert.assertTrue(urlSet
+        assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin.test-plugin-1.0.jar")));
 
         // from platform class loader
-        Assert.assertNotNull(
+        assertNotNull(
                 isolatedClassLoader.loadClass("java.net.http.HttpClient"));
         // from maven.api class loader
-        Assert.assertNotNull(
+        assertNotNull(
                 isolatedClassLoader.getResource("org/json/CookieList.class"));
-        Assert.assertNotNull(
-                isolatedClassLoader.loadClass("org.json.CookieList"));
+        assertNotNull(isolatedClassLoader.loadClass("org.json.CookieList"));
     }
 
     @Test
-    public void reflector_frontendScannerConfigExclusions_getsFilteredIsolatedClassLoader()
+    void reflector_frontendScannerConfigExclusions_getsFilteredIsolatedClassLoader()
             throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.addExclude(
@@ -241,7 +243,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_frontendScannerConfigInclusions_getsFilteredIsolatedClassLoader()
+    void reflector_frontendScannerConfigInclusions_getsFilteredIsolatedClassLoader()
             throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.addInclude(
@@ -256,7 +258,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_frontendScannerConfigExclusionHigherPriority_getsFilteredIsolatedClassLoader()
+    void reflector_frontendScannerConfigExclusionHigherPriority_getsFilteredIsolatedClassLoader()
             throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.addExclude(
@@ -284,7 +286,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_frontendScannerConfig_vaadinArtifactAlwaysIncluded()
+    void reflector_frontendScannerConfig_vaadinArtifactAlwaysIncluded()
             throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.addExclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
@@ -297,7 +299,55 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_disabledFrontendScannerConfig_getsFullIsolatedClassLoader()
+    void close_isIdempotent() {
+        reflector.close();
+        reflector.close(); // second close should not throw
+    }
+
+    @Test
+    void getResource_jarUrlDisablesCaching() throws Exception {
+        // The reflector's isolated classloader delegates to maven.api realm
+        // which contains the test JAR
+        MavenProject project = new MavenProject();
+        project.setGroupId("com.vaadin.test");
+        project.setArtifactId("reflector-tests");
+        project.setBuild(new Build());
+        project.getBuild().setOutputDirectory(PROJECT_TARGET_FOLDER);
+        project.setArtifacts(Set.of());
+
+        MojoExecution exec = new MojoExecution(new MojoDescriptor());
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        exec.getMojoDescriptor().setPluginDescriptor(pluginDescriptor);
+        pluginDescriptor.setGroupId("com.vaadin.test");
+        pluginDescriptor.setArtifactId("test-plugin");
+        pluginDescriptor.setArtifacts(List.of());
+        ClassWorld classWorld = new ClassWorld("maven.api", null);
+        classWorld.getRealm("maven.api")
+                .addURL(Path
+                        .of("src", "test", "resources",
+                                "jar-without-frontend-resources.jar")
+                        .toUri().toURL());
+        pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
+
+        Reflector execReflector = Reflector.of(project, exec, null);
+        try {
+            URL resource = execReflector.getIsolatedClassLoader()
+                    .getResource("org/json/CookieList.class");
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
+
+            URLConnection conn = resource.openConnection();
+            assertFalse(conn.getUseCaches(),
+                    "jar: URL connections should have caching disabled "
+                            + "to prevent stale JarFileFactory entries "
+                            + "under mvnd");
+        } finally {
+            execReflector.close();
+        }
+    }
+
+    @Test
+    void reflector_disabledFrontendScannerConfig_getsFullIsolatedClassLoader()
             throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.addExclude(
@@ -321,8 +371,7 @@ public class ReflectorTest {
     }
 
     @Test
-    public void reflector_excludeTargetFolder_targetFolderExcluded()
-            throws Exception {
+    void reflector_excludeTargetFolder_targetFolderExcluded() throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.setIncludeOutputDirectory(false);
 
@@ -414,42 +463,40 @@ public class ReflectorTest {
         // Ensure the classloader references all dependencies
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(19, urlSet.size());
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
-        Assert.assertTrue(urlSet
+        assertEquals(19, urlSet.size());
+        assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
+        assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(
+        assertTrue(urlSet.contains(toURLExternalForm(
                 "org.springframework.boot-spring-boot-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.addon-alpha-1.0.jar")));
-        Assert.assertTrue(urlSet
+        assertTrue(urlSet
                 .contains(toURLExternalForm("com.example.addon-beta-1.0.jar")));
-        Assert.assertTrue(
+        assertTrue(
                 urlSet.contains(toURLExternalForm("org.test-alpha-1.0.jar")));
-        Assert.assertTrue(
-                urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        assertTrue(urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
+        assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
         for (String url : defaultVaadinDependencies) {
-            Assert.assertTrue(urlSet.contains(toURLExternalForm(url)));
+            assertTrue(urlSet.contains(toURLExternalForm(url)));
         }
 
         // Verify scan URLs
         urlSet = Arrays.stream(isolatedClassLoader.getUrlsToScan())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(expectedScanURLs.size(), urlSet.size());
+        assertEquals(expectedScanURLs.size(), urlSet.size());
         for (String expectedUrl : expectedScanURLs) {
-            Assert.assertTrue("Scan URL missing in Reflector: " + expectedUrl,
-                    urlSet.contains(toURLExternalForm(expectedUrl)));
+            assertTrue(urlSet.contains(toURLExternalForm(expectedUrl)),
+                    "Scan URL missing in Reflector: " + expectedUrl);
         }
         // verify default excluded URLs are indeed excluded
         for (String expectedExcludedUrl : defaultVaadinDependencies) {
             if (expectedScanURLs.contains(expectedExcludedUrl)) {
                 continue; // already checked as included
             }
-            Assert.assertFalse(
-                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl,
-                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)));
+            assertFalse(urlSet.contains(toURLExternalForm(expectedExcludedUrl)),
+                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl);
         }
 
     }

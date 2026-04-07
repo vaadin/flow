@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,34 +19,35 @@ import jakarta.servlet.ServletException;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(properties = { "vaadin.push-mode=MANUAL" })
 @Import(TestServletConfiguration.class)
-public class SpringServletTest {
+class SpringServletTest {
 
     @Autowired
     private ApplicationContext context;
 
     @Test
-    public void readUniformNameProperty_propertyNameContainsDash_propertyNameIsConvertedToCamelCaseAndReadProperly()
+    void readUniformNameProperty_propertyNameContainsDash_propertyNameIsConvertedToCamelCaseAndReadProperly()
             throws ServletException {
         VaadinService service = SpringInstantiatorTest.getService(context,
                 new Properties());
         PushMode pushMode = service.getDeploymentConfiguration().getPushMode();
-        Assert.assertEquals(PushMode.MANUAL, pushMode);
+        assertEquals(PushMode.MANUAL, pushMode);
     }
 
 }

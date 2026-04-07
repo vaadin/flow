@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,7 @@
 package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -28,10 +28,10 @@ import static org.hamcrest.core.Is.is;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class DependencyTest {
+class DependencyTest {
 
     @Test
-    public void checkJsonSerialization_3ArgsCTor() {
+    void checkJsonSerialization_3ArgsCTor() {
         Dependency dependency = new Dependency(Dependency.Type.JAVASCRIPT,
                 "url", LoadMode.INLINE);
 
@@ -39,7 +39,7 @@ public class DependencyTest {
     }
 
     @Test
-    public void dynamicDependency_hasLazyMode() {
+    void dynamicDependency_hasLazyMode() {
         Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
                 "foo");
 
@@ -53,7 +53,7 @@ public class DependencyTest {
     }
 
     @Test
-    public void checkJsonSerialization_2ArgsCTor() {
+    void checkJsonSerialization_2ArgsCTor() {
         Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
                 "foo");
 

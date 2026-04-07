@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 
 /**
  * A functional interface for validating user input or other potentially invalid
@@ -202,6 +203,8 @@ public interface Validator<T>
                     return ValidationResult.create(
                             errorMessageProvider.apply(context), errorLevel);
                 }
+            } catch (DeniedSignalUsageException e) {
+                throw e;
             } catch (Exception e) {
                 LoggerFactory.getLogger(Validator.class.getName())
                         .info("An exception is thrown during validation", e);

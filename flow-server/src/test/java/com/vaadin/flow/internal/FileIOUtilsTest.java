@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,41 +18,42 @@ package com.vaadin.flow.internal;
 import java.io.File;
 import java.net.URL;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.open.OSUtils;
 
-public class FileIOUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+class FileIOUtilsTest {
 
     @Test
-    public void projectFolderOnWindows() throws Exception {
-        Assume.assumeTrue(OSUtils.isWindows());
+    void projectFolderOnWindows() throws Exception {
+        assumeTrue(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/C:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assert.assertEquals(
+        assertEquals(
                 new File("C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
-    public void projectFolderOnMacOrLinux() throws Exception {
-        Assume.assumeFalse(OSUtils.isWindows());
+    void projectFolderOnMacOrLinux() throws Exception {
+        assumeFalse(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assert.assertEquals(
-                new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
+        assertEquals(new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
-    public void tempFilesAreTempFiles() {
-        Assert.assertTrue(
-                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
-        Assert.assertFalse(
-                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
+    void tempFilesAreTempFiles() {
+        assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
+        assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -253,6 +253,57 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
+     * Exception thrown when the client sends a message with an unexpected
+     * message ID, indicating that the client and server are out of sync.
+     * <p>
+     * This typically occurs when a server pod terminates abruptly (e.g.,
+     * OOMKilled, SIGKILL) before UI state can be serialized to distributed
+     * session storage. When clients reconnect to a healthy pod, their message
+     * ID exceeds what the server expects.
+     *
+     * @since 25.1
+     */
+    public static class MessageIdSyncException extends Exception {
+
+        private final int expectedId;
+        private final int receivedId;
+
+        /**
+         * Creates a new MessageIdSyncException with the expected and received
+         * message IDs.
+         *
+         * @param expectedId
+         *            the message ID the server expected
+         * @param receivedId
+         *            the message ID received from the client
+         */
+        public MessageIdSyncException(int expectedId, int receivedId) {
+            super("Unexpected message id from the client. Expected: "
+                    + expectedId + ", got: " + receivedId);
+            this.expectedId = expectedId;
+            this.receivedId = receivedId;
+        }
+
+        /**
+         * Gets the message ID the server expected.
+         *
+         * @return the expected message ID
+         */
+        public int getExpectedId() {
+            return expectedId;
+        }
+
+        /**
+         * Gets the message ID received from the client.
+         *
+         * @return the received message ID
+         */
+        public int getReceivedId() {
+            return receivedId;
+        }
+    }
+
+    /**
      * Reads JSON containing zero or more serialized RPC calls (including legacy
      * variable changes) and executes the calls.
      *
@@ -269,7 +320,8 @@ public class ServerRpcHandler implements Serializable {
      *             the session.
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
-            throws IOException, InvalidUIDLSecurityKeyException {
+            throws IOException, InvalidUIDLSecurityKeyException,
+            MessageIdSyncException {
         handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
                 request);
     }
@@ -289,7 +341,7 @@ public class ServerRpcHandler implements Serializable {
      *             the session.
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
-            throws InvalidUIDLSecurityKeyException {
+            throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
 
         if (message == null || message.isEmpty()) {
@@ -362,11 +414,7 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug("Unexpected message id from the client."
                         + " Expected client id: " + expectedId + ", got "
                         + requestId + ". Message start: " + messageDetails);
-                throw new UnsupportedOperationException(
-                        "Unexpected message id from the client."
-                                + " Expected client id: " + expectedId
-                                + ", got " + requestId
-                                + ". more details logged on DEBUG level.");
+                throw new MessageIdSyncException(expectedId, requestId);
             }
         } else {
             // Message id ok, process RPCs

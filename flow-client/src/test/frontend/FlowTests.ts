@@ -2,13 +2,13 @@ import { expect } from '@open-wc/testing';
 
 // API to test
 import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
-import { Flow, NavigationParameters } from '../../main/frontend/Flow';
+import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import '../../main/frontend/FlowBootstrap';
 import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
-import { MockXhrServer, newServer } from 'mock-xmlhttprequest';
+import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';
 
 const $wnd = window as any;
@@ -103,7 +103,7 @@ describe('Flow', () => {
     $wnd.addEventListener = $wnd.originalAddEventListener;
   });
 
-  let listeners: { type: string; listener: any }[] = [];
+  let listeners: Array<{ type: string; listener: any }> = [];
 
   beforeEach(() => {
     delete $wnd.Vaadin;
@@ -751,7 +751,7 @@ function stubServerRemoteFunction(
     req.respond(
       200,
       { 'content-type': 'application/json' },
-      'for(;;);[{"syncId":' + (payload['syncId'] + 1) + ',"clientId":' + (payload['clientId'] + 1) + '}]'
+      '{"syncId":' + (payload['syncId'] + 1) + ',"clientId":' + (payload['clientId'] + 1) + '}'
     );
   });
 }

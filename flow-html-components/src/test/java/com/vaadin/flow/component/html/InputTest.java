@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,16 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class InputTest extends ComponentTest {
+class InputTest extends ComponentTest {
 
     // Actual test methods in super class
 
+    @BeforeEach
     @Override
-    public void setup() throws IntrospectionException, InstantiationException,
+    void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
         whitelistProperty("valueChangeMode");
@@ -43,7 +45,7 @@ public class InputTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 }

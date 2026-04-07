@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,14 +17,14 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -32,11 +32,14 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link DefaultDeploymentConfiguration}
@@ -44,20 +47,18 @@ import static org.junit.Assert.assertTrue;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class DefaultDeploymentConfigurationTest {
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
+class DefaultDeploymentConfigurationTest {
+    @TempDir
+    Path tempFolder;
     VaadinContext context;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         context = new MockVaadinContext();
     }
 
     @Test
-    public void testGetSystemPropertyForDefaultPackage()
+    void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
         Class<?> clazz = Class.forName("ClassInDefaultPackage");
         String value = "value";
@@ -73,7 +74,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void testGetSystemProperty() {
+    void testGetSystemProperty() {
         String value = "value";
         String prop = "prop";
         System.setProperty(
@@ -91,7 +92,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void booleanValueReadIgnoreTheCase_true() {
+    void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
@@ -99,13 +100,12 @@ public class DefaultDeploymentConfigurationTest {
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
-        assertTrue(
-                "Boolean value equal to 'true' ignoring case should be interpreted as 'true'",
-                config.isSendUrlsAsParameters());
+        assertTrue(config.isSendUrlsAsParameters(),
+                "Boolean value equal to 'true' ignoring case should be interpreted as 'true'");
     }
 
     @Test
-    public void booleanValueReadIgnoreTheCase_false() {
+    void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
@@ -114,13 +114,12 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
-        assertFalse(
-                "Boolean value equal to 'false' ignoring case should be interpreted as 'false'",
-                config.isSendUrlsAsParameters());
+        assertFalse(config.isSendUrlsAsParameters(),
+                "Boolean value equal to 'false' ignoring case should be interpreted as 'false'");
     }
 
     @Test
-    public void booleanValueRead_emptyIsTrue() {
+    void booleanValueRead_emptyIsTrue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
@@ -128,12 +127,12 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
-        assertTrue("Empty boolean value should be interpreted as 'true'",
-                config.isSendUrlsAsParameters());
+        assertTrue(config.isSendUrlsAsParameters(),
+                "Empty boolean value should be interpreted as 'true'");
     }
 
     @Test
-    public void defaultPushServletMapping() {
+    void defaultPushServletMapping() {
         Properties initParameters = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -141,7 +140,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void pushUrl() {
+    void pushUrl() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
@@ -152,18 +151,19 @@ public class DefaultDeploymentConfigurationTest {
         assertThat(config.getPushServletMapping(), is("/foo/*"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void booleanValueRead_exceptionOnNonBooleanValue() {
+    @Test
+    void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
 
-        createDeploymentConfig(initParameters);
+        assertThrows(IllegalArgumentException.class,
+                () -> createDeploymentConfig(initParameters));
     }
 
     @Test
-    public void maxMessageSuspendTimeout_validValue_accepted() {
+    void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
@@ -174,7 +174,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
+    void maxMessageSuspendTimeout_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
@@ -185,23 +185,23 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
+    void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
         // parameter !
-        Assert.assertNull(appConfig.getStringProperty(
+        assertNull(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, null));
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
-        Assert.assertTrue(config.isProductionMode());
-        Assert.assertTrue(config.getProperties().isEmpty());
+        assertTrue(config.isProductionMode());
+        assertTrue(config.getProperties().isEmpty());
     }
 
     @Test
-    public void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
+    void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
 
@@ -213,28 +213,28 @@ public class DefaultDeploymentConfigurationTest {
                 appConfig, initParameters);
         // the deployment configuration parameter takes precedence over parent
         // config
-        Assert.assertTrue(config.isProductionMode());
+        assertTrue(config.isProductionMode());
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
+    void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
         // parameter !
-        Assert.assertNull(appConfig.getStringProperty(
+        assertNull(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                 null));
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
-        Assert.assertTrue(config.isXsrfProtectionEnabled());
-        Assert.assertTrue(config.getProperties().isEmpty());
+        assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.getProperties().isEmpty());
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
+    void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
@@ -247,79 +247,80 @@ public class DefaultDeploymentConfigurationTest {
                 appConfig, initParameters);
         // the deployment configuration parameter takes precedence over parent
         // config
-        Assert.assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.isXsrfProtectionEnabled());
     }
 
     @Test
-    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
+    void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
-        Assert.assertEquals("Expected dev server to be disabled by default",
-                Mode.DEVELOPMENT_BUNDLE, config.getMode());
+        assertEquals(Mode.DEVELOPMENT_BUNDLE, config.getMode(),
+                "Expected dev server to be disabled by default");
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
-        Assert.assertEquals("Expected dev server to be enabled when set true",
-                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+        assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
+                "Expected dev server to be enabled when set true");
     }
 
     @Test
-    public void frontendHotdeploy_defaultsToParentConfiguration() {
+    void frontendHotdeploy_defaultsToParentConfiguration() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
 
-        Assert.assertEquals(
-                "Expected dev server to be enabled from parent configuration",
-                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+        assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
+                "Expected dev server to be enabled from parent configuration");
     }
 
     @Test
-    public void checkLockStrategy_defaultsToAssert() {
+    void checkLockStrategy_defaultsToAssert() {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+        assertEquals(SessionLockCheckStrategy.ASSERT,
                 config.getSessionLockCheckStrategy());
     }
 
     @Test
-    public void checkLockStrategy_configurableViaPropertyParameter() {
+    void checkLockStrategy_configurableViaPropertyParameter() {
         Properties init = new Properties();
         init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                 "throw");
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assert.assertEquals(SessionLockCheckStrategy.THROW,
+        assertEquals(SessionLockCheckStrategy.THROW,
                 config.getSessionLockCheckStrategy());
     }
 
     @Test
-    public void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
+    void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         init.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assert.assertTrue("ProductionMode should be enabled",
-                config.isProductionMode());
+        assertTrue(config.isProductionMode(),
+                "ProductionMode should be enabled");
     }
 
     @Test
-    public void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
+    void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
             throws IOException {
-        File projectRoot = tempFolder.getRoot();
-        File legacyFrontend = tempFolder
-                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
+        File projectRoot = tempFolder.toFile();
+        File legacyFrontend = Files
+                .createDirectories(
+                        tempFolder.resolve(FrontendUtils.LEGACY_FRONTEND_DIR))
+                .toFile();
 
         File legacyFrontendViews = new File(legacyFrontend,
                 FrontendUtils.HILLA_VIEWS_PATH);
         if (!legacyFrontendViews.mkdir()) {
-            Assert.fail("Failed to generate legacy frontend views folder");
+            fail("Failed to generate legacy frontend views folder");
         }
 
         File viewFile = new File(legacyFrontendViews, "MyView.tsx");
@@ -334,8 +335,8 @@ public class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
-            Assert.assertEquals("Should use the legacy frontend folder",
-                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+            assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
+                    "Should use the legacy frontend folder");
         }
     }
 
@@ -364,7 +365,7 @@ public class DefaultDeploymentConfigurationTest {
                         FrontendUtils.DEFAULT_FRONTEND_DIR))
                 .thenReturn(FrontendUtils.DEFAULT_FRONTEND_DIR);
         Mockito.when(appConfig.getProjectFolder())
-                .thenReturn(tempFolder.getRoot());
+                .thenReturn(tempFolder.toFile());
         Mockito.when(appConfig.getContext()).thenReturn(context);
         return appConfig;
     }

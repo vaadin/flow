@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -35,10 +34,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
-public class CompositeTest {
+class CompositeTest {
 
     // layoutWithSingleComponentComposite (TestLayout)
     // - compositeWithComponent (CompositeWithComponent)
@@ -92,8 +92,8 @@ public class CompositeTest {
 
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         compositeWithComponent = new CompositeWithComponent() {
             @Override
             public String toString() {
@@ -114,7 +114,7 @@ public class CompositeTest {
         layoutInsideComposite.track();
         layoutWithSingleComponentComposite.track();
 
-        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService.setCurrent(null);
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -124,67 +124,67 @@ public class CompositeTest {
         VaadinService.setCurrent(service);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         VaadinService.setCurrent(null);
     }
 
     @Test
-    public void getElement_compositeAndCompositeComponent() {
+    void getElement_compositeAndCompositeComponent() {
         assertEquals(layoutInsideComposite.getElement(),
                 compositeWithComponent.getElement());
     }
 
     @Test
-    public void getParentElement_compositeInLayout() {
+    void getParentElement_compositeInLayout() {
         assertEquals(layoutWithSingleComponentComposite.getElement(),
                 compositeWithComponent.getElement().getParent());
     }
 
     @Test
-    public void getElementChildren_layoutWithComponentInComposite() {
+    void getElementChildren_layoutWithComponentInComposite() {
         assertElementChildren(layoutWithSingleComponentComposite.getElement(),
                 layoutInsideComposite.getElement());
     }
 
     @Test
-    public void getParent_compositeInLayout() {
+    void getParent_compositeInLayout() {
         assertEquals(layoutWithSingleComponentComposite,
                 compositeWithComponent.getParent().get());
     }
 
     @Test
-    public void getParent_componentInComposite() {
+    void getParent_componentInComposite() {
         assertEquals(compositeWithComponent,
                 layoutInsideComposite.getParent().get());
     }
 
     @Test
-    public void getParent_componentInLayoutInComposite() {
+    void getParent_componentInLayoutInComposite() {
         assertEquals(layoutInsideComposite,
                 componentInsideLayoutInsideComposite.getParent().get());
     }
 
     @Test
-    public void getChildren_layoutWithComposite() {
+    void getChildren_layoutWithComposite() {
         ComponentTest.assertChildren(layoutWithSingleComponentComposite,
                 compositeWithComponent);
     }
 
     @Test
-    public void getChildren_compositeWithComponent() {
+    void getChildren_compositeWithComponent() {
         ComponentTest.assertChildren(compositeWithComponent,
                 layoutInsideComposite);
     }
 
     @Test
-    public void getChildren_layoutInComposite() {
+    void getChildren_layoutInComposite() {
         ComponentTest.assertChildren(layoutInsideComposite,
                 componentInsideLayoutInsideComposite);
     }
 
     @Test
-    public void automaticCompositeContentType() {
+    void automaticCompositeContentType() {
         class CompositeWithGenericType extends Composite<TestComponent> {
         }
 
@@ -193,21 +193,21 @@ public class CompositeTest {
         assertEquals(TestComponent.class, instance.getContent().getClass());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void compositeContentTypeWithVariableTypeParameter() {
+    @Test
+    void compositeContentTypeWithVariableTypeParameter() {
         class CompositeWithVariableType<C extends Component>
                 extends Composite<C> {
         }
 
         CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     public static class CustomComponent<T> extends UI {
     }
 
     @Test
-    public void compositeContentTypeWithSpecifiedType() {
+    void compositeContentTypeWithSpecifiedType() {
         class CompositeWithCustomComponent
                 extends Composite<CustomComponent<List<String>>> {
         }
@@ -221,37 +221,38 @@ public class CompositeTest {
             extends Composite<C> {
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void compositeContentTypeWithTypeVariable() {
+    @Test
+    void compositeContentTypeWithTypeVariable() {
         class CompositeWithComposite
                 extends Composite<CompositeWithVariableType<TestComponent>> {
         }
 
         CompositeWithComposite composite = new CompositeWithComposite();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void rawContentType() {
+    @Test
+    void rawContentType() {
         @SuppressWarnings("rawtypes")
         class CompositeWithRawType extends Composite {
         }
 
         CompositeWithRawType composite = new CompositeWithRawType();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void noDefaultConstructor() {
+    @Test
+    void noDefaultConstructor() {
         class NoDefaultConstructor extends Composite<Text> {
         }
 
         NoDefaultConstructor composite = new NoDefaultConstructor();
-        composite.getContent();
+        assertThrows(IllegalArgumentException.class,
+                () -> composite.getContent());
     }
 
     @Test
-    public void compositeHierarchy() {
+    void compositeHierarchy() {
         class Class1<T extends Component> extends Composite<T> {
         }
         class Class2<T, V extends Component> extends Class1<V> {
@@ -273,7 +274,7 @@ public class CompositeTest {
     // --- layoutInsideComposite (TestLayout) content for compositeWithComponent
     // ---- componentInsideLayoutInsideComposite (TestComponent)
     @Test
-    public void attachDetachEvents_compositeHierarchy_correctOrder() {
+    void attachDetachEvents_compositeHierarchy_correctOrder() {
         UI ui = new UI();
 
         List<Component> attached = new ArrayList<>();
@@ -334,7 +335,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void testOnAttachOnDetachAndEventsOrder() {
+    void testOnAttachOnDetachAndEventsOrder() {
         List<Integer> triggered = new ArrayList<>();
 
         Component component = new Component(new Element("div")) {

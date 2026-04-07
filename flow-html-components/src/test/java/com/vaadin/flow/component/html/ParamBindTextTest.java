@@ -1,0 +1,101 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.component.html;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.SignalsUnitTest;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ParamBindTextTest extends SignalsUnitTest {
+
+    @Test
+    void bindName_updatesAttributeOnSignalChange() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        ValueSignal<String> signal = new ValueSignal<>("");
+        param.bindName(signal);
+
+        signal.set("name-1");
+        assertEquals("name-1", param.getName());
+
+        signal.set("name-2");
+        assertEquals("name-2", param.getName());
+    }
+
+    @Test
+    void bindName_setNameWhileBindingActive_throws() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        param.bindName(signal);
+
+        assertThrows(BindingActiveException.class,
+                () -> param.setName("manual"));
+    }
+
+    @Test
+    void bindName_nullSignal_throwsNPE() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        assertThrows(NullPointerException.class, () -> param.bindName(null));
+    }
+
+    @Test
+    void bindValue_updatesAttributeOnSignalChange() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        ValueSignal<String> signal = new ValueSignal<>("");
+        param.bindValue(signal);
+
+        signal.set("value-1");
+        assertEquals(Optional.of("value-1"), param.getValue());
+
+        signal.set("value-2");
+        assertEquals(Optional.of("value-2"), param.getValue());
+    }
+
+    @Test
+    void bindValue_setValueWhileBindingActive_throws() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        param.bindValue(signal);
+
+        assertThrows(BindingActiveException.class,
+                () -> param.setValue("manual"));
+    }
+
+    @Test
+    void bindValue_nullSignal_throwsNPE() {
+        Param param = new Param();
+        UI.getCurrent().add(param);
+
+        assertThrows(NullPointerException.class, () -> param.bindValue(null));
+    }
+}

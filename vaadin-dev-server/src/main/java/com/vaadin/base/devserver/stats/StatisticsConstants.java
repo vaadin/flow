@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ public class StatisticsConstants {
     static final String FIELD_PROJECT_DEVMODE_STARTS = "devModeStarts";
     static final String FIELD_OPERATING_SYSTEM = "os";
     static final String FIELD_JVM = "jvm";
+    static final String FIELD_CONTAINER = "container";
     static final String FIELD_FLOW_VERSION = "flowVersion";
     static final String FIELD_VAADIN_VERSION = "vaadinVersion";
     static final String FIELD_HILLA_VERSION = "hillaVersion";

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,6 +60,7 @@ public class NodeTasks implements FallibleCommand {
     // without depending on when they are added.
     private static final List<Class<? extends FallibleCommand>> commandOrder =
         Collections.unmodifiableList(Arrays.asList(
+            TaskPrepareProdBundle.class,
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
@@ -91,7 +92,6 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyTemplateFiles.class,
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
-            TaskPrepareProdBundle.class,
             TaskProcessStylesheetCss.class,
             TaskCleanFrontendFiles.class,
             TaskRemoveOldFrontendGeneratedFiles.class

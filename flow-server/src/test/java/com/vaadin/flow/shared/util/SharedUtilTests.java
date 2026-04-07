@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,67 +17,65 @@ package com.vaadin.flow.shared.util;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SharedUtilTests {
+class SharedUtilTests {
 
     @Test
-    public void trailingSlashIsTrimmed() {
+    void trailingSlashIsTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/path/"), is("/path"));
     }
 
     @Test
-    public void noTrailingSlashForTrimming() {
+    void noTrailingSlashForTrimming() {
         assertThat(SharedUtil.trimTrailingSlashes("/path"), is("/path"));
     }
 
     @Test
-    public void trailingSlashesAreTrimmed() {
+    void trailingSlashesAreTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/path///"), is("/path"));
     }
 
     @Test
-    public void emptyStringIsHandled() {
+    void emptyStringIsHandled() {
         assertThat(SharedUtil.trimTrailingSlashes(""), is(""));
     }
 
     @Test
-    public void rootSlashIsTrimmed() {
+    void rootSlashIsTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/"), is(""));
     }
 
     @Test
-    public void camelCaseToHumanReadable() {
-        Assert.assertEquals("First Name",
+    void camelCaseToHumanReadable() {
+        assertEquals("First Name",
                 SharedUtil.camelCaseToHumanFriendly("firstName"));
-        Assert.assertEquals("First Name",
+        assertEquals("First Name",
                 SharedUtil.camelCaseToHumanFriendly("first name"));
-        Assert.assertEquals("First Name2",
+        assertEquals("First Name2",
                 SharedUtil.camelCaseToHumanFriendly("firstName2"));
-        Assert.assertEquals("First",
-                SharedUtil.camelCaseToHumanFriendly("first"));
-        Assert.assertEquals("First",
-                SharedUtil.camelCaseToHumanFriendly("First"));
-        Assert.assertEquals("Some XYZ Abbreviation",
+        assertEquals("First", SharedUtil.camelCaseToHumanFriendly("first"));
+        assertEquals("First", SharedUtil.camelCaseToHumanFriendly("First"));
+        assertEquals("Some XYZ Abbreviation",
                 SharedUtil.camelCaseToHumanFriendly("SomeXYZAbbreviation"));
 
         // Javadoc examples
-        Assert.assertEquals("My Bean Container",
+        assertEquals("My Bean Container",
                 SharedUtil.camelCaseToHumanFriendly("MyBeanContainer"));
-        Assert.assertEquals("Awesome URL Factory",
+        assertEquals("Awesome URL Factory",
                 SharedUtil.camelCaseToHumanFriendly("AwesomeURLFactory"));
-        Assert.assertEquals("Some Uri Action",
+        assertEquals("Some Uri Action",
                 SharedUtil.camelCaseToHumanFriendly("SomeUriAction"));
 
     }
 
     @Test
-    public void splitCamelCase() {
+    void splitCamelCase() {
         assertCamelCaseSplit("firstName", "first", "Name");
         assertCamelCaseSplit("fooBar", "foo", "Bar");
         assertCamelCaseSplit("fooBar", "foo", "Bar");
@@ -92,85 +90,80 @@ public class SharedUtilTests {
 
     private void assertCamelCaseSplit(String camelCaseString, String... parts) {
         String[] splitParts = SharedUtil.splitCamelCase(camelCaseString);
-        Assert.assertArrayEquals(parts, splitParts);
+        assertArrayEquals(parts, splitParts);
     }
 
     @Test
-    public void join() {
+    void join() {
         String s1 = "foo-bar-baz";
         String s2 = "foo--bar";
 
-        Assert.assertEquals("foobarbaz", SharedUtil.join(s1.split("-"), ""));
-        Assert.assertEquals("foo!bar!baz", SharedUtil.join(s1.split("-"), "!"));
-        Assert.assertEquals("foo!!bar!!baz",
-                SharedUtil.join(s1.split("-"), "!!"));
+        assertEquals("foobarbaz", SharedUtil.join(s1.split("-"), ""));
+        assertEquals("foo!bar!baz", SharedUtil.join(s1.split("-"), "!"));
+        assertEquals("foo!!bar!!baz", SharedUtil.join(s1.split("-"), "!!"));
 
-        Assert.assertEquals("foo##bar", SharedUtil.join(s2.split("-"), "#"));
+        assertEquals("foo##bar", SharedUtil.join(s2.split("-"), "#"));
     }
 
     @Test
-    public void dashSeparatedToCamelCase() {
-        Assert.assertEquals(null, SharedUtil.dashSeparatedToCamelCase(null));
-        Assert.assertEquals("", SharedUtil.dashSeparatedToCamelCase(""));
-        Assert.assertEquals("foo", SharedUtil.dashSeparatedToCamelCase("foo"));
-        Assert.assertEquals("fooBar",
-                SharedUtil.dashSeparatedToCamelCase("foo-bar"));
-        Assert.assertEquals("fooBar",
-                SharedUtil.dashSeparatedToCamelCase("foo--bar"));
-        Assert.assertEquals("fooBarBaz",
+    void dashSeparatedToCamelCase() {
+        assertEquals(null, SharedUtil.dashSeparatedToCamelCase(null));
+        assertEquals("", SharedUtil.dashSeparatedToCamelCase(""));
+        assertEquals("foo", SharedUtil.dashSeparatedToCamelCase("foo"));
+        assertEquals("fooBar", SharedUtil.dashSeparatedToCamelCase("foo-bar"));
+        assertEquals("fooBar", SharedUtil.dashSeparatedToCamelCase("foo--bar"));
+        assertEquals("fooBarBaz",
                 SharedUtil.dashSeparatedToCamelCase("foo-bar-baz"));
-        Assert.assertEquals("fooBarBaz",
+        assertEquals("fooBarBaz",
                 SharedUtil.dashSeparatedToCamelCase("foo-Bar-Baz"));
     }
 
     @Test
-    public void camelCaseToDashSeparated() {
-        Assert.assertEquals(null, SharedUtil.camelCaseToDashSeparated(null));
-        Assert.assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
-        Assert.assertEquals("foo", SharedUtil.camelCaseToDashSeparated("foo"));
-        Assert.assertEquals("foo-bar",
-                SharedUtil.camelCaseToDashSeparated("fooBar"));
-        Assert.assertEquals("foo--bar",
+    void camelCaseToDashSeparated() {
+        assertEquals(null, SharedUtil.camelCaseToDashSeparated(null));
+        assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
+        assertEquals("foo", SharedUtil.camelCaseToDashSeparated("foo"));
+        assertEquals("foo-bar", SharedUtil.camelCaseToDashSeparated("fooBar"));
+        assertEquals("foo--bar",
                 SharedUtil.camelCaseToDashSeparated("foo--bar"));
-        Assert.assertEquals("foo-bar-baz",
+        assertEquals("foo-bar-baz",
                 SharedUtil.camelCaseToDashSeparated("fooBarBaz"));
-        Assert.assertEquals("-my-bean-container",
+        assertEquals("-my-bean-container",
                 SharedUtil.camelCaseToDashSeparated("MyBeanContainer"));
-        Assert.assertEquals("-awesome-uRL-factory",
+        assertEquals("-awesome-uRL-factory",
                 SharedUtil.camelCaseToDashSeparated("AwesomeURLFactory"));
-        Assert.assertEquals("some-uri-action",
+        assertEquals("some-uri-action",
                 SharedUtil.camelCaseToDashSeparated("someUriAction"));
     }
 
     @Test
-    public void upperCamelCaseToDashSeparatedLowerCase() {
-        Assert.assertEquals(null,
+    void upperCamelCaseToDashSeparatedLowerCase() {
+        assertEquals(null,
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase(null));
-        Assert.assertEquals("",
-                SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
-        Assert.assertEquals("foo",
+        assertEquals("", SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
+        assertEquals("foo",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo"));
-        Assert.assertEquals("foo-bar",
+        assertEquals("foo-bar",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBar"));
-        Assert.assertEquals("foo--bar",
+        assertEquals("foo--bar",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo--bar"));
-        Assert.assertEquals("foo-bar-baz",
+        assertEquals("foo-bar-baz",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBarBaz"));
-        Assert.assertEquals("my-bean-container", SharedUtil
+        assertEquals("my-bean-container", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("MyBeanContainer"));
-        Assert.assertEquals("awesome-url-factory", SharedUtil
+        assertEquals("awesome-url-factory", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("AwesomeURLFactory"));
-        Assert.assertEquals("some-uri-action", SharedUtil
+        assertEquals("some-uri-action", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("someUriAction"));
     }
 
     @Test
-    public void methodUppercaseWithTurkishLocale() {
+    void methodUppercaseWithTurkishLocale() {
         Locale defaultLocale = Locale.getDefault();
         try {
             Locale.setDefault(new Locale("tr", "TR"));
-            Assert.assertEquals("Integer", SharedUtil.capitalize("integer"));
-            Assert.assertEquals("I", SharedUtil.capitalize("i"));
+            assertEquals("Integer", SharedUtil.capitalize("integer"));
+            assertEquals("I", SharedUtil.capitalize("i"));
         } finally {
             Locale.setDefault(defaultLocale);
         }
@@ -190,7 +183,7 @@ public class SharedUtilTests {
     };
 
     @Test
-    public void testParameterAdding() {
+    void testParameterAdding() {
         String[] urisWithAbcdParam = new String[] {
                 "http://demo.vaadin.com/?a=b&c=d",
                 "https://demo.vaadin.com/?a=b&c=d",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,25 +15,26 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AnchorTargetValueTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AnchorTargetValueTest {
 
     @Test
-    public void fromString_notEnum_objectHasValueAndEquals() {
+    void fromString_notEnum_objectHasValueAndEquals() {
         AnchorTargetValue value = AnchorTargetValue.forString("foo");
-        Assert.assertEquals("foo", value.getValue());
+        assertEquals("foo", value.getValue());
 
         AnchorTargetValue value1 = AnchorTargetValue.forString("foo");
-        Assert.assertEquals(value, value1);
-        Assert.assertEquals(value.hashCode(), value1.hashCode());
+        assertEquals(value, value1);
+        assertEquals(value.hashCode(), value1.hashCode());
     }
 
     @Test
-    public void fromString_enumValue_resultIsEnum() {
+    void fromString_enumValue_resultIsEnum() {
         AnchorTargetValue value = AnchorTargetValue
                 .forString(AnchorTarget.TOP.getValue());
-        Assert.assertEquals(AnchorTarget.TOP, value);
+        assertEquals(AnchorTarget.TOP, value);
     }
 }

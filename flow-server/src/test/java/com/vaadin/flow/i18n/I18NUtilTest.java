@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,34 +34,33 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
-@RunWith(MockitoJUnitRunner.class)
-public class I18NUtilTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+class I18NUtilTest {
+    @TempDir
+    Path temporaryFolder;
     private File resources;
 
     @Mock
     private ClassLoader mockLoader;
 
-    @Before
-    public void init() throws IOException {
-        resources = temporaryFolder.newFolder();
+    @BeforeEach
+    void init() throws IOException {
+        MockitoAnnotations.openMocks(this);
+        resources = Files.createTempDirectory(temporaryFolder, "temp").toFile();
     }
 
     @Test
-    public void foundResourceFolder_returnsExpectedLocales()
-            throws IOException {
+    void foundResourceFolder_returnsExpectedLocales() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
@@ -87,30 +86,29 @@ public class I18NUtilTest {
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assert.assertEquals(3, defaultTranslationLocales.size());
+        assertEquals(3, defaultTranslationLocales.size());
 
-        Assert.assertTrue("Missing German bundle",
-                defaultTranslationLocales.contains(new Locale("de")));
-        Assert.assertTrue("Missing English bundle",
-                defaultTranslationLocales.contains(new Locale("en", "GB")));
-        Assert.assertTrue("Missing Finnish bundle",
-                defaultTranslationLocales.contains(new Locale("fi", "FI")));
+        assertTrue(defaultTranslationLocales.contains(new Locale("de")),
+                "Missing German bundle");
+        assertTrue(defaultTranslationLocales.contains(new Locale("en", "GB")),
+                "Missing English bundle");
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Missing Finnish bundle");
     }
 
     @Test
-    public void noTranslationFiles_returnsEmptyList() throws IOException {
+    void noTranslationFiles_returnsEmptyList() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assert.assertTrue("Nothing should be returned for empty folder",
-                defaultTranslationLocales.isEmpty());
+        assertTrue(defaultTranslationLocales.isEmpty(),
+                "Nothing should be returned for empty folder");
     }
 
     @Test
-    public void onlyDefaultTranslationFile_returnsEmptyList()
-            throws IOException {
+    void onlyDefaultTranslationFile_returnsEmptyList() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
@@ -121,13 +119,12 @@ public class I18NUtilTest {
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assert.assertTrue("Nothing should be returned for empty folder",
-                defaultTranslationLocales.isEmpty());
+        assertTrue(defaultTranslationLocales.isEmpty(),
+                "Nothing should be returned for empty folder");
     }
 
     @Test
-    public void onlyDefaultTranslationFile_returnsTrueForDefault()
-            throws IOException {
+    void onlyDefaultTranslationFile_returnsTrueForDefault() throws IOException {
         File translations = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
         translations.mkdirs();
@@ -140,12 +137,12 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        Assert.assertTrue("Default file should return true",
-                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
     }
 
     @Test
-    public void noTranslationFilesInExistingFolder_returnsFalseForDefault()
+    void noTranslationFilesInExistingFolder_returnsFalseForDefault()
             throws IOException {
         File translations = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
@@ -154,36 +151,35 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
 
-        Assert.assertFalse("Nothing should be returned for empty folder",
-                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        assertFalse(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Nothing should be returned for empty folder");
     }
 
     @Test
-    public void translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
 
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { path.toUri().toURL() });
 
-        Assert.assertTrue("Default file should return true",
-                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assert.assertEquals(
-                "Translation files with locale inside JAR should be resolved",
-                2, defaultTranslationLocales.size());
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files with locale inside JAR should be resolved");
 
-        Assert.assertTrue("Finnish locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("fi", "FI")));
-        Assert.assertTrue("Japan locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("ja", "JP")));
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
     }
 
     // Open Liberty may use 'wsjar' as protocol of JAR resources
     // https://openliberty.io/docs/latest/reference/config/classloading.html
     @Test
-    public void openliberty_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void openliberty_translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
 
@@ -218,18 +214,17 @@ public class I18NUtilTest {
             }
         };
 
-        Assert.assertTrue("Default file should return true",
-                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assert.assertEquals(
-                "Translation files with locale inside JAR should be resolved",
-                2, defaultTranslationLocales.size());
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files with locale inside JAR should be resolved");
 
-        Assert.assertTrue("Finnish locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("fi", "FI")));
-        Assert.assertTrue("Japan locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("ja", "JP")));
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
     }
 
     public static class MockVirtualFile {
@@ -258,7 +253,7 @@ public class I18NUtilTest {
 
     // vfs:/content/my.war/WEB-INF/classes/vaadin-i18n/
     @Test
-    public void jbossVfs_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void jbossVfs_translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
         JarFile jarFile = new JarFile(path.toFile());
@@ -303,22 +298,21 @@ public class I18NUtilTest {
             }
         };
 
-        Assert.assertTrue("Default file should return true",
-                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assert.assertEquals(
-                "Translation files with locale inside JAR should be resolved",
-                2, defaultTranslationLocales.size());
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files with locale inside JAR should be resolved");
 
-        Assert.assertTrue("Finnish locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("fi", "FI")));
-        Assert.assertTrue("Japan locale translation should have been found",
-                defaultTranslationLocales.contains(new Locale("ja", "JP")));
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
     }
 
-    private Path generateZipArchive(TemporaryFolder folder) throws IOException {
-        File archiveFile = new File(folder.getRoot(), "fake.jar");
+    private Path generateZipArchive(Path folder) throws IOException {
+        File archiveFile = folder.resolve("fake.jar").toFile();
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 

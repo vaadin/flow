@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,8 +55,6 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
@@ -72,8 +70,6 @@ import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -87,6 +83,8 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -129,7 +127,8 @@ public class UI extends Component
 
     private PushConfiguration pushConfiguration;
 
-    private Locale locale = Locale.getDefault();
+    private final ValueSignal<Locale> localeSignal = new ValueSignal<>(
+            Locale.getDefault());
 
     private final UIInternals internals;
 
@@ -810,7 +809,32 @@ public class UI extends Component
      */
     @Override
     public Locale getLocale() {
-        return locale;
+        return localeSignal.peek();
+    }
+
+    /**
+     * Gets a read-only signal that holds the current locale of this UI.
+     * <p>
+     * Use {@link Signal#get()} to read the locale reactively (creates a
+     * dependency when called inside a signal effect). Use {@link #getLocale()}
+     * for non-reactive reads. To change the locale, use
+     * {@link #setLocale(Locale)} which also notifies
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver LocaleChangeObserver}
+     * instances.
+     * <p>
+     * The signal can be used for two-way binding with a field component by
+     * passing {@link #setLocale(Locale)} as the write callback:
+     *
+     * <pre>
+     * localeDropdown.bindValue(ui.localeSignal(), ui::setLocale);
+     * </pre>
+     *
+     * @return a read-only signal holding the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public Signal<Locale> localeSignal() {
+        return localeSignal.asReadonly();
     }
 
     /**
@@ -825,8 +849,8 @@ public class UI extends Component
      */
     public void setLocale(Locale locale) {
         assert locale != null : "Null locale is not supported!";
-        if (!this.locale.equals(locale)) {
-            this.locale = locale;
+        if (!getLocale().equals(locale)) {
+            localeSignal.set(locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }
@@ -1261,6 +1285,10 @@ public class UI extends Component
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * In development mode, local signal field values are automatically
+     * transferred from the old component instance to the new one, preserving UI
+     * state across refreshes.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1724,6 +1752,18 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
+    /**
+     * Reference to the client outlet element wrapper.
+     * <p>
+     * This field should not be set directly for any reason; assigning a new
+     * value has no effect on the application. It is maintained internally and
+     * will be removed in a future version.
+     *
+     * @deprecated Use {@link UIInternals#getWrapperElement()} through
+     *             {@code getInternals().getWrapperElement()} instead.
+     */
+    @Deprecated(forRemoval = true)
+    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
@@ -2009,7 +2049,11 @@ public class UI extends Component
             if (!isPostponed()) {
                 // Route does not exist, and current view does not prevent
                 // navigation thus an error page is shown
-                handleErrorNavigation(location);
+                NotFoundException notFoundException = new NotFoundException(
+                        "Couldn't find route for '" + location.getPath() + "'");
+                getInternals().getRouter().handleExceptionNavigation(this,
+                        location, notFoundException,
+                        NavigationTrigger.CLIENT_SIDE, null);
             }
 
         }
@@ -2029,52 +2073,16 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        try {
-            getInternals().setLastHandledNavigation(location);
-            NavigationEvent navigationEvent = new NavigationEvent(
-                    getInternals().getRouter(), location, this, trigger);
+        NavigationEvent navigationEvent = new NavigationEvent(
+                getInternals().getRouter(), location, this, trigger);
 
-            JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
-                    navigationState);
-
-            clientNavigationStateRenderer.handle(navigationEvent);
-
-            forwardToClientUrl = clientNavigationStateRenderer
-                    .getClientForwardRoute();
-
-            adjustPageTitle();
-
-        } catch (Exception exception) {
-            handleExceptionNavigation(location, exception);
-        } finally {
-            getInternals().clearLastHandledNavigation();
-        }
-    }
-
-    private boolean handleExceptionNavigation(Location location,
-            Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getInternals()
-                .getRouter().getErrorNavigationTarget(exception);
-        if (maybeLookupResult.isPresent()) {
-            ErrorTargetEntry lookupResult = maybeLookupResult.get();
-
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    exception.getMessage());
-            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                    new NavigationStateBuilder(getInternals().getRouter())
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
-
-            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    getInternals().getRouter(), location, this,
-                    NavigationTrigger.CLIENT_SIDE, errorParameter);
-
-            errorStateRenderer.handle(errorNavigationEvent);
-        } else {
-            throw new RuntimeException(exception);
-        }
-        return isPostponed();
+        JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
+                navigationState);
+        getInternals().getRouter().executeNavigation(this, location,
+                navigationEvent, renderer, (httpStatus) -> {
+                    forwardToClientUrl = renderer.getClientForwardRoute();
+                    adjustPageTitle();
+                });
     }
 
     private boolean isPostponed() {
@@ -2092,22 +2100,6 @@ public class UI extends Component
             getInternals().cancelPendingTitleUpdate();
             getInternals().setTitle(appShellTitle);
         }
-    }
-
-    private void handleErrorNavigation(Location location) {
-        NavigationState errorNavigationState = getInternals().getRouter()
-                .resolveRouteNotFoundNavigationTarget()
-                .orElse(getDefaultNavigationError());
-        ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                errorNavigationState);
-        NotFoundException notFoundException = new NotFoundException(
-                "Couldn't find route for '" + location.getPath() + "'");
-        ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
-                NotFoundException.class, notFoundException);
-        ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                getInternals().getRouter(), location, this,
-                NavigationTrigger.CLIENT_SIDE, errorParameter);
-        errorStateRenderer.handle(errorNavigationEvent);
     }
 
     private NavigationState getDefaultNavigationError() {

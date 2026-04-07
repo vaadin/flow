@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,8 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.dom.Element;
@@ -34,7 +33,13 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.tests.PublicApiAnalyzer;
 
-public class AbstractFieldTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AbstractFieldTest {
     // This isn't a test in itself, but it shows that no more than one method
     // needs to be overridden
     private static class SimpleAbstractField<T>
@@ -108,39 +113,38 @@ public class AbstractFieldTest {
 
     private static void assertNoEvents(HasValue<?, ?> observable) {
         observable.addValueChangeListener(
-                event -> Assert.fail("Got unexpected event: " + event));
+                event -> fail("Got unexpected event: " + event));
     }
 
     @Test
-    public void initialValue_used() {
+    void initialValue_used() {
         TestAbstractField<String> field = new TestAbstractField<>("foo");
 
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void emptyValue_sameAsInitial() {
+    void emptyValue_sameAsInitial() {
         TestAbstractField<String> field = new TestAbstractField<>("foo");
 
-        Assert.assertEquals("foo", field.getEmptyValue());
+        assertEquals("foo", field.getEmptyValue());
 
         field.setValue("bar");
 
-        Assert.assertEquals(
-                "Empty value shouldn't change when value is changed", "foo",
-                field.getEmptyValue());
+        assertEquals("foo", field.getEmptyValue(),
+                "Empty value shouldn't change when value is changed");
     }
 
     @Test
-    public void initialValue_defaultNull() {
+    void initialValue_defaultNull() {
         TestAbstractField<String> field = new TestAbstractField<>();
 
-        Assert.assertNull(field.getValue());
-        Assert.assertNull(field.getEmptyValue());
+        assertNull(field.getValue());
+        assertNull(field.getEmptyValue());
     }
 
     @Test
-    public void setValue_differentValue_firesOneEvent() {
+    void setValue_differentValue_firesOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -148,11 +152,11 @@ public class AbstractFieldTest {
         field.setValue("Foo");
 
         eventMonitor.assertEvent(false, null, "Foo");
-        Assert.assertEquals("Foo", field.presentationValue);
+        assertEquals("Foo", field.presentationValue);
     }
 
     @Test
-    public void setValue_sameValue_firesNoEvent() {
+    void setValue_sameValue_firesNoEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -163,7 +167,7 @@ public class AbstractFieldTest {
     }
 
     @Test
-    public void clear_firesIfNotEmpty() {
+    void clear_firesIfNotEmpty() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -173,30 +177,30 @@ public class AbstractFieldTest {
 
         field.setValue("foo");
         eventMonitor.discard();
-        Assert.assertFalse(field.isEmpty());
+        assertFalse(field.isEmpty());
 
         field.clear();
         eventMonitor.assertEvent(false, "foo", null);
-        Assert.assertTrue(field.isEmpty());
+        assertTrue(field.isEmpty());
 
         field.clear();
         eventMonitor.assertNoEvent();
     }
 
     @Test
-    public void clear_customEmptyValue_emptyValueUsed() {
+    void clear_customEmptyValue_emptyValueUsed() {
         TestAbstractField<String> field = new TestAbstractField<>();
         field.emptyValue = () -> "";
 
-        Assert.assertFalse(field.isEmpty());
+        assertFalse(field.isEmpty());
 
         field.clear();
-        Assert.assertTrue(field.isEmpty());
-        Assert.assertEquals("", field.getValue());
+        assertTrue(field.isEmpty());
+        assertEquals("", field.getValue());
     }
 
     @Test
-    public void updateFromClient_differentValue_updatesAndFires() {
+    void updateFromClient_differentValue_updatesAndFires() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -209,7 +213,7 @@ public class AbstractFieldTest {
     }
 
     @Test
-    public void customEquals() {
+    void customEquals() {
         TestAbstractField<Integer> field = new TestAbstractField<>();
         field.valueEquals = (value1, value2) -> value1 == value2;
 
@@ -235,68 +239,67 @@ public class AbstractFieldTest {
     }
 
     @Test
-    public void customEquals_isEmpty() {
+    void customEquals_isEmpty() {
         Integer value1 = new Integer(0);
         Integer value2 = new Integer(0);
 
         TestAbstractField<Integer> field = new TestAbstractField<>(value1);
         field.valueEquals = (v1, v2) -> v1 == v2;
 
-        Assert.assertTrue(field.isEmpty());
-        Assert.assertFalse(field.getOptionalValue().isPresent());
+        assertTrue(field.isEmpty());
+        assertFalse(field.getOptionalValue().isPresent());
 
         field.setValue(value2);
-        Assert.assertFalse(field.isEmpty());
-        Assert.assertTrue(field.getOptionalValue().isPresent());
+        assertFalse(field.isEmpty());
+        assertTrue(field.getOptionalValue().isPresent());
 
         field.clear();
-        Assert.assertTrue(field.isEmpty());
-        Assert.assertFalse(field.getOptionalValue().isPresent());
+        assertTrue(field.isEmpty());
+        assertFalse(field.getOptionalValue().isPresent());
     }
 
     @Test
-    public void getValue_changesAfterUpdatedFromClient() {
+    void getValue_changesAfterUpdatedFromClient() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        Assert.assertNull(field.getValue());
+        assertNull(field.getValue());
 
         field.presentationValue = "foo";
-        Assert.assertNull(field.getValue());
+        assertNull(field.getValue());
 
         field.valueUpdatedFromClient(false);
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void setPresentation_setSameValue_notRunAgain() {
+    void setPresentation_setSameValue_notRunAgain() {
         TestAbstractField<String> field = new TestAbstractField<>();
         AtomicReference<String> lastWriteValue = new AtomicReference<>();
         field.setPresentationValue = value -> {
-            Assert.assertNull("Unexpected update",
-                    lastWriteValue.getAndSet(value));
+            assertNull(lastWriteValue.getAndSet(value), "Unexpected update");
             field.presentationValue = value;
         };
 
         field.setValue("foo");
-        Assert.assertEquals("foo", lastWriteValue.get());
+        assertEquals("foo", lastWriteValue.get());
 
         lastWriteValue.set(null);
 
         field.setValue("foo");
-        Assert.assertNull(lastWriteValue.get());
+        assertNull(lastWriteValue.get());
     }
 
     @Test
-    public void updatePresentation_doesntCallSetPresentation() {
+    void updatePresentation_doesntCallSetPresentation() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        field.setPresentationValue = value -> Assert
-                .fail("setPresentationValue should not run");
+        field.setPresentationValue = value -> fail(
+                "setPresentationValue should not run");
 
         field.updatePresentationValue("foo", true);
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void setPresentation_throws_sameException_valuePreserved() {
+    void setPresentation_throws_sameException_valuePreserved() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -307,17 +310,17 @@ public class AbstractFieldTest {
 
         try {
             field.setValue("foo");
-            Assert.fail("Exception should have been thrown");
+            fail("Exception should have been thrown");
         } catch (IllegalStateException e) {
-            Assert.assertEquals("foo", e.getMessage());
+            assertEquals("foo", e.getMessage());
         }
 
         eventMonitor.assertNoEvent();
-        Assert.assertNull(field.getValue());
+        assertNull(field.getValue());
     }
 
     @Test
-    public void setPresentation_partialUpdates_onlyOneEvent() {
+    void setPresentation_partialUpdates_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -333,18 +336,18 @@ public class AbstractFieldTest {
 
         field.setValue("foo");
         eventMonitor.assertEvent(false, null, "foo");
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void setPresentation_changesValue_onlyOneEvent() {
+    void setPresentation_changesValue_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
 
         field.setPresentationValue = value -> {
-            field.setPresentationValue = value2 -> Assert
-                    .fail("setPresentationValue should not be called again");
+            field.setPresentationValue = value2 -> fail(
+                    "setPresentationValue should not be called again");
 
             field.updatePresentationValue(value.toUpperCase(Locale.ROOT),
                     false);
@@ -352,29 +355,29 @@ public class AbstractFieldTest {
 
         field.setValue("foo");
         eventMonitor.assertEvent(false, null, "FOO");
-        Assert.assertEquals("FOO", field.getValue());
+        assertEquals("FOO", field.getValue());
     }
 
     @Test
-    public void setPresentation_revertsValue_noEvent() {
+    void setPresentation_revertsValue_noEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
 
         field.setPresentationValue = value -> {
-            field.setPresentationValue = value2 -> Assert
-                    .fail("setPresentationValue should not be called again");
+            field.setPresentationValue = value2 -> fail(
+                    "setPresentationValue should not be called again");
             field.valueUpdatedFromClient(false);
         };
 
         field.setValue("foo");
         eventMonitor.assertNoEvent();
 
-        Assert.assertNull(field.getValue());
+        assertNull(field.getValue());
     }
 
     @Test
-    public void setValueInEventHandler() {
+    void setValueInEventHandler() {
         TestAbstractField<String> field = new TestAbstractField<>();
 
         List<ValueChangeEvent<String>> beforeEvents = new ArrayList<>();
@@ -388,75 +391,75 @@ public class AbstractFieldTest {
 
         field.setValue("foo");
 
-        Assert.assertEquals(2, beforeEvents.size());
+        assertEquals(2, beforeEvents.size());
         ValueChangeMonitor.assertEventValues(beforeEvents.get(0), null, "foo");
         ValueChangeMonitor.assertEventValues(beforeEvents.get(1), "foo", "bar");
 
         // Does not make sense, but still testing so we know how it works
         // Also, this is how Vaadin 8 works, and nobody has been too upset
-        Assert.assertEquals(2, afterEvents.size());
+        assertEquals(2, afterEvents.size());
         ValueChangeMonitor.assertEventValues(afterEvents.get(0), "foo", "bar");
         ValueChangeMonitor.assertEventValues(afterEvents.get(1), null, "foo");
     }
 
     @Test
-    public void requiredIndicator_writtenToElement() {
+    void requiredIndicator_writtenToElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
-        Assert.assertFalse(element.getProperty("required", false));
+        assertFalse(element.getProperty("required", false));
 
         field.setRequiredIndicatorVisible(true);
-        Assert.assertTrue(element.getProperty("required", false));
+        assertTrue(element.getProperty("required", false));
 
         field.setRequiredIndicatorVisible(false);
-        Assert.assertFalse(element.getProperty("required", false));
+        assertFalse(element.getProperty("required", false));
     }
 
     @Test
-    public void requiredIndicator_readFromElement() {
+    void requiredIndicator_readFromElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
-        Assert.assertFalse(field.isRequiredIndicatorVisible());
+        assertFalse(field.isRequiredIndicatorVisible());
 
         element.setProperty("required", true);
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
 
         element.setProperty("required", false);
-        Assert.assertFalse(field.isRequiredIndicatorVisible());
+        assertFalse(field.isRequiredIndicatorVisible());
     }
 
     @Test
-    public void readonly_writtenToElement() {
+    void readonly_writtenToElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
-        Assert.assertFalse(element.getProperty("readonly", false));
+        assertFalse(element.getProperty("readonly", false));
 
         field.setReadOnly(true);
-        Assert.assertTrue(element.getProperty("readonly", false));
+        assertTrue(element.getProperty("readonly", false));
 
         field.setReadOnly(false);
-        Assert.assertFalse(element.getProperty("readonly", false));
+        assertFalse(element.getProperty("readonly", false));
     }
 
     @Test
-    public void readonly_readFromElement() {
+    void readonly_readFromElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
-        Assert.assertFalse(field.isReadOnly());
+        assertFalse(field.isReadOnly());
 
         element.setProperty("readonly", true);
-        Assert.assertTrue(field.isReadOnly());
+        assertTrue(field.isReadOnly());
 
         element.setProperty("readonly", false);
-        Assert.assertFalse(field.isReadOnly());
+        assertFalse(field.isReadOnly());
     }
 
     @Test
-    public void readonly_setValue_accepted() {
+    void readonly_setValue_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -465,12 +468,12 @@ public class AbstractFieldTest {
         field.setValue("foo");
 
         eventMonitor.discard();
-        Assert.assertEquals("foo", field.presentationValue);
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.presentationValue);
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void readonly_presentationFromClient_reverted() {
+    void readonly_presentationFromClient_reverted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -479,12 +482,12 @@ public class AbstractFieldTest {
         field.updatePresentationValue("foo", true);
 
         eventMonitor.assertNoEvent();
-        Assert.assertEquals(null, field.getValue());
-        Assert.assertEquals(null, field.presentationValue);
+        assertEquals(null, field.getValue());
+        assertEquals(null, field.presentationValue);
     }
 
     @Test
-    public void readonly_presentationFromServer_accepted() {
+    void readonly_presentationFromServer_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -493,20 +496,20 @@ public class AbstractFieldTest {
         field.updatePresentationValue("foo", false);
 
         eventMonitor.discard();
-        Assert.assertEquals("foo", field.presentationValue);
-        Assert.assertEquals("foo", field.getValue());
+        assertEquals("foo", field.presentationValue);
+        assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void noOwnPublicApi() {
+    void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
                 .findNewPublicMethods(AbstractField.class)
                 .collect(Collectors.toList());
-        Assert.assertEquals(Collections.emptyList(), newPublicMethods);
+        assertEquals(Collections.emptyList(), newPublicMethods);
     }
 
     @Test
-    public void serializable() {
+    void serializable() {
         TestAbstractField<String> field = new TestAbstractField<>();
         field.addValueChangeListener(ignore -> {
         });
@@ -514,7 +517,7 @@ public class AbstractFieldTest {
 
         TestAbstractField<String> anotherField = SerializationUtils
                 .roundtrip(field);
-        Assert.assertEquals("foo", anotherField.getValue());
+        assertEquals("foo", anotherField.getValue());
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,49 +15,47 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoadingIndicatorConfigurationMapTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class LoadingIndicatorConfigurationMapTest
         extends AbstractMapFeatureTest<LoadingIndicatorConfigurationMap> {
     private final LoadingIndicatorConfigurationMap map = createFeature();
 
     @Test
-    public void defaults() {
-        Assert.assertEquals(
-                LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT,
+    void defaults() {
+        assertEquals(LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT,
                 map.getFirstDelay());
-        Assert.assertEquals(
-                LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT,
+        assertEquals(LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT,
                 map.getSecondDelay());
-        Assert.assertEquals(
-                LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT,
+        assertEquals(LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT,
                 map.getThirdDelay());
-        Assert.assertEquals(
+        assertEquals(
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT,
                 map.isApplyDefaultTheme());
     }
 
     @Test
-    public void setGetFirstDelay() {
+    void setGetFirstDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
                 map::setFirstDelay, map::getFirstDelay);
     }
 
     @Test
-    public void setGetSecondDelay() {
+    void setGetSecondDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
                 map::setSecondDelay, map::getSecondDelay);
     }
 
     @Test
-    public void setGetThirdDelay() {
+    void setGetThirdDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
                 map::setThirdDelay, map::getThirdDelay);
     }
 
     @Test
-    public void setGetDefaultThemeApplied() {
+    void setGetDefaultThemeApplied() {
         testBoolean(map,
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
                 map::setApplyDefaultTheme, map::isApplyDefaultTheme);

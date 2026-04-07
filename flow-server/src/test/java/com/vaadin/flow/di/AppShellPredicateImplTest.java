@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,14 +17,16 @@ package com.vaadin.flow.di;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 
-public class AppShellPredicateImplTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AppShellPredicateImplTest {
 
     private AppShellPredicate predicate = new AppShellPredicateImpl();
 
@@ -34,12 +36,12 @@ public class AppShellPredicateImplTest {
     }
 
     @Test
-    public void isShell_isAppShellConfigurator_returnsTrue() {
-        Assert.assertTrue(predicate.isShell(TestAppShellPredicateConfig.class));
+    void isShell_isAppShellConfigurator_returnsTrue() {
+        assertTrue(predicate.isShell(TestAppShellPredicateConfig.class));
     }
 
     @Test
-    public void isShell_isNotAppShellConfigurator_returnsFalse() {
-        Assert.assertFalse(predicate.isShell(List.class));
+    void isShell_isNotAppShellConfigurator_returnsFalse() {
+        assertFalse(predicate.isShell(List.class));
     }
 }

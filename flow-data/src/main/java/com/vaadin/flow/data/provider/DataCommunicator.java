@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1308,6 +1308,13 @@ public class DataCommunicator<T> implements Serializable {
 
         activeKeyOrder = activation.getActiveKeys();
         activeStart = effectiveRequested.getStart();
+
+        // Clamp range when data provider returns fewer items than expected
+        // (e.g. items deleted between count and fetch queries)
+        if (activeKeyOrder.size() < effectiveRequested.length()) {
+            effectiveRequested = Range.withLength(activeStart,
+                    activeKeyOrder.size());
+        }
 
         // Phase 2: Collect changes to send
         Update update = arrayUpdater.startUpdate(assumedSize);

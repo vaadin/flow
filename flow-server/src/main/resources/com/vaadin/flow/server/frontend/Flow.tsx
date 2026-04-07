@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -603,7 +603,8 @@ function Flow() {
                 }
                 return container.onBeforeEnter?.call(
                     container,
-                    { pathname: location.pathname, search: location.search },
+                  // Always add base to path as it is cleaned in getFlowRoutePath and will break a route starting with basename
+                    { pathname: basename + location.pathname, search: location.search },
                     {
                         prevent,
                         redirect,

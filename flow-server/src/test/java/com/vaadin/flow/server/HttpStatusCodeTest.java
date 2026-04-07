@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,29 +20,29 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HttpStatusCodeTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HttpStatusCodeTest {
 
     @Test
-    public void isValidStatusCode_invalidCode_returnsFalse() {
+    void isValidStatusCode_invalidCode_returnsFalse() {
         Set<Integer> validCodes = Stream.of(HttpStatusCode.values())
                 .map(HttpStatusCode::getCode).collect(Collectors.toSet());
 
         IntStream.rangeClosed(-1000, 1000)
                 .filter(sc -> !validCodes.contains(sc))
-                .forEach(sc -> Assert.assertFalse(
-                        sc + " should be invalid, but was not",
-                        HttpStatusCode.isValidStatusCode(sc)));
+                .forEach(sc -> assertFalse(HttpStatusCode.isValidStatusCode(sc),
+                        sc + " should be invalid, but was not"));
     }
 
     @Test
-    public void isValidStatusCode_validCode_returnsTrue() {
+    void isValidStatusCode_validCode_returnsTrue() {
         Stream.of(HttpStatusCode.values()).mapToInt(HttpStatusCode::getCode)
-                .forEach(sc -> Assert.assertTrue(
-                        sc + " should be valid, but was not",
-                        HttpStatusCode.isValidStatusCode(sc)));
+                .forEach(sc -> assertTrue(HttpStatusCode.isValidStatusCode(sc),
+                        sc + " should be valid, but was not"));
 
     }
 

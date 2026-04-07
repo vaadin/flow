@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -204,7 +204,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         long start = System.nanoTime();
         getLogger().info("Starting " + getServerName());
 
-        watchDog.set(new DevServerWatchDog());
+        DevServerWatchDog newWatchDog = new DevServerWatchDog();
+        newWatchDog.start();
+        watchDog.set(newWatchDog);
 
         // Look for a free port
         port = NetworkUtil.getFreePort();

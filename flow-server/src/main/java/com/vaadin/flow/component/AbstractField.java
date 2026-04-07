@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,8 +20,10 @@ import java.util.Objects;
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * An abstract implementation of a field, or a {@code Component} allowing user
@@ -261,7 +263,8 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     }
 
     @Override
-    public void bindValue(WritableSignal<T> valueSignal) {
-        fieldSupport.bindValue(valueSignal);
+    public SignalBinding<T> bindValue(Signal<T> valueSignal,
+            SerializableConsumer<T> writeCallback) {
+        return fieldSupport.bindValue(valueSignal, writeCallback);
     }
 }

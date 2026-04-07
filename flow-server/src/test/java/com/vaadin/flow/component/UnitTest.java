@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UnitTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class UnitTest {
 
     @Test
-    public void getUnit() {
-        Assert.assertFalse(Unit.getUnit(null).isPresent());
-        Assert.assertFalse(Unit.getUnit("").isPresent());
-        Assert.assertFalse(Unit.getUnit("10unknown").isPresent());
+    void getUnit() {
+        assertFalse(Unit.getUnit(null).isPresent());
+        assertFalse(Unit.getUnit("").isPresent());
+        assertFalse(Unit.getUnit("10unknown").isPresent());
 
-        Assert.assertEquals(Unit.PERCENTAGE, Unit.getUnit("100%").get());
-        Assert.assertEquals(Unit.PIXELS, Unit.getUnit("100px").get());
+        assertEquals(Unit.PERCENTAGE, Unit.getUnit("100%").get());
+        assertEquals(Unit.PIXELS, Unit.getUnit("100px").get());
     }
 }

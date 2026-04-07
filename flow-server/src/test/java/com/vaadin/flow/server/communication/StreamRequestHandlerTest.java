@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,10 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -50,9 +49,10 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @NotThreadSafe
-public class StreamRequestHandlerTest {
+class StreamRequestHandlerTest {
 
     private StreamRequestHandler handler = new StreamRequestHandler();
     private MockVaadinSession session;
@@ -61,8 +61,8 @@ public class StreamRequestHandlerTest {
     private StreamResourceRegistry streamResourceRegistry;
     private UI ui;
 
-    @Before
-    public void setUp() throws ServletException, ServiceException {
+    @BeforeEach
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service) {
@@ -82,88 +82,88 @@ public class StreamRequestHandlerTest {
         UI.setCurrent(ui);
     }
 
-    @After
-    public void cleanup() {
+    @AfterEach
+    void cleanup() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void streamResourceNameEndsWithPluses_streamFactory_resourceIsStreamed()
+    void streamResourceNameEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameEndsWithPluses_resourceWriter_resourceIsStreamed()
+    void streamResourceNameEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPluses_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsSpaceEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory(
                 "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPluses_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsSpaceEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter(
                 "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test
-    public void streamResourceNameEndsInPlus_streamFactory_resourceIsStreamed()
+    void streamResourceNameEndsInPlus_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("end in plus", "readme+.md");
     }
 
     @Test
-    public void streamResourceNameEndsInPlus_resourceWriter_resourceIsStreamed()
+    void streamResourceNameEndsInPlus_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("end in plus", "readme+.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlus_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsPlus_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("plus in middle",
                 "readme+mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlus_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsPlus_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("plus in middle",
                 "readme+mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlusAndSpaces_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsPlusAndSpaces_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("plus surrounded by spaces",
                 "readme + mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlusAndSpaces_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsPlusAndSpaces_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("plus surrounded by spaces",
                 "readme + mine.md");
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
+    void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
         Mockito.verify(response).sendError(403, "Resource not available");
     }
 
     @Test
-    public void nodeDisabled_shouldReplyForDisabledUpdateModeAlways()
+    void nodeDisabled_shouldReplyForDisabledUpdateModeAlways()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
@@ -173,8 +173,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeInert_shouldRespondWithResourceNotAvailable()
-            throws IOException {
+    void nodeInert_shouldRespondWithResourceNotAvailable() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true);
         stateNodeStatesTestInternal(builder);
@@ -182,7 +181,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeInert_handlerShouldReplyForAllowInert() throws IOException {
+    void nodeInert_handlerShouldReplyForAllowInert() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true).withAllowInert(true);
         stateNodeStatesTestInternal(builder);
@@ -191,8 +190,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeHidden_shouldRespondWithResourceNotAvailable()
-            throws IOException {
+    void nodeHidden_shouldRespondWithResourceNotAvailable() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withVisible(false);
         stateNodeStatesTestInternal(builder);
@@ -200,14 +198,14 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
+    void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
             throws IOException {
         stateNodeStatesTestInternal(true, false);
         Mockito.verify(response).sendError(403, "Resource not available");
     }
 
     @Test
-    public void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
+    void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
             throws IOException {
         stateNodeStatesTestInternal(true, true);
         Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
@@ -286,8 +284,8 @@ public class StreamRequestHandlerTest {
         for (int i = 0; i < testBytes.length; i++) {
             buf[i] = testBytes[i];
         }
-        Assert.assertArrayEquals("Output differed from expected", buf,
-                argument.getValue());
+        assertArrayEquals(buf, argument.getValue(),
+                "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
@@ -315,8 +313,8 @@ public class StreamRequestHandlerTest {
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
         Mockito.verify(outputStream).write(argument.capture());
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                argument.getValue());
+        assertArrayEquals(testBytes, argument.getValue(),
+                "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
     }

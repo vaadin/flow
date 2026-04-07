@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static org.junit.Assert.assertFalse;
@@ -80,8 +81,10 @@ public class InternalErrorIT extends ChromeBrowserTest {
     public void enableSessionExpiredNotification_sessionExpired_notificationShown() {
         clickButton("enable-notification");
 
+        WebElement message = $(DivElement.class).id("message");
         // Refresh to take the new config into use
         getDriver().navigate().refresh();
+        waitUntil(ExpectedConditions.stalenessOf(message));
 
         clickButton(UPDATE);
         waitUntil(driver -> isMessageUpdated());

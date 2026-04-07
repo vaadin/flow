@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -192,8 +192,7 @@ public class SystemErrorHandler {
                 registry.getHeartbeat().setInterval(-1);
 
                 int uiId = registry.getApplicationConfiguration().getUIId();
-                ValueMap json = MessageHandler
-                        .parseWrappedJson(xhr.getResponseText());
+                ValueMap json = MessageHandler.parseJson(xhr.getResponseText());
                 int newUiId = json.getInt(ApplicationConstants.UI_ID);
                 if (newUiId != uiId) {
                     Console.debug("UI ID switched from " + uiId + " to "

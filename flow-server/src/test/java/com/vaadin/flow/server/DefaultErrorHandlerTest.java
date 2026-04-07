@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,22 +20,22 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultErrorHandlerTest {
+class DefaultErrorHandlerTest {
 
     MockedStatic<LoggerFactory> loggerFactory;
     Logger logger;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         logger = Mockito
                 .spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
         loggerFactory = Mockito.mockStatic(LoggerFactory.class);
@@ -46,13 +46,13 @@ public class DefaultErrorHandlerTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         loggerFactory.close();
     }
 
     @Test
-    public void error_acceptedException_errorHandled() {
+    void error_acceptedException_errorHandled() {
         DefaultErrorHandler errorHandler = Mockito
                 .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
                         MalformedURLException.class.getName())));
@@ -67,7 +67,7 @@ public class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_ignoredException_notHandled() {
+    void error_ignoredException_notHandled() {
         DefaultErrorHandler errorHandler = Mockito
                 .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
                         MalformedURLException.class.getName(),
@@ -83,7 +83,7 @@ public class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_subclassOfIgnoredException_errorHandled() {
+    void error_subclassOfIgnoredException_errorHandled() {
         DefaultErrorHandler errorHandler = Mockito.spy(
                 new DefaultErrorHandler(Set.of(IOException.class.getName())));
 
@@ -93,7 +93,7 @@ public class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_loggerAtDebugLevel_errorHandled() {
+    void error_loggerAtDebugLevel_errorHandled() {
         Mockito.reset(logger);
         Mockito.doReturn(true).when(logger).isDebugEnabled();
 

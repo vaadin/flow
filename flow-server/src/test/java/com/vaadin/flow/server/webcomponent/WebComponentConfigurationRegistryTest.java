@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,9 +31,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -44,12 +43,17 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
-public class WebComponentConfigurationRegistryTest {
+class WebComponentConfigurationRegistryTest {
 
     private static final String MY_COMPONENT_TAG = "my-component";
     private static final String USER_BOX_TAG = "user-box";
@@ -63,8 +67,8 @@ public class WebComponentConfigurationRegistryTest {
         };
     }
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         VaadinService service = mock(VaadinService.class);
         context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
@@ -80,60 +84,60 @@ public class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void assertWebComponentRegistry() {
-        Assert.assertNotNull(registry);
+    void assertWebComponentRegistry() {
+        assertNotNull(registry);
     }
 
     @Test
-    public void assertRegistryIsSingleton() {
-        Assert.assertSame(
-                "WebComponentConfigurationRegistry instance should be singleton",
-                registry,
-                WebComponentConfigurationRegistry.getInstance(context));
+    void assertRegistryIsSingleton() {
+        assertSame(registry,
+                WebComponentConfigurationRegistry.getInstance(context),
+                "WebComponentConfigurationRegistry instance should be singleton");
     }
 
     @Test
-    public void setConfigurations_allCanBeFoundInRegistry() {
-        Assert.assertTrue("Registry should have accepted the webComponents",
+    void setConfigurations_allCanBeFoundInRegistry() {
+        assertTrue(
                 registry.setConfigurations(createConfigurations(
-                        MyComponentExporter.class, UserBoxExporter.class)));
+                        MyComponentExporter.class, UserBoxExporter.class)),
+                "Registry should have accepted the webComponents");
 
-        Assert.assertEquals("Expected two targets to be registered", 2,
-                registry.getConfigurations().size());
+        assertEquals(2, registry.getConfigurations().size(),
+                "Expected two targets to be registered");
 
-        Assert.assertEquals(
+        assertEquals(MyComponent.class,
+                registry.getConfiguration(MY_COMPONENT_TAG).get()
+                        .getComponentClass(),
                 "Tag 'my-component' should have returned "
-                        + "'WebComponentBuilder' matching MyComponent",
-                MyComponent.class, registry.getConfiguration(MY_COMPONENT_TAG)
-                        .get().getComponentClass());
-        Assert.assertEquals(
+                        + "'WebComponentBuilder' matching MyComponent");
+        assertEquals(UserBox.class,
+                registry.getConfiguration(USER_BOX_TAG).get()
+                        .getComponentClass(),
                 "Tag 'user-box' should have returned 'WebComponentBuilder' "
-                        + "matching UserBox",
-                UserBox.class, registry.getConfiguration(USER_BOX_TAG).get()
-                        .getComponentClass());
+                        + "matching UserBox");
     }
 
     @Test
-    public void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
+    void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class));
 
         WebComponentConfiguration<? extends Component> conf1 = registry
                 .getConfiguration("my-component").get();
 
-        Assert.assertNotNull(conf1);
+        assertNotNull(conf1);
 
-        Assert.assertFalse(registry.setConfigurations(
+        assertFalse(registry.setConfigurations(
                 createConfigurations(UserBoxExporter.class)));
 
         WebComponentConfiguration<? extends Component> conf2 = registry
                 .getConfiguration("my-component").get();
 
-        Assert.assertEquals(conf1, conf2);
+        assertEquals(conf1, conf2);
     }
 
     @Test
-    public void getWebComponentConfigurationsForComponent() {
+    void getWebComponentConfigurationsForComponent() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class,
                         MyComponentExporter2.class, UserBoxExporter.class));
@@ -141,75 +145,70 @@ public class WebComponentConfigurationRegistryTest {
         Set<WebComponentConfiguration<MyComponent>> set = registry
                 .getConfigurationsByComponentType(MyComponent.class);
 
-        Assert.assertEquals("Set should contain two configurations", 2,
-                set.size());
+        assertEquals(2, set.size(), "Set should contain two configurations");
 
-        Assert.assertTrue(
-                "Both configurations should have component class "
-                        + "MyComponent.class",
+        assertTrue(
                 set.stream().map(WebComponentConfiguration::getComponentClass)
-                        .allMatch(clazz -> clazz.equals(MyComponent.class)));
+                        .allMatch(clazz -> clazz.equals(MyComponent.class)),
+                "Both configurations should have component class "
+                        + "MyComponent.class");
     }
 
     @Test
-    public void setConfigurationsTwice_onlyFirstSetIsAccepted() {
+    void setConfigurationsTwice_onlyFirstSetIsAccepted() {
         Set<WebComponentConfiguration<? extends Component>> configs1st = createConfigurations(
                 MyComponentExporter.class);
 
         Set<WebComponentConfiguration<? extends Component>> configs2nd = createConfigurations(
                 UserBoxExporter.class);
 
-        Assert.assertTrue("Registry should have accepted the configurations",
-                registry.setConfigurations(configs1st));
+        assertTrue(registry.setConfigurations(configs1st),
+                "Registry should have accepted the configurations");
 
-        Assert.assertFalse(
-                "Registry should not accept a second set of configurations.",
-                registry.setConfigurations(configs2nd));
+        assertFalse(registry.setConfigurations(configs2nd),
+                "Registry should not accept a second set of configurations.");
 
-        Assert.assertEquals(
-                "Builders from the first Set should have been added",
-                MyComponent.class,
+        assertEquals(MyComponent.class,
                 registry.getConfiguration("my" + "-component").get()
-                        .getComponentClass());
+                        .getComponentClass(),
+                "Builders from the first Set should have been added");
 
-        Assert.assertFalse(
-                "Components from the second Set should not have been added",
-                registry.getConfiguration("user-box").isPresent());
+        assertFalse(registry.getConfiguration("user-box").isPresent(),
+                "Components from the second Set should not have been added");
     }
 
     @Test
-    public void getConfigurations_uninitializedReturnsEmptySet() {
+    void getConfigurations_uninitializedReturnsEmptySet() {
         WebComponentConfigurationRegistry uninitializedRegistry = new WebComponentConfigurationRegistry();
 
         Set<?> set = uninitializedRegistry.getConfigurations();
 
-        Assert.assertEquals("Configuration set should be empty", 0, set.size());
+        assertEquals(0, set.size(), "Configuration set should be empty");
     }
 
     @Test
-    public void hasConfigurations() {
+    void hasConfigurations() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class,
                         MyComponentExporter2.class, UserBoxExporter.class));
 
-        Assert.assertTrue("Should have configurations, when 3 were set",
-                registry.hasConfigurations());
+        assertTrue(registry.hasConfigurations(),
+                "Should have configurations, when 3 were set");
     }
 
     @Test
-    public void hasConfigurations_noConfigurations() {
-        Assert.assertFalse("New registry should have no configurations",
-                registry.hasConfigurations());
+    void hasConfigurations_noConfigurations() {
+        assertFalse(registry.hasConfigurations(),
+                "New registry should have no configurations");
 
         registry.setConfigurations(Collections.emptySet());
 
-        Assert.assertFalse(
-                "Should not have configurations, when empty set is" + " given",
-                registry.hasConfigurations());
+        assertFalse(registry.hasConfigurations(),
+                "Should not have configurations, when empty set is" + " given");
     }
 
     @Test
-    public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
+    void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 10;
 
@@ -233,17 +232,17 @@ public class WebComponentConfigurationRegistryTest {
 
         executorService.shutdown();
 
-        Assert.assertEquals("Expected a result for all threads", THREADS,
-                futures.size());
+        assertEquals(THREADS, futures.size(),
+                "Expected a result for all threads");
 
         List<AtomicBoolean> results = new ArrayList<>();
         for (Future<AtomicBoolean> resultFuture : futures) {
             results.add(resultFuture.get());
         }
 
-        Assert.assertEquals("Expected all except one thread to return false",
-                THREADS - 1,
-                results.stream().filter(result -> !result.get()).count());
+        assertEquals(THREADS - 1,
+                results.stream().filter(result -> !result.get()).count(),
+                "Expected all except one thread to return false");
 
     }
 

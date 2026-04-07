@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,18 @@ package com.vaadin.flow.component;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.tests.util.MockUI;
 
-public class FocusableTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FocusableTest {
     @Tag("div")
     private static class FocusableTestComponent extends Component
             implements Focusable {
@@ -36,7 +39,7 @@ public class FocusableTest {
     private final FocusableTestComponent component = new FocusableTestComponent();
 
     @Test
-    public void focusUnattached_nothingScheduled() {
+    void focusUnattached_nothingScheduled() {
         component.focus();
 
         assertPendingInvocationCount(
@@ -45,7 +48,7 @@ public class FocusableTest {
     }
 
     @Test
-    public void focusBeforeAttach_executionScheduled() {
+    void focusBeforeAttach_executionScheduled() {
         component.focus();
         ui.add(component);
 
@@ -55,7 +58,7 @@ public class FocusableTest {
     }
 
     @Test
-    public void focusAfterAttach_executionScheduled() {
+    void focusAfterAttach_executionScheduled() {
         ui.add(component);
         component.focus();
 
@@ -65,7 +68,7 @@ public class FocusableTest {
     }
 
     @Test
-    public void detachAfterFocus_nothingScheduled() {
+    void detachAfterFocus_nothingScheduled() {
         ui.add(component);
         component.focus();
         ui.remove(component);
@@ -78,196 +81,189 @@ public class FocusableTest {
     private void assertPendingInvocationCount(String message, int expected) {
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(message, expected, invocations.size());
+        assertEquals(expected, invocations.size(), message);
     }
 
     @Test
-    public void focus_withFocusVisible_generatesCorrectJS() {
+    void focus_withFocusVisible_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.VISIBLE);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set focusVisible to true",
-                paramJson.contains("\"focusVisible\":true"));
-        Assert.assertFalse("Should not contain preventScroll",
-                paramJson.contains("preventScroll"));
+        assertTrue(paramJson.contains("\"focusVisible\":true"),
+                "Should set focusVisible to true");
+        assertFalse(paramJson.contains("preventScroll"),
+                "Should not contain preventScroll");
     }
 
     @Test
-    public void focus_withFocusNotVisible_generatesCorrectJS() {
+    void focus_withFocusNotVisible_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.NOT_VISIBLE);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set focusVisible to false",
-                paramJson.contains("\"focusVisible\":false"));
+        assertTrue(paramJson.contains("\"focusVisible\":false"),
+                "Should set focusVisible to false");
     }
 
     @Test
-    public void focus_withPreventScrollEnabled_generatesCorrectJS() {
+    void focus_withPreventScrollEnabled_generatesCorrectJS() {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set preventScroll to true",
-                paramJson.contains("\"preventScroll\":true"));
-        Assert.assertFalse("Should not contain focusVisible",
-                paramJson.contains("focusVisible"));
+        assertTrue(paramJson.contains("\"preventScroll\":true"),
+                "Should set preventScroll to true");
+        assertFalse(paramJson.contains("focusVisible"),
+                "Should not contain focusVisible");
     }
 
     @Test
-    public void focus_withPreventScrollDisabled_generatesCorrectJS() {
+    void focus_withPreventScrollDisabled_generatesCorrectJS() {
         ui.add(component);
         component.focus(PreventScroll.DISABLED);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set preventScroll to false",
-                paramJson.contains("\"preventScroll\":false"));
+        assertTrue(paramJson.contains("\"preventScroll\":false"),
+                "Should set preventScroll to false");
     }
 
     @Test
-    public void focus_withBothOptions_generatesCorrectJS() {
+    void focus_withBothOptions_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set preventScroll to true",
-                paramJson.contains("\"preventScroll\":true"));
-        Assert.assertTrue("Should set focusVisible to true",
-                paramJson.contains("\"focusVisible\":true"));
+        assertTrue(paramJson.contains("\"preventScroll\":true"),
+                "Should set preventScroll to true");
+        assertTrue(paramJson.contains("\"focusVisible\":true"),
+                "Should set focusVisible to true");
     }
 
     @Test
-    public void focus_withBothOptionsFalse_generatesCorrectJS() {
+    void focus_withBothOptionsFalse_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.NOT_VISIBLE, PreventScroll.DISABLED);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.get(0).getInvocation().getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus($1)"),
+                "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
         // First param is element, second param is the options object
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
-        Assert.assertTrue("Should set preventScroll to false",
-                paramJson.contains("\"preventScroll\":false"));
-        Assert.assertTrue("Should set focusVisible to false",
-                paramJson.contains("\"focusVisible\":false"));
+        assertTrue(paramJson.contains("\"preventScroll\":false"),
+                "Should set preventScroll to false");
+        assertTrue(paramJson.contains("\"focusVisible\":false"),
+                "Should set focusVisible to false");
     }
 
     @Test
-    public void focus_withoutOptions_generatesCorrectJS() {
+    void focus_withoutOptions_generatesCorrectJS() {
         ui.add(component);
         component.focus();
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assert.assertEquals(1, invocations.size());
+        assertEquals(1, invocations.size());
 
         String expression = invocations.getFirst().getInvocation()
                 .getExpression();
-        Assert.assertTrue("Should contain setTimeout wrapper",
-                expression.contains("setTimeout"));
-        Assert.assertTrue("Should contain focus call without parameters",
-                expression.contains(".focus()"));
-        Assert.assertFalse("Should not contain focus call with parameter",
-                expression.contains(".focus($1)"));
+        assertTrue(expression.contains("setTimeout"),
+                "Should contain setTimeout wrapper");
+        assertTrue(expression.contains(".focus()"),
+                "Should contain focus call without parameters");
+        assertFalse(expression.contains(".focus($1)"),
+                "Should not contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.getFirst().getInvocation()
                 .getParameters();
-        Assert.assertEquals(
-                "Should have exactly 1 parameter (the element node and wrapped parameter)",
-                2, params.size());
+        assertEquals(2, params.size(),
+                "Should have exactly 1 parameter (the element node and wrapped parameter)");
     }
 }

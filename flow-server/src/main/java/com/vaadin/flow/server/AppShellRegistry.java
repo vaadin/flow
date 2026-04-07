@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,9 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ActiveStyleSheetTracker;
+import com.vaadin.flow.internal.ResourceContentHash;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
@@ -75,10 +78,12 @@ public class AppShellRegistry implements Serializable {
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
+    private static final String AURA_STYLESHEET = "aura/aura.css";
     private static final Logger log = LoggerFactory
             .getLogger(AppShellRegistry.class);
 
     private Class<? extends AppShellConfigurator> appShellClass;
+    private boolean auraAutoLoadWarningLogged = false;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
@@ -232,6 +237,43 @@ public class AppShellRegistry implements Serializable {
                 stylesheets.put(href, sheet.value());
             }
         }
+
+        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
+        // available
+        if (appShellClass == null) {
+            String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                    + AURA_STYLESHEET;
+            VaadinService service = request.getService();
+            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
+                String auraHref = resolveStyleSheetHref(defaultStylesheet,
+                        request);
+                if (auraHref != null) {
+                    stylesheets.put(auraHref, defaultStylesheet);
+                    if (!auraAutoLoadWarningLogged) {
+                        auraAutoLoadWarningLogged = true;
+                        log.info(
+                                """
+                                        There is no AppShellConfigurator implementation \
+                                        available, auto loading the Aura theme. Add an \
+                                        AppShellConfigurator to define the theme to use, e.g.
+
+                                        import com.vaadin.flow.theme.aura.Aura;
+
+                                        @StyleSheet(Aura.STYLESHEET)
+                                        public class Application implements AppShellConfigurator {
+                                        }
+                                        """);
+                    }
+                }
+            }
+        }
+
+        if (!request.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            ActiveStyleSheetTracker.get(request.getService())
+                    .trackForAppShell(stylesheets.values());
+        }
+
         addStyleSheets(request, stylesheets, settings);
         return settings;
     }
@@ -374,8 +416,8 @@ public class AppShellRegistry implements Serializable {
 
     private static void addStyleSheets(VaadinRequest request,
             Map<String, String> stylesheets, AppShellSettings settings) {
-        DeploymentConfiguration config = request.getService()
-                .getDeploymentConfiguration();
+        VaadinService service = request.getService();
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode()) {
             stylesheets.replaceAll((resolved, source) -> {
                 if (source.startsWith("/")) {
@@ -395,10 +437,17 @@ public class AppShellRegistry implements Serializable {
         }
 
         stylesheets.forEach((href, sourcePath) -> {
+            String linkHref = href;
+            if (config.isProductionMode()) {
+                String hash = ResourceContentHash.getContentHash(service,
+                        sourcePath);
+                linkHref = UrlUtil.appendQueryParameter(href,
+                        ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+            }
             Map<String, String> attributes = Map.of("rel", "stylesheet",
                     "data-file-path", sourcePath, "data-id",
                     "appShell-" + sourcePath);
-            settings.addLink(Position.APPEND, href, attributes);
+            settings.addLink(Position.APPEND, linkHref, attributes);
         });
     }
 }

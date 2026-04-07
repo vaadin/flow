@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Shared code to use in the unit tests.
@@ -83,9 +84,9 @@ public final class TestUtils {
     public static URL getTestResource(String resourceName) {
         URL resourceUrl = TestUtils.class.getClassLoader()
                 .getResource(resourceName);
-        assertNotNull(String.format(
+        assertNotNull(resourceUrl, String.format(
                 "Expect the test resource to be present in test resource folder with name = '%s'",
-                resourceName), resourceUrl);
+                resourceName));
         return resourceUrl;
     }
 
@@ -102,9 +103,8 @@ public final class TestUtils {
                 : "This method expects valid directory as input, but got: "
                         + directory;
 
-        try {
-            return Files.walk(directory.toPath())
-                    .filter(file -> Files.isRegularFile(file))
+        try (Stream<Path> paths = Files.walk(directory.toPath())) {
+            return paths.filter(file -> Files.isRegularFile(file))
                     .map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
                     .map(path -> path.startsWith(File.separator)

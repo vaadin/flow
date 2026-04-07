@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,53 +15,82 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-public class HasTextTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class HasTextTest {
 
     private HasText hasText = Mockito.mock(HasText.class);
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Element element = ElementFactory.createDiv();
         Mockito.when(hasText.getElement()).thenReturn(element);
 
         Mockito.doCallRealMethod().when(hasText).setWhiteSpace(Mockito.any());
         Mockito.doCallRealMethod().when(hasText).getWhiteSpace();
+        Mockito.doCallRealMethod().when(hasText).setText(Mockito.any());
+        Mockito.doCallRealMethod().when(hasText).bindText(Mockito.any());
     }
 
     @Test
-    public void setWhiteSpace_styleIsSet() {
+    void setWhiteSpace_styleIsSet() {
         hasText.setWhiteSpace(WhiteSpace.NOWRAP);
 
-        Assert.assertEquals("nowrap",
+        assertEquals("nowrap",
                 hasText.getElement().getStyle().get("white-space"));
     }
 
     @Test
-    public void getWhiteSpace_getStyleValue() {
+    void getWhiteSpace_getStyleValue() {
         hasText.getElement().getStyle().setWhiteSpace(Style.WhiteSpace.INHERIT);
-        Assert.assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
+        assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_noStyleIsSet_normalIsReturned() {
-        Assert.assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
+    void getWhiteSpace_noStyleIsSet_normalIsReturned() {
+        assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_notStandardValue_nullIsReturned() {
+    void getWhiteSpace_notStandardValue_nullIsReturned() {
         hasText.getElement().getStyle().set("white-space", "foo");
 
-        Assert.assertEquals(null, hasText.getWhiteSpace());
+        assertEquals(null, hasText.getWhiteSpace());
+    }
+
+    @Test
+    void setText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.setText("test"));
+    }
+
+    @Test
+    void bindText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.bindText(new ValueSignal<>("")));
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -393,11 +393,11 @@ class ClientCallableAotProcessorTest {
         }
 
         @ClientCallable
-        public void processData(ComplexDto data) {
+        void processData(ComplexDto data) {
         }
 
         @ClientCallable
-        public void processDataWithPrimitive(int value) {
+        void processDataWithPrimitive(int value) {
         }
 
         @ClientCallable
@@ -406,7 +406,7 @@ class ClientCallableAotProcessorTest {
         }
 
         @ClientCallable
-        public void handleVoid() {
+        void handleVoid() {
         }
 
         @ClientCallable
@@ -426,7 +426,7 @@ class ClientCallableAotProcessorTest {
 
     public static class ComplexParameterComponent extends Component {
         @ClientCallable
-        public void processData(ComplexDto data, OtherDto otherData) {
+        void processData(ComplexDto data, OtherDto otherData) {
         }
     }
 
@@ -446,7 +446,7 @@ class ClientCallableAotProcessorTest {
 
     public static class VoidMethodComponent extends Component {
         @ClientCallable
-        public void handleVoid() {
+        void handleVoid() {
         }
     }
 
@@ -520,7 +520,7 @@ class ClientCallableAotProcessorTest {
             return name;
         }
 
-        public void setName(String name) {
+        void setName(String name) {
             this.name = name;
         }
     }
@@ -533,7 +533,7 @@ class ClientCallableAotProcessorTest {
             return id;
         }
 
-        public void setId(String id) {
+        void setId(String id) {
             this.id = id;
         }
 
@@ -541,7 +541,7 @@ class ClientCallableAotProcessorTest {
             return nested;
         }
 
-        public void setNested(NestedDto nested) {
+        void setNested(NestedDto nested) {
             this.nested = nested;
         }
     }
@@ -553,7 +553,7 @@ class ClientCallableAotProcessorTest {
             return value;
         }
 
-        public void setValue(String value) {
+        void setValue(String value) {
             this.value = value;
         }
     }
@@ -571,7 +571,7 @@ class ClientCallableAotProcessorTest {
             return data;
         }
 
-        public void setData(String data) {
+        void setData(String data) {
             this.data = data;
         }
     }
