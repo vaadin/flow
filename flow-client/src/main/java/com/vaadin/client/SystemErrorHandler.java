@@ -275,6 +275,8 @@ public class SystemErrorHandler {
             String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
+        // Set the popover attribute for native popovers.
+        systemErrorContainer.setAttribute("popover", "manual");
         systemErrorContainer.setClassName("v-system-error");
 
         if (caption != null) {
