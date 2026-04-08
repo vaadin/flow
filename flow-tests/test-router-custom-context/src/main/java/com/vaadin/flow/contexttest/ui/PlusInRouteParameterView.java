@@ -26,8 +26,9 @@ public class PlusInRouteParameterView extends Div
 
     public static final String TENANT_ID = "tenant_content";
 
+    private final Div tenantDiv = new Div();
+
     public PlusInRouteParameterView() {
-        Div tenantDiv = new Div();
         tenantDiv.setId(TENANT_ID);
         add(tenantDiv);
     }
@@ -35,6 +36,6 @@ public class PlusInRouteParameterView extends Div
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         String tenant = event.getRouteParameters().get("tenant").orElse("");
-        ((Div) getChildren().findFirst().orElseThrow()).setText(tenant);
+        tenantDiv.setText(tenant);
     }
 }
