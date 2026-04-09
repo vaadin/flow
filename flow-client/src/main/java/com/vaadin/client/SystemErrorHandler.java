@@ -313,15 +313,14 @@ public class SystemErrorHandler {
         } else {
             document.getBody().appendChild(systemErrorContainer);
         }
-        showErrorPopover();
+        showPopover(systemErrorContainer);
 
         return systemErrorContainer;
     }
 
     // @formatter:off
-    private native void showErrorPopover() 
+    private native void showErrorPopover(Element el) 
     /*-{
-        var el = document.querySelector(".v-system-error");
         el.showPopover();
     }-*/;
     // @formatter:on
