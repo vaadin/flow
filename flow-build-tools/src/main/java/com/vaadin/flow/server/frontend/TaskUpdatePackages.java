@@ -244,11 +244,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
-        // Clean up empty vaadin.overrides section
         if (vaadinOverrides.isEmpty()) {
+            // Clean up empty Vaadin overrides section
             ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).remove(OVERRIDES);
         } else {
-
+            // Save Vaadin overrides section
+            ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).set(OVERRIDES,
+                    vaadinOverrides);
         }
         return versionLockingUpdated;
     }
