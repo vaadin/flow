@@ -321,7 +321,8 @@ public class SystemErrorHandler {
     // @formatter:off
     private native void showPopover(Element el) 
     /*-{
-        el.showPopover();
+        var fn = el.showPopover;
+        fn.call(el);
     }-*/;
     // @formatter:on
 
