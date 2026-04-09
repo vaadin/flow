@@ -210,7 +210,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
         if (notification == null) {
             return false;
         }
-        return getErrorNotification().getAttribute("innerHTML").contains(text);
+        return notification.getText().contains(text);
     }
 
     private WebElement getErrorNotification() {
