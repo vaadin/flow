@@ -321,8 +321,10 @@ public class SystemErrorHandler {
     // @formatter:off
     private native void showPopover(Element el) 
     /*-{
-        var fn = el.showPopover;
-        fn.call(el);
+        var fn = el && el.showPopover;
+        if (typeof fn === "function") {
+            fn.call(el);
+        }
     }-*/;
     // @formatter:on
 
