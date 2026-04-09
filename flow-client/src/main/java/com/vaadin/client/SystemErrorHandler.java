@@ -313,9 +313,17 @@ public class SystemErrorHandler {
         } else {
             document.getBody().appendChild(systemErrorContainer);
         }
+        showPopover(systemErrorContainer);
 
         return systemErrorContainer;
     }
+
+    // @formatter:off
+    private native void showPopover(Element el) 
+    /*-{
+        el.showPopover();
+    }-*/;
+    // @formatter:on
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {
