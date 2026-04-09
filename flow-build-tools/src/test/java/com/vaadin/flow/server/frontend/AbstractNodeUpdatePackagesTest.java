@@ -55,6 +55,7 @@ import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACK
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
@@ -867,6 +868,11 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         assertTrue(packageUpdater.modified,
                 "Modification flag should be true when overrides are added.");
+        // Verify the user's override is not removed
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get("overrides");
+        assertNotNull(overrides);
+        assertEquals("$some-dep", overrides.get("some-dep").asString());
     }
 
     @Test

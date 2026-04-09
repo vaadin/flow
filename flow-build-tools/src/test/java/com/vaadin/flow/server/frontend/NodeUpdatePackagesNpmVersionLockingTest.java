@@ -164,13 +164,17 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
 
-        // Add a nested object override (like workbox-build overrides)
-        ObjectNode overridesSection = JacksonUtils.createObjectNode();
-        ObjectNode nestedOverride = JacksonUtils.createObjectNode();
-        nestedOverride.put("nested-dep", "1.0.0");
-        overridesSection.set("parent-package", nestedOverride);
-        // Also add a regular string override
-        overridesSection.put(TEST_DEPENDENCY, "$" + TEST_DEPENDENCY);
+        // Add a nested object override (like workbox-build overrides), and a
+        // regular string override
+        final ObjectNode overridesSection = JacksonUtils
+                .readTree(String.format("""
+                        {
+                          "parent-package": {
+                            "nested-dep": "1.0.0"
+                          },
+                          "%s": "%s"
+                        }
+                        """, TEST_DEPENDENCY, "$" + TEST_DEPENDENCY));
         packageJson.set(OVERRIDES, overridesSection);
 
         packageUpdater.generateVersionsJson(packageJson);
