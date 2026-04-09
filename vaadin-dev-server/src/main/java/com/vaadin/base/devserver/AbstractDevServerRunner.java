@@ -30,7 +30,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -96,6 +98,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     // explicitly check requests for it
     private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
             .compile("\"|%22");
+
+    // Hop-by-hop headers per RFC 9110 Section 7.6.1: these are
+    // per-connection headers that a proxy must not forward to the next hop.
+    // Stored in lowercase for case-insensitive matching.
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of("connection",
+            "keep-alive", "proxy-authenticate", "proxy-authorization", "te",
+            "trailer", "transfer-encoding", "upgrade");
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
@@ -765,15 +774,20 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         HttpURLConnection connection = prepareConnection(devServerRequestPath,
                 request.getMethod());
 
-        // Copies all the headers from the original request
+        // Copies request headers, skipping hop-by-hop headers
+        // (RFC 9110 Section 7.6.1) which are per-connection and must not
+        // be forwarded by a proxy
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();
-            connection.setRequestProperty(header,
-                    // Exclude keep-alive
-                    "Connect".equals(header) ? "close"
-                            : request.getHeader(header));
+            if (!HOP_BY_HOP_HEADERS
+                    .contains(header.toLowerCase(Locale.ENGLISH))) {
+                connection.setRequestProperty(header,
+                        request.getHeader(header));
+            }
         }
+        // Connection is not reused, signal to the dev server
+        connection.setRequestProperty("Connection", "close");
 
         // Send the request
         getLogger().debug("Requesting resource from {} {}", getServerName(),
@@ -790,13 +804,18 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         getLogger().debug("Served resource by {}: {} {}", getServerName(),
                 responseCode, devServerRequestPath);
 
-        // Copies response headers
+        // Copies response headers, skipping hop-by-hop headers
+        // (RFC 9110 Section 7.6.1) and Content-Length. Content-Length is
+        // dropped because HttpURLConnection may transparently decode the
+        // body (de-chunking, decompression), making the original value
+        // incorrect. The servlet container will determine the correct
+        // framing from the actual bytes written (RFC 9110 Section 8.6).
         connection.getHeaderFields().forEach((header, values) -> {
-            if (header != null) {
-                if ("Transfer-Encoding".equals(header)) {
-                    return;
-                }
-                response.addHeader(header, values.get(0));
+            if (header != null
+                    && !HOP_BY_HOP_HEADERS
+                            .contains(header.toLowerCase(Locale.ENGLISH))
+                    && !"Content-Length".equalsIgnoreCase(header)) {
+                response.setHeader(header, values.get(0));
             }
         });
 
@@ -809,15 +828,17 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             // Copies response payload
             writeStream(response.getOutputStream(),
                     connection.getInputStream());
+            // Close request to avoid issues in CI and Chrome
+            response.getOutputStream().close();
         } else if (responseCode < 400) {
             response.setStatus(responseCode);
+            response.getOutputStream().close();
         } else {
-            // Copies response code
+            // sendError() commits the response and may generate an error
+            // page; closing the output stream after that can throw in
+            // some servlet containers.
             response.sendError(responseCode);
         }
-
-        // Close request to avoid issues in CI and Chrome
-        response.getOutputStream().close();
 
         return true;
     }
