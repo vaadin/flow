@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -164,6 +166,8 @@ public class Options implements Serializable {
 
     private boolean commercialBannerEnabled = false;
 
+    private ApplicationConfiguration applicationConfiguration;
+
     /**
      * Creates a new instance.
      *
@@ -191,6 +195,21 @@ public class Options implements Serializable {
         this.lookup = lookup;
         this.classFinder = classFinder;
         this.npmFolder = npmFolder;
+    }
+
+    /**
+     * Sets the application configuration for the current options and returns
+     * the updated options instance.
+     *
+     * @param applicationConfiguration
+     *            the application configuration to be applied
+     * @return the updated {@code Options} instance with the specified
+     *         application configuration
+     */
+    public Options withApplicationConfiguration(
+            ApplicationConfiguration applicationConfiguration) {
+        this.applicationConfiguration = applicationConfiguration;
+        return this;
     }
 
     /**
@@ -1139,5 +1158,43 @@ public class Options implements Serializable {
      */
     public File getMetaInfResourcesDirectory() {
         return resourcesDirectory;
+    }
+
+    /**
+     * Retrieves the value of a string application property.
+     * <p>
+     * Returns an empty {@code Optional} if the application configuration is not
+     * available (e.g., at build time). When configuration is available, returns
+     * the property value or the given default.
+     *
+     * @param name
+     *            the name of the property to retrieve
+     * @param defaultValue
+     *            the value to return if the property is not set
+     * @return the property value, or empty if configuration is unavailable
+     */
+    public Optional<String> getApplicationStringProperty(String name,
+            String defaultValue) {
+        return Optional.ofNullable(applicationConfiguration)
+                .map(app -> app.getStringProperty(name, defaultValue));
+    }
+
+    /**
+     * Retrieves the value of a boolean application property.
+     * <p>
+     * Returns an empty {@code Optional} if the application configuration is not
+     * available (e.g., at build time). When configuration is available, returns
+     * the property value or the given default.
+     *
+     * @param name
+     *            the name of the property to retrieve
+     * @param defaultValue
+     *            the value to return if the property is not set
+     * @return the property value, or empty if configuration is unavailable
+     */
+    public Optional<Boolean> getApplicationBooleanProperty(String name,
+            boolean defaultValue) {
+        return Optional.ofNullable(applicationConfiguration)
+                .map(app -> app.getBooleanProperty(name, defaultValue));
     }
 }
