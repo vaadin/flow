@@ -319,7 +319,7 @@ public class SystemErrorHandler {
     }
 
     // @formatter:off
-    private native void showErrorPopover(Element el) 
+    private native void showPopover(Element el) 
     /*-{
         el.showPopover();
     }-*/;
