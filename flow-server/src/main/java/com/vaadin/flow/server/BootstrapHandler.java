@@ -1566,7 +1566,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "color: black;" +
                 "background: white;" +
                 "top: 1em;" +
-                "right: 1em;" +
+                "margin-right: 1em;" +
                 "border: 1px solid black;" +
                 "padding: 1em;" +
                 "z-index: 10000;" +
