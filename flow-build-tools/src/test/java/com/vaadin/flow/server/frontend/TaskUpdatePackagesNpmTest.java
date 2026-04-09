@@ -1337,6 +1337,13 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(pkgJson.has(OVERRIDES));
         assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
                 "workbox-build override should be present after first run");
+        JsonNode workboxOverride = pkgJson.get(OVERRIDES).get("workbox-build");
+        assertTrue(workboxOverride.isObject(),
+                "workbox-build should be a nested object");
+
+        // Verify nested structure exists
+        assertTrue(((ObjectNode) workboxOverride).size() > 0,
+                "workbox-build nested object should have at least one child");
 
         // Second run with PWA offline disabled
         task = createTaskWithPwa(createApplicationDependencies(), false, false);
@@ -1347,15 +1354,52 @@ class TaskUpdatePackagesNpmTest {
         if (pkgJson.has(OVERRIDES)) {
             assertFalse(pkgJson.get(OVERRIDES).has("workbox-build"),
                     "workbox-build override should be removed when PWA offline is disabled");
+            // Verify the entire nested object structure is gone, not just the
+            // key
+            ObjectNode overridesSection = (ObjectNode) pkgJson.get(OVERRIDES);
+            for (String key : JacksonUtils.getKeys(overridesSection)) {
+                assertFalse(key.equals("workbox-build"),
+                        "No workbox-build key should remain in any form");
+            }
         }
-        // Also verify vaadin.overrides was cleaned up
+
+        // Verify vaadin.overrides was cleaned up properly
         if (pkgJson.has(VAADIN_DEP_KEY)
                 && pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES)) {
             assertFalse(
                     pkgJson.get(VAADIN_DEP_KEY).get(OVERRIDES)
                             .has("workbox-build"),
                     "workbox-build should be removed from vaadin.overrides");
+            // Verify empty vaadin.overrides section is removed
+            JsonNode vaadinOverrides = pkgJson.get(VAADIN_DEP_KEY)
+                    .get(OVERRIDES);
+            if (vaadinOverrides != null && vaadinOverrides.size() == 0) {
+                assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                        "Empty vaadin.overrides should be removed");
+            }
         }
+
+        // Add user override and re-enable PWA to verify proper coexistence
+        pkgJson = getOrCreatePackageJson();
+        if (!pkgJson.has(OVERRIDES)) {
+            pkgJson.set(OVERRIDES, JacksonUtils.createObjectNode());
+        }
+        ((ObjectNode) pkgJson.get(OVERRIDES)).put("user-dep", "1.0.0");
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Third run with PWA re-enabled
+        task = createTaskWithPwa(createApplicationDependencies(), false, true);
+        task.execute();
+
+        // Verify both user override and workbox override coexist
+        pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.get(OVERRIDES).has("user-dep"),
+                "User override should be preserved");
+        assertEquals("1.0.0",
+                pkgJson.get(OVERRIDES).get("user-dep").asString());
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be re-added");
     }
 
     @Test
