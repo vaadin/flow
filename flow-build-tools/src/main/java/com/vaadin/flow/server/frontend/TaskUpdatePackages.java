@@ -91,17 +91,16 @@ public class TaskUpdatePackages extends NodeUpdater {
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
-            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
+            modified = lockVersionForNpm(packageJson) || modified;
 
-            // Recompute hash after lockVersionForNpm may have modified
-            // overrides
-            if (npmVersionLockingUpdated) {
+            // Update hash if dependencies or overrides were modified
+            if (modified) {
                 String finalHash = generatePackageJsonHash(packageJson);
                 ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
                         finalHash);
             }
 
-            if (modified || npmVersionLockingUpdated) {
+            if (modified) {
                 if (!packageJson.has("type") || !packageJson.get("type")
                         .asString().equals("module")) {
                     packageJson.put("type", "module");
@@ -125,16 +124,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // the user overrides.
 
         // Collect all Vaadin overrides that need to be currently enabled
-        final ObjectNode vaadinOverrides = JacksonUtils.createObjectNode();
-
-        // Add default overrides
-        final ObjectNode defaultOverrides = getDefaultOverrides();
-        for (String key : JacksonUtils.getKeys(defaultOverrides)) {
-            final JsonNode value = defaultOverrides.get(key);
-            if (!value.equals(vaadinOverrides.get(key))) {
-                vaadinOverrides.set(key, value);
-            }
-        }
+        final ObjectNode vaadinOverrides = getDefaultOverrides();
 
         // Add dependency locking overrides
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
@@ -178,7 +168,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .entrySet()) {
             final String lastValue = flatLastVaadinOverrides
                     .get(entryToUpdate.getKey());
-            if (entryToUpdate.getKey().equals(
+            if (entryToUpdate.getValue().equals(
                     flatLastVaadinOverrides.get(entryToUpdate.getKey()))) {
                 // Override value didn't change, skipping.
                 continue;
@@ -207,9 +197,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                         // Create and use an intermediate nested object
                         final ObjectNode objectNode = JacksonUtils
                                 .createObjectNode();
-                        if (plainValueNode.isString()) {
-                            // Plain string override exists: add to nested
-                            // object
+                        if (plainValueNode != null
+                                && plainValueNode.isString()) {
+                            // Upgrade plain string override to nested object
                             // { "dep": "1.0" } => { "dep" : { ".": "1.0" } }
                             objectNode.set(".", plainValueNode);
                         }
@@ -476,9 +466,10 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         // Add application dev dependencies.
+        int addedDev = 0;
         for (Entry<String, String> devDep : applicationDevDependencies
                 .entrySet()) {
-            added += addDependency(packageJson, DEV_DEPENDENCIES,
+            addedDev += addDependency(packageJson, DEV_DEPENDENCIES,
                     devDep.getKey(), devDep.getValue());
         }
 
@@ -502,6 +493,10 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (added > 0) {
             log().debug("Added {} dependencies to main package.json", added);
+        }
+
+        if (addedDev > 0) {
+            log().debug("Added {} devDependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
@@ -542,14 +537,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        String oldHash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
-                .asString();
-        String newHash = generatePackageJsonHash(packageJson);
-        // update packageJson hash value, if no changes it will not be written
-        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY, newHash);
-
-        return added > 0 || removed > 0 || removedDev > 0
-                || !oldHash.equals(newHash);
+        return added > 0 || addedDev > 0 || removed > 0 || removedDev > 0;
     }
 
     private int cleanDependencies(List<String> dependencyCollection,
