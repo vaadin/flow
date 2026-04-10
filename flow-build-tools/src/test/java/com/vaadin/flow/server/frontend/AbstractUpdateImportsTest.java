@@ -957,7 +957,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         Class<?>[] testClasses = { MultiCssImportAppShell.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.getOutput().get(updater.appShellImports);
@@ -971,7 +972,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
@@ -986,7 +988,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { ThemeForCssImportExporter.class,
                 ThemeForCssImport.class, UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
@@ -1002,7 +1005,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { ThemeCssImport.class, FooCssImport.class,
                 CssImportExporter.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
