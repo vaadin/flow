@@ -198,7 +198,6 @@ public class TaskUpdatePackages extends NodeUpdater {
                         entryToUpdate.getValue());
                 continue;
             }
-
             // Handle possibly nested overrides object
             final List<String> keyPath = List
                     .of(entryToUpdate.getKey().split(">"));
@@ -209,20 +208,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // assume opt-out and skip.
                 continue;
             }
-            JacksonUtils.setNestedKey(overridesSection, keyPath,
-                    StringNode.valueOf(entryToUpdate.getValue()),
-                    (plainValueNode) -> {
-                        // Create and use an intermediate nested object
-                        final ObjectNode objectNode = JacksonUtils
-                                .createObjectNode();
-                        if (plainValueNode != null
-                                && plainValueNode.isString()) {
-                            // Upgrade plain string override to nested object
-                            // { "dep": "1.0" } => { "dep" : { ".": "1.0" } }
-                            objectNode.set(".", plainValueNode);
-                        }
-                        return objectNode;
-                    });
+            putNestedOverride(overridesSection, keyPath,
+                    entryToUpdate.getValue());
         }
         for (final Map.Entry<String, String> entryToRemove : flatLastVaadinOverrides
                 .entrySet()) {
@@ -276,6 +263,28 @@ public class TaskUpdatePackages extends NodeUpdater {
                     vaadinOverrides);
         }
         return versionLockingUpdated;
+    }
+
+    private void putNestedOverride(ObjectNode overrides, List<String> keyPath,
+            String value) {
+        JsonNode existingNode = JacksonUtils.getNestedKey(overrides, keyPath);
+        if (existingNode != null && existingNode.isObject()) {
+            // Add as a "." property in existing object
+            ((ObjectNode) existingNode).put(".", value);
+            return;
+        }
+        JacksonUtils.setNestedKey(overrides, keyPath, StringNode.valueOf(value),
+                (plainValueNode) -> {
+                    // Create and use an intermediate nested object
+                    final ObjectNode objectNode = JacksonUtils
+                            .createObjectNode();
+                    if (plainValueNode != null && plainValueNode.isString()) {
+                        // Upgrade plain string override to nested object
+                        // { "dep": "1.0" } => { "dep" : { ".": "1.0" } }
+                        objectNode.set(".", plainValueNode);
+                    }
+                    return objectNode;
+                });
     }
 
     /**
@@ -374,37 +383,46 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private ObjectNode getOverridesSection(ObjectNode packageJson) {
-        ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
-        ObjectNode oldOverrides = null;
+        ObjectNode overridesSection;
+        ObjectNode oldOverrides;
         if (options.isEnablePnpm()) {
-            if (overridesSection != null) {
-                oldOverrides = overridesSection;
+            ObjectNode pnpm = (ObjectNode) packageJson.get(PNPM);
+            if (pnpm == null) {
+                pnpm = JacksonUtils.createObjectNode();
+                packageJson.set(PNPM, pnpm);
+            }
+            overridesSection = (ObjectNode) pnpm.get(OVERRIDES);
+            if (overridesSection == null) {
+                overridesSection = JacksonUtils.createObjectNode();
+                pnpm.set(OVERRIDES, overridesSection);
+            }
+            oldOverrides = (ObjectNode) packageJson.get(OVERRIDES);
+            if (oldOverrides != null) {
+                // convert npm overrides to flat format for pnpm
+                flattenOverrides(oldOverrides).forEach(overridesSection::put);
                 // remove npm overrides when moving to pnpm
                 packageJson.remove(OVERRIDES);
             }
-            JsonNode pnpm = packageJson.get(PNPM);
-            if (pnpm == null) {
-                overridesSection = null;
-            } else {
-                overridesSection = (ObjectNode) pnpm.get(OVERRIDES);
-            }
-        } else if (packageJson.has(PNPM)) {
-            oldOverrides = overridesSection;
-            // remove pnpm overrides for npm
-            ((ObjectNode) packageJson.get(PNPM)).remove(OVERRIDES);
+            return overridesSection;
         }
+        overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
         if (overridesSection == null) {
-            overridesSection = oldOverrides == null
-                    ? JacksonUtils.createObjectNode()
-                    : oldOverrides;
-            if (options.isEnablePnpm()) {
-                ObjectNode pnpmNode = packageJson.has(PNPM)
-                        ? (ObjectNode) packageJson.get(PNPM)
-                        : JacksonUtils.createObjectNode();
-                packageJson.set(PNPM, pnpmNode);
-                pnpmNode.set(OVERRIDES, overridesSection);
-            } else {
-                packageJson.set(OVERRIDES, overridesSection);
+            overridesSection = JacksonUtils.createObjectNode();
+            packageJson.set(OVERRIDES, overridesSection);
+        }
+        if (packageJson.has(PNPM)) {
+            ObjectNode pnpm = (ObjectNode) packageJson.get(PNPM);
+            oldOverrides = (ObjectNode) pnpm.get(OVERRIDES);
+            // convert pnpm overrides to nested format for npm
+            for (String key : oldOverrides.propertyNames()) {
+                final List<String> keyPath = List.of(key.split(">"));
+                putNestedOverride(overridesSection, keyPath,
+                        oldOverrides.get(key).stringValue());
+            }
+            // remove pnpm overrides when moving to npm
+            pnpm.remove(OVERRIDES);
+            if (pnpm.isEmpty()) {
+                packageJson.remove(PNPM);
             }
         }
         return overridesSection;
@@ -426,6 +444,19 @@ public class TaskUpdatePackages extends NodeUpdater {
         for (String key : JacksonUtils.getKeys(nestedOverrides)) {
             JsonNode value = nestedOverrides.get(key);
             if (value.isObject()) {
+                // "." refers to key dependency
+                if (value.has(".")) {
+                    flatOverrides.put(key, value.get(".").stringValue());
+                    // Use a shallow value object copy without the "." property
+                    ObjectNode filtered = JacksonUtils.createObjectNode();
+                    for (String nestedProp : value.propertyNames()) {
+                        if (nestedProp.equals(".")) {
+                            continue;
+                        }
+                        filtered.set(nestedProp, value.get(nestedProp));
+                    }
+                    value = filtered;
+                }
                 // Nested override: {"workbox-build": {"dep": "1.0"}}
                 final Map<String, String> childOverrides = flattenOverrides(
                         (ObjectNode) value);
@@ -436,7 +467,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 }
             } else {
                 // Already flat, keep as-is
-                flatOverrides.put(key, value.asString());
+                flatOverrides.put(key, value.stringValue());
             }
         }
         return flatOverrides;

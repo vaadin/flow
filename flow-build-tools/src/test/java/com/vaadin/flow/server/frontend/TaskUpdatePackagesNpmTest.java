@@ -1678,6 +1678,120 @@ class TaskUpdatePackagesNpmTest {
                 "Flattened workbox override should be present");
     }
 
+    @Test
+    void pwaOfflineEnabled_npmToPnpmTransition_workboxOverridesFlattened()
+            throws IOException {
+        // Create initial package.json in npm mode
+        createBasicVaadinVersionsJson();
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, true);
+        task.execute();
+
+        // Add user nested override (npm format)
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ((ObjectNode) pkgJson.get(OVERRIDES)).set("user-nested", JacksonUtils
+                .createObjectNode().put(".", "1.0").put("dep", "2.0"));
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Run update in pnpm mode
+        task = createTaskWithPwa(createApplicationDependencies(), true, true);
+        task.execute();
+
+        pkgJson = getOrCreatePackageJson();
+
+        // Verify npm-style overrides are NOT at root level
+        assertFalse(pkgJson.has(OVERRIDES),
+                "npm overrides should not exist at root when pnpm is enabled");
+
+        // Verify pnpm.overrides section exists
+        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
+        JsonNode pnpm = pkgJson.get(PNPM);
+        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
+        JsonNode overrides = pnpm.get(OVERRIDES);
+
+        // Verify workbox-build nested overrides are flattened with > separator
+        assertTrue(overrides.has("workbox-build>serialize-javascript"),
+                "Flattened workbox-build>serialize-javascript should be present");
+        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
+                "Flattened workbox-build>@rollup/plugin-terser should be present");
+        assertTrue(overrides.has("workbox-build>glob"),
+                "Flattened workbox-build>glob should be present");
+
+        // Verify user overrides are converted to pnpm format
+        assertTrue(overrides.has("user-nested"),
+                "Flattened user-nested should be present");
+        assertTrue(overrides.has("user-nested>dep"),
+                "Flattened user-nested>dep should be present");
+
+        // Verify the values are strings, not nested objects
+        assertTrue(
+                overrides.get("workbox-build>serialize-javascript").isString(),
+                "Flattened override should be a string value");
+
+        // Verify nested object form does NOT exist
+        assertFalse(overrides.has("workbox-build"),
+                "Nested object workbox-build should not exist in pnpm overrides");
+    }
+
+    @Test
+    void pwaOfflineEnabled_pnpmToNpmTransition_workboxOverridesFlattened()
+            throws IOException {
+        // Create initial package.json in pnpm mode
+        createBasicVaadinVersionsJson();
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), true, true);
+        task.execute();
+
+        // Add user nested override (pnpm format)
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ((ObjectNode) pkgJson.get(PNPM).get(OVERRIDES))
+                .put("user-nested", "1.0").put("user-nested>dep", "2.0")
+                .put("user-nested-reverse>dep", "3.0")
+                .put("user-nested-reverse", "4.0");
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Run update in npm mode
+        task = createTaskWithPwa(createApplicationDependencies(), false, true);
+        task.execute();
+
+        pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(OVERRIDES), "overrides section should exist");
+        JsonNode overrides = pkgJson.get(OVERRIDES);
+
+        // Verify workbox-build nested object override is present
+        assertTrue(overrides.has("workbox-build"),
+                "workbox-build override should be added when PWA offline is enabled");
+        JsonNode workboxBuildOverride = overrides.get("workbox-build");
+        assertTrue(workboxBuildOverride.isObject(),
+                "workbox-build override should be a nested object");
+        assertTrue(workboxBuildOverride.has("serialize-javascript"),
+                "workbox-build override should contain serialize-javascript");
+
+        // Verify user overrides are converted to npm format
+        JsonNode nestedOverride = overrides.get("user-nested");
+        assertNotNull(nestedOverride, "user-nested override should be present");
+        assertTrue(nestedOverride.isObject(),
+                "user-nested override should be an object");
+        assertTrue(nestedOverride.has("."),
+                "user-nested override should have a version");
+        assertTrue(nestedOverride.has("dep"),
+                "user-nested>dep override should have a version");
+        JsonNode nestedReverse = overrides.get("user-nested-reverse");
+        assertNotNull(nestedReverse,
+                "user-nested-reverse override should be present");
+        assertTrue(nestedReverse.isObject(),
+                "user-nested-reverse override should be an object");
+        assertTrue(nestedReverse.has("."),
+                "user-nested-reverse override should have a version");
+        assertTrue(nestedReverse.has("dep"),
+                "user-nested-reverse>dep override should have a version");
+
+        // Verify pnpm.overrides was removed
+        assertFalse(pkgJson.has(PNPM));
+    }
+
     private TaskUpdatePackages createTaskWithPwa(
             Map<String, String> applicationDependencies, boolean enablePnpm,
             boolean pwaOfflineEnabled) {
