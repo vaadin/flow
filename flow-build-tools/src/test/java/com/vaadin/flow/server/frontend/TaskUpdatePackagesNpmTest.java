@@ -379,6 +379,46 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void npmIsInUse_emptyVaadinOverrides_obsoleteOverride_overrideRemoved()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
+                PLATFORM_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+        TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+
+        // Remove platform lock for vaadin-element-mixin
+        final ObjectNode versions = JacksonUtils.readTree(FileUtils
+                .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
+        ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
+        FileUtils.writeStringToFile(versionJsonFile, versions.toString(),
+                StandardCharsets.UTF_8);
+
+        // Remove Vaadin overrides from package.json (simulate old style
+        // overrides not tracked using Vaadin overrides section introduced in
+        // PR #24008)
+        ObjectNode packageJson = getOrCreatePackageJson();
+        JacksonUtils.removeNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES));
+        FileUtils.writeStringToFile(this.packageJson,
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        // Remove VAADIN_ELEMENT_MIXIN from the application dependencies
+        applicationDependencies.remove(VAADIN_ELEMENT_MIXIN);
+        task = createTask(applicationDependencies);
+
+        task.execute();
+
+        assertTrue(task.modified, "Updates not picked");
+
+        verifyVersionLockingWithNpmOverrides(true, false, true);
+    }
+
+    @Test
     void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
             throws IOException {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,

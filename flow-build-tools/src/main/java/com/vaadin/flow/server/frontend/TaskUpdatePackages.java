@@ -173,11 +173,11 @@ public class TaskUpdatePackages extends NodeUpdater {
         // Flatten overrides to simplify diffing
         final Map<String, String> flatVaadinOverrides = flattenOverrides(
                 vaadinOverrides);
-        final Map<String, String> flatLastVaadinOverrides = flattenOverrides(
-                Objects.requireNonNullElseGet(
-                        (ObjectNode) packageJson.get(VAADIN_DEP_KEY)
-                                .get(OVERRIDES),
-                        JacksonUtils::createObjectNode));
+        final ObjectNode lastVaadinOverrides = (ObjectNode) packageJson
+                .get(VAADIN_DEP_KEY).get(OVERRIDES);
+        final Map<String, String> flatLastVaadinOverrides = lastVaadinOverrides == null
+                ? Map.of()
+                : flattenOverrides(lastVaadinOverrides);
 
         boolean versionLockingUpdated = false;
         // Update overrides based on diff between current and last overrides
@@ -249,6 +249,21 @@ public class TaskUpdatePackages extends NodeUpdater {
             // Plain format: { "dep": "1.0" }
             if (JacksonUtils.getNestedKey(overridesSection, keyPath) != null) {
                 JacksonUtils.removeNestedKey(overridesSection, keyPath);
+            }
+        }
+
+        if (lastVaadinOverrides == null) {
+            // Additional cleanup for overrides added before Vaadin overrides
+            // section was introduced in PR #24008. Find and remove any obsolete
+            // relative overrides.
+            for (String overrideDependency : JacksonUtils
+                    .getKeys(overridesSection)) {
+                final boolean relativeOverride = overridesSection
+                        .get(overrideDependency).stringValue("")
+                        .startsWith("$");
+                if (relativeOverride && !dependencies.has(overrideDependency)) {
+                    overridesSection.remove(overrideDependency);
+                }
             }
         }
 
