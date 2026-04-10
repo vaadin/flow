@@ -93,14 +93,17 @@ public class TaskUpdatePackages extends NodeUpdater {
             generateVersionsJson(packageJson);
             modified = lockVersionForNpm(packageJson) || modified;
 
-            // Update hash if dependencies or overrides were modified
+            // Recompute hash
+            final String finalHash = generatePackageJsonHash(packageJson);
+            final JsonNode hashNode = JacksonUtils.getNestedKey(packageJson,
+                    List.of(VAADIN_DEP_KEY, HASH_KEY));
+            modified = !finalHash
+                    .equals(hashNode != null ? hashNode.stringValue() : "")
+                    || modified;
             if (modified) {
-                String finalHash = generatePackageJsonHash(packageJson);
                 ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
                         finalHash);
-            }
 
-            if (modified) {
                 if (!packageJson.has("type") || !packageJson.get("type")
                         .asString().equals("module")) {
                     packageJson.put("type", "module");
@@ -131,12 +134,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
             if (!vaadinOverrides.has(dependency) && shouldLockDependencyVersion(
                     dependency, dependencies, versionsJson)) {
+                // Lock with a dependency reference
                 vaadinOverrides.put(dependency, "$" + dependency);
             }
         }
 
         // Add platform versions
-        ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
+        final ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
+        final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
         for (String dependency : JacksonUtils
                 .getKeys(fullPlatformDependencies)) {
             try {
@@ -145,6 +150,19 @@ public class TaskUpdatePackages extends NodeUpdater {
                 if ("SNAPSHOT".equals(frontendVersion.getBuildIdentifier())) {
                     continue;
                 }
+                if (vaadinOverrides.has(dependency)
+                        && vaadinOverrides.get(dependency).isString()
+                        && vaadinOverrides.get(dependency).asString()
+                                .startsWith("$")) {
+                    // Already locked with a dependency reference, skip
+                    continue;
+                }
+                if (dependencies.has(dependency)
+                        || devDependencies.has(dependency)) {
+                    // Skip platform overrides for existing dependencies
+                    continue;
+                }
+                // Lock with a version number
                 vaadinOverrides.put(dependency,
                         frontendVersion.getFullVersion());
             } catch (NumberFormatException nfe) {

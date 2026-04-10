@@ -360,6 +360,10 @@ class TaskUpdatePackagesNpmTest {
         ObjectNode packageJson = getOrCreatePackageJson();
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
                 .put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+        // Remove VAADIN_ELEMENT_MIXIN override from Vaadin overrides
+        JacksonUtils.removeNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_ELEMENT_MIXIN));
+        // Save modified package.json
         FileUtils.writeStringToFile(this.packageJson,
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
 
@@ -1436,33 +1440,29 @@ class TaskUpdatePackagesNpmTest {
     void npmIsInUse_emptyVaadinOverrides_removedFromPackageJson()
             throws IOException {
         // Setup: Create package.json with vaadin.overrides that will be removed
-        createBasicVaadinVersionsJson();
+        FileUtils.write(versionJsonFile, "{}", StandardCharsets.UTF_8);
 
-        // First run to create a valid package.json with vaadin section
-        TaskUpdatePackages task = createTask(createApplicationDependencies());
+        // First run to create a valid package.json with empty dependencies
+        TaskUpdatePackages task = createTask(Map.of());
         task.execute();
 
         // Now add a Vaadin-managed override (both in vaadin.overrides and main
-        // overrides)
-        // This simulates an override that was added by Vaadin but is no longer
-        // needed
+        // overrides). This simulates an override that was added by Vaadin but
+        // is no longer needed.
         ObjectNode pkgJson = getOrCreatePackageJson();
-        ObjectNode vaadinSection = (ObjectNode) pkgJson.get(VAADIN_DEP_KEY);
-        ObjectNode vaadinOverrides = JacksonUtils.createObjectNode();
-        vaadinOverrides.put("some-old-override", "value");
-        vaadinSection.set(OVERRIDES, vaadinOverrides);
+        pkgJson.set(VAADIN_DEP_KEY,
+                JacksonUtils.createObjectNode().set(OVERRIDES, JacksonUtils
+                        .createObjectNode().put("some-old-override", "value")));
 
         // Also add to main overrides section (this makes it a "Vaadin-managed"
         // override)
-        ObjectNode mainOverrides = JacksonUtils.createObjectNode();
-        mainOverrides.put("some-old-override", "value");
-        pkgJson.set(OVERRIDES, mainOverrides);
+        pkgJson.set(OVERRIDES, JacksonUtils.createObjectNode()
+                .put("some-old-override", "value"));
 
         FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
                 StandardCharsets.UTF_8);
 
-        // Execute task again (with no PWA, so no default overrides needed)
-        task = createTask(createApplicationDependencies());
+        // Execute task again
         task.execute();
 
         // Verify vaadin.overrides is removed when empty

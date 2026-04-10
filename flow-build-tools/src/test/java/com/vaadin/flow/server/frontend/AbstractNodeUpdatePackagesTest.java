@@ -868,8 +868,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // Run again - should not detect change due to overrides
         packageUpdater.execute();
 
-        assertFalse(packageUpdater.modified,
-                "Modification flag should be false when user overrides are added.");
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true when user overrides are added.");
         // Verify the user's override is not removed
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get("overrides");
