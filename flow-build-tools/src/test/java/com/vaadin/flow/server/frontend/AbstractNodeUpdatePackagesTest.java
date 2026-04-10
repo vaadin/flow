@@ -865,7 +865,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         json.set(OVERRIDES, overrides);
         writePackageJson(packageJson, json);
 
-        // Run again - should not detect change due to overrides
+        // Run again - should detect change due to overrides
         packageUpdater.execute();
 
         assertTrue(packageUpdater.modified,
