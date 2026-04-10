@@ -85,11 +85,19 @@
             <goalPrefix>flow</goalPrefix>
             <requiredJavaVersion>${maven.compiler.release}</requiredJavaVersion>
             <requiredMavenVersion>3.8</requiredMavenVersion>
+            <helpPackageName>com.vaadin.flow.plugin.maven</helpPackageName>
           </configuration>
           <executions>
             <execution>
-              <id>mojo-descriptor</id>
+              <id>generated-helpmojo</id>
               <goals>
+                <goal>helpmojo</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>default-descriptor</id>
+              <goals>
+                <goal>helpmojo</goal>
                 <goal>descriptor</goal>
               </goals>
             </execution>
