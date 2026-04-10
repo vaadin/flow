@@ -584,7 +584,7 @@ public final class JacksonUtils {
      *            the root object node to search within
      * @param keyPath
      *            the nested key path
-     * @return the value of the last key found, or {@code null]
+     * @return the value of the last key found, or {@code null}
      */
     public static @Nullable JsonNode getNestedKey(ObjectNode objectNode,
             List<String> keyPath) {
