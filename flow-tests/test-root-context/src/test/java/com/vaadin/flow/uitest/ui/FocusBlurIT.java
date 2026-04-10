@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -33,6 +34,7 @@ public class FocusBlurIT extends ChromeBrowserTest {
         $(NativeButtonElement.class).id("server-side").click();
 
         $(NativeButtonElement.class).id("focus").click();
+        waitForElementPresent(By.id("blur-event"));
         SpanElement focusEvent = $(SpanElement.class).id("focus-event");
         SpanElement blurEvent = $(SpanElement.class).id("blur-event");
 

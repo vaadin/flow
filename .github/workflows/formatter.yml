@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     # spotless available in 25.x
     branches: [main]
+  merge_group:
 
 # Cancel previous runs if a new one is triggered
 concurrency:
@@ -71,6 +72,7 @@ jobs:
           retention-days: 30
 
       - name: Find existing comment
+        if: github.event_name == 'pull_request_target'
         uses: peter-evans/find-comment@v4
         id: find-comment
         with:
@@ -79,7 +81,7 @@ jobs:
           body-includes: '<!-- tc-formatter -->'
 
       - name: Create or update comment
-        if: steps.formatter.outputs.modified != '0'
+        if: steps.find-comment.outputs.comment-id != '' && steps.formatter.outputs.modified != '0'
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}

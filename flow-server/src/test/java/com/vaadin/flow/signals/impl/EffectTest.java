@@ -901,4 +901,87 @@ class EffectTest extends SignalTestBase {
         assertTrue(backgroundChanges.get(2),
                 "Change without VaadinRequest should be background");
     }
+
+    @Test
+    void changeTracking_readSameSignalMultipleTimes_effectRunOnlyOnce() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            invocations.add(signal.get());
+            signal.get();
+            signal.get();
+        });
+
+        assertEquals(List.of("initial"), invocations);
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), invocations);
+
+        signal.set("again");
+        assertEquals(List.of("initial", "update", "again"), invocations);
+    }
+
+    @Test
+    void changeTracking_readMultipleDifferentSignals_effectRunsOncePerChange() {
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("a");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("b");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            invocations.add(signal1.get() + signal2.get());
+        });
+
+        assertEquals(List.of("ab"), invocations);
+
+        signal1.set("A");
+        assertEquals(List.of("ab", "Ab"), invocations);
+
+        signal2.set("B");
+        assertEquals(List.of("ab", "Ab", "AB"), invocations);
+    }
+
+    @Test
+    void changeTracking_multipleReadsFromTwoSignals_eachSignalChangeTriggersEffectOnce() {
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("a");
+        SharedValueSignal<Integer> signal2 = new SharedValueSignal<>(1);
+        AtomicInteger effectRunCount = new AtomicInteger(0);
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            effectRunCount.incrementAndGet();
+            // Read signal1 three times
+            String s1 = signal1.get();
+            signal1.get();
+            signal1.get();
+            // Read signal2 two times
+            Integer s2 = signal2.get();
+            signal2.get();
+            invocations.add(s1 + ":" + s2);
+        });
+
+        assertEquals(1, effectRunCount.get(),
+                "Effect should run exactly once initially");
+        assertEquals(List.of("a:1"), invocations);
+
+        signal1.set("b");
+        assertEquals(2, effectRunCount.get(),
+                "Effect should run exactly once when signal1 changes (despite 3 reads)");
+        assertEquals(List.of("a:1", "b:1"), invocations);
+
+        signal2.set(2);
+        assertEquals(3, effectRunCount.get(),
+                "Effect should run exactly once when signal2 changes (despite 2 reads)");
+        assertEquals(List.of("a:1", "b:1", "b:2"), invocations);
+
+        signal1.set("c");
+        assertEquals(4, effectRunCount.get(),
+                "Effect should run exactly once when signal1 changes again");
+        assertEquals(List.of("a:1", "b:1", "b:2", "c:2"), invocations);
+
+        signal2.set(3);
+        assertEquals(5, effectRunCount.get(),
+                "Effect should run exactly once when signal2 changes again");
+        assertEquals(List.of("a:1", "b:1", "b:2", "c:2", "c:3"), invocations);
+    }
 }

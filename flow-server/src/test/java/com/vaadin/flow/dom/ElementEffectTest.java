@@ -1518,6 +1518,43 @@ class ElementEffectTest {
         assertEquals("footer", parent.getChild(1).getAttribute("slot"));
     }
 
+    @Test
+    void effect_reattachWithoutChanges_readSameSignalMultipleTimes_effectRunOnlyOnce() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        ArrayList<String> invocations = new ArrayList<>();
+        Signal.effect(component, () -> {
+            count.incrementAndGet();
+            invocations.add(signal.get());
+            signal.get();
+            signal.get();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get());
+        assertEquals(List.of("initial"), invocations);
+
+        // Detach and reattach without changes (passivate/activate path)
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(1, count.get(), "No re-run on reattach without changes");
+
+        // Change signal - should trigger the effect exactly once,
+        // even though the effect reads the same signal three times
+        signal.set("update");
+        assertEquals(2, count.get(),
+                "Effect should run exactly once after reattach despite multiple reads of the same signal");
+        assertEquals(List.of("initial", "update"), invocations);
+
+        signal.set("again");
+        assertEquals(3, count.get(),
+                "Effect should run exactly once on subsequent change");
+        assertEquals(List.of("initial", "update", "again"), invocations);
+    }
+
     private TestLayout prepareTestLayout(ListSignal<String> listSignal) {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
