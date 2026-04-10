@@ -193,21 +193,23 @@ class ElementEffectTest {
         assertFalse(backgroundChanges.get(0),
                 "Initial run should not be a background change");
 
-        // Change signal with VaadinRequest present (simulates user request)
+        // Change signal with same UI current (simulates user request)
         signal.set("from request");
 
         assertEquals(2, backgroundChanges.size());
         assertFalse(backgroundChanges.get(1),
-                "Change with VaadinRequest should not be a background change");
+                "Change with same UI should not be a background change");
 
-        // Clear VaadinRequest to simulate background change
+        // Clearing only VaadinRequest while the same UI is still current
+        // is NOT a background change: the effect's owner UI matches
         CurrentInstance.set(VaadinRequest.class, null);
 
-        signal.set("from background");
+        signal.set("from same ui without request");
 
         assertEquals(3, backgroundChanges.size());
-        assertTrue(backgroundChanges.get(2),
-                "Change without VaadinRequest should be a background change");
+        assertFalse(backgroundChanges.get(2),
+                "Change from same UI should not be a background change "
+                        + "even without VaadinRequest");
     }
 
     @Test
@@ -1514,6 +1516,43 @@ class ElementEffectTest {
         assertEquals("second", parent.getChild(0).getComponent()
                 .map(c -> ((TestComponent) c).getValue()).orElse(null));
         assertEquals("footer", parent.getChild(1).getAttribute("slot"));
+    }
+
+    @Test
+    void effect_reattachWithoutChanges_readSameSignalMultipleTimes_effectRunOnlyOnce() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        ArrayList<String> invocations = new ArrayList<>();
+        Signal.effect(component, () -> {
+            count.incrementAndGet();
+            invocations.add(signal.get());
+            signal.get();
+            signal.get();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get());
+        assertEquals(List.of("initial"), invocations);
+
+        // Detach and reattach without changes (passivate/activate path)
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(1, count.get(), "No re-run on reattach without changes");
+
+        // Change signal - should trigger the effect exactly once,
+        // even though the effect reads the same signal three times
+        signal.set("update");
+        assertEquals(2, count.get(),
+                "Effect should run exactly once after reattach despite multiple reads of the same signal");
+        assertEquals(List.of("initial", "update"), invocations);
+
+        signal.set("again");
+        assertEquals(3, count.get(),
+                "Effect should run exactly once on subsequent change");
+        assertEquals(List.of("initial", "update", "again"), invocations);
     }
 
     private TestLayout prepareTestLayout(ListSignal<String> listSignal) {

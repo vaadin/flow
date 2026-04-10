@@ -47,7 +47,7 @@ class TaskGenerateTsConfigTest {
     private static final CharSequence DEFAULT_ES_TARGET = "es2023";
     private static final CharSequence NEWER_ES_TARGET = "es2024";
 
-    static private String LATEST_VERSION = "9.1";
+    static private String LATEST_VERSION = "9.2";
 
     @TempDir
     File temporaryFolder;
@@ -253,7 +253,7 @@ class TaskGenerateTsConfigTest {
         }
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
         assertTrue(tsConfigString.contains(
-                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+                "\"@vaadin/flow-frontend\": [\"./src/main/frontend/generated/jar-resources\"],"));
         assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
     }
 
@@ -285,7 +285,7 @@ class TaskGenerateTsConfigTest {
         taskGenerateTsConfig.execute();
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
         assertTrue(tsConfigString.contains(
-                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+                "\"@vaadin/flow-frontend\": [\"./src/main/frontend/generated/jar-resources\"],"));
     }
 
     @Test
@@ -295,7 +295,7 @@ class TaskGenerateTsConfigTest {
         taskGenerateTsConfig.execute();
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
         assertTrue(tsConfigString.contains(
-                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+                "\"@vaadin/flow-frontend\": [\"./src/main/frontend/generated/jar-resources\"],"));
     }
 
     private File writeTestTsConfigContent(String s) throws IOException {

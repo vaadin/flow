@@ -16,24 +16,53 @@
 package com.vaadin.flow.gradle
 
 import java.io.File
+import com.vaadin.flow.internal.FrontendUtils
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.LocalState
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
 /**
  * Declaratively defines the outputs of the [VaadinBuildFrontendTask].
- * Uses a marker file in the Vaadin-generated directory to track build
- * completion. The actual production bundle is written to the shared
- * resources directory (build/resources/main/META-INF/VAADIN/) which
- * cannot be declared as a task output because it overlaps with other
- * Gradle tasks (e.g. processResources, Spring Boot's resolveMainClassName).
+ *
+ * A cached copy of the production `flow-build-info.json` token file is
+ * stored in the project build directory (e.g. `build/`). This serves
+ * both as the Gradle up-to-date marker (its existence and content drive
+ * the up-to-date check) and as a source for restoring the token when
+ * the original in `build/resources/main/` has been deleted (e.g. by
+ * post-packaging cleanup or deleteOnExit).
+ *
+ * The [getFrontendIndexHtml] output tracks the `index.html` file that the
+ * task creates if it is missing. Declaring it as an output means Gradle
+ * also tracks its content for up-to-date checking, so user edits to the
+ * file will trigger a rebuild.
+ *
+ * The generated frontend directory is declared as [LocalState] so that
+ * Gradle will clean it before re-execution and restore it from cache,
+ * but its contents do not participate in up-to-date checking (the
+ * generated files are non-deterministic across runs).
  */
 internal class BuildFrontendOutputProperties(
     adapter: GradlePluginAdapter
 ) {
 
-    private val markerFile: File =
-        File(adapter.config.resourceOutputDirectory.get(), "build-frontend.marker")
+    private val cachedBuildInfoFile: File =
+        File(adapter.config.projectBuildDir.get(),
+            VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE)
+    private val generatedTsFolder: File =
+        BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
+    private val frontendIndexHtml: File =
+        File(BuildFrontendUtil.getFrontendDirectory(adapter),
+            FrontendUtils.INDEX_HTML)
 
     @OutputFile
-    fun getBuildFrontendMarker(): File = markerFile
+    fun getCachedBuildInfoFile(): File = cachedBuildInfoFile
+
+    @OutputFile
+    @Optional
+    fun getFrontendIndexHtml(): File = frontendIndexHtml
+
+    @LocalState
+    fun getGeneratedTsFolder(): File = generatedTsFolder
 }

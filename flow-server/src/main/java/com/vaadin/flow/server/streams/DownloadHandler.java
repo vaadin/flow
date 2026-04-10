@@ -371,6 +371,32 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
+     * Generate a function for downloading from a generated InputStream.
+     * <p>
+     * <code>DownloadResponse</code> instances can be created using various
+     * factory methods or with new operator.
+     * <p>
+     * File name override is appended to the download url as the logical name of
+     * the target file.
+     * <p>
+     * The {@link DownloadEvent#getFileName()} of the
+     * {@link InputStreamDownloadCallback} returns the given
+     * {@code fileNameOverride}.
+     *
+     * @param callback
+     *            a function that will be called on download
+     * @param fileNameOverride
+     *            download file name that overrides the name taken from
+     *            <code>path</code> and also used as a download request URL
+     *            postfix
+     * @return DownloadHandler implementation for download from an input stream
+     */
+    static InputStreamDownloadHandler fromInputStream(
+            InputStreamDownloadCallback callback, String fileNameOverride) {
+        return new InputStreamDownloadHandler(callback, fileNameOverride);
+    }
+
+    /**
      * Generate a function for downloading from a generated InputStream with the
      * given progress listener.
      * <p>
@@ -388,6 +414,39 @@ public interface DownloadHandler extends ElementRequestHandler {
             TransferProgressListener listener) {
         InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
                 callback);
+        downloadHandler.addTransferProgressListener(listener);
+        return downloadHandler;
+    }
+
+    /**
+     * Generate a function for downloading from a generated InputStream with the
+     * given progress listener.
+     * <p>
+     * <code>DownloadResponse</code> instances can be created using various
+     * factory methods or with new operator.
+     * <p>
+     * File name override is appended to the download url as the logical name of
+     * the target file.
+     * <p>
+     * The {@link DownloadEvent#getFileName()} of the
+     * {@link InputStreamDownloadCallback} returns the given
+     * {@code fileNameOverride}.
+     *
+     * @param callback
+     *            a function that will be called on download
+     * @param fileNameOverride
+     *            download file name that overrides the name taken from
+     *            <code>path</code> and also used as a download request URL
+     *            postfix
+     * @param listener
+     *            listener for transfer progress events
+     * @return DownloadHandler implementation for download from an input stream
+     */
+    static InputStreamDownloadHandler fromInputStream(
+            InputStreamDownloadCallback callback, String fileNameOverride,
+            TransferProgressListener listener) {
+        InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
+                callback, fileNameOverride);
         downloadHandler.addTransferProgressListener(listener);
         return downloadHandler;
     }

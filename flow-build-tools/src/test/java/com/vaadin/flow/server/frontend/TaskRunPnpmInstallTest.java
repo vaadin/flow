@@ -19,12 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -62,8 +61,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // create an empty package.json so as pnpm can be run without
         // error
-        FileUtils.write(new File(npmFolder, PACKAGE_JSON), "{}",
-                StandardCharsets.UTF_8);
+        Files.writeString(new File(npmFolder, PACKAGE_JSON).toPath(), "{}");
     }
 
     @Override
@@ -71,7 +69,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = options.getNodeModulesFolder();
-        FileUtils.forceMkdir(nodeModules);
+        Files.createDirectories(nodeModules.toPath());
 
         // create a fake file in the node modules dir to check that it's
         // removed
@@ -94,9 +92,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation
         // into
         // node_modules folder
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
-                StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(),
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}");
 
         getNodeUpdater().modified = true;
         createTask().execute();
@@ -119,18 +116,18 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         packageJson.createNewFile();
 
         // Write package json file
-        FileUtils.write(packageJson, "{}", StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(), "{}");
 
         File versions = File.createTempFile("tmp", null, temporaryFolder);
         // Platform defines a pinned version
         // @formatter:off
-        FileUtils.write(versions, String.format(
+        Files.writeString(versions.toPath(), String.format(
                 "{"
                   + "\"vaadin-overlay\": {"
                     + "\"npmName\": \"@vaadin/vaadin-overlay\","
                     + "\"jsVersion\": \"%s\""
                   + "}"
-                + "}", PINNED_VERSION), StandardCharsets.UTF_8);
+                + "}", PINNED_VERSION));
         // @formatter:on
 
         JsonNode object = getGeneratedVersionsContent(versions, packageJson);
@@ -153,7 +150,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String notificationVersion = "1.4.0";
         String uploadVersion = "4.2.0";
         // @formatter:off
-        FileUtils.write(packageJson, String.format(
+        Files.writeString(packageJson.toPath(), String.format(
                 "{"
                     + "\"vaadin\": {"
                       + "\"dependencies\": {"
@@ -172,7 +169,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}",
                 loginVersion, "1.0.0", notificationVersion,
                 "4.0.0", loginVersion, menuVersion, notificationVersion,
-                uploadVersion), StandardCharsets.UTF_8);
+                uploadVersion));
         // @formatter:on
         // Platform defines a pinned version
 
@@ -183,7 +180,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         File versions = File.createTempFile("tmp", null, temporaryFolder);
         // @formatter:off
-        FileUtils.write(versions,String.format(
+        Files.writeString(versions.toPath(), String.format(
                 "{"
                     + "\"vaadin-login\": {"
                         + "\"npmName\": \"@vaadin/vaadin-login\","
@@ -203,7 +200,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     + "}"
                 + "}",
                 versionsLoginVersion, versionsMenuBarVersion,
-                versionsNotificationVersion, versionsUploadVersion), StandardCharsets.UTF_8);
+                versionsNotificationVersion, versionsUploadVersion));
         // @formatter:on
 
         JsonNode generatedVersions = getGeneratedVersionsContent(versions,
@@ -225,8 +222,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         File npmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(npmRcFile.exists());
-        String content = FileUtils.readFileToString(npmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(npmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
     }
 
@@ -239,16 +235,14 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "shamefully-hoist=true\n"
                 + "symlink=true\n";
         // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(oldNpmRcFile.toPath(), originalContent);
 
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(newNpmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
         assertFalse(content.contains("symlink=true"));
     }
@@ -261,16 +255,14 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String originalContent = "# A custom npmrc file for my project\n"
                 + "symlink=true\n";
         // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(oldNpmRcFile.toPath(), originalContent);
 
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(newNpmRcFile.toPath());
         assertEquals(originalContent, content);
     }
 
@@ -291,8 +283,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}"
             + "}";
         // @formatter:on
-        FileUtils.write(packageJson, packageJsonContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(), packageJsonContent);
 
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 JacksonUtils.readTree(packageJsonContent),
@@ -310,8 +301,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "@vaadin/vaadin-overlay/package.json");
 
         // The resulting version should be the one specified by the user
-        JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
+        JsonNode overlayPackage = JacksonUtils
+                .readTree(Files.readString(overlayPackageJson.toPath()));
         assertEquals(customOverlayVersion,
                 overlayPackage.get("version").asString());
     }
@@ -365,12 +356,11 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File fooPackageJson = new File(
                 new File(nodeModules.getParentFile(), "fake-foo"),
                 "package.json");
-        String fooPackageJsonContents = IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall-writing-to-console.json"),
-                StandardCharsets.UTF_8);
-        FileUtils.write(fooPackageJson, fooPackageJsonContents,
-                StandardCharsets.UTF_8);
+        String fooPackageJsonContents = new String(getClass()
+                .getResourceAsStream(
+                        "fake-package-with-postinstall-writing-to-console.json")
+                .readAllBytes(), StandardCharsets.UTF_8);
+        Files.writeString(fooPackageJson.toPath(), fooPackageJsonContents);
 
         TaskRunNpmInstall task = createTask(List.of("foo"));
         task.execute();
@@ -481,8 +471,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        ObjectNode packageJson = JacksonUtils.readTree(FileUtils
-                .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
+        ObjectNode packageJson = JacksonUtils
+                .readTree(Files.readString(packageJsonFile.toPath()));
         getNodeUpdater().generateVersionsJson(packageJson);
         return getNodeUpdater().versionsJson;
     }

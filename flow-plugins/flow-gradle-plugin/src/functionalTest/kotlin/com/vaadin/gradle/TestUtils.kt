@@ -103,6 +103,18 @@ private fun File.zipListAllFiles(): List<String> =
         }
 
 /**
+ * Reads the content of a single entry from this zip archive.
+ * @param entryPath the path inside the archive, e.g. `META-INF/VAADIN/config/flow-build-info.json`
+ * @return the entry content as a String, or null if not found
+ */
+fun File.zipReadEntry(entryPath: String): String? =
+        ZipInputStream(this.inputStream().buffered()).use { zin ->
+            generateSequence { zin.nextEntry }
+                .firstOrNull { it.name == entryPath }
+                ?.let { zin.readBytes().toString(Charsets.UTF_8) }
+        }
+
+/**
  * Expects that given archive contains at least one file matching every glob in the [globs] list.
  * @param archiveProvider returns the zip file to examine.
  */

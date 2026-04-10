@@ -44,13 +44,16 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
+import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -676,6 +679,7 @@ public class StateNode implements Serializable {
             if (hasFeature(ElementData.class)) {
                 doCollectChanges(collector,
                         Stream.of(getFeature(ElementData.class)));
+                collectStructuralAttributeChanges(collector);
             }
             return;
         }
@@ -705,6 +709,30 @@ public class StateNode implements Serializable {
         isInitialChanges = false;
         if (changes != null && changes.isEmpty()) {
             changes = null;
+        }
+    }
+
+    /**
+     * Emits only structural attribute changes for invisible elements. This
+     * sends a filtered subset of {@link ElementAttributeMap} values to avoid
+     * leaking data attributes to the client while preserving attributes needed
+     * for CSS selectors.
+     * <p>
+     * This does not consume the feature's change tracker, so the full attribute
+     * set is still available when the element becomes visible and gets fully
+     * bound.
+     */
+    private void collectStructuralAttributeChanges(
+            Consumer<NodeChange> collector) {
+        if (!hasFeature(ElementAttributeMap.class)) {
+            return;
+        }
+        ElementAttributeMap attributeMap = getFeature(
+                ElementAttributeMap.class);
+        String attr = NodeProperties.SLOT_ATTRIBUTE;
+        if (attributeMap.has(attr)) {
+            collector.accept(new MapPutChange(attributeMap, attr,
+                    attributeMap.get(attr)));
         }
     }
 

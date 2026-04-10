@@ -45,6 +45,11 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 /**
  * Generates necessary PWA icons.
  * <p>
+ * Icons are processed in parallel but each thread draws, writes the PNG
+ * directly to disk, and immediately flushes the scaled image. This avoids
+ * accumulating all icon data in memory while still benefiting from concurrent
+ * I/O and image scaling.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskGeneratePWAIcons implements FallibleCommand {
@@ -94,8 +99,7 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             ExecutorService executor = Executors.newFixedThreadPool(4);
             CompletableFuture<?>[] iconsGenerators = PwaRegistry
                     .getIconTemplates(pwaConfiguration.getIconPath()).stream()
-                    .map(icon -> new InternalPwaIcon(icon, baseImage))
-                    .map(this::generateIcon)
+                    .map(icon -> generateIconTask(icon, baseImage))
                     .map(task -> CompletableFuture.runAsync(task, executor))
                     .toArray(CompletableFuture[]::new);
             try {
@@ -115,6 +119,7 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             } finally {
                 executor.shutdown();
             }
+            baseImage.flush();
         } finally {
             if (headless == null) {
                 System.clearProperty(HEADLESS_PROPERTY);
@@ -173,30 +178,22 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         return iconURL;
     }
 
-    private Runnable generateIcon(InternalPwaIcon icon) {
-        Path iconPath = generatedIconsPath.resolve(icon.getRelHref()
-                .substring(1).replace('/', File.separatorChar));
+    private Runnable generateIconTask(PwaIcon icon, BufferedImage baseImage) {
+        String relHref = "/" + icon.getHref().split("\\?")[0];
+        Path iconPath = generatedIconsPath
+                .resolve(relHref.substring(1).replace('/', File.separatorChar));
+        int targetWidth = icon.getWidth();
+        int targetHeight = icon.getHeight();
         return () -> {
+            BufferedImage scaled = PwaIcon.drawIconImage(baseImage, targetWidth,
+                    targetHeight);
             try (OutputStream os = Files.newOutputStream(iconPath)) {
-                icon.write(os);
+                ImageIO.write(scaled, "png", os);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
+            } finally {
+                scaled.flush();
             }
         };
-    }
-
-    private static class InternalPwaIcon extends PwaIcon {
-        private final BufferedImage baseImage;
-
-        public InternalPwaIcon(PwaIcon icon, BufferedImage baseImage) {
-            super(icon);
-            this.baseImage = baseImage;
-        }
-
-        @Override
-        protected BufferedImage getBaseImage() {
-            return baseImage;
-        }
-
     }
 }

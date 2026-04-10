@@ -40,7 +40,7 @@ import com.vaadin.flow.function.ValueProvider;
  * @param <T>
  *            data type
  */
-public class TreeData<T> implements Serializable {
+public class TreeData<T> implements HierarchicalData<T> {
 
     private static class HierarchyWrapper<T> implements Serializable {
         private T parent;
@@ -333,17 +333,7 @@ public class TreeData<T> implements Serializable {
         return getChildren(null);
     }
 
-    /**
-     * Get the immediate child items for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve child items for, null to
-     *            retrieve all root items
-     * @return an unmodifiable list of child items for the given item
-     *
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public List<T> getChildren(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -353,16 +343,7 @@ public class TreeData<T> implements Serializable {
                 .unmodifiableList(itemToWrapperMap.get(item).getChildren());
     }
 
-    /**
-     * Get the parent item for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve the parent item for
-     * @return parent item for the given item or {@code null} if the item is a
-     *         root item.
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public T getParent(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -468,14 +449,7 @@ public class TreeData<T> implements Serializable {
         }
     }
 
-    /**
-     * Check whether the given item is in this hierarchy.
-     *
-     * @param item
-     *            the item to check
-     * @return {@code true} if the item is in this hierarchy, {@code false} if
-     *         not
-     */
+    @Override
     public boolean contains(T item) {
         return itemToWrapperMap.containsKey(item);
     }

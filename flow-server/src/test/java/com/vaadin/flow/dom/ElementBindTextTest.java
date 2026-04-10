@@ -243,4 +243,24 @@ class ElementBindTextTest extends SignalsUnitTest {
 
         assertThrows(NullPointerException.class, () -> span.bindText(null));
     }
+
+    @Test
+    void bindText_computedSignal_evaluatedOnlyOnce() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<String> signal = new ValueSignal<>("Hello");
+        int[] evaluationCount = { 0 };
+
+        Signal<String> computedSignal = Signal.computed(() -> {
+            evaluationCount[0]++;
+            return signal.get();
+        });
+
+        element.bindText(computedSignal);
+
+        assertEquals(1, evaluationCount[0],
+                "Computed signal should be evaluated only once when creating the binding");
+        assertEquals("Hello", element.getText());
+    }
 }

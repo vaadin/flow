@@ -85,13 +85,13 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.4</spring.boot.version>
+    <spring.boot.version>4.0.5</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
     <slf4j.version>2.0.17</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
-    <jackson.version>3.0.4</jackson.version>
+    <jackson.version>3.1.1</jackson.version>
     <jaxb.version>4.0.7</jaxb.version>
     <guava.version>33.5.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
@@ -105,8 +105,8 @@
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
-    <testbench.version>10.1.0-rc1</testbench.version>
-    <jetty.version>12.1.7</jetty.version>
+    <testbench.version>10.2.0-alpha1</testbench.version>
+    <jetty.version>12.1.8</jetty.version>
     <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.14</maven.version>
@@ -128,7 +128,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.2.1</bnd.version>
+    <bnd.version>7.2.3</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -201,7 +201,7 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.7</version>
+        <version>1.18.8</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
