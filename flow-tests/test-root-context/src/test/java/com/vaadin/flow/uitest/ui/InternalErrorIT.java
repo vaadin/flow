@@ -116,7 +116,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
                         + "a server-side exception",
                 isInternalErrorNotificationPresent());
 
-        getErrorNotification().click();
+        clickErrorNotification();
         try {
             waitUntil(driver -> !isMessageUpdated());
         } catch (TimeoutException e) {
@@ -154,6 +154,33 @@ public class InternalErrorIT extends ChromeBrowserTest {
                 isInternalErrorNotificationPresent());
     }
 
+    @Test
+    public void popover_showNotification_notificationInteractable() {
+        clickButton(UPDATE);
+
+        clickButton("open-popover");
+        waitForElementPresent(By.id("cause-exception-popover"));
+        clickButton("cause-exception-popover");
+
+        Assert.assertTrue("The page should not be immediately refreshed after "
+                + "a server-side exception", isMessageUpdated());
+        Assert.assertTrue(
+                "'Internal error' notification should be present after "
+                        + "a server-side exception",
+                isInternalErrorNotificationPresent());
+
+        clickErrorNotification();
+        try {
+            waitUntil(driver -> !isMessageUpdated());
+        } catch (TimeoutException e) {
+            Assert.fail("After internal error, clicking the notification "
+                    + "should refresh the page, resetting the state of the UI.");
+        }
+        Assert.assertFalse(
+                "'Internal error' notification should be gone after refreshing",
+                isInternalErrorNotificationPresent());
+    }
+
     @After
     public void resetSystemMessages() {
         waitUntil(ExpectedConditions
@@ -177,7 +204,13 @@ public class InternalErrorIT extends ChromeBrowserTest {
         if (!isElementPresent(By.className("v-system-error"))) {
             return false;
         }
-        return getErrorNotification().getAttribute("innerHTML").contains(text);
+        WebElement notification = getErrorNotification();
+        notification = ExpectedConditions.elementToBeClickable(notification)
+                .apply(driver);
+        if (notification == null) {
+            return false;
+        }
+        return notification.getText().contains(text);
     }
 
     private WebElement getErrorNotification() {
@@ -187,4 +220,12 @@ public class InternalErrorIT extends ChromeBrowserTest {
     private void clickButton(String id) {
         findElement(By.id(id)).click();
     }
+
+    private void clickErrorNotification() {
+        // Do not use click() because it currently invokes JavaScript function
+        // instead of clicking on the element
+        new Actions(getDriver()).click(getErrorNotification()).build()
+                .perform();
+    }
+
 }
