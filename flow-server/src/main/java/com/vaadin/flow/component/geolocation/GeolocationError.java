@@ -16,29 +16,54 @@
 package com.vaadin.flow.component.geolocation;
 
 /**
- * Represents an error from the browser's Geolocation API.
+ * A failed location reading: the request did not produce a
+ * {@link GeolocationPosition}.
+ * <p>
+ * This is one of the three possible values of a {@link Geolocation#state()}
+ * signal, and is the payload passed to the {@code onError} callbacks of
+ * {@link Geolocation#get}. Typical application code switches on
+ * {@link #errorCode()} to react to the specific reason:
+ *
+ * <pre>
+ * Geolocation.get(pos -&gt; ..., err -&gt; {
+ *     switch (err.errorCode()) {
+ *     case PERMISSION_DENIED -&gt;
+ *             showExplanation("Location is blocked for this site.");
+ *     case POSITION_UNAVAILABLE -&gt;
+ *             showRetry("Could not determine your location.");
+ *     case TIMEOUT -&gt;
+ *             showRetry("Location request took too long.");
+ *     case null -&gt;
+ *             showGenericError(err.message()); // unknown future code
+ *     }
+ * });
+ * </pre>
+ *
+ * The raw numeric {@link #code()} is also exposed for logging and for safe
+ * handling of future browser codes that the enum does not yet know about.
  *
  * @param code
- *            the error code, one of {@link #PERMISSION_DENIED},
- *            {@link #POSITION_UNAVAILABLE}, or {@link #TIMEOUT}
+ *            the raw numeric error code as reported by the browser.
+ *            Applications should usually call {@link #errorCode()} instead of
+ *            comparing this directly
  * @param message
- *            a human-readable error message
+ *            a human-readable message from the browser. Mainly useful for
+ *            logging — the wording is not standardised and should not be shown
+ *            to end users as-is
  */
 public record GeolocationError(int code,
         String message) implements GeolocationState {
 
     /**
-     * The user denied the request for geolocation.
+     * Returns the error reason as a typed enum suitable for exhaustive
+     * {@code switch}. Returns {@code null} if the browser reports a numeric
+     * code this version of Flow does not recognise — match that with a
+     * {@code case null} arm to keep the switch exhaustive at compile time.
+     *
+     * @return the matching {@link GeolocationErrorCode}, or {@code null} when
+     *         the raw {@link #code()} is not one of the known values
      */
-    public static final int PERMISSION_DENIED = 1;
-
-    /**
-     * The position could not be determined.
-     */
-    public static final int POSITION_UNAVAILABLE = 2;
-
-    /**
-     * The request to get the position timed out.
-     */
-    public static final int TIMEOUT = 3;
+    public GeolocationErrorCode errorCode() {
+        return GeolocationErrorCode.fromCode(code);
+    }
 }

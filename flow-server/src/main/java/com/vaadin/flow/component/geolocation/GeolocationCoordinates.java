@@ -18,26 +18,39 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 /**
- * Represents geographic coordinates as returned by the browser's Geolocation
- * API.
+ * A single point in the world, as reported by the browser.
+ * <p>
+ * Latitude, longitude and accuracy are always present. The remaining fields are
+ * boxed {@link Double} because the device may not measure them: a laptop
+ * without GPS typically reports {@code null} for altitude, heading and speed,
+ * while a mobile phone with GPS typically reports all of them. Applications
+ * should either tolerate {@code null} or check before using.
  *
  * @param latitude
- *            the latitude in decimal degrees
+ *            latitude in decimal degrees, positive north, negative south.
+ *            Always present. Example: {@code 60.1699} for Helsinki
  * @param longitude
- *            the longitude in decimal degrees
+ *            longitude in decimal degrees, positive east, negative west. Always
+ *            present. Example: {@code 24.9384} for Helsinki
  * @param accuracy
- *            the accuracy of the position in meters
+ *            the 1-sigma horizontal accuracy of the reading in metres: the true
+ *            location lies within this distance of the reported
+ *            {@code latitude}/{@code longitude} with ~68% probability. Smaller
+ *            is better. Always present
  * @param altitude
- *            the altitude in meters above the WGS84 ellipsoid, or {@code null}
- *            if not available
+ *            height in metres above the WGS 84 ellipsoid (approximately mean
+ *            sea level), or {@code null} when the device cannot measure it
  * @param altitudeAccuracy
- *            the accuracy of the altitude in meters, or {@code null} if not
- *            available
+ *            the 1-sigma vertical accuracy of {@code altitude} in metres, or
+ *            {@code null} when {@code altitude} is not available
  * @param heading
- *            the direction of travel in degrees (0-360), or {@code null} if not
- *            available
+ *            the direction of travel in degrees clockwise from true north (0 =
+ *            north, 90 = east, 180 = south, 270 = west), or {@code null} when
+ *            the device cannot measure it or the user is stationary. Not
+ *            meaningful when {@code speed} is 0
  * @param speed
- *            the speed in meters per second, or {@code null} if not available
+ *            ground speed in metres per second, or {@code null} when the device
+ *            cannot measure it
  */
 public record GeolocationCoordinates(double latitude, double longitude,
         double accuracy, Double altitude, Double altitudeAccuracy,

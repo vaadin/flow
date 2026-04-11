@@ -86,7 +86,8 @@ public class GeolocationTest {
     @Test
     void geolocationError_jacksonRoundTrip() {
         GeolocationError error = new GeolocationError(
-                GeolocationError.PERMISSION_DENIED, "User denied geolocation");
+                GeolocationErrorCode.PERMISSION_DENIED.code(),
+                "User denied geolocation");
 
         ObjectNode json = JacksonUtils.beanToJson(error);
         GeolocationError result = JacksonUtils.readValue(json,
@@ -94,6 +95,22 @@ public class GeolocationTest {
 
         Assertions.assertEquals(error.code(), result.code());
         Assertions.assertEquals(error.message(), result.message());
+    }
+
+    @Test
+    void geolocationError_errorCode_mapsKnownCodes() {
+        Assertions.assertEquals(GeolocationErrorCode.PERMISSION_DENIED,
+                new GeolocationError(1, "denied").errorCode());
+        Assertions.assertEquals(GeolocationErrorCode.POSITION_UNAVAILABLE,
+                new GeolocationError(2, "unavailable").errorCode());
+        Assertions.assertEquals(GeolocationErrorCode.TIMEOUT,
+                new GeolocationError(3, "timeout").errorCode());
+    }
+
+    @Test
+    void geolocationError_errorCode_returnsNullForUnknownCode() {
+        Assertions.assertNull(
+                new GeolocationError(99, "future code").errorCode());
     }
 
     // --- get() tests ---
@@ -180,7 +197,7 @@ public class GeolocationTest {
 
         ObjectNode eventData = JacksonUtils.createObjectNode();
         ObjectNode detail = JacksonUtils.createObjectNode();
-        detail.put("code", GeolocationError.PERMISSION_DENIED);
+        detail.put("code", GeolocationErrorCode.PERMISSION_DENIED.code());
         detail.put("message", "User denied geolocation");
         eventData.set("event.detail", detail);
 
@@ -189,7 +206,7 @@ public class GeolocationTest {
 
         Assertions.assertInstanceOf(GeolocationError.class, geo.state().peek());
         GeolocationError error = (GeolocationError) geo.state().peek();
-        Assertions.assertEquals(GeolocationError.PERMISSION_DENIED,
+        Assertions.assertEquals(GeolocationErrorCode.PERMISSION_DENIED.code(),
                 error.code());
         Assertions.assertEquals("User denied geolocation", error.message());
     }
@@ -204,7 +221,7 @@ public class GeolocationTest {
         // First simulate an error
         ObjectNode errEventData = JacksonUtils.createObjectNode();
         ObjectNode errDetail = JacksonUtils.createObjectNode();
-        errDetail.put("code", GeolocationError.TIMEOUT);
+        errDetail.put("code", GeolocationErrorCode.TIMEOUT.code());
         errDetail.put("message", "Timeout");
         errEventData.set("event.detail", errDetail);
         fireEvent(component.getElement(), "vaadin-geolocation-error",
@@ -262,6 +279,127 @@ public class GeolocationTest {
         Assertions.assertTrue(
                 invocations.stream().anyMatch(inv -> inv.getInvocation()
                         .getExpression().contains("geolocation.clearWatch")));
+    }
+
+    @Test
+    void stop_removesListenersAndQueuesClearWatch() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        Geolocation geo = Geolocation.track(component);
+
+        ElementListenerMap listenerMap = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+        Assertions.assertFalse(listenerMap
+                .getExpressions("vaadin-geolocation-position").isEmpty());
+
+        // Drain the pending JS from track() setup
+        ui.dumpPendingJsInvocations();
+
+        geo.stop();
+
+        Assertions.assertTrue(listenerMap
+                .getExpressions("vaadin-geolocation-position").isEmpty());
+        Assertions.assertTrue(listenerMap
+                .getExpressions("vaadin-geolocation-error").isEmpty());
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(
+                invocations.stream().anyMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.clearWatch")));
+    }
+
+    @Test
+    void stop_isIdempotent() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        Geolocation geo = Geolocation.track(component);
+        ui.dumpPendingJsInvocations();
+
+        geo.stop();
+        ui.dumpPendingJsInvocations();
+
+        // Second call must not queue another clearWatch
+        Assertions.assertDoesNotThrow(geo::stop);
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(
+                invocations.stream().noneMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.clearWatch")));
+    }
+
+    @Test
+    void stop_afterDetach_isNoOp() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        Geolocation geo = Geolocation.track(component);
+        ui.remove(component);
+        ui.dumpPendingJsInvocations();
+
+        Assertions.assertDoesNotThrow(geo::stop);
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(
+                invocations.stream().noneMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.clearWatch")));
+    }
+
+    // --- isSupported() / queryPermission() tests ---
+
+    @Test
+    void isSupported_executesJs() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        Geolocation.isSupported(supported -> {
+        });
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(
+                invocations.stream().anyMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.isSupported")));
+    }
+
+    @Test
+    void queryPermission_executesJs() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        Geolocation.queryPermission(state -> {
+        });
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(invocations.stream()
+                .anyMatch(inv -> inv.getInvocation().getExpression()
+                        .contains("geolocation.queryPermission")));
+    }
+
+    // --- GeolocationOptions builder tests ---
+
+    @Test
+    void geolocationOptions_builder_convertsDurationsToMillis() {
+        GeolocationOptions opts = GeolocationOptions.builder()
+                .highAccuracy(true).timeout(java.time.Duration.ofSeconds(10))
+                .maximumAge(java.time.Duration.ZERO).build();
+
+        Assertions.assertEquals(Boolean.TRUE, opts.enableHighAccuracy());
+        Assertions.assertEquals(10_000, opts.timeout());
+        Assertions.assertEquals(0, opts.maximumAge());
+    }
+
+    @Test
+    void geolocationOptions_builder_leavesUnsetFieldsNull() {
+        GeolocationOptions opts = GeolocationOptions.builder()
+                .timeout(java.time.Duration.ofSeconds(5)).build();
+
+        Assertions.assertNull(opts.enableHighAccuracy());
+        Assertions.assertEquals(5_000, opts.timeout());
+        Assertions.assertNull(opts.maximumAge());
     }
 
     private void fireEvent(Element element, String eventType,

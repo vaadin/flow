@@ -16,14 +16,21 @@
 package com.vaadin.flow.component.geolocation;
 
 /**
- * Represents a geographic position as returned by the browser's Geolocation
- * API, consisting of coordinates and a timestamp.
+ * A successful location reading: the coordinates the browser reported and the
+ * moment in time they were taken.
+ * <p>
+ * This is one of the three possible values of a {@link Geolocation#state()}
+ * signal, and is the payload passed to the {@code onSuccess} callbacks of
+ * {@link Geolocation#get}.
  *
  * @param coords
- *            the geographic coordinates
+ *            the latitude/longitude and related fields; see
+ *            {@link GeolocationCoordinates}
  * @param timestamp
- *            the time at which the position was determined, in milliseconds
- *            since the Unix epoch
+ *            the moment the reading was taken, as milliseconds since the Unix
+ *            epoch (1970-01-01T00:00:00Z). Convert to an
+ *            {@link java.time.Instant} with
+ *            {@code Instant.ofEpochMilli(timestamp)} when needed
  */
 public record GeolocationPosition(GeolocationCoordinates coords,
         long timestamp) implements GeolocationState {

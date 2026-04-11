@@ -60,19 +60,6 @@ interface VaadinGeolocationOptions {
   maximumAge?: number;
 }
 
-// Safari may report timestamps relative to the Apple epoch
-// (2001-01-01) instead of Unix epoch (1970-01-01).
-// The offset between the two is 978307200000 ms.
-const APPLE_TO_UNIX_EPOCH_MS = 978307200000;
-const MAX_REASONABLE_AGE_MS = 86400000000;
-
-function fixTimestamp(ts: number): number {
-  if (Date.now() - ts > MAX_REASONABLE_AGE_MS) {
-    return ts + APPLE_TO_UNIX_EPOCH_MS;
-  }
-  return ts;
-}
-
 function copyCoords(c: GeolocationCoordinates): VaadinGeolocationCoordinates {
   return {
     latitude: c.latitude,
@@ -97,7 +84,7 @@ const watches = new Map<string, number>();
           resolve({
             position: {
               coords: copyCoords(p.coords),
-              timestamp: fixTimestamp(p.timestamp)
+              timestamp: p.timestamp
             }
           });
         },
@@ -123,7 +110,7 @@ const watches = new Map<string, number>();
             new CustomEvent('vaadin-geolocation-position', {
               detail: {
                 coords: copyCoords(p.coords),
-                timestamp: fixTimestamp(p.timestamp)
+                timestamp: p.timestamp
               }
             })
           );
@@ -144,6 +131,45 @@ const watches = new Map<string, number>();
     if (watches.has(watchKey)) {
       navigator.geolocation.clearWatch(watches.get(watchKey)!);
       watches.delete(watchKey);
+    }
+  },
+
+  isSupported(): boolean {
+    if (!window.isSecureContext) {
+      return false;
+    }
+    // Chromium exposes document.featurePolicy; Firefox and Safari do not
+    // expose any feature-policy introspection API, so the check is only
+    // possible on Chromium. When absent, assume geolocation is allowed.
+    const doc = document as any;
+    if (doc.featurePolicy && typeof doc.featurePolicy.allowsFeature === 'function') {
+      try {
+        if (!doc.featurePolicy.allowsFeature('geolocation')) {
+          return false;
+        }
+      } catch (_e) {
+        // Ignore and assume allowed
+      }
+    }
+    return true;
+  },
+
+  async queryPermission(): Promise<'GRANTED' | 'DENIED' | 'PROMPT' | 'UNKNOWN'> {
+    try {
+      const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      switch (status.state) {
+        case 'granted':
+          return 'GRANTED';
+        case 'denied':
+          return 'DENIED';
+        case 'prompt':
+          return 'PROMPT';
+        default:
+          return 'UNKNOWN';
+      }
+    } catch (_e) {
+      // Safari rejects the 'geolocation' permission name with a TypeError
+      return 'UNKNOWN';
     }
   }
 };

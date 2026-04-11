@@ -16,34 +16,140 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
+import java.time.Duration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Options for the browser's Geolocation API.
+ * Tuning knobs for a geolocation request — controls the accuracy / battery /
+ * speed / freshness trade-off of a single {@link Geolocation#get} or
+ * {@link Geolocation#track} call.
  * <p>
- * All fields are optional. When {@code null}, the browser's default values are
- * used.
+ * Every field is optional. A {@code null} field means "let the browser decide":
+ * high accuracy defaults to {@code false}, timeout defaults to no timeout at
+ * all, and cached readings are never accepted unless explicitly allowed.
+ * <p>
+ * Hand-written code should use {@link #builder()} rather than the canonical
+ * constructor: the builder labels each setting at the call site and accepts
+ * {@link Duration} instead of raw milliseconds.
+ *
+ * <pre>
+ * // High accuracy, give up after 10 seconds, refuse cached readings:
+ * GeolocationOptions opts = GeolocationOptions.builder().highAccuracy(true)
+ *         .timeout(Duration.ofSeconds(10)).maximumAge(Duration.ZERO).build();
+ *
+ * // Low-battery mode: accept a cached reading up to five minutes old:
+ * GeolocationOptions cached = GeolocationOptions.builder()
+ *         .maximumAge(Duration.ofMinutes(5)).build();
+ * </pre>
+ *
+ * The canonical record constructor accepts raw millisecond values and is mainly
+ * useful when building an instance from deserialised data.
  *
  * @param enableHighAccuracy
- *            whether to request high-accuracy position data (e.g. GPS), or
- *            {@code null} for the browser default ({@code false})
+ *            when {@code true}, asks the browser for the most accurate reading
+ *            it can produce (typically GPS on mobile devices). This may use
+ *            more battery and take longer. When {@code null}, the browser
+ *            default ({@code false}) applies and a coarse network-based reading
+ *            is returned
  * @param timeout
- *            the maximum time in milliseconds to wait for a position, or
- *            {@code null} for the browser default ({@code Infinity})
+ *            the maximum time in milliseconds the browser is allowed to spend
+ *            before reporting a {@link GeolocationErrorCode#TIMEOUT} error.
+ *            When {@code null}, there is no timeout — the request will wait
+ *            indefinitely for a positioning answer
  * @param maximumAge
- *            the maximum age in milliseconds of a cached position that is
- *            acceptable, or {@code null} for the browser default ({@code 0})
+ *            the maximum age in milliseconds of a cached reading that the
+ *            browser is allowed to return without querying the positioning
+ *            hardware again. {@code 0} means "never use a cached reading";
+ *            {@code null} also means {@code 0}. Larger values save battery and
+ *            return faster at the cost of freshness
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
         Integer maximumAge) implements Serializable {
 
     /**
-     * Creates options with all values set to {@code null}, meaning the
-     * browser's defaults will be used.
+     * Starts building a {@link GeolocationOptions} instance. Only the settings
+     * the caller explicitly sets are included; everything else falls back to
+     * the browser default.
+     *
+     * @return a fresh builder
      */
-    public GeolocationOptions() {
-        this(null, null, null);
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link GeolocationOptions}. Accepts {@link Duration} for the
+     * time-based fields and {@code boolean} for the high-accuracy flag so that
+     * call sites read naturally. Any setter that is not called leaves the
+     * corresponding field {@code null}, which means "use the browser default"
+     * when the request runs.
+     */
+    public static final class Builder {
+        private Boolean enableHighAccuracy;
+        private Integer timeout;
+        private Integer maximumAge;
+
+        private Builder() {
+        }
+
+        /**
+         * Requests the most accurate reading the device can produce (typically
+         * GPS on mobile, coarse network lookup on desktop). High accuracy
+         * usually costs more battery and takes longer.
+         *
+         * @param highAccuracy
+         *            {@code true} to ask for the best available accuracy
+         * @return this builder
+         */
+        public Builder highAccuracy(boolean highAccuracy) {
+            this.enableHighAccuracy = highAccuracy;
+            return this;
+        }
+
+        /**
+         * Sets the maximum time to wait for a position before the request fails
+         * with {@link GeolocationErrorCode#TIMEOUT}. If {@code null} is passed
+         * (or this setter is never called), the browser waits indefinitely.
+         *
+         * @param timeout
+         *            the timeout, or {@code null} to wait indefinitely
+         * @return this builder
+         */
+        public Builder timeout(Duration timeout) {
+            this.timeout = timeout == null ? null
+                    : Math.toIntExact(timeout.toMillis());
+            return this;
+        }
+
+        /**
+         * Sets how old a cached reading may be while still being acceptable as
+         * an answer to this request. {@link Duration#ZERO} (or {@code null}, or
+         * never calling this setter) means the browser must query the
+         * positioning hardware on every request. Larger values save battery and
+         * return faster.
+         *
+         * @param maximumAge
+         *            the maximum acceptable age, or {@code null} to refuse
+         *            cached readings
+         * @return this builder
+         */
+        public Builder maximumAge(Duration maximumAge) {
+            this.maximumAge = maximumAge == null ? null
+                    : Math.toIntExact(maximumAge.toMillis());
+            return this;
+        }
+
+        /**
+         * Creates a new {@link GeolocationOptions} from this builder's current
+         * state.
+         *
+         * @return a new options instance
+         */
+        public GeolocationOptions build() {
+            return new GeolocationOptions(enableHighAccuracy, timeout,
+                    maximumAge);
+        }
     }
 }

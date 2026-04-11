@@ -18,20 +18,29 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 /**
- * Represents the state of a geolocation tracking request.
+ * The current state of a {@link Geolocation#track tracking} session, as held by
+ * {@link Geolocation#state()}.
  * <p>
- * Three states are possible:
+ * A {@code GeolocationState} is always exactly one of three things:
  * <ul>
- * <li>{@link Pending} — initial state before the browser responds</li>
- * <li>{@link GeolocationPosition} — a successful position fix</li>
- * <li>{@link GeolocationError} — the browser reported an error</li>
+ * <li>{@link Pending} — the initial state, before the browser has produced any
+ * answer</li>
+ * <li>{@link GeolocationPosition} — the most recent successful reading. Updated
+ * on every new reading while tracking is active</li>
+ * <li>{@link GeolocationError} — the browser's most recent error (permission
+ * denied, position unavailable, or timeout)</li>
  * </ul>
  * <p>
- * The sealed type enables exhaustive pattern matching:
+ * The sealed interface is designed for exhaustive pattern matching. A
+ * {@code switch} on a {@code GeolocationState} that covers all three permitted
+ * subtypes is guaranteed complete at compile time — adding a new state in a
+ * future version of Flow would break existing switches so that callers are
+ * forced to decide how to handle it.
  *
  * <pre>
  * switch (geo.state().get()) {
  * case GeolocationState.Pending p -&gt; {
+ *     // waiting for the first fix
  * }
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());
@@ -42,7 +51,8 @@ public sealed interface GeolocationState extends Serializable permits
         GeolocationState.Pending, GeolocationPosition, GeolocationError {
 
     /**
-     * Initial state before the browser has responded to the tracking request.
+     * The initial state of a newly started tracking session, used until the
+     * browser reports the first position (or the first error).
      */
     record Pending() implements GeolocationState {
     }
