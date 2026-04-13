@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.PwaConfiguration;
 
 /**
  * Updates the Vite configuration files according with current project settings.
@@ -123,6 +124,12 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG)) {
             String template = StringUtil.toUTF8String(resource);
 
+            // First apply plugin insertions that use #buildFolder# placeholder
+            template = updateServiceWorkerVitePlugin(template);
+            template = updateFileSystemRouterVitePlugin(template);
+            template = updateTailwindCssVitePlugin(template);
+
+            // Then replace placeholders with actual values
             template = template
                     .replace("#settingsImport#",
                             "./" + options.getBuildDirectoryName() + "/"
@@ -137,8 +144,6 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                                                     webComponentTags))
                     .replace("#frontendExtraFileExtensions#",
                             getFrontendExtraFileExtensions());
-            template = updateFileSystemRouterVitePlugin(template);
-            template = updateTailwindCssVitePlugin(template);
 
             FileIOUtils.writeIfChanged(generatedConfigFile, template);
         }
@@ -157,6 +162,19 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     .collect(Collectors.joining("', '", ", '", "'"));
         }
         return "";
+    }
+
+    private String updateServiceWorkerVitePlugin(String template) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
+            return template.replace("//#serviceWorkerPluginImport#",
+                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")
+                    .replace("//#serviceWorkerPlugin#",
+                            "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),");
+        }
+        return template.replace("//#serviceWorkerPluginImport#", "")
+                .replace("//#serviceWorkerPlugin#", "");
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
