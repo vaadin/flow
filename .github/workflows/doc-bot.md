@@ -139,6 +139,12 @@ Scope guidelines:
 
 ## Phase 5: Implement Documentation Changes
 
+**Style guide** (don't read files to learn style, use these rules):
+- AsciiDoc format with YAML frontmatter
+- Code blocks: `[source,java]` with `----` delimiters
+- Cross-refs: `<<filename#anchor,text>>`
+- Admonitions: `[NOTE]`, `[TIP]`, `[WARNING]`
+
 1. **Clone** the `vaadin/docs` repository.
 2. **Create a branch** named: `doc-bot/${{ env.SOURCE_REPO }}/${{ env.PR_NUMBER }}` (replace `/` in the repo name with `-`).
 3. **Edit files** — Apply the planned changes, matching the existing AsciiDoc style and conventions found in the repository. Follow these rules:
