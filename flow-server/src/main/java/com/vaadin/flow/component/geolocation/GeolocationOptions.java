@@ -86,7 +86,7 @@ public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
      * corresponding field {@code null}, which means "use the browser default"
      * when the request runs.
      */
-    public static final class Builder {
+    public static final class Builder implements Serializable {
         private Boolean enableHighAccuracy;
         private Integer timeout;
         private Integer maximumAge;
