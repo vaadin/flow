@@ -203,8 +203,7 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(frontendDependencies,
-                        options);
+                packageUpdater = new TaskUpdatePackages(options);
                 commands.add(packageUpdater);
             }
 
@@ -241,7 +240,7 @@ public class NodeTasks implements FallibleCommand {
         // available)
         addEndpointServicesTasks(options);
 
-        commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
+        commands.add(new TaskGenerateBootstrap(options));
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
@@ -279,7 +278,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(frontendDependencies, options));
+            commands.add(new TaskUpdateImports(options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));
