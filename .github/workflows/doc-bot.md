@@ -6,13 +6,13 @@ description: >
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 
 permissions:
   contents: read
   pull-requests: read
 
-engine: claude
+engine: codex
 
 tools:
   github:
