@@ -97,7 +97,6 @@
             <execution>
               <id>default-descriptor</id>
               <goals>
-                <goal>helpmojo</goal>
                 <goal>descriptor</goal>
               </goals>
             </execution>
