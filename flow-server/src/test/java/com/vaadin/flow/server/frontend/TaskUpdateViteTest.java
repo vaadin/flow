@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -19,6 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
@@ -39,7 +55,8 @@ public class TaskUpdateViteTest {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, temporaryFolder.getRoot())
-                .withBuildDirectory("build");
+                .withBuildDirectory("build").withFrontendDependenciesScanner(
+                        Mockito.mock(FrontendDependenciesScanner.class));
     }
 
     @Test
@@ -219,5 +236,76 @@ public class TaskUpdateViteTest {
                 "Extra frontend extensions should be added to vite configuration, but was not.",
                 "'.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'",
                 matcher.group(1));
+    }
+
+    @Test
+    public void generatedTemplate_pwaOfflineEnabled_serviceWorkerPluginIncluded()
+            throws IOException {
+        PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        final FrontendDependenciesScanner frontendDeps = options
+                .getFrontendDependenciesScanner();
+        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
+
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        task.execute();
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertTrue(
+                "serviceWorkerPlugin import should be included when PWA offline is enabled",
+                template.contains(
+                        "import serviceWorkerPlugin from './build/plugins/vite-plugin-service-worker'"));
+        Assert.assertTrue(
+                "serviceWorkerPlugin should be used when PWA offline is enabled",
+                template.contains(
+                        "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),"));
+    }
+
+    @Test
+    public void generatedTemplate_pwaOfflineDisabled_serviceWorkerPluginNotIncluded()
+            throws IOException {
+        PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        final FrontendDependenciesScanner frontendDeps = options
+                .getFrontendDependenciesScanner();
+        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
+
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        task.execute();
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse(
+                "serviceWorkerPlugin import should not be included when PWA offline is disabled",
+                template.contains("import serviceWorkerPlugin from"));
+        Assert.assertFalse(
+                "serviceWorkerPlugin should not be used when PWA offline is disabled",
+                template.contains("serviceWorkerPlugin("));
+    }
+
+    @Test
+    public void generatedTemplate_pwaNull_serviceWorkerPluginNotIncluded()
+            throws IOException {
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        task.execute();
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse(
+                "serviceWorkerPlugin import should not be included when PWA is null",
+                template.contains("import serviceWorkerPlugin from"));
+        Assert.assertFalse(
+                "serviceWorkerPlugin should not be used when PWA is null",
+                template.contains("serviceWorkerPlugin("));
     }
 }
