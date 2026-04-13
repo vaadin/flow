@@ -80,7 +80,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines, options, frontDeps);
+            modifier.modify(lines, options,
+                    options.getFrontendDependenciesScanner());
         }
         lines.add(0,
                 String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
