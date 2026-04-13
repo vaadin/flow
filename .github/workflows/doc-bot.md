@@ -128,7 +128,11 @@ Documentation files are **AsciiDoc** (`.adoc`) with YAML front matter blocks. Pa
 
 For each user-facing change identified in Phase 1:
 
-1. **Search for existing references** — Use `search_code` to find mentions of the affected APIs, components, or features in `vaadin/docs`. Look for class names, method names, configuration property names, and feature names.
+1. **Search for existing references** — Use `search_code` to find mentions of the affected APIs, components, or features in `vaadin/docs`. Look for class names, method names, configuration property names, and feature names. To keep token usage low, follow these limits:
+   - **Maximum 3 `search_code` calls** — only search for the most significant API changes.
+   - **Search by class name only** — do not search for every method name.
+   - **Use file path filters** — limit searches to `articles/flow/**` for Flow changes.
+   - **Cache lookups** — if multiple changes affect the same class, search for it once and reuse the result.
 
 2. **Identify target files** — Determine which documentation file(s) need updating. Prefer updating existing files over creating new ones.
 
