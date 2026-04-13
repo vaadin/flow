@@ -20,7 +20,6 @@
     "rollup-plugin-visualizer": "7.0.1",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.12.0",
-    "workbox-build": "7.4.0",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
     "@types/node": "25.5.0"

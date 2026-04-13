@@ -79,10 +79,10 @@ class NodeUpdaterTest {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
-                .withFeatureFlags(featureFlags);
+                .withFeatureFlags(featureFlags).withFrontendDependenciesScanner(
+                        Mockito.mock(FrontendDependencies.class));
 
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {
@@ -165,7 +165,7 @@ class NodeUpdaterTest {
         expectedDependencies.add("@rollup/pluginutils");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
-        expectedDependencies.add("workbox-build");
+        // Note: workbox-build is now only included when PWA offline is enabled
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/core");
@@ -721,17 +721,16 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void getDefaultDevDependencies_includesWorkbox_whenPwaEnabled() {
-        // Create a mock FrontendDependencies with PWA enabled
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+    void getDefaultDevDependencies_includesWorkbox_whenPwaOfflineEnabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
         com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
                 .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isEnabled()).thenReturn(true);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -741,23 +740,22 @@ class NodeUpdaterTest {
         Map<String, String> defaultDevDeps = nodeUpdater
                 .getDefaultDevDependencies();
         assertTrue(defaultDevDeps.containsKey("workbox-core"),
-                "workbox-core should be included when PWA is enabled");
+                "workbox-core should be included when PWA offline is enabled");
         assertTrue(defaultDevDeps.containsKey("workbox-precaching"),
-                "workbox-precaching should be included when PWA is enabled");
+                "workbox-precaching should be included when PWA offline is enabled");
     }
 
     @Test
-    void getDefaultDevDependencies_excludesWorkbox_whenPwaDisabled() {
-        // Create a mock FrontendDependencies with PWA disabled
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+    void getDefaultDevDependencies_excludesWorkbox_whenPwaOfflineDisabled() {
+        // Create a mock PwaConfiguration with PWA offline disabled
         com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
                 .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isEnabled()).thenReturn(false);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -767,20 +765,19 @@ class NodeUpdaterTest {
         Map<String, String> defaultDevDeps = nodeUpdater
                 .getDefaultDevDependencies();
         assertFalse(defaultDevDeps.containsKey("workbox-core"),
-                "workbox-core should not be included when PWA is disabled");
+                "workbox-core should not be included when PWA offline is disabled");
         assertFalse(defaultDevDeps.containsKey("workbox-precaching"),
-                "workbox-precaching should not be included when PWA is disabled");
+                "workbox-precaching should not be included when PWA offline is disabled");
     }
 
     @Test
     void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
-        // Create a mock FrontendDependencies with no PWA configuration
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        // No PWA configuration
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(null);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -793,6 +790,75 @@ class NodeUpdaterTest {
                 "workbox-core should not be included when PWA is null");
         assertFalse(defaultDevDeps.containsKey("workbox-precaching"),
                 "workbox-precaching should not be included when PWA is null");
+    }
+
+    @Test
+    void getDefaultOverrides_includesWorkboxOverrides_whenPwaOfflineEnabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.has("workbox-build"),
+                "workbox-build override should be included when PWA offline is enabled");
+        // Verify nested structure
+        JsonNode workboxBuildOverride = overrides.get("workbox-build");
+        assertTrue(workboxBuildOverride.isObject(),
+                "workbox-build override should be an object");
+        assertTrue(workboxBuildOverride.has("serialize-javascript"),
+                "workbox-build override should contain serialize-javascript");
+    }
+
+    @Test
+    void getDefaultOverrides_returnsEmpty_whenPwaOfflineDisabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.isEmpty(),
+                "overrides should be empty when PWA offline is disabled");
+    }
+
+    @Test
+    void getDefaultOverrides_returnsEmpty_whenPwaNull() {
+        // No PWA configuration
+        Mockito.when(
+                options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(null);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.isEmpty(),
+                "overrides should be empty when PWA is null");
     }
 
     @Test
@@ -818,8 +884,7 @@ class NodeUpdaterTest {
     @Test
     void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
         Logger log = Mockito.mock(Logger.class);
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {

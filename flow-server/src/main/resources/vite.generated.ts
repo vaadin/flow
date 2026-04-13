@@ -27,7 +27,7 @@ import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
-import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+//#serviceWorkerPluginImport#
 export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
 
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -514,9 +514,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       productionMode && brotli(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && serviceWorkerPlugin({
-        srcPath: settings.clientServiceWorkerSource,
-      }),
+      //#serviceWorkerPlugin#
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
