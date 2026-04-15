@@ -93,7 +93,7 @@
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.2</jackson.version>
     <jaxb.version>4.0.7</jaxb.version>
-    <guava.version>33.5.0-jre</guava.version>
+    <guava.version>33.6.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <junit.jupiter.version>6.0.3</junit.jupiter.version>
 
