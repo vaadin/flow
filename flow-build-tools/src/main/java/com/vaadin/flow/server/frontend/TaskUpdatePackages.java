@@ -197,9 +197,11 @@ public class TaskUpdatePackages extends NodeUpdater {
             if (enablePnpm) {
                 lastUserValue = overridesSection.get(entryToUpdate.getKey());
             } else {
-                lastUserValue = JacksonUtils.getNestedKey(overridesSection, keyPath);
+                lastUserValue = JacksonUtils.getNestedKey(overridesSection,
+                        keyPath);
             }
-            boolean optOut = !Objects.equals(StringNode.valueOf(lastValue), lastUserValue);
+            boolean optOut = !Objects.equals(StringNode.valueOf(lastValue),
+                    lastUserValue);
             if (optOut) {
                 // Actual override value is different from last Vaadin override:
                 // assume user opt-out and skip.
