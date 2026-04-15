@@ -191,25 +191,31 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Override value didn't change, skipping.
                 continue;
             }
+            final JsonNode lastUserValue;
+            final List<String> keyPath = List
+                    .of(entryToUpdate.getKey().split(">"));
+            if (enablePnpm) {
+                lastUserValue = overridesSection.get(entryToUpdate.getKey());
+            } else {
+                lastUserValue = JacksonUtils.getNestedKey(overridesSection,
+                        keyPath);
+            }
+            boolean optOut = !Objects.equals(StringNode.valueOf(lastValue),
+                    lastUserValue);
+            if (optOut) {
+                // Actual override value is different from last Vaadin override:
+                // assume user opt-out and skip.
+                continue;
+            }
             versionLockingUpdated = true;
             if (enablePnpm) {
                 // Use flat format for pnpm
                 overridesSection.put(entryToUpdate.getKey(),
                         entryToUpdate.getValue());
-                continue;
+            } else {
+                putNestedOverride(overridesSection, keyPath,
+                        entryToUpdate.getValue());
             }
-            // Handle possibly nested overrides object
-            final List<String> keyPath = List
-                    .of(entryToUpdate.getKey().split(">"));
-            final JsonNode lastValueNode = StringNode.valueOf(lastValue);
-            if (lastValueNode != null && !lastValueNode.equals(
-                    JacksonUtils.getNestedKey(overridesSection, keyPath))) {
-                // Actual override value is different from last Vaadin override:
-                // assume opt-out and skip.
-                continue;
-            }
-            putNestedOverride(overridesSection, keyPath,
-                    entryToUpdate.getValue());
         }
         for (final Map.Entry<String, String> entryToRemove : flatLastVaadinOverrides
                 .entrySet()) {

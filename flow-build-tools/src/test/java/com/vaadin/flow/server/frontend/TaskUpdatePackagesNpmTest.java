@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -234,6 +235,11 @@ class TaskUpdatePackagesNpmTest {
         ObjectNode packageJson = getOrCreatePackageJson();
         packageJson.set(OVERRIDES, JacksonUtils.createObjectNode());
         ((ObjectNode) packageJson.get(OVERRIDES)).put("@vaadin/aura", "1.0");
+        // Assuming Vaadin added the override, set Vaadin overrides accordingly
+        JacksonUtils.setNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, "@vaadin/aura"),
+                StringNode.valueOf("1.0"),
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
 
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
