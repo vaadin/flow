@@ -148,6 +148,10 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TS)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(FrontendUtils.APP_SHELL_IMPORTS_NAME)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME)));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve("file-routes.ts")));
         knownFiles.add(normalizePath(
