@@ -194,7 +194,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         // Verify flat override stays flat
-        JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
+        JsonNode overrides = packageJson.get(OVERRIDES);
         assertTrue("Flat override should remain unchanged",
                 overrides.has("flat-dep"));
         assertEquals("3.0.0", overrides.get("flat-dep").stringValue());
