@@ -140,7 +140,8 @@ public class UpdateImportsWithByteCodeScannerTest
 
         createExpectedLazyImports();
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -178,7 +179,8 @@ public class UpdateImportsWithByteCodeScannerTest
 
         createExpectedLazyImports();
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -237,7 +239,8 @@ public class UpdateImportsWithByteCodeScannerTest
                 LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -270,7 +273,8 @@ public class UpdateImportsWithByteCodeScannerTest
                 LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -303,7 +307,8 @@ public class UpdateImportsWithByteCodeScannerTest
     public void cssImportFromAppShellAndThemeWork() throws Exception {
         Class<?>[] testClasses = { ThemeCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -336,7 +341,8 @@ public class UpdateImportsWithByteCodeScannerTest
     public void cssInLazyChunkWorks() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -418,7 +424,8 @@ public class UpdateImportsWithByteCodeScannerTest
                 OtherView.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -444,7 +451,8 @@ public class UpdateImportsWithByteCodeScannerTest
         Class<?>[] testClasses = { OtherView.class, CloneView.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -473,7 +481,8 @@ public class UpdateImportsWithByteCodeScannerTest
         Class<?>[] testClasses = { OtherView.class, CloneView.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();

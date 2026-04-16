@@ -164,8 +164,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private Map<File, List<String>> output;
         private List<String> webComponentImports;
 
-        UpdateImports(FrontendDependenciesScanner scanner, Options options) {
-            super(options, scanner);
+        UpdateImports(Options options) {
+            super(options);
         }
 
         @Override
@@ -218,8 +218,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         featureFlags = Mockito.mock(FeatureFlags.class);
         options = new MockOptions(classFinder, tmpRoot).withTokenFile(tokenFile)
                 .withProductionMode(true).withFeatureFlags(featureFlags)
-                .withBundleBuild(true);
-        updater = new UpdateImports(getScanner(classFinder), options);
+                .withBundleBuild(true)
+                .withFrontendDependenciesScanner(getScanner(classFinder));
+        updater = new UpdateImports(options);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(
@@ -268,7 +269,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 NodeTestComponents.ReferenceView.class,
                 NodeTestComponents.VaadinBowerComponent.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
 
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./generated/jar-resources/sub/example-import.js");
@@ -331,7 +333,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         options.withTokenFile(null);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -577,7 +580,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Pattern injectGlobalCssPattern = Pattern
@@ -618,7 +622,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -640,7 +645,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -666,7 +672,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void themeForCssImports_eagerLoaded() throws Exception {
         Class<?>[] testClasses = { ThemeForCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -783,7 +790,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 DevelopmentAndProductionDependencies.class);
 
         options.withProductionMode(productionMode);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
     }
@@ -824,7 +832,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 LumoTest.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
         String output = String.join("\n", updater.getMergedOutput());
 
@@ -848,7 +857,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         // Imports are collected as
@@ -947,7 +957,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
@@ -961,7 +972,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         Class<?>[] testClasses = { MultiCssImportAppShell.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.getOutput().get(updater.appShellImports);
@@ -976,7 +988,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
@@ -991,7 +1004,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { ThemeForCssImportExporter.class,
                 ThemeForCssImport.class, UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;
@@ -1007,7 +1021,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { ThemeCssImport.class, FooCssImport.class,
                 CssImportExporter.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         List<String> lines = updater.webComponentImports;

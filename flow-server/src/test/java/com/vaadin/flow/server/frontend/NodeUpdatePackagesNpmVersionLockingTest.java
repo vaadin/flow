@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -27,6 +29,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -38,6 +41,13 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.DEPENDENCIES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(SlowTests.class)
 public class NodeUpdatePackagesNpmVersionLockingTest
@@ -91,7 +101,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
-                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY)
+                        .stringValue());
     }
 
     @Test
@@ -125,7 +136,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
-                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY)
+                        .stringValue());
     }
 
     @Test
@@ -154,13 +166,188 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
     }
 
-    private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
+    @Test
+    public void shouldHandleNestedObjectOverrides_withoutError() throws IOException {
+        final ObjectNode testOverrides = JacksonUtils.readTree("""
+                {
+                  "parent-package": {
+                    "nested-dep": "1.0.0"
+                  },
+                  "level1": {
+                    "level2": {
+                      "deep-dep": "2.0.0"
+                    }
+                  },
+                  "flat-dep": "3.0.0"
+                }
+                """);
+
+        TaskUpdatePackages packageUpdater = createPackageUpdater(false,
+                testOverrides);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+
+        // Add dependency
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+
+        packageUpdater.generateVersionsJson(packageJson);
+
+        // Should not throw and should handle nested objects correctly
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Verify flat override stays flat
+        JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
+        assertTrue("Flat override should remain unchanged",
+                overrides.has("flat-dep"));
+        assertEquals("3.0.0", overrides.get("flat-dep").stringValue());
+
+        // Verify nested object override is preserved
+        assertTrue("Nested object override should be preserved",
+                overrides.has("parent-package"));
+        assertTrue("Nested override should remain an object",
+                overrides.get("parent-package").isObject());
+        assertEquals("Nested override value should be preserved",
+                "1.0.0",
+                overrides.get("parent-package").get("nested-dep").stringValue());
+
+        // Verify vaadin.overrides tracks the nested structure correctly
+        assertTrue(packageJson.has(VAADIN_DEP_KEY));
+        JsonNode vaadinSection = packageJson.get(VAADIN_DEP_KEY);
+        assertTrue("vaadin.overrides should exist",
+                vaadinSection.has(OVERRIDES));
+        JsonNode vaadinOverrides = vaadinSection.get(OVERRIDES);
+        assertTrue("vaadin.overrides should track nested override",
+                vaadinOverrides.has("parent-package"));
+        assertTrue("vaadin.overrides should preserve nested structure",
+                vaadinOverrides.get("parent-package").isObject());
+        assertEquals("vaadin.overrides should track exact nested values",
+                "1.0.0",
+                vaadinOverrides.get("parent-package").get("nested-dep")
+                        .stringValue());
+
+        // Verify deep nesting is preserved
+        JsonNode level1Override = overrides.get("level1");
+        assertTrue(level1Override.isObject());
+        JsonNode level2Override = level1Override.get("level2");
+        assertTrue(level2Override.isObject());
+        assertEquals("2.0.0", level2Override.get("deep-dep").stringValue());
+    }
+
+    @Test
+    public void pnpmIsInUse_nestedOverrides_flattenedWithSeparator()
+            throws IOException {
+        final ObjectNode testOverrides = JacksonUtils.readTree("""
+                {
+                  "parent-package": {
+                    "nested-dep": "1.0.0"
+                  },
+                  "level1": {
+                    "level2": {
+                      "deep-dep": "2.0.0"
+                    }
+                  },
+                  "flat-dep": "3.0.0"
+                }
+                """);
+
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true,
+                testOverrides);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+
+        // Add dependency
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+
+        packageUpdater.generateVersionsJson(packageJson);
+
+        // Run version locking
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Verify pnpm flattens overrides with > separator
+        JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
+        assertTrue("Nested override should be flattened with > separator for pnpm",
+                overrides.has("parent-package>nested-dep"));
+        assertEquals("Flattened override should have correct value",
+                "1.0.0",
+                overrides.get("parent-package>nested-dep").stringValue());
+
+        // Verify flat override stays flat
+        assertTrue("Flat override should remain unchanged",
+                overrides.has("flat-dep"));
+        assertEquals("3.0.0", overrides.get("flat-dep").stringValue());
+
+        // Verify vaadin.overrides tracks the original nested structure
+        JsonNode vaadinOverrides = packageJson.get(VAADIN_DEP_KEY)
+                .get(OVERRIDES);
+        assertTrue("vaadin.overrides should track nested structure",
+                vaadinOverrides.has("parent-package"));
+        assertTrue("vaadin.overrides should preserve object format",
+                vaadinOverrides.get("parent-package").isObject());
+
+        // Verify deep nesting is fully flattened
+        assertTrue("Deeply nested override should be fully flattened",
+                overrides.has("level1>level2>deep-dep"));
+        assertEquals("2.0.0",
+                overrides.get("level1>level2>deep-dep").stringValue());
+    }
+
+    @Test
+    public void pnpmIsInUse_userFlatOverride_preserved() throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+
+        // User adds a flat override in pnpm format
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        overridesSection.put("user-package>user-dep", "5.0.0");
+        JacksonUtils.setNestedKey(packageJson, List.of(PNPM, OVERRIDES),
+                overridesSection,
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Verify user's override is preserved
+        JsonNode overrides = JacksonUtils.getNestedKey(packageJson,
+                List.of(PNPM, OVERRIDES));
+        assertNotNull(overrides);
+        assertTrue("User's override should be preserved",
+                overrides.has("user-package>user-dep"));
+        assertEquals("5.0.0",
+                overrides.get("user-package>user-dep").stringValue());
+
+        // Run again to ensure it remains stable
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        overrides = JacksonUtils.getNestedKey(packageJson,
+                List.of(PNPM, OVERRIDES));
+        assertNotNull(overrides);
+        assertTrue("User's override should remain preserved on second run",
+                overrides.has("user-package>user-dep"));
+        assertEquals("5.0.0",
+                overrides.get("user-package>user-dep").stringValue());
+    }
+
+    private TaskUpdatePackages createPackageUpdater(boolean enablePnpm,
+            ObjectNode testOverrides) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withFrontendDependenciesScanner(scanner);
 
-        return new TaskUpdatePackages(scanner, options);
+        return new TaskUpdatePackages(options) {
+            @Override
+            ObjectNode getDefaultOverrides() {
+                final ObjectNode overrides = super.getDefaultOverrides();
+                overrides.setAll(testOverrides);
+                return overrides;
+            }
+        };
+    }
+
+    private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
+        return createPackageUpdater(enablePnpm,
+                JacksonUtils.createObjectNode());
     }
 
     private TaskUpdatePackages createPackageUpdater() {

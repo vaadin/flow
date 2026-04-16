@@ -36,7 +36,6 @@ import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -97,8 +96,7 @@ public class TaskInstallFrontendBuildPluginsTest {
     public void pluginsNotAddedToPackageJson() throws IOException {
         Options options = new MockOptions(rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
-        NodeUpdater nodeUpdater = new NodeUpdater(
-                Mockito.mock(FrontendDependencies.class), options) {
+        NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
             }
