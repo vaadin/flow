@@ -17,7 +17,7 @@ engine: codex
 tools:
   github:
     toolsets: [repos, pull_requests, search]
-    github-token: ${{ secrets.DOCS_REPO_TOKEN }}
+    github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   edit:
   bash: true
 
@@ -39,11 +39,11 @@ safe-outputs:
     draft: true
     expires: 14
     fallback-as-issue: true
-    github-token: ${{ secrets.DOCS_REPO_TOKEN }}
+    github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   assign-to-user:
     target-repo: "vaadin/docs"
     target: "*"
-    github-token: ${{ secrets.DOCS_REPO_TOKEN }}
+    github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   add-comment:
 ---
 
