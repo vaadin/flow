@@ -35,6 +35,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -50,9 +51,14 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractNodeUpdatePackagesTest
         extends NodeUpdateTestUtil {
@@ -84,7 +90,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
         classFinder = Mockito.spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
+                .withBuildDirectory(TARGET).withBundleBuild(true)
+                .withFrontendDependenciesScanner(getScanner(classFinder));
         packageCreator = new TaskGeneratePackageJson(options);
         versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
@@ -92,8 +99,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -133,8 +139,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -148,8 +153,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -159,8 +163,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -174,8 +177,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -185,8 +187,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageLockExists_removePackageLock()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -195,8 +196,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
         Assert.assertFalse("npm package-lock should be removed for pnpm",
                 packageLock.exists());
@@ -335,9 +335,10 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void versionsDoNotMatch_inVaadinJson_cleanUpPnpm()
             throws IOException {
         options.withEnablePnpm(true);
+        options = options.withFrontendDependenciesScanner(
+                Mockito.mock(FrontendDependencies.class));
 
-        packageUpdater = new TaskUpdatePackages(
-                Mockito.mock(FrontendDependencies.class), options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -374,8 +375,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         // packages.put(VAADIN_CORE, "1.1.1");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -403,8 +405,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         options.enableNpmFileCleaning(true);
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         // clean up happened
@@ -424,8 +425,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -453,8 +455,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -497,8 +500,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -527,8 +531,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -549,8 +554,9 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -574,8 +580,9 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -601,8 +608,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         JsonNode json = getPackageJson(packageJson);
@@ -627,8 +635,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -641,8 +648,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(legacyPackageContent));
 
-        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
-                options);
+        packageUpdater = new TaskUpdatePackages(options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -662,8 +668,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -706,8 +713,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
 
-        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -845,6 +853,336 @@ public abstract class AbstractNodeUpdatePackagesTest
     void writePackageJson(File packageJsonFile, JsonNode packageJson)
             throws IOException {
         FileIOUtils.writeIfChanged(packageJsonFile, packageJson.toString());
+    }
+
+    @Test
+    public void generatePackageJson_userOverridesChanged_updaterIsNotModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
+
+        packageUpdater = new TaskUpdatePackages(options);
+
+        // Generate initial state
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Run again to establish baseline (not modified)
+        packageUpdater.execute();
+        assertFalse("Modification flag should be false after second run.",
+                packageUpdater.modified);
+
+        // User adds an override to package.json
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("some-dep", "$some-dep");
+        json.set(OVERRIDES, overrides);
+        writePackageJson(packageJson, json);
+
+        // Run again - should detect change due to overrides
+        packageUpdater.execute();
+
+        assertTrue(
+                "Modification flag should be true when user overrides are added.",
+                packageUpdater.modified);
+        // Verify the user's override is not removed
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get("overrides");
+        assertNotNull(overrides);
+        assertEquals("$some-dep", overrides.get("some-dep").asString());
+    }
+
+    @Test
+    public void generatePackageJson_vaadinOverridesChanged_updaterIsModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
+
+        packageUpdater = new TaskUpdatePackages(options);
+
+        // Generate initial state
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // User adds an override to package.json
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("some-dep", "$some-dep");
+        ObjectNode nestedOverride = JacksonUtils.createObjectNode();
+        nestedOverride.put("nested-dep", "1.0.0");
+        overrides.set("parent-package", nestedOverride);
+        json.set(OVERRIDES, overrides);
+        writePackageJson(packageJson, json);
+
+        // Run again to establish baseline (not modified)
+        packageUpdater.execute();
+
+        // Simulate Vaadin overrides change
+        packageUpdater = new TaskUpdatePackages(options) {
+            @Override
+            ObjectNode getDefaultOverrides() {
+                final ObjectNode defaultOverrides = super.getDefaultOverrides();
+                defaultOverrides.put("@vaadin/flat-override", "2.0.0");
+                defaultOverrides.set("@vaadin/nested-override",
+                        JacksonUtils.createObjectNode().put(".", "3.0.0")
+                                .put("dep", "4.0.0"));
+                return defaultOverrides;
+            }
+        };
+        // Run again - should detect change due to overrides
+        packageUpdater.execute();
+
+        assertTrue(
+                "Modification flag should be true when Vaadin overrides are added.",
+                packageUpdater.modified);
+
+        // Run again - should detect no change
+        packageUpdater.execute();
+
+        assertFalse(
+                "Modification flag should be false when overrides are unchanged.",
+                packageUpdater.modified);
+
+        // Verify the user's override is not removed
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get("overrides");
+        assertNotNull(overrides);
+        assertEquals("Flat user override should be preserved", "$some-dep",
+                overrides.get("some-dep").asString());
+        assertTrue("Nested user override should remain an object",
+                overrides.get("parent-package").isObject());
+        assertEquals("Nested user override value should be preserved", "1.0.0",
+                overrides.get("parent-package").get("nested-dep").asString());
+
+        // Verify Vaadin overrides are present
+        assertEquals(StringNode.valueOf("2.0.0"),
+                overrides.get("@vaadin/flat-override"));
+        assertEquals(StringNode.valueOf("3.0.0"), JacksonUtils.getNestedKey(
+                overrides, List.of("@vaadin/nested-override", ".")));
+        assertEquals(StringNode.valueOf("4.0.0"), JacksonUtils.getNestedKey(
+                overrides, List.of("@vaadin/nested-override", "dep")));
+        // Verify Vaadin overrides are present
+        assertEquals(StringNode.valueOf("2.0.0"), JacksonUtils.getNestedKey(
+                json, List.of("vaadin", "overrides", "@vaadin/flat-override")));
+        assertEquals(StringNode.valueOf("3.0.0"),
+                JacksonUtils.getNestedKey(json, List.of("vaadin", "overrides",
+                        "@vaadin/nested-override", ".")));
+        assertEquals(StringNode.valueOf("4.0.0"),
+                JacksonUtils.getNestedKey(json, List.of("vaadin", "overrides",
+                        "@vaadin/nested-override", "dep")));
+    }
+
+    @Test
+    public void generatePackageJson_sameOverrides_updaterIsNotModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
+
+        packageUpdater = new TaskUpdatePackages(options) {
+            @Override
+            ObjectNode getDefaultOverrides() {
+                final ObjectNode defaultOverrides = super.getDefaultOverrides();
+                defaultOverrides.put("@vaadin/flat-override", "2.0.0");
+                defaultOverrides.set("@vaadin/nested-override",
+                        JacksonUtils.createObjectNode().put(".", "3.0.0")
+                                .put("dep", "4.0.0"));
+                return defaultOverrides;
+            }
+        };
+
+        // Generate initial state
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Add multiple types of overrides: flat, nested, and mixed
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("some-dep", "$some-dep");
+        ObjectNode nestedOverride = JacksonUtils.createObjectNode();
+        nestedOverride.put("nested-dep", "1.0.0");
+        overrides.set("parent-package", nestedOverride);
+        json.set(OVERRIDES, overrides);
+        writePackageJson(packageJson, json);
+
+        // Run to register the override
+        packageUpdater.execute();
+
+        // Capture vaadin.overrides state after first run
+        json = (ObjectNode) getPackageJson(packageJson);
+        JsonNode vaadinOverridesAfterFirstRun = json.get(VAADIN_DEP_KEY)
+                .get(OVERRIDES);
+        assertNotNull("Vaadin overrides should be preserved.",
+                vaadinOverridesAfterFirstRun);
+
+        // Run again with same overrides - should not be modified
+        packageUpdater.execute();
+
+        assertFalse(
+                "Modification flag should be false when overrides are unchanged.",
+                packageUpdater.modified);
+
+        // Verify user overrides are preserved
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get(OVERRIDES);
+        assertNotNull(overrides);
+        assertEquals("Flat user override should be preserved", "$some-dep",
+                overrides.get("some-dep").asString());
+        assertTrue("Nested user override should remain an object",
+                overrides.get("parent-package").isObject());
+        assertEquals("Nested user override value should be preserved", "1.0.0",
+                overrides.get("parent-package").get("nested-dep").asString());
+
+        // Run a third time to ensure stability
+        packageUpdater.execute();
+        assertFalse("Modification flag should remain false on third run.",
+                packageUpdater.modified);
+
+        // Verify vaadin.overrides consistency across runs
+        json = (ObjectNode) getPackageJson(packageJson);
+        JsonNode vaadinOverridesAfterThirdRun = json.get(VAADIN_DEP_KEY) != null
+                ? json.get(VAADIN_DEP_KEY).get(OVERRIDES)
+                : null;
+        assertTrue("vaadin.overrides should remain consistent across runs",
+                JacksonUtils.jsonEquals(vaadinOverridesAfterFirstRun,
+                        vaadinOverridesAfterThirdRun));
+
+        // Run a fourth time to ensure long-term stability
+        packageUpdater.execute();
+        assertFalse("Modification flag should remain false on fourth run.",
+                packageUpdater.modified);
+    }
+
+    @Test
+    public void generatePackageJson_userModifiesVaadinOverride_optOut()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
+
+        packageUpdater = new TaskUpdatePackages(options) {
+            @Override
+            ObjectNode getDefaultOverrides() {
+                final ObjectNode defaultOverrides = super.getDefaultOverrides();
+                defaultOverrides.put("@vaadin/flat-override", "2.0.0");
+                defaultOverrides.set("@vaadin/nested-override",
+                        JacksonUtils.createObjectNode().put(".", "3.0.0")
+                                .put("dep", "4.0.0"));
+                return defaultOverrides;
+            }
+        };
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Get initial state - Vaadin adds platform overrides
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        ObjectNode overrides = (ObjectNode) json.get(OVERRIDES);
+
+        // Verify Vaadin added an override for a platform dependency
+        assertNotNull("Expected an override for Vaadin managed dependency",
+                overrides.get("@polymer/iron-list"));
+
+        // User modifies the Vaadin-managed overrides
+        overrides.put("@polymer/iron-list", "99.99.1");
+        overrides.put("@vaadin/flat-override", "99.99.2");
+        JacksonUtils.setNestedKey(overrides,
+                List.of("@vaadin/nested-override", "dep"),
+                StringNode.valueOf("99.99.3"),
+                (plainValue) -> JacksonUtils.createObjectNode());
+        writePackageJson(packageJson, json);
+
+        // Run updater again
+        packageUpdater.execute();
+
+        // Verify the user's modification is preserved (opt-out behavior)
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get(OVERRIDES);
+        assertEquals("User's modified override should be preserved (opted out)",
+                "99.99.1", overrides.get("@polymer/iron-list").asString());
+        assertEquals("User's modified override should be preserved (opted out)",
+                "99.99.2", overrides.get("@vaadin/flat-override").asString());
+        assertEquals("User's modified override should be preserved (opted out)",
+                StringNode.valueOf("99.99.3"), JacksonUtils.getNestedKey(
+                        overrides, List.of("@vaadin/nested-override", "dep")));
+    }
+
+    @Test
+    public void generatePackageJson_mixedOptOutAndUpdates_handledCorrectly()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@polymer/paper-button", "3.0.2");
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        options = options.withFrontendDependenciesScanner(frontendDependencies);
+
+        packageUpdater = new TaskUpdatePackages(options);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Set up initial state with multiple user overrides
+        ObjectNode json = (ObjectNode) getPackageJson(packageJson);
+        if (!json.has(OVERRIDES)) {
+            json.set(OVERRIDES, JacksonUtils.createObjectNode());
+        }
+        ObjectNode overrides = (ObjectNode) json.get(OVERRIDES);
+        overrides.put("dep-1", "1.0.0");
+        overrides.put("dep-2", "2.0.0");
+        overrides.put("user-dep", "3.0.0");
+        writePackageJson(packageJson, json);
+
+        // Register the overrides
+        packageUpdater.execute();
+
+        // User modifies one Vaadin override but leaves another alone
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get(OVERRIDES);
+        overrides.put("@polymer/iron-list", "99.0.0");
+        writePackageJson(packageJson, json);
+
+        // Run updater
+        packageUpdater.execute();
+
+        // Verify outcomes:
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get(OVERRIDES);
+
+        assertEquals("User-modified override should be preserved (opted out)",
+                "99.0.0", overrides.get("@polymer/iron-list").asString());
+
+        assertEquals("User's own override should always be preserved", "3.0.0",
+                overrides.get("user-dep").asString());
+
+        // Verify stability on subsequent runs
+        packageUpdater.execute();
+        json = (ObjectNode) getPackageJson(packageJson);
+        overrides = (ObjectNode) json.get(OVERRIDES);
+        assertEquals("Opted-out override should remain stable", "99.0.0",
+                overrides.get("@polymer/iron-list").asString());
+        assertEquals("User override should remain stable", "3.0.0",
+                overrides.get("user-dep").asString());
     }
 
 }
