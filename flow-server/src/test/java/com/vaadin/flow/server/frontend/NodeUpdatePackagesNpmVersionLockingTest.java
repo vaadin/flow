@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -101,8 +100,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
-                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY)
-                        .stringValue());
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
     @Test
@@ -136,8 +134,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
-                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY)
-                        .stringValue());
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
     @Test
@@ -167,7 +164,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     }
 
     @Test
-    public void shouldHandleNestedObjectOverrides_withoutError() throws IOException {
+    public void shouldHandleNestedObjectOverrides_withoutError()
+            throws IOException {
         final ObjectNode testOverrides = JacksonUtils.readTree("""
                 {
                   "parent-package": {
@@ -206,9 +204,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 overrides.has("parent-package"));
         assertTrue("Nested override should remain an object",
                 overrides.get("parent-package").isObject());
-        assertEquals("Nested override value should be preserved",
-                "1.0.0",
-                overrides.get("parent-package").get("nested-dep").stringValue());
+        assertEquals("Nested override value should be preserved", "1.0.0",
+                overrides.get("parent-package").get("nested-dep")
+                        .stringValue());
 
         // Verify vaadin.overrides tracks the nested structure correctly
         assertTrue(packageJson.has(VAADIN_DEP_KEY));
@@ -221,8 +219,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         assertTrue("vaadin.overrides should preserve nested structure",
                 vaadinOverrides.get("parent-package").isObject());
         assertEquals("vaadin.overrides should track exact nested values",
-                "1.0.0",
-                vaadinOverrides.get("parent-package").get("nested-dep")
+                "1.0.0", vaadinOverrides.get("parent-package").get("nested-dep")
                         .stringValue());
 
         // Verify deep nesting is preserved
@@ -265,10 +262,10 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
         // Verify pnpm flattens overrides with > separator
         JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
-        assertTrue("Nested override should be flattened with > separator for pnpm",
+        assertTrue(
+                "Nested override should be flattened with > separator for pnpm",
                 overrides.has("parent-package>nested-dep"));
-        assertEquals("Flattened override should have correct value",
-                "1.0.0",
+        assertEquals("Flattened override should have correct value", "1.0.0",
                 overrides.get("parent-package>nested-dep").stringValue());
 
         // Verify flat override stays flat

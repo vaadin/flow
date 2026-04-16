@@ -602,8 +602,7 @@ public class JacksonUtilsTest {
                 unused -> mapper.createObjectNode());
 
         Assert.assertTrue(node.get("outer").isObject());
-        Assert.assertEquals("value",
-                node.get("outer").get("inner").asString());
+        Assert.assertEquals("value", node.get("outer").get("inner").asString());
     }
 
     @Test
@@ -649,10 +648,8 @@ public class JacksonUtilsTest {
                 });
 
         Assert.assertTrue(node.get("key").isObject());
-        Assert.assertEquals("plainValue",
-                node.get("key").get(".").asString());
-        Assert.assertEquals("value",
-                node.get("key").get("nested").asString());
+        Assert.assertEquals("plainValue", node.get("key").get(".").asString());
+        Assert.assertEquals("value", node.get("key").get("nested").asString());
     }
 
     @Test
@@ -721,8 +718,7 @@ public class JacksonUtilsTest {
 
         JacksonUtils.removeNestedKey(node, List.of("a", "b", "c", "deep"));
 
-        Assert.assertFalse(
-                "All empty parent objects should be removed",
+        Assert.assertFalse("All empty parent objects should be removed",
                 node.has("a"));
     }
 

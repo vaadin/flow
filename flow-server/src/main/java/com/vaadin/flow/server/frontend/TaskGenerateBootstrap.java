@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;

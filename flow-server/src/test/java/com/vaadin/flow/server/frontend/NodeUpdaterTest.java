@@ -808,8 +808,7 @@ public class NodeUpdaterTest {
                 overrides.has("workbox-build"));
         // Verify nested structure
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
-        Assert.assertTrue(
-                "workbox-build override should be an object",
+        Assert.assertTrue("workbox-build override should be an object",
                 workboxBuildOverride.isObject());
         Assert.assertTrue(
                 "workbox-build override should contain serialize-javascript",
@@ -854,8 +853,7 @@ public class NodeUpdaterTest {
         };
 
         ObjectNode overrides = nodeUpdater.getDefaultOverrides();
-        Assert.assertTrue(
-                "overrides should be empty when PWA is null",
+        Assert.assertTrue("overrides should be empty when PWA is null",
                 overrides.isEmpty());
     }
 

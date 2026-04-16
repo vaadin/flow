@@ -55,8 +55,7 @@ public class TaskUpdateViteTest {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, temporaryFolder.getRoot())
-                .withBuildDirectory("build")
-                .withFrontendDependenciesScanner(
+                .withBuildDirectory("build").withFrontendDependenciesScanner(
                         Mockito.mock(FrontendDependenciesScanner.class));
     }
 

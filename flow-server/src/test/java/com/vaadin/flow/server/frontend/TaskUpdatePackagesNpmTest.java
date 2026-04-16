@@ -57,12 +57,10 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
@@ -1339,7 +1337,8 @@ public class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pkgJson.get(OVERRIDES);
 
         // Verify workbox-build nested object override is present
-        assertTrue("workbox-build override should be added when PWA offline is enabled",
+        assertTrue(
+                "workbox-build override should be added when PWA offline is enabled",
                 overrides.has("workbox-build"));
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue("workbox-build override should be a nested object",
@@ -1359,7 +1358,8 @@ public class TaskUpdatePackagesNpmTest {
         ObjectNode pkgJson = getOrCreatePackageJson();
         if (pkgJson.has(OVERRIDES)) {
             JsonNode overrides = pkgJson.get(OVERRIDES);
-            assertFalse("workbox-build override should not be added when PWA offline is disabled",
+            assertFalse(
+                    "workbox-build override should not be added when PWA offline is disabled",
                     overrides.has("workbox-build"));
         }
     }
@@ -1414,7 +1414,8 @@ public class TaskUpdatePackagesNpmTest {
         // Verify workbox override was removed
         pkgJson = getOrCreatePackageJson();
         if (pkgJson.has(OVERRIDES)) {
-            assertFalse("workbox-build override should be removed when PWA offline is disabled",
+            assertFalse(
+                    "workbox-build override should be removed when PWA offline is disabled",
                     pkgJson.get(OVERRIDES).has("workbox-build"));
             // Verify the entire nested object structure is gone, not just the
             // key
@@ -1525,7 +1526,8 @@ public class TaskUpdatePackagesNpmTest {
         // Verify vaadin.overrides is removed when empty
         ObjectNode resultJson = getOrCreatePackageJson();
         ObjectNode resultVaadin = (ObjectNode) resultJson.get(VAADIN_DEP_KEY);
-        assertFalse("Empty vaadin.overrides should be removed from package.json",
+        assertFalse(
+                "Empty vaadin.overrides should be removed from package.json",
                 resultVaadin.has(OVERRIDES));
     }
 
@@ -1540,7 +1542,8 @@ public class TaskUpdatePackagesNpmTest {
         ObjectNode pkgJson = getOrCreatePackageJson();
 
         // Verify npm-style overrides are NOT at root level
-        assertFalse("npm overrides should not exist at root when pnpm is enabled",
+        assertFalse(
+                "npm overrides should not exist at root when pnpm is enabled",
                 pkgJson.has(OVERRIDES));
 
         // Verify pnpm.overrides section exists
@@ -1550,9 +1553,11 @@ public class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pnpm.get(OVERRIDES);
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue("Flattened workbox-build>serialize-javascript should be present",
+        assertTrue(
+                "Flattened workbox-build>serialize-javascript should be present",
                 overrides.has("workbox-build>serialize-javascript"));
-        assertTrue("Flattened workbox-build>@rollup/plugin-terser should be present",
+        assertTrue(
+                "Flattened workbox-build>@rollup/plugin-terser should be present",
                 overrides.has("workbox-build>@rollup/plugin-terser"));
         assertTrue("Flattened workbox-build>glob should be present",
                 overrides.has("workbox-build>glob"));
@@ -1562,7 +1567,8 @@ public class TaskUpdatePackagesNpmTest {
                 overrides.get("workbox-build>serialize-javascript").isString());
 
         // Verify nested object form does NOT exist
-        assertFalse("Nested object workbox-build should not exist in pnpm overrides",
+        assertFalse(
+                "Nested object workbox-build should not exist in pnpm overrides",
                 overrides.has("workbox-build"));
     }
 
@@ -1591,9 +1597,11 @@ public class TaskUpdatePackagesNpmTest {
         pkgJson = getOrCreatePackageJson();
         if (pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES)) {
             JsonNode overrides = pkgJson.get(PNPM).get(OVERRIDES);
-            assertFalse("Flattened workbox-build>serialize-javascript should be removed",
+            assertFalse(
+                    "Flattened workbox-build>serialize-javascript should be removed",
                     overrides.has("workbox-build>serialize-javascript"));
-            assertFalse("Flattened workbox-build>@rollup/plugin-terser should be removed",
+            assertFalse(
+                    "Flattened workbox-build>@rollup/plugin-terser should be removed",
                     overrides.has("workbox-build>@rollup/plugin-terser"));
             assertFalse("Flattened workbox-build>glob should be removed",
                     overrides.has("workbox-build>glob"));
@@ -1680,7 +1688,8 @@ public class TaskUpdatePackagesNpmTest {
         String hashWithWorkboxOverrides = pkgJsonWithPwa.get(VAADIN_DEP_KEY)
                 .get("hash").asString();
 
-        assertNotEquals("Hash should be different when workbox overrides are added",
+        assertNotEquals(
+                "Hash should be different when workbox overrides are added",
                 hashWithoutWorkboxOverrides, hashWithWorkboxOverrides);
 
         // Verify flattened overrides exist
@@ -1714,7 +1723,8 @@ public class TaskUpdatePackagesNpmTest {
         pkgJson = getOrCreatePackageJson();
 
         // Verify npm-style overrides are NOT at root level
-        assertFalse("npm overrides should not exist at root when pnpm is enabled",
+        assertFalse(
+                "npm overrides should not exist at root when pnpm is enabled",
                 pkgJson.has(OVERRIDES));
 
         // Verify pnpm.overrides section exists
@@ -1724,9 +1734,11 @@ public class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pnpm.get(OVERRIDES);
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue("Flattened workbox-build>serialize-javascript should be present",
+        assertTrue(
+                "Flattened workbox-build>serialize-javascript should be present",
                 overrides.has("workbox-build>serialize-javascript"));
-        assertTrue("Flattened workbox-build>@rollup/plugin-terser should be present",
+        assertTrue(
+                "Flattened workbox-build>@rollup/plugin-terser should be present",
                 overrides.has("workbox-build>@rollup/plugin-terser"));
         assertTrue("Flattened workbox-build>glob should be present",
                 overrides.has("workbox-build>glob"));
@@ -1742,7 +1754,8 @@ public class TaskUpdatePackagesNpmTest {
                 overrides.get("workbox-build>serialize-javascript").isString());
 
         // Verify nested object form does NOT exist
-        assertFalse("Nested object workbox-build should not exist in pnpm overrides",
+        assertFalse(
+                "Nested object workbox-build should not exist in pnpm overrides",
                 overrides.has("workbox-build"));
     }
 
@@ -1773,7 +1786,8 @@ public class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pkgJson.get(OVERRIDES);
 
         // Verify workbox-build nested object override is present
-        assertTrue("workbox-build override should be added when PWA offline is enabled",
+        assertTrue(
+                "workbox-build override should be added when PWA offline is enabled",
                 overrides.has("workbox-build"));
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue("workbox-build override should be a nested object",
