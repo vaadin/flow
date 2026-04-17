@@ -957,6 +957,28 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    void setAcceptHiddenFields_defaultsToFalse_appliesToHiddenFieldsWhenEnabled() {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .withValidator(name -> false, "")
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        assertFalse(binder.isAcceptHiddenFields());
+
+        ((Component) nameBinding.getField()).setVisible(false);
+        assertTrue(binder.isValid(),
+                "Hidden field should be skipped by default");
+
+        binder.setAcceptHiddenFields(true);
+        assertFalse(binder.isValid(),
+                "Hidden field should be validated when acceptHiddenFields is true");
+
+        nameBinding.setIsAppliedPredicate(p -> false);
+        assertTrue(binder.isValid(),
+                "Per-binding predicate should override Binder-level acceptHiddenFields");
+    }
+
+    @Test
     void writeBean_isAppliedIsEvaluated() {
         AtomicInteger invokes = new AtomicInteger();
 
