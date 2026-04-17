@@ -535,7 +535,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }),
       // Babel plugins for source location info and signals transform
       // (separate from reactPlugin since v6 uses OXC instead of Babel for JSX)
-      babel({
+      // Must run AFTER reactPlugin (OXC) so that source locations are correct.
+      // @rolldown/plugin-babel sets enforce:'pre' by default, so we override it.
+      {...babel({
         include: '**/*.tsx',
         plugins: [
           !productionMode && addFunctionComponentSourceLocationBabel(),
@@ -546,7 +548,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             }
           ]
         ].filter(Boolean)
-      }),
+      }), enforce: undefined},
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
