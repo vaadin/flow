@@ -170,7 +170,6 @@ class NodeUpdaterTest {
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/core");
         expectedDependencies.add("@babel/preset-react");
-        expectedDependencies.add("@rolldown/plugin-babel");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");

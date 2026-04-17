@@ -43,14 +43,18 @@ export function addFunctionComponentSourceLocationBabel() {
         }
       }
       if (constMatch) {
-        // Find arrow function body: look for => and then { or (
+        // Find arrow function body: look for => and then the body start
         for (let j = i; j < Math.min(i + 5, lines.length); j++) {
           const arrowIdx = lines[j].indexOf('=>');
           if (arrowIdx >= 0) {
-            const after = lines[j].substring(arrowIdx + 2).trim();
-            if (after.startsWith('{') || after.startsWith('(')) {
-              return { line: j + 1, column: arrowIdx + 3 };
+            const afterArrow = lines[j].substring(arrowIdx + 2);
+            const trimmed = afterArrow.trim();
+            if (trimmed.length > 0) {
+              // Body starts on same line as =>
+              const bodyStart = arrowIdx + 2 + afterArrow.indexOf(trimmed.charAt(0));
+              return { line: j + 1, column: bodyStart + 1 };
             }
+            // Body starts on next line
             if (j + 1 < lines.length) {
               return { line: j + 2, column: 1 };
             }
