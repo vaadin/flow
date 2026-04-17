@@ -52,6 +52,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     private static final String OVERRIDES = "overrides";
     private static final String PLATFORM_PINNED_DEPENDENCY_VERSION = "3.2.17";
     private static final String USER_PINNED_DEPENDENCY_VERSION = "1.0";
+    private static final String RELATIVE_DEPENDENCY_VERSION = "$@vaadin/vaadin-overlay";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -129,6 +130,27 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
+    }
+
+    @Test
+    public void shouldUpdatesOverrides_whenNoVaadinOverrides_changingVersion()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(false,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY,
+                        PLATFORM_PINNED_DEPENDENCY_VERSION));
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                USER_PINNED_DEPENDENCY_VERSION);
+        overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        Assert.assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
     }
 

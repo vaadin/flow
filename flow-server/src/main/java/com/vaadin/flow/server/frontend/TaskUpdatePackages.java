@@ -176,6 +176,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
+        final ObjectNode overridesSection = getOverridesSection(packageJson);
+
         // Flatten overrides to simplify diffing
         final Map<String, String> flatVaadinOverrides = flattenOverrides(
                 vaadinOverrides);
@@ -187,7 +189,6 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         boolean versionLockingUpdated = false;
         // Update overrides based on diff between current and last overrides
-        final ObjectNode overridesSection = getOverridesSection(packageJson);
         for (final Map.Entry<String, String> entryToUpdate : flatVaadinOverrides
                 .entrySet()) {
             final String lastValue = flatLastVaadinOverrides
@@ -206,11 +207,22 @@ public class TaskUpdatePackages extends NodeUpdater {
                 lastUserValue = JacksonUtils.getNestedKey(overridesSection,
                         keyPath);
             }
-            boolean optOut = !Objects.equals(TextNode.valueOf(lastValue),
-                    lastUserValue);
+            boolean optOut;
+            if (lastValue == null) {
+                // Old-style package.json did not have Vaadin overrides.
+                // We generally cannot detect opt-out except for one case:
+                // prevent unpinning with relative version when the user has
+                // existing non-relative override.
+                optOut = lastUserValue != null
+                        && entryToUpdate.getValue().startsWith("$")
+                        && !lastUserValue.textValue().startsWith("$");
+            } else {
+                // Detect opt-out: the actual override value is different from
+                // last Vaadin override:
+                optOut = !TextNode.valueOf(lastValue).equals(lastUserValue);
+            }
             if (optOut) {
-                // Actual override value is different from last Vaadin override:
-                // assume user opt-out and skip.
+                // Skip due to user opt-out using a custom override
                 continue;
             }
             versionLockingUpdated = true;
