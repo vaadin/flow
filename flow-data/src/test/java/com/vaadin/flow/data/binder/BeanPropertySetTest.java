@@ -85,6 +85,18 @@ class BeanPropertySetTest {
     public record TestRecord(String name, int age) {
     }
 
+    interface EntityWithId<ID> {
+        ID getEntityId();
+    }
+
+    public record RecordWithInterface(String client,
+            String server) implements EntityWithId<String> {
+        @Override
+        public String getEntityId() {
+            return server;
+        }
+    }
+
     interface Iface3 extends Iface2, Iface {
     }
 
@@ -264,6 +276,24 @@ class BeanPropertySetTest {
                 .getPropertySet().getProperties().toList();
         assertEquals("name", propertyList.get(0).getName());
         assertEquals("age", propertyList.get(1).getName());
+    }
+
+    @Test
+    void recordImplementingInterface_interfacePropertyDiscovered() {
+        PropertySet<RecordWithInterface> set = BeanPropertySet
+                .get(RecordWithInterface.class);
+
+        Set<String> names = set.getProperties().map(PropertyDefinition::getName)
+                .collect(Collectors.toSet());
+
+        assertEquals(Set.of("client", "server", "entityId"), names);
+
+        // Getter works and dispatches to the record's override
+        PropertyDefinition<RecordWithInterface, ?> entityId = set
+                .getProperty("entityId").orElseThrow();
+        Object value = entityId.getGetter()
+                .apply(new RecordWithInterface("c", "s"));
+        assertEquals("s", value);
     }
 
     @Test

@@ -93,6 +93,18 @@ class BeanUtilTest {
     public record TestRecord(String recordProperty, int recordAge) {
     }
 
+    public interface EntityWithId<ID> {
+        ID getEntityId();
+    }
+
+    public record RecordImplementsInterface(String client,
+            String server) implements EntityWithId<String> {
+        @Override
+        public String getEntityId() {
+            return server;
+        }
+    }
+
     // Test helper classes for duplicate property test from main branch
     public interface FirstInterface {
         default void setOneInterface(boolean bothInterfaces) {
@@ -194,6 +206,24 @@ class BeanUtilTest {
         assertTrue(foundRecordProperty,
                 "Should find 'recordProperty' property");
         assertTrue(foundRecordAge, "Should find 'recordAge' property");
+    }
+
+    // Test for getBeanPropertyDescriptors with a record that implements
+    // an interface declaring bean-style getters
+    @Test
+    void getBeanPropertyDescriptors_recordImplementingInterface()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(RecordImplementsInterface.class);
+
+        List<String> names = descriptors.stream()
+                .map(PropertyDescriptor::getName).toList();
+
+        assertTrue(names.contains("client"));
+        assertTrue(names.contains("server"));
+        assertTrue(names.contains("entityId"),
+                "Interface-declared property must be discovered for records");
+        assertEquals(3, descriptors.size());
     }
 
     // Test for getBeanPropertyDescriptors with interface

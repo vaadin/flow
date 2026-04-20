@@ -120,6 +120,16 @@ public final class BeanUtil implements Serializable {
         if (beanType.isRecord()) {
             List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
 
+            // Interface-declared bean properties (and their superinterfaces)
+            // are discovered the same way as for regular classes. The
+            // Introspector is intentionally not used for the record type
+            // itself because it does not recognise record component accessors
+            // (name() vs. getName() convention).
+            for (Class<?> cls : beanType.getInterfaces()) {
+                propertyDescriptors
+                        .addAll(internalGetBeanPropertyDescriptors(cls));
+            }
+
             for (RecordComponent component : beanType.getRecordComponents()) {
                 propertyDescriptors.add(new PropertyDescriptor(
                         component.getName(), component.getAccessor(), null));
