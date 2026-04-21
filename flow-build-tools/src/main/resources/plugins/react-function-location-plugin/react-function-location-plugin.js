@@ -46,18 +46,13 @@ export function addFunctionComponentSourceLocationBabel() {
           });
 
           for (const { name, loc } of collected) {
-            const debugSourceMember = t.memberExpression(
-              t.identifier(name),
-              t.identifier('__debugSourceDefine')
-            );
+            const debugSourceMember = t.memberExpression(t.identifier(name), t.identifier('__debugSourceDefine'));
             const debugSourceDefine = t.objectExpression([
               t.objectProperty(t.identifier('fileName'), t.stringLiteral(filename)),
               t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(loc.start.line)),
               t.objectProperty(t.identifier('columnNumber'), t.numericLiteral(loc.start.column + 1))
             ]);
-            const assignment = t.expressionStatement(
-              t.assignmentExpression('=', debugSourceMember, debugSourceDefine)
-            );
+            const assignment = t.expressionStatement(t.assignmentExpression('=', debugSourceMember, debugSourceDefine));
             const condition = t.binaryExpression(
               '===',
               t.unaryExpression('typeof', t.identifier(name)),
