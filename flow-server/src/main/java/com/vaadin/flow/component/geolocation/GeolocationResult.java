@@ -19,45 +19,35 @@ import java.io.Serializable;
 
 /**
  * The outcome of a geolocation request — either the browser produced a reading,
- * or it reported an error, or the tracker is still waiting for the first
- * answer.
+ * or it reported an error.
  * <p>
- * Returned to {@link Geolocation#get} callbacks and held by the signal exposed
- * by {@link GeolocationTracker#value()}. A {@code GeolocationResult} is always
- * exactly one of three things:
- * <ul>
- * <li>{@link Pending} — the initial state of a newly started tracker, before
- * the browser has produced any answer. One-shot {@link Geolocation#get} never
- * resolves to this value.</li>
- * <li>{@link GeolocationPosition} — the most recent successful reading. While
- * tracking is active, the signal is updated on every new reading.</li>
- * <li>{@link GeolocationError} — the browser's most recent error (permission
- * denied, position unavailable, or timeout).</li>
- * </ul>
+ * Passed to {@link Geolocation#get} callbacks and held (possibly as
+ * {@code null} before the first fix) by the signal exposed by
+ * {@link GeolocationTracker#value()}.
  * <p>
  * The sealed interface is designed for exhaustive pattern matching. A
- * {@code switch} covering all three permitted subtypes is guaranteed complete
- * at compile time — adding a new variant in a future version of Flow would
- * break existing switches so that callers are forced to decide how to handle
- * it.
+ * {@code switch} covering both permitted subtypes is guaranteed complete at
+ * compile time — adding a new variant in a future version of Flow would break
+ * existing switches so that callers are forced to decide how to handle it.
  *
  * <pre>
  * switch (result) {
- * case GeolocationResult.Pending p -&gt; {
- *     // waiting for the first fix
+ * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
+ * case GeolocationError err -&gt; showError(err.message());
  * }
+ * </pre>
+ *
+ * For a tracker, the signal starts as {@code null} until the first reading
+ * arrives. Match with {@code case null} to handle the waiting state:
+ *
+ * <pre>
+ * switch (tracker.value().get()) {
+ * case null -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());
  * }
  * </pre>
  */
-public sealed interface GeolocationResult extends Serializable permits
-        GeolocationResult.Pending, GeolocationPosition, GeolocationError {
-
-    /**
-     * The initial state of a newly started tracking session, used until the
-     * browser reports the first position (or the first error).
-     */
-    record Pending() implements GeolocationResult {
-    }
+public sealed interface GeolocationResult extends Serializable
+        permits GeolocationPosition, GeolocationError {
 }

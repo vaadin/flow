@@ -426,18 +426,6 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      // Collect browser details to send with init request as JSON
-      const browserDetails = this.collectBrowserDetails();
-      const browserDetailsParam = browserDetails
-        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
-        : '';
-
-      const requestPath = `?v-r=init&location=${encodeURIComponent(
-        this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
-
-      httpRequest.open('GET', requestPath);
-
       httpRequest.onerror = () =>
         reject(
           new FlowUiInitializationError(
@@ -455,12 +443,23 @@ export class Flow {
           httpRequest.onerror();
         }
       };
-      httpRequest.send();
+
+      // Collect browser details (async) and send the init request
+      this.collectBrowserDetails().then((browserDetails) => {
+        const browserDetailsParam = browserDetails
+          ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+          : '';
+        const requestPath = `?v-r=init&location=${encodeURIComponent(
+          this.getFlowRoutePath(location)
+        )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+        httpRequest.open('GET', requestPath);
+        httpRequest.send();
+      });
     });
   }
 
   // Collects browser details parameters
-  private collectBrowserDetails(): Record<string, string> {
+  private async collectBrowserDetails(): Promise<Record<string, string>> {
     const params: Record<string, any> = {};
 
     /* Screen height and width */
@@ -550,6 +549,16 @@ export class Flow {
       themeName = 'aura';
     }
     params['v-tn'] = themeName;
+
+    /* Geolocation availability (async) */
+    try {
+      const geolocation = ($wnd as any).Vaadin?.Flow?.geolocation;
+      if (geolocation && typeof geolocation.queryAvailability === 'function') {
+        params['v-ga'] = await geolocation.queryAvailability();
+      }
+    } catch (e) {
+      /* leave v-ga unset */
+    }
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

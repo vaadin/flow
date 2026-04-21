@@ -14,6 +14,8 @@
  * the License.
  */
 
+type VaadinGeolocationAvailability = 'GRANTED' | 'DENIED' | 'PROMPT' | 'UNKNOWN' | 'UNSUPPORTED';
+
 /**
  * Coordinates data sent to the server, matching the Java GeolocationCoordinates record.
  */
@@ -44,11 +46,13 @@ interface VaadinGeolocationError {
 }
 
 /**
- * Result of a one-shot geolocation request. Contains either a position or an error.
+ * Result of a one-shot geolocation request. Contains either a position or an error,
+ * plus the availability state updated by this response.
  */
 interface VaadinGeolocationGetResult {
   position?: VaadinGeolocationPosition;
   error?: VaadinGeolocationError;
+  availability: VaadinGeolocationAvailability;
 }
 
 /**
@@ -74,6 +78,98 @@ function copyCoords(c: GeolocationCoordinates): VaadinGeolocationCoordinates {
 
 const watches = new Map<string, number>();
 
+// The cached availability for the current page. Populated on first
+// queryAvailability() call, refreshed from each get()/watch() outcome, and
+// kept current by a permissionchange listener (where supported).
+let cachedAvailability: VaadinGeolocationAvailability | null = null;
+let permissionChangeListenerInstalled = false;
+
+function deriveSupported(): 'supported' | 'unsupported' {
+  if (!window.isSecureContext) {
+    return 'unsupported';
+  }
+  // Chromium exposes document.featurePolicy; Firefox and Safari do not
+  // expose any feature-policy introspection API, so the check is only
+  // possible on Chromium. When absent, assume geolocation is allowed.
+  const doc = document as any;
+  if (doc.featurePolicy && typeof doc.featurePolicy.allowsFeature === 'function') {
+    try {
+      if (!doc.featurePolicy.allowsFeature('geolocation')) {
+        return 'unsupported';
+      }
+    } catch (_e) {
+      // Ignore and assume allowed
+    }
+  }
+  return 'supported';
+}
+
+function publishAvailability(next: VaadinGeolocationAvailability): void {
+  if (cachedAvailability === next) {
+    return;
+  }
+  cachedAvailability = next;
+  // Dispatch on document.body so the server-side Geolocation facade (listening
+  // on the UI element, which is body) can update its cached value.
+  document.body.dispatchEvent(
+    new CustomEvent('vaadin-geolocation-availability-change', {
+      detail: { availability: next }
+    })
+  );
+}
+
+// Derive an availability hint from a single get()/watch() outcome.
+// Never overwrites UNSUPPORTED, which is session-stable.
+function updateAvailabilityFromResult(
+  position: VaadinGeolocationPosition | undefined,
+  error: VaadinGeolocationError | undefined
+): void {
+  if (cachedAvailability === 'UNSUPPORTED') {
+    return;
+  }
+  if (position) {
+    publishAvailability('GRANTED');
+  } else if (error) {
+    if (error.code === 1) {
+      publishAvailability('DENIED');
+    }
+    // TIMEOUT (3) and POSITION_UNAVAILABLE (2) don't reveal the permission
+    // state, so leave the cached value alone.
+  }
+}
+
+async function resolveAvailability(): Promise<VaadinGeolocationAvailability> {
+  if (deriveSupported() === 'unsupported') {
+    return 'UNSUPPORTED';
+  }
+  try {
+    const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+    if (!permissionChangeListenerInstalled) {
+      permissionChangeListenerInstalled = true;
+      status.addEventListener('change', () => {
+        publishAvailability(stateToAvailability(status.state));
+      });
+    }
+    return stateToAvailability(status.state);
+  } catch (_e) {
+    // Safari rejects the 'geolocation' permission name with a TypeError
+    return 'UNKNOWN';
+  }
+}
+
+function stateToAvailability(state: string): VaadinGeolocationAvailability {
+  switch (state) {
+    case 'granted':
+      return 'GRANTED';
+    case 'denied':
+      return 'DENIED';
+    case 'prompt':
+      return 'PROMPT';
+    default:
+      return 'UNKNOWN';
+  }
+}
+
 (window as any).Vaadin = (window as any).Vaadin || {};
 (window as any).Vaadin.Flow = (window as any).Vaadin.Flow || {};
 (window as any).Vaadin.Flow.geolocation = {
@@ -81,17 +177,14 @@ const watches = new Map<string, number>();
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (p) => {
-          resolve({
-            position: {
-              coords: copyCoords(p.coords),
-              timestamp: p.timestamp
-            }
-          });
+          const position = { coords: copyCoords(p.coords), timestamp: p.timestamp };
+          updateAvailabilityFromResult(position, undefined);
+          resolve({ position, availability: cachedAvailability ?? 'UNKNOWN' });
         },
         (e) => {
-          resolve({
-            error: { code: e.code, message: e.message }
-          });
+          const error = { code: e.code, message: e.message };
+          updateAvailabilityFromResult(undefined, error);
+          resolve({ error, availability: cachedAvailability ?? 'UNKNOWN' });
         },
         options || undefined
       );
@@ -106,19 +199,20 @@ const watches = new Map<string, number>();
       watchKey,
       navigator.geolocation.watchPosition(
         (p) => {
+          const position = { coords: copyCoords(p.coords), timestamp: p.timestamp };
+          updateAvailabilityFromResult(position, undefined);
           element.dispatchEvent(
             new CustomEvent('vaadin-geolocation-position', {
-              detail: {
-                coords: copyCoords(p.coords),
-                timestamp: p.timestamp
-              }
+              detail: position
             })
           );
         },
         (e) => {
+          const error = { code: e.code, message: e.message };
+          updateAvailabilityFromResult(undefined, error);
           element.dispatchEvent(
             new CustomEvent('vaadin-geolocation-error', {
-              detail: { code: e.code, message: e.message }
+              detail: error
             })
           );
         },
@@ -134,39 +228,13 @@ const watches = new Map<string, number>();
     }
   },
 
-  async queryAvailability(): Promise<'GRANTED' | 'DENIED' | 'PROMPT' | 'UNKNOWN' | 'UNSUPPORTED'> {
-    if (!window.isSecureContext) {
-      return 'UNSUPPORTED';
-    }
-    // Chromium exposes document.featurePolicy; Firefox and Safari do not
-    // expose any feature-policy introspection API, so the check is only
-    // possible on Chromium. When absent, assume geolocation is allowed.
-    const doc = document as any;
-    if (doc.featurePolicy && typeof doc.featurePolicy.allowsFeature === 'function') {
-      try {
-        if (!doc.featurePolicy.allowsFeature('geolocation')) {
-          return 'UNSUPPORTED';
-        }
-      } catch (_e) {
-        // Ignore and assume allowed
-      }
-    }
-    try {
-      const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      switch (status.state) {
-        case 'granted':
-          return 'GRANTED';
-        case 'denied':
-          return 'DENIED';
-        case 'prompt':
-          return 'PROMPT';
-        default:
-          return 'UNKNOWN';
-      }
-    } catch (_e) {
-      // Safari rejects the 'geolocation' permission name with a TypeError
-      return 'UNKNOWN';
-    }
+  async queryAvailability(): Promise<VaadinGeolocationAvailability> {
+    const value = await resolveAvailability();
+    // publish without dispatching a change event — there is no previous
+    // cached value to compare against when cachedAvailability is null and
+    // the bootstrap consumer just wants the initial answer.
+    cachedAvailability = value;
+    return value;
   }
 };
 

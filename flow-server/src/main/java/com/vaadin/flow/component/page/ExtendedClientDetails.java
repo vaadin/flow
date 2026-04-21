@@ -25,6 +25,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -60,6 +61,7 @@ public class ExtendedClientDetails implements Serializable {
     private String navigatorPlatform;
     private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
     private String themeName;
+    private GeolocationAvailability geolocationAvailability;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -441,6 +443,33 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns the browser's current geolocation availability — whether the
+     * Geolocation API is usable in this context and, if so, what permission
+     * state the origin has. Populated during UI initialization and kept current
+     * from {@code get()}/{@code track()} responses and browser
+     * permission-change events.
+     *
+     * @return the current availability, or {@code null} if the browser has not
+     *         yet reported one
+     */
+    public GeolocationAvailability getGeolocationAvailability() {
+        return geolocationAvailability;
+    }
+
+    /**
+     * Updates the cached geolocation availability. For internal use by the
+     * Geolocation facade — applications read
+     * {@link #getGeolocationAvailability()} but do not write.
+     *
+     * @param availability
+     *            the new availability, or {@code null} to clear
+     */
+    public void setGeolocationAvailability(
+            GeolocationAvailability availability) {
+        this.geolocationAvailability = availability;
+    }
+
+    /**
      * Creates an ExtendedClientDetails instance from browser details JSON
      * object. This is intended for internal use when browser details are
      * provided as JSON (e.g., during UI initialization or refresh).
@@ -474,7 +503,8 @@ public class ExtendedClientDetails implements Serializable {
             }
         };
 
-        return new ExtendedClientDetails(ui, getStringElseNull.apply("v-sw"),
+        ExtendedClientDetails details = new ExtendedClientDetails(ui,
+                getStringElseNull.apply("v-sw"),
                 getStringElseNull.apply("v-sh"),
                 getStringElseNull.apply("v-ww"),
                 getStringElseNull.apply("v-wh"),
@@ -492,6 +522,16 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-np"),
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
+        String ga = getStringElseNull.apply("v-ga");
+        if (ga != null) {
+            try {
+                details.setGeolocationAvailability(
+                        GeolocationAvailability.valueOf(ga));
+            } catch (IllegalArgumentException e) {
+                // unknown value; leave as null
+            }
+        }
+        return details;
     }
 
     /**

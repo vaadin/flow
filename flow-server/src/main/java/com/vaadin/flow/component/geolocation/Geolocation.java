@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -48,10 +49,12 @@ import com.vaadin.flow.function.SerializableConsumer;
  * </ul>
  * <b>Availability check:</b>
  * <ul>
- * <li>{@link #queryAvailability(SerializableConsumer)} — reports both whether
- * the feature is usable at all and, if so, what permission state the origin
- * has, without triggering a prompt. See {@link GeolocationAvailability} for the
- * values and their typical application responses.</li>
+ * <li>{@link #getAvailability()} — synchronous snapshot of whether the feature
+ * is usable and what permission state the origin has. Populated as part of the
+ * client bootstrap (via
+ * {@link ExtendedClientDetails#getGeolocationAvailability()}), refreshed from
+ * every {@link #get}/{@link #track} outcome, and updated on browser
+ * permission-change events where supported.</li>
  * </ul>
  *
  * <p>
@@ -72,9 +75,6 @@ import com.vaadin.flow.function.SerializableConsumer;
  *     case GeolocationPosition pos -&gt;
  *         showNearest(pos.coords().latitude(), pos.coords().longitude());
  *     case GeolocationError err -&gt; showManualEntry();
- *     case GeolocationResult.Pending p -&gt; {
- *         // unreachable from get(), present so the switch is exhaustive
- *     }
  *     }
  * }));
  * </pre>
@@ -86,7 +86,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  * GeolocationTracker tracker = UI.getCurrent().getGeolocation().track(this);
  * ComponentEffect.effect(this, () -&gt; {
  *     switch (tracker.value().get()) {
- *     case GeolocationResult.Pending p -&gt; {
+ *     case null -&gt; {
  *         // still waiting for the first fix
  *     }
  *     case GeolocationPosition pos -&gt;
@@ -100,10 +100,18 @@ public class Geolocation implements Serializable {
 
     /**
      * Wire shape of a one-shot get() answer: always exactly one of the two
-     * fields is populated.
+     * result fields is populated, plus the updated availability.
      */
     private record GetResult(GeolocationPosition position,
-            GeolocationError error) implements Serializable {
+            GeolocationError error,
+            String availability) implements Serializable {
+    }
+
+    /**
+     * Wire shape of a permission-change push from the client.
+     */
+    private record AvailabilityDetail(
+            String availability) implements Serializable {
     }
 
     private final UI ui;
@@ -111,23 +119,30 @@ public class Geolocation implements Serializable {
     /**
      * Creates a new Geolocation facade bound to the given UI.
      * <p>
-     * Called from {@link UI}'s constructor; application code obtains the
-     * instance via {@link UI#getGeolocation()} and should not instantiate this
-     * class directly.
+     * Called from {@link UI}'s constructor after the UI's internals are ready;
+     * application code obtains the instance via {@link UI#getGeolocation()} and
+     * should not instantiate this class directly.
      *
      * @param ui
      *            the UI this facade belongs to
      */
     public Geolocation(UI ui) {
         this.ui = Objects.requireNonNull(ui, "ui");
+        // Listen for client-side permissionchange events so the cached
+        // availability on ExtendedClientDetails stays current without
+        // requiring a get()/track() call to refresh it.
+        ui.getElement()
+                .addEventListener("vaadin-geolocation-availability-change",
+                        e -> setAvailability(
+                                e.getEventDetail(AvailabilityDetail.class)
+                                        .availability()))
+                .addEventDetail().allowInert();
     }
 
     /**
      * Requests the user's current position once. The callback receives a
      * {@link GeolocationResult} that is either a {@link GeolocationPosition} or
-     * a {@link GeolocationError} — {@link GeolocationResult.Pending} never
-     * appears here, but must still be handled to keep pattern-match switches
-     * exhaustive.
+     * a {@link GeolocationError}.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
      * the first call; after the user responds, the callback is invoked on the
@@ -162,6 +177,7 @@ public class Geolocation implements Serializable {
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
                         options)
                 .then(GetResult.class, result -> {
+                    setAvailability(result.availability());
                     if (result.position() != null) {
                         callback.accept(result.position());
                     } else if (result.error() != null) {
@@ -177,9 +193,9 @@ public class Geolocation implements Serializable {
      * The browser reports new positions whenever it detects movement. Each
      * report is delivered to the returned tracker's
      * {@link GeolocationTracker#value() value()} signal on the UI thread. The
-     * initial value is {@link GeolocationResult.Pending} until the first
-     * reading arrives, then transitions to {@link GeolocationPosition} (updated
-     * on every subsequent reading) or {@link GeolocationError}.
+     * initial value is {@code null} until the first reading arrives, then
+     * transitions to {@link GeolocationPosition} (updated on every subsequent
+     * reading) or {@link GeolocationError}.
      * <p>
      * The underlying browser watch is automatically cancelled when
      * {@code owner} detaches, so the application does not need to write cleanup
@@ -222,40 +238,42 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Asynchronously reports the current geolocation availability
-     * <b>without</b> triggering a permission prompt.
+     * Returns the browser's current geolocation availability — whether the
+     * Geolocation API is usable in this context and, if so, what permission
+     * state the origin has.
      * <p>
-     * Use this to decide whether a location request would be silent (the user
-     * has already granted permission on a previous visit), would pop up a
-     * browser dialog, or would fail outright because the feature is blocked in
-     * this context. See {@link GeolocationAvailability} for the values and
-     * their typical responses.
-     * <p>
-     * <b>Safari caveat:</b> Safari does not implement permission querying for
-     * geolocation and always returns {@link GeolocationAvailability#UNKNOWN}
-     * for supported origins. {@link GeolocationAvailability#UNSUPPORTED} is
-     * still returned correctly.
-     * <p>
-     * The call returns immediately. Some time later, {@code callback} is
-     * invoked on the UI thread with the result.
+     * The value is populated as part of the initial client bootstrap (carried
+     * in the browser-details handshake, see
+     * {@link ExtendedClientDetails#getGeolocationAvailability()}), kept current
+     * by {@link #get} and {@link #track} responses, and updated on browser
+     * permission-change events on Chromium. It is synchronous — application
+     * code can read it from the very first {@code onAttach} without an async
+     * callback — and may return {@code null} only in the atypical case where
+     * the client never sent browser details.
      *
-     * @param callback
-     *            invoked with the current availability
+     * @return the current availability, or {@code null} if never reported
      */
-    public void queryAvailability(
-            SerializableConsumer<GeolocationAvailability> callback) {
-        Objects.requireNonNull(callback, "callback");
-        ui.getElement().executeJs(
-                "return window.Vaadin.Flow.geolocation.queryAvailability()")
-                .then(String.class, result -> {
-                    GeolocationAvailability availability;
-                    try {
-                        availability = GeolocationAvailability
-                                .valueOf(result == null ? "UNKNOWN" : result);
-                    } catch (IllegalArgumentException ex) {
-                        availability = GeolocationAvailability.UNKNOWN;
-                    }
-                    callback.accept(availability);
-                });
+    public GeolocationAvailability getAvailability() {
+        ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        return details == null ? null : details.getGeolocationAvailability();
+    }
+
+    /**
+     * Internal: update the cached availability from a client-side response. The
+     * availability is stored on {@link ExtendedClientDetails} so it shares a
+     * location with other browser-provided details.
+     */
+    void setAvailability(String value) {
+        if (value == null) {
+            return;
+        }
+        try {
+            ui.getInternals().getExtendedClientDetails()
+                    .setGeolocationAvailability(
+                            GeolocationAvailability.valueOf(value));
+        } catch (IllegalArgumentException ignored) {
+            // Unknown value — leave the previous cached value untouched.
+        }
     }
 }

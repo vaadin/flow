@@ -41,7 +41,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class GeolocationTracker implements Serializable {
 
     private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
-            new GeolocationResult.Pending());
+            (GeolocationResult) null);
 
     private final UI ui;
     private final String watchKey;
@@ -84,11 +84,12 @@ public class GeolocationTracker implements Serializable {
      * effect, call {@code value().get()} or {@code value().peek()} to read a
      * snapshot.
      * <p>
-     * The signal starts as {@link GeolocationResult.Pending} and transitions to
-     * {@link GeolocationPosition} on every successful reading, or
-     * {@link GeolocationError} on failure. After {@link #stop()} (or after the
-     * owner detaches), the last value remains readable but the signal stops
-     * receiving updates.
+     * The signal starts as {@code null} until the first reading arrives, then
+     * transitions to {@link GeolocationPosition} on every successful reading,
+     * or {@link GeolocationError} on failure. After {@link #stop()} (or after
+     * the owner detaches), the last value remains readable but the signal stops
+     * receiving updates. Match with {@code case null} to handle the initial
+     * waiting state in an exhaustive switch.
      *
      * @return a read-only signal reporting the latest result
      */

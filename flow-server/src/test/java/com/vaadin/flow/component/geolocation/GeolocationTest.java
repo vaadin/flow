@@ -147,8 +147,7 @@ public class GeolocationTest {
 
         Assertions.assertNotNull(tracker);
         Assertions.assertNotNull(tracker.value());
-        Assertions.assertInstanceOf(GeolocationResult.Pending.class,
-                tracker.value().peek());
+        Assertions.assertNull(tracker.value().peek());
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -356,21 +355,56 @@ public class GeolocationTest {
                         .getExpression().contains("geolocation.clearWatch")));
     }
 
-    // --- queryAvailability() tests ---
+    // --- getAvailability() tests ---
 
     @Test
-    void queryAvailability_executesJs() {
+    void getAvailability_nullWithoutExtendedClientDetails() {
+        Assertions.assertNull(ui.getGeolocation().getAvailability());
+    }
+
+    @Test
+    void getAvailability_readsFromExtendedClientDetails() {
+        ui.getInternals().getExtendedClientDetails()
+                .setGeolocationAvailability(GeolocationAvailability.GRANTED);
+
+        Assertions.assertEquals(GeolocationAvailability.GRANTED,
+                ui.getGeolocation().getAvailability());
+    }
+
+    @Test
+    void setAvailability_updatesExtendedClientDetails() {
+        ui.getGeolocation().setAvailability("DENIED");
+
+        Assertions.assertEquals(GeolocationAvailability.DENIED,
+                ui.getInternals().getExtendedClientDetails()
+                        .getGeolocationAvailability());
+    }
+
+    @Test
+    void get_registersAvailabilityChangeListener() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        ui.getGeolocation().queryAvailability(a -> {
+        ui.getGeolocation().get(result -> {
         });
 
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        Assertions.assertTrue(invocations.stream()
-                .anyMatch(inv -> inv.getInvocation().getExpression()
-                        .contains("geolocation.queryAvailability")));
+        ElementListenerMap listenerMap = ui.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+        Assertions.assertFalse(listenerMap
+                .getExpressions("vaadin-geolocation-availability-change")
+                .isEmpty());
+    }
+
+    @Test
+    void setAvailability_ignoresUnknownValue() {
+        ui.getInternals().getExtendedClientDetails()
+                .setGeolocationAvailability(GeolocationAvailability.GRANTED);
+
+        ui.getGeolocation().setAvailability("BOGUS");
+
+        Assertions.assertEquals(GeolocationAvailability.GRANTED,
+                ui.getInternals().getExtendedClientDetails()
+                        .getGeolocationAvailability());
     }
 
     // --- GeolocationOptions builder tests ---

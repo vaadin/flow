@@ -135,7 +135,7 @@ public class UI extends Component
 
     private final Page page = new Page(this);
 
-    private final Geolocation geolocation = new Geolocation(this);
+    private final Geolocation geolocation;
 
     /*
      * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
@@ -166,6 +166,7 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
+        geolocation = new Geolocation(this);
     }
 
     /**
