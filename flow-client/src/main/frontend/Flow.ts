@@ -551,8 +551,13 @@ export class Flow {
     }
     params['v-tn'] = themeName;
 
-    /* Geolocation availability */
-    params['v-ga'] = await ($wnd.Vaadin.Flow as any).geolocation.queryAvailability();
+    /* Geolocation availability — guarded because tests may reset
+       window.Vaadin between runs, removing the namespace that
+       Geolocation.ts installs at import time. */
+    const geolocation = ($wnd.Vaadin.Flow as any)?.geolocation;
+    if (geolocation) {
+      params['v-ga'] = await geolocation.queryAvailability();
+    }
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
