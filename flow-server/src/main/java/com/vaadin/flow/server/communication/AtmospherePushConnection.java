@@ -16,6 +16,7 @@ import java.io.StringReader;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -47,7 +48,7 @@ public class AtmospherePushConnection implements PushConnection {
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
-    private volatile boolean disconnecting;
+    private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -180,8 +181,9 @@ public class AtmospherePushConnection implements PushConnection {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        if (disconnecting || !isConnected()) {
-            if (disconnecting) {
+        boolean isDisconnecting = disconnecting.get();
+        if (isDisconnecting || !isConnected()) {
+            if (isDisconnecting) {
                 getLogger().debug(
                         "Disconnection in progress, ignoring push request");
             }
@@ -314,7 +316,11 @@ public class AtmospherePushConnection implements PushConnection {
         // to skip the operation. This also prevents potential deadlocks if the
         // container acquires locks during operations on HTTP session, as
         // closing the AtmosphereResource may cause HTTP session access
-        if (disconnecting) {
+        // Atomically claim the right to disconnect. Only one thread can
+        // pass this gate - eliminates the TOCTOU (time-of-check-time-of-use)
+        // race that existed when the volatile boolean was checked outside
+        // synchronized(lock) but set inside it.
+        if (!disconnecting.compareAndSet(false, true)) {
             getLogger().debug(
                     "Disconnection already in progress, ignoring request");
             return;
@@ -329,7 +335,6 @@ public class AtmospherePushConnection implements PushConnection {
                 return;
             }
             try {
-                disconnecting = true;
                 if (resource.isResumed()) {
                     // This can happen for long polling because of
                     // http://dev.vaadin.com/ticket/16919
@@ -365,7 +370,7 @@ public class AtmospherePushConnection implements PushConnection {
                 }
                 connectionLost();
             } finally {
-                disconnecting = false;
+                disconnecting.set(false);
             }
         }
     }
@@ -410,7 +415,7 @@ public class AtmospherePushConnection implements PushConnection {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
-        disconnecting = false;
+        disconnecting = new AtomicBoolean(false);
         lock = new Object();
     }
 
