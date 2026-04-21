@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.time.Duration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Tuning knobs for a geolocation request — controls the accuracy / battery /
@@ -65,8 +66,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *            return faster at the cost of freshness
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
-        Integer maximumAge) implements Serializable {
+public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
+        @Nullable Integer timeout,
+        @Nullable Integer maximumAge) implements Serializable {
 
     /**
      * Starts building a {@link GeolocationOptions} instance. Only the settings
@@ -87,9 +89,9 @@ public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
      * when the request runs.
      */
     public static final class Builder implements Serializable {
-        private Boolean enableHighAccuracy;
-        private Integer timeout;
-        private Integer maximumAge;
+        private @Nullable Boolean enableHighAccuracy;
+        private @Nullable Integer timeout;
+        private @Nullable Integer maximumAge;
 
         private Builder() {
         }
@@ -117,7 +119,7 @@ public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
          *            the timeout, or {@code null} to wait indefinitely
          * @return this builder
          */
-        public Builder timeout(Duration timeout) {
+        public Builder timeout(@Nullable Duration timeout) {
             this.timeout = timeout == null ? null
                     : Math.toIntExact(timeout.toMillis());
             return this;
@@ -135,7 +137,7 @@ public record GeolocationOptions(Boolean enableHighAccuracy, Integer timeout,
          *            cached readings
          * @return this builder
          */
-        public Builder maximumAge(Duration maximumAge) {
+        public Builder maximumAge(@Nullable Duration maximumAge) {
             this.maximumAge = maximumAge == null ? null
                     : Math.toIntExact(maximumAge.toMillis());
             return this;

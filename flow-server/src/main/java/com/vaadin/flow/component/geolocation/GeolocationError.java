@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.geolocation;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A failed location reading: the request did not produce a
  * {@link GeolocationPosition}.
@@ -63,7 +65,7 @@ public record GeolocationError(int code,
      * @return the matching {@link GeolocationErrorCode}, or {@code null} when
      *         the raw {@link #code()} is not one of the known values
      */
-    public GeolocationErrorCode errorCode() {
+    public @Nullable GeolocationErrorCode errorCode() {
         return GeolocationErrorCode.fromCode(code);
     }
 }

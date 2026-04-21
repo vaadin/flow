@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.geolocation;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Typed reasons why a geolocation request can fail.
  * <p>
@@ -79,7 +81,7 @@ public enum GeolocationErrorCode {
      *            the numeric error code
      * @return the matching constant, or {@code null} if unknown
      */
-    public static GeolocationErrorCode fromCode(int code) {
+    public static @Nullable GeolocationErrorCode fromCode(int code) {
         for (GeolocationErrorCode c : values()) {
             if (c.code == code) {
                 return c;

@@ -18,6 +18,8 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -40,18 +42,19 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class GeolocationTracker implements Serializable {
 
-    private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
+    private final ValueSignal<@Nullable GeolocationResult> valueSignal = new ValueSignal<>(
             (GeolocationResult) null);
 
     private final UI ui;
     private final String watchKey;
 
     private boolean active = true;
-    private DomListenerRegistration positionListener;
-    private DomListenerRegistration errorListener;
-    private Registration detachRegistration;
+    private @Nullable DomListenerRegistration positionListener;
+    private @Nullable DomListenerRegistration errorListener;
+    private @Nullable Registration detachRegistration;
 
-    GeolocationTracker(UI ui, Component owner, GeolocationOptions options) {
+    GeolocationTracker(UI ui, Component owner,
+            @Nullable GeolocationOptions options) {
         this.ui = ui;
         this.watchKey = UUID.randomUUID().toString();
 
@@ -93,7 +96,7 @@ public class GeolocationTracker implements Serializable {
      *
      * @return a read-only signal reporting the latest result
      */
-    public Signal<GeolocationResult> value() {
+    public Signal<@Nullable GeolocationResult> value() {
         return valueSignal;
     }
 

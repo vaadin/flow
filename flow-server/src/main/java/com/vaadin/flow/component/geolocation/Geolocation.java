@@ -16,7 +16,8 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
-import java.util.Objects;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -99,16 +100,16 @@ public class Geolocation implements Serializable {
      * Wire shape of a one-shot get() answer: always exactly one of the two
      * result fields is populated, plus the updated availability.
      */
-    private record GetResult(GeolocationPosition position,
-            GeolocationError error,
-            String availability) implements Serializable {
+    private record GetResult(@Nullable GeolocationPosition position,
+            @Nullable GeolocationError error,
+            @Nullable String availability) implements Serializable {
     }
 
     /**
      * Wire shape of a permission-change push from the client.
      */
     private record AvailabilityDetail(
-            String availability) implements Serializable {
+            @Nullable String availability) implements Serializable {
     }
 
     private final UI ui;
@@ -123,7 +124,7 @@ public class Geolocation implements Serializable {
      *            the UI this facade belongs to
      */
     public Geolocation(UI ui) {
-        this.ui = Objects.requireNonNull(ui, "ui");
+        this.ui = ui;
         // Listen for client-side permissionchange events so the cached
         // availability on ExtendedClientDetails stays current without
         // requiring a get()/track() call to refresh it.
@@ -166,9 +167,8 @@ public class Geolocation implements Serializable {
      * @param callback
      *            invoked with the outcome once the browser reports it
      */
-    public void get(GeolocationOptions options,
+    public void get(@Nullable GeolocationOptions options,
             SerializableConsumer<GeolocationResult> callback) {
-        Objects.requireNonNull(callback, "callback");
         ui.getElement()
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
                         options)
@@ -228,8 +228,7 @@ public class Geolocation implements Serializable {
      *         watch
      */
     public GeolocationTracker track(Component owner,
-            GeolocationOptions options) {
-        Objects.requireNonNull(owner, "owner");
+            @Nullable GeolocationOptions options) {
         return new GeolocationTracker(ui, owner, options);
     }
 
@@ -245,7 +244,7 @@ public class Geolocation implements Serializable {
      *
      * @return the current availability, or {@code null} if never reported
      */
-    public GeolocationAvailability getAvailability() {
+    public @Nullable GeolocationAvailability getAvailability() {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
         return details == null ? null : details.getGeolocationAvailability();
@@ -256,7 +255,7 @@ public class Geolocation implements Serializable {
      * availability is stored on {@link ExtendedClientDetails} so it shares a
      * location with other browser-provided details.
      */
-    void setAvailability(String value) {
+    void setAvailability(@Nullable String value) {
         if (value == null) {
             return;
         }

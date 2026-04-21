@@ -17,6 +17,8 @@ package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A single point in the world, as reported by the browser.
  * <p>
@@ -53,6 +55,7 @@ import java.io.Serializable;
  *            cannot measure it
  */
 public record GeolocationCoordinates(double latitude, double longitude,
-        double accuracy, Double altitude, Double altitudeAccuracy,
-        Double heading, Double speed) implements Serializable {
+        double accuracy, @Nullable Double altitude,
+        @Nullable Double altitudeAccuracy, @Nullable Double heading,
+        @Nullable Double speed) implements Serializable {
 }
