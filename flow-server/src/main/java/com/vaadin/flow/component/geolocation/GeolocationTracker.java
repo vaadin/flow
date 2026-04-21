@@ -42,8 +42,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class GeolocationTracker implements Serializable {
 
-    private final ValueSignal<@Nullable GeolocationResult> valueSignal = new ValueSignal<>(
-            (GeolocationResult) null);
+    private final ValueSignal<@Nullable GeolocationResult> valueSignal = new ValueSignal<@Nullable GeolocationResult>(
+            null);
 
     private final UI ui;
     private final String watchKey;
