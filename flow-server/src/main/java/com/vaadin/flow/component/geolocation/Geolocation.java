@@ -23,20 +23,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
- * Per-{@link UI} facade for the browser's Geolocation API. Obtain via
+ * Facade for the browser's Geolocation API. Obtain via
  * {@link UI#getGeolocation()}.
  * <p>
  * Every entry point on this class is asynchronous: calling it enqueues a
  * request to the browser and returns immediately. The browser answers later
  * (after the user responds to a permission prompt, after the operating system
  * reports a position, or after a timeout), and Flow invokes the callback or
- * updates the signal on the UI thread. Application code therefore never needs
- * {@code ui.access(...)}.
- * <p>
- * <b>When can this be called?</b> Every method must be called while a
- * {@link UI} is current — typically from a click listener, an attach listener,
- * or a similar event callback. Calling from a background thread without a
- * current UI will fail.
+ * updates the signal on the UI thread.
  * <p>
  * <b>Two usage modes:</b>
  * <ul>
@@ -52,16 +46,12 @@ import com.vaadin.flow.function.SerializableConsumer;
  * the owning component detaches; use {@link GeolocationTracker#stop()} to
  * cancel it sooner.</li>
  * </ul>
- * <b>Two capability checks:</b>
+ * <b>Availability check:</b>
  * <ul>
- * <li>{@link #isSupported(SerializableConsumer)} — returns {@code false} when
- * the feature is unusable in this context (insecure connection, or embedded in
- * an iframe that blocks geolocation). Use this to hide location controls
- * entirely.</li>
- * <li>{@link #queryPermission(SerializableConsumer)} — returns the current
- * browser permission state without triggering a prompt. Use this to decide
- * whether auto-fetching on page load will be silent (user has already granted)
- * or will pop up a permission dialog.</li>
+ * <li>{@link #queryAvailability(SerializableConsumer)} — reports both whether
+ * the feature is usable at all and, if so, what permission state the origin
+ * has, without triggering a prompt. See {@link GeolocationAvailability} for the
+ * values and their typical application responses.</li>
  * </ul>
  *
  * <p>
@@ -141,7 +131,7 @@ public class Geolocation implements Serializable {
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
      * the first call; after the user responds, the callback is invoked on the
-     * UI thread (no {@code ui.access(...)} required).
+     * UI thread.
      *
      * @param callback
      *            invoked with the outcome once the browser reports it
@@ -157,7 +147,7 @@ public class Geolocation implements Serializable {
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
      * the first call; after the user responds, the callback is invoked on the
-     * UI thread (no {@code ui.access(...)} required).
+     * UI thread.
      *
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
@@ -232,72 +222,40 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Asynchronously reports whether the geolocation feature can be used at all
-     * in the current page context.
-     * <p>
-     * Returns {@code false} when the page is served over an insecure connection
-     * (plain HTTP rather than HTTPS or {@code localhost}), or when the page is
-     * embedded in an iframe whose Permissions-Policy blocks geolocation. In
-     * either case the API is not merely denied — it is unusable regardless of
-     * what the user chooses, so applications should hide location-related
-     * controls entirely instead of showing a button that would always fail.
-     * <p>
-     * This is different from {@link #queryPermission}: {@code isSupported}
-     * reports "can the API be used at all"; {@code queryPermission} reports
-     * "has the user already granted/denied access".
-     * <p>
-     * The call returns immediately. Some time later, {@code callback} is
-     * invoked on the UI thread with the result.
-     *
-     * @param callback
-     *            invoked with {@code true} when geolocation is usable,
-     *            {@code false} otherwise
-     */
-    public void isSupported(SerializableConsumer<Boolean> callback) {
-        Objects.requireNonNull(callback, "callback");
-        ui.getElement()
-                .executeJs(
-                        "return window.Vaadin.Flow.geolocation.isSupported()")
-                .then(Boolean.class, callback::accept);
-    }
-
-    /**
-     * Asynchronously reports the current geolocation permission state
+     * Asynchronously reports the current geolocation availability
      * <b>without</b> triggering a permission prompt.
      * <p>
      * Use this to decide whether a location request would be silent (the user
-     * has already granted permission on a previous visit) or would pop up a
-     * browser dialog. A typical pattern is auto-fetching a position on page
-     * load only when the permission state is
-     * {@link GeolocationPermission#GRANTED}, so first-time visitors are not
-     * greeted by a surprise prompt.
+     * has already granted permission on a previous visit), would pop up a
+     * browser dialog, or would fail outright because the feature is blocked in
+     * this context. See {@link GeolocationAvailability} for the values and
+     * their typical responses.
      * <p>
      * <b>Safari caveat:</b> Safari does not implement permission querying for
-     * geolocation and always returns {@link GeolocationPermission#UNKNOWN}.
-     * Applications relying on the {@code GRANTED} branch should therefore also
-     * provide an explicit user action (e.g. a "Use my location" button) as a
-     * fallback for Safari users.
+     * geolocation and always returns {@link GeolocationAvailability#UNKNOWN}
+     * for supported origins. {@link GeolocationAvailability#UNSUPPORTED} is
+     * still returned correctly.
      * <p>
      * The call returns immediately. Some time later, {@code callback} is
      * invoked on the UI thread with the result.
      *
      * @param callback
-     *            invoked with the current permission state
+     *            invoked with the current availability
      */
-    public void queryPermission(
-            SerializableConsumer<GeolocationPermission> callback) {
+    public void queryAvailability(
+            SerializableConsumer<GeolocationAvailability> callback) {
         Objects.requireNonNull(callback, "callback");
         ui.getElement().executeJs(
-                "return window.Vaadin.Flow.geolocation.queryPermission()")
+                "return window.Vaadin.Flow.geolocation.queryAvailability()")
                 .then(String.class, result -> {
-                    GeolocationPermission permission;
+                    GeolocationAvailability availability;
                     try {
-                        permission = GeolocationPermission
+                        availability = GeolocationAvailability
                                 .valueOf(result == null ? "UNKNOWN" : result);
                     } catch (IllegalArgumentException ex) {
-                        permission = GeolocationPermission.UNKNOWN;
+                        availability = GeolocationAvailability.UNKNOWN;
                     }
-                    callback.accept(permission);
+                    callback.accept(availability);
                 });
     }
 }

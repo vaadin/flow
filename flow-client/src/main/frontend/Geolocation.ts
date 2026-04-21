@@ -134,9 +134,9 @@ const watches = new Map<string, number>();
     }
   },
 
-  isSupported(): boolean {
+  async queryAvailability(): Promise<'GRANTED' | 'DENIED' | 'PROMPT' | 'UNKNOWN' | 'UNSUPPORTED'> {
     if (!window.isSecureContext) {
-      return false;
+      return 'UNSUPPORTED';
     }
     // Chromium exposes document.featurePolicy; Firefox and Safari do not
     // expose any feature-policy introspection API, so the check is only
@@ -145,16 +145,12 @@ const watches = new Map<string, number>();
     if (doc.featurePolicy && typeof doc.featurePolicy.allowsFeature === 'function') {
       try {
         if (!doc.featurePolicy.allowsFeature('geolocation')) {
-          return false;
+          return 'UNSUPPORTED';
         }
       } catch (_e) {
         // Ignore and assume allowed
       }
     }
-    return true;
-  },
-
-  async queryPermission(): Promise<'GRANTED' | 'DENIED' | 'PROMPT' | 'UNKNOWN'> {
     try {
       const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       switch (status.state) {

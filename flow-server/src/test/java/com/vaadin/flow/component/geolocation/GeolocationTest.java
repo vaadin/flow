@@ -356,36 +356,21 @@ public class GeolocationTest {
                         .getExpression().contains("geolocation.clearWatch")));
     }
 
-    // --- isSupported() / queryPermission() tests ---
+    // --- queryAvailability() tests ---
 
     @Test
-    void isSupported_executesJs() {
+    void queryAvailability_executesJs() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        ui.getGeolocation().isSupported(supported -> {
-        });
-
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        Assertions.assertTrue(
-                invocations.stream().anyMatch(inv -> inv.getInvocation()
-                        .getExpression().contains("geolocation.isSupported")));
-    }
-
-    @Test
-    void queryPermission_executesJs() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        ui.getGeolocation().queryPermission(state -> {
+        ui.getGeolocation().queryAvailability(a -> {
         });
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
         Assertions.assertTrue(invocations.stream()
                 .anyMatch(inv -> inv.getInvocation().getExpression()
-                        .contains("geolocation.queryPermission")));
+                        .contains("geolocation.queryAvailability")));
     }
 
     // --- GeolocationOptions builder tests ---

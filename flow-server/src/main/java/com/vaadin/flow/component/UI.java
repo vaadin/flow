@@ -920,11 +920,8 @@ public class UI extends Component
     /**
      * Returns the {@link Geolocation} facade for this UI, used to read the end
      * user's physical location from the browser.
-     * <p>
-     * The same instance is returned on every call. See {@link Geolocation} for
-     * the one-shot / tracking / capability checks it exposes.
      *
-     * @return the per-UI Geolocation facade
+     * @return the Geolocation facade
      */
     public Geolocation getGeolocation() {
         return geolocation;
