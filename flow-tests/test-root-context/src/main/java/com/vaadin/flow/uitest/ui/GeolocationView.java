@@ -16,8 +16,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.geolocation.Geolocation;
+import com.vaadin.flow.component.geolocation.GeolocationError;
 import com.vaadin.flow.component.geolocation.GeolocationPosition;
+import com.vaadin.flow.component.geolocation.GeolocationTracker;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
@@ -82,41 +83,39 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         NativeButton getButton = createButton("Get Position", "getButton",
-                e -> {
-                    Geolocation.get(pos -> {
-                        Div result = new Div();
-                        result.setId("getResult");
-                        result.setText("lat=" + pos.coords().latitude()
-                                + ", lon=" + pos.coords().longitude());
-                        add(result);
-                    }, error -> {
-                        Div result = new Div();
-                        result.setId("getResult");
-                        result.setText("error=" + error.code() + ":"
-                                + error.message());
-                        add(result);
-                    });
-                });
+                e -> UI.getCurrent().getGeolocation().get(result -> {
+                    Div out = new Div();
+                    out.setId("getResult");
+                    switch (result) {
+                    case GeolocationPosition pos ->
+                        out.setText("lat=" + pos.coords().latitude() + ", lon="
+                                + pos.coords().longitude());
+                    case GeolocationError error -> out.setText(
+                            "error=" + error.code() + ":" + error.message());
+                    default -> out.setText("unexpected: " + result);
+                    }
+                    add(out);
+                }));
 
         NativeButton trackButton = createButton("Track Position", "trackButton",
                 e -> {
-                    Geolocation geo = Geolocation.track(this);
+                    GeolocationTracker tracker = UI.getCurrent()
+                            .getGeolocation().track(this);
                     // Listen for the position event directly to avoid
                     // race conditions with signal update timing
                     getElement().addEventListener("vaadin-geolocation-position",
                             ev -> {
-                                var state = geo.state().peek();
-                                Div result = new Div();
-                                result.setId("trackResult");
-                                if (state instanceof GeolocationPosition pos) {
-                                    result.setText("lat="
-                                            + pos.coords().latitude() + ", lon="
+                                var value = tracker.value().peek();
+                                Div out = new Div();
+                                out.setId("trackResult");
+                                if (value instanceof GeolocationPosition pos) {
+                                    out.setText("lat=" + pos.coords().latitude()
+                                            + ", lon="
                                             + pos.coords().longitude());
                                 } else {
-                                    result.setText(
-                                            "unexpected state: " + state);
+                                    out.setText("unexpected state: " + value);
                                 }
-                                add(result);
+                                add(out);
                             }).addEventDetail();
                 });
 

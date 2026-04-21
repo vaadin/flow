@@ -16,42 +16,41 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
-import java.util.UUID;
+import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * Obtains the end user's physical location from the browser.
+ * Per-{@link UI} facade for the browser's Geolocation API. Obtain via
+ * {@link UI#getGeolocation()}.
  * <p>
  * Every entry point on this class is asynchronous: calling it enqueues a
  * request to the browser and returns immediately. The browser answers later
  * (after the user responds to a permission prompt, after the operating system
  * reports a position, or after a timeout), and Flow invokes the callback or
- * updates the {@link Signal} on the UI thread. Application code therefore never
- * needs {@code ui.access(...)}.
+ * updates the signal on the UI thread. Application code therefore never needs
+ * {@code ui.access(...)}.
  * <p>
- * <b>When can this be called?</b> Any of the static methods must be called
- * while a {@link UI} is current — typically from a click listener, an attach
- * listener, or a similar event callback. Calling from a background thread
- * without {@link UI#getCurrent()} will fail.
+ * <b>When can this be called?</b> Every method must be called while a
+ * {@link UI} is current — typically from a click listener, an attach listener,
+ * or a similar event callback. Calling from a background thread without a
+ * current UI will fail.
  * <p>
  * <b>Two usage modes:</b>
  * <ul>
  * <li>{@link #get(SerializableConsumer)} — one-shot position request. Use this
  * when the application only needs to know the user's location at a single
- * moment (e.g. on a button click).</li>
+ * moment (e.g. on a button click). The callback receives a single
+ * {@link GeolocationResult}; match on it to separate
+ * {@link GeolocationPosition} from {@link GeolocationError}.</li>
  * <li>{@link #track(Component)} — continuous tracking that keeps the server
- * updated as the user moves. The browser watch is automatically cancelled when
- * the owning component detaches, so the application does not need to write
- * cleanup code. Use {@link #stop()} to cancel the watch from application code
- * (for example from a "Stop tracking" button).</li>
+ * updated as the user moves. Returns a {@link GeolocationTracker} whose
+ * {@link GeolocationTracker#value() value()} is a reactive signal of
+ * {@link GeolocationResult}. The browser watch is automatically cancelled when
+ * the owning component detaches; use {@link GeolocationTracker#stop()} to
+ * cancel it sooner.</li>
  * </ul>
  * <b>Two capability checks:</b>
  * <ul>
@@ -69,29 +68,35 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <b>Permission prompts.</b> The first time the application asks for a
  * location, the browser shows its own permission dialog. The dialog is
  * controlled by the browser, not by Flow — Flow cannot style it, suppress it,
- * or detect when it is shown. If the user denies the prompt the {@code onError}
- * callback receives a {@link GeolocationErrorCode#PERMISSION_DENIED} error.
+ * or detect when it is shown. If the user denies the prompt the callback
+ * receives a {@link GeolocationError} whose {@link GeolocationError#errorCode()
+ * errorCode} is {@link GeolocationErrorCode#PERMISSION_DENIED}.
  *
  * <p>
  * <b>One-shot example:</b>
  *
  * <pre>
  * Button locate = new Button("Use my location");
- * locate.addClickListener(
- *         e -&gt; Geolocation.get(
- *                 pos -&gt; showNearest(pos.coords().latitude(),
- *                         pos.coords().longitude()),
- *                 err -&gt; showManualEntry()));
+ * locate.addClickListener(e -&gt; UI.getCurrent().getGeolocation().get(result -&gt; {
+ *     switch (result) {
+ *     case GeolocationPosition pos -&gt;
+ *         showNearest(pos.coords().latitude(), pos.coords().longitude());
+ *     case GeolocationError err -&gt; showManualEntry();
+ *     case GeolocationResult.Pending p -&gt; {
+ *         // unreachable from get(), present so the switch is exhaustive
+ *     }
+ *     }
+ * }));
  * </pre>
  *
  * <p>
  * <b>Tracking example:</b>
  *
  * <pre>
- * Geolocation geo = Geolocation.track(this);
+ * GeolocationTracker tracker = UI.getCurrent().getGeolocation().track(this);
  * ComponentEffect.effect(this, () -&gt; {
- *     switch (geo.state().get()) {
- *     case GeolocationState.Pending p -&gt; {
+ *     switch (tracker.value().get()) {
+ *     case GeolocationResult.Pending p -&gt; {
  *         // still waiting for the first fix
  *     }
  *     case GeolocationPosition pos -&gt;
@@ -104,107 +109,73 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class Geolocation implements Serializable {
 
     /**
-     * Wrapper for the JS result which always resolves with either a position or
-     * an error.
+     * Wire shape of a one-shot get() answer: always exactly one of the two
+     * fields is populated.
      */
     private record GetResult(GeolocationPosition position,
             GeolocationError error) implements Serializable {
     }
 
-    private final ValueSignal<GeolocationState> stateSignal = new ValueSignal<>(
-            new GeolocationState.Pending());
+    private final UI ui;
 
-    // Tracking-handle state. Populated by track() and cleared by stop().
-    private boolean active;
-    private UI ui;
-    private String watchKey;
-    private DomListenerRegistration positionListener;
-    private DomListenerRegistration errorListener;
-    private Registration detachRegistration;
-
-    private Geolocation() {
+    /**
+     * Creates a new Geolocation facade bound to the given UI.
+     * <p>
+     * Called from {@link UI}'s constructor; application code obtains the
+     * instance via {@link UI#getGeolocation()} and should not instantiate this
+     * class directly.
+     *
+     * @param ui
+     *            the UI this facade belongs to
+     */
+    public Geolocation(UI ui) {
+        this.ui = Objects.requireNonNull(ui, "ui");
     }
 
     /**
-     * Requests the user's current position once. Errors (including the user
-     * denying the permission prompt) are silently ignored — use
-     * {@link #get(SerializableConsumer, SerializableConsumer)} if the
-     * application needs to react to failures.
+     * Requests the user's current position once. The callback receives a
+     * {@link GeolocationResult} that is either a {@link GeolocationPosition} or
+     * a {@link GeolocationError} — {@link GeolocationResult.Pending} never
+     * appears here, but must still be handled to keep pattern-match switches
+     * exhaustive.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
-     * the first call; after the user responds and a position is obtained,
-     * {@code onSuccess} is invoked on the UI thread (no {@code ui.access(...)}
-     * required).
-     * <p>
-     * Must be called while a {@link UI} is current (typically from a click
-     * listener or other event callback).
+     * the first call; after the user responds, the callback is invoked on the
+     * UI thread (no {@code ui.access(...)} required).
      *
-     * @param onSuccess
-     *            invoked with the position once the browser reports it
+     * @param callback
+     *            invoked with the outcome once the browser reports it
      */
-    public static void get(
-            SerializableConsumer<GeolocationPosition> onSuccess) {
-        get(null, onSuccess, null);
+    public void get(SerializableConsumer<GeolocationResult> callback) {
+        get(null, callback);
     }
 
     /**
-     * Requests the user's current position once, with explicit success and
-     * error callbacks.
-     * <p>
-     * The call returns immediately. The browser may show a permission dialog on
-     * the first call; after the user responds, exactly one of {@code onSuccess}
-     * or {@code onError} is invoked on the UI thread (no {@code ui.access(...)}
-     * required). {@code onError} fires on permission denial, positioning
-     * failure, and timeout — inspect {@link GeolocationError#errorCode()} to
-     * distinguish the cases.
-     * <p>
-     * Must be called while a {@link UI} is current (typically from a click
-     * listener or other event callback).
-     *
-     * @param onSuccess
-     *            invoked with the position once the browser reports it
-     * @param onError
-     *            invoked if the browser reports an error, or {@code null} to
-     *            silently ignore errors
-     */
-    public static void get(SerializableConsumer<GeolocationPosition> onSuccess,
-            SerializableConsumer<GeolocationError> onError) {
-        get(null, onSuccess, onError);
-    }
-
-    /**
-     * Requests the user's current position once with tuning options — use this
+     * Requests the user's current position once with tuning options. Use this
      * to trade accuracy for battery/speed or to accept a recent cached reading.
+     * See {@link GeolocationOptions} for the available settings.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
-     * the first call; after the user responds, exactly one of {@code onSuccess}
-     * or {@code onError} is invoked on the UI thread (no {@code ui.access(...)}
-     * required).
-     * <p>
-     * Must be called while a {@link UI} is current (typically from a click
-     * listener or other event callback).
+     * the first call; after the user responds, the callback is invoked on the
+     * UI thread (no {@code ui.access(...)} required).
      *
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
-     *            the browser defaults. See {@link GeolocationOptions}
-     * @param onSuccess
-     *            invoked with the position once the browser reports it
-     * @param onError
-     *            invoked if the browser reports an error, or {@code null} to
-     *            silently ignore errors
+     *            the browser defaults
+     * @param callback
+     *            invoked with the outcome once the browser reports it
      */
-    public static void get(GeolocationOptions options,
-            SerializableConsumer<GeolocationPosition> onSuccess,
-            SerializableConsumer<GeolocationError> onError) {
-        UI ui = UI.getCurrent();
+    public void get(GeolocationOptions options,
+            SerializableConsumer<GeolocationResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         ui.getElement()
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
                         options)
                 .then(GetResult.class, result -> {
                     if (result.position() != null) {
-                        onSuccess.accept(result.position());
-                    } else if (onError != null && result.error() != null) {
-                        onError.accept(result.error());
+                        callback.accept(result.position());
+                    } else if (result.error() != null) {
+                        callback.accept(result.error());
                     }
                 });
     }
@@ -214,31 +185,26 @@ public class Geolocation implements Serializable {
      * component's lifecycle.
      * <p>
      * The browser reports new positions whenever it detects movement. Each
-     * report is delivered to the returned handle's {@link #state()} signal on
-     * the UI thread. The initial state is {@link GeolocationState.Pending}
-     * until the first reading arrives, then transitions to
-     * {@link GeolocationPosition} (updated on every subsequent reading) or
-     * {@link GeolocationError}.
+     * report is delivered to the returned tracker's
+     * {@link GeolocationTracker#value() value()} signal on the UI thread. The
+     * initial value is {@link GeolocationResult.Pending} until the first
+     * reading arrives, then transitions to {@link GeolocationPosition} (updated
+     * on every subsequent reading) or {@link GeolocationError}.
      * <p>
      * The underlying browser watch is automatically cancelled when
      * {@code owner} detaches, so the application does not need to write cleanup
      * code for navigation. For cancelling while the view is still attached
-     * (e.g. a "Stop tracking" button), call {@link #stop()} on the returned
-     * handle.
-     * <p>
-     * The browser may show a permission dialog on the first call. If the user
-     * denies, the signal transitions to {@link GeolocationError} with
-     * {@link GeolocationErrorCode#PERMISSION_DENIED}.
-     * <p>
-     * Must be called while a {@link UI} is current.
+     * (e.g. a "Stop tracking" button), call {@link GeolocationTracker#stop()}
+     * on the returned tracker.
      *
      * @param owner
      *            the component that owns this tracking session; detaching the
      *            component automatically stops the watch
-     * @return a handle whose {@link #state()} reports progress and whose
-     *         {@link #stop()} cancels the watch
+     * @return a tracker whose {@link GeolocationTracker#value()} reports
+     *         progress and whose {@link GeolocationTracker#stop()} cancels the
+     *         watch
      */
-    public static Geolocation track(Component owner) {
+    public GeolocationTracker track(Component owner) {
         return track(owner, null);
     }
 
@@ -248,8 +214,6 @@ public class Geolocation implements Serializable {
      * {@link #track(Component)} but lets the caller request high accuracy, set
      * a failure timeout, or accept cached readings. See
      * {@link GeolocationOptions} for the available settings.
-     * <p>
-     * Must be called while a {@link UI} is current.
      *
      * @param owner
      *            the component that owns this tracking session; detaching the
@@ -257,36 +221,14 @@ public class Geolocation implements Serializable {
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
      *            the browser defaults
-     * @return a handle whose {@link #state()} reports progress and whose
-     *         {@link #stop()} cancels the watch
+     * @return a tracker whose {@link GeolocationTracker#value()} reports
+     *         progress and whose {@link GeolocationTracker#stop()} cancels the
+     *         watch
      */
-    public static Geolocation track(Component owner,
+    public GeolocationTracker track(Component owner,
             GeolocationOptions options) {
-        Geolocation geo = new Geolocation();
-        Element el = owner.getElement();
-
-        geo.active = true;
-        geo.ui = owner.getUI().orElse(UI.getCurrent());
-        geo.watchKey = UUID.randomUUID().toString();
-
-        geo.positionListener = el
-                .addEventListener("vaadin-geolocation-position",
-                        e -> geo.stateSignal.set(
-                                e.getEventDetail(GeolocationPosition.class)))
-                .addEventDetail().allowInert();
-
-        geo.errorListener = el
-                .addEventListener("vaadin-geolocation-error",
-                        e -> geo.stateSignal
-                                .set(e.getEventDetail(GeolocationError.class)))
-                .addEventDetail().allowInert();
-
-        el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
-                options, geo.watchKey);
-
-        geo.detachRegistration = owner.addDetachListener(e -> geo.stop());
-
-        return geo;
+        Objects.requireNonNull(owner, "owner");
+        return new GeolocationTracker(ui, owner, options);
     }
 
     /**
@@ -306,15 +248,13 @@ public class Geolocation implements Serializable {
      * <p>
      * The call returns immediately. Some time later, {@code callback} is
      * invoked on the UI thread with the result.
-     * <p>
-     * Must be called while a {@link UI} is current.
      *
      * @param callback
      *            invoked with {@code true} when geolocation is usable,
      *            {@code false} otherwise
      */
-    public static void isSupported(SerializableConsumer<Boolean> callback) {
-        UI ui = UI.getCurrent();
+    public void isSupported(SerializableConsumer<Boolean> callback) {
+        Objects.requireNonNull(callback, "callback");
         ui.getElement()
                 .executeJs(
                         "return window.Vaadin.Flow.geolocation.isSupported()")
@@ -332,36 +272,21 @@ public class Geolocation implements Serializable {
      * {@link GeolocationPermission#GRANTED}, so first-time visitors are not
      * greeted by a surprise prompt.
      * <p>
-     * The callback receives one of:
-     * <ul>
-     * <li>{@link GeolocationPermission#GRANTED} — a subsequent {@link #get} or
-     * {@link #track} call will proceed without a prompt.</li>
-     * <li>{@link GeolocationPermission#DENIED} — permission was previously
-     * denied; requests will fail with
-     * {@link GeolocationErrorCode#PERMISSION_DENIED}. Use this to pre-explain
-     * to the user why location is blocked.</li>
-     * <li>{@link GeolocationPermission#PROMPT} — permission has not been
-     * requested yet; the next call will show a dialog.</li>
-     * <li>{@link GeolocationPermission#UNKNOWN} — the browser cannot report the
-     * state. Treat this like "do nothing automatic".</li>
-     * </ul>
-     * <p>
      * <b>Safari caveat:</b> Safari does not implement permission querying for
-     * geolocation and always returns {@code UNKNOWN}. Applications relying on
-     * the {@code GRANTED} branch should therefore also provide an explicit user
-     * action (e.g. a "Use my location" button) as a fallback for Safari users.
+     * geolocation and always returns {@link GeolocationPermission#UNKNOWN}.
+     * Applications relying on the {@code GRANTED} branch should therefore also
+     * provide an explicit user action (e.g. a "Use my location" button) as a
+     * fallback for Safari users.
      * <p>
      * The call returns immediately. Some time later, {@code callback} is
      * invoked on the UI thread with the result.
-     * <p>
-     * Must be called while a {@link UI} is current.
      *
      * @param callback
      *            invoked with the current permission state
      */
-    public static void queryPermission(
+    public void queryPermission(
             SerializableConsumer<GeolocationPermission> callback) {
-        UI ui = UI.getCurrent();
+        Objects.requireNonNull(callback, "callback");
         ui.getElement().executeJs(
                 "return window.Vaadin.Flow.geolocation.queryPermission()")
                 .then(String.class, result -> {
@@ -374,63 +299,5 @@ public class Geolocation implements Serializable {
                     }
                     callback.accept(permission);
                 });
-    }
-
-    /**
-     * Returns a reactive signal that holds the most recent tracking state.
-     * <p>
-     * Combine with {@code ComponentEffect.effect(owner, ...)} to run code
-     * whenever the state changes — the effect re-runs automatically on every
-     * update and no manual event-listener bookkeeping is required. Outside an
-     * effect, call {@code state().get()} or {@code state().peek()} to read a
-     * snapshot.
-     * <p>
-     * The signal starts as {@link GeolocationState.Pending} and transitions to
-     * {@link GeolocationPosition} on every successful reading, or
-     * {@link GeolocationError} on failure. After {@link #stop()} (or after the
-     * owner detaches), the last value remains readable but the signal stops
-     * receiving updates.
-     *
-     * @return a read-only signal reporting the current state
-     */
-    public Signal<GeolocationState> state() {
-        return stateSignal;
-    }
-
-    /**
-     * Cancels continuous tracking started by
-     * {@link #track(Component)}/{@link #track(Component, GeolocationOptions)}.
-     * <p>
-     * The browser stops reporting position updates and the {@link #state()}
-     * signal stops changing. The last value remains readable. This is the way
-     * to end tracking from application code (e.g. a "Stop" button) — leaving
-     * the view automatically calls this method, so there is no need to call it
-     * from a detach listener.
-     * <p>
-     * Idempotent and always safe: calling it twice, or calling it on a handle
-     * whose owner has already detached, does nothing extra.
-     */
-    public void stop() {
-        if (!active) {
-            return;
-        }
-        active = false;
-
-        if (positionListener != null) {
-            positionListener.remove();
-            positionListener = null;
-        }
-        if (errorListener != null) {
-            errorListener.remove();
-            errorListener = null;
-        }
-        if (detachRegistration != null) {
-            detachRegistration.remove();
-            detachRegistration = null;
-        }
-        if (ui != null && watchKey != null) {
-            ui.getPage().executeJs(
-                    "window.Vaadin.Flow.geolocation.clearWatch($0)", watchKey);
-        }
     }
 }

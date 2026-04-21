@@ -19,22 +19,22 @@ package com.vaadin.flow.component.geolocation;
  * A failed location reading: the request did not produce a
  * {@link GeolocationPosition}.
  * <p>
- * This is one of the three possible values of a {@link Geolocation#state()}
- * signal, and is the payload passed to the {@code onError} callbacks of
- * {@link Geolocation#get}. Typical application code switches on
- * {@link #errorCode()} to react to the specific reason:
+ * This is one of the three possible values of a
+ * {@link GeolocationTracker#value()} signal, and one of the two values a
+ * {@link Geolocation#get} callback can receive. Typical application code
+ * switches on {@link #errorCode()} to react to the specific reason:
  *
  * <pre>
- * Geolocation.get(pos -&gt; ..., err -&gt; {
- *     switch (err.errorCode()) {
- *     case PERMISSION_DENIED -&gt;
+ * ui.getGeolocation().get(result -&gt; {
+ *     if (result instanceof GeolocationError err) {
+ *         switch (err.errorCode()) {
+ *         case PERMISSION_DENIED -&gt;
  *             showExplanation("Location is blocked for this site.");
- *     case POSITION_UNAVAILABLE -&gt;
+ *         case POSITION_UNAVAILABLE -&gt;
  *             showRetry("Could not determine your location.");
- *     case TIMEOUT -&gt;
- *             showRetry("Location request took too long.");
- *     case null -&gt;
- *             showGenericError(err.message()); // unknown future code
+ *         case TIMEOUT -&gt; showRetry("Location request took too long.");
+ *         case null -&gt; showGenericError(err.message()); // unknown future code
+ *         }
  *     }
  * });
  * </pre>
@@ -52,7 +52,7 @@ package com.vaadin.flow.component.geolocation;
  *            to end users as-is
  */
 public record GeolocationError(int code,
-        String message) implements GeolocationState {
+        String message) implements GeolocationResult {
 
     /**
      * Returns the error reason as a typed enum suitable for exhaustive

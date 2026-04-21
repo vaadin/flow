@@ -32,6 +32,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -133,6 +134,8 @@ public class UI extends Component
     private final UIInternals internals;
 
     private final Page page = new Page(this);
+
+    private final Geolocation geolocation = new Geolocation(this);
 
     /*
      * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
@@ -912,6 +915,19 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
+    }
+
+    /**
+     * Returns the {@link Geolocation} facade for this UI, used to read the end
+     * user's physical location from the browser.
+     * <p>
+     * The same instance is returned on every call. See {@link Geolocation} for
+     * the one-shot / tracking / capability checks it exposes.
+     *
+     * @return the per-UI Geolocation facade
+     */
+    public Geolocation getGeolocation() {
+        return geolocation;
     }
 
     /**

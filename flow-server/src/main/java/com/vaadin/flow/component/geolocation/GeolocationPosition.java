@@ -19,9 +19,9 @@ package com.vaadin.flow.component.geolocation;
  * A successful location reading: the coordinates the browser reported and the
  * moment in time they were taken.
  * <p>
- * This is one of the three possible values of a {@link Geolocation#state()}
- * signal, and is the payload passed to the {@code onSuccess} callbacks of
- * {@link Geolocation#get}.
+ * This is one of the three possible values of a
+ * {@link GeolocationTracker#value()} signal, and one of the two values a
+ * {@link Geolocation#get} callback can receive.
  *
  * @param coords
  *            the latitude/longitude and related fields; see
@@ -33,5 +33,5 @@ package com.vaadin.flow.component.geolocation;
  *            {@code Instant.ofEpochMilli(timestamp)} when needed
  */
 public record GeolocationPosition(GeolocationCoordinates coords,
-        long timestamp) implements GeolocationState {
+        long timestamp) implements GeolocationResult {
 }
