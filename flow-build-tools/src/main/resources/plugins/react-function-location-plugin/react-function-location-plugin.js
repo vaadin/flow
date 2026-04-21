@@ -1,5 +1,4 @@
 import * as t from '@babel/types';
-import { readFileSync } from 'fs';
 
 export function addFunctionComponentSourceLocationBabel() {
   function isReactFunctionName(name) {
@@ -7,128 +6,66 @@ export function addFunctionComponentSourceLocationBabel() {
     return name && name.match(/^[A-Z].*/);
   }
 
-  // Cache original file contents for finding correct line numbers.
-  // When running after OXC (enforce: 'post'), Babel's AST positions
-  // refer to the transformed code, not the original source. We read
-  // the original file to get correct positions.
-  const originalSources = {};
-
-  function getOriginalLines(filename) {
-    if (!originalSources[filename]) {
-      try {
-        originalSources[filename] = readFileSync(filename, 'utf-8').split('\n');
-      } catch {
-        originalSources[filename] = [];
-      }
-    }
-    return originalSources[filename];
-  }
-
-  function findFunctionLine(filename, functionName) {
-    const lines = getOriginalLines(filename);
-    for (let i = 0; i < lines.length; i++) {
-      // Match "function FunctionName(" or "const/let/var FunctionName ="
-      const funcMatch = lines[i].match(new RegExp(`\\bfunction\\s+${functionName}\\s*\\(`));
-      const constMatch = lines[i].match(new RegExp(`\\b(?:const|let|var)\\s+${functionName}\\s*=`));
-      if (funcMatch) {
-        // Find the opening brace of the function body
-        const braceCol = lines[i].indexOf('{', funcMatch.index + funcMatch[0].length);
-        if (braceCol >= 0) {
-          return { line: i + 1, column: braceCol + 1 };
-        }
-        // Brace might be on a following line
-        for (let j = i + 1; j < lines.length; j++) {
-          const bc = lines[j].indexOf('{');
-          if (bc >= 0) return { line: j + 1, column: bc + 1 };
-        }
-      }
-      if (constMatch) {
-        // Find arrow function body: look for => and then the body start
-        for (let j = i; j < Math.min(i + 5, lines.length); j++) {
-          const arrowIdx = lines[j].indexOf('=>');
-          if (arrowIdx >= 0) {
-            const afterArrow = lines[j].substring(arrowIdx + 2);
-            const trimmed = afterArrow.trim();
-            if (trimmed.length > 0) {
-              // Body starts on same line as =>
-              const bodyStart = arrowIdx + 2 + afterArrow.indexOf(trimmed.charAt(0));
-              return { line: j + 1, column: bodyStart + 1 };
-            }
-            // Body starts on next line
-            if (j + 1 < lines.length) {
-              return { line: j + 2, column: 1 };
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }
-
   /**
-   * Writes debug info as Name.__debugSourceDefine={...} after the given statement ("path").
-   * This is used to make the source location of the function available in the browser in development mode.
-   * The name __debugSourceDefine is prefixed by __ to mark this is not a public API.
+   * Collects React function component locations during AST traversal and
+   * appends all `Name.__debugSourceDefine = {...}` statements at the end of
+   * the file in Program.exit. Appending at the end (rather than after each
+   * function) avoids shifting line numbers for subsequent transforms, so JSX
+   * source locations reported by OXC remain correct.
    *
-   * Uses the original source file to determine correct line numbers,
-   * since Babel may be running on OXC-transformed code with different positions.
+   * Must be combined with retainLines:true in Babel options so Babel's
+   * printer doesn't shift lines when regenerating the file.
    */
-  function addDebugInfo(path, name, filename) {
-    const loc = findFunctionLine(filename, name);
-    if (!loc) {
-      return;
-    }
-    const debugSourceMember = t.memberExpression(t.identifier(name), t.identifier('__debugSourceDefine'));
-    const debugSourceDefine = t.objectExpression([
-      t.objectProperty(t.identifier('fileName'), t.stringLiteral(filename)),
-      t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(loc.line)),
-      t.objectProperty(t.identifier('columnNumber'), t.numericLiteral(loc.column))
-    ]);
-    const assignment = t.expressionStatement(t.assignmentExpression('=', debugSourceMember, debugSourceDefine));
-    const condition = t.binaryExpression(
-      '===',
-      t.unaryExpression('typeof', t.identifier(name)),
-      t.stringLiteral('function')
-    );
-    const ifFunction = t.ifStatement(condition, t.blockStatement([assignment]));
-    path.insertAfter(ifFunction);
-  }
-
   return {
     visitor: {
-      VariableDeclaration(path, state) {
-        // Finds declarations such as
-        // const Foo = () => <div/>
-        // export const Bar = () => <span/>
-
-        // and writes a Foo.__debugSourceDefine= {..} after it, referring to the start of the function body
-        path.node.declarations.forEach((declaration) => {
-          if (declaration.id.type !== 'Identifier') {
-            return;
-          }
-          const name = declaration?.id?.name;
-          if (!isReactFunctionName(name)) {
-            return;
-          }
-
+      Program: {
+        exit(path, state) {
           const filename = state.file.opts.filename;
-          addDebugInfo(path, name, filename);
-        });
-      },
+          const collected = [];
 
-      FunctionDeclaration(path, state) {
-        // Finds declarations such as
-        // function Foo() { return <div/>; }
-        // export function Bar() { return <span>Hello</span>;}
+          path.traverse({
+            FunctionDeclaration(p) {
+              // Matches: function Foo() { ... }
+              const name = p.node?.id?.name;
+              if (!isReactFunctionName(name)) return;
+              if (p.node.body.loc) {
+                collected.push({ name, loc: p.node.body.loc });
+              }
+            },
+            VariableDeclaration(p) {
+              // Matches: const Foo = () => <div/>
+              p.node.declarations.forEach((d) => {
+                if (d.id.type !== 'Identifier') return;
+                const name = d.id.name;
+                if (!isReactFunctionName(name)) return;
+                if (d.init?.body?.loc) {
+                  collected.push({ name, loc: d.init.body.loc });
+                }
+              });
+            }
+          });
 
-        // and writes a Foo.__debugSourceDefine= {..} after it, referring to the start of the function body
-        const node = path.node;
-        const name = node?.id?.name;
-        if (!isReactFunctionName(name)) {
-          return;
+          for (const { name, loc } of collected) {
+            const debugSourceMember = t.memberExpression(
+              t.identifier(name),
+              t.identifier('__debugSourceDefine')
+            );
+            const debugSourceDefine = t.objectExpression([
+              t.objectProperty(t.identifier('fileName'), t.stringLiteral(filename)),
+              t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(loc.start.line)),
+              t.objectProperty(t.identifier('columnNumber'), t.numericLiteral(loc.start.column + 1))
+            ]);
+            const assignment = t.expressionStatement(
+              t.assignmentExpression('=', debugSourceMember, debugSourceDefine)
+            );
+            const condition = t.binaryExpression(
+              '===',
+              t.unaryExpression('typeof', t.identifier(name)),
+              t.stringLiteral('function')
+            );
+            path.pushContainer('body', t.ifStatement(condition, t.blockStatement([assignment])));
+          }
         }
-        const filename = state.file.opts.filename;
-        addDebugInfo(path, name, filename);
       }
     }
   };

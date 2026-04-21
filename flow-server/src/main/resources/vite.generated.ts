@@ -32,7 +32,7 @@ export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plu
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
-import { transformSync } from '@babel/core';
+import babel from '@rolldown/plugin-babel';
 //#tailwindcssVitePluginImport#
 
 //#vitePluginFileSystemRouterImport#
@@ -528,38 +528,32 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh and JSX transformation via OXC
+      // The React plugin provides fast refresh and JSX transformation via OXC.
+      // The custom jsxImportSource wraps React 19's jsxDEV to capture source
+      // locations on _debugInfo (since React 19 dropped _source).
       reactPlugin({
         include: '**/*.tsx',
         jsxImportSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
       }),
-      // Babel plugins for source location info and signals transform.
-      // Must run AFTER reactPlugin (OXC) so that source locations are correct.
-      // Uses a custom plugin instead of @rolldown/plugin-babel because that
-      // plugin hardcodes enforce:'pre' which cannot be overridden.
-      {
-        name: 'vaadin-babel-post',
-        enforce: 'post' as const,
-        transform(code: string, id: string) {
-          if (!id.endsWith('.tsx')) return null;
-          const result = transformSync(code, {
-            filename: id,
-            plugins: [
-              !productionMode && addFunctionComponentSourceLocationBabel(),
-              [
-                'module:@preact/signals-react-transform',
-                {
-                  mode: 'all' // Needed to include translations which do not use something.value
-                }
-              ]
-            ].filter(Boolean),
-            sourceMaps: true,
-            sourceFileName: id,
-          });
-          if (!result?.code) return null;
-          return { code: result.code, map: result.map };
-        },
-      },
+      // Babel runs with enforce:'pre' (default), so it sees the original source
+      // and all AST positions are correct for source location plugins.
+      // retainLines:true ensures Babel's printer doesn't shift line numbers,
+      // so OXC's JSX source locations remain correct. The source location
+      // plugin appends __debugSourceDefine statements at the end of the file
+      // rather than inserting in the middle, also avoiding line shifting.
+      babel({
+        include: '**/*.tsx',
+        retainLines: true,
+        plugins: [
+          !productionMode && addFunctionComponentSourceLocationBabel(),
+          [
+            'module:@preact/signals-react-transform',
+            {
+              mode: 'all' // Needed to include translations which do not use something.value
+            }
+          ]
+        ].filter(Boolean),
+      }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
