@@ -421,10 +421,22 @@ export class Flow {
       return Promise.resolve(initial);
     }
 
+    const browserDetails = await this.collectBrowserDetails();
+
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
+
+      const browserDetailsParam = browserDetails
+        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+        : '';
+
+      const requestPath = `?v-r=init&location=${encodeURIComponent(
+        this.getFlowRoutePath(location)
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+
+      httpRequest.open('GET', requestPath);
 
       httpRequest.onerror = () =>
         reject(
@@ -443,18 +455,7 @@ export class Flow {
           httpRequest.onerror();
         }
       };
-
-      // Collect browser details (async) and send the init request
-      this.collectBrowserDetails().then((browserDetails) => {
-        const browserDetailsParam = browserDetails
-          ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
-          : '';
-        const requestPath = `?v-r=init&location=${encodeURIComponent(
-          this.getFlowRoutePath(location)
-        )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
-        httpRequest.open('GET', requestPath);
-        httpRequest.send();
-      });
+      httpRequest.send();
     });
   }
 
@@ -550,15 +551,8 @@ export class Flow {
     }
     params['v-tn'] = themeName;
 
-    /* Geolocation availability (async) */
-    try {
-      const geolocation = ($wnd as any).Vaadin?.Flow?.geolocation;
-      if (geolocation && typeof geolocation.queryAvailability === 'function') {
-        params['v-ga'] = await geolocation.queryAvailability();
-      }
-    } catch (e) {
-      /* leave v-ga unset */
-    }
+    /* Geolocation availability */
+    params['v-ga'] = await ($wnd.Vaadin.Flow as any).geolocation.queryAvailability();
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
