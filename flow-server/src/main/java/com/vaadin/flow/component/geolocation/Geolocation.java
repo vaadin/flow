@@ -238,11 +238,36 @@ public class Geolocation implements Serializable {
      * origin has.
      * <p>
      * Synchronous; can be read from {@code onAttach} without an async callback.
-     * Stays in sync automatically as the user interacts with location or
-     * changes site permissions. Returns {@code null} only in the atypical case
-     * where the browser has not yet reported any value.
+     * The value is fetched once during the initial client handshake and kept
+     * current after that.
+     * <p>
+     * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
+     * it reflects what the browser last reported, and can be briefly stale in
+     * these cases:
+     * <ul>
+     * <li>Between server attach and the completion of the first client
+     * handshake — returns {@code null} during this short window.</li>
+     * <li>On Safari, the permission state is never observable;
+     * {@link GeolocationAvailability#GRANTED},
+     * {@link GeolocationAvailability#DENIED DENIED} and
+     * {@link GeolocationAvailability#PROMPT PROMPT} all surface as
+     * {@link GeolocationAvailability#UNKNOWN UNKNOWN}.
+     * {@link GeolocationAvailability#UNSUPPORTED UNSUPPORTED} is still reported
+     * correctly.</li>
+     * <li>On Firefox, permission changes the user makes in browser settings are
+     * not reliably propagated back — the cached value can remain stale until
+     * the next {@link #get} or {@link #track} call.</li>
+     * <li>On Chromium, the value updates promptly when the user flips the site
+     * permission, but there is still a small propagation delay between the
+     * browser event and the cache update.</li>
+     * </ul>
+     * Treat the value as a hint for pre-rendering decisions (e.g. auto-fetching
+     * on return visits, hiding controls in unsupported contexts). For critical
+     * paths, call {@link #get} and handle the authoritative result in the
+     * callback.
      *
-     * @return the current availability, or {@code null} if never reported
+     * @return the current availability, or {@code null} if the browser has not
+     *         yet reported one
      */
     public @Nullable GeolocationAvailability getAvailability() {
         ExtendedClientDetails details = ui.getInternals()
