@@ -7,59 +7,73 @@ export function addFunctionComponentSourceLocationBabel() {
   }
 
   /**
-   * Collects React function component locations during AST traversal and
-   * appends all `Name.__debugSourceDefine = {...}` statements at the end of
-   * the file in Program.exit. Appending at the end (rather than after each
-   * function) avoids shifting line numbers for subsequent transforms, so JSX
-   * source locations reported by OXC remain correct.
+   * Writes debug info as Name.__debugSourceDefine={...} after the given statement ("path").
+   * This is used to make the source location of the function (defined by the loc parameter) available in the browser in development mode.
+   * The name __debugSourceDefine is prefixed by __ to mark this is not a public API.
    *
-   * Must be combined with retainLines:true in Babel options so Babel's
-   * printer doesn't shift lines when regenerating the file.
+   * Must be combined with retainLines:true in Babel options so the inserted
+   * statement doesn't shift subsequent lines when Babel regenerates the file.
+   * This keeps OXC's view of JSX source locations correct and also allows
+   * nested component functions (where insertAfter inserts into the enclosing
+   * function's scope so the component name is in scope).
    */
+  function addDebugInfo(path, name, filename, loc) {
+    const lineNumber = loc.start.line;
+    const columnNumber = loc.start.column + 1;
+    const debugSourceMember = t.memberExpression(t.identifier(name), t.identifier('__debugSourceDefine'));
+    const debugSourceDefine = t.objectExpression([
+      t.objectProperty(t.identifier('fileName'), t.stringLiteral(filename)),
+      t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(lineNumber)),
+      t.objectProperty(t.identifier('columnNumber'), t.numericLiteral(columnNumber))
+    ]);
+    const assignment = t.expressionStatement(t.assignmentExpression('=', debugSourceMember, debugSourceDefine));
+    const condition = t.binaryExpression(
+      '===',
+      t.unaryExpression('typeof', t.identifier(name)),
+      t.stringLiteral('function')
+    );
+    const ifFunction = t.ifStatement(condition, t.blockStatement([assignment]));
+    path.insertAfter(ifFunction);
+  }
+
   return {
     visitor: {
-      Program: {
-        exit(path, state) {
-          const filename = state.file.opts.filename;
-          const collected = [];
+      VariableDeclaration(path, state) {
+        // Finds declarations such as
+        // const Foo = () => <div/>
+        // export const Bar = () => <span/>
 
-          path.traverse({
-            FunctionDeclaration(p) {
-              // Matches: function Foo() { ... }
-              const name = p.node?.id?.name;
-              if (!isReactFunctionName(name)) return;
-              if (p.node.body.loc) {
-                collected.push({ name, loc: p.node.body.loc });
-              }
-            },
-            VariableDeclaration(p) {
-              // Matches: const Foo = () => <div/>
-              p.node.declarations.forEach((d) => {
-                if (d.id.type !== 'Identifier') return;
-                const name = d.id.name;
-                if (!isReactFunctionName(name)) return;
-                if (d.init?.body?.loc) {
-                  collected.push({ name, loc: d.init.body.loc });
-                }
-              });
-            }
-          });
-
-          for (const { name, loc } of collected) {
-            const debugSourceMember = t.memberExpression(t.identifier(name), t.identifier('__debugSourceDefine'));
-            const debugSourceDefine = t.objectExpression([
-              t.objectProperty(t.identifier('fileName'), t.stringLiteral(filename)),
-              t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(loc.start.line)),
-              t.objectProperty(t.identifier('columnNumber'), t.numericLiteral(loc.start.column + 1))
-            ]);
-            const assignment = t.expressionStatement(t.assignmentExpression('=', debugSourceMember, debugSourceDefine));
-            const condition = t.binaryExpression(
-              '===',
-              t.unaryExpression('typeof', t.identifier(name)),
-              t.stringLiteral('function')
-            );
-            path.pushContainer('body', t.ifStatement(condition, t.blockStatement([assignment])));
+        // and writes a Foo.__debugSourceDefine= {..} after it, referring to the start of the function body
+        path.node.declarations.forEach((declaration) => {
+          if (declaration.id.type !== 'Identifier') {
+            return;
           }
+          const name = declaration?.id?.name;
+          if (!isReactFunctionName(name)) {
+            return;
+          }
+
+          const filename = state.file.opts.filename;
+          if (declaration?.init?.body?.loc) {
+            addDebugInfo(path, name, filename, declaration.init.body.loc);
+          }
+        });
+      },
+
+      FunctionDeclaration(path, state) {
+        // Finds declarations such as
+        // function Foo() { return <div/>; }
+        // export function Bar() { return <span>Hello</span>;}
+
+        // and writes a Foo.__debugSourceDefine= {..} after it, referring to the start of the function body
+        const node = path.node;
+        const name = node?.id?.name;
+        if (!isReactFunctionName(name)) {
+          return;
+        }
+        const filename = state.file.opts.filename;
+        if (node.body.loc) {
+          addDebugInfo(path, name, filename, node.body.loc);
         }
       }
     }
