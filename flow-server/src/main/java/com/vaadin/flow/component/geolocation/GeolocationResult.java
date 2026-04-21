@@ -22,7 +22,7 @@ import java.io.Serializable;
  * or it reported an error.
  * <p>
  * Passed to {@link Geolocation#get} callbacks and held (possibly as
- * {@code null} before the first fix) by the signal exposed by
+ * {@code null} before the first reading) by the signal exposed by
  * {@link GeolocationTracker#value()}.
  * <p>
  * The sealed interface is designed for exhaustive pattern matching. A

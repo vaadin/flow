@@ -39,7 +39,7 @@ public enum GeolocationErrorCode {
 
     /**
      * The browser tried to determine a position but failed — for example
-     * because the device has no GPS fix and no network positioning is
+     * because the device has no GPS signal and no network positioning is
      * available, or because the operating system refused the request. Usually
      * transient; showing a retry button is a reasonable response.
      */

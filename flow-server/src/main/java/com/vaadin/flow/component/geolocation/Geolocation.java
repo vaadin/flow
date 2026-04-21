@@ -50,11 +50,8 @@ import com.vaadin.flow.function.SerializableConsumer;
  * <b>Availability check:</b>
  * <ul>
  * <li>{@link #getAvailability()} — synchronous snapshot of whether the feature
- * is usable and what permission state the origin has. Populated as part of the
- * client bootstrap (via
- * {@link ExtendedClientDetails#getGeolocationAvailability()}), refreshed from
- * every {@link #get}/{@link #track} outcome, and updated on browser
- * permission-change events where supported.</li>
+ * is usable and what permission state the origin has. Kept in sync
+ * automatically for the lifetime of the UI.</li>
  * </ul>
  *
  * <p>
@@ -87,7 +84,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  * ComponentEffect.effect(this, () -&gt; {
  *     switch (tracker.value().get()) {
  *     case null -&gt; {
- *         // still waiting for the first fix
+ *         // still waiting for the first reading
  *     }
  *     case GeolocationPosition pos -&gt;
  *         map.setCenter(pos.coords().latitude(), pos.coords().longitude());
@@ -119,8 +116,7 @@ public class Geolocation implements Serializable {
     /**
      * Creates a new Geolocation facade bound to the given UI.
      * <p>
-     * Called from {@link UI}'s constructor after the UI's internals are ready;
-     * application code obtains the instance via {@link UI#getGeolocation()} and
+     * Application code obtains the instance via {@link UI#getGeolocation()} and
      * should not instantiate this class directly.
      *
      * @param ui
@@ -238,18 +234,14 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Returns the browser's current geolocation availability — whether the
-     * Geolocation API is usable in this context and, if so, what permission
-     * state the origin has.
+     * Returns the current geolocation availability — whether the Geolocation
+     * API is usable in this context and, if so, what permission state the
+     * origin has.
      * <p>
-     * The value is populated as part of the initial client bootstrap (carried
-     * in the browser-details handshake, see
-     * {@link ExtendedClientDetails#getGeolocationAvailability()}), kept current
-     * by {@link #get} and {@link #track} responses, and updated on browser
-     * permission-change events on Chromium. It is synchronous — application
-     * code can read it from the very first {@code onAttach} without an async
-     * callback — and may return {@code null} only in the atypical case where
-     * the client never sent browser details.
+     * Synchronous; can be read from {@code onAttach} without an async callback.
+     * Stays in sync automatically as the user interacts with location or
+     * changes site permissions. Returns {@code null} only in the atypical case
+     * where the browser has not yet reported any value.
      *
      * @return the current availability, or {@code null} if never reported
      */

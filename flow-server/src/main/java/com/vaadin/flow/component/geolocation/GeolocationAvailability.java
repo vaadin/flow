@@ -29,7 +29,7 @@ package com.vaadin.flow.component.geolocation;
  * Typical usage:
  * <ul>
  * <li>{@link #UNSUPPORTED} — hide the location control entirely; no user action
- * can fix this.</li>
+ * can change this.</li>
  * <li>{@link #DENIED} — pre-explain to the user why location is blocked and how
  * to re-enable it in the browser settings.</li>
  * <li>{@link #GRANTED} — safe to auto-fetch silently on return visits.</li>

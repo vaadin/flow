@@ -443,11 +443,10 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the browser's current geolocation availability — whether the
-     * Geolocation API is usable in this context and, if so, what permission
-     * state the origin has. Populated during UI initialization and kept current
-     * from {@code get()}/{@code track()} responses and browser
-     * permission-change events.
+     * Returns the current geolocation availability — whether the Geolocation
+     * API is usable in this context and, if so, what permission state the
+     * origin has. The value from this getter is the same as the one returned by
+     * {@code UI.getCurrent().getGeolocation().getAvailability()}.
      *
      * @return the current availability, or {@code null} if the browser has not
      *         yet reported one
@@ -457,9 +456,9 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Updates the cached geolocation availability. For internal use by the
-     * Geolocation facade — applications read
-     * {@link #getGeolocationAvailability()} but do not write.
+     * For internal use. Applications should read
+     * {@link #getGeolocationAvailability()} and let the framework keep it
+     * current.
      *
      * @param availability
      *            the new availability, or {@code null} to clear
