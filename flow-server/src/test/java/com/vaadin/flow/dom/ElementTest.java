@@ -2270,8 +2270,8 @@ class ElementTest extends AbstractNodeTest {
         div.appendChild(span);
         span.appendChild(button);
 
-        assertEquals("<div>\n" + " <span>\n  <button>hello</button>\n </span>\n"
-                + "</div>", div.getOuterHTML());
+        assertEquals("<div>\n <span><button>hello</button></span>\n</div>",
+                div.getOuterHTML());
     }
 
     @Test
@@ -2300,9 +2300,10 @@ class ElementTest extends AbstractNodeTest {
     void htmlComponentOuterHtml() {
         Html html = new Html(
                 "<div style='background:green'><span><button>hello</button></span></div>");
-        assertEquals("<div style=\"background:green\">\n"
-                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
-                html.getElement().getOuterHTML());
+        assertEquals("""
+                <div style="background:green">
+                 <span><button>hello</button></span>
+                </div>""", html.getElement().getOuterHTML());
     }
 
     @Test
