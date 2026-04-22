@@ -59,6 +59,32 @@ public class CssBundler {
     private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
             + MEDIA_QUERY + ")";
 
+    // Selects how url(...) references are rewritten when inlining @import
+    // statements. The right choice depends on how the bundled CSS is later
+    // delivered to the browser:
+    //
+    // THEMES — used for application themes; url() targets are rewritten to
+    // absolute "VAADIN/themes/<theme>/..." paths because themes are
+    // served from a known fixed location.
+    //
+    // STATIC_RESOURCES — used in dev mode for @StyleSheet files served from
+    // public roots (META-INF/resources, webapp, ...). The dev-tools
+    // live-reload client (vaadin-dev-tools.ts onUpdate) injects the
+    // bundled content into an inline <style> tag and removes the
+    // original <link>. An inline <style> has no URL of its own, so the
+    // browser resolves any relative url() against the *page URL*, which
+    // would point to the wrong folder. To stay correct we rewrite to
+    // absolute paths rooted at the servlet context (e.g.
+    // "/myapp/relurl-test/images/dot.svg").
+    //
+    // STATIC_RESOURCES_RELATIVE — used in prod by TaskProcessStylesheetCss.
+    // The bundled CSS is written back in-place under META-INF/resources
+    // and served via the original <link href>, so the browser still
+    // fetches it from the entry file's URL. Relative url() therefore
+    // resolves against the entry's folder and we just need to express
+    // each url() relative to that folder. We can't use STATIC_RESOURCES
+    // here because the deployment context path is not known at build
+    // time.
     private enum BundleFor {
         THEMES, STATIC_RESOURCES, STATIC_RESOURCES_RELATIVE
     }
