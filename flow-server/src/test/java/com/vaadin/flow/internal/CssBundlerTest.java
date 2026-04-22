@@ -613,6 +613,103 @@ class CssBundlerTest {
     }
 
     @Test
+    void inlineImportsForStaticResourcesRelative_rewritesUrlFromNestedImport()
+            throws IOException {
+        writeCss("@import url('./views/messages.css');", "styles.css");
+        writeCss(".icon { mask-image: url(\"../images/foo.svg\"); }",
+                "views/messages.css");
+        createThemeFile("images/foo.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/foo.svg')"),
+                "Expected url rewritten to 'images/foo.svg' but got: "
+                        + result);
+        assertFalse(result.contains("../images/"),
+                "Expected '../images/' to be rewritten away but got: "
+                        + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_entryFileUrlUnchanged()
+            throws IOException {
+        writeCss("background-image: url('images/foo.svg');", "styles.css");
+        createThemeFile("images/foo.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/foo.svg')"),
+                "Unexpected content: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_absoluteAndProtocolUrlsUnchanged()
+            throws IOException {
+        writeCss("""
+                background-image: url('/static/foo.svg');
+                background-image: url('https://cdn.example.com/bar.svg');
+                background-image: url('data:image/svg+xml;base64,AAAA');
+                """, "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('/static/foo.svg')"),
+                "Absolute url should be unchanged: " + result);
+        assertTrue(result.contains("url('https://cdn.example.com/bar.svg')"),
+                "Protocol url should be unchanged: " + result);
+        assertTrue(result.contains("url('data:image/svg+xml;base64,AAAA')"),
+                "Data url should be unchanged: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_nonExistentFileUnchanged()
+            throws IOException {
+        writeCss("background-image: url('images/missing.svg');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/missing.svg')"),
+                "Non-existent file url should be unchanged: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_urlEscapingBaseFolderUnchanged()
+            throws IOException {
+        // Create a file outside the themeFolder (base folder for the rewrite)
+        File outside = new File(themesFolder, "outside.svg");
+        outside.getParentFile().mkdirs();
+        outside.createNewFile();
+
+        writeCss("background-image: url('../outside.svg');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('../outside.svg')"),
+                "Url targeting outside base folder should be left untouched: "
+                        + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_deepNestedImport()
+            throws IOException {
+        writeCss("@import url('a/b/c/x.css');", "styles.css");
+        writeCss(".deep { background: url(\"../../../img/y.svg\"); }",
+                "a/b/c/x.css");
+        createThemeFile("img/y.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('img/y.svg')"),
+                "Expected url rewritten to 'img/y.svg' but got: " + result);
+    }
+
+    @Test
     void cyclicImportsInNestedFoldersDoNotCauseStackOverflow()
             throws IOException {
         // styles.css imports sub/a.css

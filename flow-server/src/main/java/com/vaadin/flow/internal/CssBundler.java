@@ -60,7 +60,7 @@ public class CssBundler {
             + MEDIA_QUERY + ")";
 
     private enum BundleFor {
-        THEMES, STATIC_RESOURCES
+        THEMES, STATIC_RESOURCES, STATIC_RESOURCES_RELATIVE
     }
 
     /**
@@ -168,6 +168,36 @@ public class CssBundler {
     }
 
     /**
+     * Inlines imports for CSS files located under public static resources (e.g.
+     * META-INF/resources) at build time, rewriting relative {@code url(...)}
+     * references so they are expressed relative to the entry CSS file's folder.
+     * <p>
+     * Unlike {@link #inlineImportsForPublicResources(File, File, String)}, this
+     * variant does not prepend a servlet context path. The resulting URLs are
+     * purely relative, which is required when the CSS is processed at build
+     * time and the deployment context path is not yet known.
+     *
+     * @param baseFolder
+     *            folder of the entry CSS file; inlined {@code url(...)}
+     *            references are rewritten to paths relative to this folder.
+     * @param cssFile
+     *            the CSS file to process.
+     * @param nodeModulesFolder
+     *            the node_modules folder for resolving npm package imports, or
+     *            {@code null} if node_modules resolution is not needed.
+     * @return the processed stylesheet content, with inlined imports and
+     *         rewritten URLs.
+     * @throws IOException
+     *             if filesystem resources cannot be read.
+     */
+    public static String inlineImportsForStaticResourcesRelative(
+            File baseFolder, File cssFile, File nodeModulesFolder)
+            throws IOException {
+        return inlineImports(baseFolder, cssFile, new HashSet<>(),
+                BundleFor.STATIC_RESOURCES_RELATIVE, null, nodeModulesFolder);
+    }
+
+    /**
      * Internal implementation that can optionally skip URL rewriting.
      *
      * @param baseFolder
@@ -247,6 +277,9 @@ public class CssBundler {
         } else if (bundleFor == BundleFor.STATIC_RESOURCES) {
             content = rewriteCssUrlsForStaticResources(baseFolder, cssFile,
                     contextPath, content);
+        } else if (bundleFor == BundleFor.STATIC_RESOURCES_RELATIVE) {
+            content = rewriteCssUrlsForStaticResourcesRelative(baseFolder,
+                    cssFile, content);
         }
         content = StringUtil.removeComments(content, true);
         List<String> unhandledImports = new ArrayList<>();
@@ -349,6 +382,48 @@ public class CssBundler {
             return Matcher.quoteReplacement(urlMatcher.group());
         });
         return content;
+    }
+
+    private static String rewriteCssUrlsForStaticResourcesRelative(
+            File baseFolder, File cssFile, String content) {
+        Path baseNormalized = baseFolder.toPath().normalize().toAbsolutePath();
+        Matcher urlMatcher = URL_PATTERN.matcher(content);
+        return urlMatcher.replaceAll(result -> {
+            String url = getNonNullGroup(result, 2, 3, 4);
+            if (url == null || url.trim().endsWith(".css")) {
+                // @import urls - handled by import inlining, not here
+                return Matcher.quoteReplacement(urlMatcher.group());
+            }
+            String sanitized = sanitizeUrl(url);
+            if (sanitized == null) {
+                return Matcher.quoteReplacement(urlMatcher.group());
+            }
+            String trimmed = sanitized.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("/")
+                    || PROTOCOL_PATTER_FOR_URLS.matcher(trimmed).matches()) {
+                return Matcher.quoteReplacement(urlMatcher.group());
+            }
+            try {
+                Path target = cssFile.getParentFile().toPath().resolve(trimmed)
+                        .normalize().toAbsolutePath();
+                if (!target.startsWith(baseNormalized)) {
+                    // Target is outside the entry file's folder (e.g. a URL
+                    // in an npm-package CSS that references a sibling file).
+                    // Do not invent a path for it.
+                    return Matcher.quoteReplacement(urlMatcher.group());
+                }
+                if (!Files.exists(target)) {
+                    return Matcher.quoteReplacement(urlMatcher.group());
+                }
+                String rebased = baseNormalized.relativize(target).toString()
+                        .replace('\\', '/');
+                return Matcher.quoteReplacement("url('" + rebased + "')");
+            } catch (Exception e) {
+                getLogger().debug("Unable to resolve url: {}",
+                        urlMatcher.group());
+            }
+            return Matcher.quoteReplacement(urlMatcher.group());
+        });
     }
 
     private static String rewriteCssUrlsForThemes(File baseFolder, File cssFile,
