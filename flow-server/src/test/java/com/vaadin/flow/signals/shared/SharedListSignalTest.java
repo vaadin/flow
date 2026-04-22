@@ -502,6 +502,7 @@ class SharedListSignalTest extends SignalTestBase {
                 .insertAllAt(List.of("a", "b"), ListPosition.after(child));
 
         assertFailure(op);
+        assertChildren(signal);
     }
 
     @Test
