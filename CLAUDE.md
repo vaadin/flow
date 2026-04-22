@@ -175,3 +175,10 @@ Components extend `Component` and use:
 - Prefix custom DOM events with `vaadin-` (e.g. `vaadin-component-resize` instead of `component-resize`)
 - Always write even slightly complex JavaScript into a separate `.js` file rather than inlining it in Java strings. Use `@JsModule` on `UI.java` to load the file from `META-INF/frontend/`
 - Store global JavaScript state and functions on `window.Vaadin.Flow` (e.g. `window.Vaadin.Flow.componentSizeObserver`). Use annotations on the UI class for global scripts
+- Supported browsers — only write client code targeting these, and do not add fallbacks or polyfills for anything else:
+  - Chrome (evergreen)
+  - Firefox (evergreen)
+  - Firefox Extended Support Release (ESR)
+  - Safari 17 or newer (latest minor version in each major series)
+  - Edge (Chromium, evergreen)
+- Javadoc for any Java API that wraps a browser/JS API must be written for Java developers who do not know the underlying JS API. Explain what the method does in Java terms, when to call it, what the parameters and return value mean, threading/lifecycle expectations, and any browser-specific caveats (e.g. "Safari always returns UNKNOWN"). Do not assume the reader will read the W3C spec or the `.ts` source.

@@ -137,8 +137,9 @@ class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         };
         Options options = new MockOptions(finder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
-                .withBuildDirectory(TARGET).withProductionMode(true);
-        updater = new TaskUpdateImports(deps, options);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withFrontendDependenciesScanner(deps);
+        updater = new TaskUpdateImports(options);
     }
 
     @Test

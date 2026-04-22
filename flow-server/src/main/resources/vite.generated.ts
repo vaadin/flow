@@ -27,7 +27,7 @@ import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
-import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+//#serviceWorkerPluginImport#
 export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
 
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -514,9 +514,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       productionMode && brotli(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && serviceWorkerPlugin({
-        srcPath: settings.clientServiceWorkerSource,
-      }),
+      //#serviceWorkerPlugin#
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
@@ -530,15 +528,22 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh and JSX transformation via OXC
+      // The React plugin provides fast refresh and JSX transformation via OXC.
+      // The custom jsxImportSource wraps React 19's jsxDEV to capture source
+      // locations on _debugInfo (since React 19 dropped _source).
       reactPlugin({
         include: '**/*.tsx',
         jsxImportSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
       }),
-      // Babel plugins for source location info and signals transform
-      // (separate from reactPlugin since v6 uses OXC instead of Babel for JSX)
+      // Babel runs with enforce:'pre' (default), so it sees the original source
+      // and all AST positions are correct for source location plugins.
+      // retainLines:true ensures Babel's printer doesn't shift line numbers,
+      // so OXC's JSX source locations remain correct. The source location
+      // plugin appends __debugSourceDefine statements at the end of the file
+      // rather than inserting in the middle, also avoiding line shifting.
       babel({
         include: '**/*.tsx',
+        retainLines: true,
         plugins: [
           !productionMode && addFunctionComponentSourceLocationBabel(),
           [
@@ -547,7 +552,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
               mode: 'all' // Needed to include translations which do not use something.value
             }
           ]
-        ].filter(Boolean)
+        ].filter(Boolean),
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({

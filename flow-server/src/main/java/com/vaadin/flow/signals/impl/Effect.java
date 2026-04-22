@@ -181,17 +181,14 @@ public class Effect implements Serializable {
         activeEffects.get().add(this);
         try {
             boolean[] hasSignalUsage = { false };
+            // Ensure effect runs only once per change event, even if the same
+            // signal is read multiple times (each read registers a listener)
+            boolean[] changeHandled = { false };
             UsageTracker.track(action, usage -> {
                 hasSignalUsage[0] = true;
                 usages.add(usage);
-                // avoid lambda to allow proper deserialization
-                TransientListener usageListener = new TransientListener() {
-                    @Override
-                    public boolean invoke(boolean immediate) {
-                        return onDependencyChange(immediate);
-                    }
-                };
-                registrations.add(usage.onNextChange(usageListener));
+                registrations.add(usage
+                        .onNextChange(createChangeListener(changeHandled)));
             });
             if (!hasSignalUsage[0]) {
                 throw new MissingSignalUsageException(
@@ -201,6 +198,20 @@ public class Effect implements Serializable {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
         }
+    }
+
+    private TransientListener createChangeListener(boolean[] changeHandled) {
+        // avoid lambda to allow proper deserialization
+        return new TransientListener() {
+            @Override
+            public boolean invoke(boolean immediate) {
+                if (!changeHandled[0]) {
+                    changeHandled[0] = true;
+                    return onDependencyChange(immediate);
+                }
+                return false;
+            }
+        };
     }
 
     private boolean onDependencyChange(boolean immediate) {
@@ -317,8 +328,12 @@ public class Effect implements Serializable {
             // listener may still fire immediately if a change sneaks in
             // between the hasChanges check and the onNextChange call,
             // in which case firstRun is already set to true above.
+            // Ensure effect runs only once even if the same signal is
+            // registered multiple times
+            boolean[] changeHandled = { false };
             for (UsageTracker.Usage usage : usages) {
-                registrations.add(usage.onNextChange(this::onDependencyChange));
+                registrations.add(usage
+                        .onNextChange(createChangeListener(changeHandled)));
             }
             if (!invalidateScheduled.get()) {
                 // No invalidation was scheduled, so no change was

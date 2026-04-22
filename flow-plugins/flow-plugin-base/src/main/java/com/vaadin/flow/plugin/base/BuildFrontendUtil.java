@@ -607,6 +607,37 @@ public class BuildFrontendUtil {
 
     /**
      * Validate pro component licenses.
+     * <p>
+     * When {@link PluginAdapterBuild#optimizeBundle()} is {@code false} the
+     * bytecode scanner is disabled and every commercial component present on
+     * the classpath is assumed to be used, regardless of whether the
+     * application actually references it. In that case the thrown
+     * {@link LicenseException} uses a dedicated message that explains the
+     * classpath-level detection and suggests concrete workarounds (re-enable
+     * bundle optimization, switch to {@code com.vaadin:vaadin-core}, or exclude
+     * {@code com.vaadin:vaadin} from a transitive dependency).
+     *
+     * @param adapter
+     *            the PluginAdapterBuild
+     * @param frontendDependencies
+     *            frontend dependencies scanner
+     * @return {@literal true} if license validation is required because of the
+     *         presence of commercial components, otherwise {@literal false}.
+     * @throws MissingLicenseKeyException
+     *             if commercial components are used in a commercial
+     *             banner-enabled build and no license key is present
+     * @throws LicenseException
+     *             if commercial components are used without a license and
+     *             commercial banner is not enabled
+     */
+    public static boolean validateLicenses(PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies) {
+        return doValidateLicenses(adapter, frontendDependencies,
+                adapter.optimizeBundle());
+    }
+
+    /**
+     * Validate pro component licenses.
      *
      * @param adapter
      *            the PluginAdapterBase
@@ -620,9 +651,25 @@ public class BuildFrontendUtil {
      * @throws LicenseException
      *             if commercial components are used without a license and
      *             commercial banner is not enabled
+     * @deprecated use
+     *             {@link #validateLicenses(PluginAdapterBuild, FrontendDependenciesScanner)}
+     *             instead
      */
+    @Deprecated(since = "25.2", forRemoval = true)
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
+        if (adapter instanceof PluginAdapterBuild pluginAdapterBuild) {
+            return validateLicenses(pluginAdapterBuild, frontendDependencies);
+        }
+        // Fallback for callers that only provide a PluginAdapterBase: the
+        // optimizeBundle property is not accessible, so assume the default
+        // (true) and emit the original error message.
+        return doValidateLicenses(adapter, frontendDependencies, true);
+    }
+
+    private static boolean doValidateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies,
+            boolean optimizeBundle) {
         File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
@@ -679,26 +726,74 @@ public class BuildFrontendUtil {
                                     .formatted(productsList));
                 }
                 invalidateOutput(component, outputFolder);
-                throw new LicenseException(String.format(
-                        """
-                                Commercial features require a subscription.
-                                Your application contains the following commercial components and no license was found:
-                                %1$s
-
-                                If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
-                                Otherwise go to https://vaadin.com/pricing to obtain a license.
-
-                                You can also build a watermarked version of the application configuring
-                                the '%2$s' property of the Maven or Gradle plugin
-                                or run the build with the '-Dvaadin.%2$s' system parameter
-                                """,
-                        productsList, InitParameters.COMMERCIAL_WITH_BANNER));
+                throw new LicenseException(
+                        buildLicenseErrorMessage(productsList, optimizeBundle));
             } catch (Exception e) {
                 invalidateOutput(component, outputFolder);
                 throw e;
             }
         }
         return !commercialComponents.isEmpty();
+    }
+
+    private static String buildLicenseErrorMessage(String productsList,
+            boolean optimizeBundle) {
+        if (optimizeBundle) {
+            return String.format(
+                    """
+                            Commercial features require a subscription.
+                            Your application contains the following commercial components and no license was found:
+                            %1$s
+
+                            If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                            Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                            You can also build a watermarked version of the application configuring
+                            the '%2$s' property of the Maven or Gradle plugin
+                            or run the build with the '-Dvaadin.%2$s' system parameter
+                            """,
+                    productsList, InitParameters.COMMERCIAL_WITH_BANNER);
+        }
+        return String.format(
+                """
+                        Commercial features require a subscription.
+                        The following commercial components were detected on the classpath and no license was found:
+                        %1$s
+
+                        If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                        Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                        You can also build a watermarked version of the application configuring
+                        the '%2$s' property of the Maven or Gradle plugin
+                        or run the build with the '-Dvaadin.%2$s' system parameter.
+
+                        Note: bundle optimization is disabled ('optimizeBundle=false'), so the bytecode scanner that
+                        normally restricts detection to components actually referenced by the application is bypassed
+                        — every commercial component present on the classpath is assumed to be in use.
+
+                        If the application does not actually use these commercial components, the likely cause is a
+                        dependency on the 'com.vaadin:vaadin' umbrella artifact, which transitively includes every
+                        commercial component. You can resolve this by:
+
+                        1. Setting the 'optimizeBundle' property of the Vaadin plugin to 'true' (for example in the
+                           vaadin-maven-plugin configuration in pom.xml, the 'vaadin { }' block in build.gradle(.kts),
+                           or the corresponding entry in application.properties for Quarkus). Bytecode scanning will
+                           then restrict detection to components actually referenced by the application.
+
+                        2. If your project declares 'com.vaadin:vaadin' as a direct dependency, replacing it
+                           with 'com.vaadin:vaadin-core'.
+
+                        3. If 'com.vaadin:vaadin' is pulled in transitively (for example by an add-on), identify the
+                           responsible dependency by running:
+                             Maven:  mvn dependency:tree -Dincludes=com.vaadin:vaadin
+                             Gradle: ./gradlew dependencyInsight --configuration runtimeClasspath --dependency com.vaadin:vaadin:
+                                     (note the trailing colon after 'vaadin' — it narrows the match to the exact
+                                     umbrella artifact and excludes 'com.vaadin:vaadin-*' sub-artifacts)
+                           Then exclude 'com.vaadin:vaadin' from that dependency.
+                           Please also report the issue to the add-on author — add-ons should declare 'com.vaadin:vaadin' with 'provided' scope
+                           in Maven or 'compileOnly' in Gradle so it is never leaked transitively to consumers.
+                        """,
+                productsList, InitParameters.COMMERCIAL_WITH_BANNER);
     }
 
     private static void invalidateOutput(Product component, File outputFolder) {

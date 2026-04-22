@@ -121,6 +121,13 @@ public final class NodeProperties {
      */
     public static final String URI_ATTRIBUTE = "uri";
 
+    /**
+     * The "slot" attribute, which should be sent to the client and applied to
+     * the DOM element even when the element is initially invisible. This is a
+     * structural attribute needed for CSS selectors and layout.
+     */
+    public static final String SLOT_ATTRIBUTE = "slot";
+
     private NodeProperties() {
     }
 }

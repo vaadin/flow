@@ -140,6 +140,50 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
+    void transferProgressListener_withFileNameOverride_listenersInvoked()
+            throws URISyntaxException, IOException {
+        List<String> invocations = new ArrayList<>();
+        DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
+            byte[] data = getBytes();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            return new DownloadResponse(inputStream, request.getFileName(),
+                    "application/octet-stream", data.length);
+        }, "downloadOverride", new TransferProgressListener() {
+            @Override
+            public void onStart(TransferContext context) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onStart");
+            }
+
+            @Override
+            public void onProgress(TransferContext context,
+                    long transferredBytes, long totalBytes) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onProgress");
+            }
+
+            @Override
+            public void onComplete(TransferContext context,
+                    long transferredBytes) {
+                assertEquals("downloadOverride", context.fileName());
+                invocations.add("onComplete");
+            }
+
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                invocations.add("onError");
+            }
+        });
+
+        handler.handleDownloadRequest(downloadEvent);
+
+        assertEquals(
+                List.of("onStart", "onProgress", "onProgress", "onComplete"),
+                invocations);
+        Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
+    @Test
     void transferProgressListener_addListener_errorOccurred_errorListenerInvoked()
             throws IOException {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
@@ -443,6 +487,32 @@ class InputStreamDownloadHandlerTest {
 
         Mockito.verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"download\"");
+    }
+
+    @Test
+    void handleSetToInline_contentDispositionIsInlineWithFilenameOverride()
+            throws IOException {
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(stream,
+                        "download", "application/octet-stream", 0),
+                        "download_file")
+                .inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"download_file\"");
     }
 
     @Test

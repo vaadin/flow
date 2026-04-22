@@ -78,11 +78,11 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun `vaadinBuildFrontend not ran by default in development mode`() {
+    fun `vaadin tasks not ran by default in development mode`() {
         val result: BuildResult = testProject.build("build")
-        // let's explicitly check that vaadinPrepareFrontend has been run.
-        result.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
-        // vaadinBuildFrontend should NOT have been executed automatically
+        // Since Vaadin 25, the dev server handles frontend preparation at
+        // runtime, so no vaadin tasks are chained to the build in dev mode.
+        result.expectTaskNotRan("vaadinPrepareFrontend")
         result.expectTaskNotRan("vaadinBuildFrontend")
 
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")

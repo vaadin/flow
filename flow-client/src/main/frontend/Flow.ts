@@ -431,9 +431,9 @@ export class Flow {
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
 
-      const requestPath = `?v-r=init&location=${this.getFlowRoutePath(location)}&query=${encodeURIComponent(
-        this.getFlowRouteQuery(location)
-      )}${browserDetailsParam}`;
+      const requestPath = `?v-r=init&location=${encodeURIComponent(
+        this.getFlowRoutePath(location)
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 
