@@ -632,16 +632,25 @@ class CssBundlerTest {
     }
 
     @Test
-    void inlineImportsForStaticResourcesRelative_entryFileUrlUnchanged()
+    void inlineImportsForStaticResourcesRelative_entryFileUrlNormalized()
             throws IOException {
-        writeCss("background-image: url('images/foo.svg');", "styles.css");
+        // Use double quotes and a leading "./" — both should be normalized
+        // away so that the rewrite path is actually exercised.
+        writeCss("background-image: url(\"./images/foo.svg\");", "styles.css");
         createThemeFile("images/foo.svg");
 
         String result = CssBundler.inlineImportsForStaticResourcesRelative(
                 themeFolder, getThemeFile("styles.css"), null);
 
         assertTrue(result.contains("url('images/foo.svg')"),
-                "Unexpected content: " + result);
+                "Expected url normalized to single-quoted 'images/foo.svg' but got: "
+                        + result);
+        assertFalse(result.contains("./images/"),
+                "Expected leading './' to be normalized away but got: "
+                        + result);
+        assertFalse(result.contains("url(\""),
+                "Expected double-quoted url to be rewritten to single quotes but got: "
+                        + result);
     }
 
     @Test
@@ -707,6 +716,33 @@ class CssBundlerTest {
 
         assertTrue(result.contains("url('img/y.svg')"),
                 "Expected url rewritten to 'img/y.svg' but got: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_nodeModulesUrlsLeftUntouched()
+            throws IOException {
+        // CSS imported from node_modules typically references sibling assets
+        // inside the same package using relative paths. Those targets live
+        // outside the entry file's base folder, so the rewriter must leave
+        // the urls alone — otherwise we would invent a path the runtime
+        // cannot serve.
+        File nodeModulesFolder = new File(themesFolder, "node_modules");
+        File pkgFolder = new File(nodeModulesFolder, "some-pkg");
+        pkgFolder.mkdirs();
+        File pkgCss = new File(pkgFolder, "pkg.css");
+        FileUtils.writeStringToFile(pkgCss,
+                ".pkg { background: url('./icon.svg'); }",
+                StandardCharsets.UTF_8);
+        new File(pkgFolder, "icon.svg").createNewFile();
+
+        writeCss("@import url('some-pkg/pkg.css');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), nodeModulesFolder);
+
+        assertTrue(result.contains("url('./icon.svg')"),
+                "Url inside node_modules CSS should be left untouched but got: "
+                        + result);
     }
 
     @Test

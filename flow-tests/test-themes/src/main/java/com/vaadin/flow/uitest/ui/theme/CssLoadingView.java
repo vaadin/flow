@@ -116,6 +116,16 @@ public class CssLoadingView extends Div {
         lumo.addClassNames("compare", "bg-contrast");
         add(wrap("lumo", lumo));
 
+        // Regression target for https://github.com/vaadin/flow/issues/24164:
+        // .relurl-test-target's background-image is defined in
+        // META-INF/resources/relurl-test/views/messages.css using a relative
+        // url('../images/dot.svg'). After the production build inlines the
+        // import into relurl-test/styles.css, that url must resolve to
+        // /relurl-test/images/dot.svg (not /relurl-test/views/../images/...).
+        Div relurlTestTarget = new Div();
+        relurlTestTarget.setId("relurlTestTarget");
+        relurlTestTarget.addClassName("relurl-test-target");
+        add(relurlTestTarget);
     }
 
     private Component wrap(String id, Component component) {
