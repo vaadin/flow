@@ -61,15 +61,16 @@ public class CssLoadingIT extends ChromeBrowserTest {
     }
 
     /**
-     * Regression for https://github.com/vaadin/flow/issues/24164.
+     * End-to-end smoke test for https://github.com/vaadin/flow/issues/24164.
      * <p>
      * {@code relurl-test/styles.css} imports {@code views/messages.css}, which
-     * uses {@code background-image: url('../images/dot.svg')}. In production
-     * the build inlines the import; without URL rewriting the browser would
-     * resolve the relative URL against the entry file (the wrong folder) and
-     * 404. The expected resolved URL is therefore
-     * {@code /relurl-test/images/dot.svg}, regardless of dev vs production
-     * mode.
+     * uses {@code background-image: url('../images/dot.svg')}. The relative URL
+     * must end up resolving to {@code /relurl-test/images/dot.svg} (the entry
+     * file's folder), not to {@code /relurl-test/views/../images/...} or to a
+     * path under the page route. The unit tests in {@code CssBundlerTest} cover
+     * the production-build URL rewriting; this IT just guards against the file
+     * delivery pipeline regressing such that relative urls in @import-ed CSS no
+     * longer resolve.
      */
     @Test
     public void relativeUrlInsideInlinedImportResolves() {

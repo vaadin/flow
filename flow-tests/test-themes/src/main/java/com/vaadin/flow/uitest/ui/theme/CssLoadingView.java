@@ -118,10 +118,9 @@ public class CssLoadingView extends Div {
 
         // Regression target for https://github.com/vaadin/flow/issues/24164:
         // .relurl-test-target's background-image is defined in
-        // META-INF/resources/relurl-test/views/messages.css using a relative
-        // url('../images/dot.svg'). After the production build inlines the
-        // import into relurl-test/styles.css, that url must resolve to
-        // /relurl-test/images/dot.svg (not /relurl-test/views/../images/...).
+        // webapp/relurl-test/views/messages.css using a relative
+        // url('../images/dot.svg'). The IT asserts that this url resolves
+        // to /relurl-test/images/dot.svg.
         Div relurlTestTarget = new Div();
         relurlTestTarget.setId("relurlTestTarget");
         relurlTestTarget.addClassName("relurl-test-target");
