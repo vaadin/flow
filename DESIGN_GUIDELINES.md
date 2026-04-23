@@ -31,6 +31,35 @@ holds `private final UI ui`, and all `executeJs` calls go through
 `ui.getElement()` or `ui.getPage()`. Follow the `Page` / `History`
 pattern. Enforce single-instance creation in the constructor if needed.
 
+If the facade hands out a stateful handle (e.g. `Geolocation.track()`
+returning a `GeolocationTracker`), make the handle's constructor
+**package-private** so application code cannot bypass the facade.
+
+### Keep internal mutators off user-facing classes
+
+When the framework needs to write a value that the application is meant
+to read, don't hang the setter on the class users already use for reads
+— even if it's annotated "for framework use only". Put the read surface
+on the user-facing class or facade and the write surface on
+`UIInternals` (or equivalent internal-only class). Review feedback on
+this PR explicitly flagged the opposite shape as a DX hazard, and we
+moved `setGeolocationAvailability` from `ExtendedClientDetails` to
+`UIInternals` as a result.
+
+### Options records
+
+For tunable knobs (accuracy, timeout, cache age), prefer an immutable
+Java record over a long parameter list:
+
+- Public canonical constructor with `@Nullable` params and validation
+  (reject negative durations, etc.) — NullAway needs the canonical ctor
+  spelled out explicitly rather than the record-derived one.
+- Builder for ergonomics. Offer both `Duration` and `int`-ms overloads
+  on time-related setters where the wire format is ms; applications get
+  a fluent `Duration` API and the record stores the int.
+- Record stays serialisable — implement `Serializable` on the Builder
+  too if it's meant to be held in session state.
+
 ### Signals for reactive state
 
 Expose observable state as a `Signal<T>` rather than a listener API. Name
@@ -95,6 +124,12 @@ client-side subscriptions — must be tied to a component's lifecycle:
   detach-after-stop and double-stop are safe no-ops.
 - If the API supports resuming, reset observable state on resume so
   subscribers re-render with the correct initial value.
+- DOM listeners that must keep flowing while the UI is inert (e.g. a
+  modal is open over the view but position updates should still
+  accumulate) are registered with
+  `addEventListener(...).addEventDetail().allowInert()`. Use sparingly
+  — inert exists to prevent user actions while something else has
+  focus; only bypass it for passive streams.
 
 ## Browser / JavaScript integration
 
@@ -141,6 +176,10 @@ anything else:
   plan for that on both sides.
 - Return values from JS can be deserialised to Java records automatically;
   use a private record for the wire shape.
+- **Log `executeJs` client-side errors at `DEBUG`, not WARN/ERROR.** A
+  failed JS call usually means the feature is unavailable (user denied
+  permission, API missing, insecure context) — not a server bug. The
+  pattern is `.then(ok -> {}, err -> LOGGER.debug("X failed: {}", err))`.
 
 ### DOM event naming
 
@@ -150,6 +189,33 @@ anything else:
 - Event payloads travel as Jackson-annotated records. Keep the wire shape
   faithful to what the browser produces (e.g. `long timestamp` not
   `Instant`) and provide convenience accessors on the public type.
+
+### Server ↔ client signalling patterns
+
+For streaming and state-change wiring, keep DOM events as **transport**
+and `Signal` as **state**. Applications should subscribe to the signal;
+the DOM events are an implementation detail of the facade.
+
+- **Event-to-Signal bridging.** The client dispatches a
+  `vaadin-xxx-position` / `vaadin-xxx-error` CustomEvent per update; the
+  server-side facade has a DOM listener that pulls the detail record
+  and writes it to the private `ValueSignal`. Applications subscribe to
+  the signal.
+- **Client-initiated state-change bridge-back.** For state that changes
+  without a server-initiated request (permission change, network
+  online/offline, window resize), the client dispatches a
+  `vaadin-xxx-change` event on `document.body` (which is the UI's root
+  element on the server). The facade constructor registers a listener
+  on `ui.getElement()` and forwards the detail into the same
+  `UIInternals` signal the bootstrap path seeds. No polling required.
+- **Stable client-side keys for async browser handles.** When the
+  browser API returns an opaque id asynchronously (e.g.
+  `watchPosition()`), don't try to round-trip it back to the server to
+  later cancel. Pre-generate a UUID on the server, pass it as an
+  `executeJs` parameter, and have the client's wrapper store its own
+  `Map<key, browserId>`. Both sides then use the same key for
+  subsequent operations (`clearWatch(key)` on the client looks up the
+  browser-assigned id).
 
 ### Bootstrap-time data
 
@@ -164,6 +230,26 @@ round-trip:
   appropriate `UIInternals` field / signal.
 - The public Java signal picks up the value on UI attach — no
   additional round-trip required.
+
+### Feature-capability detection
+
+Probe for feature availability **without calling the feature itself**
+— calling it usually triggers a permission prompt, which defeats the
+point of probing. Useful primitives:
+
+- `window.isSecureContext` — HTTPS or `localhost`. Most sensitive
+  browser APIs require this.
+- `document.featurePolicy?.allowsFeature("xxx")` — Chromium-only;
+  Firefox and Safari don't expose a feature-policy introspection API.
+  Absence of the API should be treated as "allowed", not "unsupported".
+- `navigator.permissions.query({ name: "xxx" })` — returns a
+  `PermissionStatus` whose `.state` is `"granted" | "denied" |
+  "prompt"` and which also emits a `change` event. Safari may reject
+  with a TypeError for specific permission names; catch and fall back
+  to an `UNKNOWN` sentinel.
+- Expose the result to the server via the bootstrap param pattern
+  above, plus a `vaadin-xxx-availability-change` event for subsequent
+  changes.
 
 ## Documentation
 
