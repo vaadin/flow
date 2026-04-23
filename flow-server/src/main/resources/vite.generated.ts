@@ -528,23 +528,28 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh and JSX transformation via OXC.
-      // The custom jsxImportSource wraps React 19's jsxDEV to capture source
-      // locations on _debugInfo (since React 19 dropped _source).
+      // The React plugin provides fast refresh. In dev mode Babel (below)
+      // handles the JSX transform so OXC skips it — keeping all source
+      // locations derived from Babel's AST, which refers to the original
+      // source. In production OXC does the JSX transform.
       reactPlugin({
         include: '**/*.tsx',
-        jsxImportSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
       }),
-      // Babel runs with enforce:'pre' (default), so it sees the original source
-      // and all AST positions are correct for source location plugins.
-      // retainLines:true ensures Babel's printer doesn't shift line numbers,
-      // so OXC's JSX source locations remain correct. The source location
-      // plugin appends __debugSourceDefine statements at the end of the file
-      // rather than inserting in the middle, also avoiding line shifting.
+      // Babel runs with enforce:'pre' (default), so it sees the original
+      // source. All line/column values it embeds in the output come from
+      // the original AST — not affected by any formatting differences in
+      // Babel's printed output that follows.
+      //
+      // In dev mode Babel also does the JSX dev transform with the custom
+      // jsxImportSource, which captures JSX element locations in
+      // _debugInfo.source (React 19 no longer exposes _source on fibers).
       babel({
         include: '**/*.tsx',
-        retainLines: true,
         plugins: [
+          !productionMode && [
+            '@babel/plugin-transform-react-jsx-development',
+            { importSource: 'Frontend/generated/jsx-dev-transform' }
+          ],
           !productionMode && addFunctionComponentSourceLocationBabel(),
           [
             'module:@preact/signals-react-transform',
