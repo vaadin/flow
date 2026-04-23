@@ -221,9 +221,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 overrides.has("parent-package"));
         Assert.assertTrue("Nested override should remain an object",
                 overrides.get("parent-package").isObject());
-        Assert.assertEquals("1.0.0",
-                overrides.get("parent-package").get("nested-dep").textValue(),
-                "Nested override value should be preserved");
+        Assert.assertEquals("Nested override value should be preserved",
+                "1.0.0",
+                overrides.get("parent-package").get("nested-dep").textValue());
 
         // Verify vaadin.overrides tracks the nested structure correctly
         Assert.assertTrue(packageJson.has(VAADIN_DEP_KEY));
