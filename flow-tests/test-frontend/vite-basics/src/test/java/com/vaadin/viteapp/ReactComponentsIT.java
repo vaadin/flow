@@ -97,8 +97,10 @@ public class ReactComponentsIT extends ChromeBrowserTest {
                             """,
                     element);
 
-            Assert.assertNotNull("_debugInfo.source not set on JSX element for "
-                    + element.getAttribute("data-jsx-expected"), result);
+            Assert.assertNotNull(
+                    "_debugInfo.source not set on JSX element for "
+                            + element.getAttribute("data-jsx-expected"),
+                    result);
             Assert.assertTrue(
                     result.get("fileName").toString().endsWith(filenameEnd));
             Assert.assertSame(line, result.get("lineNumber"));
