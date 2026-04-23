@@ -148,8 +148,9 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
 
         Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
-                .withBuildDirectory(TARGET).withProductionMode(true);
-        return new TaskUpdateImports(getScanner(classFinder, featureFlags),
-                options);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withFrontendDependenciesScanner(
+                        getScanner(classFinder, featureFlags));
+        return new TaskUpdateImports(options);
     }
 }

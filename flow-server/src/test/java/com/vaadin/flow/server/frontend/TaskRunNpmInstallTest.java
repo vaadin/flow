@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
@@ -49,7 +50,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockOptions;
 
@@ -91,8 +91,7 @@ public class TaskRunNpmInstallTest {
         options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
                 .withBundleBuild(true);
         finder = options.getClassFinder();
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {
@@ -505,7 +504,8 @@ public class TaskRunNpmInstallTest {
      * @param packageJson
      *            package.json json object
      */
-    public void updatePackageHash(ObjectNode packageJson) {
+    public void updatePackageHash(ObjectNode packageJson)
+            throws JsonProcessingException {
         final ObjectNode vaadinDep = (ObjectNode) packageJson
                 .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
         ObjectNode dependencies = JacksonUtils.createObjectNode();

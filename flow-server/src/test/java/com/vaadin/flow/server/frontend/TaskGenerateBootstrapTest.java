@@ -78,9 +78,10 @@ public class TaskGenerateBootstrapTest {
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         options = new MockOptions(finder, null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+                .withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(frontDeps);
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
     }
 
     @Test
@@ -103,7 +104,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importDevTools_inDevMode()
             throws ExecutionFailedException {
         options.withProductionMode(false);
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains(DEV_TOOLS_IMPORT));
@@ -150,10 +151,10 @@ public class TaskGenerateBootstrapTest {
     @Test
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
-        options.withFrontendDirectory(frontendFolder).withProductionMode(true);
+        options.withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(getThemedDependency());
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

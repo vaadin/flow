@@ -36,7 +36,7 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      *            build options
      */
     TaskGeneratePackageJson(Options options) {
-        super(null, options);
+        super(options);
     }
 
     @Override
