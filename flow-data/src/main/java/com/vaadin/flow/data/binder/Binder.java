@@ -2014,7 +2014,7 @@ public class Binder<BEAN> implements Serializable {
             if (isAppliedPredicate != null) {
                 return isAppliedPredicate;
             }
-            if (getBinder().isAcceptHiddenFields()) {
+            if (getBinder().isApplyBindingsToHiddenFields()) {
                 return binding -> true;
             }
             return Binding.super.getIsAppliedPredicate();
@@ -2160,7 +2160,7 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean changeDetectionEnabled = false;
 
-    private boolean acceptHiddenFields = false;
+    private boolean applyBindingsToHiddenFields = false;
 
     private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
 
@@ -4344,23 +4344,24 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * Defaults to {@literal false}.
      *
-     * @param acceptHiddenFields
+     * @param applyBindingsToHiddenFields
      *            {@literal true} to make all bindings apply to hidden fields,
      *            {@literal false} to skip hidden fields (the default)
      */
-    public void setAcceptHiddenFields(boolean acceptHiddenFields) {
-        this.acceptHiddenFields = acceptHiddenFields;
+    public void setApplyBindingsToHiddenFields(
+            boolean applyBindingsToHiddenFields) {
+        this.applyBindingsToHiddenFields = applyBindingsToHiddenFields;
     }
 
     /**
      * Returns whether all bindings of this Binder apply to fields that are not
      * currently visible.
      *
-     * @return {@literal true} if hidden fields are accepted by all bindings,
+     * @return {@literal true} if bindings are applied to hidden fields,
      *         {@literal false} if hidden fields are skipped (the default)
      */
-    public boolean isAcceptHiddenFields() {
-        return acceptHiddenFields;
+    public boolean isApplyBindingsToHiddenFields() {
+        return applyBindingsToHiddenFields;
     }
 
     /**

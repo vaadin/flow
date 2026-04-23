@@ -957,25 +957,64 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    void setAcceptHiddenFields_defaultsToFalse_appliesToHiddenFieldsWhenEnabled() {
+    void setApplyBindingsToHiddenFields_defaultsToFalse_appliesToHiddenFieldsWhenEnabled() {
         Binding<Person, String> nameBinding = binder.forField(nameField)
                 .withValidator(name -> false, "")
                 .bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
 
-        assertFalse(binder.isAcceptHiddenFields());
+        assertFalse(binder.isApplyBindingsToHiddenFields());
 
         ((Component) nameBinding.getField()).setVisible(false);
         assertTrue(binder.isValid(),
                 "Hidden field should be skipped by default");
 
-        binder.setAcceptHiddenFields(true);
+        binder.setApplyBindingsToHiddenFields(true);
         assertFalse(binder.isValid(),
-                "Hidden field should be validated when acceptHiddenFields is true");
+                "Hidden field should be validated when applyBindingsToHiddenFields is true");
 
         nameBinding.setIsAppliedPredicate(p -> false);
         assertTrue(binder.isValid(),
-                "Per-binding predicate should override Binder-level acceptHiddenFields");
+                "Per-binding predicate should override Binder-level applyBindingsToHiddenFields");
+    }
+
+    @Test
+    void writeBean_applyBindingsToHiddenFields_writesHiddenFieldsWhenEnabled()
+            throws ValidationException {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+
+        nameField.setValue("NewName");
+        ((Component) nameBinding.getField()).setVisible(false);
+
+        binder.writeBean(item);
+        assertEquals("Johannes", item.getFirstName(),
+                "Hidden field should not be written by default");
+
+        binder.setApplyBindingsToHiddenFields(true);
+        binder.writeBean(item);
+        assertEquals("NewName", item.getFirstName(),
+                "Hidden field should be written when applyBindingsToHiddenFields is true");
+    }
+
+    @Test
+    void writeBeanIfValid_applyBindingsToHiddenFields_writesHiddenFieldsWhenEnabled() {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+
+        nameField.setValue("NewName");
+        ((Component) nameBinding.getField()).setVisible(false);
+
+        assertTrue(binder.writeBeanIfValid(item));
+        assertEquals("Johannes", item.getFirstName(),
+                "Hidden field should not be written by default");
+
+        binder.setApplyBindingsToHiddenFields(true);
+        assertTrue(binder.writeBeanIfValid(item));
+        assertEquals("NewName", item.getFirstName(),
+                "Hidden field should be written when applyBindingsToHiddenFields is true");
     }
 
     @Test
