@@ -122,6 +122,7 @@ public class Geolocation implements Serializable {
     }
 
     private final UI ui;
+    private final Signal<GeolocationAvailability> availabilityReadOnly;
 
     /**
      * Creates a new Geolocation facade bound to the given UI.
@@ -143,6 +144,8 @@ public class Geolocation implements Serializable {
                             + "UI. Use UI.getGeolocation() to obtain it.");
         }
         this.ui = ui;
+        this.availabilityReadOnly = ui.getInternals()
+                .getGeolocationAvailabilitySignal().asReadonly();
         // Listen for client-side permissionchange events so the cached
         // availability stays current without requiring a get()/track()
         // call to refresh it.
@@ -298,8 +301,7 @@ public class Geolocation implements Serializable {
      * @return the availability signal
      */
     public Signal<GeolocationAvailability> availability() {
-        return ui.getInternals().getGeolocationAvailabilitySignal()
-                .asReadonly();
+        return availabilityReadOnly;
     }
 
     private void setAvailability(@Nullable String value) {

@@ -55,9 +55,13 @@ public class GeolocationTracker implements Serializable {
 
     private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
             new GeolocationPending());
+    private final Signal<GeolocationResult> valueSignalReadOnly = valueSignal
+            .asReadonly();
 
     private final ValueSignal<Boolean> activeSignal = new ValueSignal<>(
             Boolean.FALSE);
+    private final Signal<Boolean> activeSignalReadOnly = activeSignal
+            .asReadonly();
 
     private final UI ui;
     private final Component owner;
@@ -98,7 +102,7 @@ public class GeolocationTracker implements Serializable {
      * @return a read-only signal reporting the latest result
      */
     public Signal<GeolocationResult> value() {
-        return valueSignal.asReadonly();
+        return valueSignalReadOnly;
     }
 
     /**
@@ -114,7 +118,7 @@ public class GeolocationTracker implements Serializable {
      * @return a read-only signal reporting whether tracking is active
      */
     public Signal<Boolean> active() {
-        return activeSignal.asReadonly();
+        return activeSignalReadOnly;
     }
 
     /**
