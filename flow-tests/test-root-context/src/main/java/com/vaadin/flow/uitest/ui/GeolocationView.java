@@ -54,7 +54,7 @@ public class GeolocationView extends AbstractDivView {
 
         // Mock navigator.geolocation so tests work without real permissions.
         // The mock reacts to the options passed in:
-        // - getCurrentPosition with `maximumAge === -1` returns an error
+        // - getCurrentPosition with `maximumAge === 9999` returns an error
         // (used to drive the error branch deterministically).
         // - watchPosition emits a new position every 50 ms, each with a
         // different timestamp, until clearWatch is called.
@@ -78,7 +78,7 @@ public class GeolocationView extends AbstractDivView {
                             value: {
                                 getCurrentPosition: function(success, error, options) {
                                     setTimeout(function() {
-                                        if (options && options.maximumAge === -1) {
+                                        if (options && options.maximumAge === 9999) {
                                             error({ code: 1, message: 'User denied geolocation' });
                                         } else {
                                             success(mockCoords(60.1699, 24.9384));
@@ -123,7 +123,7 @@ public class GeolocationView extends AbstractDivView {
         // the error branch.
         NativeButton getErrorButton = createButton("Get Position (error)",
                 "getErrorButton", e -> UI.getCurrent().getGeolocation().get(
-                        new GeolocationOptions(null, null, -1), outcome -> {
+                        new GeolocationOptions(null, null, 9999), outcome -> {
                             Div out = new Div();
                             out.setId("getErrorResult");
                             switch (outcome) {
