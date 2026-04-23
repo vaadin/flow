@@ -107,6 +107,7 @@ class BuildFrontendUtilTest {
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory()).thenReturn(tmpDir);
         Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
+        Mockito.when(adapter.optimizeBundle()).thenReturn(true);
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 getClass().getClassLoader());
         lookup = Mockito.spy(new LookupImpl(classFinder));
@@ -601,6 +602,93 @@ class BuildFrontendUtilTest {
     void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithCommercialBannerEnabled_propagateMissingKeyException()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            assertThrows(MissingLicenseKeyException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            assertTrue(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be preserved but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerDisabled_failsWithOptimizeBundleAwareMessage()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+        Mockito.when(adapter.optimizeBundle()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Set<String> commercialProducts = new HashSet<>();
+        commercialProducts.add("comm-comp");
+        commercialProducts.add("comm-comp2");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            commercialProducts.forEach(product -> assertTrue(
+                    exception.getMessage().contains(product),
+                    "Exception should list all commercial products but "
+                            + product + " is missing"));
+            String message = exception.getMessage();
+            assertTrue(message.contains("optimizeBundle"),
+                    "Expected message to mention the optimizeBundle property but was: "
+                            + message);
+            assertTrue(message.contains("vaadin-core"),
+                    "Expected message to suggest switching to vaadin-core but was: "
+                            + message);
+            assertTrue(message.contains("provided"),
+                    "Expected message to mention provided scope for add-on authors but was: "
+                            + message);
+            assertTrue(message.contains(InitParameters.COMMERCIAL_WITH_BANNER),
+                    "Expected message to still suggest the commercial banner build but was: "
+                            + message);
+            assertFalse(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be deleted but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerEnabled_propagateMissingKeyExceptionUnchanged()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        Mockito.when(adapter.optimizeBundle()).thenReturn(false);
+
         Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");

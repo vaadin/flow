@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -45,9 +46,8 @@ import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
@@ -93,12 +93,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_VERSION = "vaadinVersion";
     static final String PROJECT_FOLDER = "projectFolder";
 
-    /**
-     * The {@link FrontendDependencies} object representing the application
-     * dependencies.
-     */
-    protected final FrontendDependenciesScanner frontDeps;
-
     final ClassFinder finder;
 
     boolean modified;
@@ -110,15 +104,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Constructor.
      *
-     * @param frontendDependencies
-     *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    protected NodeUpdater(FrontendDependenciesScanner frontendDependencies,
-            Options options) {
+    protected NodeUpdater(Options options) {
         this.finder = options.getClassFinder();
-        this.frontDeps = frontendDependencies;
         this.options = options;
     }
 
@@ -324,27 +314,37 @@ public abstract class NodeUpdater implements FallibleCommand {
         return dependencies;
     }
 
-    Map<String, String> readDependencies(String id, String packageJsonKey) {
+    @Nullable
+    JsonNode readPackageJsonKey(String id, String packageJsonKey) {
+        final JsonNode packageJson;
         try {
-            Map<String, String> map = new HashMap<>();
-            JsonNode dependencies = readPackageJson(id).get(packageJsonKey);
-            if (dependencies == null) {
-                log().error("Unable to find " + packageJsonKey + " from '" + id
-                        + "'");
-                return new HashMap<>();
-            }
-            for (String key : JacksonUtils.getKeys(dependencies)) {
-                map.put(key, dependencies.get(key).asString());
-            }
-
-            return map;
+            packageJson = readPackageJson(id);
         } catch (IOException e) {
             log().error(
                     "Unable to read " + packageJsonKey + " from '" + id + "'",
                     e);
-            return new HashMap<>();
+            return null;
+        }
+        var value = packageJson.get(packageJsonKey);
+        if (value == null) {
+            log().error(
+                    "Unable to find " + packageJsonKey + " from '" + id + "'");
+        }
+        return value;
+    }
+
+    Map<String, String> readDependencies(String id, String packageJsonKey) {
+        Map<String, String> map = new HashMap<>();
+        JsonNode dependencies = readPackageJsonKey(id, packageJsonKey);
+        if (dependencies == null) {
+            return map;
         }
 
+        for (String key : JacksonUtils.getKeys(dependencies)) {
+            map.put(key, dependencies.get(key).asString());
+        }
+
+        return map;
     }
 
     JsonNode readPackageJson(String id) throws IOException {
@@ -395,12 +395,31 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         // Add workbox dependencies only when PWA is enabled
-        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
-                && frontDeps.getPwaConfiguration().isEnabled()) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
             defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
         return defaults;
+    }
+
+    ObjectNode getDefaultOverrides() {
+        var overrides = JacksonUtils.createObjectNode();
+
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        // Currently, we only have overrides for workbox uses overrides, and
+        // only when PWA is enabled
+        final ObjectNode workboxOverrides = pwaConfiguration != null
+                && pwaConfiguration.isOfflineEnabled()
+                        ? (ObjectNode) readPackageJsonKey("workbox",
+                                "overrides")
+                        : null;
+        if (workboxOverrides != null) {
+            overrides = overrides.setAll(workboxOverrides);
+        }
+        return overrides;
     }
 
     /**

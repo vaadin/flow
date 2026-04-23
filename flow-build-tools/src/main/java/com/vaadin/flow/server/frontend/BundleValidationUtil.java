@@ -263,8 +263,7 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
-        if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
-                frontendDependencies)) {
+        if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-missing-frontend-import", null);
             return true;
@@ -344,8 +343,7 @@ public final class BundleValidationUtil {
     public static JsonNode getDefaultPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ObjectNode packageJson) {
-        NodeUpdater nodeUpdater = new NodeUpdater(frontendDependencies,
-                options) {
+        NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
             }
@@ -651,12 +649,11 @@ public final class BundleValidationUtil {
     }
 
     public static boolean frontendImportsFound(JsonNode statsJson,
-            Options options, FrontendDependenciesScanner frontendDependencies)
-            throws IOException {
+            Options options) throws IOException {
 
         // Validate frontend requirements in flow-generated-imports.js
         final GenerateMainImports generateMainImports = new GenerateMainImports(
-                frontendDependencies, options, statsJson);
+                options, statsJson);
         generateMainImports.run();
         final List<String> imports = generateMainImports.getLines().stream()
                 .filter(line -> line.startsWith("import"))
