@@ -89,7 +89,8 @@ import com.vaadin.flow.function.SerializableConsumer;
  *         // waiting for first reading
  *     }
  *     case GeolocationPosition pos -&gt;
- *         map.setCenter(pos.coords().latitude(), pos.coords().longitude());
+ *         map.setCenter(new Coordinate(pos.coords().longitude(),
+ *                 pos.coords().latitude()));
  *     case GeolocationError err -&gt; showError(err.message());
  *     }
  * });

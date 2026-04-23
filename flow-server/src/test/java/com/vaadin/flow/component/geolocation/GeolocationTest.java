@@ -553,7 +553,8 @@ public class GeolocationTest {
     @Test
     void geolocationOptions_rejectsNegativeTimeout() {
         assertThrows(IllegalArgumentException.class,
-                () -> new GeolocationOptions(null, -1, null));
+                () -> new GeolocationOptions((Boolean) null, -1,
+                        (Integer) null));
         assertThrows(IllegalArgumentException.class,
                 () -> GeolocationOptions.builder().timeout(-1).build());
     }
@@ -561,7 +562,8 @@ public class GeolocationTest {
     @Test
     void geolocationOptions_rejectsNegativeMaximumAge() {
         assertThrows(IllegalArgumentException.class,
-                () -> new GeolocationOptions(null, null, -1));
+                () -> new GeolocationOptions((Boolean) null, (Integer) null,
+                        -1));
         assertThrows(IllegalArgumentException.class,
                 () -> GeolocationOptions.builder().maximumAge(-1).build());
     }

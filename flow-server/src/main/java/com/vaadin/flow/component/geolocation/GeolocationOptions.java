@@ -74,10 +74,17 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
      * Canonical constructor. Rejects negative {@code timeout} and
      * {@code maximumAge} values — both must be non-negative or {@code null}.
      *
+     * @param enableHighAccuracy
+     *            see the record component
+     * @param timeout
+     *            see the record component
+     * @param maximumAge
+     *            see the record component
      * @throws IllegalArgumentException
      *             if {@code timeout} or {@code maximumAge} is negative
      */
-    public GeolocationOptions {
+    public GeolocationOptions(@Nullable Boolean enableHighAccuracy,
+            @Nullable Integer timeout, @Nullable Integer maximumAge) {
         if (timeout != null && timeout < 0) {
             throw new IllegalArgumentException(
                     "timeout must be non-negative, was " + timeout);
@@ -86,6 +93,9 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
             throw new IllegalArgumentException(
                     "maximumAge must be non-negative, was " + maximumAge);
         }
+        this.enableHighAccuracy = enableHighAccuracy;
+        this.timeout = timeout;
+        this.maximumAge = maximumAge;
     }
 
     /**
