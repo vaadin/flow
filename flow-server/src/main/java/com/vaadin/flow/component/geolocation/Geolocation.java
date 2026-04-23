@@ -39,9 +39,9 @@ import com.vaadin.flow.function.SerializableConsumer;
  * <ul>
  * <li>{@link #get(SerializableConsumer)} — one-shot position request. Use this
  * when the application only needs to know the user's location at a single
- * moment (e.g. on a button click). The callback receives a single
- * {@link GeolocationResult}; match on it to separate
- * {@link GeolocationPosition} from {@link GeolocationError}.</li>
+ * moment (e.g. on a button click). The callback receives a
+ * {@link GeolocationOutcome} — either a {@link GeolocationPosition} or a
+ * {@link GeolocationError}.</li>
  * <li>{@link #track(Component)} — continuous tracking that keeps the server
  * updated as the user moves. Returns a {@link GeolocationTracker} whose
  * {@link GeolocationTracker#value() value()} is a reactive signal of
@@ -69,13 +69,14 @@ import com.vaadin.flow.function.SerializableConsumer;
  *
  * <pre>
  * Button locate = new Button("Use my location");
- * locate.addClickListener(e -&gt; UI.getCurrent().getGeolocation().get(result -&gt; {
- *     switch (result) {
- *     case GeolocationPosition pos -&gt;
- *         showNearest(pos.coords().latitude(), pos.coords().longitude());
- *     case GeolocationError err -&gt; showManualEntry();
- *     }
- * }));
+ * locate.addClickListener(
+ *         e -&gt; UI.getCurrent().getGeolocation().get(outcome -&gt; {
+ *             switch (outcome) {
+ *             case GeolocationPosition pos -&gt; showNearest(
+ *                     pos.coords().latitude(), pos.coords().longitude());
+ *             case GeolocationError err -&gt; showManualEntry();
+ *             }
+ *         }));
  * </pre>
  *
  * <p>
@@ -153,8 +154,10 @@ public class Geolocation implements Serializable {
 
     /**
      * Requests the user's current position once. The callback receives a
-     * {@link GeolocationResult} that is either a {@link GeolocationPosition} or
-     * a {@link GeolocationError}.
+     * {@link GeolocationOutcome} — either a {@link GeolocationPosition} or a
+     * {@link GeolocationError}. Use {@code switch} pattern matching on the
+     * outcome; no dead "pending" arm is needed because one-shot requests never
+     * produce that value.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
      * the first call; after the user responds, the callback is invoked on the
@@ -163,7 +166,7 @@ public class Geolocation implements Serializable {
      * @param callback
      *            invoked with the outcome once the browser reports it
      */
-    public void get(SerializableConsumer<GeolocationResult> callback) {
+    public void get(SerializableConsumer<GeolocationOutcome> callback) {
         get(null, callback);
     }
 
@@ -183,7 +186,7 @@ public class Geolocation implements Serializable {
      *            invoked with the outcome once the browser reports it
      */
     public void get(@Nullable GeolocationOptions options,
-            SerializableConsumer<GeolocationResult> callback) {
+            SerializableConsumer<GeolocationOutcome> callback) {
         ui.getElement()
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
                         options)

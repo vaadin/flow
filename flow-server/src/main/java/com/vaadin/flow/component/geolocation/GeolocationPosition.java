@@ -34,7 +34,7 @@ import java.time.Instant;
  *            for an {@link Instant}
  */
 public record GeolocationPosition(GeolocationCoordinates coords,
-        long timestamp) implements GeolocationResult {
+        long timestamp) implements GeolocationOutcome {
 
     /**
      * Returns the reading's timestamp as an {@link Instant}.

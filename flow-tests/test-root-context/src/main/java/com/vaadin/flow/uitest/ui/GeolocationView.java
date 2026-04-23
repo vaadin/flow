@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.geolocation.GeolocationError;
 import com.vaadin.flow.component.geolocation.GeolocationOptions;
-import com.vaadin.flow.component.geolocation.GeolocationPending;
 import com.vaadin.flow.component.geolocation.GeolocationPosition;
 import com.vaadin.flow.component.geolocation.GeolocationTracker;
 import com.vaadin.flow.component.html.Div;
@@ -110,17 +109,15 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         NativeButton getButton = createButton("Get Position", "getButton",
-                e -> UI.getCurrent().getGeolocation().get(result -> {
+                e -> UI.getCurrent().getGeolocation().get(outcome -> {
                     Div out = new Div();
                     out.setId("getResult");
-                    switch (result) {
+                    switch (outcome) {
                     case GeolocationPosition pos ->
                         out.setText("lat=" + pos.coords().latitude() + ", lon="
                                 + pos.coords().longitude());
                     case GeolocationError error -> out.setText(
                             "error=" + error.code() + ":" + error.message());
-                    case GeolocationPending p ->
-                        out.setText("unexpected: pending from get()");
                     }
                     add(out);
                 }));
@@ -128,18 +125,16 @@ public class GeolocationView extends AbstractDivView {
         // Uses the mock's "maximumAge == -1 → error" trigger to exercise
         // the error branch.
         NativeButton getErrorButton = createButton("Get Position (error)",
-                "getErrorButton", e -> UI.getCurrent().getGeolocation()
-                        .get(new GeolocationOptions(null, null, -1), result -> {
+                "getErrorButton", e -> UI.getCurrent().getGeolocation().get(
+                        new GeolocationOptions(null, null, -1), outcome -> {
                             Div out = new Div();
                             out.setId("getErrorResult");
-                            switch (result) {
+                            switch (outcome) {
                             case GeolocationPosition pos -> out.setText(
                                     "unexpected position: " + pos.coords());
                             case GeolocationError error ->
                                 out.setText("error=" + error.errorCode() + ":"
                                         + error.message());
-                            case GeolocationPending p ->
-                                out.setText("unexpected: pending");
                             }
                             add(out);
                         }));

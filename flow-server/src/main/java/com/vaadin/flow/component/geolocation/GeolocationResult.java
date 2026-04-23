@@ -18,28 +18,27 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 /**
- * The outcome of a geolocation request — a successful reading, an error, or the
- * initial "waiting for first reading" state of a tracker.
+ * Anything a tracker can currently hold — a successful reading, an error, or
+ * the initial "waiting for first reading" state.
  * <p>
- * Passed to {@link Geolocation#get} callbacks and held by the signal exposed by
- * {@link GeolocationTracker#value()}. A {@code GeolocationResult} is always
- * exactly one of three things:
+ * Held by the signal exposed by {@link GeolocationTracker#value()}. A
+ * {@code GeolocationResult} is always exactly one of three things:
  * <ul>
  * <li>{@link GeolocationPending} — the initial state of a newly started
- * tracker, before the browser has reported anything. One-shot
- * {@link Geolocation#get} never resolves to this value.</li>
+ * tracker, before the browser has reported anything.</li>
  * <li>{@link GeolocationPosition} — a successful reading.</li>
  * <li>{@link GeolocationError} — the browser reported an error.</li>
  * </ul>
+ * For the one-shot {@link Geolocation#get} callback use the narrower
+ * {@link GeolocationOutcome}, which excludes {@link GeolocationPending}
+ * (one-shot requests never produce that value).
  * <p>
- * The sealed interface is designed for exhaustive pattern matching. A
- * {@code switch} covering all three permitted subtypes is guaranteed complete
- * at compile time — adding a new variant in a future version of Flow would
- * break existing switches so that callers are forced to decide how to handle
- * it.
+ * The sealed hierarchy is designed for exhaustive pattern matching. A
+ * {@code switch} covering the three permitted variants is guaranteed complete
+ * at compile time.
  *
  * <pre>
- * switch (result) {
+ * switch (tracker.value().get()) {
  * case GeolocationPending p -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());
@@ -47,5 +46,5 @@ import java.io.Serializable;
  * </pre>
  */
 public sealed interface GeolocationResult extends Serializable
-        permits GeolocationPending, GeolocationPosition, GeolocationError {
+        permits GeolocationOutcome, GeolocationPending {
 }

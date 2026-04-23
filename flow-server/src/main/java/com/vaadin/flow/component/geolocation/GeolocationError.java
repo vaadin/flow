@@ -52,7 +52,7 @@ package com.vaadin.flow.component.geolocation;
  *            to end users as-is
  */
 public record GeolocationError(int code,
-        String message) implements GeolocationResult {
+        String message) implements GeolocationOutcome {
 
     /**
      * Returns the error reason as a typed enum suitable for exhaustive

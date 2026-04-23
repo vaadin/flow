@@ -169,7 +169,7 @@ public class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        List<GeolocationResult> received = new ArrayList<>();
+        List<GeolocationOutcome> received = new ArrayList<>();
         ui.getGeolocation().get(received::add);
 
         resolvePromise(ui,
@@ -186,7 +186,7 @@ public class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        List<GeolocationResult> received = new ArrayList<>();
+        List<GeolocationOutcome> received = new ArrayList<>();
         ui.getGeolocation().get(received::add);
 
         resolvePromise(ui, resultJson(null, error(1, "denied"), "DENIED"));
