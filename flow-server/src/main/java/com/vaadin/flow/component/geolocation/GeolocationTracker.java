@@ -98,7 +98,7 @@ public class GeolocationTracker implements Serializable {
      * @return a read-only signal reporting the latest result
      */
     public Signal<GeolocationResult> value() {
-        return valueSignal;
+        return valueSignal.asReadonly();
     }
 
     /**
@@ -114,7 +114,7 @@ public class GeolocationTracker implements Serializable {
      * @return a read-only signal reporting whether tracking is active
      */
     public Signal<Boolean> active() {
-        return activeSignal;
+        return activeSignal.asReadonly();
     }
 
     /**

@@ -296,7 +296,8 @@ public class Geolocation implements Serializable {
      * @return the availability signal
      */
     public Signal<@Nullable GeolocationAvailability> availability() {
-        return ui.getInternals().getGeolocationAvailabilitySignal();
+        return ui.getInternals().getGeolocationAvailabilitySignal()
+                .asReadonly();
     }
 
     private void setAvailability(@Nullable String value) {

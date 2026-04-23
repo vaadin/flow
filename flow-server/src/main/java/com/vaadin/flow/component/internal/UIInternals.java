@@ -89,7 +89,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -1418,7 +1417,7 @@ public class UIInternals implements Serializable {
      *
      * @return the availability signal
      */
-    public Signal<@Nullable GeolocationAvailability> getGeolocationAvailabilitySignal() {
+    public ValueSignal<@Nullable GeolocationAvailability> getGeolocationAvailabilitySignal() {
         return geolocationAvailabilitySignal;
     }
 
