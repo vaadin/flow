@@ -366,58 +366,41 @@ public class CssBundler {
 
     private static String rewriteCssUrlsForStaticResources(File baseFolder,
             File cssFile, String contextPath, String content) {
-        // Public resources: rebase URLs from the current cssFile to the
-        // entry stylesheet base folder
-        Matcher urlMatcher = URL_PATTERN.matcher(content);
-        content = urlMatcher.replaceAll(result -> {
-            String url = getNonNullGroup(result, 2, 3, 4);
-            if (url == null || url.trim().endsWith(".css")) {
-                // CSS imports handled separately below
-                return Matcher.quoteReplacement(urlMatcher.group());
-            }
-            String sanitized = sanitizeUrl(url);
-            if (sanitized == null) {
-                return Matcher.quoteReplacement(urlMatcher.group());
-            }
-            String trimmed = sanitized.trim();
-            // Only handle relative URLs (no protocol, no leading slash, not
-            // data URIs)
-            // Treat only known protocols as absolute to avoid false
-            // positives like "my:file.css"
-            if (trimmed.startsWith("/")
-                    || PROTOCOL_PATTER_FOR_URLS.matcher(trimmed).matches()) {
-                return Matcher.quoteReplacement(urlMatcher.group());
-            }
-            try {
-                Path target = cssFile.getParentFile().toPath().resolve(trimmed)
-                        .normalize();
-                // Only rewrite when we can safely confirm the target (in
-                // url()) file exists
-                if (Files.exists(target)) {
-                    // For inline <style> tags, make URLs absolute to the
-                    // application context
-                    String rebased = rebaseToContextPath(baseFolder,
-                            contextPath, target);
-                    return Matcher.quoteReplacement("url('" + rebased + "')");
-                }
-            } catch (Exception e) {
-                // On any resolution issue, keep the original
-                getLogger().debug("Unable to resolve url: {}",
-                        urlMatcher.group());
-            }
-            return Matcher.quoteReplacement(urlMatcher.group());
-        });
-        return content;
+        // Bundled CSS is delivered as inline <style> in dev mode, so url()s
+        // need to be absolute paths rooted at the servlet context.
+        return rewriteCssUrls(baseFolder, cssFile, content,
+                target -> rebaseToContextPath(baseFolder, contextPath, target));
     }
 
     private static String rewriteCssUrlsForStaticResourcesRelative(
             File baseFolder, File cssFile, String content) {
+        // Bundled CSS is written back to disk and served from the entry
+        // file's URL in prod mode, so url()s can be expressed relative to
+        // that entry folder.
+        Path baseNormalized = baseFolder.toPath().normalize().toAbsolutePath();
+        return rewriteCssUrls(baseFolder, cssFile, content,
+                target -> baseNormalized.relativize(target).toString()
+                        .replace('\\', '/'));
+    }
+
+    /**
+     * Common url() rewriting pipeline used by both static-resource bundling
+     * strategies. Walks every {@code url(...)} in {@code content}, skips ones
+     * that should be left untouched (empty, absolute, protocol-prefixed,
+     * unresolvable, outside {@code baseFolder}, or pointing at a missing file),
+     * and lets the caller decide how to format the kept ones via
+     * {@code targetToUrl}.
+     */
+    private static String rewriteCssUrls(File baseFolder, File cssFile,
+            String content,
+            java.util.function.Function<Path, String> targetToUrl) {
         Path baseNormalized = baseFolder.toPath().normalize().toAbsolutePath();
         Matcher urlMatcher = URL_PATTERN.matcher(content);
         return urlMatcher.replaceAll(result -> {
             String url = getNonNullGroup(result, 2, 3, 4);
             if (url == null || url.trim().endsWith(".css")) {
-                // @import urls - handled by import inlining, not here
+                // @import-style url()s are handled by import inlining, not
+                // here.
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             String sanitized = sanitizeUrl(url);
@@ -425,6 +408,9 @@ public class CssBundler {
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             String trimmed = sanitized.trim();
+            // Only handle relative URLs: not empty, no leading slash, no
+            // known protocol prefix. Match only known protocols as absolute
+            // to avoid false positives like "my:file.css".
             if (trimmed.isEmpty() || trimmed.startsWith("/")
                     || PROTOCOL_PATTER_FOR_URLS.matcher(trimmed).matches()) {
                 return Matcher.quoteReplacement(urlMatcher.group());
@@ -433,17 +419,17 @@ public class CssBundler {
                 Path target = cssFile.getParentFile().toPath().resolve(trimmed)
                         .normalize().toAbsolutePath();
                 if (!target.startsWith(baseNormalized)) {
-                    // Target is outside the entry file's folder (e.g. a URL
-                    // in an npm-package CSS that references a sibling file).
-                    // Do not invent a path for it.
+                    // Target is outside the entry's base folder (e.g. an
+                    // npm-package CSS referencing a sibling file). Don't
+                    // invent a path for it.
                     return Matcher.quoteReplacement(urlMatcher.group());
                 }
                 if (!Files.exists(target)) {
+                    // Don't rewrite something we can't confirm.
                     return Matcher.quoteReplacement(urlMatcher.group());
                 }
-                String rebased = baseNormalized.relativize(target).toString()
-                        .replace('\\', '/');
-                return Matcher.quoteReplacement("url('" + rebased + "')");
+                return Matcher.quoteReplacement(
+                        "url('" + targetToUrl.apply(target) + "')");
             } catch (Exception e) {
                 getLogger().debug("Unable to resolve url: {}",
                         urlMatcher.group());
