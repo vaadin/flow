@@ -19,7 +19,7 @@ package com.vaadin.flow.component.geolocation;
  * Whether the browser can read the user's location right now, and if so what
  * permission state the origin has.
  * <p>
- * Returned by {@link Geolocation#availability()}. Reading the value does
+ * Returned by {@link Geolocation#availabilitySignal()}. Reading the value does
  * <b>not</b> show a permission dialog — it reports whether a dialog would
  * appear on the next {@link Geolocation#get} or {@link Geolocation#track} call,
  * or whether the call would fail regardless because the feature is unusable in

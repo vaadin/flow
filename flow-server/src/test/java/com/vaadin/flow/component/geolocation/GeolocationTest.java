@@ -220,8 +220,9 @@ class GeolocationTest {
         GeolocationTracker tracker = ui.getGeolocation().track(component);
 
         assertNotNull(tracker);
-        assertNotNull(tracker.value());
-        assertInstanceOf(GeolocationPending.class, tracker.value().peek());
+        assertNotNull(tracker.valueSignal());
+        assertInstanceOf(GeolocationPending.class,
+                tracker.valueSignal().peek());
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -253,8 +254,10 @@ class GeolocationTest {
         fireEvent(component.getElement(), "vaadin-geolocation-position",
                 eventData);
 
-        assertInstanceOf(GeolocationPosition.class, tracker.value().peek());
-        GeolocationPosition pos = (GeolocationPosition) tracker.value().peek();
+        assertInstanceOf(GeolocationPosition.class,
+                tracker.valueSignal().peek());
+        GeolocationPosition pos = (GeolocationPosition) tracker.valueSignal()
+                .peek();
         assertEquals(60.1699, pos.coords().latitude());
         assertEquals(24.9384, pos.coords().longitude());
         assertEquals(10.0, pos.coords().accuracy());
@@ -281,8 +284,9 @@ class GeolocationTest {
         fireEvent(component.getElement(), "vaadin-geolocation-error",
                 eventData);
 
-        assertInstanceOf(GeolocationError.class, tracker.value().peek());
-        GeolocationError error = (GeolocationError) tracker.value().peek();
+        assertInstanceOf(GeolocationError.class, tracker.valueSignal().peek());
+        GeolocationError error = (GeolocationError) tracker.valueSignal()
+                .peek();
         assertEquals(GeolocationErrorCode.PERMISSION_DENIED.code(),
                 error.code());
         assertEquals("User denied geolocation", error.message());
@@ -302,7 +306,7 @@ class GeolocationTest {
         errEventData.set("event.detail", errDetail);
         fireEvent(component.getElement(), "vaadin-geolocation-error",
                 errEventData);
-        assertInstanceOf(GeolocationError.class, tracker.value().peek());
+        assertInstanceOf(GeolocationError.class, tracker.valueSignal().peek());
 
         ObjectNode posEventData = JacksonUtils.createObjectNode();
         ObjectNode posDetail = JacksonUtils.createObjectNode();
@@ -316,7 +320,8 @@ class GeolocationTest {
         fireEvent(component.getElement(), "vaadin-geolocation-position",
                 posEventData);
 
-        assertInstanceOf(GeolocationPosition.class, tracker.value().peek());
+        assertInstanceOf(GeolocationPosition.class,
+                tracker.valueSignal().peek());
     }
 
     @Test
@@ -425,7 +430,8 @@ class GeolocationTest {
 
         assertFalse(listenerMap.getExpressions("vaadin-geolocation-position")
                 .isEmpty());
-        assertInstanceOf(GeolocationPending.class, tracker.value().peek());
+        assertInstanceOf(GeolocationPending.class,
+                tracker.valueSignal().peek());
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
         assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
@@ -454,13 +460,13 @@ class GeolocationTest {
         ui.add(component);
 
         GeolocationTracker tracker = ui.getGeolocation().track(component);
-        assertTrue(tracker.active().peek());
+        assertTrue(tracker.activeSignal().peek());
 
         tracker.stop();
-        assertFalse(tracker.active().peek());
+        assertFalse(tracker.activeSignal().peek());
 
         tracker.resume();
-        assertTrue(tracker.active().peek());
+        assertTrue(tracker.activeSignal().peek());
     }
 
     // --- availability() / availability-change listener tests ---
@@ -468,7 +474,7 @@ class GeolocationTest {
     @Test
     void availability_unknownBeforeAnyReport() {
         assertEquals(GeolocationAvailability.UNKNOWN,
-                ui.getGeolocation().availability().peek());
+                ui.getGeolocation().availabilitySignal().peek());
     }
 
     @Test
@@ -477,7 +483,7 @@ class GeolocationTest {
                 .setGeolocationAvailability(GeolocationAvailability.GRANTED);
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getGeolocation().availability().peek());
+                ui.getGeolocation().availabilitySignal().peek());
     }
 
     @Test

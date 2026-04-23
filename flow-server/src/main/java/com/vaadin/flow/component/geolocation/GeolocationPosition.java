@@ -22,7 +22,7 @@ import java.time.Instant;
  * moment in time they were taken.
  * <p>
  * This is one of the three possible values of a
- * {@link GeolocationTracker#value()} signal, and one of the two values a
+ * {@link GeolocationTracker#valueSignal()} signal, and one of the two values a
  * {@link Geolocation#get} callback can receive.
  *
  * @param coords

@@ -20,7 +20,7 @@ package com.vaadin.flow.component.geolocation;
  * {@link GeolocationPosition}.
  * <p>
  * This is one of the three possible values of a
- * {@link GeolocationTracker#value()} signal, and one of the two values a
+ * {@link GeolocationTracker#valueSignal()} signal, and one of the two values a
  * {@link Geolocation#get} callback can receive. Typical application code
  * switches on {@link #errorCode()} to react to the specific reason:
  *

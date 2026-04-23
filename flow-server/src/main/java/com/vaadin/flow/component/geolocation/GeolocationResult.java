@@ -21,7 +21,7 @@ import java.io.Serializable;
  * Anything a tracker can currently hold — a successful reading, an error, or
  * the initial "waiting for first reading" state.
  * <p>
- * Held by the signal exposed by {@link GeolocationTracker#value()}. A
+ * Held by the signal exposed by {@link GeolocationTracker#valueSignal()}. A
  * {@code GeolocationResult} is always exactly one of three things:
  * <ul>
  * <li>{@link GeolocationPending} — the initial state of a newly started
@@ -38,7 +38,7 @@ import java.io.Serializable;
  * at compile time.
  *
  * <pre>
- * switch (tracker.value().get()) {
+ * switch (tracker.valueSignal().get()) {
  * case GeolocationPending p -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());

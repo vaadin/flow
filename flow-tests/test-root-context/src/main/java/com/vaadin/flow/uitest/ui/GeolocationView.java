@@ -142,7 +142,7 @@ public class GeolocationView extends AbstractDivView {
                     trackUpdateCount = 0;
                     getElement().addEventListener("vaadin-geolocation-position",
                             ev -> {
-                                var value = tracker.value().peek();
+                                var value = tracker.valueSignal().peek();
                                 if (value instanceof GeolocationPosition pos) {
                                     trackUpdateCount++;
                                     Div out = new Div();

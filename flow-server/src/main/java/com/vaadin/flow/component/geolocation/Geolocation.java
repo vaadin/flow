@@ -45,17 +45,17 @@ import com.vaadin.flow.signals.Signal;
  * {@link GeolocationError}.</li>
  * <li>{@link #track(Component)} — continuous tracking that keeps the server
  * updated as the user moves. Returns a {@link GeolocationTracker} whose
- * {@link GeolocationTracker#value() value()} is a reactive signal of
- * {@link GeolocationResult}. The browser watch is automatically cancelled when
- * the owning component detaches; use {@link GeolocationTracker#stop()} to
+ * {@link GeolocationTracker#valueSignal() valueSignal()} is a reactive signal
+ * of {@link GeolocationResult}. The browser watch is automatically cancelled
+ * when the owning component detaches; use {@link GeolocationTracker#stop()} to
  * cancel it sooner and {@link GeolocationTracker#resume()} to resume.</li>
  * </ul>
  * <b>Availability check:</b>
  * <ul>
- * <li>{@link #availability()} — reactive signal of whether the feature is
+ * <li>{@link #availabilitySignal()} — reactive signal of whether the feature is
  * usable and what permission state the origin has. Subscribe with
  * {@code Signal.effect(owner, ...)} to react to changes, or call
- * {@code availability().peek()} for a snapshot.</li>
+ * {@code availabilitySignal().peek()} for a snapshot.</li>
  * </ul>
  *
  * <p>
@@ -87,7 +87,7 @@ import com.vaadin.flow.signals.Signal;
  * <pre>
  * GeolocationTracker tracker = UI.getCurrent().getGeolocation().track(this);
  * Signal.effect(this, () -&gt; {
- *     switch (tracker.value().get()) {
+ *     switch (tracker.valueSignal().get()) {
  *     case GeolocationPending p -&gt; {
  *         // waiting for first reading
  *     }
@@ -212,10 +212,10 @@ public class Geolocation implements Serializable {
      * <p>
      * The browser reports new positions whenever it detects movement. Each
      * report is delivered to the returned tracker's
-     * {@link GeolocationTracker#value() value()} signal on the UI thread. The
-     * initial value is {@link GeolocationPending} until the first reading
-     * arrives, then transitions to {@link GeolocationPosition} (updated on
-     * every subsequent reading) or {@link GeolocationError}.
+     * {@link GeolocationTracker#valueSignal() valueSignal()} signal on the UI
+     * thread. The initial value is {@link GeolocationPending} until the first
+     * reading arrives, then transitions to {@link GeolocationPosition} (updated
+     * on every subsequent reading) or {@link GeolocationError}.
      * <p>
      * The underlying browser watch is automatically cancelled when
      * {@code owner} detaches, so the application does not need to write cleanup
@@ -226,7 +226,7 @@ public class Geolocation implements Serializable {
      * @param owner
      *            the component that owns this tracking session; detaching the
      *            component automatically stops the watch
-     * @return a tracker whose {@link GeolocationTracker#value()} reports
+     * @return a tracker whose {@link GeolocationTracker#valueSignal()} reports
      *         progress and whose {@link GeolocationTracker#stop()} cancels the
      *         watch
      */
@@ -247,7 +247,7 @@ public class Geolocation implements Serializable {
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
      *            the browser defaults
-     * @return a tracker whose {@link GeolocationTracker#value()} reports
+     * @return a tracker whose {@link GeolocationTracker#valueSignal()} reports
      *         progress and whose {@link GeolocationTracker#stop()} cancels the
      *         watch
      */
@@ -263,8 +263,9 @@ public class Geolocation implements Serializable {
      * <p>
      * Subscribe with {@code Signal.effect(owner, ...)} to react to availability
      * changes (e.g. disabling a location button when the user revokes
-     * permission). For a snapshot read, call {@code availability().peek()}; in
-     * an effect or reactive context, call {@code availability().get()}.
+     * permission). For a snapshot read, call
+     * {@code availabilitySignal().peek()}; in an effect or reactive context,
+     * call {@code availabilitySignal().get()}.
      * <p>
      * The signal starts as {@link GeolocationAvailability#UNKNOWN UNKNOWN},
      * transitions to the value reported during the initial client bootstrap,
@@ -300,7 +301,7 @@ public class Geolocation implements Serializable {
      *
      * @return the availability signal
      */
-    public Signal<GeolocationAvailability> availability() {
+    public Signal<GeolocationAvailability> availabilitySignal() {
         return availabilityReadOnly;
     }
 

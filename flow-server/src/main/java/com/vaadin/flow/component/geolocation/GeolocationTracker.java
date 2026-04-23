@@ -36,7 +36,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * {@link Geolocation#track(Component, GeolocationOptions)}.
  * <p>
  * Exposes the latest {@link GeolocationResult} as a reactive signal via
- * {@link #value()}, and lets the application cancel tracking via
+ * {@link #valueSignal()}, and lets the application cancel tracking via
  * {@link #stop()} or resume it via {@link #resume()}. The underlying browser
  * watch is also cancelled automatically when the owning component detaches, so
  * most applications never need to call {@code stop()} explicitly — it is
@@ -44,9 +44,9 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <p>
  * A tracker is reusable: after {@link #stop()} you can call {@link #resume()}
  * to resume tracking on the same handle, and any effects or bindings subscribed
- * to {@link #value()} continue to work. Bind a toggle button's state to
- * {@link #active()} to let the UI react to start/stop without tracking your own
- * flag.
+ * to {@link #valueSignal()} continue to work. Bind a toggle button's state to
+ * {@link #activeSignal()} to let the UI react to start/stop without tracking
+ * your own flag.
  */
 public class GeolocationTracker implements Serializable {
 
@@ -86,10 +86,10 @@ public class GeolocationTracker implements Serializable {
      * Combine with {@code Signal.effect(owner, ...)} or an attach listener to
      * run code whenever the value changes — the effect re-runs automatically on
      * every update and no manual event-listener bookkeeping is required. Inside
-     * an effect or another reactive context, call {@code value().get()} to read
-     * the current value and subscribe to further updates; outside a reactive
-     * context, call {@code value().peek()} to read a snapshot without
-     * subscribing.
+     * an effect or another reactive context, call {@code valueSignal().get()}
+     * to read the current value and subscribe to further updates; outside a
+     * reactive context, call {@code valueSignal().peek()} to read a snapshot
+     * without subscribing.
      * <p>
      * The signal starts as {@link GeolocationPending} until the first reading
      * arrives, then transitions to {@link GeolocationPosition} on every
@@ -101,7 +101,7 @@ public class GeolocationTracker implements Serializable {
      *
      * @return a read-only signal reporting the latest result
      */
-    public Signal<GeolocationResult> value() {
+    public Signal<GeolocationResult> valueSignal() {
         return valueSignalReadOnly;
     }
 
@@ -112,12 +112,13 @@ public class GeolocationTracker implements Serializable {
      * <p>
      * Subscribe with {@code Signal.effect(owner, ...)} to bind a toggle
      * button's label/state to the tracker without tracking a separate flag.
-     * Inside a reactive context, call {@code active().get()} to subscribe;
-     * outside a reactive context, call {@code active().peek()} for a snapshot.
+     * Inside a reactive context, call {@code activeSignal().get()} to
+     * subscribe; outside a reactive context, call {@code activeSignal().peek()}
+     * for a snapshot.
      *
      * @return a read-only signal reporting whether tracking is active
      */
-    public Signal<Boolean> active() {
+    public Signal<Boolean> activeSignal() {
         return activeSignalReadOnly;
     }
 
@@ -127,7 +128,7 @@ public class GeolocationTracker implements Serializable {
      * Called automatically from the constructor so that a freshly created
      * tracker is immediately active. Call again after {@link #stop()} to resume
      * tracking on the same handle — any effects or bindings subscribed to
-     * {@link #value()} stay attached and start receiving new updates.
+     * {@link #valueSignal()} stay attached and start receiving new updates.
      * <p>
      * The signal is reset to {@link GeolocationPending} on every resume.
      * Calling {@code resume()} on an already-running tracker is a no-op.
@@ -165,8 +166,8 @@ public class GeolocationTracker implements Serializable {
      * Cancels the underlying browser watch and tears down the server-side
      * listeners.
      * <p>
-     * The browser stops reporting position updates and {@link #value()} stops
-     * changing. The last value remains readable. This is the way to end
+     * The browser stops reporting position updates and {@link #valueSignal()}
+     * stops changing. The last value remains readable. This is the way to end
      * tracking from application code (e.g. a "Stop" button) — leaving the view
      * automatically calls this method, so there is no need to call it from a
      * detach listener.
