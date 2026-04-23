@@ -87,11 +87,8 @@ public class GeolocationView extends AbstractDivView {
                                 },
                                 watchPosition: function(success, error, options) {
                                     const id = nextWatchId++;
-                                    let n = 0;
                                     const interval = setInterval(function() {
-                                        n++;
-                                        success(mockCoords(60.1699 + n * 0.0001,
-                                                24.9384 + n * 0.0001));
+                                        success(mockCoords(60.1699, 24.9384));
                                     }, 50);
                                     watches.set(id, interval);
                                     return id;

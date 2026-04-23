@@ -48,9 +48,9 @@ public class GeolocationIT extends ChromeBrowserTest {
             if (debug != null && !debug.getText().isEmpty()) {
                 System.out.println("DEBUG info: " + debug.getText());
             }
-            return findElement(By.id("trackResult"));
+            return findElement(By.id("trackResult1"));
         });
-        WebElement result = findElement(By.id("trackResult"));
+        WebElement result = findElement(By.id("trackResult1"));
         Assert.assertEquals("lat=60.1699, lon=24.9384", result.getText());
     }
 }
