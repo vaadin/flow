@@ -534,7 +534,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
       // source. In production OXC does the JSX transform.
       reactPlugin({
         include: '**/*.tsx',
-        jsxImportSource: productionMode ? 'react' : undefined,
       }),
       // Babel runs with enforce:'pre' (default), so it sees the original
       // source. All line/column values it embeds in the output come from
