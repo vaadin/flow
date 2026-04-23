@@ -474,7 +474,8 @@ public class ExtendedClientDetails implements Serializable {
             }
         };
 
-        return new ExtendedClientDetails(ui, getStringElseNull.apply("v-sw"),
+        ExtendedClientDetails details = new ExtendedClientDetails(ui,
+                getStringElseNull.apply("v-sw"),
                 getStringElseNull.apply("v-sh"),
                 getStringElseNull.apply("v-ww"),
                 getStringElseNull.apply("v-wh"),
@@ -492,6 +493,21 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-np"),
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
+        if (ui != null) {
+            seedPageVisibility(ui, getStringElseNull.apply("v-pv"));
+        }
+        return details;
+    }
+
+    private static void seedPageVisibility(UI ui, String raw) {
+        if (raw == null) {
+            return;
+        }
+        try {
+            ui.getInternals().setPageVisibility(PageVisibility.valueOf(raw));
+        } catch (IllegalArgumentException ignored) {
+            // Unknown client value — keep UNKNOWN.
+        }
     }
 
     /**

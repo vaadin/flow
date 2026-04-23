@@ -50,6 +50,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PageVisibility;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -87,6 +88,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -230,6 +232,9 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
+
+    private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
+            PageVisibility.UNKNOWN);
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1400,6 +1405,32 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Returns the mutable page visibility signal backing
+     * {@link Page#pageVisibilitySignal()}. Framework-only; application code
+     * must go through {@link Page} which hands out a read-only view.
+     *
+     * @return the mutable signal
+     */
+    public ValueSignal<PageVisibility> getPageVisibilitySignal() {
+        return pageVisibilitySignal;
+    }
+
+    /**
+     * Updates the page visibility signal. Called from bootstrap
+     * ({@link ExtendedClientDetails}) and from the {@code Page} facade in
+     * response to {@code vaadin-page-visibility-change} DOM events.
+     *
+     * @param visibility
+     *            the new visibility, or {@code null} to leave the current value
+     *            unchanged
+     */
+    public void setPageVisibility(PageVisibility visibility) {
+        if (visibility != null) {
+            pageVisibilitySignal.set(visibility);
+        }
     }
 
     /**

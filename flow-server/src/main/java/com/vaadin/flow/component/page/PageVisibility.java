@@ -19,13 +19,22 @@ package com.vaadin.flow.component.page;
  * Represents the visibility state of a browser page.
  * <p>
  * Uses the browser's Page Visibility API ({@code document.hidden}) combined
- * with {@code document.hasFocus()} to distinguish between three states: fully
- * visible and focused, visible but not focused (e.g. behind another window),
- * and hidden (e.g. background tab or minimized window).
+ * with {@code document.hasFocus()} to distinguish between three observable
+ * states — fully visible and focused, visible but not focused, and hidden —
+ * plus an {@link #UNKNOWN} sentinel used before the first value has arrived
+ * from the client.
  *
  * @see Page#pageVisibilitySignal()
  */
 public enum PageVisibility {
+
+    /**
+     * No value has been reported by the browser yet. Only observed between
+     * server attach and the completion of the first client handshake; after
+     * bootstrap, the signal transitions to one of the other values and never
+     * returns to {@code UNKNOWN}.
+     */
+    UNKNOWN,
 
     /**
      * The page is visible and focused.

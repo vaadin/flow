@@ -28,40 +28,61 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class PageVisibilitySignalTest {
 
     @Test
     void pageVisibilitySignal_isReadOnly() {
-        Page page = new Page(new MockUI());
-        Signal<PageVisibility> signal = page.pageVisibilitySignal();
+        MockUI ui = new MockUI();
+        Signal<PageVisibility> signal = ui.getPage().pageVisibilitySignal();
         assertFalse(signal instanceof ValueSignal,
                 "pageVisibilitySignal() should return a read-only signal");
     }
 
     @Test
-    void pageVisibilitySignal_defaultsToVisible() {
-        Page page = new Page(new MockUI());
-        Signal<PageVisibility> signal = page.pageVisibilitySignal();
-        assertEquals(PageVisibility.VISIBLE, signal.get());
+    void pageVisibilitySignal_defaultsToUnknownBeforeBootstrap() {
+        MockUI ui = new MockUI();
+        Signal<PageVisibility> signal = ui.getPage().pageVisibilitySignal();
+        assertEquals(PageVisibility.UNKNOWN, signal.peek(),
+                "Before bootstrap the value should be UNKNOWN so callers can "
+                        + "distinguish 'no data yet' from a real VISIBLE");
+    }
+
+    @Test
+    void pageVisibilitySignal_readonlyWrapperIsCached() {
+        Page page = new MockUI().getPage();
+        assertSame(page.pageVisibilitySignal(), page.pageVisibilitySignal(),
+                "Repeated calls must return the same read-only wrapper so "
+                        + "subscriber identity stays stable");
     }
 
     @Test
     void pageVisibilitySignal_tracksVisibilityChanges() {
         MockUI ui = new MockUI();
-        Page page = new Page(ui);
-
-        Signal<PageVisibility> signal = page.pageVisibilitySignal();
-        assertEquals(PageVisibility.VISIBLE, signal.get());
-
-        fireVisibilityEvent(ui, "HIDDEN");
-        assertEquals(PageVisibility.HIDDEN, signal.get());
+        Signal<PageVisibility> signal = ui.getPage().pageVisibilitySignal();
 
         fireVisibilityEvent(ui, "VISIBLE");
-        assertEquals(PageVisibility.VISIBLE, signal.get());
+        assertEquals(PageVisibility.VISIBLE, signal.peek());
+
+        fireVisibilityEvent(ui, "HIDDEN");
+        assertEquals(PageVisibility.HIDDEN, signal.peek());
 
         fireVisibilityEvent(ui, "VISIBLE_NOT_FOCUSED");
-        assertEquals(PageVisibility.VISIBLE_NOT_FOCUSED, signal.get());
+        assertEquals(PageVisibility.VISIBLE_NOT_FOCUSED, signal.peek());
+    }
+
+    @Test
+    void pageVisibilitySignal_unknownDetailKeepsPreviousValue() {
+        MockUI ui = new MockUI();
+        Signal<PageVisibility> signal = ui.getPage().pageVisibilitySignal();
+
+        fireVisibilityEvent(ui, "VISIBLE");
+        fireVisibilityEvent(ui, "SOMETHING_NEW");
+
+        assertEquals(PageVisibility.VISIBLE, signal.peek(),
+                "Unknown detail values from a newer client should not reset "
+                        + "the signal");
     }
 
     private void fireVisibilityEvent(MockUI ui, String visibility) {

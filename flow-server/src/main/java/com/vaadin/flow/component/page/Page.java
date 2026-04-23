@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -52,12 +55,14 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class Page implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
+
     private final UI ui;
     private final History history;
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
-    private ValueSignal<PageVisibility> pageVisibilitySignal;
+    private Signal<PageVisibility> pageVisibilityReadOnly;
     private DomListenerRegistration visibilityReceiver;
 
     /**
@@ -480,40 +485,69 @@ public class Page implements Serializable {
     }
 
     /**
-     * Returns a signal that tracks the current page visibility state.
+     * Returns a read-only signal that tracks the browser tab's visibility and
+     * focus state.
      * <p>
-     * The signal is lazily initialized on first access and automatically
-     * updates when the browser tab visibility or focus state changes. It
-     * distinguishes between three states: fully visible and focused, visible
-     * but not focused (e.g. behind another window), and hidden (e.g. background
-     * tab or minimized window).
+     * The signal distinguishes between {@link PageVisibility#VISIBLE VISIBLE}
+     * (tab shown and focused), {@link PageVisibility#VISIBLE_NOT_FOCUSED
+     * VISIBLE_NOT_FOCUSED} (tab shown but behind another window or another
+     * application has focus), {@link PageVisibility#HIDDEN HIDDEN} (tab in
+     * background, minimized, or on a different virtual desktop), and
+     * {@link PageVisibility#UNKNOWN UNKNOWN} (held briefly between server
+     * attach and the first client handshake).
      * <p>
-     * The returned signal is read-only.
+     * The underlying DOM listener is installed lazily on first access. The
+     * signal value is seeded from the initial client bootstrap, so code that
+     * reads it from {@code onAttach} sees the real state rather than a
+     * placeholder. Subscribe with {@code Signal.effect(owner, ...)} to react to
+     * changes; call {@code pageVisibilitySignal().peek()} for a snapshot
+     * outside a reactive context, and {@code .get()} inside one.
+     * <p>
+     * <b>Reliability caveats.</b> The value is best-effort:
+     * <ul>
+     * <li>Firefox defers the {@code visibilitychange} event while the window is
+     * blurred, so transitions from {@link PageVisibility#VISIBLE VISIBLE} to
+     * {@link PageVisibility#HIDDEN HIDDEN} may take up to half a second longer
+     * than on Chromium or Safari.</li>
+     * <li>The {@link PageVisibility#VISIBLE_NOT_FOCUSED VISIBLE_NOT_FOCUSED}
+     * distinction relies on {@code document.hasFocus()}, which is accurate in
+     * all supported browsers but depends on the OS reporting focus changes
+     * promptly — some window-manager configurations can delay it briefly.</li>
+     * <li>Rapid focus/blur bursts are intentionally coalesced
+     * ({@code debounce(100)}) so the signal settles once the sequence ends
+     * instead of firing on each intermediate state.</li>
+     * </ul>
      *
-     * @return a read-only signal with the current page visibility
+     * @return the read-only visibility signal
      */
     public Signal<PageVisibility> pageVisibilitySignal() {
-        ensurePageVisibilitySignal();
-        return pageVisibilitySignal.asReadonly();
-    }
-
-    private void ensurePageVisibilitySignal() {
-        if (pageVisibilitySignal == null) {
-            pageVisibilitySignal = new ValueSignal<>(PageVisibility.VISIBLE);
+        if (pageVisibilityReadOnly == null) {
+            pageVisibilityReadOnly = ui.getInternals().getPageVisibilitySignal()
+                    .asReadonly();
+            ensureVisibilityListener();
         }
-        ensureVisibilityListener();
+        return pageVisibilityReadOnly;
     }
 
     private void ensureVisibilityListener() {
         if (visibilityReceiver == null) {
             ui.getElement()
-                    .executeJs("window.Vaadin.Flow.pageVisibility.init(this)");
+                    .executeJs("window.Vaadin.Flow.pageVisibility.init(this)")
+                    .then(ok -> {
+                    }, err -> LOGGER.debug(
+                            "Client-side pageVisibility.init failed: {}", err));
             visibilityReceiver = ui.getElement()
                     .addEventListener("vaadin-page-visibility-change", e -> {
                         String detail = e.getEventDetail(String.class);
-                        if (detail != null && pageVisibilitySignal != null) {
-                            pageVisibilitySignal
-                                    .set(PageVisibility.valueOf(detail));
+                        if (detail == null) {
+                            return;
+                        }
+                        try {
+                            ui.getInternals().setPageVisibility(
+                                    PageVisibility.valueOf(detail));
+                        } catch (IllegalArgumentException ignored) {
+                            // Client sent a value this server version does
+                            // not know — keep the previous signal state.
                         }
                     }).addEventDetail().debounce(100).allowInert();
         }

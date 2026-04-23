@@ -4,6 +4,7 @@ import {
   type ConnectionStateChangeListener,
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
+import './PageVisibility';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -540,6 +541,9 @@ export class Flow {
     const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
     // "normal" is the default value and means no color scheme is set
     params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
+    /* Page visibility — initial state of document.hidden / document.hasFocus() */
+    params['v-pv'] = ($wnd as any).Vaadin.Flow.pageVisibility.current();
+
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';
