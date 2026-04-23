@@ -81,9 +81,11 @@ public class GeolocationTracker implements Serializable {
      * <p>
      * Combine with {@code Signal.effect(owner, ...)} or an attach listener to
      * run code whenever the value changes — the effect re-runs automatically on
-     * every update and no manual event-listener bookkeeping is required.
-     * Outside an effect, call {@code value().get()} or {@code value().peek()}
-     * to read a snapshot.
+     * every update and no manual event-listener bookkeeping is required. Inside
+     * an effect or another reactive context, call {@code value().get()} to read
+     * the current value and subscribe to further updates; outside a reactive
+     * context, call {@code value().peek()} to read a snapshot without
+     * subscribing.
      * <p>
      * The signal starts as {@link GeolocationPending} until the first reading
      * arrives, then transitions to {@link GeolocationPosition} on every
@@ -105,8 +107,9 @@ public class GeolocationTracker implements Serializable {
      * and to {@code false} on {@link #stop()} (or when the owner detaches).
      * <p>
      * Subscribe with {@code Signal.effect(owner, ...)} to bind a toggle
-     * button's label/state to the tracker without tracking a separate flag, or
-     * call {@code active().peek()} for a snapshot.
+     * button's label/state to the tracker without tracking a separate flag.
+     * Inside a reactive context, call {@code active().get()} to subscribe;
+     * outside a reactive context, call {@code active().peek()} for a snapshot.
      *
      * @return a read-only signal reporting whether tracking is active
      */
