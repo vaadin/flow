@@ -50,6 +50,8 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @NotThreadSafe
 class StreamRequestHandlerTest {
@@ -156,6 +158,18 @@ class StreamRequestHandlerTest {
     }
 
     @Test
+    public void streamResourceNameContainsPercent_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("percent in name", "file%.txt");
+    }
+
+    @Test
+    public void streamResourceNameContainsPercent_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("percent in name", "file%.txt");
+    }
+
+    @Test
     void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
@@ -247,9 +261,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -268,9 +283,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -302,9 +318,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -317,6 +334,22 @@ class StreamRequestHandlerTest {
                 "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void sanitizeNameForUrl_percentIsReplaced() {
+        assertEquals("file_.txt",
+                StreamRequestHandler.sanitizeNameForUrl("file%.txt"));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_nullReturnsNull() {
+        assertNull(StreamRequestHandler.sanitizeNameForUrl(null));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_emptyReturnsEmpty() {
+        assertEquals("", StreamRequestHandler.sanitizeNameForUrl(""));
     }
 
     private static final class TestElementHandlerBuilder {
