@@ -2011,9 +2011,13 @@ public class Binder<BEAN> implements Serializable {
         }
 
         public SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
-            return isAppliedPredicate == null
-                    ? Binding.super.getIsAppliedPredicate()
-                    : isAppliedPredicate;
+            if (isAppliedPredicate != null) {
+                return isAppliedPredicate;
+            }
+            if (getBinder().isApplyBindingsToHiddenFields()) {
+                return binding -> true;
+            }
+            return Binding.super.getIsAppliedPredicate();
         }
 
         @Override
@@ -2155,6 +2159,8 @@ public class Binder<BEAN> implements Serializable {
     private boolean defaultValidatorsEnabled = true;
 
     private boolean changeDetectionEnabled = false;
+
+    private boolean applyBindingsToHiddenFields = false;
 
     private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
 
@@ -4322,6 +4328,40 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
+    }
+
+    /**
+     * Sets whether all bindings of this Binder should be applied to fields that
+     * are not currently visible. By default, bindings whose field is a
+     * {@link Component} with {@link Component#isVisible()} returning
+     * {@literal false} are skipped during validation and when writing values to
+     * the bean. Enabling this setting restores the pre-Vaadin 25 behavior where
+     * hidden fields are validated and written just like visible ones.
+     * <p>
+     * This is a Binder-level fallback: any binding that has its own predicate
+     * set via {@link Binding#setIsAppliedPredicate(SerializablePredicate)}
+     * continues to use that predicate and is not affected by this flag.
+     * <p>
+     * Defaults to {@literal false}.
+     *
+     * @param applyBindingsToHiddenFields
+     *            {@literal true} to make all bindings apply to hidden fields,
+     *            {@literal false} to skip hidden fields (the default)
+     */
+    public void setApplyBindingsToHiddenFields(
+            boolean applyBindingsToHiddenFields) {
+        this.applyBindingsToHiddenFields = applyBindingsToHiddenFields;
+    }
+
+    /**
+     * Returns whether all bindings of this Binder apply to fields that are not
+     * currently visible.
+     *
+     * @return {@literal true} if bindings are applied to hidden fields,
+     *         {@literal false} if hidden fields are skipped (the default)
+     */
+    public boolean isApplyBindingsToHiddenFields() {
+        return applyBindingsToHiddenFields;
     }
 
     /**
