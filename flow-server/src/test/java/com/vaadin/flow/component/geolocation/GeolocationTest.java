@@ -207,7 +207,7 @@ public class GeolocationTest {
                 resultJson(position(60.0, 25.0, 10.0), null, "GRANTED"));
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getInternals().getGeolocationAvailability());
+                ui.getInternals().getGeolocationAvailabilitySignal().peek());
     }
 
     // --- track() tests ---
@@ -463,20 +463,20 @@ public class GeolocationTest {
         assertTrue(tracker.active().peek());
     }
 
-    // --- getAvailability() / availability-change listener tests ---
+    // --- availability() / availability-change listener tests ---
 
     @Test
-    void getAvailability_nullBeforeAnyReport() {
-        assertNull(ui.getGeolocation().getAvailability());
+    void availability_nullBeforeAnyReport() {
+        assertNull(ui.getGeolocation().availability().peek());
     }
 
     @Test
-    void getAvailability_readsFromUIInternals() {
+    void availability_reflectsUIInternalsSignal() {
         ui.getInternals()
                 .setGeolocationAvailability(GeolocationAvailability.GRANTED);
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getGeolocation().getAvailability());
+                ui.getGeolocation().availability().peek());
     }
 
     @Test
@@ -499,7 +499,7 @@ public class GeolocationTest {
                 eventData);
 
         assertEquals(GeolocationAvailability.DENIED,
-                ui.getInternals().getGeolocationAvailability());
+                ui.getInternals().getGeolocationAvailabilitySignal().peek());
     }
 
     @Test
@@ -515,7 +515,7 @@ public class GeolocationTest {
                 eventData);
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getInternals().getGeolocationAvailability());
+                ui.getInternals().getGeolocationAvailabilitySignal().peek());
     }
 
     // --- GeolocationOptions tests ---

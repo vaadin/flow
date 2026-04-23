@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Facade for the browser's Geolocation API. Obtain via
@@ -51,9 +52,10 @@ import com.vaadin.flow.function.SerializableConsumer;
  * </ul>
  * <b>Availability check:</b>
  * <ul>
- * <li>{@link #getAvailability()} — synchronous snapshot of whether the feature
- * is usable and what permission state the origin has. Kept in sync
- * automatically for the lifetime of the UI.</li>
+ * <li>{@link #availability()} — reactive signal of whether the feature is
+ * usable and what permission state the origin has. Subscribe with
+ * {@code Signal.effect(owner, ...)} to react to changes, or call
+ * {@code availability().peek()} for a snapshot.</li>
  * </ul>
  *
  * <p>
@@ -252,22 +254,26 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Returns the current geolocation availability — whether the Geolocation
-     * API is usable in this context and, if so, what permission state the
-     * origin has.
+     * Returns a read-only signal holding the current geolocation availability —
+     * whether the Geolocation API is usable in this context and, if so, what
+     * permission state the origin has.
      * <p>
-     * Synchronous; can be read from {@code onAttach} or an attach listener
-     * without an async callback. The value is fetched once during the initial
-     * client handshake and kept current after that.
+     * Subscribe with {@code Signal.effect(owner, ...)} to react to availability
+     * changes (e.g. disabling a location button when the user revokes
+     * permission). For a snapshot read, call {@code availability().peek()}; in
+     * an effect or reactive context, call {@code availability().get()}.
+     * <p>
+     * The signal starts as {@code null}, transitions to the value reported
+     * during the initial client bootstrap, and updates on every {@link #get} /
+     * {@link #track} outcome and on browser permission-change events where
+     * supported.
      * <p>
      * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
      * it reflects what the browser last reported, and can be briefly stale in
      * these cases:
      * <ul>
      * <li>Between server attach and the completion of the first client
-     * handshake — returns {@code null} during this short window. Using an
-     * attach listener (which fires after the handshake) is a safe place to read
-     * a non-null value.</li>
+     * handshake — holds {@code null} during this short window.</li>
      * <li>On Safari, the permission state is never observable;
      * {@link GeolocationAvailability#GRANTED GRANTED},
      * {@link GeolocationAvailability#DENIED DENIED} and
@@ -276,8 +282,8 @@ public class Geolocation implements Serializable {
      * {@link GeolocationAvailability#UNSUPPORTED UNSUPPORTED} is still reported
      * correctly.</li>
      * <li>On Firefox, permission changes the user makes in browser settings are
-     * not reliably propagated back — the cached value can remain stale until
-     * the next {@link #get} or {@link #track} call.</li>
+     * not reliably propagated back — the signal can stay stale until the next
+     * {@link #get} or {@link #track} call.</li>
      * <li>On Chromium, the value updates promptly when the user flips the site
      * permission, but there is still a small propagation delay between the
      * browser event and the cache update.</li>
@@ -287,11 +293,10 @@ public class Geolocation implements Serializable {
      * paths, call {@link #get} and handle the authoritative result in the
      * callback.
      *
-     * @return the current availability, or {@code null} if the browser has not
-     *         yet reported one
+     * @return the availability signal
      */
-    public @Nullable GeolocationAvailability getAvailability() {
-        return ui.getInternals().getGeolocationAvailability();
+    public Signal<@Nullable GeolocationAvailability> availability() {
+        return ui.getInternals().getGeolocationAvailabilitySignal();
     }
 
     private void setAvailability(@Nullable String value) {

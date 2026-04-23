@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -88,6 +89,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -232,7 +235,8 @@ public class UIInternals implements Serializable {
 
     private ExtendedClientDetails extendedClientDetails = null;
 
-    private GeolocationAvailability geolocationAvailability;
+    private final ValueSignal<@Nullable GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<@Nullable GeolocationAvailability>(
+            null);
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1406,30 +1410,27 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Returns the cached geolocation availability for this UI, or {@code null}
-     * if the browser has not yet reported one. Populated during the initial
-     * client bootstrap and kept current by the Geolocation facade; application
-     * code should read the value via
-     * {@link com.vaadin.flow.component.geolocation.Geolocation#getAvailability()}
-     * rather than here.
+     * Returns the reactive signal holding the geolocation availability for this
+     * UI. Starts as {@code null} and transitions to the value the browser
+     * reports during the initial client bootstrap, then reflects subsequent
+     * updates. Application code reads it via
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availability()}.
      *
-     * @return the current availability, or {@code null} if never reported
+     * @return the availability signal
      */
-    public GeolocationAvailability getGeolocationAvailability() {
-        return geolocationAvailability;
+    public Signal<@Nullable GeolocationAvailability> getGeolocationAvailabilitySignal() {
+        return geolocationAvailabilitySignal;
     }
 
     /**
-     * Updates the cached geolocation availability. For framework use only — see
-     * {@link com.vaadin.flow.component.geolocation.Geolocation#getAvailability()}
-     * for the read side.
+     * Updates the geolocation availability signal. For framework use only.
      *
      * @param availability
      *            the new availability, or {@code null} to clear
      */
     public void setGeolocationAvailability(
-            GeolocationAvailability availability) {
-        this.geolocationAvailability = availability;
+            @Nullable GeolocationAvailability availability) {
+        this.geolocationAvailabilitySignal.set(availability);
     }
 
     /**
