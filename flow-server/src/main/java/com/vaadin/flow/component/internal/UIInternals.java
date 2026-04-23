@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -234,8 +233,8 @@ public class UIInternals implements Serializable {
 
     private ExtendedClientDetails extendedClientDetails = null;
 
-    private final ValueSignal<@Nullable GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<@Nullable GeolocationAvailability>(
-            null);
+    private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
+            GeolocationAvailability.UNKNOWN);
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1410,14 +1409,14 @@ public class UIInternals implements Serializable {
 
     /**
      * Returns the reactive signal holding the geolocation availability for this
-     * UI. Starts as {@code null} and transitions to the value the browser
-     * reports during the initial client bootstrap, then reflects subsequent
-     * updates. Application code reads it via
+     * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
+     * client bootstrap report, then transitions to the value the browser
+     * reports and reflects subsequent updates. Application code reads it via
      * {@link com.vaadin.flow.component.geolocation.Geolocation#availability()}.
      *
      * @return the availability signal
      */
-    public ValueSignal<@Nullable GeolocationAvailability> getGeolocationAvailabilitySignal() {
+    public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
         return geolocationAvailabilitySignal;
     }
 
@@ -1425,10 +1424,10 @@ public class UIInternals implements Serializable {
      * Updates the geolocation availability signal. For framework use only.
      *
      * @param availability
-     *            the new availability, or {@code null} to clear
+     *            the new availability
      */
     public void setGeolocationAvailability(
-            @Nullable GeolocationAvailability availability) {
+            GeolocationAvailability availability) {
         this.geolocationAvailabilitySignal.set(availability);
     }
 

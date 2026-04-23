@@ -263,17 +263,19 @@ public class Geolocation implements Serializable {
      * permission). For a snapshot read, call {@code availability().peek()}; in
      * an effect or reactive context, call {@code availability().get()}.
      * <p>
-     * The signal starts as {@code null}, transitions to the value reported
-     * during the initial client bootstrap, and updates on every {@link #get} /
-     * {@link #track} outcome and on browser permission-change events where
-     * supported.
+     * The signal starts as {@link GeolocationAvailability#UNKNOWN UNKNOWN},
+     * transitions to the value reported during the initial client bootstrap,
+     * and updates on every {@link #get} / {@link #track} outcome and on browser
+     * permission-change events where supported.
      * <p>
      * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
      * it reflects what the browser last reported, and can be briefly stale in
      * these cases:
      * <ul>
      * <li>Between server attach and the completion of the first client
-     * handshake — holds {@code null} during this short window.</li>
+     * handshake — holds {@link GeolocationAvailability#UNKNOWN UNKNOWN} during
+     * this short window, indistinguishable from a real UNKNOWN reported by the
+     * browser.</li>
      * <li>On Safari, the permission state is never observable;
      * {@link GeolocationAvailability#GRANTED GRANTED},
      * {@link GeolocationAvailability#DENIED DENIED} and
@@ -295,7 +297,7 @@ public class Geolocation implements Serializable {
      *
      * @return the availability signal
      */
-    public Signal<@Nullable GeolocationAvailability> availability() {
+    public Signal<GeolocationAvailability> availability() {
         return ui.getInternals().getGeolocationAvailabilitySignal()
                 .asReadonly();
     }

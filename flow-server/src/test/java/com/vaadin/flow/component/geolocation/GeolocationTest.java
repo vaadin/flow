@@ -466,8 +466,9 @@ class GeolocationTest {
     // --- availability() / availability-change listener tests ---
 
     @Test
-    void availability_nullBeforeAnyReport() {
-        assertNull(ui.getGeolocation().availability().peek());
+    void availability_unknownBeforeAnyReport() {
+        assertEquals(GeolocationAvailability.UNKNOWN,
+                ui.getGeolocation().availability().peek());
     }
 
     @Test
