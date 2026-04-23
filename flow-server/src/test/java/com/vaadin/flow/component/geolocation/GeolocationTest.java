@@ -556,9 +556,8 @@ class GeolocationTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new GeolocationOptions((Boolean) null, -1,
                         (Integer) null));
-        GeolocationOptions.Builder builder = GeolocationOptions.builder()
-                .timeout(-1);
-        assertThrows(IllegalArgumentException.class, builder::build);
+        GeolocationOptions.Builder builder = GeolocationOptions.builder();
+        assertThrows(IllegalArgumentException.class, () -> builder.timeout(-1));
     }
 
     @Test
@@ -566,9 +565,9 @@ class GeolocationTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new GeolocationOptions((Boolean) null, (Integer) null,
                         -1));
-        GeolocationOptions.Builder builder = GeolocationOptions.builder()
-                .maximumAge(-1);
-        assertThrows(IllegalArgumentException.class, builder::build);
+        GeolocationOptions.Builder builder = GeolocationOptions.builder();
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.maximumAge(-1));
     }
 
     // --- Helpers ---
