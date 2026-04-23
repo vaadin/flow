@@ -421,9 +421,10 @@ class FrontendUtilsTest {
                 packageJson.toString(), StandardCharsets.UTF_8);
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET);
-        NodeUpdater nodeUpdater = new NodeUpdater(
-                Mockito.mock(FrontendDependencies.class), options) {
+        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
+                .withFrontendDependenciesScanner(
+                        Mockito.mock(FrontendDependencies.class));
+        NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // no need to execute logic for this test

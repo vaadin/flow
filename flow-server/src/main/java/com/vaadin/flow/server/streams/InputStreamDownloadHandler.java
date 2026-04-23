@@ -33,6 +33,7 @@ public class InputStreamDownloadHandler
         extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
     private final InputStreamDownloadCallback callback;
+    private String fileNameOverride;
 
     /**
      * Create an input stream download handler for given event -> response
@@ -45,6 +46,26 @@ public class InputStreamDownloadHandler
         this.callback = callback;
     }
 
+    /**
+     * Create an input stream download handler for given event -> response
+     * function.
+     * <p>
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
+     *
+     * @param callback
+     *            serializable function for handling download
+     * @param fileNameOverride
+     *            used as a downloaded file name as a download request URL
+     *            postfix, e.g.
+     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
+     */
+    public InputStreamDownloadHandler(InputStreamDownloadCallback callback,
+            String fileNameOverride) {
+        this.callback = callback;
+        this.fileNameOverride = fileNameOverride;
+    }
+
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
@@ -52,6 +73,12 @@ public class InputStreamDownloadHandler
         setTransferUI(downloadEvent.getUI());
         DownloadResponse download;
         try {
+            String resourceName = getUrlPostfix();
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
+            } else {
+                downloadEvent.setFileName(resourceName);
+            }
             download = callback.complete(downloadEvent);
         } catch (IOException | RuntimeException e) {
             // Set status before output is closed (see #8740)
@@ -108,5 +135,10 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    @Override
+    public String getUrlPostfix() {
+        return fileNameOverride;
     }
 }
