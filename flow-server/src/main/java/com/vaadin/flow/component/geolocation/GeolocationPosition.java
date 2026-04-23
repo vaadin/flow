@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.geolocation;
 
+import java.time.Instant;
+
 /**
  * A successful location reading: the coordinates the browser reported and the
  * moment in time they were taken.
@@ -28,10 +30,18 @@ package com.vaadin.flow.component.geolocation;
  *            {@link GeolocationCoordinates}
  * @param timestamp
  *            the moment the reading was taken, as milliseconds since the Unix
- *            epoch (1970-01-01T00:00:00Z). Convert to an
- *            {@link java.time.Instant} with
- *            {@code Instant.ofEpochMilli(timestamp)} when needed
+ *            epoch (1970-01-01T00:00:00Z). Use {@link #timestampAsInstant()}
+ *            for an {@link Instant}
  */
 public record GeolocationPosition(GeolocationCoordinates coords,
         long timestamp) implements GeolocationResult {
+
+    /**
+     * Returns the reading's timestamp as an {@link Instant}.
+     *
+     * @return the timestamp as an Instant
+     */
+    public Instant timestampAsInstant() {
+        return Instant.ofEpochMilli(timestamp);
+    }
 }

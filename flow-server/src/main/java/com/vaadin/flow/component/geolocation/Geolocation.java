@@ -18,10 +18,11 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -46,7 +47,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  * {@link GeolocationTracker#value() value()} is a reactive signal of
  * {@link GeolocationResult}. The browser watch is automatically cancelled when
  * the owning component detaches; use {@link GeolocationTracker#stop()} to
- * cancel it sooner.</li>
+ * cancel it sooner and {@link GeolocationTracker#resume()} to resume.</li>
  * </ul>
  * <b>Availability check:</b>
  * <ul>
@@ -82,10 +83,10 @@ import com.vaadin.flow.function.SerializableConsumer;
  *
  * <pre>
  * GeolocationTracker tracker = UI.getCurrent().getGeolocation().track(this);
- * ComponentEffect.effect(this, () -&gt; {
+ * Signal.effect(this, () -&gt; {
  *     switch (tracker.value().get()) {
- *     case null -&gt; {
- *         // still waiting for the first reading
+ *     case GeolocationPending p -&gt; {
+ *         // waiting for first reading
  *     }
  *     case GeolocationPosition pos -&gt;
  *         map.setCenter(pos.coords().latitude(), pos.coords().longitude());
@@ -96,9 +97,13 @@ import com.vaadin.flow.function.SerializableConsumer;
  */
 public class Geolocation implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(Geolocation.class);
+
     /**
      * Wire shape of a one-shot get() answer: always exactly one of the two
-     * result fields is populated, plus the updated availability.
+     * result fields is populated, plus the availability reported alongside so
+     * the server can refresh the cache inline.
      */
     private record GetResult(@Nullable GeolocationPosition position,
             @Nullable GeolocationError error,
@@ -117,17 +122,26 @@ public class Geolocation implements Serializable {
     /**
      * Creates a new Geolocation facade bound to the given UI.
      * <p>
-     * Application code obtains the instance via {@link UI#getGeolocation()} and
-     * should not instantiate this class directly.
+     * Framework-only. Application code obtains the instance via
+     * {@link UI#getGeolocation()} and should not instantiate this class
+     * directly — attempting to create a second instance for a UI that already
+     * has one throws.
      *
      * @param ui
      *            the UI this facade belongs to
+     * @throws IllegalStateException
+     *             if the UI already has a Geolocation facade
      */
     public Geolocation(UI ui) {
+        if (ui.getGeolocation() != null) {
+            throw new IllegalStateException(
+                    "A Geolocation facade has already been created for this "
+                            + "UI. Use UI.getGeolocation() to obtain it.");
+        }
         this.ui = ui;
         // Listen for client-side permissionchange events so the cached
-        // availability on ExtendedClientDetails stays current without
-        // requiring a get()/track() call to refresh it.
+        // availability stays current without requiring a get()/track()
+        // call to refresh it.
         ui.getElement()
                 .addEventListener("vaadin-geolocation-availability-change",
                         e -> setAvailability(
@@ -179,7 +193,8 @@ public class Geolocation implements Serializable {
                     } else if (result.error() != null) {
                         callback.accept(result.error());
                     }
-                });
+                }, err -> LOGGER.debug("Client-side geolocation.get failed: {}",
+                        err));
     }
 
     /**
@@ -189,9 +204,9 @@ public class Geolocation implements Serializable {
      * The browser reports new positions whenever it detects movement. Each
      * report is delivered to the returned tracker's
      * {@link GeolocationTracker#value() value()} signal on the UI thread. The
-     * initial value is {@code null} until the first reading arrives, then
-     * transitions to {@link GeolocationPosition} (updated on every subsequent
-     * reading) or {@link GeolocationError}.
+     * initial value is {@link GeolocationPending} until the first reading
+     * arrives, then transitions to {@link GeolocationPosition} (updated on
+     * every subsequent reading) or {@link GeolocationError}.
      * <p>
      * The underlying browser watch is automatically cancelled when
      * {@code owner} detaches, so the application does not need to write cleanup
@@ -237,18 +252,20 @@ public class Geolocation implements Serializable {
      * API is usable in this context and, if so, what permission state the
      * origin has.
      * <p>
-     * Synchronous; can be read from {@code onAttach} without an async callback.
-     * The value is fetched once during the initial client handshake and kept
-     * current after that.
+     * Synchronous; can be read from {@code onAttach} or an attach listener
+     * without an async callback. The value is fetched once during the initial
+     * client handshake and kept current after that.
      * <p>
      * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
      * it reflects what the browser last reported, and can be briefly stale in
      * these cases:
      * <ul>
      * <li>Between server attach and the completion of the first client
-     * handshake — returns {@code null} during this short window.</li>
+     * handshake — returns {@code null} during this short window. Using an
+     * attach listener (which fires after the handshake) is a safe place to read
+     * a non-null value.</li>
      * <li>On Safari, the permission state is never observable;
-     * {@link GeolocationAvailability#GRANTED},
+     * {@link GeolocationAvailability#GRANTED GRANTED},
      * {@link GeolocationAvailability#DENIED DENIED} and
      * {@link GeolocationAvailability#PROMPT PROMPT} all surface as
      * {@link GeolocationAvailability#UNKNOWN UNKNOWN}.
@@ -270,24 +287,16 @@ public class Geolocation implements Serializable {
      *         yet reported one
      */
     public @Nullable GeolocationAvailability getAvailability() {
-        ExtendedClientDetails details = ui.getInternals()
-                .getExtendedClientDetails();
-        return details == null ? null : details.getGeolocationAvailability();
+        return ui.getInternals().getGeolocationAvailability();
     }
 
-    /**
-     * Internal: update the cached availability from a client-side response. The
-     * availability is stored on {@link ExtendedClientDetails} so it shares a
-     * location with other browser-provided details.
-     */
-    void setAvailability(@Nullable String value) {
+    private void setAvailability(@Nullable String value) {
         if (value == null) {
             return;
         }
         try {
-            ui.getInternals().getExtendedClientDetails()
-                    .setGeolocationAvailability(
-                            GeolocationAvailability.valueOf(value));
+            ui.getInternals().setGeolocationAvailability(
+                    GeolocationAvailability.valueOf(value));
         } catch (IllegalArgumentException ignored) {
             // Unknown value — leave the previous cached value untouched.
         }

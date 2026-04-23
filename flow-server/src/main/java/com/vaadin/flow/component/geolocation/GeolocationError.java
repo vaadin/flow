@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.geolocation;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * A failed location reading: the request did not produce a
  * {@link GeolocationPosition}.
@@ -35,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  *         case POSITION_UNAVAILABLE -&gt;
  *             showRetry("Could not determine your location.");
  *         case TIMEOUT -&gt; showRetry("Location request took too long.");
- *         case null -&gt; showGenericError(err.message()); // unknown future code
+ *         case UNKNOWN -&gt; showGenericError(err.message());
  *         }
  *     }
  * });
@@ -58,14 +56,14 @@ public record GeolocationError(int code,
 
     /**
      * Returns the error reason as a typed enum suitable for exhaustive
-     * {@code switch}. Returns {@code null} if the browser reports a numeric
-     * code this version of Flow does not recognise — match that with a
-     * {@code case null} arm to keep the switch exhaustive at compile time.
+     * {@code switch}. Returns {@link GeolocationErrorCode#UNKNOWN} if the
+     * browser reports a numeric code this version of Flow does not recognise.
      *
-     * @return the matching {@link GeolocationErrorCode}, or {@code null} when
-     *         the raw {@link #code()} is not one of the known values
+     * @return the matching {@link GeolocationErrorCode}, or
+     *         {@link GeolocationErrorCode#UNKNOWN} when the raw {@link #code()}
+     *         is not one of the known values
      */
-    public @Nullable GeolocationErrorCode errorCode() {
+    public GeolocationErrorCode errorCode() {
         return GeolocationErrorCode.fromCode(code);
     }
 }

@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.component.geolocation;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * Typed reasons why a geolocation request can fail.
  * <p>
  * Returned by {@link GeolocationError#errorCode()}. Prefer this enum over
  * comparing raw numbers — exhaustive {@code switch} catches missing branches at
- * compile time, and a {@code case null} arm lets the application handle future
- * browser codes gracefully without losing the compile-time check.
+ * compile time.
  * <p>
  * Each constant holds an integer identifier. Applications rarely need to look
  * at {@link #code()} directly; it is exposed for logging and for round-tripping
@@ -52,7 +49,14 @@ public enum GeolocationErrorCode {
      * {@link GeolocationOptions}. Either the user is in a difficult-to-locate
      * environment or the timeout was too tight.
      */
-    TIMEOUT(3);
+    TIMEOUT(3),
+
+    /**
+     * The browser reported a numeric error code that this version of Flow does
+     * not recognise. {@link GeolocationError#code()} still holds the raw value
+     * for logging or custom handling.
+     */
+    UNKNOWN(-1);
 
     private final int code;
 
@@ -61,32 +65,33 @@ public enum GeolocationErrorCode {
     }
 
     /**
-     * Returns the integer identifier of this error code. Mainly useful for
-     * logging or interoperating with {@link GeolocationError#code()}.
+     * Returns the integer identifier of this error code, or {@code -1} for
+     * {@link #UNKNOWN}. Mainly useful for logging or interoperating with
+     * {@link GeolocationError#code()}.
      *
-     * @return the numeric code
+     * @return the numeric code, or {@code -1} for {@link #UNKNOWN}
      */
     public int code() {
         return code;
     }
 
     /**
-     * Looks up the enum constant for a raw numeric code, returning {@code null}
-     * if the code is not one this version of Flow recognises. This is how
-     * {@link GeolocationError#errorCode()} behaves — it maps known codes to
-     * constants and surfaces unknown future codes as {@code null} rather than
-     * throwing.
+     * Looks up the enum constant for a raw numeric code, returning
+     * {@link #UNKNOWN} if the code is not one this version of Flow recognises.
+     * This is how {@link GeolocationError#errorCode()} behaves — it maps known
+     * codes to constants and surfaces unknown future codes as {@link #UNKNOWN}
+     * rather than throwing.
      *
      * @param code
      *            the numeric error code
-     * @return the matching constant, or {@code null} if unknown
+     * @return the matching constant, or {@link #UNKNOWN} if unrecognised
      */
-    public static @Nullable GeolocationErrorCode fromCode(int code) {
+    public static GeolocationErrorCode fromCode(int code) {
         for (GeolocationErrorCode c : values()) {
             if (c.code == code) {
                 return c;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

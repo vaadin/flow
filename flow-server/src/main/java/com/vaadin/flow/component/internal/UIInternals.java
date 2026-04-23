@@ -47,6 +47,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
@@ -230,6 +231,8 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
+
+    private GeolocationAvailability geolocationAvailability;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1400,6 +1403,33 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Returns the cached geolocation availability for this UI, or {@code null}
+     * if the browser has not yet reported one. Populated during the initial
+     * client bootstrap and kept current by the Geolocation facade; application
+     * code should read the value via
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#getAvailability()}
+     * rather than here.
+     *
+     * @return the current availability, or {@code null} if never reported
+     */
+    public GeolocationAvailability getGeolocationAvailability() {
+        return geolocationAvailability;
+    }
+
+    /**
+     * Updates the cached geolocation availability. For framework use only — see
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#getAvailability()}
+     * for the read side.
+     *
+     * @param availability
+     *            the new availability, or {@code null} to clear
+     */
+    public void setGeolocationAvailability(
+            GeolocationAvailability availability) {
+        this.geolocationAvailability = availability;
     }
 
     /**

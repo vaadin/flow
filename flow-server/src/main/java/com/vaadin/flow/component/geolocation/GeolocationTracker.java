@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -29,26 +31,39 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * A handle to a running geolocation tracking session, returned by
+ * A handle to a geolocation tracking session, returned by
  * {@link Geolocation#track(Component)} /
  * {@link Geolocation#track(Component, GeolocationOptions)}.
  * <p>
  * Exposes the latest {@link GeolocationResult} as a reactive signal via
  * {@link #value()}, and lets the application cancel tracking via
- * {@link #stop()}. The underlying browser watch is also cancelled automatically
- * when the owning component detaches, so most applications never need to call
- * {@code stop()} explicitly — it is provided for "Stop tracking" buttons and
- * similar mid-view cancellation.
+ * {@link #stop()} or resume it via {@link #resume()}. The underlying browser
+ * watch is also cancelled automatically when the owning component detaches, so
+ * most applications never need to call {@code stop()} explicitly — it is
+ * provided for "Stop tracking" buttons and similar mid-view cancellation.
+ * <p>
+ * A tracker is reusable: after {@link #stop()} you can call {@link #resume()}
+ * to resume tracking on the same handle, and any effects or bindings subscribed
+ * to {@link #value()} continue to work. Bind a toggle button's state to
+ * {@link #active()} to let the UI react to start/stop without tracking your own
+ * flag.
  */
 public class GeolocationTracker implements Serializable {
 
-    private final ValueSignal<@Nullable GeolocationResult> valueSignal = new ValueSignal<@Nullable GeolocationResult>(
-            null);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(GeolocationTracker.class);
+
+    private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
+            new GeolocationPending());
+
+    private final ValueSignal<Boolean> activeSignal = new ValueSignal<>(
+            Boolean.FALSE);
 
     private final UI ui;
-    private final String watchKey;
+    private final Component owner;
+    private final @Nullable GeolocationOptions options;
+    private final String watchKey = UUID.randomUUID().toString();
 
-    private boolean active = true;
     private @Nullable DomListenerRegistration positionListener;
     private @Nullable DomListenerRegistration errorListener;
     private @Nullable Registration detachRegistration;
@@ -56,7 +71,66 @@ public class GeolocationTracker implements Serializable {
     GeolocationTracker(UI ui, Component owner,
             @Nullable GeolocationOptions options) {
         this.ui = ui;
-        this.watchKey = UUID.randomUUID().toString();
+        this.owner = owner;
+        this.options = options;
+        resume();
+    }
+
+    /**
+     * Returns a read-only signal that holds the most recent tracking result.
+     * <p>
+     * Combine with {@code Signal.effect(owner, ...)} or an attach listener to
+     * run code whenever the value changes — the effect re-runs automatically on
+     * every update and no manual event-listener bookkeeping is required.
+     * Outside an effect, call {@code value().get()} or {@code value().peek()}
+     * to read a snapshot.
+     * <p>
+     * The signal starts as {@link GeolocationPending} until the first reading
+     * arrives, then transitions to {@link GeolocationPosition} on every
+     * successful reading, or {@link GeolocationError} on failure. After
+     * {@link #stop()} (or after the owner detaches), the last value remains
+     * readable but the signal stops receiving updates. Calling
+     * {@link #resume()} resumes updates; the signal is reset to
+     * {@link GeolocationPending} on resume.
+     *
+     * @return a read-only signal reporting the latest result
+     */
+    public Signal<GeolocationResult> value() {
+        return valueSignal;
+    }
+
+    /**
+     * Returns a read-only signal that indicates whether the tracker is
+     * currently receiving updates. Flips to {@code true} on {@link #resume()}
+     * and to {@code false} on {@link #stop()} (or when the owner detaches).
+     * <p>
+     * Subscribe with {@code Signal.effect(owner, ...)} to bind a toggle
+     * button's label/state to the tracker without tracking a separate flag, or
+     * call {@code active().peek()} for a snapshot.
+     *
+     * @return a read-only signal reporting whether tracking is active
+     */
+    public Signal<Boolean> active() {
+        return activeSignal;
+    }
+
+    /**
+     * Starts, or resumes, the underlying browser watch.
+     * <p>
+     * Called automatically from the constructor so that a freshly created
+     * tracker is immediately active. Call again after {@link #stop()} to resume
+     * tracking on the same handle — any effects or bindings subscribed to
+     * {@link #value()} stay attached and start receiving new updates.
+     * <p>
+     * The signal is reset to {@link GeolocationPending} on every resume.
+     * Calling {@code resume()} on an already-running tracker is a no-op.
+     */
+    public void resume() {
+        if (activeSignal.peek()) {
+            return;
+        }
+        activeSignal.set(Boolean.TRUE);
+        valueSignal.set(new GeolocationPending());
 
         Element el = owner.getElement();
 
@@ -73,31 +147,11 @@ public class GeolocationTracker implements Serializable {
                 .addEventDetail().allowInert();
 
         el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
-                options, watchKey);
+                options, watchKey).then(ignored -> {
+                }, err -> LOGGER.debug(
+                        "Client-side geolocation.watch failed: {}", err));
 
         detachRegistration = owner.addDetachListener(e -> stop());
-    }
-
-    /**
-     * Returns a read-only signal that holds the most recent tracking result.
-     * <p>
-     * Combine with {@code ComponentEffect.effect(owner, ...)} to run code
-     * whenever the value changes — the effect re-runs automatically on every
-     * update and no manual event-listener bookkeeping is required. Outside an
-     * effect, call {@code value().get()} or {@code value().peek()} to read a
-     * snapshot.
-     * <p>
-     * The signal starts as {@code null} until the first reading arrives, then
-     * transitions to {@link GeolocationPosition} on every successful reading,
-     * or {@link GeolocationError} on failure. After {@link #stop()} (or after
-     * the owner detaches), the last value remains readable but the signal stops
-     * receiving updates. Match with {@code case null} to handle the initial
-     * waiting state in an exhaustive switch.
-     *
-     * @return a read-only signal reporting the latest result
-     */
-    public Signal<@Nullable GeolocationResult> value() {
-        return valueSignal;
     }
 
     /**
@@ -111,13 +165,14 @@ public class GeolocationTracker implements Serializable {
      * detach listener.
      * <p>
      * Idempotent and always safe: calling it twice, or calling it on a tracker
-     * whose owner has already detached, does nothing extra.
+     * whose owner has already detached, does nothing extra. After
+     * {@code stop()} the tracker can be resumed with {@link #resume()}.
      */
     public void stop() {
-        if (!active) {
+        if (!activeSignal.peek()) {
             return;
         }
-        active = false;
+        activeSignal.set(Boolean.FALSE);
 
         if (positionListener != null) {
             positionListener.remove();
@@ -131,9 +186,9 @@ public class GeolocationTracker implements Serializable {
             detachRegistration.remove();
             detachRegistration = null;
         }
-        if (ui != null && watchKey != null) {
-            ui.getPage().executeJs(
-                    "window.Vaadin.Flow.geolocation.clearWatch($0)", watchKey);
-        }
+        ui.getPage().executeJs("window.Vaadin.Flow.geolocation.clearWatch($0)",
+                watchKey).then(ignored -> {
+                }, err -> LOGGER.debug(
+                        "Client-side geolocation.clearWatch failed: {}", err));
     }
 }

@@ -71,6 +71,24 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
         @Nullable Integer maximumAge) implements Serializable {
 
     /**
+     * Canonical constructor. Rejects negative {@code timeout} and
+     * {@code maximumAge} values — both must be non-negative or {@code null}.
+     *
+     * @throws IllegalArgumentException
+     *             if {@code timeout} or {@code maximumAge} is negative
+     */
+    public GeolocationOptions {
+        if (timeout != null && timeout < 0) {
+            throw new IllegalArgumentException(
+                    "timeout must be non-negative, was " + timeout);
+        }
+        if (maximumAge != null && maximumAge < 0) {
+            throw new IllegalArgumentException(
+                    "maximumAge must be non-negative, was " + maximumAge);
+        }
+    }
+
+    /**
      * Starts building a {@link GeolocationOptions} instance. Only the settings
      * the caller explicitly sets are included; everything else falls back to
      * the browser default.
@@ -126,6 +144,27 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
         }
 
         /**
+         * Sets the maximum time in milliseconds to wait for a position before
+         * the request fails with {@link GeolocationErrorCode#TIMEOUT}.
+         * Convenience overload for callers that already have a millisecond
+         * value on hand.
+         *
+         * @param timeoutMillis
+         *            the timeout in milliseconds; must be non-negative
+         * @return this builder
+         * @throws IllegalArgumentException
+         *             if {@code timeoutMillis} is negative
+         */
+        public Builder timeout(int timeoutMillis) {
+            if (timeoutMillis < 0) {
+                throw new IllegalArgumentException(
+                        "timeout must be non-negative, was " + timeoutMillis);
+            }
+            this.timeout = timeoutMillis;
+            return this;
+        }
+
+        /**
          * Sets how old a cached reading may be while still being acceptable as
          * an answer to this request. {@link Duration#ZERO} (or {@code null}, or
          * never calling this setter) means the browser must query the
@@ -140,6 +179,29 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
         public Builder maximumAge(@Nullable Duration maximumAge) {
             this.maximumAge = maximumAge == null ? null
                     : Math.toIntExact(maximumAge.toMillis());
+            return this;
+        }
+
+        /**
+         * Sets how old a cached reading may be, in milliseconds. Convenience
+         * overload for callers that already have a millisecond value on hand.
+         * {@code 0} means the browser must query the positioning hardware on
+         * every request.
+         *
+         * @param maximumAgeMillis
+         *            the maximum acceptable age in milliseconds; must be
+         *            non-negative
+         * @return this builder
+         * @throws IllegalArgumentException
+         *             if {@code maximumAgeMillis} is negative
+         */
+        public Builder maximumAge(int maximumAgeMillis) {
+            if (maximumAgeMillis < 0) {
+                throw new IllegalArgumentException(
+                        "maximumAge must be non-negative, was "
+                                + maximumAgeMillis);
+            }
+            this.maximumAge = maximumAgeMillis;
             return this;
         }
 

@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.geolocation.GeolocationError;
+import com.vaadin.flow.component.geolocation.GeolocationOptions;
+import com.vaadin.flow.component.geolocation.GeolocationPending;
 import com.vaadin.flow.component.geolocation.GeolocationPosition;
 import com.vaadin.flow.component.geolocation.GeolocationTracker;
 import com.vaadin.flow.component.html.Div;
@@ -26,6 +28,9 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.GeolocationView", layout = ViewTestLayout.class)
 public class GeolocationView extends AbstractDivView {
+
+    private GeolocationTracker tracker;
+    private int trackUpdateCount;
 
     @Override
     protected void onShow() {
@@ -49,14 +54,17 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         // Mock navigator.geolocation so tests work without real permissions.
-        // getCurrentPosition calls success immediately with fixed coordinates.
-        // watchPosition calls success once, then returns a watch id.
+        // The mock reacts to the options passed in:
+        // - getCurrentPosition with `maximumAge === -1` returns an error
+        // (used to drive the error branch deterministically).
+        // - watchPosition emits a new position every 50 ms, each with a
+        // different timestamp, until clearWatch is called.
         UI.getCurrent().getPage().executeJs(
                 """
-                        const mockPosition = {
+                        const mockCoords = (lat, lon) => ({
                             coords: {
-                                latitude: 60.1699,
-                                longitude: 24.9384,
+                                latitude: lat,
+                                longitude: lon,
                                 accuracy: 10.0,
                                 altitude: 25.5,
                                 altitudeAccuracy: 5.0,
@@ -64,19 +72,38 @@ public class GeolocationView extends AbstractDivView {
                                 speed: 1.5
                             },
                             timestamp: Date.now()
-                        };
+                        });
+                        const watches = new Map();
                         let nextWatchId = 1;
                         Object.defineProperty(navigator, 'geolocation', {
                             value: {
                                 getCurrentPosition: function(success, error, options) {
-                                    setTimeout(function() { success(mockPosition); }, 0);
+                                    setTimeout(function() {
+                                        if (options && options.maximumAge === -1) {
+                                            error({ code: 1, message: 'User denied geolocation' });
+                                        } else {
+                                            success(mockCoords(60.1699, 24.9384));
+                                        }
+                                    }, 0);
                                 },
                                 watchPosition: function(success, error, options) {
                                     const id = nextWatchId++;
-                                    setTimeout(function() { success(mockPosition); }, 0);
+                                    let n = 0;
+                                    const interval = setInterval(function() {
+                                        n++;
+                                        success(mockCoords(60.1699 + n * 0.0001,
+                                                24.9384 + n * 0.0001));
+                                    }, 50);
+                                    watches.set(id, interval);
                                     return id;
                                 },
-                                clearWatch: function(id) {}
+                                clearWatch: function(id) {
+                                    const interval = watches.get(id);
+                                    if (interval) {
+                                        clearInterval(interval);
+                                        watches.delete(id);
+                                    }
+                                }
                             },
                             configurable: true
                         });
@@ -92,33 +119,62 @@ public class GeolocationView extends AbstractDivView {
                                 + pos.coords().longitude());
                     case GeolocationError error -> out.setText(
                             "error=" + error.code() + ":" + error.message());
-                    default -> out.setText("unexpected: " + result);
+                    case GeolocationPending p ->
+                        out.setText("unexpected: pending from get()");
                     }
                     add(out);
                 }));
 
+        // Uses the mock's "maximumAge == -1 → error" trigger to exercise
+        // the error branch.
+        NativeButton getErrorButton = createButton("Get Position (error)",
+                "getErrorButton", e -> UI.getCurrent().getGeolocation()
+                        .get(new GeolocationOptions(null, null, -1), result -> {
+                            Div out = new Div();
+                            out.setId("getErrorResult");
+                            switch (result) {
+                            case GeolocationPosition pos -> out.setText(
+                                    "unexpected position: " + pos.coords());
+                            case GeolocationError error ->
+                                out.setText("error=" + error.errorCode() + ":"
+                                        + error.message());
+                            case GeolocationPending p ->
+                                out.setText("unexpected: pending");
+                            }
+                            add(out);
+                        }));
+
         NativeButton trackButton = createButton("Track Position", "trackButton",
                 e -> {
-                    GeolocationTracker tracker = UI.getCurrent()
-                            .getGeolocation().track(this);
-                    // Listen for the position event directly to avoid
-                    // race conditions with signal update timing
+                    tracker = UI.getCurrent().getGeolocation().track(this);
+                    trackUpdateCount = 0;
                     getElement().addEventListener("vaadin-geolocation-position",
                             ev -> {
                                 var value = tracker.value().peek();
-                                Div out = new Div();
-                                out.setId("trackResult");
                                 if (value instanceof GeolocationPosition pos) {
+                                    trackUpdateCount++;
+                                    Div out = new Div();
+                                    out.setId("trackResult" + trackUpdateCount);
                                     out.setText("lat=" + pos.coords().latitude()
                                             + ", lon="
                                             + pos.coords().longitude());
-                                } else {
-                                    out.setText("unexpected state: " + value);
+                                    add(out);
                                 }
-                                add(out);
                             }).addEventDetail();
                 });
 
-        add(getButton, trackButton);
+        NativeButton stopButton = createButton("Stop tracking", "stopButton",
+                e -> {
+                    if (tracker != null) {
+                        tracker.stop();
+                        Div out = new Div();
+                        out.setId("stopResult");
+                        out.setText("stopped after " + trackUpdateCount
+                                + " updates");
+                        add(out);
+                    }
+                });
+
+        add(getButton, getErrorButton, trackButton, stopButton);
     }
 }

@@ -61,7 +61,6 @@ public class ExtendedClientDetails implements Serializable {
     private String navigatorPlatform;
     private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
     private String themeName;
-    private GeolocationAvailability geolocationAvailability;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -443,32 +442,6 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the current geolocation availability — whether the Geolocation
-     * API is usable in this context and, if so, what permission state the
-     * origin has. The value from this getter is the same as the one returned by
-     * {@code UI.getCurrent().getGeolocation().getAvailability()}.
-     *
-     * @return the current availability, or {@code null} if the browser has not
-     *         yet reported one
-     */
-    public GeolocationAvailability getGeolocationAvailability() {
-        return geolocationAvailability;
-    }
-
-    /**
-     * For internal use. Applications should read
-     * {@link #getGeolocationAvailability()} and let the framework keep it
-     * current.
-     *
-     * @param availability
-     *            the new availability, or {@code null} to clear
-     */
-    public void setGeolocationAvailability(
-            GeolocationAvailability availability) {
-        this.geolocationAvailability = availability;
-    }
-
-    /**
      * Creates an ExtendedClientDetails instance from browser details JSON
      * object. This is intended for internal use when browser details are
      * provided as JSON (e.g., during UI initialization or refresh).
@@ -522,12 +495,12 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
         String ga = getStringElseNull.apply("v-ga");
-        if (ga != null) {
+        if (ga != null && ui != null) {
             try {
-                details.setGeolocationAvailability(
+                ui.getInternals().setGeolocationAvailability(
                         GeolocationAvailability.valueOf(ga));
             } catch (IllegalArgumentException e) {
-                // unknown value; leave as null
+                // unknown value; leave the current availability alone
             }
         }
         return details;
