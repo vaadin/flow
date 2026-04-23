@@ -61,9 +61,13 @@ public class GeolocationIT extends ChromeBrowserTest {
                 findElement(By.id("trackResult2")).getText());
 
         // Stop tracking and snapshot how many updates had been rendered by
-        // the time stop() returned.
+        // the time stop() returned. A position event that was already
+        // in-flight when stop() ran can still land after stopResult appears,
+        // so sleep briefly before reading the count to let any such event
+        // settle — without this guard the assertion below can flake.
         findElement(By.id("stopButton")).click();
         waitUntil(d -> findElement(By.id("stopResult")));
+        sleep(100);
         int countAtStop = findElements(By.cssSelector("[id^='trackResult']"))
                 .size();
 
@@ -71,11 +75,7 @@ public class GeolocationIT extends ChromeBrowserTest {
         // cleared by clearWatch, which the tracker posts on stop). Give the
         // server a full second to confirm no further trackResult divs are
         // appended.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        }
+        sleep(1000);
         int countAfterWait = findElements(By.cssSelector("[id^='trackResult']"))
                 .size();
         Assert.assertEquals(
@@ -90,6 +90,14 @@ public class GeolocationIT extends ChromeBrowserTest {
                     + " rendered after stop()");
         } catch (NoSuchElementException expected) {
             // expected
+        }
+    }
+
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
     }
 }
