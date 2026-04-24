@@ -222,6 +222,18 @@ public class Geolocation implements Serializable {
      * code for navigation. For cancelling while the view is still attached
      * (e.g. a "Stop tracking" button), call {@link GeolocationTracker#stop()}
      * on the returned tracker.
+     * <p>
+     * <b>Permission-revoke caveat.</b> If the user revokes geolocation
+     * permission while a watch is active and then grants it again, the browser
+     * silently stops delivering position updates to the existing watch — this
+     * is the W3C Geolocation API's documented behavior across browsers, not a
+     * Flow-specific limitation. To recover after a revoke/regrant cycle, call
+     * {@link GeolocationTracker#stop()} followed by
+     * {@link GeolocationTracker#resume()}, which installs a fresh browser
+     * watch. Applications that want this to happen automatically can subscribe
+     * to {@link #availabilitySignal()} with {@code Signal.effect(owner, ...)}
+     * and trigger the stop/resume when the availability transitions back to
+     * {@link GeolocationAvailability#GRANTED GRANTED}.
      *
      * @param owner
      *            the component that owns this tracking session; detaching the
