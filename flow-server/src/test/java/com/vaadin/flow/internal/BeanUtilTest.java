@@ -94,7 +94,9 @@ public class BeanUtilTest {
                 .orElse(null);
 
         Assert.assertNotNull("Should find 'value' property", valueDescriptor);
-        Assert.assertNotNull("Should have read method from parent interface", valueDescriptor.getReadMethod());
-        Assert.assertNotNull("Should have write method from child interface", valueDescriptor.getWriteMethod());
+        Assert.assertNotNull("Should have read method from parent interface",
+                valueDescriptor.getReadMethod());
+        Assert.assertNotNull("Should have write method from child interface",
+                valueDescriptor.getWriteMethod());
     }
 }

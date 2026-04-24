@@ -42,7 +42,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -503,8 +502,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private NodeUpdater createNodeUpdater(String versionsContent) {
         options.withBuildDirectory(TARGET);
 
-        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        return new NodeUpdater(options) {
 
             @Override
             public void execute() {
