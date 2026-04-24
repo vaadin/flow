@@ -45,7 +45,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -89,8 +88,7 @@ class TaskRunNpmInstallTest {
         options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
                 .withBundleBuild(true);
         finder = options.getClassFinder();
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {

@@ -300,6 +300,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * will re-run every time it is called.
      *
      * Setting this to `true` allows to always execute `vaadinPrepareFrontend`.
+     * It also chains the task to `processResources`, which is no longer done
+     * by default since the dev server handles frontend preparation at runtime.
      *
      * Defaults to `false`, meaning that the task execution is skipped when its
      * outcomes are up-to-date, improving the overall build time.
