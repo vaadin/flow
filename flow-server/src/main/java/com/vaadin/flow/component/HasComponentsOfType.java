@@ -81,7 +81,7 @@ public interface HasComponentsOfType<T extends Component>
      * @param components
      *            the components to add
      */
-    default void add(Collection<T> components) {
+    default void add(Collection<? extends T> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("add");
         if (hasChildrenBinding()) {
@@ -139,7 +139,7 @@ public interface HasComponentsOfType<T extends Component>
      *             if there is a component whose non {@code null} parent is not
      *             this component
      */
-    default void remove(Collection<T> components) {
+    default void remove(Collection<? extends T> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("remove");
         if (hasChildrenBinding()) {
@@ -284,7 +284,8 @@ public interface HasComponentsOfType<T extends Component>
      *             thrown if a binding for children already exists
      */
     default <V extends @Nullable Object, S extends Signal<V>> void bindChildren(
-            Signal<List<S>> list, SerializableFunction<S, T> childFactory) {
+            Signal<List<S>> list,
+            SerializableFunction<S, ? extends T> childFactory) {
         throwIfTextBindingIsActive("bindChildren");
         var self = (Component & HasComponentsOfType<T>) this;
         var node = self.getElement().getNode();
