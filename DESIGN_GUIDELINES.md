@@ -155,14 +155,30 @@ anything else:
 
 ### JavaScript location and globals
 
-- **Non-trivial JS goes in its own `.js` or `.ts` file** under
-  `META-INF/frontend/` (Java side) or `flow-client/src/main/frontend/`
-  (client module), loaded via `@JsModule` on `UI.java`. Don't inline
-  anything beyond a one-liner in a Java string.
+- **Non-trivial JS goes in its own file**, never inlined beyond a
+  one-liner in a Java string. Two valid homes:
+  - `flow-client/src/main/frontend/Xxx.ts` imported from `Flow.ts`
+    (`import './Xxx';`). Use this for platform-level features that
+    need to be available before the bootstrap handshake (anything
+    referenced from `collectBrowserDetails`, anything that must attach
+    `document` / `window` listeners before the first user interaction).
+    Precedents: `Geolocation.ts`, `PageVisibility.ts`. Prefer TypeScript
+    here — new files should not be `.js`.
+  - `META-INF/frontend/xxx.js` loaded via `@JsModule("./xxx.js")` on
+    `UI.java` or a component. Use this when the script is tied to a
+    specific Java API surface and does not need to run at bootstrap
+    time.
 - **Global state and helper functions live under `window.Vaadin.Flow`**
   (e.g. `window.Vaadin.Flow.geolocation`,
+  `window.Vaadin.Flow.pageVisibility`,
   `window.Vaadin.Flow.componentSizeObserver`). Use annotations on
   `UI.java` for scripts that need to run globally.
+- **`init(element)` installers must be idempotent.** A facade may call
+  `window.Vaadin.Flow.xxx.init(this)` more than once per UI element
+  (lazy (re)arming from a signal accessor, navigation to a view that
+  re-subscribes, etc.). Track installations per element (WeakMap) and
+  dispose the previous set of listeners before attaching new ones so
+  the element never carries duplicates.
 
 ### `executeJs` parameter passing
 
@@ -225,11 +241,17 @@ round-trip:
 
 - Client collects the value in `collectBrowserDetails` (make that
   function async if needed) and appends it to the init request as a
-  `v-xxx` parameter.
+  `v-xxx` parameter. The TS that produces the value must be imported
+  from `Flow.ts` so it is loaded when `collectBrowserDetails` runs —
+  `@JsModule` on `UI.java` loads too late for this path.
 - Server reads it in `ExtendedClientDetails.fromJson` and seeds the
   appropriate `UIInternals` field / signal.
 - The public Java signal picks up the value on UI attach — no
   additional round-trip required.
+- Seed the server-side signal with a sentinel (`UNKNOWN`, `Pending`, …)
+  so the brief window between attach and handshake completion is
+  distinguishable from a genuine reading. Precedents:
+  `GeolocationAvailability.UNKNOWN`.
 
 ### Feature-capability detection
 
