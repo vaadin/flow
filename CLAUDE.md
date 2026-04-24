@@ -21,7 +21,7 @@ React support).
 **Core Server Framework (`flow-server/`)**:
 - Component system with server-side state management (`StateNode`, `StateTree`)
 - DOM abstraction layer (`Element`, `Node`) that syncs with client-side
-- JavaScript execution bridge (`JacksonCodec`, `JsonCodec`) for seamless
+- JavaScript execution bridge (`JacksonCodec`) for seamless
   client-server communication
 - Routing system (`Router`, `RouteConfiguration`) with navigation lifecycle
 - Dependency injection and instantiation (`Instantiator`, `Lookup`)
@@ -126,8 +126,8 @@ cd flow-client && npm install && npm run build
 
 ### JavaScript Execution and JSON Codec
 
-The `JacksonCodec` and `JsonCodec` classes handle serialization between
-Java and JavaScript:
+The `JacksonCodec` class handles serialization between Java and
+JavaScript:
 
 - Parameters: Java objects → JSON → JavaScript variables (`$0`, `$1`, etc.)
 - Return values: JavaScript objects → JSON → Java beans

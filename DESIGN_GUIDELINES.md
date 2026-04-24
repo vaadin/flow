@@ -41,10 +41,9 @@ When the framework needs to write a value that the application is meant
 to read, don't hang the setter on the class users already use for reads
 — even if it's annotated "for framework use only". Put the read surface
 on the user-facing class or facade and the write surface on
-`UIInternals` (or equivalent internal-only class). Review feedback on
-this PR explicitly flagged the opposite shape as a DX hazard, and we
-moved `setGeolocationAvailability` from `ExtendedClientDetails` to
-`UIInternals` as a result.
+`UIInternals` (or equivalent internal-only class). The opposite shape
+is a DX hazard: for example, `setGeolocationAvailability` lives on
+`UIInternals`, not on the user-facing `ExtendedClientDetails`.
 
 ### Options records
 
@@ -295,11 +294,13 @@ point of probing. Useful primitives:
 - Keep the unit test count minimal — only the essential cases. More tests
   are not better; focused tests are.
 - For browser-facing features, add an IT view under
-  `flow-tests/test-root-context/` that mocks `navigator.geolocation` (or
-  the relevant browser API) and exercises both happy-path and error
-  branches. Use an option value to trigger errors deterministically
-  (e.g. `maximumAge === -1`). Use `setInterval` to simulate a stream of
-  updates, and verify that `clearWatch` actually stops them.
+  `flow-tests/test-root-context/` that mocks the relevant browser API
+  and exercises both happy-path and error branches. Use an option
+  value to trigger errors deterministically (for geolocation,
+  `maximumAge === -1` works). If the API streams updates (e.g.
+  `watchPosition`), use `setInterval` to simulate them and verify
+  that the matching cancel call (e.g. `clearWatch`) actually stops
+  them.
 - ITs assert concrete outputs, not just "not null". If floating-point
   arithmetic would make assertions brittle, simplify the mock to emit
   stable values (different timestamps suffice for uniqueness).
@@ -314,6 +315,6 @@ point of probing. Useful primitives:
 - When a commit resolves an issue in this repo, add `Fixes #issuenumber`
   to the message.
 - Use `test:` prefix for commits that only touch tests; `fix:` is for
-  production-code fixes.
+  production-code fixes; `feat:` is for new features.
 - When opening a PR, mark it as draft. Remind the author to self-review
   before marking it ready.
