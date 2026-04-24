@@ -25,6 +25,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -495,6 +496,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         if (ui != null) {
             seedPageVisibility(ui, getStringElseNull.apply("v-pv"));
+            seedGeolocationAvailability(ui, getStringElseNull.apply("v-ga"));
         }
         return details;
     }
@@ -507,6 +509,17 @@ public class ExtendedClientDetails implements Serializable {
             ui.getInternals().setPageVisibility(PageVisibility.valueOf(raw));
         } catch (IllegalArgumentException ignored) {
             // Unknown client value — keep UNKNOWN.
+        }
+    }
+    private static void seedGeolocationAvailability(UI ui, String raw) {
+        if (raw == null) {
+            return;
+        }
+        try {
+            ui.getInternals().setGeolocationAvailability(
+                    GeolocationAvailability.valueOf(raw));
+        } catch (IllegalArgumentException e) {
+            // unknown value; leave the current availability alone
         }
     }
 

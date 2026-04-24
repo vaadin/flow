@@ -47,6 +47,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
@@ -235,6 +236,9 @@ public class UIInternals implements Serializable {
 
     private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
             PageVisibility.UNKNOWN);
+  
+    private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
+            GeolocationAvailability.UNKNOWN);
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1431,6 +1435,30 @@ public class UIInternals implements Serializable {
         if (visibility != null) {
             pageVisibilitySignal.set(visibility);
         }
+    }
+  
+    /**
+     * Returns the reactive signal holding the geolocation availability for this
+     * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
+     * client bootstrap report, then transitions to the value the browser
+     * reports and reflects subsequent updates. Application code reads it via
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilitySignal()}.
+     *
+     * @return the availability signal
+     */
+    public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
+        return geolocationAvailabilitySignal;
+    }
+
+    /**
+     * Updates the geolocation availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     */
+    public void setGeolocationAvailability(
+            GeolocationAvailability availability) {
+        this.geolocationAvailabilitySignal.set(availability);
     }
 
     /**
