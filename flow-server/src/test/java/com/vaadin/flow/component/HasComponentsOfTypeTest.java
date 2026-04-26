@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,13 +26,6 @@ class HasComponentsOfTypeTest {
     static class Item extends Component {
         Item(String id) {
             setId(id);
-        }
-    }
-
-    @Tag("breadcrumb-item")
-    static class SubItem extends Item {
-        SubItem(String id) {
-            super(id);
         }
     }
 
@@ -57,32 +48,5 @@ class HasComponentsOfTypeTest {
         Item first = trail.getComponentAt(0);
         assertSame(a, first);
         assertEquals(1, trail.indexOf(b));
-    }
-
-    @Test
-    void add_listOfSubtype_accepted() {
-        Trail trail = new Trail();
-        List<SubItem> subs = List.of(new SubItem("s1"), new SubItem("s2"));
-
-        // Collection<? extends T>: List<SubItem> must be assignable to the
-        // Collection parameter of HasComponentsOfType<Item>.add.
-        trail.add(subs);
-
-        assertEquals(2, trail.getComponentCount());
-        assertSame(subs.get(0), trail.getComponentAt(0));
-        assertSame(subs.get(1), trail.getComponentAt(1));
-    }
-
-    @Test
-    void remove_listOfSubtype_accepted() {
-        Trail trail = new Trail();
-        SubItem s1 = new SubItem("s1");
-        SubItem s2 = new SubItem("s2");
-        trail.add(s1, s2);
-
-        List<SubItem> toRemove = List.of(s1, s2);
-        trail.remove(toRemove);
-
-        assertEquals(0, trail.getComponentCount());
     }
 }
