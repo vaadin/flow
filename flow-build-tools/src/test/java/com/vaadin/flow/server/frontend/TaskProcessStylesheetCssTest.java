@@ -305,6 +305,66 @@ class TaskProcessStylesheetCssTest {
     }
 
     @Test
+    void execute_rewritesRelativeUrlsInInlinedImports()
+            throws ExecutionFailedException, IOException {
+        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+                .thenReturn(Set.of(TestClassWithStyleSheet.class));
+
+        // Entry file at META-INF/resources/styles.css imports
+        // views/messages.css which references ../images/foo.svg
+        String mainCss = "@import './views/messages.css';";
+        String messagesCss = ".icon { mask-image: url(\"../images/foo.svg\"); }";
+
+        File mainFile = new File(metaInfResources, "styles.css");
+        FileUtils.writeStringToFile(mainFile, mainCss, StandardCharsets.UTF_8);
+
+        File viewsDir = new File(metaInfResources, "views");
+        viewsDir.mkdirs();
+        File messagesFile = new File(viewsDir, "messages.css");
+        FileUtils.writeStringToFile(messagesFile, messagesCss,
+                StandardCharsets.UTF_8);
+
+        File imagesDir = new File(metaInfResources, "images");
+        imagesDir.mkdirs();
+        new File(imagesDir, "foo.svg").createNewFile();
+
+        TaskProcessStylesheetCss task = new TaskProcessStylesheetCss(options);
+        task.execute();
+
+        String processedCss = Files.readString(mainFile.toPath());
+        assertTrue(processedCss.contains("url('images/foo.svg')"),
+                "Expected url rewritten to 'images/foo.svg' but got: "
+                        + processedCss);
+        assertTrue(!processedCss.contains("../images/"),
+                "Expected '../images/' to be rewritten away but got: "
+                        + processedCss);
+    }
+
+    @Test
+    void execute_leavesAbsoluteAndExternalUrlsAlone()
+            throws ExecutionFailedException, IOException {
+        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+                .thenReturn(Set.of(TestClassWithStyleSheet.class));
+
+        String mainCss = """
+                .a { background: url('/absolute/x.svg'); }
+                .b { background: url('https://cdn.example.com/y.svg'); }
+                """;
+        File mainFile = new File(metaInfResources, "styles.css");
+        FileUtils.writeStringToFile(mainFile, mainCss, StandardCharsets.UTF_8);
+
+        TaskProcessStylesheetCss task = new TaskProcessStylesheetCss(options);
+        task.execute();
+
+        String processedCss = Files.readString(mainFile.toPath());
+        assertTrue(processedCss.contains("url('/absolute/x.svg')"),
+                "Absolute url should remain unchanged: " + processedCss);
+        assertTrue(
+                processedCss.contains("url('https://cdn.example.com/y.svg')"),
+                "External url should remain unchanged: " + processedCss);
+    }
+
+    @Test
     void execute_processesMultipleAnnotatedClasses()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
