@@ -571,6 +571,9 @@
           <configuration>
             <!-- Default is system -->
             <excludedScopes>system,test</excludedScopes>
+            <!-- Workaround for https://github.com/mojohaus/license-maven-plugin/issues/511:
+                 2.7.1 default AUTODETECT fails on a clean target dir where licenses.xml does not yet exist. -->
+            <licensesOutputFileEol>LF</licensesOutputFileEol>
           </configuration>
         </plugin>
         <plugin>

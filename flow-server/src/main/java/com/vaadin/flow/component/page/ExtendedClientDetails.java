@@ -25,6 +25,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -474,7 +475,8 @@ public class ExtendedClientDetails implements Serializable {
             }
         };
 
-        return new ExtendedClientDetails(ui, getStringElseNull.apply("v-sw"),
+        ExtendedClientDetails details = new ExtendedClientDetails(ui,
+                getStringElseNull.apply("v-sw"),
                 getStringElseNull.apply("v-sh"),
                 getStringElseNull.apply("v-ww"),
                 getStringElseNull.apply("v-wh"),
@@ -492,6 +494,16 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-np"),
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
+        String ga = getStringElseNull.apply("v-ga");
+        if (ga != null && ui != null) {
+            try {
+                ui.getInternals().setGeolocationAvailability(
+                        GeolocationAvailability.valueOf(ga));
+            } catch (IllegalArgumentException e) {
+                // unknown value; leave the current availability alone
+            }
+        }
+        return details;
     }
 
     /**
