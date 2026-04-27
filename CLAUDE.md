@@ -1,26 +1,41 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
+
+For guidance on **designing a new feature** (API shape, browser-API wrapping,
+signals, lifecycle, nullability, DOM events, bootstrap flow, Javadoc
+expectations), see [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md). This file
+covers the operational side: repo structure, build commands, test workflow,
+coding conventions, and general coding rules that apply to all changes.
 
 ## Repository Overview
 
-Vaadin Flow is the Java framework of Vaadin Platform for building modern web applications. This is a large, multi-module Maven project that combines server-side Java components with modern frontend tooling (Vite, TypeScript, React support).
+Vaadin Flow is the Java framework of Vaadin Platform for building modern
+web applications. This is a large, multi-module Maven project that combines
+server-side Java components with modern frontend tooling (Vite, TypeScript,
+React support).
 
 ### Key Architecture Components
 
 **Core Server Framework (`flow-server/`)**:
 - Component system with server-side state management (`StateNode`, `StateTree`)
 - DOM abstraction layer (`Element`, `Node`) that syncs with client-side
-- JavaScript execution bridge (`JacksonCodec`, `JsonCodec`) for seamless client-server communication
+- JavaScript execution bridge (`JacksonCodec`) for seamless
+  client-server communication
 - Routing system (`Router`, `RouteConfiguration`) with navigation lifecycle
 - Dependency injection and instantiation (`Instantiator`, `Lookup`)
 - Frontend asset management and bundling
 
 **Client-Server Communication**:
-- Uses Jackson for JSON serialization/deserialization between Java objects and JavaScript
-- `executeJs()` methods allow calling JavaScript from server with automatic parameter serialization
-- Return values from JavaScript can be automatically deserialized into Java beans
-- WebSocket-based push communication (`PushConnection`, `AtmospherePushConnection`)
+- Uses Jackson for JSON serialization/deserialization between Java objects
+  and JavaScript
+- `executeJs()` methods allow calling JavaScript from server with automatic
+  parameter serialization
+- Return values from JavaScript can be automatically deserialized into
+  Java beans
+- WebSocket-based push communication (`PushConnection`,
+  `AtmospherePushConnection`)
 
 **Frontend Build System**:
 - Vite-based development mode with hot reload
@@ -86,13 +101,6 @@ mvn spotless:check
 mvn checkstyle:check
 ```
 
-### Coding Conventions
-
-- Use triple quotes (`"""`) for multi-line string blocks in Java text blocks
-- **When tests fail, code doesn't compile, or similar issues occur: Always analyze why first, do not start rewriting code**
-- **When writing code, names and comments should describe how the code works and why, not what has changed from previous versions. Commit messages capture change information, not the code itself.**
-- **Always create proper tests for what should work first. If the tests expose problems in the implementation, fix the implementation after the tests have been created.**
-
 ### Frontend Development
 
 ```bash
@@ -102,16 +110,33 @@ mvn checkstyle:check
 cd flow-client && npm install && npm run build
 ```
 
+## Coding Conventions
+
+- Use triple quotes (`"""`) for multi-line string blocks in Java text blocks.
+- **When tests fail, code doesn't compile, or similar issues occur: Always
+  analyze why first. Do not start rewriting code.**
+- **When writing code, names and comments should describe how the code works
+  and why, not what has changed from previous versions. Commit messages
+  capture change information, not the code itself.**
+- **Always create proper tests for what should work first. If the tests
+  expose problems in the implementation, fix the implementation after the
+  tests have been created.**
+
 ## Working with Key Components
 
 ### JavaScript Execution and JSON Codec
 
-The `JacksonCodec` and `JsonCodec` classes handle serialization between Java and JavaScript:
+The `JacksonCodec` class handles serialization between Java and
+JavaScript:
 
 - Parameters: Java objects → JSON → JavaScript variables (`$0`, `$1`, etc.)
 - Return values: JavaScript objects → JSON → Java beans
 - Special handling for `Element` instances (sent as DOM references)
 - Support for arbitrary objects via Jackson serialization
+
+When calling `executeJs()`, always pass values as parameters (`$0`, `$1`,
+...) — never concatenate them into the expression string. See
+[DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for the full rules.
 
 ### State Management
 
@@ -133,16 +158,17 @@ Components extend `Component` and use:
 
 **Unit Tests**: Located in `src/test/java/` in each module
 - Use JUnit 4/5
-- Mock heavy use of Mockito
+- Heavy use of Mockito for mocks
 - Focus on individual class behavior
 
 **Integration Tests**: Located in `flow-tests/`
 - Use TestBench for browser automation
 - Test full client-server interaction
 - Require running application server
-- **When an IT fails: Use Playwright to debug the browser behavior and understand what's actually happening in the UI**
+- **When an IT fails: Use Playwright to debug the browser behavior and
+  understand what's actually happening in the UI.**
 
-### Common Patterns
+## Common Patterns
 
 **Test Improvements**: When improving tests, focus on:
 - Verifying actual behavior rather than just "not null"
@@ -166,19 +192,15 @@ Components extend `Component` and use:
 - Spring Boot 4 integration available
 - Hot reload available in development mode
 - Extensive CI/CD pipeline with multiple test configurations
-- When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
-- When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
-- When creating a PR, mark it as a draft on GitHub and remind the user about reviewing the code themselves and marking the PR ready
-- Don't add @since to javadocs
+- When creating a commit that will resolve an issue in the same repository,
+  add "Fixes #issuenumber" to the commit message
+- When creating a PR, mark it as a draft on GitHub and remind the user
+  about reviewing the code themselves and marking the PR ready
+- Don't add `@since` to javadocs
 - When adding unit tests, add only the essential ones and not more than that
-- Use test: instead of fix: when fixing only tests
-- Prefix custom DOM events with `vaadin-` (e.g. `vaadin-component-resize` instead of `component-resize`)
-- Always write even slightly complex JavaScript into a separate `.js` file rather than inlining it in Java strings. Use `@JsModule` on `UI.java` to load the file from `META-INF/frontend/`
-- Store global JavaScript state and functions on `window.Vaadin.Flow` (e.g. `window.Vaadin.Flow.componentSizeObserver`). Use annotations on the UI class for global scripts
-- Supported browsers — only write client code targeting these, and do not add fallbacks or polyfills for anything else:
-  - Chrome (evergreen)
-  - Firefox (evergreen)
-  - Firefox Extended Support Release (ESR)
-  - Safari 17 or newer (latest minor version in each major series)
-  - Edge (Chromium, evergreen)
-- Javadoc for any Java API that wraps a browser/JS API must be written for Java developers who do not know the underlying JS API. Explain what the method does in Java terms, when to call it, what the parameters and return value mean, threading/lifecycle expectations, and any browser-specific caveats (e.g. "Safari always returns UNKNOWN"). Do not assume the reader will read the W3C spec or the `.ts` source.
+- Use `test:` instead of `fix:` when fixing only tests
+
+See [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for design-level guidance
+(API shape, signals, sealed types, DOM event naming, browser-wrapping
+conventions, supported browsers, bootstrap data flow, Javadoc for wrapped
+browser APIs).
