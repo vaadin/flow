@@ -219,23 +219,30 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void initializeFeatureFlags(Document indexDocument,
             VaadinRequest request) {
         String script = featureFlagsInitializer(request);
+        if (script.isEmpty()) {
+            return;
+        }
         Element scriptElement = indexDocument.head().prependElement("script");
         scriptElement.attr(SCRIPT_INITIAL, "");
         scriptElement.appendChild(new DataNode(script));
     }
 
     static String featureFlagsInitializer(VaadinRequest request) {
-        return FeatureFlags.get(request.getService().getContext()).getFeatures()
-                .stream().filter(Feature::isEnabled)
+        String activations = FeatureFlags.get(request.getService().getContext())
+                .getFeatures().stream().filter(Feature::isEnabled)
                 .map(feature -> String.format("activator(\"%s\");",
                         feature.getId()))
-                .collect(Collectors.joining("\n",
-                        """
-                                window.Vaadin = window.Vaadin || {};
-                                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
-                                window.Vaadin.featureFlagsUpdaters.push((activator) => {
-                                """,
-                        "});"));
+                .collect(Collectors.joining("\n"));
+
+        if (activations.isEmpty()) {
+            return "";
+        }
+
+        return """
+                window.Vaadin = window.Vaadin || {};
+                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
+                window.Vaadin.featureFlagsUpdaters.push((activator) => {
+                """ + activations + "\n});";
     }
 
     private static void addDevBundleTheme(Document document,

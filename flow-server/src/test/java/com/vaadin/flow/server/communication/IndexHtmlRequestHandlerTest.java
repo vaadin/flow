@@ -218,9 +218,9 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        assertTrue(indexHtml.contains(
+        assertFalse(indexHtml.contains(
                 "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
-                "Response should have Feature Flags updater function");
+                "Response should not have Feature Flags updater function when no flags are enabled");
     }
 
     @Test
