@@ -283,7 +283,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
             testProject.build("-Pvaadin.productionMode=false", "bootJar")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -291,13 +291,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     private fun doTestSpringProject() {
-        val springBootVersion = "3.3.4"
+        val springBootVersion = "4.0.5"
 
         testProject.settingsFile.writeText(
             """
             pluginManagement {
                 repositories {
-                  maven { url 'https://repo.spring.io/milestone' }
                   gradlePluginPortal()
                 }
               }
@@ -307,35 +306,27 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
-                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id 'io.spring.dependency-management' version '1.1.7'
                 id 'java'
                 id("com.vaadin.flow")
             }
-            
+
             repositories {
                 mavenLocal()
                 mavenCentral()
                 maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
-                maven { url 'https://repo.spring.io/milestone' }
             }
 
-            configurations {
-                developmentOnly
-                runtimeClasspath {
-                    extendsFrom developmentOnly
-                }
-            }
-            
             dependencies {
                 implementation('com.vaadin:flow:$flowVersion')
                 implementation('com.vaadin:vaadin-spring:$flowVersion')
-                implementation('org.springframework.boot:spring-boot-starter-web:$springBootVersion')
+                implementation('org.springframework.boot:spring-boot-starter-webmvc:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {
                     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
                 }
             }
-            
+
             dependencyManagement {
                 imports {
                     mavenBom "com.vaadin:flow:$flowVersion"
@@ -565,6 +556,34 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
+    fun alwaysExecutePrepareFrontend_chainsToProcessResources() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin.flow'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecutePrepareFrontend = true
+            }
+        """
+        )
+        val build: BuildResult = testProject.build("build")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinBuildFrontend")
+    }
+
+    @Test
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
             plugins {
@@ -614,17 +633,17 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '3.3.4'
-                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id 'org.springframework.boot' version '4.0.5'
+                id 'io.spring.dependency-management' version '1.1.7'
                 id("com.vaadin.flow")
             }
-            
+
             repositories {
                 mavenLocal()
                 mavenCentral()
                 maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            
+
             sourceSets {
                 ui {
                     java
@@ -636,15 +655,15 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                     }
                 }
             }
-            
+
             vaadin {
                 productionMode = true
                 sourceSetName = 'ui'
             }
-            
+
             dependencies {
                 uiImplementation('com.vaadin:flow:$flowVersion')
-                implementation('org.springframework.boot:spring-boot-starter-web')
+                implementation('org.springframework.boot:spring-boot-starter-webmvc')
             }
             
             jar {

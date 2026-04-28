@@ -68,7 +68,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -222,6 +221,7 @@ public class DevModeInitializer implements Serializable {
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
+                .withApplicationConfiguration(config)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
                         new File(frontendFolder + FrontendUtils.GENERATED))
@@ -389,8 +389,8 @@ public class DevModeInitializer implements Serializable {
     private static void runNodeTasks(NodeTasks tasks) {
         try {
             tasks.execute();
-        } catch (ExecutionFailedException exception) {
-            log().debug(
+        } catch (Exception exception) {
+            log().error(
                     "Could not initialize dev mode handler. One of the node tasks failed",
                     exception);
             throw new CompletionException(exception);

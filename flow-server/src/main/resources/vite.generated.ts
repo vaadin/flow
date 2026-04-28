@@ -27,7 +27,7 @@ import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
-import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+//#serviceWorkerPluginImport#
 export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
 
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -514,9 +514,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       productionMode && brotli(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && serviceWorkerPlugin({
-        srcPath: settings.clientServiceWorkerSource,
-      }),
+      //#serviceWorkerPlugin#
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
@@ -530,16 +528,28 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh and JSX transformation via OXC
+      // The React plugin provides fast refresh. In dev mode Babel (below)
+      // handles the JSX transform so OXC skips it — keeping all source
+      // locations derived from Babel's AST, which refers to the original
+      // source. In production OXC does the JSX transform.
       reactPlugin({
         include: '**/*.tsx',
-        jsxImportSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
       }),
-      // Babel plugins for source location info and signals transform
-      // (separate from reactPlugin since v6 uses OXC instead of Babel for JSX)
+      // Babel runs with enforce:'pre' (default), so it sees the original
+      // source. All line/column values it embeds in the output come from
+      // the original AST — not affected by any formatting differences in
+      // Babel's printed output that follows.
+      //
+      // In dev mode Babel also does the JSX dev transform with the custom
+      // jsxImportSource, which captures JSX element locations in
+      // _debugInfo.source (React 19 no longer exposes _source on fibers).
       babel({
         include: '**/*.tsx',
         plugins: [
+          !productionMode && [
+            '@babel/plugin-transform-react-jsx-development',
+            { importSource: 'Frontend/generated/jsx-dev-transform' }
+          ],
           !productionMode && addFunctionComponentSourceLocationBabel(),
           [
             'module:@preact/signals-react-transform',
@@ -547,7 +557,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
               mode: 'all' // Needed to include translations which do not use something.value
             }
           ]
-        ].filter(Boolean)
+        ].filter(Boolean),
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
