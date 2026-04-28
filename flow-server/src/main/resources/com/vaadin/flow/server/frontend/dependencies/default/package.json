@@ -7,7 +7,7 @@
     "lit": "3.3.2"
   },
   "devDependencies": {
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "strip-css-comments": "5.0.0"
   }
 }
