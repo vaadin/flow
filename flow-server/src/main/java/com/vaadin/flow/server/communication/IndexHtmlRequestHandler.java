@@ -228,10 +228,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     static String featureFlagsInitializer(VaadinRequest request) {
-        String activations = FeatureFlags.get(request.getService().getContext())
-                .getFeatures().stream().filter(Feature::isEnabled)
-                .map(feature -> String.format("activator(\"%s\");",
-                        feature.getId()))
+        String activations = FeatureFlags
+                .get(request.getService().getContext()).getFeatures().stream()
+                .filter(Feature::isEnabled).map(feature -> String
+                        .format("activator(\"%s\");", feature.getId()))
                 .collect(Collectors.joining("\n"));
 
         if (activations.isEmpty()) {
@@ -242,7 +242,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 window.Vaadin = window.Vaadin || {};
                 window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
                 window.Vaadin.featureFlagsUpdaters.push((activator) => {
-                """ + activations + "\n});";
+                """
+                + activations + "\n});";
     }
 
     private static void addDevBundleTheme(Document document,
