@@ -209,9 +209,9 @@ class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle web-component request");
 
-        assertTrue(out.toString().contains(
+        assertFalse(out.toString().contains(
                 "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
-                "Response should have Feature Flags updater function");
+                "Response should not have Feature Flags updater function when no flags are enabled");
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),
