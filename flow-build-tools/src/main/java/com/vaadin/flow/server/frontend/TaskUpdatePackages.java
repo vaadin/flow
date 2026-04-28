@@ -157,11 +157,6 @@ public class TaskUpdatePackages extends NodeUpdater {
                     // Already locked with a dependency reference, skip
                     continue;
                 }
-                if (dependencies.has(dependency)
-                        || devDependencies.has(dependency)) {
-                    // Skip platform overrides for existing dependencies
-                    continue;
-                }
                 // Lock with a version number
                 vaadinOverrides.put(dependency,
                         frontendVersion.getFullVersion());
