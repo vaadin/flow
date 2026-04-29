@@ -61,17 +61,12 @@ final class BrowserGeolocationClient implements GeolocationClient {
     private final UI ui;
     private final List<SerializableConsumer<GeolocationAvailability>> availabilityListeners = new ArrayList<>();
     private final DomListenerRegistration availabilityChangeRegistration;
-    private GeolocationAvailability currentAvailability = GeolocationAvailability.UNKNOWN;
+    private GeolocationAvailability currentAvailability;
     private boolean closed;
 
-    BrowserGeolocationClient(UI ui) {
+    BrowserGeolocationClient(UI ui, GeolocationAvailability seed) {
         this.ui = ui;
-        // Seed availability from bootstrap if it has been populated.
-        GeolocationAvailability seeded = ui.getInternals()
-                .getGeolocationAvailabilitySignal().peek();
-        if (seeded != null) {
-            currentAvailability = seeded;
-        }
+        this.currentAvailability = seed;
         availabilityChangeRegistration = ui.getElement()
                 .addEventListener("vaadin-geolocation-availability-change",
                         e -> updateAvailability(

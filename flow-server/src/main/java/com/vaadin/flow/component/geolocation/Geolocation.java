@@ -22,7 +22,6 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -103,14 +102,7 @@ public class Geolocation implements Serializable {
     private final UI ui;
     private final Signal<GeolocationAvailability> availabilityReadOnly;
 
-    private @Nullable GeolocationClient client;
-    // Transient: the Registration lambda captures another serializable lambda,
-    // which causes a nested-lambda cast failure during Java deserialization.
-    // After deserialization the listener already lives in the client's listener
-    // list, so the subscription handle is not needed for correctness; if
-    // setClient() is called later the old client is closed (which clears its
-    // listener list) before the new listener is wired.
-    private transient @Nullable Registration availabilitySubscription;
+    private GeolocationClient client;
 
     /**
      * Creates a new Geolocation facade bound to the given UI.
@@ -125,6 +117,8 @@ public class Geolocation implements Serializable {
      * @throws IllegalStateException
      *             if the UI already has a Geolocation facade
      */
+    @SuppressWarnings("NullAway") // setClient always assigns client; the guard
+                                  // throw above it exits before client is used
     public Geolocation(UI ui) {
         if (ui.getGeolocation() != null) {
             throw new IllegalStateException(
@@ -134,9 +128,12 @@ public class Geolocation implements Serializable {
         this.ui = ui;
         this.availabilityReadOnly = ui.getInternals()
                 .getGeolocationAvailabilitySignal().asReadonly();
-        // Eagerly initialize the client so that the availability-change
-        // listener is registered immediately — tests verify this.
-        client();
+        GeolocationAvailability seed = ui.getInternals()
+                .getGeolocationAvailabilitySignal().peek();
+        if (seed == null) {
+            seed = GeolocationAvailability.UNKNOWN;
+        }
+        setClient(new BrowserGeolocationClient(ui, seed));
     }
 
     /**
@@ -174,7 +171,7 @@ public class Geolocation implements Serializable {
      */
     public void get(@Nullable GeolocationOptions options,
             SerializableConsumer<GeolocationOutcome> callback) {
-        client().get(options).thenAccept(callback);
+        client.get(options).thenAccept(callback);
     }
 
     /**
@@ -236,7 +233,7 @@ public class Geolocation implements Serializable {
      */
     public GeolocationTracker track(Component owner,
             @Nullable GeolocationOptions options) {
-        return new GeolocationTracker(owner, options, client());
+        return new GeolocationTracker(owner, options, client);
     }
 
     /**
@@ -295,10 +292,6 @@ public class Geolocation implements Serializable {
      *            the replacement client, never null
      */
     void setClient(GeolocationClient client) {
-        if (availabilitySubscription != null) {
-            availabilitySubscription.remove();
-            availabilitySubscription = null;
-        }
         if (this.client != null) {
             this.client.close();
         }
@@ -306,18 +299,10 @@ public class Geolocation implements Serializable {
         wireAvailability(client);
     }
 
-    GeolocationClient client() {
-        if (client == null) {
-            client = new BrowserGeolocationClient(ui);
-            wireAvailability(client);
-        }
-        return client;
-    }
-
     private void wireAvailability(GeolocationClient activeClient) {
         ui.getInternals()
                 .setGeolocationAvailability(activeClient.currentAvailability());
-        availabilitySubscription = activeClient.subscribeAvailability(
+        activeClient.subscribeAvailability(
                 next -> ui.getInternals().setGeolocationAvailability(next));
     }
 }
