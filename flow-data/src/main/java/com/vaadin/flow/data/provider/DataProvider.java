@@ -138,6 +138,57 @@ public interface DataProvider<T, F> extends Serializable {
     void refreshAll();
 
     /**
+     * Notifies listeners that a single item has been added to the underlying
+     * data and the listening components should refresh accordingly. This allows
+     * components to perform an incremental update without rebuilding the
+     * per-item state for unrelated items, which can be significantly faster
+     * than {@link #refreshAll()} when only a single item changes.
+     * <p>
+     * Where the new item appears in the rendered output is still determined by
+     * the configured sorting and filtering: the implementation is expected to
+     * have already added the item to the underlying data structure before
+     * calling this method.
+     * <p>
+     * The default implementation falls back to {@link #refreshAll()} so that
+     * custom data providers do not need to opt in to the new behavior. Data
+     * providers that fire {@link DataChangeEvent}s should override this method
+     * to fire a {@link DataChangeEvent.ItemAddedEvent} instead, which lets
+     * {@link DataCommunicator} perform an efficient update.
+     *
+     * @param item
+     *            the added item; not {@code null}
+     */
+    default void notifyItemAdded(T item) {
+        Objects.requireNonNull(item, "Added item cannot be null.");
+        refreshAll();
+    }
+
+    /**
+     * Notifies listeners that a single item has been removed from the
+     * underlying data and the listening components should refresh accordingly.
+     * This allows components to perform an incremental update without
+     * rebuilding the per-item state for unrelated items, which can be
+     * significantly faster than {@link #refreshAll()} when only a single item
+     * changes.
+     * <p>
+     * The implementation is expected to have already removed the item from the
+     * underlying data structure before calling this method.
+     * <p>
+     * The default implementation falls back to {@link #refreshAll()} so that
+     * custom data providers do not need to opt in to the new behavior. Data
+     * providers that fire {@link DataChangeEvent}s should override this method
+     * to fire a {@link DataChangeEvent.ItemRemovedEvent} instead, which lets
+     * {@link DataCommunicator} perform an efficient update.
+     *
+     * @param item
+     *            the removed item; not {@code null}
+     */
+    default void notifyItemRemoved(T item) {
+        Objects.requireNonNull(item, "Removed item cannot be null.");
+        refreshAll();
+    }
+
+    /**
      * Gets an identifier for the given item. This identifier is used by the
      * framework to determine equality between two items.
      * <p>

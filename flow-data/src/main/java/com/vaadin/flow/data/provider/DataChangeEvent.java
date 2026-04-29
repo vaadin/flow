@@ -102,6 +102,87 @@ public class DataChangeEvent<T> extends EventObject {
     }
 
     /**
+     * An event fired when a single item has been added to a
+     * {@code DataProvider}.
+     * <p>
+     * Listeners that don't need fine-grained handling can simply treat this as
+     * any other {@link DataChangeEvent}. {@link DataCommunicator} uses this
+     * event to perform a more efficient update than a full refresh while still
+     * picking up the new total item count and the position of the new item with
+     * respect to current sorting and filtering.
+     *
+     * @param <T>
+     *            the data type
+     */
+    public static class ItemAddedEvent<T> extends DataChangeEvent<T> {
+
+        private final T item;
+
+        /**
+         * Creates a new event originating from the given data provider.
+         *
+         * @param source
+         *            the data provider, not <code>null</code>
+         * @param item
+         *            the added item, not <code>null</code>
+         */
+        public ItemAddedEvent(DataProvider<T, ?> source, T item) {
+            super(source);
+            Objects.requireNonNull(item, "Added item can't be null");
+            this.item = item;
+        }
+
+        /**
+         * Gets the added item.
+         *
+         * @return the added item, never <code>null</code>
+         */
+        public T getItem() {
+            return item;
+        }
+    }
+
+    /**
+     * An event fired when a single item has been removed from a
+     * {@code DataProvider}.
+     * <p>
+     * Listeners that don't need fine-grained handling can simply treat this as
+     * any other {@link DataChangeEvent}. {@link DataCommunicator} uses this
+     * event to perform a more efficient update than a full refresh while still
+     * picking up the new total item count.
+     *
+     * @param <T>
+     *            the data type
+     */
+    public static class ItemRemovedEvent<T> extends DataChangeEvent<T> {
+
+        private final T item;
+
+        /**
+         * Creates a new event originating from the given data provider.
+         *
+         * @param source
+         *            the data provider, not <code>null</code>
+         * @param item
+         *            the removed item, not <code>null</code>
+         */
+        public ItemRemovedEvent(DataProvider<T, ?> source, T item) {
+            super(source);
+            Objects.requireNonNull(item, "Removed item can't be null");
+            this.item = item;
+        }
+
+        /**
+         * Gets the removed item.
+         *
+         * @return the removed item, never <code>null</code>
+         */
+        public T getItem() {
+            return item;
+        }
+    }
+
+    /**
      * Creates a new {@code DataChangeEvent} event originating from the given
      * data provider.
      *

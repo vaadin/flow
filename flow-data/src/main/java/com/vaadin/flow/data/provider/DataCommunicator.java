@@ -44,6 +44,8 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemAddedEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemRemovedEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -1131,6 +1133,10 @@ public class DataCommunicator<T> implements Serializable {
                 .addDataProviderListener(event -> {
                     if (event instanceof DataRefreshEvent) {
                         handleDataRefreshEvent((DataRefreshEvent<T>) event);
+                    } else if (event instanceof ItemAddedEvent) {
+                        handleItemAddedEvent((ItemAddedEvent<T>) event);
+                    } else if (event instanceof ItemRemovedEvent) {
+                        handleItemRemovedEvent((ItemRemovedEvent<T>) event);
                     } else {
                         reset();
                     }
@@ -1142,6 +1148,40 @@ public class DataCommunicator<T> implements Serializable {
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
         refresh(event.getItem());
+    }
+
+    /**
+     * Handles a notification that a single item has been added to the
+     * underlying data. The default implementation triggers a viewport refresh
+     * and a size re-fetch without discarding per-item state for unrelated
+     * items, which is significantly cheaper than {@link #reset()} when only one
+     * item changes.
+     *
+     * @param event
+     *            the added-item event, not {@code null}
+     */
+    protected void handleItemAddedEvent(ItemAddedEvent<T> event) {
+        sizeReset = true;
+        refreshViewport();
+    }
+
+    /**
+     * Handles a notification that a single item has been removed from the
+     * underlying data. The default implementation removes the removed item from
+     * the {@link KeyMapper} (if active) and triggers a viewport refresh with a
+     * size re-fetch, without discarding per-item state for unrelated items.
+     *
+     * @param event
+     *            the removed-item event, not {@code null}
+     */
+    protected void handleItemRemovedEvent(ItemRemovedEvent<T> event) {
+        T removed = event.getItem();
+        if (keyMapper.has(removed)) {
+            dataGenerator.destroyData(removed);
+            keyMapper.remove(removed);
+        }
+        sizeReset = true;
+        refreshViewport();
     }
 
     private void handleDetach() {
