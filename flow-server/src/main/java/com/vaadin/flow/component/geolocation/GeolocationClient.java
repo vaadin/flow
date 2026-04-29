@@ -34,13 +34,9 @@ import com.vaadin.flow.shared.Registration;
  * {@link #get}, the {@code onUpdate} consumer passed to {@link #startWatch},
  * and the {@code onChange} consumer passed to {@link #subscribeAvailability})
  * must be invoked on the UI thread.
- * <p>
- * <b>Framework internal.</b> Application code never references this interface
- * directly; external browserless test drivers install a replacement client via
- * {@link Geolocation#setClient(GeolocationClient)}.
  */
 @NullMarked
-public interface GeolocationClient extends Serializable {
+interface GeolocationClient extends Serializable {
 
     /**
      * Issues a one-shot position request. The future completes once the client

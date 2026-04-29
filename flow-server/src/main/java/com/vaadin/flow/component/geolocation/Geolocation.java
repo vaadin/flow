@@ -289,15 +289,12 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * <b>Framework internal.</b> Replaces this facade's geolocation client.
-     * Used by external browserless test drivers to swap the production wire
-     * client for an in-memory test driver. Calling this is equivalent to
-     * closing the previous client; do not call from application code.
+     * Replaces this facade's geolocation client.
      *
      * @param client
      *            the replacement client, never null
      */
-    public void setClient(GeolocationClient client) {
+    void setClient(GeolocationClient client) {
         if (availabilitySubscription != null) {
             availabilitySubscription.remove();
             availabilitySubscription = null;

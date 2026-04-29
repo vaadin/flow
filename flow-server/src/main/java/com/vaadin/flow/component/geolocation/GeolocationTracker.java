@@ -163,15 +163,13 @@ public class GeolocationTracker implements Serializable {
     }
 
     /**
-     * <b>Framework internal.</b> Returns the active watch handle obtained from
-     * the {@link GeolocationClient}, or {@code null} if the tracker is not
-     * currently active. Used by external browserless test drivers to push
-     * position and error updates from tests; do not call from application code.
+     * Returns the active watch handle, or {@code null} if the tracker is not
+     * currently active.
      *
      * @return the active watch handle, or {@code null} if the tracker has been
      *         stopped or auto-cancelled
      */
-    public GeolocationClient.@Nullable WatchHandle handle() {
+    GeolocationClient.@Nullable WatchHandle handle() {
         return handle;
     }
 }
