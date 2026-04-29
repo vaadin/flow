@@ -89,11 +89,11 @@ final class BrowserGeolocationClient implements GeolocationClient {
                     } else if (result.error() != null) {
                         future.complete(result.error());
                     } else {
-                        LOGGER.debug(
-                                "Geolocation get() returned neither position nor error");
+                        future.completeExceptionally(new IllegalStateException(
+                                "Geolocation get() returned neither position nor error"));
                     }
-                }, err -> LOGGER.debug("Client-side geolocation.get failed: {}",
-                        err));
+                }, err -> future.completeExceptionally(new RuntimeException(
+                        "Client-side geolocation.get failed: " + err)));
         return future;
     }
 
