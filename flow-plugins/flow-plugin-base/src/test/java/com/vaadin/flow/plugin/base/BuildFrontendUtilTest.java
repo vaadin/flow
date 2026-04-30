@@ -39,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
 import org.mockito.InOrder;
@@ -875,6 +877,42 @@ class BuildFrontendUtilTest {
 
         FileIOUtils.writeIfChanged(tokenFile,
                 buildInfo.toPrettyString() + "\n");
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void runVite_nonZeroExit_doesNotLeakEnvironment() throws Exception {
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(), """
+                #!/bin/sh
+                echo TEST_OUTPUT_LINE
+                exit 7
+                """);
+        assertTrue(fakeNode.setExecutable(true));
+
+        File viteJs = new File(baseDir, "node_modules/vite/bin/vite.js");
+
+        FrontendTools frontendTools = Mockito.mock(FrontendTools.class);
+        Mockito.when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+        Mockito.when(
+                frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
+                .thenReturn(viteJs.toPath());
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+
+        String message = ex.getMessage();
+        assertTrue(message.contains("exited with non-zero exit code 7"),
+                () -> "missing exit code in: " + message);
+        assertTrue(message.contains("TEST_OUTPUT_LINE"),
+                () -> "missing process output in: " + message);
+        // zt-exec exception messages started with "with environment {…}" —
+        // proving its absence proves we are off the leak path.
+        assertFalse(message.contains("with environment"),
+                () -> "leaked env marker in: " + message);
+        // No zt-exec exception should be chained as cause.
+        assertEquals(null, ex.getCause());
     }
 
     private static String statsJsonWithCommercialComponents() {

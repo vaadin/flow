@@ -39,11 +39,6 @@
             <artifactId>classgraph</artifactId>
             <version>4.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.zeroturnaround</groupId>
-            <artifactId>zt-exec</artifactId>
-            <version>1.4</version>
-        </dependency>
     </dependencies>
 
     <build>
