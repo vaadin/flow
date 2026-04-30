@@ -71,9 +71,8 @@ public final class Reflector implements Closeable {
             "org.apache.maven", "org.codehaus.plexus", "org.slf4j",
             "org.eclipse.sisu");
     // Dependency required by the plugin but not provided by Flow at runtime
-    private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
-            "org.reflections:reflections:jar",
-            "org.zeroturnaround:zt-exec:jar");
+    private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set
+            .of("org.reflections:reflections:jar");
     private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
             Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
     private static final Cleaner CLEANER = Cleaner.create();
