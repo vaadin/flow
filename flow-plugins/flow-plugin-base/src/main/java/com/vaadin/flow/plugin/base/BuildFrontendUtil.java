@@ -18,7 +18,6 @@ package com.vaadin.flow.plugin.base;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -499,13 +497,11 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     * @throws TimeoutException
-     *             - while running build system
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
     public static void runFrontendBuild(PluginAdapterBase adapter)
-            throws TimeoutException, URISyntaxException {
+            throws URISyntaxException {
         LicenseChecker.setStrictOffline(true);
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
@@ -540,21 +536,17 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @param frontendTools
      *            - frontend tools access object
-     * @throws TimeoutException
-     *             - while running vite
      */
     public static void runVite(PluginAdapterBase adapter,
-            FrontendTools frontendTools) throws TimeoutException {
+            FrontendTools frontendTools) {
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
 
-    // The declared TimeoutException is retained for source compatibility with
-    // the prior zt-exec-based implementation; this body never times out.
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
             FrontendTools frontendTools, String toolName, String packageName,
             String binaryName, Map<String, String> environment,
-            String... params) throws TimeoutException {
+            String... params) {
 
         File buildExecutable;
         try {
@@ -610,16 +602,14 @@ public class BuildFrontendUtil {
             Runtime.getRuntime().addShutdownHook(shutdownHook);
 
             StringBuilder toolOutput = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
+            try (BufferedReader reader = process
+                    .inputReader(StandardCharsets.UTF_8)) {
+                reader.lines().forEach(line -> {
                     if (adapter.isDebugEnabled()) {
                         adapter.logDebug(line);
                     }
                     toolOutput.append(line).append(System.lineSeparator());
-                }
+                });
             }
 
             int exitCode = process.waitFor();
