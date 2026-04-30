@@ -100,4 +100,48 @@ public class ConnectionIndicator {
             $wnd.Vaadin.connectionIndicator[property] = value;
         }
     }-*/;
+
+    /**
+     * Notifies the client-side connection state indicator that a loading
+     * operation has started.
+     * <p>
+     * This method triggers the {@link ConnectionIndicator#LOADING} state
+     * transition on the client side.</p>
+     */
+    public static native void loadingStarted()
+    /*-{
+        if ($wnd.Vaadin.connectionState) {
+            $wnd.Vaadin.connectionState.loadingStarted();
+        }
+     }-*/;
+
+    /**
+     * Notifies the client-side connection state indicator that a loading
+     * operation has completed successfully.
+     * <p>
+     * When all requests finish, this method triggers the
+     * {@link ConnectionIndicator#CONNECTED} state transition
+     * on the client side .
+     */
+    public static native void loadingFinished()
+    /*-{
+        if ($wnd.Vaadin.connectionState) {
+            $wnd.Vaadin.connectionState.loadingFinished();
+        }
+     }-*/;
+
+    /**
+     * Notifies the client-side connection state indicator that a loading
+     * operation has encountered an error or failed.
+     * <p>
+     * If no requests are remaining, triggers
+     * the {@link ConnectionIndicator#CONNECTION_LOST} state transition
+     * on the client side.
+     */
+    public static native void loadingFailed()
+    /*-{
+        if ($wnd.Vaadin.connectionState) {
+            $wnd.Vaadin.connectionState.loadingFailed();
+        }
+     }-*/;
 }

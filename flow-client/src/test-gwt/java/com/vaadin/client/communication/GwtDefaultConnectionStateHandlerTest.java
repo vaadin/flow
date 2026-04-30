@@ -40,6 +40,7 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
                         new RequestResponseTracker(this));
                 set(ConnectionStateHandler.class,
                         handler = new DefaultConnectionStateHandler(this));
+                set(LoadingIndicatorStateHandler.class, new LoadingIndicatorStateHandler(this));
             }
         };
     }
