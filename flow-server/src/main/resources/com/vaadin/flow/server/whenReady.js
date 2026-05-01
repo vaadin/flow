@@ -1,3 +1,4 @@
+/* No // comments: this file is concatenated into an inline <script> that may collapse to one line. */
 window.Vaadin.Flow.ready = async function ({ timeout = 30000 } = {}) {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const deadline = Date.now() + timeout;
@@ -7,7 +8,6 @@ window.Vaadin.Flow.ready = async function ({ timeout = 30000 } = {}) {
     if (window.Vaadin.Flow.devServerIsNotLoaded) return false;
     const clients = window.Vaadin.Flow.clients;
     if (!clients) return false;
-    // Flow has not bootstrapped until at least one client with isActive is registered
     const probes = Object.values(clients).filter((c) => typeof c.isActive === 'function');
     if (probes.length === 0) return false;
     return probes.every((c) => !c.isActive());
