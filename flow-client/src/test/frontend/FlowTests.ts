@@ -15,35 +15,36 @@ const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
 /**
- * Defines window.Vaadin.Flow.whenReady in tests.
- * In production this is defined by the inline bootstrap script before
- * the Flow.ts module loads, so tests must set it up manually.
+ * Defines window.Vaadin.Flow.ready and window.Vaadin.Flow.whenReady in tests.
+ * In production these are defined by the inline bootstrap script before
+ * the Flow.ts module loads, so tests must set them up manually.
  */
 function defineWhenReady() {
   $wnd.Vaadin = $wnd.Vaadin || {};
   $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
-  $wnd.Vaadin.Flow.whenReady = function (callback: () => void) {
-    function check() {
-      if (document.readyState !== 'complete') {
-        setTimeout(check, 50);
-        return;
-      }
-      if ($wnd.Vaadin.Flow.devServerIsNotLoaded) {
-        setTimeout(check, 50);
-        return;
-      }
+  $wnd.Vaadin.Flow.ready = async function ({ timeout = 30000 }: { timeout?: number } = {}) {
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const deadline = Date.now() + timeout;
+    const isIdle = () => {
+      if (document.readyState !== 'complete') return false;
+      if ($wnd.Vaadin.Flow.devServerIsNotLoaded) return false;
       const clients = $wnd.Vaadin.Flow.clients;
-      if (clients) {
-        for (const key in clients) {
-          if (clients.hasOwnProperty(key) && typeof clients[key].isActive === 'function' && clients[key].isActive()) {
-            setTimeout(check, 50);
-            return;
-          }
-        }
+      if (!clients) return false;
+      const probes = Object.values(clients).filter((c: any) => typeof c.isActive === 'function');
+      if (probes.length === 0) return false;
+      return probes.every((c: any) => !c.isActive());
+    };
+    while (!isIdle()) {
+      if (Date.now() >= deadline) {
+        throw new Error('Vaadin.Flow.ready timed out after ' + timeout + 'ms');
       }
-      callback();
+      await sleep(50);
     }
-    check();
+  };
+  $wnd.Vaadin.Flow.whenReady = function (callback: () => void) {
+    $wnd.Vaadin.Flow.ready()
+      .catch((e: Error) => console.warn(e.message))
+      .then(callback);
   };
 }
 
@@ -741,6 +742,44 @@ describe('Flow', () => {
       expect(callbackCalled).to.be.false;
       delete $wnd.Vaadin.Flow.devServerIsNotLoaded;
     }, 60);
+  });
+
+  it('ready should reject after timeout when not idle', async () => {
+    defineWhenReady();
+    new Flow({ imports: () => {} });
+    $wnd.Vaadin.Flow.clients.TypeScript.isActive = () => true;
+    let error: Error | undefined;
+    try {
+      await $wnd.Vaadin.Flow.ready({ timeout: 100 });
+    } catch (e) {
+      error = e as Error;
+    }
+    expect(error).to.be.an('Error');
+    expect(error!.message).to.contain('timed out');
+  });
+
+  it('whenReady should invoke callback even when ready rejects', (done) => {
+    defineWhenReady();
+    // Force ready() to reject immediately
+    $wnd.Vaadin.Flow.ready = () => Promise.reject(new Error('boom'));
+    $wnd.Vaadin.Flow.whenReady(() => {
+      done();
+    });
+  });
+
+  it('ready should wait until at least one client is registered', async () => {
+    defineWhenReady();
+    delete $wnd.Vaadin.Flow.clients;
+    let resolved = false;
+    const promise = $wnd.Vaadin.Flow.ready({ timeout: 5000 }).then(() => {
+      resolved = true;
+    });
+    await new Promise((r) => setTimeout(r, 60));
+    expect(resolved).to.be.false;
+    new Flow({ imports: () => {} });
+    $wnd.Vaadin.Flow.clients.TypeScript.isActive = () => false;
+    await promise;
+    expect(resolved).to.be.true;
   });
 
   it('should pre-attach container element on every navigation', async () => {

@@ -87,7 +87,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
-
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override

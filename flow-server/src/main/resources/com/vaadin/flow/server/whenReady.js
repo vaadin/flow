@@ -1,23 +1,28 @@
-window.Vaadin.Flow.whenReady = function (callback) {
-  function check() {
-    if (document.readyState !== 'complete') {
-      setTimeout(check, 50);
-      return;
+window.Vaadin.Flow.ready = async function ({ timeout = 30000 } = {}) {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const deadline = Date.now() + timeout;
+
+  const isIdle = () => {
+    if (document.readyState !== 'complete') return false;
+    if (window.Vaadin.Flow.devServerIsNotLoaded) return false;
+    const clients = window.Vaadin.Flow.clients;
+    if (!clients) return false;
+    // Flow has not bootstrapped until at least one client with isActive is registered
+    const probes = Object.values(clients).filter((c) => typeof c.isActive === 'function');
+    if (probes.length === 0) return false;
+    return probes.every((c) => !c.isActive());
+  };
+
+  while (!isIdle()) {
+    if (Date.now() >= deadline) {
+      throw new Error('Vaadin.Flow.ready timed out after ' + timeout + 'ms');
     }
-    if (window.Vaadin.Flow.devServerIsNotLoaded) {
-      setTimeout(check, 50);
-      return;
-    }
-    var clients = window.Vaadin.Flow.clients;
-    if (clients) {
-      for (var key in clients) {
-        if (clients.hasOwnProperty(key) && typeof clients[key].isActive === 'function' && clients[key].isActive()) {
-          setTimeout(check, 50);
-          return;
-        }
-      }
-    }
-    callback();
+    await sleep(50);
   }
-  check();
+};
+
+window.Vaadin.Flow.whenReady = function (callback) {
+  window.Vaadin.Flow.ready()
+    .catch((e) => console.warn(e.message))
+    .then(callback);
 };
