@@ -19,7 +19,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.apache.maven.artifact.Artifact;
@@ -173,8 +172,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 if (cleanFrontendFiles()) {
                     cleanTask.execute();
                 }
-            } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
+            } catch (URISyntaxException | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
