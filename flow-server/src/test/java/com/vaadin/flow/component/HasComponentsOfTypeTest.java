@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,5 +50,32 @@ class HasComponentsOfTypeTest {
         Item first = trail.getComponentAt(0);
         assertSame(a, first);
         assertEquals(1, trail.indexOf(b));
+    }
+
+    @Test
+    void typedContainer_addCollection_appendsInOrder() {
+        Trail trail = new Trail();
+        Item a = new Item("a");
+        Item b = new Item("b");
+
+        trail.add(List.of(a, b));
+
+        assertEquals(2, trail.getComponentCount());
+        assertSame(a, trail.getComponentAt(0));
+        assertSame(b, trail.getComponentAt(1));
+    }
+
+    @Test
+    void typedContainer_removeCollection_detachesGivenItems() {
+        Trail trail = new Trail();
+        Item a = new Item("a");
+        Item b = new Item("b");
+        Item c = new Item("c");
+        trail.add(a, b, c);
+
+        trail.remove(List.of(a, c));
+
+        assertEquals(1, trail.getComponentCount());
+        assertSame(b, trail.getComponentAt(0));
     }
 }
