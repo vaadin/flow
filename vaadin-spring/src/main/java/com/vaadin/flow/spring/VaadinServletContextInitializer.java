@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -976,8 +977,7 @@ public class VaadinServletContextInitializer
      * For npm we scan all packages. For performance reasons and due to problems
      * with atmosphere we skip known packaged from our resources collection.
      */
-    private static class CustomResourceLoader
-            extends FilterableResourceResolver {
+    static class CustomResourceLoader extends FilterableResourceResolver {
 
         private final PrefixTree scanNever = new PrefixTree(DEFAULT_SCAN_NEVER);
 
@@ -1048,15 +1048,8 @@ public class VaadinServletContextInitializer
 
             for (Resource resource : super.getResources(locationPattern)) {
                 String originalPath = resource.getURL().getPath();
-                String path;
-                if (originalPath.startsWith("file:///resources!")) {
-                    // It's a resource from a native build, remove the
-                    // prefix from URL path
-                    path = originalPath
-                            .substring("file:///resources!".length());
-                } else {
-                    path = originalPath;
-                }
+                final String path = getComparableResourcePath(resource,
+                        originalPath);
 
                 if (isDevModeCacheUsed() && skipped.contains(originalPath)) {
                     continue;
@@ -1066,8 +1059,8 @@ public class VaadinServletContextInitializer
                     resources.add(resource);
                     // Restore root paths to ensure new resources are correctly
                     // validate and cached after a reload
-                    if (originalPath.endsWith("/")) {
-                        rootPaths.add(originalPath);
+                    if (path.endsWith("/")) {
+                        rootPaths.add(path);
                     }
                 } else {
                     if (path.endsWith(".jar!/")) {
@@ -1122,6 +1115,26 @@ public class VaadinServletContextInitializer
             }
 
             return resources.toArray(new Resource[0]);
+        }
+
+        private String getComparableResourcePath(Resource resource,
+                String fallbackPath) throws IOException {
+            try {
+                String path = resource.getURL().toURI().getPath();
+                return stripNativeImageResourcePrefix(
+                        path == null ? fallbackPath : path);
+            } catch (IllegalArgumentException | URISyntaxException exception) {
+                return stripNativeImageResourcePrefix(fallbackPath);
+            }
+        }
+
+        private String stripNativeImageResourcePrefix(String path) {
+            if (path.startsWith("file:///resources!")) {
+                // It's a resource from a native build, remove the prefix from
+                // URL path.
+                return path.substring("file:///resources!".length());
+            }
+            return path;
         }
 
         private boolean isDevModeCacheUsed() {

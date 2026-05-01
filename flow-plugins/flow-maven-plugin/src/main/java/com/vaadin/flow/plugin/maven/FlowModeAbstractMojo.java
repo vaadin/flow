@@ -36,6 +36,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -121,7 +122,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      *
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
+    @Parameter(property = "vaadin." + InitParameters.NODE_DOWNLOAD_ROOT)
     private String nodeDownloadRoot;
 
     /**
@@ -129,7 +130,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Vaadin, for example `"v16.0.0"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
-    @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
+    @Parameter(property = "vaadin."
+            + InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
     /**
@@ -148,23 +150,26 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
-            + Constants.ENABLE_PNPM_DEFAULT)
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
+                    + Constants.ENABLE_PNPM_DEFAULT)
     private boolean pnpmEnable;
 
     /**
      * Instructs to use bun for installing npm frontend resources.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = ""
-            + Constants.ENABLE_BUN_DEFAULT)
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = ""
+                    + Constants.ENABLE_BUN_DEFAULT)
     private boolean bunEnable;
 
     /**
      * Instructs to use globally installed pnpm tool or the default supported
      * pnpm version.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = ""
-            + Constants.GLOBAL_PNPM_DEFAULT)
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = ""
+                    + Constants.GLOBAL_PNPM_DEFAULT)
     private boolean useGlobalPnpm;
 
     /**
@@ -179,6 +184,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(defaultValue = "${mojoExecution}")
     MojoExecution mojoExecution;
 
+    @Parameter(defaultValue = "${session}", readonly = true)
+    private MavenSession session;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -192,8 +200,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * absent. Then it will be used instead of globally 'node' or locally
      * installed installed 'node'.
      */
-    @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
-            + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
+    @Parameter(property = "vaadin."
+            + InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
+                    + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
     /**
@@ -204,7 +213,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * Example: {@code /usr/local/custom-node} or {@code C:\custom\node}
      */
-    @Parameter(property = InitParameters.NODE_FOLDER)
+    @Parameter(property = "vaadin." + InitParameters.NODE_FOLDER)
     private String nodeFolder;
 
     /**
@@ -235,7 +244,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Build directory for the project.
      */
-    @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
+    @Parameter(property = "vaadin.build.folder", defaultValue = "${project.build.directory}")
     private String projectBuildDir;
 
     /**
@@ -244,7 +253,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Post install is automatically run for internal dependencies which rely on
      * post install scripts to work, e.g. esbuild.
      */
-    @Parameter(property = "npm.postinstallPackages", defaultValue = "")
+    @Parameter(property = "vaadin.npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
     /**
@@ -253,16 +262,19 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * By default, the frontend server is not used.
      */
-    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
+    @Parameter(property = "vaadin."
+            + InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
     private Boolean frontendHotdeploy;
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
+    @Parameter(property = "vaadin."
+            + InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
-    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    @Parameter(property = "vaadin."
+            + InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
     /**
@@ -271,7 +283,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * bundle should be generated.
      * <p>
      * From the commandline use comma separated list
-     * {@code -Ddevmode.frontendExtraFileExtensions="svg,ico"}
+     * {@code -Dvaadin.devmode.frontendExtraFileExtensions="svg,ico"}
      * <p>
      * In plugin configuration use comma separated values
      *
@@ -279,7 +291,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <frontendExtraFileExtensions>svg,ico</frontendExtraFileExtensions>
      * </configuration>
      */
-    @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
+    @Parameter(property = "vaadin."
+            + InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
     private List<String> frontendExtraFileExtensions;
 
     /**
@@ -287,7 +300,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * If not specified, defaults to '{@literal groupId:artifactId}'.
      */
-    @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
+    @Parameter(property = "vaadin." + InitParameters.APPLICATION_IDENTIFIER)
     private String applicationIdentifier;
 
     /**
@@ -336,6 +349,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (skip) {
             getLog().info("Skipping Vaadin build");
             return;
+        }
+
+        if (session != null && mojoExecution != null) {
+            DeprecatedPropertyResolver.resolve(this,
+                    mojoExecution.getMojoDescriptor(), session, project);
         }
 
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
