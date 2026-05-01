@@ -83,6 +83,7 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -1054,14 +1055,24 @@ public class UIInternals implements Serializable {
             triggerChunkLoading(componentClass);
         }
 
-        dependencies.getStyleSheets().forEach(styleSheet -> page
-                .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+        dependencies.getStyleSheets().forEach(styleSheet -> {
+            String resolved = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet.value());
+            if (resolved != null) {
+                page.addStyleSheet(resolved, styleSheet.loadMode());
+            }
+        });
 
         VaadinService service = session.getService();
         if (!service.getDeploymentConfiguration().isProductionMode()) {
-            dependencies.getStyleSheets()
-                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
-                            .trackAddForComponent(styleSheet.value()));
+            dependencies.getStyleSheets().forEach(styleSheet -> {
+                String resolved = FrontendDependencyUrlResolver
+                        .resolveToContextRoot(styleSheet.value());
+                if (resolved != null) {
+                    ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(resolved);
+                }
+            });
         }
 
         warnForUnavailableBundledDependencies(componentClass, dependencies);
