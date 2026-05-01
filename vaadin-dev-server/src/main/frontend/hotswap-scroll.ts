@@ -93,15 +93,13 @@ export function registerRefreshUIHandler(): void {
 
 /**
  * Restores scroll positions after a hot-swap UI refresh completes.
- * Polls Flow client isActive() to wait until UIDL processing is done,
- * then uses requestAnimationFrame to restore all captured scroll positions.
+ * Waits for Flow to be idle (via Vaadin.Flow.ready), then uses
+ * requestAnimationFrame to restore all captured scroll positions.
  */
 export function restoreScrollPositions(snapshot: ScrollSnapshot): void {
   if (Object.keys(snapshot).length === 0) {
     return;
   }
-  const MAX_POLL_ATTEMPTS = 200; // 200 * 50ms = 10 seconds
-  let attempts = 0;
 
   const applyScroll = () => {
     requestAnimationFrame(() => {
@@ -119,14 +117,7 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot): void {
     });
   };
 
-  const poll = () => {
-    const clients = getFlowClients();
-    const allIdle = clients.length > 0 && clients.every((c: any) => !c.isActive());
-    if (allIdle || ++attempts >= MAX_POLL_ATTEMPTS) {
-      applyScroll();
-    } else {
-      setTimeout(poll, 50);
-    }
-  };
-  setTimeout(poll, 50);
+  (window as any).Vaadin.Flow.ready({ timeout: 10000 })
+    .catch(() => {})
+    .then(applyScroll);
 }
