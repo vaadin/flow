@@ -133,6 +133,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
+    /**
+     * Inlined into the bootstrap {@code <script>}. Must not contain {@code //}
+     * comments — they would swallow the rest of the line if the inline script
+     * is collapsed to one line by HTML processing.
+     */
     public static final String WHEN_READY_JS = readResource("whenReady.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 

@@ -1,4 +1,3 @@
-/* No // comments: this file is concatenated into an inline <script> that may collapse to one line. */
 window.Vaadin.Flow.ready = async function ({ timeout = 30000 } = {}) {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const deadline = Date.now() + timeout;

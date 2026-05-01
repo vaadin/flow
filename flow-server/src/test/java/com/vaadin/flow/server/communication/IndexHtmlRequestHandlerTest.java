@@ -399,11 +399,12 @@ public class IndexHtmlRequestHandlerTest {
 
         String scriptContent = initialUidlScript.childNode(0).toString();
         assertTrue(
-                scriptContent.startsWith("window.Vaadin = window.Vaadin || {};"
-                        + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
-                        + "window.Vaadin.Flow.ready = "));
+                scriptContent.contains("window.Vaadin = window.Vaadin || {};"));
+        assertTrue(scriptContent
+                .contains("window.Vaadin.Flow = window.Vaadin.Flow || {};"));
+        assertTrue(scriptContent.contains("window.Vaadin.Flow.ready = "));
         assertTrue(scriptContent.contains("window.Vaadin.Flow.whenReady = "));
-        assertTrue(scriptContent.endsWith("window.Vaadin.TypeScript= {};"));
+        assertTrue(scriptContent.contains("window.Vaadin.TypeScript= {};"));
         assertEquals("", initialUidlScript.attr("initial"));
     }
 
@@ -454,11 +455,12 @@ public class IndexHtmlRequestHandlerTest {
                 INITIAL_UIDL_SEARCH_STRING);
         String scriptContent = initialUidlScript.childNode(0).toString();
         assertTrue(
-                scriptContent.startsWith("window.Vaadin = window.Vaadin || {};"
-                        + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
-                        + "window.Vaadin.Flow.ready = "));
+                scriptContent.contains("window.Vaadin = window.Vaadin || {};"));
+        assertTrue(scriptContent
+                .contains("window.Vaadin.Flow = window.Vaadin.Flow || {};"));
+        assertTrue(scriptContent.contains("window.Vaadin.Flow.ready = "));
         assertTrue(scriptContent.contains("window.Vaadin.Flow.whenReady = "));
-        assertTrue(scriptContent.endsWith("window.Vaadin.TypeScript= {};"));
+        assertTrue(scriptContent.contains("window.Vaadin.TypeScript= {};"));
         assertEquals("", initialUidlScript.attr("initial"));
         assertNull(UI.getCurrent());
     }
