@@ -15,9 +15,23 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.InOrder;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -34,18 +48,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.InOrder;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 public class BuildFrontendUtilTest {
 
@@ -229,4 +231,35 @@ public class BuildFrontendUtilTest {
                         this.getClass().getClassLoader()));
         Mockito.when(adapter.runNpmInstall()).thenReturn(true);
     }
+
+    @Test
+    public void runVite_nonZeroExit_doesNotLeakEnvironment() throws Exception {
+        Assume.assumeFalse("Skipping test on windows.",
+                FrontendUtils.isWindows());
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(),
+                "#!/bin/sh\necho TEST_OUTPUT_LINE\nexit 7\n");
+        Assert.assertTrue(fakeNode.setExecutable(true));
+
+        FrontendTools frontendTools = Mockito.mock(FrontendTools.class);
+        Mockito.when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+
+        IllegalStateException ex = Assert.assertThrows(
+                IllegalStateException.class,
+                () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+
+        String message = ex.getMessage();
+        Assert.assertTrue("missing exit code in: " + message,
+                message.contains("exited with non-zero exit code 7"));
+        Assert.assertTrue("missing process output in: " + message,
+                message.contains("TEST_OUTPUT_LINE"));
+        // zt-exec exception messages started with "with environment {…}" —
+        // proving its absence proves we are off the leak path.
+        Assert.assertFalse("leaked env marker in: " + message,
+                message.contains("with environment"));
+        // No zt-exec exception should be chained as cause.
+        Assert.assertNull(ex.getCause());
+    }
+
 }

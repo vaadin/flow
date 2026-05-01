@@ -10,7 +10,6 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -113,7 +112,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         if (generateBundle()) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
-            } catch (URISyntaxException | TimeoutException exception) {
+            } catch (URISyntaxException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
