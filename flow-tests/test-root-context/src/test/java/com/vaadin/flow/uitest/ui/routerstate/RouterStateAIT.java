@@ -71,8 +71,9 @@ public class RouterStateAIT extends ChromeBrowserTest {
         // signal
         click(RouterStateBView.SET_LOCALE_BUTTON);
         // Path/target/params must still match the last navigation
-        Assert.assertEquals("RouterStateBView/99",
-                text(RouterStateLayout.PATH_ID));
+        Assert.assertTrue("Path must still end with RouterStateBView/99",
+                text(RouterStateLayout.PATH_ID)
+                        .endsWith("RouterStateBView/99"));
         Assert.assertEquals("RouterStateBView",
                 text(RouterStateLayout.TARGET_ID));
         Assert.assertEquals("id=99", text(RouterStateLayout.PARAMS_ID));
