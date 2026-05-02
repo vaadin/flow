@@ -66,7 +66,6 @@ public class Page implements Serializable {
             PageVisibility.UNKNOWN);
     private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
             .asReadonly();
-    private boolean visibilityListenerInstalled;
 
     /**
      * Creates a page instance for the given UI.
@@ -77,6 +76,10 @@ public class Page implements Serializable {
     public Page(UI ui) {
         this.ui = ui;
         history = new History(ui);
+        ui.getElement()
+                .addEventListener("vaadin-page-visibility-change",
+                        e -> setPageVisibility(e.getEventDetail(String.class)))
+                .addEventDetail().debounce(100).allowInert();
     }
 
     /**
@@ -524,7 +527,6 @@ public class Page implements Serializable {
      * @return the read-only visibility signal
      */
     public Signal<PageVisibility> pageVisibilitySignal() {
-        ensureVisibilityListener();
         return pageVisibilityReadOnly;
     }
 
@@ -548,17 +550,6 @@ public class Page implements Serializable {
             LOGGER.debug("Unknown page visibility value from client: {}",
                     value);
         }
-    }
-
-    private void ensureVisibilityListener() {
-        if (visibilityListenerInstalled) {
-            return;
-        }
-        visibilityListenerInstalled = true;
-        ui.getElement()
-                .addEventListener("vaadin-page-visibility-change",
-                        e -> setPageVisibility(e.getEventDetail(String.class)))
-                .addEventDetail().debounce(100).allowInert();
     }
 
     /**
