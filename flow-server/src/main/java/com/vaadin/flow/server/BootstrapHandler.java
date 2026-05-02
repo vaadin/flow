@@ -1388,9 +1388,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
             try {
                 JsonNode json = JacksonUtils.readTree(browserDetailsJson);
-                ExtendedClientDetails details = ExtendedClientDetails
-                        .fromJson(ui, json);
-                ui.getInternals().setExtendedClientDetails(details);
+                ExtendedClientDetails.updateFromJson(ui, json);
             } catch (Exception e) {
                 // Log and continue without browser details
                 getLogger().debug(
