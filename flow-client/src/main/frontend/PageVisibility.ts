@@ -36,62 +36,43 @@ function isFirefox(): boolean {
   return navigator.userAgent.indexOf('Firefox') > -1;
 }
 
-interface PageVisibilityInstance {
-  dispose(): void;
+let blurTimer: ReturnType<typeof setTimeout> | undefined;
+
+// Dispatch on document.body so the server-side Page facade (listening on
+// the UI element, which is body) can update its signal.
+function dispatch(state: VaadinPageVisibility): void {
+  document.body.dispatchEvent(new CustomEvent('vaadin-page-visibility-change', { detail: state }));
 }
 
-function install(element: HTMLElement): PageVisibilityInstance {
-  let blurTimer: ReturnType<typeof setTimeout> | undefined;
+function clearBlurTimer(): void {
+  if (blurTimer !== undefined) {
+    clearTimeout(blurTimer);
+    blurTimer = undefined;
+  }
+}
 
-  const dispatch = (state: VaadinPageVisibility): void => {
-    element.dispatchEvent(new CustomEvent('vaadin-page-visibility-change', { detail: state }));
-  };
+document.addEventListener('visibilitychange', () => {
+  clearBlurTimer();
+  dispatch(document.hidden ? 'HIDDEN' : 'VISIBLE');
+});
 
-  const clearBlurTimer = (): void => {
-    if (blurTimer !== undefined) {
-      clearTimeout(blurTimer);
-      blurTimer = undefined;
-    }
-  };
-
-  const onVisibilityChange = (): void => {
-    clearBlurTimer();
-    dispatch(document.hidden ? 'HIDDEN' : 'VISIBLE');
-  };
-
-  const onBlur = (): void => {
-    clearBlurTimer();
-    const delay = isFirefox() ? FIREFOX_BLUR_SETTLE_MS : DEFAULT_BLUR_SETTLE_MS;
-    blurTimer = setTimeout(() => {
-      blurTimer = undefined;
-      if (!document.hidden) {
-        dispatch('VISIBLE_NOT_FOCUSED');
-      }
-    }, delay);
-  };
-
-  const onFocus = (): void => {
-    clearBlurTimer();
+window.addEventListener('blur', () => {
+  clearBlurTimer();
+  const delay = isFirefox() ? FIREFOX_BLUR_SETTLE_MS : DEFAULT_BLUR_SETTLE_MS;
+  blurTimer = setTimeout(() => {
+    blurTimer = undefined;
     if (!document.hidden) {
-      dispatch('VISIBLE');
+      dispatch('VISIBLE_NOT_FOCUSED');
     }
-  };
+  }, delay);
+});
 
-  document.addEventListener('visibilitychange', onVisibilityChange);
-  window.addEventListener('blur', onBlur);
-  window.addEventListener('focus', onFocus);
-
-  return {
-    dispose(): void {
-      clearBlurTimer();
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      window.removeEventListener('blur', onBlur);
-      window.removeEventListener('focus', onFocus);
-    }
-  };
-}
-
-const installedElements = new WeakMap<HTMLElement, PageVisibilityInstance>();
+window.addEventListener('focus', () => {
+  clearBlurTimer();
+  if (!document.hidden) {
+    dispatch('VISIBLE');
+  }
+});
 
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
@@ -103,17 +84,6 @@ $wnd.Vaadin.Flow.pageVisibility = {
    */
   current(): VaadinPageVisibility {
     return currentVisibility();
-  },
-
-  /**
-   * Starts dispatching `vaadin-page-visibility-change` events on the given
-   * element. Idempotent: calling it twice on the same element tears down the
-   * previous listeners before installing new ones, so the element only ever
-   * has one set attached.
-   */
-  init(element: HTMLElement): void {
-    installedElements.get(element)?.dispose();
-    installedElements.set(element, install(element));
   }
 };
 

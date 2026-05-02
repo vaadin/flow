@@ -24,9 +24,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -54,8 +51,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @since 1.0
  */
 public class Page implements Serializable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
 
     private final UI ui;
     private final History history;
@@ -531,11 +526,6 @@ public class Page implements Serializable {
 
     private void ensureVisibilityListener() {
         if (visibilityReceiver == null) {
-            ui.getElement()
-                    .executeJs("window.Vaadin.Flow.pageVisibility.init(this)")
-                    .then(ok -> {
-                    }, err -> LOGGER.debug(
-                            "Client-side pageVisibility.init failed: {}", err));
             visibilityReceiver = ui.getElement()
                     .addEventListener("vaadin-page-visibility-change", e -> {
                         String detail = e.getEventDetail(String.class);
