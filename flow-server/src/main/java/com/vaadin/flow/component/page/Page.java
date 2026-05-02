@@ -59,8 +59,9 @@ public class Page implements Serializable {
     private ValueSignal<WindowSize> windowSizeSignal;
     private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
             PageVisibility.UNKNOWN);
-    private Signal<PageVisibility> pageVisibilityReadOnly;
-    private DomListenerRegistration visibilityReceiver;
+    private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
+            .asReadonly();
+    private boolean visibilityListenerInstalled;
 
     /**
      * Creates a page instance for the given UI.
@@ -518,10 +519,7 @@ public class Page implements Serializable {
      * @return the read-only visibility signal
      */
     public Signal<PageVisibility> pageVisibilitySignal() {
-        if (pageVisibilityReadOnly == null) {
-            pageVisibilityReadOnly = pageVisibilitySignal.asReadonly();
-            ensureVisibilityListener();
-        }
+        ensureVisibilityListener();
         return pageVisibilityReadOnly;
     }
 
@@ -537,22 +535,22 @@ public class Page implements Serializable {
     }
 
     private void ensureVisibilityListener() {
-        if (visibilityReceiver == null) {
-            visibilityReceiver = ui.getElement()
-                    .addEventListener("vaadin-page-visibility-change", e -> {
-                        String detail = e.getEventDetail(String.class);
-                        if (detail == null) {
-                            return;
-                        }
-                        try {
-                            pageVisibilitySignal
-                                    .set(PageVisibility.valueOf(detail));
-                        } catch (IllegalArgumentException ignored) {
-                            // Client sent a value this server version does
-                            // not know — keep the previous signal state.
-                        }
-                    }).addEventDetail().debounce(100).allowInert();
+        if (visibilityListenerInstalled) {
+            return;
         }
+        visibilityListenerInstalled = true;
+        ui.getElement().addEventListener("vaadin-page-visibility-change", e -> {
+            String detail = e.getEventDetail(String.class);
+            if (detail == null) {
+                return;
+            }
+            try {
+                pageVisibilitySignal.set(PageVisibility.valueOf(detail));
+            } catch (IllegalArgumentException ignored) {
+                // Client sent a value this server version does
+                // not know — keep the previous signal state.
+            }
+        }).addEventDetail().debounce(100).allowInert();
     }
 
     /**
