@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -51,6 +54,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @since 1.0
  */
 public class Page implements Serializable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
 
     private final UI ui;
     private final History history;
@@ -524,14 +529,25 @@ public class Page implements Serializable {
     }
 
     /**
-     * Sets the page visibility in the signal. Used by
-     * {@link ExtendedClientDetails} to feed bootstrap data into the signal.
+     * Sets the page visibility from a raw client-side value (e.g. from the
+     * bootstrap parameters or from a {@code vaadin-page-visibility-change} DOM
+     * event). {@code null} and unknown values are ignored — the latter is
+     * logged at debug level so a forward-compatible client value does not
+     * silently disappear.
      *
-     * @param visibility
-     *            the new visibility state
+     * @param value
+     *            the raw value, or {@code null}
      */
-    void setPageVisibility(PageVisibility visibility) {
-        pageVisibilitySignal.set(visibility);
+    void setPageVisibility(String value) {
+        if (value == null) {
+            return;
+        }
+        try {
+            pageVisibilitySignal.set(PageVisibility.valueOf(value));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown page visibility value from client: {}",
+                    value);
+        }
     }
 
     private void ensureVisibilityListener() {
@@ -539,18 +555,10 @@ public class Page implements Serializable {
             return;
         }
         visibilityListenerInstalled = true;
-        ui.getElement().addEventListener("vaadin-page-visibility-change", e -> {
-            String detail = e.getEventDetail(String.class);
-            if (detail == null) {
-                return;
-            }
-            try {
-                pageVisibilitySignal.set(PageVisibility.valueOf(detail));
-            } catch (IllegalArgumentException ignored) {
-                // Client sent a value this server version does
-                // not know — keep the previous signal state.
-            }
-        }).addEventDetail().debounce(100).allowInert();
+        ui.getElement()
+                .addEventListener("vaadin-page-visibility-change",
+                        e -> setPageVisibility(e.getEventDetail(String.class)))
+                .addEventDetail().debounce(100).allowInert();
     }
 
     /**

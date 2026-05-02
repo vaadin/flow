@@ -498,7 +498,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
-        seedPageVisibility(ui, getStringElseNull.apply("v-pv"));
+        ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
         String ga = getStringElseNull.apply("v-ga");
         if (ga != null) {
             try {
@@ -509,29 +509,6 @@ public class ExtendedClientDetails implements Serializable {
             }
         }
         return details;
-    }
-
-    private static void seedPageVisibility(UI ui, String raw) {
-        if (raw == null) {
-            return;
-        }
-        try {
-            ui.getPage().setPageVisibility(PageVisibility.valueOf(raw));
-        } catch (IllegalArgumentException ignored) {
-            // Unknown client value — keep UNKNOWN.
-        }
-    }
-
-    private static void seedGeolocationAvailability(UI ui, String raw) {
-        if (raw == null) {
-            return;
-        }
-        try {
-            ui.getInternals().setGeolocationAvailability(
-                    GeolocationAvailability.valueOf(raw));
-        } catch (IllegalArgumentException e) {
-            // unknown value; leave the current availability alone
-        }
     }
 
     /**
