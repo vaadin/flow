@@ -57,6 +57,8 @@ public class Page implements Serializable {
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
+    private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
+            PageVisibility.UNKNOWN);
     private Signal<PageVisibility> pageVisibilityReadOnly;
     private DomListenerRegistration visibilityReceiver;
 
@@ -517,11 +519,21 @@ public class Page implements Serializable {
      */
     public Signal<PageVisibility> pageVisibilitySignal() {
         if (pageVisibilityReadOnly == null) {
-            pageVisibilityReadOnly = ui.getInternals().getPageVisibilitySignal()
-                    .asReadonly();
+            pageVisibilityReadOnly = pageVisibilitySignal.asReadonly();
             ensureVisibilityListener();
         }
         return pageVisibilityReadOnly;
+    }
+
+    /**
+     * Sets the page visibility in the signal. Used by
+     * {@link ExtendedClientDetails} to feed bootstrap data into the signal.
+     *
+     * @param visibility
+     *            the new visibility state
+     */
+    void setPageVisibility(PageVisibility visibility) {
+        pageVisibilitySignal.set(visibility);
     }
 
     private void ensureVisibilityListener() {
@@ -533,7 +545,7 @@ public class Page implements Serializable {
                             return;
                         }
                         try {
-                            ui.getInternals().getPageVisibilitySignal()
+                            pageVisibilitySignal
                                     .set(PageVisibility.valueOf(detail));
                         } catch (IllegalArgumentException ignored) {
                             // Client sent a value this server version does

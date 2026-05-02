@@ -516,8 +516,7 @@ public class ExtendedClientDetails implements Serializable {
             return;
         }
         try {
-            ui.getInternals().getPageVisibilitySignal()
-                    .set(PageVisibility.valueOf(raw));
+            ui.getPage().setPageVisibility(PageVisibility.valueOf(raw));
         } catch (IllegalArgumentException ignored) {
             // Unknown client value — keep UNKNOWN.
         }

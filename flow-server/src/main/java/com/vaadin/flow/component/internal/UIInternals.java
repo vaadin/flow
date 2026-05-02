@@ -51,7 +51,6 @@ import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PageVisibility;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -233,9 +232,6 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
-
-    private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
-            PageVisibility.UNKNOWN);
 
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
@@ -1409,17 +1405,6 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
-    }
-
-    /**
-     * Returns the mutable page visibility signal backing
-     * {@link Page#pageVisibilitySignal()}. Framework-only; application code
-     * must go through {@link Page} which hands out a read-only view.
-     *
-     * @return the mutable signal
-     */
-    public ValueSignal<PageVisibility> getPageVisibilitySignal() {
-        return pageVisibilitySignal;
     }
 
     /**
