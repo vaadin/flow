@@ -236,7 +236,7 @@ public class UIInternals implements Serializable {
 
     private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
             PageVisibility.UNKNOWN);
-  
+
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
 
@@ -1422,21 +1422,6 @@ public class UIInternals implements Serializable {
         return pageVisibilitySignal;
     }
 
-    /**
-     * Updates the page visibility signal. Called from bootstrap
-     * ({@link ExtendedClientDetails}) and from the {@code Page} facade in
-     * response to {@code vaadin-page-visibility-change} DOM events.
-     *
-     * @param visibility
-     *            the new visibility, or {@code null} to leave the current value
-     *            unchanged
-     */
-    public void setPageVisibility(PageVisibility visibility) {
-        if (visibility != null) {
-            pageVisibilitySignal.set(visibility);
-        }
-    }
-  
     /**
      * Returns the reactive signal holding the geolocation availability for this
      * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first

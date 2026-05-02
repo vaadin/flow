@@ -543,8 +543,8 @@ public class Page implements Serializable {
                             return;
                         }
                         try {
-                            ui.getInternals().setPageVisibility(
-                                    PageVisibility.valueOf(detail));
+                            ui.getInternals().getPageVisibilitySignal()
+                                    .set(PageVisibility.valueOf(detail));
                         } catch (IllegalArgumentException ignored) {
                             // Client sent a value this server version does
                             // not know — keep the previous signal state.
