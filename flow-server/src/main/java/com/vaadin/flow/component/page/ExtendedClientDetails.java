@@ -499,7 +499,15 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
         seedPageVisibility(ui, getStringElseNull.apply("v-pv"));
-        seedGeolocationAvailability(ui, getStringElseNull.apply("v-ga"));
+        String ga = getStringElseNull.apply("v-ga");
+        if (ga != null) {
+            try {
+                ui.getInternals().setGeolocationAvailability(
+                        GeolocationAvailability.valueOf(ga));
+            } catch (IllegalArgumentException e) {
+                // unknown value; leave the current availability alone
+            }
+        }
         return details;
     }
 
