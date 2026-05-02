@@ -133,7 +133,7 @@ public class UI extends Component
 
     private final UIInternals internals;
 
-    private final Page page = new Page(this);
+    private final Page page;
 
     private final Geolocation geolocation;
 
@@ -166,6 +166,7 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
+        page = new Page(this);
         geolocation = new Geolocation(this);
     }
 
