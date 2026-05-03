@@ -18,13 +18,11 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.PageVisibility;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageVisibilityView", layout = ViewTestLayout.class)
-@Push
 public class PageVisibilityView extends AbstractDivView {
 
     @Override
