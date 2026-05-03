@@ -23,22 +23,29 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class PageVisibilityIT extends ChromeBrowserTest {
 
     @Test
-    public void initialState_isVisible() {
+    public void initialState_isReportedFromBootstrap() {
         open();
-        waitUntilStateIs("VISIBLE");
+        // The bootstrap parameter v-pv must seed the signal to a real value
+        // before the view renders. In headless CI the tab has no OS focus,
+        // so VISIBLE_NOT_FOCUSED is just as valid as VISIBLE — the
+        // contract is only that the signal is no longer UNKNOWN.
+        waitUntil(d -> {
+            String s = findElement(By.id("state")).getText();
+            return "VISIBLE".equals(s) || "VISIBLE_NOT_FOCUSED".equals(s);
+        });
     }
 
     @Test
     public void blurAndFocus_transitionsThroughVisibleNotFocused() {
         open();
-        waitUntilStateIs("VISIBLE");
+        forceVisibleBaseline();
 
-        // Headless Chrome does not actually fire blur/focus when another tab
-        // is opened, so dispatch synthetic window events to drive the
-        // server-side signal. The client-side handler reads
-        // document.hidden and document.hasFocus() in response to these
-        // events, both of which keep their default values here, so the only
-        // observable transition comes from the event itself.
+        // Headless Chrome does not actually fire blur/focus when another
+        // tab is opened, so dispatch synthetic window events to drive the
+        // server-side signal. The client-side handler reads document.hidden
+        // and document.hasFocus() in response to these events, both of
+        // which keep their default values here, so the only observable
+        // transition comes from the event itself.
         executeScript("window.dispatchEvent(new Event('blur'));");
         waitUntilStateIs("VISIBLE_NOT_FOCUSED");
 
@@ -49,7 +56,7 @@ public class PageVisibilityIT extends ChromeBrowserTest {
     @Test
     public void hidden_isReportedAsHidden() {
         open();
-        waitUntilStateIs("VISIBLE");
+        forceVisibleBaseline();
 
         // The client-side handler reads document.hidden inside its
         // visibilitychange listener, so spoof the property before
@@ -62,6 +69,16 @@ public class PageVisibilityIT extends ChromeBrowserTest {
         executeScript("Object.defineProperty(document, 'hidden', "
                 + "{value: false, configurable: true});"
                 + "document.dispatchEvent(new Event('visibilitychange'));");
+        waitUntilStateIs("VISIBLE");
+    }
+
+    /**
+     * Drives the signal to VISIBLE so the rest of the test starts from a known
+     * baseline regardless of whether the headless browser reports the tab as
+     * focused.
+     */
+    private void forceVisibleBaseline() {
+        executeScript("window.dispatchEvent(new Event('focus'));");
         waitUntilStateIs("VISIBLE");
     }
 
