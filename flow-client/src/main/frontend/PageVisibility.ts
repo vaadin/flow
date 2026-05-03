@@ -22,7 +22,11 @@ type VaadinPageVisibility = 'VISIBLE' | 'VISIBLE_NOT_FOCUSED' | 'HIDDEN';
 const FIREFOX_BLUR_SETTLE_MS = 500;
 const DEFAULT_BLUR_SETTLE_MS = 10;
 
-function currentVisibility(): VaadinPageVisibility {
+/**
+ * Returns the current visibility state synchronously. Used by the bootstrap
+ * path to seed the server-side signal without waiting for a DOM event.
+ */
+export function currentVisibility(): VaadinPageVisibility {
   if (document.hidden) {
     return 'HIDDEN';
   }
@@ -73,19 +77,3 @@ window.addEventListener('focus', () => {
     dispatch('VISIBLE');
   }
 });
-
-const $wnd = window as any;
-$wnd.Vaadin ??= {};
-$wnd.Vaadin.Flow ??= {};
-$wnd.Vaadin.Flow.pageVisibility = {
-  /**
-   * Returns the current visibility state synchronously. Used by the bootstrap
-   * path to seed the server-side signal without waiting for a DOM event.
-   */
-  current(): VaadinPageVisibility {
-    return currentVisibility();
-  }
-};
-
-// Ensure this file is emitted as an ES module so Vite can load it via import.
-export {};
