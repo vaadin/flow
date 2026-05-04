@@ -170,6 +170,32 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @Test
+    void modifyIndex_customServletMapping_hrefIsServletRelative()
+            throws Exception {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyShell.class);
+
+        // Servlet mapped to "/myservlet/*", context path "/ctx".
+        // contextRootRelativePath becomes "./../" so relative and
+        // context:// hrefs must step one level up from the servlet path.
+        VaadinServletRequest request = createRequest("/", "/ctx", "/myservlet");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(4, links.size());
+
+        // Absolute path remains unchanged
+        assertEquals("/absolute.css", links.get(0).attr("href"));
+        // Relative href steps up out of the servlet path
+        assertEquals("./../relative/path.css", links.get(1).attr("href"));
+        // context:// expands the same way
+        assertEquals("./../from-context.css", links.get(2).attr("href"));
+        // Remote URL untouched
+        assertEquals("https://cdn.example.com/remote.css",
+                links.get(3).attr("href"));
+    }
+
+    @Test
     void productionMode_missingResource_fallsBackToOriginalUrl()
             throws Exception {
         mocks.getDeploymentConfiguration().setProductionMode(true);
@@ -194,9 +220,14 @@ class AppShellRegistryStyleSheetDataFilePathTest {
 
     private VaadinServletRequest createRequest(String pathInfo,
             String contextPath) {
+        return createRequest(pathInfo, contextPath, "");
+    }
+
+    private VaadinServletRequest createRequest(String pathInfo,
+            String contextPath, String servletPath) {
         jakarta.servlet.http.HttpServletRequest req = Mockito
                 .mock(jakarta.servlet.http.HttpServletRequest.class);
-        Mockito.when(req.getServletPath()).thenReturn("");
+        Mockito.when(req.getServletPath()).thenReturn(servletPath);
         Mockito.when(req.getPathInfo()).thenReturn(pathInfo);
         Mockito.when(req.getRequestURL())
                 .thenReturn(new StringBuffer(pathInfo));
