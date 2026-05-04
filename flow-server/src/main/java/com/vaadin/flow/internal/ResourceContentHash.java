@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -99,7 +100,7 @@ public class ResourceContentHash {
             String resourceUrl) {
         String resolved = service.resolveResource(resourceUrl);
         if (!resolved.startsWith("/") && !resolved.contains("://")) {
-            resolved = "/" + resolved;
+            resolved = URI.create("/" + resolved).normalize().getPath();
         }
         URL url = service.getStaticResource(resolved);
         if (url == null) {
