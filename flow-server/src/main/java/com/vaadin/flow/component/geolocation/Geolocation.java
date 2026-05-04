@@ -18,6 +18,8 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -99,6 +101,9 @@ import com.vaadin.flow.signals.Signal;
  */
 public class Geolocation implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(Geolocation.class);
+
     private final UI ui;
     private final Signal<GeolocationAvailability> availabilityReadOnly;
 
@@ -171,7 +176,13 @@ public class Geolocation implements Serializable {
      */
     public void get(@Nullable GeolocationOptions options,
             SerializableConsumer<GeolocationOutcome> callback) {
-        client.get(options).thenAccept(callback);
+        client.get(options).whenComplete((outcome, error) -> {
+            if (error != null) {
+                LOGGER.warn("Geolocation get() failed", error);
+            } else {
+                callback.accept(outcome);
+            }
+        });
     }
 
     /**
