@@ -16,16 +16,10 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -50,9 +44,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class GeolocationTracker implements Serializable {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(GeolocationTracker.class);
-
     private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
             new GeolocationPending());
     private final Signal<GeolocationResult> valueSignalReadOnly = valueSignal
@@ -63,20 +54,18 @@ public class GeolocationTracker implements Serializable {
     private final Signal<Boolean> activeSignalReadOnly = activeSignal
             .asReadonly();
 
-    private final UI ui;
     private final Component owner;
     private final @Nullable GeolocationOptions options;
-    private final String watchKey = UUID.randomUUID().toString();
+    private final GeolocationClient client;
 
-    private @Nullable DomListenerRegistration positionListener;
-    private @Nullable DomListenerRegistration errorListener;
+    private GeolocationClient.@Nullable WatchHandle handle;
     private @Nullable Registration detachRegistration;
 
-    GeolocationTracker(UI ui, Component owner,
-            @Nullable GeolocationOptions options) {
-        this.ui = ui;
+    GeolocationTracker(Component owner, @Nullable GeolocationOptions options,
+            GeolocationClient client) {
         this.owner = owner;
         this.options = options;
+        this.client = client;
         resume();
     }
 
@@ -140,25 +129,7 @@ public class GeolocationTracker implements Serializable {
         activeSignal.set(Boolean.TRUE);
         valueSignal.set(new GeolocationPending());
 
-        Element el = owner.getElement();
-
-        positionListener = el
-                .addEventListener("vaadin-geolocation-position",
-                        e -> valueSignal.set(
-                                e.getEventDetail(GeolocationPosition.class)))
-                .addEventDetail().allowInert();
-
-        errorListener = el
-                .addEventListener("vaadin-geolocation-error",
-                        e -> valueSignal
-                                .set(e.getEventDetail(GeolocationError.class)))
-                .addEventDetail().allowInert();
-
-        el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
-                options, watchKey).then(ignored -> {
-                }, err -> LOGGER.debug(
-                        "Client-side geolocation.watch failed: {}", err));
-
+        handle = client.startWatch(owner, options, valueSignal::set);
         detachRegistration = owner.addDetachListener(e -> stop());
     }
 
@@ -181,22 +152,24 @@ public class GeolocationTracker implements Serializable {
             return;
         }
         activeSignal.set(Boolean.FALSE);
-
-        if (positionListener != null) {
-            positionListener.remove();
-            positionListener = null;
-        }
-        if (errorListener != null) {
-            errorListener.remove();
-            errorListener = null;
+        if (handle != null) {
+            handle.stop();
+            handle = null;
         }
         if (detachRegistration != null) {
             detachRegistration.remove();
             detachRegistration = null;
         }
-        ui.getPage().executeJs("window.Vaadin.Flow.geolocation.clearWatch($0)",
-                watchKey).then(ignored -> {
-                }, err -> LOGGER.debug(
-                        "Client-side geolocation.clearWatch failed: {}", err));
+    }
+
+    /**
+     * Returns the active watch handle, or {@code null} if the tracker is not
+     * currently active.
+     *
+     * @return the active watch handle, or {@code null} if the tracker has been
+     *         stopped or auto-cancelled
+     */
+    GeolocationClient.@Nullable WatchHandle handle() {
+        return handle;
     }
 }
