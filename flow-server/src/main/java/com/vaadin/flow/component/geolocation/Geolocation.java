@@ -178,7 +178,7 @@ public class Geolocation implements Serializable {
             SerializableConsumer<GeolocationOutcome> callback) {
         client.get(options).whenComplete((outcome, error) -> {
             if (error != null) {
-                LOGGER.warn("Geolocation get() failed", error);
+                LOGGER.debug("Geolocation get() failed", error);
             } else {
                 callback.accept(outcome);
             }
