@@ -305,16 +305,22 @@ public class AppShellRegistry implements Serializable {
             return href;
         }
 
-        String contextPath = request.getContextPath();
-        if (!contextPath.isEmpty()) {
-            String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
-            if (!lower.startsWith(contextProtocol)) {
-                // Prepend context protocol so URL is resolved with context path
-                href = contextProtocol + href;
-            }
+        String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+        if (!lower.startsWith(contextProtocol)) {
+            // Prepend context protocol so URL is resolved against the
+            // context root by the bootstrap URI resolver below.
+            href = contextProtocol + href;
         }
+        // Use the servlet-relative path (e.g. "./", "../") rather than the
+        // absolute context path. The emitted href is then resolved by the
+        // browser against <base>, which Vaadin sets from the actual request
+        // URL (honoring X-Forwarded-* headers). This works correctly behind
+        // reverse proxies that rewrite or strip the context path in the
+        // public URL.
+        String servletPathToContextRoot = request.getService()
+                .getContextRootRelativePath(request);
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
-                contextPath + "/", null);
+                servletPathToContextRoot, null);
         return resolver.resolveVaadinUri(href);
     }
 

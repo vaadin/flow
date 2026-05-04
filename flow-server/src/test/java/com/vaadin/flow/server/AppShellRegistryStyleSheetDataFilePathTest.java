@@ -74,21 +74,25 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(4, links.size());
 
+        // The href values are servlet-relative (resolved through <base> by
+        // the browser). With the test request's empty servletPath, the
+        // context:// prefix expands to "./".
+
         // 1) Absolute path: href preserved, data-file-path drops leading '/'
         Element abs = links.get(0);
         assertEquals("/absolute.css", abs.attr("href"));
         assertEquals("absolute.css", abs.attr("data-file-path"));
 
-        // 2) Relative with './': href resolved with context path,
+        // 2) Relative with './': href is servlet-relative,
         // data-file-path drops './'
         Element rel = links.get(1);
-        assertEquals("/ctx/relative/path.css", rel.attr("href"));
+        assertEquals("./relative/path.css", rel.attr("href"));
         assertEquals("relative/path.css", rel.attr("data-file-path"));
 
-        // 3) context:// should resolve to context path in href, and
-        // data-file-path strips context protocol prefix
+        // 3) context:// expands to servlet-relative path; data-file-path
+        // strips the context protocol prefix
         Element ctx = links.get(2);
-        assertEquals("/ctx/from-context.css", ctx.attr("href"));
+        assertEquals("./from-context.css", ctx.attr("href"));
         assertEquals("from-context.css", ctx.attr("data-file-path"));
 
         // 4) Remote http(s) URL unchanged, data-file-path remains original
@@ -138,20 +142,22 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "Absolute href should start with /absolute.css");
         assertEquals("/absolute.css", abs.attr("data-file-path"));
 
-        // 2) Relative path: href has hash appended, data-file-path unchanged
+        // 2) Relative path: href is servlet-relative, hash appended,
+        // data-file-path unchanged
         Element rel = links.get(1);
         assertTrue(hashPattern.matcher(rel.attr("href")).find(),
                 "Relative href should contain hash parameter");
-        assertTrue(rel.attr("href").startsWith("/ctx/relative/path.css"),
-                "Relative href should start with /ctx/");
+        assertTrue(rel.attr("href").startsWith("./relative/path.css"),
+                "Relative href should start with ./");
         assertEquals("./relative/path.css", rel.attr("data-file-path"));
 
-        // 3) Context path: href has hash appended, data-file-path unchanged
+        // 3) Context path: href is servlet-relative (context:// expanded),
+        // hash appended, data-file-path unchanged
         Element ctx = links.get(2);
         assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
                 "Context href should contain hash parameter");
-        assertTrue(ctx.attr("href").startsWith("/ctx/from-context.css"),
-                "Context href should start with /ctx/");
+        assertTrue(ctx.attr("href").startsWith("./from-context.css"),
+                "Context href should start with ./");
         assertEquals("context://from-context.css", ctx.attr("data-file-path"));
 
         // 4) External URL: no hash appended, data-file-path unchanged
@@ -161,6 +167,32 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "External href should not have hash");
         assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("data-file-path"));
+    }
+
+    @Test
+    void modifyIndex_customServletMapping_hrefIsServletRelative()
+            throws Exception {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyShell.class);
+
+        // Servlet mapped to "/myservlet/*", context path "/ctx".
+        // contextRootRelativePath becomes "./../" so relative and
+        // context:// hrefs must step one level up from the servlet path.
+        VaadinServletRequest request = createRequest("/", "/ctx", "/myservlet");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(4, links.size());
+
+        // Absolute path remains unchanged
+        assertEquals("/absolute.css", links.get(0).attr("href"));
+        // Relative href steps up out of the servlet path
+        assertEquals("./../relative/path.css", links.get(1).attr("href"));
+        // context:// expands the same way
+        assertEquals("./../from-context.css", links.get(2).attr("href"));
+        // Remote URL untouched
+        assertEquals("https://cdn.example.com/remote.css",
+                links.get(3).attr("href"));
     }
 
     @Test
@@ -188,9 +220,14 @@ class AppShellRegistryStyleSheetDataFilePathTest {
 
     private VaadinServletRequest createRequest(String pathInfo,
             String contextPath) {
+        return createRequest(pathInfo, contextPath, "");
+    }
+
+    private VaadinServletRequest createRequest(String pathInfo,
+            String contextPath, String servletPath) {
         jakarta.servlet.http.HttpServletRequest req = Mockito
                 .mock(jakarta.servlet.http.HttpServletRequest.class);
-        Mockito.when(req.getServletPath()).thenReturn("");
+        Mockito.when(req.getServletPath()).thenReturn(servletPath);
         Mockito.when(req.getPathInfo()).thenReturn(pathInfo);
         Mockito.when(req.getRequestURL())
                 .thenReturn(new StringBuffer(pathInfo));
