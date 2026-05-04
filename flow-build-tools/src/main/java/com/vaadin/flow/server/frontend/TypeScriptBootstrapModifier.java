@@ -34,9 +34,6 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            options used by the build
      * @param frontendDependenciesScanner
      *            the frontend dependencies scanner
-     * @deprecated {@code frontendDependenciesScanner} can be obtained calling
-     *             {@link Options#getFrontendDependenciesScanner()}. Use
-     *             {@link #modify(List, Options)} instead
      */
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
