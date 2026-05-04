@@ -221,6 +221,7 @@ public class DevModeInitializer implements Serializable {
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
+                .withApplicationConfiguration(config)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
                         new File(frontendFolder + FrontendUtils.GENERATED))
