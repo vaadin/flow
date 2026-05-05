@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -116,14 +119,17 @@ public class Geolocation implements Serializable {
      * {@link UI#getGeolocation()} and should not instantiate this class
      * directly — attempting to create a second instance for a UI that already
      * has one throws.
+     * <p>
+     * The underlying {@link GeolocationClient} is resolved through
+     * {@link Lookup}: if a {@link GeolocationClientFactory} is registered, its
+     * {@link GeolocationClientFactory#create(UI)} produces the client.
+     * Otherwise the built-in browser-backed client is used.
      *
      * @param ui
      *            the UI this facade belongs to
      * @throws IllegalStateException
      *             if the UI already has a Geolocation facade
      */
-    @SuppressWarnings("NullAway") // setClient always assigns client; the guard
-                                  // throw above it exits before client is used
     public Geolocation(UI ui) {
         if (ui.getGeolocation() != null) {
             throw new IllegalStateException(
@@ -133,12 +139,40 @@ public class Geolocation implements Serializable {
         this.ui = ui;
         this.availabilityReadOnly = ui.getInternals()
                 .getGeolocationAvailabilitySignal().asReadonly();
+        this.client = resolveClient(ui);
+        wireClient(this.client);
+    }
+
+    private static GeolocationClient resolveClient(UI ui) {
+        GeolocationClientFactory factory = lookupFactory(ui);
+        if (factory != null) {
+            return factory.create(ui);
+        }
         GeolocationAvailability seed = ui.getInternals()
                 .getGeolocationAvailabilitySignal().peek();
         if (seed == null) {
             seed = GeolocationAvailability.UNKNOWN;
         }
-        setClient(new BrowserGeolocationClient(ui, seed));
+        return new BrowserGeolocationClient(ui, seed);
+    }
+
+    private static @Nullable GeolocationClientFactory lookupFactory(UI ui) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null && ui.getSession() != null) {
+            service = ui.getSession().getService();
+        }
+        if (service == null) {
+            return null;
+        }
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup == null) {
+            return null;
+        }
+        return lookup.lookup(GeolocationClientFactory.class);
     }
 
     /**
@@ -296,24 +330,16 @@ public class Geolocation implements Serializable {
         return availabilityReadOnly;
     }
 
-    /**
-     * Replaces this facade's geolocation client.
-     *
-     * @param client
-     *            the replacement client, never null
-     */
     void setClient(GeolocationClient client) {
-        if (this.client != null) {
-            this.client.close();
-        }
+        this.client.close();
         this.client = client;
-        wireAvailability(client);
+        wireClient(client);
     }
 
-    private void wireAvailability(GeolocationClient activeClient) {
+    private void wireClient(GeolocationClient client) {
         ui.getInternals()
-                .setGeolocationAvailability(activeClient.currentAvailability());
-        activeClient.subscribeAvailability(
+                .setGeolocationAvailability(client.currentAvailability());
+        client.subscribeAvailability(
                 next -> ui.getInternals().setGeolocationAvailability(next));
     }
 }
