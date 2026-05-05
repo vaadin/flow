@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -192,8 +192,7 @@ public class SystemErrorHandler {
                 registry.getHeartbeat().setInterval(-1);
 
                 int uiId = registry.getApplicationConfiguration().getUIId();
-                ValueMap json = MessageHandler
-                        .parseWrappedJson(xhr.getResponseText());
+                ValueMap json = MessageHandler.parseJson(xhr.getResponseText());
                 int newUiId = json.getInt(ApplicationConstants.UI_ID);
                 if (newUiId != uiId) {
                     Console.debug("UI ID switched from " + uiId + " to "
@@ -276,6 +275,8 @@ public class SystemErrorHandler {
             String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
+        // Set the popover attribute for native popovers.
+        systemErrorContainer.setAttribute("popover", "manual");
         systemErrorContainer.setClassName("v-system-error");
 
         if (caption != null) {
@@ -312,9 +313,20 @@ public class SystemErrorHandler {
         } else {
             document.getBody().appendChild(systemErrorContainer);
         }
+        showPopover(systemErrorContainer);
 
         return systemErrorContainer;
     }
+
+    // @formatter:off
+    private native void showPopover(Element el) 
+    /*-{
+        var fn = el && el.showPopover;
+        if (typeof fn === "function") {
+            fn.call(el);
+        }
+    }-*/;
+    // @formatter:on
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {

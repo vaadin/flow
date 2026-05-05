@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.BlurNotifier;
 import com.vaadin.flow.component.ClickNotifier;
@@ -26,7 +26,7 @@ import com.vaadin.flow.component.InputNotifier;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.Tag;
 
-public class NotifierTest {
+class NotifierTest {
     @Tag("div")
     public static class NotifierComponent extends Component
             implements BlurNotifier<NotifierComponent>,
@@ -35,7 +35,7 @@ public class NotifierTest {
     }
 
     @Test
-    public void addNotifiers() {
+    void addNotifiers() {
         // Just testing that adding notifiers actually compiles and doesn't
         // throw. Test is on purpose outside com.vaadin.flow.component to
         // uncover visibility problems.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.plugin.base;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -40,8 +40,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zeroturnaround.exec.InvalidExitValueException;
-import org.zeroturnaround.exec.ProcessExecutor;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -499,13 +497,11 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     * @throws TimeoutException
-     *             - while running build system
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
     public static void runFrontendBuild(PluginAdapterBase adapter)
-            throws TimeoutException, URISyntaxException {
+            throws URISyntaxException {
         LicenseChecker.setStrictOffline(true);
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
@@ -540,11 +536,9 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @param frontendTools
      *            - frontend tools access object
-     * @throws TimeoutException
-     *             - while running vite
      */
     public static void runVite(PluginAdapterBase adapter,
-            FrontendTools frontendTools) throws TimeoutException {
+            FrontendTools frontendTools) {
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
@@ -552,7 +546,7 @@ public class BuildFrontendUtil {
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
             FrontendTools frontendTools, String toolName, String packageName,
             String binaryName, Map<String, String> environment,
-            String... params) throws TimeoutException {
+            String... params) {
 
         File buildExecutable;
         try {
@@ -580,29 +574,102 @@ public class BuildFrontendUtil {
         command.addAll(Arrays.asList(params));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-
-        ProcessExecutor processExecutor = new ProcessExecutor()
-                .command(builder.command()).environment(builder.environment())
-                .environment(environment)
-                .directory(adapter.projectBaseDirectory().toFile());
+        if (!environment.isEmpty()) {
+            builder.environment().putAll(environment);
+        }
+        builder.directory(adapter.projectBaseDirectory().toFile());
+        builder.redirectErrorStream(true);
 
         adapter.logInfo("Running " + toolName + " ...");
         if (adapter.isDebugEnabled()) {
             adapter.logDebug(FrontendUtils.commandToString(
                     adapter.npmFolder().getAbsolutePath(), command));
         }
+
+        Process process = null;
+        // Per-invocation hook: registered before start, removed in finally.
+        // The unconditional add+forget pattern leaks Thread refs in the Gradle
+        // daemon JVM, where the hook list never drains until JVM shutdown.
+        Thread shutdownHook = null;
         try {
-            processExecutor.exitValueNormal().readOutput(true).destroyOnExit()
-                    .execute();
-        } catch (InvalidExitValueException e) {
-            throw new IllegalStateException(String.format(
-                    "%s process exited with non-zero exit code.%nStderr: '%s'",
-                    toolName, e.getResult().outputUTF8()), e);
-        } catch (IOException | InterruptedException e) {
+            process = builder.start();
+            final Process startedProcess = process;
+            shutdownHook = new Thread(() -> {
+                if (startedProcess.isAlive()) {
+                    startedProcess.destroyForcibly();
+                }
+            }, toolName + "-shutdown-hook");
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
+
+            StringBuilder toolOutput = new StringBuilder();
+            try (BufferedReader reader = process
+                    .inputReader(StandardCharsets.UTF_8)) {
+                reader.lines().forEach(line -> {
+                    if (adapter.isDebugEnabled()) {
+                        adapter.logDebug(line);
+                    }
+                    toolOutput.append(line).append(System.lineSeparator());
+                });
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IllegalStateException(String.format(
+                        "%s process exited with non-zero exit code %d.%nOutput: '%s'",
+                        toolName, exitCode, toolOutput.toString().trim()));
+            }
+        } catch (IOException e) {
             throw new IllegalStateException(
                     String.format("Failed to run %s due to an error", toolName),
                     e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(
+                    String.format("Failed to run %s due to an error", toolName),
+                    e);
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
+            if (shutdownHook != null) {
+                try {
+                    Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                } catch (IllegalStateException ignore) {
+                    // JVM is already shutting down; the hook will run.
+                }
+            }
         }
+    }
+
+    /**
+     * Validate pro component licenses.
+     * <p>
+     * When {@link PluginAdapterBuild#optimizeBundle()} is {@code false} the
+     * bytecode scanner is disabled and every commercial component present on
+     * the classpath is assumed to be used, regardless of whether the
+     * application actually references it. In that case the thrown
+     * {@link LicenseException} uses a dedicated message that explains the
+     * classpath-level detection and suggests concrete workarounds (re-enable
+     * bundle optimization, switch to {@code com.vaadin:vaadin-core}, or exclude
+     * {@code com.vaadin:vaadin} from a transitive dependency).
+     *
+     * @param adapter
+     *            the PluginAdapterBuild
+     * @param frontendDependencies
+     *            frontend dependencies scanner
+     * @return {@literal true} if license validation is required because of the
+     *         presence of commercial components, otherwise {@literal false}.
+     * @throws MissingLicenseKeyException
+     *             if commercial components are used in a commercial
+     *             banner-enabled build and no license key is present
+     * @throws LicenseException
+     *             if commercial components are used without a license and
+     *             commercial banner is not enabled
+     */
+    public static boolean validateLicenses(PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies) {
+        return doValidateLicenses(adapter, frontendDependencies,
+                adapter.optimizeBundle());
     }
 
     /**
@@ -620,9 +687,25 @@ public class BuildFrontendUtil {
      * @throws LicenseException
      *             if commercial components are used without a license and
      *             commercial banner is not enabled
+     * @deprecated use
+     *             {@link #validateLicenses(PluginAdapterBuild, FrontendDependenciesScanner)}
+     *             instead
      */
+    @Deprecated(since = "25.2", forRemoval = true)
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
+        if (adapter instanceof PluginAdapterBuild pluginAdapterBuild) {
+            return validateLicenses(pluginAdapterBuild, frontendDependencies);
+        }
+        // Fallback for callers that only provide a PluginAdapterBase: the
+        // optimizeBundle property is not accessible, so assume the default
+        // (true) and emit the original error message.
+        return doValidateLicenses(adapter, frontendDependencies, true);
+    }
+
+    private static boolean doValidateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies,
+            boolean optimizeBundle) {
         File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
@@ -679,26 +762,74 @@ public class BuildFrontendUtil {
                                     .formatted(productsList));
                 }
                 invalidateOutput(component, outputFolder);
-                throw new LicenseException(String.format(
-                        """
-                                Commercial features require a subscription.
-                                Your application contains the following commercial components and no license was found:
-                                %1$s
-
-                                If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
-                                Otherwise go to https://vaadin.com/pricing to obtain a license.
-
-                                You can also build a watermarked version of the application configuring
-                                the '%2$s' property of the Maven or Gradle plugin
-                                or run the build with the '-Dvaadin.%2$s' system parameter
-                                """,
-                        productsList, InitParameters.COMMERCIAL_WITH_BANNER));
+                throw new LicenseException(
+                        buildLicenseErrorMessage(productsList, optimizeBundle));
             } catch (Exception e) {
                 invalidateOutput(component, outputFolder);
                 throw e;
             }
         }
         return !commercialComponents.isEmpty();
+    }
+
+    private static String buildLicenseErrorMessage(String productsList,
+            boolean optimizeBundle) {
+        if (optimizeBundle) {
+            return String.format(
+                    """
+                            Commercial features require a subscription.
+                            Your application contains the following commercial components and no license was found:
+                            %1$s
+
+                            If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                            Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                            You can also build a watermarked version of the application configuring
+                            the '%2$s' property of the Maven or Gradle plugin
+                            or run the build with the '-Dvaadin.%2$s' system parameter
+                            """,
+                    productsList, InitParameters.COMMERCIAL_WITH_BANNER);
+        }
+        return String.format(
+                """
+                        Commercial features require a subscription.
+                        The following commercial components were detected on the classpath and no license was found:
+                        %1$s
+
+                        If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                        Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                        You can also build a watermarked version of the application configuring
+                        the '%2$s' property of the Maven or Gradle plugin
+                        or run the build with the '-Dvaadin.%2$s' system parameter.
+
+                        Note: bundle optimization is disabled ('optimizeBundle=false'), so the bytecode scanner that
+                        normally restricts detection to components actually referenced by the application is bypassed
+                        — every commercial component present on the classpath is assumed to be in use.
+
+                        If the application does not actually use these commercial components, the likely cause is a
+                        dependency on the 'com.vaadin:vaadin' umbrella artifact, which transitively includes every
+                        commercial component. You can resolve this by:
+
+                        1. Setting the 'optimizeBundle' property of the Vaadin plugin to 'true' (for example in the
+                           vaadin-maven-plugin configuration in pom.xml, the 'vaadin { }' block in build.gradle(.kts),
+                           or the corresponding entry in application.properties for Quarkus). Bytecode scanning will
+                           then restrict detection to components actually referenced by the application.
+
+                        2. If your project declares 'com.vaadin:vaadin' as a direct dependency, replacing it
+                           with 'com.vaadin:vaadin-core'.
+
+                        3. If 'com.vaadin:vaadin' is pulled in transitively (for example by an add-on), identify the
+                           responsible dependency by running:
+                             Maven:  mvn dependency:tree -Dincludes=com.vaadin:vaadin
+                             Gradle: ./gradlew dependencyInsight --configuration runtimeClasspath --dependency com.vaadin:vaadin:
+                                     (note the trailing colon after 'vaadin' — it narrows the match to the exact
+                                     umbrella artifact and excludes 'com.vaadin:vaadin-*' sub-artifacts)
+                           Then exclude 'com.vaadin:vaadin' from that dependency.
+                           Please also report the issue to the add-on author — add-ons should declare 'com.vaadin:vaadin' with 'provided' scope
+                           in Maven or 'compileOnly' in Gradle so it is never leaked transitively to consumers.
+                        """,
+                productsList, InitParameters.COMMERCIAL_WITH_BANNER);
     }
 
     private static void invalidateOutput(Product component, File outputFolder) {
@@ -913,7 +1044,6 @@ public class BuildFrontendUtil {
 
             FileUtils.write(tokenFile, buildInfo.toPrettyString() + "\n",
                     StandardCharsets.UTF_8.name());
-            tokenFile.deleteOnExit();
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
         }

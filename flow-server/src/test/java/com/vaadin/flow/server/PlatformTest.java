@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,33 +24,31 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PlatformTest {
+class PlatformTest {
     private ClassLoader oldContextClassLoader;
+    @TempDir
+    Path temporary;
 
-    @Rule
-    public TemporaryFolder temporary = new TemporaryFolder();
-
-    @Before
-    public void rememberContextClassLoader() {
+    @BeforeEach
+    void rememberContextClassLoader() {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
-    @After
-    public void restoreContextClassLoader() {
+    @AfterEach
+    void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
     }
 
-    @Before
-    @After
-    public void cleanMemoizedValues() {
+    @BeforeEach
+    @AfterEach
+    void cleanMemoizedValues() {
         Platform.hillaVersion = null;
         Platform.vaadinVersion = null;
     }
@@ -63,7 +61,8 @@ public class PlatformTest {
         final List<URL> classPath = new LinkedList<>();
 
         if (hillaVersion != null) {
-            final Path hillaJar = temporary.newFolder().toPath();
+            final Path hillaJar = Files.createTempDirectory(temporary, "temp")
+                    .toFile().toPath();
             final Path pomProperties = hillaJar
                     .resolve(Platform.HILLA_POM_PROPERTIES);
             Files.createDirectories(pomProperties.getParent());
@@ -72,7 +71,8 @@ public class PlatformTest {
         }
 
         if (vaadinVersion != null) {
-            final Path vaadinJar = temporary.newFolder().toPath();
+            final Path vaadinJar = Files.createTempDirectory(temporary, "temp")
+                    .toFile().toPath();
             final Path pomProperties = vaadinJar.resolve(
                     "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
             Files.createDirectories(pomProperties.getParent());
@@ -90,12 +90,12 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinVersionReturnsEmptyOptionalWhenVaadinNotOnClasspath() {
+    void testGetVaadinVersionReturnsEmptyOptionalWhenVaadinNotOnClasspath() {
         assertEquals(Optional.empty(), Platform.getVaadinVersion());
     }
 
     @Test
-    public void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath()
+    void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath()
             throws Exception {
         fakeVaadinHilla("24.1.0", null);
         assertEquals(Optional.of("24.1.0"), Platform.getVaadinVersion());
@@ -106,12 +106,12 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetHillaVersionReturnsEmptyOptionalWhenHillaNotOnClasspath() {
+    void testGetHillaVersionReturnsEmptyOptionalWhenHillaNotOnClasspath() {
         assertEquals(Optional.empty(), Platform.getHillaVersion());
     }
 
     @Test
-    public void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
+    void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
             throws Exception {
         fakeVaadinHilla(null, "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());
@@ -122,7 +122,7 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath()
+    void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath()
             throws Exception {
         fakeVaadinHilla("24.0.0", "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());

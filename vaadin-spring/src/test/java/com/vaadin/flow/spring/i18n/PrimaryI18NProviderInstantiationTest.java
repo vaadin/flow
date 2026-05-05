@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,16 +31,19 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@ExtendWith(SpringExtension.class)
 @Import(PrimaryI18NProviderInstantiationTest.I18NTestConfig.class)
-public class PrimaryI18NProviderInstantiationTest {
+class PrimaryI18NProviderInstantiationTest {
 
     @Autowired
     private ApplicationContext context;
@@ -87,22 +89,22 @@ public class PrimaryI18NProviderInstantiationTest {
     }
 
     @Test
-    public void getI18NProvider_usePrimaryBean() throws ServletException {
+    void getI18NProvider_usePrimaryBean() throws ServletException {
         Instantiator instantiator = SpringInstantiatorTest
                 .getService(context, null).getInstantiator();
 
-        Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(PrimaryI18NTestProvider.class,
+        assertNotNull(instantiator.getI18NProvider());
+        assertEquals(PrimaryI18NTestProvider.class,
                 instantiator.getI18NProvider().getClass());
     }
 
     @Test
-    public void getI18NProvider_givenDefaultI18NProvider_usePrimaryBean()
+    void getI18NProvider_givenDefaultI18NProvider_usePrimaryBean()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(PrimaryI18NTestProvider.class,
+        assertNotNull(instantiator.getI18NProvider());
+        assertEquals(PrimaryI18NTestProvider.class,
                 instantiator.getI18NProvider().getClass());
     }
 

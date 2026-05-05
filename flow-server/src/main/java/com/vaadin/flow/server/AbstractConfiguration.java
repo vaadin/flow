@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -159,6 +159,18 @@ public interface AbstractConfiguration extends Serializable {
         return !isProductionMode() && getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
                 Constants.DEFAULT_DEVMODE_STATS);
+    }
+
+    /**
+     * Returns whether browserless mode is enabled. In browserless mode, the
+     * application runs without a browser connection, typically for UI unit
+     * testing. Dev server related warnings are suppressed.
+     *
+     * @return {@code true} if browserless mode is enabled, {@code false}
+     *         otherwise
+     */
+    default boolean isBrowserless() {
+        return getBooleanProperty(InitParameters.BROWSERLESS, false);
     }
 
     /**

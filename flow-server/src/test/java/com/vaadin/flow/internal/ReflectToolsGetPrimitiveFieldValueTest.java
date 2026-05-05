@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class ReflectToolsGetPrimitiveFieldValueTest {
+class ReflectToolsGetPrimitiveFieldValueTest {
     @Test
-    public void getFieldValueViaGetter() {
+    void getFieldValueViaGetter() {
         class MyClass {
             @SuppressWarnings("unused")
             public int field = 1;

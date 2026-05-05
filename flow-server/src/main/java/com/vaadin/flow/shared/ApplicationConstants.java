@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -173,6 +173,12 @@ public class ApplicationConstants implements Serializable {
      * Get parameter used in framework requests to identify the request type.
      */
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
+
+    /**
+     * Query parameter appended to static resource URLs for content-based
+     * cache-busting (e.g. {@code ?v-c=abcd1234}).
+     */
+    public static final String CONTENT_HASH_PARAMETER = "v-c";
 
     /**
      * Request type parameter value indicating an init request.

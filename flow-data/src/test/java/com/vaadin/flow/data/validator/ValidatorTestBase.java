@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,7 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder;
@@ -27,14 +26,18 @@ import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ValidatorTestBase {
 
     private TestLabel localeContext;
     private Locale locale = Locale.US;
     private UI ui;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         ui = new UI() {
             @Override
             public Locale getLocale() {
@@ -49,7 +52,7 @@ public class ValidatorTestBase {
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder()));
         if (result.isError()) {
-            Assert.fail(value + " should pass " + validator + " but got "
+            fail(value + " should pass " + validator + " but got "
                     + result.getErrorMessage());
         }
     }
@@ -58,8 +61,8 @@ public class ValidatorTestBase {
             Validator<? super T> validator) {
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder(), localeContext));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals(errorMessage, result.getErrorMessage());
+        assertTrue(result.isError());
+        assertEquals(errorMessage, result.getErrorMessage());
     }
 
     protected <T> void assertFails(T value, AbstractValidator<? super T> v) {

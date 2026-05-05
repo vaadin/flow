@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,19 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @TestPropertySource(properties = { "server.port = 1234" })
-public class DevModeBrowserLauncherNoPropertiesTest
+class DevModeBrowserLauncherNoPropertiesTest
         extends AbstractDevModeBrowserLauncherTest {
 
     @Test
-    public void getUrl_noProperties_givesUrlWithNoContextPathAndUrlMapping() {
+    void getUrl_noProperties_givesUrlWithNoContextPathAndUrlMapping() {
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1234/", url);
+        assertEquals("http://localhost:1234/", url);
     }
 
 }

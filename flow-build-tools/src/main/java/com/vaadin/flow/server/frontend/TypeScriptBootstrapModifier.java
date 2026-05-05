@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,9 +34,26 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            options used by the build
      * @param frontendDependenciesScanner
      *            the frontend dependencies scanner
+     * @deprecated {@code frontendDependenciesScanner} can be obtained calling
+     *             {@link Options#getFrontendDependenciesScanner()}. Use
+     *             {@link #modify(List, Options)} instead
      */
+    @Deprecated(since = "25.2", forRemoval = true)
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
+    }
+
+    /**
+     * Modifies the bootstrap typescript by mutating the parameter.
+     *
+     * @param bootstrapTypeScript
+     *            the input typescript split into lines
+     * @param options
+     *            options used by the build
+     */
+    default void modify(List<String> bootstrapTypeScript, Options options) {
+        modify(bootstrapTypeScript, options,
+                options.getFrontendDependenciesScanner());
     }
 
 }

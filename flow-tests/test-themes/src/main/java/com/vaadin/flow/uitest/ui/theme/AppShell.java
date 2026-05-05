@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,11 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
 @StyleSheet("context://aura/fake-aura.css")
+@StyleSheet("context://styles.css")
+// Regression for https://github.com/vaadin/flow/issues/24164: relative
+// url(...) inside an @import-ed CSS file must still resolve correctly when
+// the entry CSS is loaded.
+@StyleSheet("context://relurl-test/styles.css")
 @CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 public class AppShell implements AppShellConfigurator {
 }

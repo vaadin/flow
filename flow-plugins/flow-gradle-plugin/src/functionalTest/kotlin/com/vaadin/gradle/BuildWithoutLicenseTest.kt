@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -62,22 +62,20 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             
-            // Copy the flow-build-info.json so that tests can assert on it
-            // after the build.
+            // Copy the cached flow-build-info.json so that tests can assert
+            // on it after the build (the original is deleted by the task so
+            // IDE runs default to development mode).
             tasks.named('vaadinBuildFrontend').configure {
                 doLast {
-                    def mainResourcesDir = project.sourceSets.main.output.resourcesDir
-                    
-                    // Define source file path based on the resources directory
-                    def sourceFile = new File(mainResourcesDir, "META-INF/VAADIN/config/flow-build-info.json")
-                    
-                    if (sourceFile.exists()) {
+                    def cachedFile = new File(project.buildDir, "cached-flow-build-info.json")
+
+                    if (cachedFile.exists()) {
                         def destFile = project.file("${buildInfo.absolutePath}")
-                        destFile.text = sourceFile.text
-                        
-                        logger.lifecycle("Copied flow-build-info.json to temporary file: ${buildInfo.absolutePath}")
+                        destFile.text = cachedFile.text
+
+                        logger.lifecycle("Copied cached flow-build-info.json to temporary file: ${buildInfo.absolutePath}")
                     } else {
-                        logger.warn("Could not find flow-build-info.json to copy")
+                        logger.warn("Could not find cached flow-build-info.json to copy")
                     }
                 }
             }

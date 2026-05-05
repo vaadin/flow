@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,16 @@ package com.vaadin.flow.component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class CompositeNestedTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CompositeNestedTest {
     TestLayout layout;
     TestComponent componentInComposite;
     Composite<?> compositeOuter;
@@ -74,8 +75,8 @@ public class CompositeNestedTest {
 
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         layout = new TestLayout();
         componentInComposite = new TestComponent(
                 ElementFactory.createDiv("Inside composite"));
@@ -95,63 +96,62 @@ public class CompositeNestedTest {
     }
 
     @Test
-    public void compositeOuterElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+    void compositeOuterElement() {
+        assertEquals(componentInComposite.getElement(),
                 compositeOuter.getElement());
     }
 
     @Test
-    public void compositeInnerElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+    void compositeInnerElement() {
+        assertEquals(componentInComposite.getElement(),
                 compositeInner.getElement());
     }
 
     @Test
-    public void getParentElement_compositeOuter() {
-        Assert.assertEquals(layout.getElement(),
+    void getParentElement_compositeOuter() {
+        assertEquals(layout.getElement(),
                 compositeOuter.getElement().getParent());
     }
 
     @Test
-    public void getParentElement_compositeInner() {
-        Assert.assertEquals(layout.getElement(),
+    void getParentElement_compositeInner() {
+        assertEquals(layout.getElement(),
                 compositeInner.getElement().getParent());
     }
 
     @Test
-    public void layoutChildElements() {
+    void layoutChildElements() {
         CompositeTest.assertElementChildren(layout.getElement(),
                 componentInComposite.getElement());
     }
 
     @Test
-    public void getParent_compositeOuter() {
-        Assert.assertEquals(layout, compositeOuter.getParent().get());
+    void getParent_compositeOuter() {
+        assertEquals(layout, compositeOuter.getParent().get());
     }
 
     @Test
-    public void getParent_compositeInner() {
-        Assert.assertEquals(compositeOuter, compositeInner.getParent().get());
+    void getParent_compositeInner() {
+        assertEquals(compositeOuter, compositeInner.getParent().get());
     }
 
     @Test
-    public void getParent_componentInComposite() {
-        Assert.assertEquals(compositeInner,
-                componentInComposite.getParent().get());
+    void getParent_componentInComposite() {
+        assertEquals(compositeInner, componentInComposite.getParent().get());
     }
 
     @Test
-    public void getChildren_layout() {
+    void getChildren_layout() {
         ComponentTest.assertChildren(layout, compositeOuter);
     }
 
     @Test
-    public void getChildren_compositeOuter() {
+    void getChildren_compositeOuter() {
         ComponentTest.assertChildren(compositeOuter, compositeInner);
     }
 
     @Test
-    public void getChildren_compositeInner() {
+    void getChildren_compositeInner() {
         ComponentTest.assertChildren(compositeInner, componentInComposite);
     }
 

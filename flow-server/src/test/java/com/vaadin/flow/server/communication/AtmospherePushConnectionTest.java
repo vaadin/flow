@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,15 +27,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -44,11 +44,15 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnectionTest {
+class AtmospherePushConnectionTest {
 
     private static ExecutorService executor;
     private MockVaadinSession vaadinSession;
@@ -56,18 +60,18 @@ public class AtmospherePushConnectionTest {
     private AtmosphereResource resource;
     private AtmospherePushConnection connection;
 
-    @BeforeClass
-    public static void initExecutor() {
+    @BeforeAll
+    static void initExecutor() {
         executor = Executors.newSingleThreadExecutor();
     }
 
-    @AfterClass
-    public static void stopExecutor() {
+    @AfterAll
+    static void stopExecutor() {
         executor.shutdown();
     }
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         vaadinSession = new MockVaadinSession();
         vaadinSession.lock();
         UI ui = new MockUI(vaadinSession);
@@ -92,7 +96,7 @@ public class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void testSerialization() throws Exception {
+    void testSerialization() throws Exception {
 
         UI ui = Mockito.mock(UI.class);
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
@@ -100,7 +104,7 @@ public class AtmospherePushConnectionTest {
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
 
-        Assert.assertEquals(State.CONNECTED, connection.getState());
+        assertEquals(State.CONNECTED, connection.getState());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -109,11 +113,11 @@ public class AtmospherePushConnectionTest {
         connection = (AtmospherePushConnection) new ObjectInputStream(
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
-        Assert.assertEquals(State.DISCONNECTED, connection.getState());
+        assertEquals(State.DISCONNECTED, connection.getState());
     }
 
     @Test
-    public void pushWhileDisconnect_disconnectedWithoutSendingMessage()
+    void pushWhileDisconnect_disconnectedWithoutSendingMessage()
             throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
@@ -132,15 +136,14 @@ public class AtmospherePushConnectionTest {
                     return null;
                 });
         connection.disconnect();
-        Assert.assertTrue("AtmospherePushConnection not disconnected",
-                latch.await(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.PUSH_PENDING, connection.getState());
+        assertTrue(latch.await(2, TimeUnit.SECONDS),
+                "AtmospherePushConnection not disconnected");
+        assertEquals(State.PUSH_PENDING, connection.getState());
         Mockito.verifyNoInteractions(broadcaster);
     }
 
     @Test
-    public void disconnectWhilePush_messageSentAndThenDisconnected()
-            throws Exception {
+    void disconnectWhilePush_messageSentAndThenDisconnected() throws Exception {
         CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture.runAsync(() -> {
             try {
@@ -166,15 +169,13 @@ public class AtmospherePushConnectionTest {
             return null;
         });
 
-        Assert.assertTrue("Push not completed",
-                latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }
 
     @Test
-    public void disconnect_concurrentRequests_preventDeadlocks()
-            throws Exception {
+    void disconnect_concurrentRequests_preventDeadlocks() throws Exception {
         // A deadlock may happen when an HTTP session is invalidated in a
         // thread, causing VaadinSession and UIs to be closed and push
         // connections to be disconnected, but a push disconnection is
@@ -242,15 +243,16 @@ public class AtmospherePushConnectionTest {
         if (threadError != null) {
             StringWriter sw = new StringWriter();
             threadError.printStackTrace(new PrintWriter(sw));
-            Assert.fail("Disconnection on spawned thread failed: " + sw);
+            fail("Disconnection on spawned thread failed: " + sw);
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 
     @Test
-    public void pushWhileDisconnect_preventDeadlocks() throws Exception {
+    void pushWhileDisconnect_preventDeadlocks() throws Exception {
         // Similar motivation exposed in
         // disconnect_concurrentRequests_preventDeadlocks
         // but when a Vaadin session is unlocked as a consequence of HTTP
@@ -300,12 +302,140 @@ public class AtmospherePushConnectionTest {
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
         if (threadError != null) {
-            Assert.fail("Disconnection on spawned thread failed: "
+            fail("Disconnection on spawned thread failed: "
                     + threadError.getMessage());
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
+    }
+
+    @Test
+    void pushInterleavedWithDisconnect_preventDeadlocks() throws Exception {
+        // Same motivation as pushWhileDisconnect_preventDeadlocks, but
+        // exercises the race where push() has already read
+        // disconnecting=false BEFORE a concurrent disconnect() flips it
+        // to true. The AtomicBoolean guard does not protect against this
+        // interleaving: disconnect() enters synchronized(lock) and
+        // blocks in resource.close() waiting for the HTTP session lock
+        // held by the push thread, while the push thread then blocks
+        // trying to enter synchronized(lock) held by disconnect(),
+        // producing a deadlock.
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        CountDownLatch disconnectReachedClose = new CountDownLatch(1);
+        Mockito.doAnswer(i -> {
+            // Signal that disconnect() has entered synchronized(lock)
+            // and is about to contend for the HTTP session lock.
+            disconnectReachedClose.countDown();
+            // simulate HTTP session lock attempt because resource.close
+            // accesses session attributes; fail fast if it is still held
+            // by the push thread (indicates a deadlock).
+            if (httpSessionLock.tryLock(2, TimeUnit.SECONDS)) {
+                httpSessionLock.unlock();
+            } else {
+                throw new AssertionError(
+                        "Deadlock on AtmosphereResource.close");
+            }
+            return null;
+        }).when(resource).close();
+
+        CountDownLatch pushReachedBarrier = new CountDownLatch(1);
+        CountDownLatch disconnectProceed = new CountDownLatch(1);
+        AtomicBoolean paused = new AtomicBoolean(false);
+        ThreadLocal<Boolean> pushThreadMarker = ThreadLocal
+                .withInitial(() -> Boolean.FALSE);
+
+        // Pause push() between the disconnecting.get() read and the
+        // synchronized(lock) entry by overriding isConnected(), which is
+        // called in between. Only the push thread's first call pauses,
+        // so a post-fix re-check inside synchronized(lock) does not
+        // re-trigger the hook.
+        UI ui = Mockito.spy(new UI());
+        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        AtmospherePushConnection testConnection = new AtmospherePushConnection(
+                ui) {
+            @Override
+            public boolean isConnected() {
+                boolean connected = super.isConnected();
+                if (connected && pushThreadMarker.get()
+                        && paused.compareAndSet(false, true)) {
+                    pushReachedBarrier.countDown();
+                    try {
+                        disconnectProceed.await(2, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                return connected;
+            }
+        };
+        testConnection.connect(resource);
+
+        // Dedicated executor to guarantee that push and disconnect can
+        // run concurrently, independent of the common pool parallelism.
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            CompletableFuture<Throwable> pushFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        pushThreadMarker.set(Boolean.TRUE);
+                        httpSessionLock.lock();
+                        try {
+                            vaadinSession.runWithLock(() -> {
+                                testConnection.push();
+                                return null;
+                            });
+                            return (Throwable) null;
+                        } catch (Throwable t) {
+                            return t;
+                        } finally {
+                            httpSessionLock.unlock();
+                            pushThreadMarker.remove();
+                        }
+                    }, executor);
+
+            // Wait until push() has read disconnecting=false and is
+            // paused just before entering synchronized(lock).
+            assertTrue(pushReachedBarrier.await(2, TimeUnit.SECONDS),
+                    "Push thread did not reach the barrier");
+
+            // Start a concurrent disconnect(). It will CAS disconnecting
+            // from false to true, enter synchronized(lock), and then
+            // attempt resource.close(), which requires the HTTP session
+            // lock held by the push thread.
+            CompletableFuture<Throwable> disconnectFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        try {
+                            testConnection.disconnect();
+                            return (Throwable) null;
+                        } catch (Throwable t) {
+                            return t;
+                        }
+                    }, executor);
+
+            // Wait deterministically until disconnect() has reached
+            // resource.close() before releasing the push thread.
+            assertTrue(disconnectReachedClose.await(2, TimeUnit.SECONDS),
+                    "Disconnect did not reach resource.close()");
+
+            // Release the push thread so it proceeds toward
+            // synchronized(lock). Without the fix, it blocks here
+            // forever.
+            disconnectProceed.countDown();
+
+            Throwable pushError = pushFuture.get(5, TimeUnit.SECONDS);
+            Throwable disconnectError = disconnectFuture.get(5,
+                    TimeUnit.SECONDS);
+
+            if (disconnectError != null) {
+                fail("Disconnect failed (likely deadlock): " + disconnectError);
+            }
+            if (pushError != null) {
+                fail("Push failed: " + pushError);
+            }
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
 }

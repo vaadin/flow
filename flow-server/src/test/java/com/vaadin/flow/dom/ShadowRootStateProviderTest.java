@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,44 +15,47 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 
-public class ShadowRootStateProviderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShadowRootStateProviderTest {
 
     @Test
-    public void supportsSelfCreatedNode() {
+    void supportsSelfCreatedNode() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assert.assertTrue(provider.supports(shadowRoot));
+        assertTrue(provider.supports(shadowRoot));
     }
 
     @Test
-    public void doesNotSupportEmptyNode() {
+    void doesNotSupportEmptyNode() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
-        Assert.assertFalse(provider.supports(new StateNode()));
+        assertFalse(provider.supports(new StateNode()));
     }
 
     @Test
-    public void createShadowRootNode_originalNodeIsInitialized() {
+    void createShadowRootNode_originalNodeIsInitialized() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assert.assertEquals(shadowRoot,
+        assertEquals(shadowRoot,
                 node.getFeature(ShadowRootData.class).getShadowRoot());
     }
 
     @Test
-    public void getParent_parentIsHostElement() {
+    void getParent_parentIsHostElement() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assert.assertEquals(node, shadowRoot.getParent());
+        assertEquals(node, shadowRoot.getParent());
     }
 
 }

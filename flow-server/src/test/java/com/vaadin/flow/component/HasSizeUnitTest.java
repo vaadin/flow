@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,13 @@ package com.vaadin.flow.component;
 
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HasSizeUnitTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HasSizeUnitTest {
 
     @Tag("div")
     public static class HasSizeComponent extends Component implements HasSize {
@@ -28,99 +31,105 @@ public class HasSizeUnitTest {
     }
 
     @Test
-    public void setWidthFloat() {
+    void setWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getWidth());
+            assertEquals("100.0" + unit.toString(), c.getWidth());
         }
     }
 
     @Test
-    public void setMinWidthFloat() {
+    void setMinWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMinWidth());
+            assertEquals("100.0" + unit.toString(), c.getMinWidth());
         }
     }
 
     @Test
-    public void setMaxWidthFloat() {
+    void setMaxWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMaxWidth());
+            assertEquals("100.0" + unit.toString(), c.getMaxWidth());
         }
     }
 
     @Test
-    public void setHeightFloat() {
+    void setHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getHeight());
+            assertEquals("100.0" + unit.toString(), c.getHeight());
         }
     }
 
     @Test
-    public void setMinHeightFloat() {
+    void setMinHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMinHeight());
+            assertEquals("100.0" + unit.toString(), c.getMinHeight());
         }
     }
 
     @Test
-    public void setMaxHeightFloat() {
+    void setMaxHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMaxHeight());
+            assertEquals("100.0" + unit.toString(), c.getMaxHeight());
         }
     }
 
     @Test
-    public void getUnit() {
+    void getUnit() {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             Optional<Unit> theUnit = Unit.getUnit(cssSize);
-            Assert.assertTrue(theUnit.isPresent());
-            Assert.assertEquals(theUnit.get(), unit);
+            assertTrue(theUnit.isPresent());
+            assertEquals(theUnit.get(), unit);
         }
     }
 
     @Test
-    public void getSize() {
+    void getSize() {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             float size = Unit.getSize(cssSize);
-            Assert.assertEquals(100f, size, 0.01);
+            assertEquals(100f, size, 0.01);
         }
         for (Unit unit : Unit.values()) {
             String cssSize = unit.toString();
             float size = Unit.getSize(cssSize);
-            Assert.assertEquals(0f, size, 0.01);
+            assertEquals(0f, size, 0.01);
         }
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void getSizeException() {
-        String cssSize = "10a0px";
-        float size = Unit.getSize(cssSize);
+    @Test
+    void getSizeException() {
+        assertThrows(NumberFormatException.class, () -> {
+            String cssSize = "10a0px";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getSizeNoUnit() {
-        String cssSize = "100";
-        float size = Unit.getSize(cssSize);
+    @Test
+    void getSizeNoUnit() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            String cssSize = "100";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getSizeNoValidUnit() {
-        String cssSize = "100p";
-        float size = Unit.getSize(cssSize);
+    @Test
+    void getSizeNoValidUnit() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            String cssSize = "100p";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
 }

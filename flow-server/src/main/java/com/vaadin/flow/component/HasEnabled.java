@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,9 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A generic interface for components and other user interface objects that may
@@ -101,15 +102,16 @@ public interface HasEnabled extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the enabled state of this component and
-     * keeps the state synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * Binds a {@link Signal}'s value to the enabled state of this component.
+     * The enabled state is set immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the element is in attached state. When the
+     * element is in detached state, signal value changes have no effect.
+     * <code>null</code> signal unbinds the existing binding.
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -119,17 +121,16 @@ public interface HasEnabled extends HasElement {
      * Span component = new Span();
      * add(component);
      * component.bindEnabled(signal);
-     * signal.value(false); // The component is disabled
+     * signal.set(false); // The component is disabled
      * </pre>
      *
      * @param enabledSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
      */
-    default void bindEnabled(Signal<Boolean> enabledSignal) {
-        getElement().bindEnabled(enabledSignal);
+    default SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
+        return getElement().bindEnabled(enabledSignal);
     }
 }

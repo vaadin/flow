@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,7 @@ import java.util.function.Consumer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -36,6 +35,10 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,7 +47,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 
 @SuppressWarnings("unchecked")
-public class BaseLicenseCheckerServiceInitListenerTest {
+class BaseLicenseCheckerServiceInitListenerTest {
 
     private static final String PRODUCT_NAME = "vaadin-test-commercial-addon";
     private static final String PRODUCT_VERSION = "1.2.3";
@@ -57,7 +60,7 @@ public class BaseLicenseCheckerServiceInitListenerTest {
     ServiceInitEvent event = new ServiceInitEvent(service);
 
     @Test
-    public void serviceInit_productionMode_licenseNotChecked() {
+    void serviceInit_productionMode_licenseNotChecked() {
         config.setProductionMode(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
                 .mockStatic(LicenseChecker.class)) {
@@ -67,7 +70,7 @@ public class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsDisabled_validLicense_noAction() {
+    void serviceInit_devToolsDisabled_validLicense_noAction() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -86,7 +89,7 @@ public class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsDisabled_missingOrInvalid_throws() {
+    void serviceInit_devToolsDisabled_missingOrInvalid_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -99,9 +102,9 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                             isNull(BuildType.class)))
                     .thenThrow(checkerException);
 
-            LicenseException exception = Assert.assertThrows(
-                    LicenseException.class, () -> listener.serviceInit(event));
-            Assert.assertSame(checkerException, exception);
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> listener.serviceInit(event));
+            assertSame(checkerException, exception);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
@@ -112,7 +115,7 @@ public class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_missingLicense_delegateHandlingToDevTools() {
+    void serviceInit_devToolsEnabled_missingLicense_delegateHandlingToDevTools() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -135,9 +138,8 @@ public class BaseLicenseCheckerServiceInitListenerTest {
 
             var indexHtmlRequestListeners = event
                     .getAddedIndexHtmlRequestListeners().toList();
-            Assert.assertEquals(
-                    "Expected index html request listener to be installed, but was not",
-                    1, indexHtmlRequestListeners.size());
+            assertEquals(1, indexHtmlRequestListeners.size(),
+                    "Expected index html request listener to be installed, but was not");
             Document document = Jsoup
                     .parse("<html><head></head><body></body></html>");
             IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
@@ -147,15 +149,15 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 
             String headHTML = document.head().html();
-            Assert.assertTrue(headHTML.contains(
+            assertTrue(headHTML.contains(
                     "window.Vaadin.devTools.createdCvdlElements.push(product);"));
-            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+            assertTrue(headHTML.contains("registerProduct('%s','%s');"
                     .formatted(PRODUCT_NAME, PRODUCT_VERSION)));
         }
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
+    void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -187,9 +189,8 @@ public class BaseLicenseCheckerServiceInitListenerTest {
 
             var indexHtmlRequestListeners = event
                     .getAddedIndexHtmlRequestListeners().toList();
-            Assert.assertEquals(
-                    "Expected a single index html request listener to be installed",
-                    1, indexHtmlRequestListeners.size());
+            assertEquals(1, indexHtmlRequestListeners.size(),
+                    "Expected a single index html request listener to be installed");
             Document document = Jsoup
                     .parse("<html><head></head><body></body></html>");
             IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
@@ -199,19 +200,19 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 
             String headHTML = document.head().html();
-            Assert.assertTrue(headHTML.contains(
+            assertTrue(headHTML.contains(
                     "window.Vaadin.devTools.createdCvdlElements.push(product);"));
-            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+            assertTrue(headHTML.contains("registerProduct('%s','%s');"
                     .formatted(PRODUCT_NAME, PRODUCT_VERSION)));
-            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+            assertTrue(headHTML.contains("registerProduct('%s','%s');"
                     .formatted("productB", "1.0.0")));
-            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+            assertTrue(headHTML.contains("registerProduct('%s','%s');"
                     .formatted("productC", "2.4.6")));
         }
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_invalidLicense_throws() {
+    void serviceInit_devToolsEnabled_invalidLicense_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -225,9 +226,9 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                             any(Capabilities.class)))
                     .thenThrow(checkerException);
 
-            LicenseException exception = Assert.assertThrows(
-                    LicenseException.class, () -> listener.serviceInit(event));
-            Assert.assertSame(checkerException, exception);
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> listener.serviceInit(event));
+            assertSame(checkerException, exception);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), any(Capabilities.class),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -148,6 +148,10 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TS)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(FrontendUtils.APP_SHELL_IMPORTS_NAME)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME)));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve("file-routes.ts")));
         knownFiles.add(normalizePath(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.PwaConfiguration;
 
 /**
  * Updates the Vite configuration files according with current project settings.
@@ -61,9 +62,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private static String getTemplate(String string) {
-        try {
-            return StringUtil.toUTF8String(
-                    TaskUpdateVite.class.getResourceAsStream(string));
+        try (InputStream resourceAsStream = TaskUpdateVite.class
+                .getResourceAsStream(string)) {
+            return StringUtil.toUTF8String(resourceAsStream);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -96,12 +97,12 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
         }
 
-        InputStream resource = this.getClass().getClassLoader()
-                .getResourceAsStream(FrontendUtils.VITE_CONFIG);
-        Files.copy(resource, configFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        log().debug("Created vite configuration file: '{}'", configFile);
-
+        try (InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_CONFIG)) {
+            Files.copy(resource, configFile.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            log().debug("Created vite configuration file: '{}'", configFile);
+        }
     }
 
     private boolean replaceWithDefault(File configFile) throws IOException {
@@ -119,26 +120,33 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         // Always overwrite this
         File generatedConfigFile = new File(options.getNpmFolder(),
                 FrontendUtils.VITE_GENERATED_CONFIG);
-        InputStream resource = this.getClass().getClassLoader()
-                .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG);
-        String template = StringUtil.toUTF8String(resource);
+        try (InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG)) {
+            String template = StringUtil.toUTF8String(resource);
 
-        template = template
-                .replace("#settingsImport#",
-                        "./" + options.getBuildDirectoryName() + "/"
-                                + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#buildFolder#",
-                        "./" + options.getBuildDirectoryName())
-                .replace("#webComponentTags#",
-                        webComponentTags == null || webComponentTags.isEmpty()
-                                ? ""
-                                : String.join(";", webComponentTags))
-                .replace("#frontendExtraFileExtensions#",
-                        getFrontendExtraFileExtensions());
-        template = updateFileSystemRouterVitePlugin(template);
-        template = updateTailwindCssVitePlugin(template);
+            // First apply plugin insertions that use #buildFolder# placeholder
+            template = updateServiceWorkerVitePlugin(template);
+            template = updateFileSystemRouterVitePlugin(template);
+            template = updateTailwindCssVitePlugin(template);
 
-        FileIOUtils.writeIfChanged(generatedConfigFile, template);
+            // Then replace placeholders with actual values
+            template = template
+                    .replace("#settingsImport#",
+                            "./" + options.getBuildDirectoryName() + "/"
+                                    + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
+                    .replace("#buildFolder#",
+                            "./" + options.getBuildDirectoryName())
+                    .replace("#webComponentTags#",
+                            webComponentTags == null
+                                    || webComponentTags.isEmpty()
+                                            ? ""
+                                            : String.join(";",
+                                                    webComponentTags))
+                    .replace("#frontendExtraFileExtensions#",
+                            getFrontendExtraFileExtensions());
+
+            FileIOUtils.writeIfChanged(generatedConfigFile, template);
+        }
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);
     }
@@ -154,6 +162,19 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     .collect(Collectors.joining("', '", ", '", "'"));
         }
         return "";
+    }
+
+    private String updateServiceWorkerVitePlugin(String template) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
+            return template.replace("//#serviceWorkerPluginImport#",
+                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")
+                    .replace("//#serviceWorkerPlugin#",
+                            "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),");
+        }
+        return template.replace("//#serviceWorkerPluginImport#", "")
+                .replace("//#serviceWorkerPlugin#", "");
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,9 @@ package com.vaadin.flow.uitest.ui;
 import java.io.IOException;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultSystemMessagesProvider;
@@ -57,9 +59,15 @@ public class InternalErrorView extends AbstractDivView {
                 "Reset system messages", "reset-system-messages",
                 event -> resetSystemMessages());
 
+        Div popover = createPopover();
+        NativeButton openPopoverButton = new NativeButton("Open popover");
+        openPopoverButton.setId("open-popover");
+        popover.getId().ifPresent(popoverId -> openPopoverButton.getElement()
+                .setAttribute("popovertarget", popoverId));
+
         add(message, updateMessageButton, closeSessionButton,
                 enableNotificationButton, causeExceptionButton,
-                resetSystemMessagesButton);
+                openPopoverButton, resetSystemMessagesButton, popover);
     }
 
     private void showInternalError() {
@@ -99,4 +107,20 @@ public class InternalErrorView extends AbstractDivView {
         VaadinService.getCurrent()
                 .setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
     }
+
+    private Div createPopover() {
+        Div popover = new Div();
+        popover.setId("popover-div");
+        popover.getElement().setAttribute("popover", "manual");
+        popover.setSizeFull();
+        popover.getStyle().setPosition(Style.Position.ABSOLUTE);
+        popover.getStyle().setPadding("10px");
+        popover.getStyle().setBorder("2px solid black");
+        popover.add(new H3("Modal dialog"));
+        NativeButton causeExceptionButton = createButton("Cause exception",
+                "cause-exception-popover", event -> showInternalError());
+        popover.add(causeExceptionButton);
+        return popover;
+    }
+
 }

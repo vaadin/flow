@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -220,6 +220,13 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         // Jetty error page
         Assert.assertTrue($("h2").withTextContaining("HTTP ERROR 500")
                 .withTextContaining("java.io.IOException: Callback").exists());
+    }
+
+    @Test
+    public void getDynamicDownloadHandlerPercentResource() throws IOException {
+        open();
+
+        assertDownloadedContent("download-handler-percent", "file_.jpg");
     }
 
     @Test

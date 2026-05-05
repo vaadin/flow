@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,9 +32,8 @@ import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
@@ -72,6 +71,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
@@ -88,8 +88,16 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public class NavigationStateRendererTest {
+class NavigationStateRendererTest {
 
     @Route(value = "preserved")
     @PreserveOnRefresh
@@ -158,28 +166,31 @@ public class NavigationStateRendererTest {
 
     private Router router;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         RouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(new MockVaadinContext());
         router = new Router(registry);
+
+        RouteParentLayout.creationCount.set(0);
+        ConditionalForwardView.shouldForward = false;
+        ConditionalRerouteView.shouldReroute = false;
     }
 
     @Test
-    public void getRouterLayoutForSingle() {
+    void getRouterLayoutForSingle() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(RouteParentLayout.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(RouteParentLayout.class, router);
 
-        Assert.assertEquals(
-                "Found layout even though RouteParentLayout doesn't have any parents.",
-                0, routerLayoutTypes.size());
+        assertEquals(0, routerLayoutTypes.size(),
+                "Found layout even though RouteParentLayout doesn't have any parents.");
     }
 
     @Test
-    public void getRouterLayoutForSingleParent() {
+    void getRouterLayoutForSingleParent() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -188,14 +199,14 @@ public class NavigationStateRendererTest {
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(SingleView.class, router);
 
-        Assert.assertEquals("Not all expected layouts were found", 1,
-                routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found", RouteParentLayout.class,
-                routerLayoutTypes.get(0));
+        assertEquals(1, routerLayoutTypes.size(),
+                "Not all expected layouts were found");
+        assertEquals(RouteParentLayout.class, routerLayoutTypes.get(0),
+                "Wrong class found");
     }
 
     @Test
-    public void getRouterLayoutForMulipleLayers() {
+    void getRouterLayoutForMulipleLayers() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -204,23 +215,23 @@ public class NavigationStateRendererTest {
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(ChildConfiguration.class, router);
 
-        Assert.assertEquals("Not all expected layouts were found", 2,
-                routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found as first in array",
-                MiddleLayout.class, routerLayoutTypes.get(0));
-        Assert.assertEquals("Wrong class found as second in array",
-                RouteParentLayout.class, routerLayoutTypes.get(1));
+        assertEquals(2, routerLayoutTypes.size(),
+                "Not all expected layouts were found");
+        assertEquals(MiddleLayout.class, routerLayoutTypes.get(0),
+                "Wrong class found as first in array");
+        assertEquals(RouteParentLayout.class, routerLayoutTypes.get(1),
+                "Wrong class found as second in array");
     }
 
     @Test
-    public void instantiatorUse() {
+    void instantiatorUse() {
 
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
             @Override
             public <T extends HasElement> T createRouteTarget(
                     Class<T> routeTargetType, NavigationEvent event) {
-                Assert.assertEquals(Component.class, routeTargetType);
+                assertEquals(Component.class, routeTargetType);
                 return (T) new Text("foo");
             }
         });
@@ -235,13 +246,13 @@ public class NavigationStateRendererTest {
         Component routeTarget = renderer.getRouteTarget(Component.class, event,
                 true);
 
-        Assert.assertEquals(Text.class, routeTarget.getClass());
+        assertEquals(Text.class, routeTarget.getClass());
 
         UI.setCurrent(null);
     }
 
     @Test
-    public void getRouteTarget_supportsProxyClasses() {
+    void getRouteTarget_supportsProxyClasses() {
         try {
             Class<? extends ProxyableView> routeProxyClass = new ByteBuddy()
                     .subclass(ProxyableView.class)
@@ -256,7 +267,7 @@ public class NavigationStateRendererTest {
                 @Override
                 public <T extends HasElement> T createRouteTarget(
                         Class<T> routeTargetType, NavigationEvent event) {
-                    Assert.assertEquals(ProxyableView.class, routeTargetType);
+                    assertEquals(ProxyableView.class, routeTargetType);
                     routeCreationCounter.incrementAndGet();
                     return (T) ReflectTools.createInstance(routeProxyClass);
                 }
@@ -286,10 +297,9 @@ public class NavigationStateRendererTest {
                     event, true);
 
             // Getting route target should not create a new instance
-            Assert.assertEquals(
-                    "Only one view instance should have been created", 1,
-                    routeCreationCounter.get());
-            Assert.assertSame(view, routeTarget);
+            assertEquals(1, routeCreationCounter.get(),
+                    "Only one view instance should have been created");
+            assertSame(view, routeTarget);
         } finally {
             UI.setCurrent(null);
         }
@@ -299,7 +309,10 @@ public class NavigationStateRendererTest {
     @Tag("div")
     private static class RouteParentLayout extends Component
             implements RouterLayout {
+        private static final AtomicInteger creationCount = new AtomicInteger(0);
+
         RouteParentLayout() {
+            creationCount.incrementAndGet();
             addAttachListener(e -> layoutAttachCount.getAndIncrement());
             layoutUUID = UUID.randomUUID().toString();
         }
@@ -324,6 +337,44 @@ public class NavigationStateRendererTest {
         }
     }
 
+    @Route(value = "forward-target", layout = RouteParentLayout.class)
+    @Tag("div")
+    private static class ForwardTargetView extends Component {
+    }
+
+    @Route(value = "reroute-target", layout = RouteParentLayout.class)
+    @Tag("div")
+    private static class RerouteTargetView extends Component {
+    }
+
+    @Route(value = "conditional-forward", layout = RouteParentLayout.class)
+    @Tag("div")
+    private static class ConditionalForwardView extends Component
+            implements BeforeEnterObserver {
+        static boolean shouldForward = false;
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            if (shouldForward) {
+                event.forwardTo(ForwardTargetView.class);
+            }
+        }
+    }
+
+    @Route(value = "conditional-reroute", layout = RouteParentLayout.class)
+    @Tag("div")
+    private static class ConditionalRerouteView extends Component
+            implements BeforeEnterObserver {
+        static boolean shouldReroute = false;
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            if (shouldReroute) {
+                event.rerouteTo(RerouteTargetView.class);
+            }
+        }
+    }
+
     @Route(value = "/:samplePersonID?/:action?(edit)")
     @RouteAlias(value = "")
     @Tag("div")
@@ -340,7 +391,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefreshAndWindowNameNotKnown_clientSideCallTriggered() {
+    void handle_preserveOnRefreshAndWindowNameNotKnown_clientSideCallTriggered() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -380,11 +431,11 @@ public class NavigationStateRendererTest {
                 new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
 
         // then client-side JS was invoked
-        Assert.assertTrue("Expected JS invocation", jsInvoked.get());
+        assertTrue(jsInvoked.get(), "Expected JS invocation");
     }
 
     @Test
-    public void handle_preserveOnRefreshAndWindowNameKnown_componentIsCachedRetrievedAndFlushed() {
+    void handle_preserveOnRefreshAndWindowNameKnown_componentIsCachedRetrievedAndFlushed() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -408,9 +459,10 @@ public class NavigationStateRendererTest {
                 ui1, NavigationTrigger.PAGE_LOAD));
 
         // then the session has a cached record of the view
-        Assert.assertTrue("Session expected to have cached view",
+        assertTrue(
                 AbstractNavigationStateRenderer.getPreservedChain(session,
-                        "ROOT.123", new Location("preserved")).isPresent());
+                        "ROOT.123", new Location("preserved")).isPresent(),
+                "Session expected to have cached view");
 
         // given the recently instantiated view
         final Component view = ui1.getCurrentView();
@@ -429,8 +481,9 @@ public class NavigationStateRendererTest {
                 ui2, NavigationTrigger.PAGE_LOAD));
 
         // then the same view is routed to
-        Assert.assertEquals("Expected same view", view,
-                ui1.getInternals().getActiveRouterTargetsChain().get(0));
+        assertEquals(view,
+                ui1.getInternals().getActiveRouterTargetsChain().get(0),
+                "Expected same view");
 
         // given yet another new UI with the same window name
         MockUI ui3 = new MockUI(session);
@@ -446,13 +499,14 @@ public class NavigationStateRendererTest {
                 ui2, NavigationTrigger.PAGE_LOAD));
 
         // then session no longer has a cached record at location "preserved"
-        Assert.assertFalse("Session expected to not have cached view",
+        assertFalse(
                 AbstractNavigationStateRenderer.hasPreservedChainOfLocation(
-                        session, new Location("preserved")));
+                        session, new Location("preserved")),
+                "Session expected to not have cached view");
     }
 
     @Test
-    public void handle_preserveOnRefresh_refreshIsFlaggedInEvent() {
+    void handle_preserveOnRefresh_refreshIsFlaggedInEvent() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -475,36 +529,36 @@ public class NavigationStateRendererTest {
                 new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
 
         // then the session has a cached record of the view
-        Assert.assertTrue("Session expected to have cached view",
+        assertTrue(
                 AbstractNavigationStateRenderer.getPreservedChain(session,
-                        "ROOT.123", new Location("preserved")).isPresent());
+                        "ROOT.123", new Location("preserved")).isPresent(),
+                "Session expected to have cached view");
 
         // given the recently instantiated view
         final PreservedEventView view = (PreservedEventView) ui.getInternals()
                 .getActiveRouterTargetsChain().get(0);
-        Assert.assertFalse(
-                "Initial view load should not be a refresh for before",
-                view.refreshBeforeEnter);
-        Assert.assertFalse(
-                "Initial view load should not be a refresh for after",
-                view.refreshAfterNavigation);
+        assertFalse(view.refreshBeforeEnter,
+                "Initial view load should not be a refresh for before");
+        assertFalse(view.refreshAfterNavigation,
+                "Initial view load should not be a refresh for after");
 
         // when another navigation targets the same location
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
 
         // then the same view is routed to
-        Assert.assertEquals("Expected same view", view,
-                ui.getInternals().getActiveRouterTargetsChain().get(0));
+        assertEquals(view,
+                ui.getInternals().getActiveRouterTargetsChain().get(0),
+                "Expected same view");
 
-        Assert.assertTrue("Reload should be flagged for before",
-                view.refreshBeforeEnter);
-        Assert.assertTrue("Reload should be flagged for after",
-                view.refreshAfterNavigation);
+        assertTrue(view.refreshBeforeEnter,
+                "Reload should be flagged for before");
+        assertTrue(view.refreshAfterNavigation,
+                "Reload should be flagged for after");
     }
 
     @Test
-    public void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
+    void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -541,15 +595,15 @@ public class NavigationStateRendererTest {
         // transferred from the previous UI to the new UI
         final Set<Element> uiChildren = ui1.getElement().getChildren()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(2, uiChildren.size());
-        Assert.assertTrue("Component element expected transferred",
-                uiChildren.contains(view.getElement()));
-        Assert.assertTrue("Extra element expected transferred",
-                uiChildren.contains(otherElement));
+        assertEquals(2, uiChildren.size());
+        assertTrue(uiChildren.contains(view.getElement()),
+                "Component element expected transferred");
+        assertTrue(uiChildren.contains(otherElement),
+                "Extra element expected transferred");
     }
 
     @Test
-    public void handle_preserveOnRefreshView_routerLayoutIsPreserved_oldUiIsClosed() {
+    void handle_preserveOnRefreshView_routerLayoutIsPreserved_oldUiIsClosed() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -589,16 +643,18 @@ public class NavigationStateRendererTest {
                         NavigationTrigger.PAGE_LOAD));
 
         // then the view and the router layout are preserved
-        Assert.assertEquals("Expected same view", nestedView,
-                ui.getInternals().getActiveRouterTargetsChain().get(0));
-        Assert.assertEquals("Expected same router layout", layout,
-                ui.getInternals().getActiveRouterTargetsChain().get(1));
+        assertEquals(nestedView,
+                ui.getInternals().getActiveRouterTargetsChain().get(0),
+                "Expected same view");
+        assertEquals(layout,
+                ui.getInternals().getActiveRouterTargetsChain().get(1),
+                "Expected same router layout");
 
-        Assert.assertTrue(previousUi.isClosing());
+        assertTrue(previousUi.isClosing());
     }
 
     @Test
-    public void handle_preserveOnRefresh_sameUI_uiIsNotClosed_childrenAreNotRemoved() {
+    void handle_preserveOnRefresh_sameUI_uiIsNotClosed_childrenAreNotRemoved() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -642,8 +698,8 @@ public class NavigationStateRendererTest {
                 new ObjectMapper().createObjectNode(), false);
         renderer.handle(event);
 
-        Assert.assertFalse(ui.isClosing());
-        Assert.assertEquals(0, count.get());
+        assertFalse(ui.isClosing());
+        assertEquals(0, count.get());
     }
 
     private static AtomicInteger layoutAttachCount;
@@ -653,7 +709,7 @@ public class NavigationStateRendererTest {
     private static String viewUUID;
 
     @Test
-    public void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
+    void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
         layoutAttachCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -687,30 +743,30 @@ public class NavigationStateRendererTest {
         String currentLayoutUUID = layoutUUID;
         String currentViewUUID = viewUUID;
 
-        Assert.assertEquals(1, layoutAttachCount.get());
-        Assert.assertEquals(1, viewAttachCount.get());
+        assertEquals(1, layoutAttachCount.get());
+        assertEquals(1, viewAttachCount.get());
 
         ui.getInternals().clearLastHandledNavigation();
 
         // Should recreate route component only
         ui.refreshCurrentRoute(false);
-        Assert.assertEquals(1, layoutAttachCount.get());
-        Assert.assertEquals(2, viewAttachCount.get());
-        Assert.assertEquals(currentLayoutUUID, layoutUUID);
-        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        assertEquals(1, layoutAttachCount.get());
+        assertEquals(2, viewAttachCount.get());
+        assertEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
         currentViewUUID = viewUUID;
 
         // Should recreate route component and parent layout
         ui.refreshCurrentRoute(true);
-        Assert.assertEquals(2, layoutAttachCount.get());
-        Assert.assertEquals(3, viewAttachCount.get());
-        Assert.assertNotEquals(currentLayoutUUID, layoutUUID);
-        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        assertEquals(2, layoutAttachCount.get());
+        assertEquals(3, viewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
 
     }
 
     @Test
-    public void handle_normalView_refreshCurrentRouteRecreatesComponents() {
+    void handle_normalView_refreshCurrentRouteRecreatesComponents() {
         layoutAttachCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -736,30 +792,102 @@ public class NavigationStateRendererTest {
         String currentLayoutUUID = layoutUUID;
         String currentViewUUID = viewUUID;
 
-        Assert.assertEquals(1, layoutAttachCount.get());
-        Assert.assertEquals(1, viewAttachCount.get());
+        assertEquals(1, layoutAttachCount.get());
+        assertEquals(1, viewAttachCount.get());
 
         ui.getInternals().clearLastHandledNavigation();
 
         // Should recreate route component only
         ui.refreshCurrentRoute(false);
-        Assert.assertEquals(1, layoutAttachCount.get());
-        Assert.assertEquals(2, viewAttachCount.get());
-        Assert.assertEquals(currentLayoutUUID, layoutUUID);
-        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        assertEquals(1, layoutAttachCount.get());
+        assertEquals(2, viewAttachCount.get());
+        assertEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
         currentViewUUID = viewUUID;
 
         // Should recreate route component and parent layout
         ui.refreshCurrentRoute(true);
-        Assert.assertEquals(2, layoutAttachCount.get());
-        Assert.assertEquals(3, viewAttachCount.get());
-        Assert.assertNotEquals(currentLayoutUUID, layoutUUID);
-        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        assertEquals(2, layoutAttachCount.get());
+        assertEquals(3, viewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
 
     }
 
     @Test
-    public void handle_clientNavigation_withMatchingFlowRoute() {
+    void handle_refreshCurrentRoute_withForwardTo_recreatesComponents() {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(ConditionalForwardView.class)
+                        .withPath("conditional-forward").build());
+        router.getRegistry().setRoute("conditional-forward",
+                ConditionalForwardView.class, List.of(RouteParentLayout.class));
+        router.getRegistry().setRoute("forward-target", ForwardTargetView.class,
+                List.of(RouteParentLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        // Initial navigation without forward
+        renderer.handle(
+                new NavigationEvent(router, new Location("conditional-forward"),
+                        ui, NavigationTrigger.PAGE_LOAD));
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Enable forwarding and refresh with recreateLayoutChain=true
+        RouteParentLayout.creationCount.set(0);
+        ConditionalForwardView.shouldForward = true;
+        ui.refreshCurrentRoute(true);
+
+        assertEquals(2, RouteParentLayout.creationCount.get(),
+                "Layout should be recreated by both refresh and forward");
+    }
+
+    @Test
+    void handle_refreshCurrentRoute_withRerouteTo_recreatesComponents() {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(ConditionalRerouteView.class)
+                        .withPath("conditional-reroute").build());
+        router.getRegistry().setRoute("conditional-reroute",
+                ConditionalRerouteView.class, List.of(RouteParentLayout.class));
+        router.getRegistry().setRoute("reroute-target", RerouteTargetView.class,
+                List.of(RouteParentLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        // Initial navigation without reroute
+        renderer.handle(
+                new NavigationEvent(router, new Location("conditional-reroute"),
+                        ui, NavigationTrigger.PAGE_LOAD));
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Enable rerouting and refresh with recreateLayoutChain=true
+        RouteParentLayout.creationCount.set(0);
+        ConditionalRerouteView.shouldReroute = true;
+        ui.refreshCurrentRoute(true);
+
+        assertEquals(2, RouteParentLayout.creationCount.get(),
+                "Layout should be recreated by both refresh and reroute");
+    }
+
+    @Test
+    void handle_clientNavigation_withMatchingFlowRoute() {
         viewAttachCount = new AtomicInteger();
         beforeEnterCount = new AtomicInteger();
 
@@ -782,8 +910,8 @@ public class NavigationStateRendererTest {
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
                 NavigationTrigger.PAGE_LOAD));
 
-        Assert.assertEquals(1, beforeEnterCount.get());
-        Assert.assertEquals(1, viewAttachCount.get());
+        assertEquals(1, beforeEnterCount.get());
+        assertEquals(1, viewAttachCount.get());
 
         ui.getInternals().clearLastHandledNavigation();
 
@@ -801,13 +929,13 @@ public class NavigationStateRendererTest {
                     new NavigationEvent(router, new Location("client-route"),
                             ui, NavigationTrigger.CLIENT_SIDE));
 
-            Assert.assertEquals(1, beforeEnterCount.get());
-            Assert.assertEquals(1, viewAttachCount.get());
+            assertEquals(1, beforeEnterCount.get());
+            assertEquals(1, viewAttachCount.get());
         }
     }
 
     @Test
-    public void handle_refreshRoute_modalComponentsDetached() {
+    void handle_refreshRoute_modalComponentsDetached() {
         beforeEnterCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -851,8 +979,8 @@ public class NavigationStateRendererTest {
                 NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
                 true, true));
 
-        Assert.assertEquals(1, modalComponent.attachCount);
-        Assert.assertEquals(1, modalComponent.detachCount);
+        assertEquals(1, modalComponent.attachCount);
+        assertEquals(1, modalComponent.detachCount);
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
@@ -884,7 +1012,7 @@ public class NavigationStateRendererTest {
     // - the navigation location is the same as the current location (repeated
     // navigation)
     // - navigation trigger is PAGE_LOAD, HISTORY, or PROGRAMMATIC
-    public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
+    void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
         ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
@@ -932,33 +1060,29 @@ public class NavigationStateRendererTest {
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
                 (BaseJsonNode) null, true));
-        Assert.assertFalse(
-                "No pushState invocation is expected when forwardTo is true.",
-                pushStateCalled.get());
+        assertFalse(pushStateCalled.get(),
+                "No pushState invocation is expected when forwardTo is true.");
 
         ui.getInternals().clearLastHandledNavigation();
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC));
-        Assert.assertFalse(
-                "No pushState invocation is expected when navigation trigger is PROGRAMMATIC.",
-                pushStateCalled.get());
+        assertFalse(pushStateCalled.get(),
+                "No pushState invocation is expected when navigation trigger is PROGRAMMATIC.");
 
         ui.getInternals().clearLastHandledNavigation();
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.HISTORY));
-        Assert.assertFalse(
-                "No pushState invocation is expected when navigation trigger is HISTORY.",
-                pushStateCalled.get());
+        assertFalse(pushStateCalled.get(),
+                "No pushState invocation is expected when navigation trigger is HISTORY.");
 
         ui.getInternals().clearLastHandledNavigation();
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.PAGE_LOAD));
-        Assert.assertFalse(
-                "No pushState invocation is expected when navigation trigger is PAGE_LOAD.",
-                pushStateCalled.get());
+        assertFalse(pushStateCalled.get(),
+                "No pushState invocation is expected when navigation trigger is PAGE_LOAD.");
 
         pushStateCalled.set(false);
         pushStateLocations.clear();
@@ -966,13 +1090,12 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
-        Assert.assertFalse(
-                "No pushState invocation is expected when navigating to the current location.",
-                pushStateCalled.get());
+        assertFalse(pushStateCalled.get(),
+                "No pushState invocation is expected when navigating to the current location.");
     }
 
     @Test
-    public void purgeInactiveUIPreservedChainCache_activeUI_throws() {
+    void purgeInactiveUIPreservedChainCache_activeUI_throws() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
@@ -980,14 +1103,14 @@ public class NavigationStateRendererTest {
         Component attachedToActiveUI = new PreservedView();
         activeUI.add(attachedToActiveUI);
 
-        Assert.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> AbstractNavigationStateRenderer
                         .purgeInactiveUIPreservedChainCache(activeUI));
 
     }
 
     @Test
-    public void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
+    void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
         Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
@@ -1021,20 +1144,18 @@ public class NavigationStateRendererTest {
 
         Optional<ArrayList<HasElement>> active = AbstractNavigationStateRenderer
                 .getPreservedChain(session, "ACTIVE", location);
-        Assert.assertTrue(
-                "Expected preserved chain for active window to be present",
-                active.isPresent());
+        assertTrue(active.isPresent(),
+                "Expected preserved chain for active window to be present");
 
         Optional<ArrayList<HasElement>> inactive = AbstractNavigationStateRenderer
                 .getPreservedChain(session, "INACTIVE", location);
-        Assert.assertFalse(
-                "Expected preserved chain for inactive window to be removed",
-                inactive.isPresent());
+        assertFalse(inactive.isPresent(),
+                "Expected preserved chain for inactive window to be removed");
 
     }
 
     @Test
-    public void getRouteTarget_usageStatistics() {
+    void getRouteTarget_usageStatistics() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService();
@@ -1058,7 +1179,7 @@ public class NavigationStateRendererTest {
 
         renderer.handle(event);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+        assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
                 .getName().equals(Constants.STATISTICS_FLOW_ROUTER)));
     }
 
@@ -1074,12 +1195,12 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
+    void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
         testClientNavigationTitle("Client", true);
     }
 
     @Test
-    public void handle_clientNavigation_doNotSetTitleFromClientRoute() {
+    void handle_clientNavigation_doNotSetTitleFromClientRoute() {
         testClientNavigationTitle(null, false);
     }
 
@@ -1106,7 +1227,7 @@ public class NavigationStateRendererTest {
 
             renderer.handle(event);
 
-            Assert.assertNotNull(ui.getPage());
+            assertNotNull(ui.getPage());
             if (expectedDocumentTitle == null) {
                 Mockito.verify(ui.getPage(), Mockito.never())
                         .setTitle("Client");
@@ -1138,4 +1259,127 @@ public class NavigationStateRendererTest {
             }
         };
     }
+
+    // Test views for forward/reroute to same view with different parameters
+    // (issue #23232)
+    static abstract class RedirectToSameViewWithParams extends Component
+            implements BeforeEnterObserver {
+        static int instanceCount = 0;
+        static int beforeEnterCount = 0;
+        static List<String> receivedIds = new ArrayList<>();
+        final int instanceId;
+
+        public RedirectToSameViewWithParams() {
+            instanceCount++;
+            instanceId = instanceCount;
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            beforeEnterCount++;
+            String id = event.getRouteParameters().get("id").orElse("");
+            receivedIds.add(id);
+            // Forward to valid-id if current id is "unknown"
+            if ("unknown".equals(id)) {
+                selfRedirect(event, "valid-id");
+            }
+        }
+
+        protected abstract void selfRedirect(BeforeEnterEvent event, String id);
+
+        static void reset() {
+            instanceCount = 0;
+            beforeEnterCount = 0;
+            receivedIds.clear();
+        }
+    }
+
+    @Route("forward-param/:id")
+    @Tag("div")
+    public static class ForwardToSameViewWithParams
+            extends RedirectToSameViewWithParams {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void selfRedirect(BeforeEnterEvent event, String id) {
+            event.forwardTo(
+                    (Class<? extends Component>) event.getNavigationTarget(),
+                    new RouteParameters("id", id));
+        }
+    }
+
+    @Route("reroute-param/:id")
+    @Tag("div")
+    public static class RerouteToSameViewWithParams
+            extends RedirectToSameViewWithParams {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void selfRedirect(BeforeEnterEvent event, String id) {
+            event.rerouteTo(
+                    (Class<? extends Component>) event.getNavigationTarget(),
+                    new RouteParameters("id", id));
+        }
+    }
+
+    @Test
+    void forwardToSameViewWithDifferentParams_reusesInstance() {
+        // Issue #23232: Forward to same view with different route parameters
+        // should reuse the view instance instead of creating a new one
+        redirectToSameViewWithDifferentParams_reusesInstance(
+                ForwardToSameViewWithParams.class, "forward");
+    }
+
+    @Test
+    void rerouteToSameViewWithDifferentParams_reusesInstance() {
+        // Reroute to same view with different route parameters
+        // should reuse the view instance instead of creating a new one
+        redirectToSameViewWithDifferentParams_reusesInstance(
+                RerouteToSameViewWithParams.class, "reroute");
+    }
+
+    private void redirectToSameViewWithDifferentParams_reusesInstance(
+            Class<? extends Component> targetView, String redirectType) {
+        // Redirect (forward/reroute) to same view with different route
+        // parameters
+        // should reuse the view instance instead of creating a new one
+
+        RedirectToSameViewWithParams.reset();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        // Use RouteConfiguration to properly register the annotated route
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(router.getRegistry());
+        routeConfiguration.setAnnotatedRoute(targetView);
+
+        MockUI ui = new MockUI(session);
+
+        // Use router.navigate() which properly handles the full navigation flow
+        router.navigate(ui, new Location(redirectType + "-param/unknown"),
+                NavigationTrigger.UI_NAVIGATE);
+
+        // Should only create one instance, not two
+        assertEquals(1, RedirectToSameViewWithParams.instanceCount,
+                "View should be instantiated only once when redirecting ("
+                        + redirectType + ") to same view");
+
+        // beforeEnter should be called twice: once for "unknown", once for
+        // "valid-id"
+        assertEquals(2, RedirectToSameViewWithParams.beforeEnterCount,
+                "beforeEnter should be called twice (original + " + redirectType
+                        + ")");
+
+        // Verify the parameters received
+        assertEquals(2, RedirectToSameViewWithParams.receivedIds.size(),
+                "Should receive both parameter values");
+        assertEquals("unknown", RedirectToSameViewWithParams.receivedIds.get(0),
+                "First call should have 'unknown'");
+        assertEquals("valid-id",
+                RedirectToSameViewWithParams.receivedIds.get(1),
+                "Second call should have 'valid-id'");
+    }
+
 }

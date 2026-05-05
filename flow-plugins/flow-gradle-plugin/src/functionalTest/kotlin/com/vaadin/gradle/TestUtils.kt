@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,18 @@ private fun File.zipListAllFiles(): List<String> =
         }
 
 /**
+ * Reads the content of a single entry from this zip archive.
+ * @param entryPath the path inside the archive, e.g. `META-INF/VAADIN/config/flow-build-info.json`
+ * @return the entry content as a String, or null if not found
+ */
+fun File.zipReadEntry(entryPath: String): String? =
+        ZipInputStream(this.inputStream().buffered()).use { zin ->
+            generateSequence { zin.nextEntry }
+                .firstOrNull { it.name == entryPath }
+                ?.let { zin.readBytes().toString(Charsets.UTF_8) }
+        }
+
+/**
  * Expects that given archive contains at least one file matching every glob in the [globs] list.
  * @param archiveProvider returns the zip file to examine.
  */
@@ -164,6 +176,10 @@ fun expectArchiveContainsVaadinBundle(
 /**
  * Asserts that given archive (jar/war) doesn't contain the Vaadin bundle:
  * the `META-INF/VAADIN/build/` directory.
+ *
+ * Since Vaadin 25, `vaadinPrepareFrontend` is no longer auto-triggered in
+ * development mode, so the token file (`flow-build-info.json`) is not
+ * expected in the archive.
  */
 fun expectArchiveDoesntContainVaadinBundle(archive: File,
                                            isSpringBootJar: Boolean) {
@@ -174,8 +190,8 @@ fun expectArchiveDoesntContainVaadinBundle(archive: File,
         isSpringBootJar -> "BOOT-INF/classes/"
         else -> ""
     }
-    expectArchiveContains("${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json") { archive }
-    expectArchiveDoesntContain("${resourcePackaging}META-INF/VAADIN/config/stats.json",
+    expectArchiveDoesntContain("${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
+            "${resourcePackaging}META-INF/VAADIN/config/stats.json",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.gz",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.js"
     ) { archive }
@@ -183,12 +199,6 @@ fun expectArchiveDoesntContainVaadinBundle(archive: File,
     if (!isStandaloneJar) {
         val libPrefix: String = if (isSpringBootJar) "BOOT-INF/lib" else "WEB-INF/lib"
         expectArchiveContains("$libPrefix/*.jar") { archive }
-    }
-
-    // make sure there is only one flow-build-info.json
-    val allFiles: List<String> = archive.zipListAllFiles()
-    expect(1, "Multiple flow-build-info.json found: ${allFiles.joinToString("\n")}") {
-        allFiles.count { it.contains("flow-build-info.json") }
     }
 }
 

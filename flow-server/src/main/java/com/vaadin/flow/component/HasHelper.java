@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,9 @@ package com.vaadin.flow.component;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Mixin interface for field components that have helper text as property and
@@ -68,6 +71,38 @@ public interface HasHelper extends HasElement {
      */
     default void setHelperText(String helperText) {
         getElement().setProperty("helperText", helperText);
+    }
+
+    /**
+     * Binds a signal's value to the component's helper text. The helper text is
+     * set immediately with the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given helper text. When unbinding, the current helper text is
+     * left unchanged.
+     * <p>
+     * While a binding for the helper text is active, any attempt to set the
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
+     * <p>
+     * When the component is in the detached state, signal value changes have no
+     * effect.
+     *
+     * @param helperTextSignal
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setHelperText(String)
+     * @see Element#bindProperty(String, Signal, SerializableConsumer)
+     *
+     * @since 25.1
+     */
+    default SignalBinding<String> bindHelperText(
+            Signal<String> helperTextSignal) {
+        return getElement().bindProperty("helperText", helperTextSignal, null);
     }
 
     /**

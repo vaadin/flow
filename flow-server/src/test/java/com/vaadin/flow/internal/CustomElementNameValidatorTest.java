@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,41 +17,49 @@ package com.vaadin.flow.internal;
 
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test CustomElementNameValidator that it validates correctly.
  */
-public class CustomElementNameValidatorTest {
+class CustomElementNameValidatorTest {
 
     @Test
-    public void testInvalidElementNames() {
+    void testInvalidElementNames() {
         Stream.of("", "foo", "annotation-xml", "0-foo", "-foo", "foo-$",
                 "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩",
                 "5th-element")
-                .forEach(name -> Assert.assertFalse(String.format(
-                        "Name %s is valid even though it should not be", name),
-                        CustomElementNameValidator.isCustomElementName(name)));
+                .forEach(name -> assertFalse(
+                        CustomElementNameValidator.isCustomElementName(name),
+                        String.format(
+                                "Name %s is valid even though it should not be",
+                                name)));
     }
 
     @Test
-    public void testValidNamesWithoutErrorOrWarning() {
+    void testValidNamesWithoutErrorOrWarning() {
         Stream.of("foo-bar", "custom-element", "date-field", "dos-box",
                 "home-4-good")
-                .forEach(name -> Assert.assertTrue(String.format(
-                        "Name %s is not valid even though it should be", name),
-                        CustomElementNameValidator.isCustomElementName(name)));
+                .forEach(name -> assertTrue(
+                        CustomElementNameValidator.isCustomElementName(name),
+                        String.format(
+                                "Name %s is not valid even though it should be",
+                                name)));
     }
 
     @Test
-    public void testValidButWithWarning() {
+    void testValidButWithWarning() {
         Stream.of("polymer-", "x-", "ng-", "unicorn-", "unicorn-ø", "uni--corn",
                 "uni-----corn", "uni-co___rn", "uni-co.rn", "uni-corné",
                 "xml-unicorn", "não-tém", "foo-bår")
-                .forEach(name -> Assert.assertTrue(String.format(
-                        "Name %s is not valid even though it should be", name),
-                        CustomElementNameValidator.isCustomElementName(name)));
+                .forEach(name -> assertTrue(
+                        CustomElementNameValidator.isCustomElementName(name),
+                        String.format(
+                                "Name %s is not valid even though it should be",
+                                name)));
 
     }
 }

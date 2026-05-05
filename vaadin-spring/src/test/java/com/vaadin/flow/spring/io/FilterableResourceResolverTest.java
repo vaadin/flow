@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,25 +15,25 @@
  */
 package com.vaadin.flow.spring.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FilterableResourceResolverTest {
+class FilterableResourceResolverTest {
 
     private FilterableResourceResolver filterableResourceResolver;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         filterableResourceResolver = new FilterableResourceResolver(
                 Mockito.mock(FilterableResourceResolver.class));
     }
 
     @Test
-    public void jarNamePatternMatch_test() {
+    void jarNamePatternMatch_test() {
         assertTrue(filterableResourceResolver
                 .jarNamePatternMatch("spring-1.0.0.jar", ""));
         assertTrue(filterableResourceResolver
@@ -41,9 +41,9 @@ public class FilterableResourceResolverTest {
         assertTrue(filterableResourceResolver
                 .jarNamePatternMatch("spring-1.0.0.jar", "*-*"));
         assertFalse(
-                "'*.*' is not matching 'spring-1.0.0.jar' due to Part[0] 'spring-1' contains '-'.",
                 filterableResourceResolver
-                        .jarNamePatternMatch("spring-1.0.0.jar", "*.*"));
+                        .jarNamePatternMatch("spring-1.0.0.jar", "*.*"),
+                "'*.*' is not matching 'spring-1.0.0.jar' due to Part[0] 'spring-1' contains '-'.");
         assertTrue(filterableResourceResolver
                 .jarNamePatternMatch("spring-1.0.0.jar", "spring"));
         assertFalse(filterableResourceResolver

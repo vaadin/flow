@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,11 +28,13 @@ import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.PropertyChangeListener;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not
@@ -62,8 +64,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindAttributeSignal(Element owner, String attribute,
-            Signal<String> signal) {
+    public SignalBinding<String> bindAttributeSignal(Element owner,
+            String attribute, Signal<String> signal) {
         throw new UnsupportedOperationException();
     }
 
@@ -135,8 +137,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name,
-            Signal<?> signal) {
+    public SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 
@@ -205,7 +207,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         throw new UnsupportedOperationException();
     }
 

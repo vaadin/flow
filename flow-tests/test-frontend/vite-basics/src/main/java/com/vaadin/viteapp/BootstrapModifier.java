@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,12 +19,10 @@ import java.util.List;
 
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TypeScriptBootstrapModifier;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 public class BootstrapModifier implements TypeScriptBootstrapModifier {
 
-    public void modify(List<String> bootstrapTypeScript, Options options,
-            FrontendDependenciesScanner frontendDependenciesScanner) {
+    public void modify(List<String> bootstrapTypeScript, Options options) {
         bootstrapTypeScript.add("(window as any).bootstrapMod=1;");
     }
 

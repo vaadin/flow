@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -294,5 +294,11 @@ public class InitParameters implements Serializable {
      * Configuration name for excluding npm packages for web components.
      */
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
+
+    /**
+     * Configuration name for enabling browserless mode (e.g. for UI unit
+     * tests). When enabled, dev server related warnings are suppressed.
+     */
+    public static final String BROWSERLESS = "browserless";
 
 }

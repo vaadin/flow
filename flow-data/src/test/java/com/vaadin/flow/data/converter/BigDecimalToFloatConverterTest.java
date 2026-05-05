@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,36 +17,36 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class BigDecimalToFloatConverterTest {
+class BigDecimalToFloatConverterTest {
 
     BigDecimalToFloatConverter converter = new BigDecimalToFloatConverter();
 
     @Test
-    public void testNullConversionToModel() {
+    void testNullConversionToModel() {
         assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
-    public void testNullConversionToPresentation() {
+    void testNullConversionToPresentation() {
         assertNull(converter.convertToPresentation(null, null));
     }
 
     @Test
-    public void testConvertToModel() {
+    void testConvertToModel() {
         Result<Float> result = converter
                 .convertToModel(BigDecimal.valueOf(42.0), null);
         assertEquals(Result.ok(42.0f), result);
     }
 
     @Test
-    public void testConvertToPresentation() {
+    void testConvertToPresentation() {
         BigDecimal value = converter.convertToPresentation(42.0f, null);
         assertEquals(BigDecimal.valueOf(42.0), value);
     }

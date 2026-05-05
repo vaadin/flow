@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,11 +21,11 @@ import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1235",
         "server.ssl.enabled = true" })
-public class DevModeBrowserLauncherHttpsProtoTest
+class DevModeBrowserLauncherHttpsProtoTest
         extends AbstractDevModeBrowserLauncherTest {
 
     @Test
-    public void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {
+    void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {
         String url = DevModeBrowserLauncher.getUrl(app);
         Assertions.assertEquals("https://localhost:1235/", url);
     }

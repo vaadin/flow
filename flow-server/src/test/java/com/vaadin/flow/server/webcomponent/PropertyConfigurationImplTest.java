@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,54 +15,57 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-public class PropertyConfigurationImplTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PropertyConfigurationImplTest {
 
     PropertyConfigurationImpl<MyComponent, Integer> intPropertyConf;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class,
                 "int", Integer.class, 1);
     }
 
     @Test
-    public void onChange() {
+    void onChange() {
         intPropertyConf.onChange(MyComponent::setInt);
 
         MyComponent myComponent = new MyComponent();
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assert.assertEquals(
-                "onChangeHandler should have been set and value " + "updated",
-                5, myComponent.value);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void onChange_throwsIfCalledTwice() {
-        intPropertyConf.onChange(MyComponent::setInt);
-        intPropertyConf.onChange(MyComponent::setInt);
+        assertEquals(5, myComponent.value,
+                "onChangeHandler should have been set and value " + "updated");
     }
 
     @Test
-    public void readOnly() {
+    void onChange_throwsIfCalledTwice() {
+        assertThrows(IllegalStateException.class, () -> {
+            intPropertyConf.onChange(MyComponent::setInt);
+            intPropertyConf.onChange(MyComponent::setInt);
+        });
+    }
+
+    @Test
+    void readOnly() {
         intPropertyConf.readOnly();
 
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
 
         // verify default value for completeness
-        Assert.assertEquals("default value is 1", 1,
-                (int) data.getDefaultValue());
+        assertEquals(1, (int) data.getDefaultValue(), "default value is 1");
 
-        Assert.assertTrue("read-only flag should have been set to true",
-                data.isReadOnly());
+        assertTrue(data.isReadOnly(),
+                "read-only flag should have been set to true");
     }
 
     @Tag("for-reasons")

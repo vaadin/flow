@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,8 +18,6 @@ package com.vaadin.client.communication;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-
-import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
@@ -122,17 +120,12 @@ public class RequestResponseTracker {
             registry.getMessageSender().sendInvocationsToServer();
         }
 
-        // deferring to avoid hiding the loading indicator and showing it again
-        // shortly thereafter
-        Scheduler.get().scheduleDeferred(() -> {
-            boolean terminated = registry.getUILifecycle().isTerminated();
-            boolean requestNowOrSoon = hasActiveRequest()
-                    || registry.getServerRpcQueue().isFlushPending();
-
-            if (terminated || !requestNowOrSoon) {
-                ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
-            }
-        });
+        // Always reset loading indicator when request ends.
+        // Client-side component will handle timing for each request
+        // independently.
+        // This ensures rapid successive requests get individual timing instead
+        // of accumulating time across requests.
+        ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
         fireEvent(new ResponseHandlingEndedEvent());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,11 +89,29 @@ public final class BeanUtil implements Serializable {
                         .getReadMethod().getDeclaringClass().isInterface()) {
                     continue;
                 }
+                // Merge read/write methods from separate descriptors
+                descriptor = mergeDescriptors(existing, descriptor);
             }
             descriptors.put(name, descriptor);
         }
 
         return new ArrayList<>(descriptors.values());
+    }
+
+    private static PropertyDescriptor mergeDescriptors(
+            PropertyDescriptor existing, PropertyDescriptor incoming) {
+        Method read = incoming.getReadMethod() != null
+                ? incoming.getReadMethod()
+                : existing.getReadMethod();
+        Method write = incoming.getWriteMethod() != null
+                ? incoming.getWriteMethod()
+                : existing.getWriteMethod();
+        try {
+            return new PropertyDescriptor(incoming.getName(), read, write);
+        } catch (IntrospectionException e) {
+            // Fall back to incoming if merge fails
+            return incoming;
+        }
     }
 
     private static List<PropertyDescriptor> internalGetBeanPropertyDescriptors(

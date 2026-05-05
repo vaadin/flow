@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,24 +19,27 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.flow.shared.communication.PushConstants;
 
-public class FragmentedMessageTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FragmentedMessageTest {
 
     @Test
-    public void shortMessageCompleteImmediately() throws IOException {
+    void shortMessageCompleteImmediately() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
-        Assert.assertTrue(
+        assertTrue(
                 msg.append(new StringReader("Hello".length() + "|" + "Hello")));
-        Assert.assertEquals("Hello", IOUtils.toString(msg.getReader()));
+        assertEquals("Hello", IOUtils.toString(msg.getReader()));
     }
 
     @Test
-    public void longMessageConcatenated() throws IOException {
+    void longMessageConcatenated() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
         String text = "HelloWorld".repeat(1700);
         String textWithLength = text.length() + "|" + text;
@@ -45,21 +48,20 @@ public class FragmentedMessageTest {
         String part2 = textWithLength
                 .substring(PushConstants.WEBSOCKET_BUFFER_SIZE);
 
-        Assert.assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE,
-                part1.length());
-        Assert.assertEquals(
+        assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE, part1.length());
+        assertEquals(
                 textWithLength.length() - PushConstants.WEBSOCKET_BUFFER_SIZE,
                 part2.length());
 
         StringReader messageReader = new StringReader(part1);
-        Assert.assertFalse(msg.append(messageReader));
+        assertFalse(msg.append(messageReader));
         StringReader messageReader2 = new StringReader(part2);
-        Assert.assertTrue(msg.append(messageReader2));
-        Assert.assertEquals(text, IOUtils.toString(msg.getReader()));
+        assertTrue(msg.append(messageReader2));
+        assertEquals(text, IOUtils.toString(msg.getReader()));
     }
 
     @Test
-    public void lengthEqualsLimitHandledCorrectly() throws IOException {
+    void lengthEqualsLimitHandledCorrectly() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
         int length = (PushConstants.WEBSOCKET_BUFFER_SIZE
                 - String.valueOf(PushConstants.WEBSOCKET_BUFFER_SIZE).length()
@@ -67,11 +69,11 @@ public class FragmentedMessageTest {
         String text = "A".repeat(length);
         String textWithLength = length + "|" + text;
 
-        Assert.assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE,
+        assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE,
                 textWithLength.length());
 
         StringReader messageReader = new StringReader(textWithLength);
-        Assert.assertTrue(msg.append(messageReader));
-        Assert.assertEquals(text, IOUtils.toString(msg.getReader()));
+        assertTrue(msg.append(messageReader));
+        assertEquals(text, IOUtils.toString(msg.getReader()));
     }
 }

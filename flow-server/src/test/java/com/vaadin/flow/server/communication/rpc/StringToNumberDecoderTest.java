@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,184 +17,215 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-public class StringToNumberDecoderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class StringToNumberDecoderTest {
 
     private StringToNumberDecoder decoder = new StringToNumberDecoder();
 
     @Test
-    public void isApplicable_applicableToStringAndNumber() {
-        Assert.assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_applicableToStringAndNumber() {
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Number.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToBooleanAndNumber() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
+    void isApplicable_notApplicableToBooleanAndNumber() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
                 Number.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndString() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_notApplicableToStringAndString() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 String.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndAtomicInteger() {
-        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_notApplicableToStringAndAtomicInteger() {
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 AtomicInteger.class));
     }
 
     @Test
-    public void isApplicable_applicableToStringAndLong() {
-        Assert.assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+    void isApplicable_applicableToStringAndLong() {
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Long.class));
     }
 
     @Test
-    public void stringToInteger_convertableString_valueIsConverted()
+    void stringToInteger_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Integer expected = 37;
         Integer value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)),
                 Integer.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToInteger_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Integer.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToInteger_doubleString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("4.2"), Integer.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToInteger_longString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode(String.valueOf(Long.MAX_VALUE)),
-                Integer.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToLong_convertableString_valueIsConverted()
+    void stringToInteger_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Integer.class);
+        });
+    }
+
+    @Test
+    void stringToInteger_doubleString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("4.2"), Integer.class);
+        });
+    }
+
+    @Test
+    void stringToInteger_longString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(
+                    JacksonUtils.createNode(String.valueOf(Long.MAX_VALUE)),
+                    Integer.class);
+        });
+    }
+
+    @Test
+    void stringToLong_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Long expected = 37l;
         Long value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)), Long.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToLong_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Long.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToLong_doubleString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("4.2"), Long.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToShort_convertableString_valueIsConverted()
+    void stringToLong_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Long.class);
+        });
+    }
+
+    @Test
+    void stringToLong_doubleString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("4.2"), Long.class);
+        });
+    }
+
+    @Test
+    void stringToShort_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Short expected = 37;
         Short value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)), Short.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToShort_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Short.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToShort_intString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode(Integer.MAX_VALUE), Short.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToShort_doubleString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("4.2"), Short.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToByte_convertableString_valueIsConverted()
+    void stringToShort_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Short.class);
+        });
+    }
+
+    @Test
+    void stringToShort_intString_exceptionIsThrown() throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode(Integer.MAX_VALUE),
+                    Short.class);
+        });
+    }
+
+    @Test
+    void stringToShort_doubleString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("4.2"), Short.class);
+        });
+    }
+
+    @Test
+    void stringToByte_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Byte expected = 37;
         Byte value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)), Byte.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToByte_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Byte.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToByte_intString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode(Short.MAX_VALUE), Byte.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToByte_doubleString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("4.2"), Byte.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToFloat_convertableString_valueIsConverted()
+    void stringToByte_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Byte.class);
+        });
+    }
+
+    @Test
+    void stringToByte_intString_exceptionIsThrown() throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode(Short.MAX_VALUE),
+                    Byte.class);
+        });
+    }
+
+    @Test
+    void stringToByte_doubleString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("4.2"), Byte.class);
+        });
+    }
+
+    @Test
+    void stringToFloat_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Float expected = 37.72f;
         Float value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)), Float.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToFloat_doubleString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(
-                JacksonUtils.createNode(String.valueOf(Double.MIN_NORMAL)),
-                Float.class);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToFloat_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Float.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToDouble_convertableString_valueIsConverted()
+    void stringToFloat_doubleString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(
+                    JacksonUtils.createNode(String.valueOf(Double.MIN_NORMAL)),
+                    Float.class);
+        });
+    }
+
+    @Test
+    void stringToFloat_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Float.class);
+        });
+    }
+
+    @Test
+    void stringToDouble_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Double expected = 823.6349d;
         Double value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)),
                 Double.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToDouble_minDoubleString_valueIsConverted()
+    void stringToDouble_minDoubleString_valueIsConverted()
             throws RpcDecodeException {
         // the value is represented in the specific notation. Check that it's
         // not a problem
@@ -202,22 +233,24 @@ public class StringToNumberDecoderTest {
         Double value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)),
                 Double.class);
-        Assert.assertEquals(expected, value);
-    }
-
-    @Test(expected = RpcDecodeException.class)
-    public void stringToDoublet_nonConvertableString_exceptionIsThrown()
-            throws RpcDecodeException {
-        decoder.decode(JacksonUtils.createNode("abc"), Double.class);
+        assertEquals(expected, value);
     }
 
     @Test
-    public void stringToNumber_convertableString_valueIsConverted()
+    void stringToDoublet_nonConvertableString_exceptionIsThrown()
+            throws RpcDecodeException {
+        assertThrows(RpcDecodeException.class, () -> {
+            decoder.decode(JacksonUtils.createNode("abc"), Double.class);
+        });
+    }
+
+    @Test
+    void stringToNumber_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Double expected = 823.6349d;
         Number value = decoder.decode(
                 JacksonUtils.createNode(String.valueOf(expected)),
                 Number.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -57,7 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
  * Base class for DevModeInitializer tests. It is an independent class so as it
  * can be created and executed with custom classloaders.
  */
-public class DevModeInitializerTestBase extends AbstractDevModeTest {
+class DevModeInitializerTestBase extends AbstractDevModeTest {
 
     DevModeStartupListener devModeStartupListener;
 
@@ -70,14 +70,12 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
 
-    @Rule
-    public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
-
     public static class VaadinServletSubClass extends VaadinServlet {
 
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @BeforeEach
     @Override
     public void setup() throws Exception {
         super.setup();
@@ -173,8 +171,9 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         return packageJson;
     }
 
+    @AfterEach
     @Override
-    public void teardown() {
+    void teardown() {
         super.teardown();
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
@@ -184,13 +183,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         mainPackageFile.delete();
     }
 
-    public void process() throws Exception {
+    void process() throws Exception {
         devModeStartupListener.process(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
     }
 
-    public void runDestroy() throws Exception {
+    void runDestroy() throws Exception {
         ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
         Mockito.when(event.getServletContext()).thenReturn(servletContext);
         devModeStartupListener.contextDestroyed(event);

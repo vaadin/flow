@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,12 +21,9 @@ import java.util.EventObject;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -38,16 +35,22 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
+class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     private RouteConfiguration routeConfiguration;
     private UI ui;
     private VaadinService service = Mockito.mock(VaadinService.class);
     private DeploymentConfiguration configuration = Mockito
             .mock(DeploymentConfiguration.class);
 
-    @Before
-    public void init() throws NoSuchFieldException, IllegalAccessException {
+    @BeforeEach
+    void init() throws NoSuchFieldException, IllegalAccessException {
         super.init();
         ui = new RouterTestMockUI(router);
         ui.getSession().lock();
@@ -63,13 +66,10 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 .forRegistry(router.getRegistry());
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
@@ -82,70 +82,90 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void basic_url_resolving()
-            throws InvalidRouteConfigurationException {
+    void basic_url_resolving() throws InvalidRouteConfigurationException {
         setNavigationTargets(RootNavigationTarget.class,
                 FooNavigationTarget.class, FooBarNavigationTarget.class);
 
-        Assert.assertEquals("",
-                routeConfiguration.getUrl(RootNavigationTarget.class));
-        Assert.assertEquals("foo",
+        assertEquals("", routeConfiguration.getUrl(RootNavigationTarget.class));
+        assertEquals("foo",
                 routeConfiguration.getUrl(FooNavigationTarget.class));
-        Assert.assertEquals("foo/bar",
+        assertEquals("foo/bar",
                 routeConfiguration.getUrl(FooBarNavigationTarget.class));
     }
 
     @Test
-    public void nested_layouts_url_resolving()
+    void nested_layouts_url_resolving()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteChild.class, LoneRoute.class);
 
-        Assert.assertEquals("parent/child",
+        assertEquals("parent/child",
                 routeConfiguration.getUrl(RouteChild.class));
-        Assert.assertEquals("single",
-                routeConfiguration.getUrl(LoneRoute.class));
+        assertEquals("single", routeConfiguration.getUrl(LoneRoute.class));
     }
 
     @Test
-    public void layout_with_url_parameter_url_resolving()
+    void layout_with_url_parameter_url_resolving()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 OtherGreetingNavigationTarget.class);
 
-        Assert.assertEquals("greeting/my_param", routeConfiguration
+        assertEquals("greeting/my_param", routeConfiguration
                 .getUrl(GreetingNavigationTarget.class, "my_param"));
-        Assert.assertEquals("greeting/true", routeConfiguration
+        assertEquals("greeting/true", routeConfiguration
                 .getUrl(GreetingNavigationTarget.class, "true"));
 
-        Assert.assertEquals("greeting/other", routeConfiguration
+        assertEquals("greeting/other", routeConfiguration
                 .getUrl(GreetingNavigationTarget.class, "other"));
     }
 
     @Test
-    public void url_resolves_correctly_for_optional_and_wild_parameters()
+    void url_resolves_correctly_for_optional_and_wild_parameters()
             throws InvalidRouteConfigurationException, NotFoundException {
         setNavigationTargets(OptionalParameter.class, WildParameter.class);
 
-        Assert.assertEquals(
-                "Optional value should be able to return even without any parameters",
-                "optional", routeConfiguration.getUrl(OptionalParameter.class));
+        assertEquals("optional",
+                routeConfiguration.getUrl(OptionalParameter.class),
+                "Optional value should be able to return even without any parameters");
 
-        Assert.assertEquals(
-                "Wildcard value should be able to return even without any parameters",
-                "wild", routeConfiguration.getUrl(WildParameter.class));
+        assertEquals("wild", routeConfiguration.getUrl(WildParameter.class),
+                "Wildcard value should be able to return even without any parameters");
 
-        Assert.assertEquals("optional/my_param",
+        assertEquals("optional/my_param",
                 routeConfiguration.getUrl(OptionalParameter.class, "my_param"));
 
-        Assert.assertEquals("wild/true",
+        assertEquals("wild/true",
                 routeConfiguration.getUrl(WildParameter.class, "true"));
 
-        Assert.assertEquals("wild/there/are/many/of/us", routeConfiguration
+        assertEquals("wild/there/are/many/of/us", routeConfiguration
                 .getUrl(WildParameter.class, "there/are/many/of/us"));
     }
 
     @Test
-    public void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
+    void getUrl_with_wildcard_parameter_requires_pre_encoded_special_chars()
+            throws InvalidRouteConfigurationException, NotFoundException {
+        setNavigationTargets(WildParameter.class);
+
+        // When generating URLs, special characters that should be preserved
+        // as data (not path structure) must be encoded BEFORE calling getUrl()
+
+        // Example: If you want a parameter value of "a/b" (with actual slash)
+        // you must encode it before passing to getUrl()
+        String parameterWithSlash = "a%2Fb"; // %2F will be preserved in URL
+        assertEquals("wild/a%2Fb", routeConfiguration
+                .getUrl(WildParameter.class, parameterWithSlash));
+
+        // Unencoded slashes are treated as path separators
+        assertEquals("wild/a/b",
+                routeConfiguration.getUrl(WildParameter.class, "a/b"));
+
+        // Other special characters should also be pre-encoded if needed
+        String parameterWithQuestion = "test%3Fquestion";
+        assertEquals("wild/test%3Fquestion", routeConfiguration
+                .getUrl(WildParameter.class, parameterWithQuestion));
+    }
+
+    @Test
+    void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
         WildParameter.events.clear();
         WildParameter.param = null;
         setNavigationTargets(WildParameter.class);
@@ -153,21 +173,21 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         router.navigate(ui, new Location("wild//two/three"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("/two/three", WildParameter.param);
+        assertEquals("/two/three", WildParameter.param);
 
         router.navigate(ui, new Location("wild////four/five"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("///four/five", WildParameter.param);
+        assertEquals("///four/five", WildParameter.param);
 
         router.navigate(ui, new Location("wild//two//four"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("/two//four", WildParameter.param);
+        assertEquals("/two//four", WildParameter.param);
     }
 
     @Test
-    public void root_navigation_target_with_wildcard_parameter()
+    void root_navigation_target_with_wildcard_parameter()
             throws InvalidRouteConfigurationException {
         WildRootParameter.events.clear();
         WildRootParameter.param = null;
@@ -175,31 +195,29 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                WildRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "",
-                WildRootParameter.param);
+        assertEquals(1, WildRootParameter.events.size(),
+                "Expected event amount was wrong");
+        assertEquals("", WildRootParameter.param, "Parameter should be empty");
 
         router.navigate(ui, new Location("my/wild"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                WildRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "my/wild",
-                WildRootParameter.param);
+        assertEquals(2, WildRootParameter.events.size(),
+                "Expected event amount was wrong");
+        assertEquals("my/wild", WildRootParameter.param,
+                "Parameter should be empty");
 
-        Assert.assertEquals("",
-                routeConfiguration.getUrl(WildRootParameter.class));
-        Assert.assertEquals("wild",
+        assertEquals("", routeConfiguration.getUrl(WildRootParameter.class));
+        assertEquals("wild",
                 routeConfiguration.getUrl(WildRootParameter.class, "wild"));
 
         List<String> params = Arrays.asList("", null);
-        Assert.assertEquals("", routeConfiguration
-                .getUrl(WildRootParameter.class, params.get(1)));
+        assertEquals("", routeConfiguration.getUrl(WildRootParameter.class,
+                params.get(1)));
     }
 
     @Test
-    public void root_navigation_target_with_optional_parameter()
+    void root_navigation_target_with_optional_parameter()
             throws InvalidRouteConfigurationException {
         OptionalRootParameter.events.clear();
         OptionalRootParameter.param = null;
@@ -207,58 +225,53 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                OptionalRootParameter.events.size());
-        Assert.assertNull("Parameter should be empty",
-                OptionalRootParameter.param);
+        assertEquals(1, OptionalRootParameter.events.size(),
+                "Expected event amount was wrong");
+        assertNull(OptionalRootParameter.param, "Parameter should be empty");
 
         router.navigate(ui, new Location("optional"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                OptionalRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "optional",
-                OptionalRootParameter.param);
+        assertEquals(2, OptionalRootParameter.events.size(),
+                "Expected event amount was wrong");
+        assertEquals("optional", OptionalRootParameter.param,
+                "Parameter should be empty");
 
-        Assert.assertEquals("",
+        assertEquals("",
                 routeConfiguration.getUrl(OptionalRootParameter.class));
-        Assert.assertEquals("optional", routeConfiguration
+        assertEquals("optional", routeConfiguration
                 .getUrl(OptionalRootParameter.class, "optional"));
 
         List<String> params = Arrays.asList("", null);
-        Assert.assertEquals("", routeConfiguration
-                .getUrl(OptionalRootParameter.class, params.get(1)));
+        assertEquals("", routeConfiguration.getUrl(OptionalRootParameter.class,
+                params.get(1)));
     }
 
     @Test
-    public void getUrl_for_has_url_with_supported_parameters()
+    void getUrl_for_has_url_with_supported_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(IntegerParameter.class, LongParameter.class,
                 BooleanParameter.class);
 
-        Assert.assertEquals("integer/5",
+        assertEquals("integer/5",
                 routeConfiguration.getUrl(IntegerParameter.class, 5));
 
-        Assert.assertEquals("long/5",
+        assertEquals("long/5",
                 routeConfiguration.getUrl(LongParameter.class, 5l));
 
-        Assert.assertEquals("boolean/false",
+        assertEquals("boolean/false",
                 routeConfiguration.getUrl(BooleanParameter.class, false));
     }
 
     @Test // 3519
-    public void getUrl_throws_for_required_parameter() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(
-                String.format("Navigation target '%s' requires a parameter.",
-                        RouteWithParameter.class.getName()));
+    void getUrl_throws_for_required_parameter() {
         setNavigationTargets(RouteWithParameter.class);
-
-        routeConfiguration.getUrl(RouteWithParameter.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> routeConfiguration.getUrl(RouteWithParameter.class));
     }
 
     @Test // 3519
-    public void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
+    void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithMultipleParameters.class,
                 OptionalParameter.class);
@@ -266,70 +279,73 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         String url = routeConfiguration
                 .getUrl(RouteWithMultipleParameters.class);
 
-        Assert.assertEquals("Returned url didn't match Wildcard parameter",
+        assertEquals(
                 RouteWithMultipleParameters.class.getAnnotation(Route.class)
                         .value(),
-                url);
+                url, "Returned url didn't match Wildcard parameter");
         url = routeConfiguration.getUrl(OptionalParameter.class);
 
-        Assert.assertEquals("Returned url didn't match Optional parameter",
-                OptionalParameter.class.getAnnotation(Route.class).value(),
-                url);
+        assertEquals(OptionalParameter.class.getAnnotation(Route.class).value(),
+                url, "Returned url didn't match Optional parameter");
     }
 
     @Test // 3519
-    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
+    void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
                 FooNavigationTarget.class);
 
-        Assert.assertEquals("Required parameter didn't match url base.",
+        assertEquals(
                 RouteWithParameter.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(RouteWithParameter.class)
-                        .orElse(null));
-        Assert.assertEquals("Wildcard parameter didn't match url base.",
+                routeConfiguration.getUrlBase(RouteWithParameter.class).orElse(
+                        null),
+                "Required parameter didn't match url base.");
+        assertEquals(
                 RouteWithMultipleParameters.class.getAnnotation(Route.class)
                         .value(),
                 routeConfiguration.getUrlBase(RouteWithMultipleParameters.class)
-                        .orElse(null));
-        Assert.assertEquals("Optional parameter didn't match url base.",
-                OptionalParameter.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(OptionalParameter.class)
-                        .orElse(null));
-        Assert.assertEquals("Non parameterized url didn't match url base.",
+                        .orElse(null),
+                "Wildcard parameter didn't match url base.");
+        assertEquals(OptionalParameter.class.getAnnotation(Route.class).value(),
+                routeConfiguration.getUrlBase(OptionalParameter.class).orElse(
+                        null),
+                "Optional parameter didn't match url base.");
+        assertEquals(
                 FooNavigationTarget.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(FooNavigationTarget.class)
-                        .orElse(null));
+                routeConfiguration.getUrlBase(FooNavigationTarget.class).orElse(
+                        null),
+                "Non parameterized url didn't match url base.");
     }
 
     @Test // #2740
-    public void getTemplate_returns_url_template()
+    void getTemplate_returns_url_template()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
                 FooNavigationTarget.class);
 
-        Assert.assertEquals("Required parameter didn't match route template.",
-                "param/" + HasUrlParameterFormat.PARAMETER, routeConfiguration
-                        .getTemplate(RouteWithParameter.class).orElse(null));
-        Assert.assertEquals("Wildcard parameter didn't match route template.",
-                "param/" + HasUrlParameterFormat.PARAMETER + "*",
+        assertEquals("param/" + HasUrlParameterFormat.PARAMETER,
+                routeConfiguration.getTemplate(RouteWithParameter.class)
+                        .orElse(null),
+                "Required parameter didn't match route template.");
+        assertEquals("param/" + HasUrlParameterFormat.PARAMETER + "*",
                 routeConfiguration
                         .getTemplate(RouteWithMultipleParameters.class)
-                        .orElse(null));
-        Assert.assertEquals("Optional parameter didn't match route template.",
-                "optional/" + HasUrlParameterFormat.PARAMETER + "?",
+                        .orElse(null),
+                "Wildcard parameter didn't match route template.");
+        assertEquals("optional/" + HasUrlParameterFormat.PARAMETER + "?",
                 routeConfiguration.getTemplate(OptionalParameter.class)
-                        .orElse(null));
-        Assert.assertEquals(
-                "Non parameterized url didn't match route template.", "foo",
+                        .orElse(null),
+                "Optional parameter didn't match route template.");
+        assertEquals("foo",
                 routeConfiguration.getTemplate(FooNavigationTarget.class)
-                        .orElse(null));
+                        .orElse(null),
+                "Non parameterized url didn't match route template.");
     }
 
     @Test
-    public void routerLinkInParent_updatesWhenNavigating()
+    void routerLinkInParent_updatesWhenNavigating()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(LoneRoute.class, RouteChild.class);
 
@@ -339,23 +355,19 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 .getActiveRouterTargetsChain().get(1);
         RouterLink loneLink = routeParent.loneLink;
 
-        Assert.assertTrue("Link should be attached",
-                loneLink.getUI().isPresent());
-        Assert.assertTrue(
-                "Link should be highlighted when navigated to link target",
-                loneLink.getElement().hasAttribute("highlight"));
+        assertTrue(loneLink.getUI().isPresent(), "Link should be attached");
+        assertTrue(loneLink.getElement().hasAttribute("highlight"),
+                "Link should be highlighted when navigated to link target");
 
         ui.navigate(routeConfiguration.getUrl(RouteChild.class));
 
-        Assert.assertTrue("Link should be attached",
-                loneLink.getUI().isPresent());
-        Assert.assertFalse(
-                "Link should not be highlighted when navigated to other target",
-                loneLink.getElement().hasAttribute("highlight"));
+        assertTrue(loneLink.getUI().isPresent(), "Link should be attached");
+        assertFalse(loneLink.getElement().hasAttribute("highlight"),
+                "Link should not be highlighted when navigated to other target");
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_with_same_path()
+    void navigation_targets_remove_route_with_same_path()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -365,15 +377,15 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         final List<RouteData> availableRoutes = routeConfiguration
                 .getAvailableRoutes();
-        Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals("my/" + HasUrlParameterFormat.PARAMETER,
+        assertEquals(1, availableRoutes.size());
+        assertEquals("my/" + HasUrlParameterFormat.PARAMETER,
                 availableRoutes.get(0).getTemplate());
-        Assert.assertEquals(MyPageWithParam.class,
+        assertEquals(MyPageWithParam.class,
                 availableRoutes.get(0).getNavigationTarget());
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_with_same_path_and_parameter()
+    void navigation_targets_remove_route_with_same_path_and_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -386,7 +398,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_target_with_same_path_and_parameter()
+    void navigation_targets_remove_route_target_with_same_path_and_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -402,18 +414,17 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         final List<RouteData> availableRoutes = routeConfiguration
                 .getAvailableRoutes();
 
-        Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals("my", availableRoutes.get(0).getTemplate());
-        Assert.assertEquals(MyPage.class,
+        assertEquals(1, availableRoutes.size());
+        assertEquals("my", availableRoutes.get(0).getTemplate());
+        assertEquals(MyPage.class,
                 availableRoutes.get(0).getNavigationTarget());
     }
 
     private void assertMyPageAndWithParamAvailable() {
-        Assert.assertEquals(MyPage.class,
-                routeConfiguration.getRoute("my").get());
-        Assert.assertEquals(MyPageWithParam.class, routeConfiguration
+        assertEquals(MyPage.class, routeConfiguration.getRoute("my").get());
+        assertEquals(MyPageWithParam.class, routeConfiguration
                 .getRoute("my/" + HasUrlParameterFormat.PARAMETER).get());
-        Assert.assertEquals(MyPageWithParam.class,
+        assertEquals(MyPageWithParam.class,
                 routeConfiguration
                         .getRoute("my",
                                 Arrays.asList(HasUrlParameterFormat.PARAMETER))
@@ -421,7 +432,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_with_same_route_and_one_with_parameter()
+    void navigation_targets_with_same_route_and_one_with_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -429,47 +440,45 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_with_same_route_and_two_with_parameter()
+    void navigation_targets_with_same_route_and_two_with_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class,
                 MyPageWithWildcardParam.class);
 
         assertSameRouteWithParams();
 
-        Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME + "*",
+        assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME + "*",
                 routeConfiguration.getTemplate(MyPageWithWildcardParam.class)
                         .get());
 
-        Assert.assertEquals("my/wild/value", routeConfiguration
+        assertEquals("my/wild/value", routeConfiguration
                 .getUrl(MyPageWithWildcardParam.class, "wild/value"));
-        Assert.assertEquals("my/wild/value",
+        assertEquals("my/wild/value",
                 routeConfiguration.getUrl(MyPageWithWildcardParam.class,
                         new RouteParameters(
                                 HasUrlParameterFormat.PARAMETER_NAME,
                                 "wild/value")));
 
-        Assert.assertEquals(MyPageWithWildcardParam.class,
+        assertEquals(MyPageWithWildcardParam.class,
                 routeConfiguration.getRoute("my/wild/param").get());
     }
 
     private void assertSameRouteWithParams() {
-        Assert.assertEquals("my",
-                routeConfiguration.getTemplate(MyPage.class).get());
-        Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME,
+        assertEquals("my", routeConfiguration.getTemplate(MyPage.class).get());
+        assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME,
                 routeConfiguration.getTemplate(MyPageWithParam.class).get());
 
-        Assert.assertEquals("my", routeConfiguration.getUrl(MyPage.class));
-        Assert.assertEquals("my/value",
+        assertEquals("my", routeConfiguration.getUrl(MyPage.class));
+        assertEquals("my/value",
                 routeConfiguration.getUrl(MyPageWithParam.class, "value"));
-        Assert.assertEquals("my/value",
+        assertEquals("my/value",
                 routeConfiguration.getUrl(MyPageWithParam.class,
                         new RouteParameters(
                                 HasUrlParameterFormat.PARAMETER_NAME,
                                 "value")));
 
-        Assert.assertEquals(MyPage.class,
-                routeConfiguration.getRoute("my").get());
-        Assert.assertEquals(MyPageWithParam.class,
+        assertEquals(MyPage.class, routeConfiguration.getRoute("my").get());
+        assertEquals(MyPageWithParam.class,
                 routeConfiguration.getRoute("my/param").get());
     }
 

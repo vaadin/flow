@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -46,7 +45,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
-public class AbstractDownloadHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AbstractDownloadHandlerTest {
     private static final long TOTAL_BYTES = 100L;
     private static final long TRANSFERRED_BYTES = 42L;
     private static final IOException EXCEPTION = new IOException("Test error");
@@ -63,8 +67,8 @@ public class AbstractDownloadHandlerTest {
     private Element owner;
     private UI ui;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
@@ -103,7 +107,7 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void addTransferProgressListener_listenerAdded_listenerInvoked_listenerRemoved_listenerNotInvoked() {
+    void addTransferProgressListener_listenerAdded_listenerInvoked_listenerRemoved_listenerNotInvoked() {
         Registration registration = handler
                 .addTransferProgressListener(listener);
         handler.getListeners().forEach(l -> l.onStart(mockContext));
@@ -116,7 +120,7 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void whenStart_onStartCalled() {
+    void whenStart_onStartCalled() {
         SerializableRunnable startHandler = Mockito
                 .mock(SerializableRunnable.class);
         handler.whenStart(startHandler);
@@ -126,7 +130,7 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void whenProgress_onProgressCalled() {
+    void whenProgress_onProgressCalled() {
         SerializableBiConsumer<Long, Long> onProgressHandler = Mockito
                 .mock(SerializableBiConsumer.class);
         handler.onProgress(onProgressHandler);
@@ -137,18 +141,18 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void multipleHooks_multipleListenersAdded_InvokedInOrder() {
+    void multipleHooks_multipleListenersAdded_InvokedInOrder() {
         List<String> executionOrder = new ArrayList<>();
         handler.whenStart(() -> executionOrder.add("first"));
         handler.whenStart(() -> executionOrder.add("second"));
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
         List<String> expectedOrder = List.of("first", "second");
-        Assert.assertEquals(expectedOrder, executionOrder);
+        assertEquals(expectedOrder, executionOrder);
     }
 
     @Test
-    public void whenComplete() {
+    void whenComplete() {
         SerializableConsumer<Boolean> completeHandler = Mockito
                 .mock(SerializableConsumer.class);
         handler.whenComplete(completeHandler);
@@ -161,7 +165,7 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_transfer_sessionNotLocked()
+    void transferProgressListener_transfer_sessionNotLocked()
             throws IOException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(
                 "Hello".getBytes(StandardCharsets.UTF_8));
@@ -175,7 +179,7 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
-    public void customHandlerWithShorthandCompleteListener_noErrorInTransfer_success_errorInTransfer_failure()
+    void customHandlerWithShorthandCompleteListener_noErrorInTransfer_success_errorInTransfer_failure()
             throws IOException {
         AtomicBoolean successAtomic = new AtomicBoolean(false);
         AbstractDownloadHandler customHandler = new AbstractDownloadHandler<>() {
@@ -198,10 +202,9 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
 
-        Assert.assertTrue(successAtomic.get());
-        Assert.assertEquals("Hello",
-                outputStream.toString(StandardCharsets.UTF_8));
-        Assert.assertNull(downloadEvent.getException());
+        assertTrue(successAtomic.get());
+        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
+        assertNull(downloadEvent.getException());
 
         OutputStream outputStreamError = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
@@ -211,30 +214,30 @@ public class AbstractDownloadHandlerTest {
                 .thenReturn(outputStreamError);
 
         customHandler.handleDownloadRequest(downloadEvent);
-        Assert.assertFalse(successAtomic.get());
-        Assert.assertNull(downloadEvent.getException());
+        assertFalse(successAtomic.get());
+        assertNull(downloadEvent.getException());
     }
 
     @Test
-    public void doesNotRequireToCatchIOException() {
+    void doesNotRequireToCatchIOException() {
         DownloadHandler handler = event -> {
             new FileInputStream(new File("foo"));
         };
     }
 
     @Test
-    public void inline_attachmentUsedByDefault() {
-        Assert.assertFalse(handler.isInline());
+    void inline_attachmentUsedByDefault() {
+        assertFalse(handler.isInline());
     }
 
     @Test
-    public void inline_inlinedWhenExplicitlyCalled() {
+    void inline_inlinedWhenExplicitlyCalled() {
         handler.inline();
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
     }
 
     @Test
-    public void getTransferContext_returnsExpectedContextFromEvent() {
+    void getTransferContext_returnsExpectedContextFromEvent() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
@@ -250,56 +253,52 @@ public class AbstractDownloadHandlerTest {
             }
         };
         TransferContext context = handler.getTransferContext(event);
-        Assert.assertEquals(owner, context.owningElement());
-        Assert.assertEquals(session, context.session());
-        Assert.assertEquals(request, context.request());
-        Assert.assertEquals(response, context.response());
-        Assert.assertEquals(1024, context.contentLength());
-        Assert.assertEquals("test.txt", context.fileName());
-        Assert.assertNull(event.getException());
+        assertEquals(owner, context.owningElement());
+        assertEquals(session, context.session());
+        assertEquals(request, context.request());
+        assertEquals(response, context.response());
+        assertEquals(1024, context.contentLength());
+        assertEquals("test.txt", context.fileName());
+        assertNull(event.getException());
     }
 
     @Test
-    public void whenStartWithContext_onStartCalled() {
+    void whenStartWithContext_onStartCalled() {
         AtomicBoolean invoked = new AtomicBoolean(false);
         handler.whenStart((context) -> invoked.set(true));
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
-        Assert.assertTrue("Start with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Start with context should be invoked");
     }
 
     @Test
-    public void whenProgressWithContext_onProgressCalled() {
+    void whenProgressWithContext_onProgressCalled() {
         AtomicBoolean invoked = new AtomicBoolean(false);
         handler.onProgress((context, current, total) -> invoked.set(true),
                 1024);
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        Assert.assertTrue("Progress with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 
     @Test
-    public void whenProgressWithContextNoInterval_onProgressCalled() {
+    void whenProgressWithContextNoInterval_onProgressCalled() {
         AtomicBoolean invoked = new AtomicBoolean(false);
         handler.onProgress((context, current, total) -> invoked.set(true));
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        Assert.assertTrue(
-                "Progress with context and interval should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(),
+                "Progress with context and interval should be invoked");
     }
 
     @Test
-    public void whenCompleteWithContext() {
+    void whenCompleteWithContext() {
         AtomicBoolean invoked = new AtomicBoolean(false);
         handler.whenComplete((context, success) -> invoked.set(true));
         handler.getListeners().forEach(listener -> {
             listener.onComplete(mockContext, TRANSFERRED_BYTES);
             listener.onError(mockContext, EXCEPTION);
         });
-        Assert.assertTrue("Progress with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 }

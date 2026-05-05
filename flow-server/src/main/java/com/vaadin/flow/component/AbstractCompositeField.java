@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,10 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
+import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * An abstract field class that is backed by a composite component.
@@ -150,4 +153,9 @@ public abstract class AbstractCompositeField<C extends Component, S extends Abst
         return fieldSupport.valueEquals(value1, value2);
     }
 
+    @Override
+    public SignalBinding<T> bindValue(Signal<T> valueSignal,
+            SerializableConsumer<T> writeCallback) {
+        return fieldSupport.bindValue(valueSignal, writeCallback);
+    }
 }

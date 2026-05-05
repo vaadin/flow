@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,9 +19,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -38,7 +37,10 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-public class BootstrapContextTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BootstrapContextTest {
 
     private MockVaadinSession session;
     private UI ui;
@@ -67,8 +69,8 @@ public class BootstrapContextTest {
 
     }
 
-    @Before
-    public void setUp() throws ServiceException {
+    @BeforeEach
+    void setUp() throws ServiceException {
         MockVaadinSession session = new MockVaadinSession();
         session.lock();
         ui = new UI();
@@ -76,7 +78,7 @@ public class BootstrapContextTest {
     }
 
     @Test
-    public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
+    void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 MainView.class, Collections.emptyList());
         Mockito.when(request
@@ -88,14 +90,14 @@ public class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assert.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assert.assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 
     @Test
-    public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
+    void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 OtherView.class, Collections.singletonList(MainView.class));
         Mockito.when(request
@@ -107,14 +109,14 @@ public class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assert.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assert.assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 
     @Test
-    public void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
+    void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");
@@ -129,14 +131,14 @@ public class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assert.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assert.assertEquals(PushMode.AUTOMATIC, pushAnnotation.value());
-        Assert.assertEquals(Transport.WEBSOCKET, pushAnnotation.transport());
+        assertEquals(PushMode.AUTOMATIC, pushAnnotation.value());
+        assertEquals(Transport.WEBSOCKET, pushAnnotation.transport());
     }
 
     @Test
-    public void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
+    void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");
@@ -151,9 +153,9 @@ public class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assert.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assert.assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 }

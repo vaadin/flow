@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,9 +23,8 @@ import java.util.Properties;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResponse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -34,7 +33,9 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class PushAtmosphereHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PushAtmosphereHandlerTest {
 
     private AtmosphereResource resource;
 
@@ -44,8 +45,8 @@ public class PushAtmosphereHandlerTest {
 
     private PushAtmosphereHandler atmosphereHandler;
 
-    @Before
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         request = Mockito.mock(AtmosphereRequest.class);
         response = Mockito.mock(AtmosphereResponse.class);
         printWriter = Mockito.mock(PrintWriter.class);
@@ -73,12 +74,12 @@ public class PushAtmosphereHandlerTest {
     }
 
     @Test
-    public void writeSessionExpiredAsyncGet() throws Exception {
+    void writeSessionExpiredAsyncGet() throws Exception {
         writeSessionExpiredAsync("GET");
     }
 
     @Test
-    public void writeSessionExpiredAsyncPost() throws Exception {
+    void writeSessionExpiredAsyncPost() throws Exception {
         writeSessionExpiredAsync("POST");
     }
 
@@ -92,9 +93,8 @@ public class PushAtmosphereHandlerTest {
                 .getStringWhenWriteString(printWriter);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"async\":true,\"sessionExpired\":true}}]",
-                responseContent);
+        assertEquals("{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
+                responseContent, "Invalid response");
     }
 
 }

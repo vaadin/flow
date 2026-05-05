@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,17 +18,18 @@ package com.vaadin.flow;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.server.AbstractConfiguration;
 
-public class ComponentTrackerLocationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ComponentTrackerLocationTest {
 
     @Test
-    public void findJavaFile_simpleClass() {
+    void findJavaFile_simpleClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -42,11 +43,11 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
-    public void findJavaFile_simpleClass_dollarInPackage() {
+    void findJavaFile_simpleClass_dollarInPackage() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -60,11 +61,11 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
-    public void findJavaFile_simpleClass_dollarInName() {
+    void findJavaFile_simpleClass_dollarInName() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -79,11 +80,11 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
-    public void findJavaFile_innerClass() {
+    void findJavaFile_innerClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -98,11 +99,11 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
-    public void findJavaFile_nestedInnerClass() {
+    void findJavaFile_nestedInnerClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -117,11 +118,11 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
-    public void findKotlinFile_simpleClass() {
+    void findKotlinFile_simpleClass() {
         File defaultJavaSrcDir = new File("src/main/java");
         File kotlinExpectedSrcDir = new File("src/main/kotlin");
         AbstractConfiguration configuration = Mockito
@@ -136,7 +137,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
 }

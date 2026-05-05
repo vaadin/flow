@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,12 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,10 +32,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -37,6 +43,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -54,7 +62,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
 
-public class VaadinServletContextInitializerTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class VaadinServletContextInitializerTest {
 
     @Mock
     private ApplicationContext applicationContext;
@@ -84,8 +95,8 @@ public class VaadinServletContextInitializerTest {
 
     private MockedStatic<ServletDeployer> servletDeployerMock;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.openMocks(this);
 
         Mockito.when(applicationContext.getBeansOfType(Executor.class))
@@ -96,8 +107,8 @@ public class VaadinServletContextInitializerTest {
         servletDeployerMock = Mockito.mockStatic(ServletDeployer.class);
     }
 
-    @After
-    public void teardown() {
+    @AfterEach
+    void teardown() {
         autoConfigurationPackagesMock.close();
         autoConfigurationPackagesMock = null;
         servletDeployerMock.close();
@@ -105,8 +116,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void onStartup_devModeNotInitialized_devModeInitialized()
-            throws Exception {
+    void onStartup_devModeNotInitialized_devModeInitialized() throws Exception {
         initDefaultMocks();
 
         Mockito.when(devModeHandlerManager.getDevModeHandler())
@@ -127,7 +137,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void onStartup_devModeAlreadyInitialized_devModeInitializationSkipped()
+    void onStartup_devModeAlreadyInitialized_devModeInitializationSkipped()
             throws Exception {
         initDefaultMocks();
 
@@ -151,7 +161,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewExtendingRouteNotFoundError_customRouteNotFoundViewIsRegistered()
+    void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewExtendingRouteNotFoundError_customRouteNotFoundViewIsRegistered()
             throws Exception {
         // given
         initDefaultMocks();
@@ -177,11 +187,11 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        assertEquals(TestErrorView.class, navigationTarget);
     }
 
     @Test
-    public void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewImplementingHasErrorParameter_customRouteNotFoundViewIsRegistered()
+    void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewImplementingHasErrorParameter_customRouteNotFoundViewIsRegistered()
             throws Exception {
         // given
         initDefaultMocks();
@@ -213,7 +223,37 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        assertEquals(TestErrorView.class, navigationTarget);
+    }
+
+    @Test
+    void customResourceLoader_classpathRootContainsUnicodeCombiningCharacter_resourcesAreMatched(
+            @TempDir Path tempDir) throws Exception {
+        Path classesRoot = tempDir.resolve("François")
+                .resolve("vaadin-c\u0327-repro").resolve("target/classes");
+        Path applicationClass = classesRoot
+                .resolve("com/example/application/Application.class");
+        Files.createDirectories(applicationClass.getParent());
+        Files.write(applicationClass, new byte[] { 0 });
+
+        try (URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { classesRoot.toUri().toURL() }, null)) {
+            Resource[] resources = new VaadinServletContextInitializer.CustomResourceLoader(
+                    new DefaultResourceLoader(classLoader)).getResources(
+                            "classpath*:com/example/application/**/*.class");
+
+            assertThat(resources).as(Arrays.toString(resources)).anySatisfy(
+                    resource -> assertThat(getResourcePath(resource)).endsWith(
+                            "/com/example/application/Application.class"));
+        }
+    }
+
+    private static String getResourcePath(Resource resource) {
+        try {
+            return resource.getURI().getPath();
+        } catch (IOException exception) {
+            throw new IllegalStateException(exception);
+        }
     }
 
     private Runnable initRouteNotFoundMocksAndGetContextInitializedMockCall(

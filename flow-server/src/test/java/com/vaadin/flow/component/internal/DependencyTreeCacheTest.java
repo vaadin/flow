@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,14 +24,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableFunction;
 
-public class DependencyTreeCacheTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class DependencyTreeCacheTest {
     @Test
-    public void multipleLevels_allIncluded_noneParsedAgain() {
+    void multipleLevels_allIncluded_noneParsedAgain() {
         MockParser parser = new MockParser().addResult("/a", "/b")
                 .addResult("/b", "/c").addResult("/c");
 
@@ -39,17 +43,17 @@ public class DependencyTreeCacheTest {
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")),
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")),
                 dependencies);
 
         // Parse again, should not trigger exception because things are parsed
         // multiple times
         Set<String> dependencies2 = cache.getDependencies("/a");
-        Assert.assertEquals(dependencies, dependencies2);
+        assertEquals(dependencies, dependencies2);
     }
 
     @Test
-    public void sharedDependency_onlyParsedOnce() {
+    void sharedDependency_onlyParsedOnce() {
         MockParser parser = new MockParser().addResult("/a", "/b", "/c")
                 .addResult("/b", "/d").addResult("/c", "/d").addResult("/d");
 
@@ -57,13 +61,12 @@ public class DependencyTreeCacheTest {
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assert.assertEquals(
-                new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")),
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")),
                 dependencies);
     }
 
     @Test
-    public void concurrentParse_onlyParsedOnce() throws InterruptedException {
+    void concurrentParse_onlyParsedOnce() throws InterruptedException {
         MockParser parser = new MockParser();
         parser.addResult("/a", "/b");
         parser.addResult("/b", 100);
@@ -84,21 +87,18 @@ public class DependencyTreeCacheTest {
 
         long end = System.currentTimeMillis();
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b")),
-                dependencies);
-        Assert.assertEquals(dependencies, threadResult);
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b")), dependencies);
+        assertEquals(dependencies, threadResult);
 
         long duration = (end - start);
 
-        Assert.assertTrue("Parsing should take less than 200 ms",
-                duration < 200);
-        Assert.assertTrue(
-                "Parsing should take at least 100 ms, was " + duration,
-                duration >= 100);
+        assertTrue(duration < 200);
+        assertTrue(duration >= 100,
+                "Parsing should take at least 100 ms, was " + duration);
     }
 
     @Test
-    public void parallelParsing_potentialSpeedup() throws InterruptedException {
+    void parallelParsing_potentialSpeedup() throws InterruptedException {
         // Eventually, we should see both a case when the randomization makes
         // parsing progress in parallel and a case when it happens sequentially
         int maxDuration = Integer.MIN_VALUE;
@@ -109,10 +109,8 @@ public class DependencyTreeCacheTest {
             if (iterationCount++ > 30) {
                 // Less than 1/10^9 chance that 50/50 randomization will give
                 // the same result 30 times in a row
-                Assert.fail(
-                        "Did not observe both slowdown and speedup. Max duration: "
-                                + maxDuration + ", min duration: "
-                                + minDuration);
+                fail("Did not observe both slowdown and speedup. Max duration: "
+                        + maxDuration + ", min duration: " + minDuration);
             }
 
             MockParser parser = new MockParser().addResult("/a", 25, "/b", "/c")
@@ -131,9 +129,8 @@ public class DependencyTreeCacheTest {
             long end = System.currentTimeMillis();
             int duration = (int) (end - start);
 
-            Assert.assertTrue(
-                    "Duration should never be less than 50, was " + duration,
-                    duration >= 50);
+            assertTrue(duration >= 50,
+                    "Duration should never be less than 50, was " + duration);
 
             maxDuration = Math.max(maxDuration, duration);
             minDuration = Math.min(minDuration, duration);
@@ -161,9 +158,9 @@ public class DependencyTreeCacheTest {
                     USED_PLACEHOLDER);
 
             if (supplier == USED_PLACEHOLDER) {
-                Assert.fail("Path " + path + " has already been parsed");
+                fail("Path " + path + " has already been parsed");
             } else if (supplier == null) {
-                Assert.fail("Parser cannot find " + path);
+                fail("Parser cannot find " + path);
             }
 
             return supplier.get();
@@ -194,9 +191,8 @@ public class DependencyTreeCacheTest {
         }
 
         public void assertConsumed() {
-            items.forEach((path, value) -> Assert.assertSame(
-                    path + " should have been parsed", USED_PLACEHOLDER,
-                    value));
+            items.forEach((path, value) -> assertSame(USED_PLACEHOLDER, value,
+                    path + " should have been parsed"));
         }
     }
 

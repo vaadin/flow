@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,22 +15,22 @@
  */
 package com.vaadin;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test that tests are run with assertions activated
  */
-public class AssertionTest {
+class AssertionTest {
 
     @Test
-    public void testAssertionsAreEnabled() {
+    void testAssertionsAreEnabled() {
         boolean assertOn = false;
         // *assigns* true if assertions are on.
         assert assertOn = true;
 
-        Assert.assertTrue("Assertions are turned off for the server package",
-                assertOn);
+        Assertions.assertTrue(assertOn,
+                "Assertions are turned off for the server package");
     }
 
 }

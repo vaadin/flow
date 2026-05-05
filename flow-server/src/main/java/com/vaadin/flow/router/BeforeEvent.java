@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,7 +46,7 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationHandler forwardTarget;
     private NavigationHandler rerouteTarget;
 
-    private final Class<?> navigationTarget;
+    private final Class<? extends Component> navigationTarget;
     private final RouteParameters parameters;
     private QueryParameters redirectQueryParameters;
     private final List<Class<? extends RouterLayout>> layouts;
@@ -70,7 +70,8 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
      */
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
@@ -88,7 +89,8 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
      */
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
@@ -115,8 +117,8 @@ public abstract class BeforeEvent extends EventObject {
      *            <code>null</code>
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<? extends Component> navigationTarget,
+            UI ui, List<Class<? extends RouterLayout>> layouts) {
         this(router, trigger, location, navigationTarget,
                 RouteParameters.empty(), ui, layouts);
     }
@@ -142,7 +144,7 @@ public abstract class BeforeEvent extends EventObject {
      *            <code>null</code>
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
+            Location location, Class<? extends Component> navigationTarget,
             RouteParameters parameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router);
@@ -1044,7 +1046,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return navigation target
      */
-    public Class<?> getNavigationTarget() {
+    public Class<? extends Component> getNavigationTarget() {
         return navigationTarget;
     }
 

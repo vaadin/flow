@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2025 Vaadin Ltd.
+ *    Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testWarProjectProductionMode() {
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Read from archive since the token file is deleted from the
+        // filesystem after packaging to avoid stale production tokens
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -80,8 +82,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testWarProjectProductionModeWithCustomName() {
         testProject.settingsFile.writeText("rootProject.name = 'my-test-project'")
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -209,7 +211,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -255,7 +257,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -268,7 +270,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
             testProject.build("bootJar")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -281,7 +283,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
             testProject.build("-Pvaadin.productionMode=false", "bootJar")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -289,13 +291,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     private fun doTestSpringProject() {
-        val springBootVersion = "3.3.4"
+        val springBootVersion = "4.0.5"
 
         testProject.settingsFile.writeText(
             """
             pluginManagement {
                 repositories {
-                  maven { url 'https://repo.spring.io/milestone' }
                   gradlePluginPortal()
                 }
               }
@@ -305,35 +306,27 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
-                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id 'io.spring.dependency-management' version '1.1.7'
                 id 'java'
                 id("com.vaadin.flow")
             }
-            
+
             repositories {
                 mavenLocal()
                 mavenCentral()
                 maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
-                maven { url 'https://repo.spring.io/milestone' }
             }
 
-            configurations {
-                developmentOnly
-                runtimeClasspath {
-                    extendsFrom developmentOnly
-                }
-            }
-            
             dependencies {
                 implementation('com.vaadin:flow:$flowVersion')
                 implementation('com.vaadin:vaadin-spring:$flowVersion')
-                implementation('org.springframework.boot:spring-boot-starter-web:$springBootVersion')
+                implementation('org.springframework.boot:spring-boot-starter-webmvc:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {
                     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
                 }
             }
-            
+
             dependencyManagement {
                 imports {
                     mavenBom "com.vaadin:flow:$flowVersion"
@@ -445,7 +438,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
@@ -563,6 +556,34 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
+    fun alwaysExecutePrepareFrontend_chainsToProcessResources() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin.flow'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecutePrepareFrontend = true
+            }
+        """
+        )
+        val build: BuildResult = testProject.build("build")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinBuildFrontend")
+    }
+
+    @Test
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
             plugins {
@@ -612,17 +633,17 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '3.3.4'
-                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id 'org.springframework.boot' version '4.0.5'
+                id 'io.spring.dependency-management' version '1.1.7'
                 id("com.vaadin.flow")
             }
-            
+
             repositories {
                 mavenLocal()
                 mavenCentral()
                 maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            
+
             sourceSets {
                 ui {
                     java
@@ -634,15 +655,15 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                     }
                 }
             }
-            
+
             vaadin {
                 productionMode = true
                 sourceSetName = 'ui'
             }
-            
+
             dependencies {
                 uiImplementation('com.vaadin:flow:$flowVersion')
-                implementation('org.springframework.boot:spring-boot-starter-web')
+                implementation('org.springframework.boot:spring-boot-starter-webmvc')
             }
             
             jar {
@@ -683,7 +704,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult = testProject.build("build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -779,33 +800,159 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        // First, run prepare and build to ensure everything works normally
+        // First, run build to ensure everything works normally
         val build1: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
-        build1.expectTaskSucceded("vaadinPrepareFrontend")
+        build1.expectTaskNotRan("vaadinPrepareFrontend")
         build1.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was created
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        expect(true) { tokenFile.exists() }
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token file was packaged in the war archive (the token
+        // is deleted from the filesystem after packaging to prevent
+        // stale production tokens when running from an IDE)
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
 
-        // Clean the token file to simulate it not existing
-        tokenFile.delete()
-        expect(false) { tokenFile.exists() }
+        // Delete the cached token file so that Gradle's up-to-date check
+        // detects a missing output and re-executes vaadinBuildFrontend.
+        val markerFile = File(testProject.dir, "build/cached-flow-build-info.json")
+        markerFile.delete()
 
-        // Run vaadinBuildFrontend again - it should propagate build info
-        // even though the token file doesn't exist
+        // Run vaadinBuildFrontend directly (not via build/war) so the
+        // token file persists on disk for verification
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         build2.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was re-created by propagation
-        expect(true) { tokenFile.exists() }
-        val newTokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token was re-created (read from the cached copy since
+        // the build service deletes the original after the build)
+        val cachedTokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
+        expect(true) { cachedTokenFile.exists() }
+        val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+    }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_featureEnabled() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+//                Uncomment for faster test.
+//                implementation("com.vaadin:vaadin-prod-bundle:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+        var result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        expect(true) { result.output.contains(
+            "Task ':vaadinBuildFrontend' is not up-to-date") }
+
+        result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        expect(true) { result.output.contains(
+            "Skipping task ':vaadinBuildFrontend' as it is up-to-date") }
+    }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_rerunsOnInputChange() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+        testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+
+        // Second run should be up-to-date
+        var result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+
+        // Change a config input (optimizeBundle) to trigger re-execution
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                optimizeBundle = false
+            }
+        """.trimIndent()
+        )
+        result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        expect(true) { result.output.contains(
+            "Task ':vaadinBuildFrontend' is not up-to-date") }
+    }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_disableWithProperty() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecuteBuildFrontend = true
+            }
+        """.trimIndent()
+        )
+        repeat(3) {
+            val result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+            expect(true) {
+                result.output.contains(
+                    "Task ':vaadinBuildFrontend' is not up-to-date"
+                )
+            }
+        }
     }
 }

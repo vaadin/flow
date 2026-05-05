@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ShortCutRegistrationFilterTest {
+class ShortCutRegistrationFilterTest {
 
     /**
      * This method is used to test the generateEventModifierFilter method in the
@@ -84,16 +84,16 @@ public class ShortCutRegistrationFilterTest {
         ArrayList<String> filterConditions = new ArrayList<>(Arrays
                 .asList(eventModifierFilter.split(" && ", Integer.MAX_VALUE)));
         assertTrue(
-                "Split filter conditions should not contain '&' character or blank strings.",
                 filterConditions.stream()
                         .filter(c -> c.contains("&") || StringUtils.isBlank(c))
-                        .collect(Collectors.toList()).isEmpty());
+                        .collect(Collectors.toList()).isEmpty(),
+                "Split filter conditions should not contain '&' character or blank strings.");
         assertEquals(expectedFilterCount, filterConditions.size());
         return filterConditions;
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAlt()
+    void testGenerateEventModifierFilterWithModifierKeyAlt()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -107,7 +107,7 @@ public class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltGr()
+    void testGenerateEventModifierFilterWithModifierKeyAltGr()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -120,7 +120,7 @@ public class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
+    void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -134,7 +134,7 @@ public class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
+    void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -148,7 +148,7 @@ public class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
+    void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {

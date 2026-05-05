@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
-public class BrowserDetailsTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BrowserDetailsTest {
 
     private static final String FIREFOX30_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6";
     private static final String FIREFOX30_LINUX = "Mozilla/5.0 (X11; U; Linux x86_64; es-ES; rv:1.9.0.12) Gecko/2009070811 Ubuntu/9.04 (jaunty) Firefox/3.0.12";
@@ -111,7 +114,8 @@ public class BrowserDetailsTest extends TestCase {
     private static final String DUCK_DUCK_BOT_2 = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.106 Mobile DuckDuckGo/5 Safari/537.36";
     private static final String DUCK_DUCK_BOT_3 = "DuckDuckGo/0.26.3 CFNetwork/1331.0.7 Darwin/21.4.0";
 
-    public void testSafari3() {
+    @Test
+    void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
         assertWebKit(bd);
         assertSafari(bd);
@@ -121,7 +125,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testSafari4() {
+    @Test
+    void testSafari4() {
         BrowserDetails bd = new BrowserDetails(SAFARI4_MAC);
         assertWebKit(bd);
         assertSafari(bd);
@@ -131,7 +136,8 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
-    public void testSafari10() {
+    @Test
+    void testSafari10() {
         BrowserDetails bd = new BrowserDetails(SAFARI10_WINDOWS);
         assertWebKit(bd);
         assertSafari(bd);
@@ -141,7 +147,8 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
-    public void testSafari11() {
+    @Test
+    void testSafari11() {
         BrowserDetails bd = new BrowserDetails(SAFARI11_MAC);
         assertWebKit(bd);
         assertSafari(bd);
@@ -151,7 +158,8 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
-    public void testIPhoneIOS6Homescreen() {
+    @Test
+    void testIPhoneIOS6Homescreen() {
         BrowserDetails bd = new BrowserDetails(
                 IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
         assertWebKit(bd);
@@ -161,7 +169,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIPhoneIOS5() {
+    @Test
+    void testIPhoneIOS5() {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_5_1);
         assertWebKit(bd);
         assertSafari(bd);
@@ -172,7 +181,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIPhoneIOS4() {
+    @Test
+    void testIPhoneIOS4() {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_4_0);
         assertWebKit(bd);
         assertSafari(bd);
@@ -182,7 +192,8 @@ public class BrowserDetailsTest extends TestCase {
         assertIPhone(bd);
     }
 
-    public void testIPadIOS4() {
+    @Test
+    void testIPadIOS4() {
         BrowserDetails bd = new BrowserDetails(IPAD_IOS_4_3_1);
         assertWebKit(bd);
         assertSafari(bd);
@@ -191,7 +202,8 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 533.17f);
     }
 
-    public void testAndroid21() {
+    @Test
+    void testAndroid21() {
         BrowserDetails bd = new BrowserDetails(ANDROID_HTC_2_1);
         assertWebKit(bd);
         assertSafari(bd);
@@ -202,7 +214,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testAndroid22() {
+    @Test
+    void testAndroid22() {
         BrowserDetails bd = new BrowserDetails(ANDROID_GOOGLE_NEXUS_2_2);
         assertWebKit(bd);
         assertSafari(bd);
@@ -213,7 +226,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testAndroid30() {
+    @Test
+    void testAndroid30() {
         BrowserDetails bd = new BrowserDetails(ANDROID_MOTOROLA_3_0);
         assertWebKit(bd);
         assertSafari(bd);
@@ -224,7 +238,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testAndroid40Chrome() {
+    @Test
+    void testAndroid40Chrome() {
         BrowserDetails bd = new BrowserDetails(
                 ANDROID_GALAXY_NEXUS_4_0_4_CHROME);
         assertWebKit(bd);
@@ -236,7 +251,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testAndroidCallpodKeeper() {
+    @Test
+    void testAndroidCallpodKeeper() {
         BrowserDetails bd = new BrowserDetails(ANDROID_CALLPOD_KEEPER);
         assertOSMajorVersion(bd, 6);
         assertOSMinorVersion(bd, 0);
@@ -252,7 +268,8 @@ public class BrowserDetailsTest extends TestCase {
         assertEquals(i, bd.getOperatingSystemMinorVersion());
     }
 
-    public void testChrome3() {
+    @Test
+    void testChrome3() {
         BrowserDetails bd = new BrowserDetails(CHROME3_MAC);
         assertWebKit(bd);
         assertChrome(bd);
@@ -263,7 +280,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testChrome4() {
+    @Test
+    void testChrome4() {
         BrowserDetails bd = new BrowserDetails(CHROME4_WINDOWS);
         assertWebKit(bd);
         assertChrome(bd);
@@ -274,7 +292,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testChromeIOS() {
+    @Test
+    void testChromeIOS() {
         BrowserDetails bd = new BrowserDetails(CHROME_IOS);
         assertWebKit(bd);
         assertChrome(bd);
@@ -283,7 +302,8 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 601.1f);
     }
 
-    public void testChromeIOSDesktopSiteFeature() {
+    @Test
+    void testChromeIOSDesktopSiteFeature() {
         BrowserDetails bd = new BrowserDetails(CHROME_IOS_DESKTOP);
         assertWebKit(bd);
         assertChrome(bd);
@@ -292,7 +312,8 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 605.1f);
     }
 
-    public void testChromeChromeOS() {
+    @Test
+    void testChromeChromeOS() {
         BrowserDetails bd = new BrowserDetails(CHROME_40_ON_CHROMEOS);
         assertWebKit(bd);
         assertChrome(bd);
@@ -303,7 +324,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testChrome100Windows() {
+    @Test
+    void testChrome100Windows() {
         BrowserDetails bd = new BrowserDetails(CHROME100_WINDOWS);
         assertWebKit(bd);
         assertChrome(bd);
@@ -313,7 +335,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testFirefox100Windows() {
+    @Test
+    void testFirefox100Windows() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_100_WIN64);
         assertGecko(bd);
         assertFirefox(bd);
@@ -323,7 +346,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testFirefox100Windows32() {
+    @Test
+    void testFirefox100Windows32() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_100_WIN32);
         assertGecko(bd);
         assertFirefox(bd);
@@ -333,7 +357,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testFirefox100MacOs() {
+    @Test
+    void testFirefox100MacOs() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_100_MACOS);
         assertGecko(bd);
         assertFirefox(bd);
@@ -343,7 +368,8 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
-    public void testFirefox100Linux() {
+    @Test
+    void testFirefox100Linux() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_100_LINUX);
         assertGecko(bd);
         assertFirefox(bd);
@@ -353,7 +379,8 @@ public class BrowserDetailsTest extends TestCase {
         assertLinux(bd);
     }
 
-    public void testFirefox3() {
+    @Test
+    void testFirefox3() {
         BrowserDetails bd = new BrowserDetails(FIREFOX30_WINDOWS);
         assertGecko(bd);
         assertFirefox(bd);
@@ -372,7 +399,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox33Android() {
+    @Test
+    void testFirefox33Android() {
         BrowserDetails bd = new BrowserDetails(FIREFOX33_ANDROID);
         assertGecko(bd);
         assertFirefox(bd);
@@ -382,7 +410,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox35() {
+    @Test
+    void testFirefox35() {
         BrowserDetails bd = new BrowserDetails(FIREFOX35_WINDOWS);
         assertGecko(bd);
         assertFirefox(bd);
@@ -393,7 +422,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox36() {
+    @Test
+    void testFirefox36() {
         BrowserDetails bd = new BrowserDetails(FIREFOX36_WINDOWS);
         assertGecko(bd);
         assertFirefox(bd);
@@ -404,7 +434,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox30b5() {
+    @Test
+    void testFirefox30b5() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_30B5_MAC);
         assertGecko(bd);
         assertFirefox(bd);
@@ -415,7 +446,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox40b11() {
+    @Test
+    void testFirefox40b11() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_40B11_WIN);
         assertGecko(bd);
         assertFirefox(bd);
@@ -426,7 +458,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testFirefox40b7() {
+    @Test
+    void testFirefox40b7() {
         BrowserDetails bd = new BrowserDetails(FIREFOX_40B7_WIN);
         assertGecko(bd);
         assertFirefox(bd);
@@ -437,13 +470,15 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testKonquerorLinux() {
+    @Test
+    void testKonquerorLinux() {
         // Just ensure detection does not crash
         BrowserDetails bd = new BrowserDetails(KONQUEROR_LINUX);
         assertLinux(bd);
     }
 
-    public void testFirefox36b() {
+    @Test
+    void testFirefox36b() {
         BrowserDetails bd = new BrowserDetails(FIREFOX36B_MAC);
         assertGecko(bd);
         assertFirefox(bd);
@@ -454,7 +489,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testOpera964() {
+    @Test
+    void testOpera964() {
         BrowserDetails bd = new BrowserDetails(OPERA964_WINDOWS);
         assertPresto(bd);
         assertOpera(bd);
@@ -464,7 +500,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testOpera1010() {
+    @Test
+    void testOpera1010() {
         BrowserDetails bd = new BrowserDetails(OPERA1010_WINDOWS);
         assertPresto(bd);
         assertOpera(bd);
@@ -474,7 +511,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testOpera1050() {
+    @Test
+    void testOpera1050() {
         BrowserDetails bd = new BrowserDetails(OPERA1050_WINDOWS);
         assertPresto(bd);
         assertOpera(bd);
@@ -484,7 +522,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE6() {
+    @Test
+    void testIE6() {
         BrowserDetails bd = new BrowserDetails(IE6_WINDOWS);
         assertEngineVersion(bd, -1);
         assertIE(bd);
@@ -494,7 +533,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE7() {
+    @Test
+    void testIE7() {
         BrowserDetails bd = new BrowserDetails(IE7_WINDOWS);
         assertEngineVersion(bd, -1);
         assertIE(bd);
@@ -504,7 +544,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE8() {
+    @Test
+    void testIE8() {
         BrowserDetails bd = new BrowserDetails(IE8_WINDOWS);
         assertTrident(bd);
         assertEngineVersion(bd, 4);
@@ -515,7 +556,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE9() {
+    @Test
+    void testIE9() {
         BrowserDetails bd = new BrowserDetails(IE9_BETA_WINDOWS_7);
         assertTrident(bd);
         assertEngineVersion(bd, 5);
@@ -526,7 +568,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE9InIE7CompatibilityMode() {
+    @Test
+    void testIE9InIE7CompatibilityMode() {
         BrowserDetails bd = new BrowserDetails(IE9_IN_IE7_MODE_WINDOWS_7);
 
         assertTrident(bd);
@@ -539,7 +582,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE9InIE8CompatibilityMode() {
+    @Test
+    void testIE9InIE8CompatibilityMode() {
         BrowserDetails bd = new BrowserDetails(IE9_BETA_IN_IE8_MODE_WINDOWS_7);
 
         /*
@@ -556,7 +600,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE10() {
+    @Test
+    void testIE10() {
         BrowserDetails bd = new BrowserDetails(IE10_WINDOWS_8);
         assertTrident(bd);
         assertEngineVersion(bd, 6);
@@ -567,7 +612,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE11() {
+    @Test
+    void testIE11() {
         BrowserDetails bd = new BrowserDetails(IE11_WINDOWS_7);
         assertTrident(bd);
         assertEngineVersion(bd, 7);
@@ -578,7 +624,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE11Windows7CompatibilityViewIE7() {
+    @Test
+    void testIE11Windows7CompatibilityViewIE7() {
         BrowserDetails bd = new BrowserDetails(IE11_IN_IE7_MODE_WINDOWS_7);
         assertTrident(bd);
         assertEngineVersion(bd, 7);
@@ -589,7 +636,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE11Windows10CompatibilityViewIE7() {
+    @Test
+    void testIE11Windows10CompatibilityViewIE7() {
         BrowserDetails bd = new BrowserDetails(IE11_IN_IE7_MODE_WINDOWS_10);
         assertTrident(bd);
         assertEngineVersion(bd, 7);
@@ -600,7 +648,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE11LaunchDayWindows10CompatibilityViewIE7() {
+    @Test
+    void testIE11LaunchDayWindows10CompatibilityViewIE7() {
         BrowserDetails bd = new BrowserDetails(
                 IE11_IN_IE7_MODE_LAUNCH_DAY_WINDOWS_10);
         assertTrident(bd);
@@ -618,7 +667,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testIE11WindowsPhone81Update() {
+    @Test
+    void testIE11WindowsPhone81Update() {
         BrowserDetails bd = new BrowserDetails(IE11_WINDOWS_PHONE_8_1_UPDATE);
         assertTrident(bd);
         assertEngineVersion(bd, 7);
@@ -629,7 +679,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testEdgeWindows10() {
+    @Test
+    void testEdgeWindows10() {
         BrowserDetails bd = new BrowserDetails(EDGE_12_WINDOWS_10);
         assertEdge(bd);
         assertBrowserMajorVersion(bd, 12);
@@ -637,7 +688,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd, false);
     }
 
-    public void testEdgeWindows11() {
+    @Test
+    void testEdgeWindows11() {
         BrowserDetails bd = new BrowserDetails(EDGE_100);
         assertEdge(bd);
         assertBrowserMajorVersion(bd, 100);
@@ -645,7 +697,8 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd, false);
     }
 
-    public void testEdgeMac() {
+    @Test
+    void testEdgeMac() {
         BrowserDetails bd = new BrowserDetails(EDGE_99_MAC);
         assertEdge(bd);
         assertBrowserMajorVersion(bd, 99);
@@ -653,7 +706,8 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
-    public void testEdgeAndroid() {
+    @Test
+    void testEdgeAndroid() {
         BrowserDetails bd = new BrowserDetails(EDGE_97_ANDROID);
         assertEdge(bd);
         assertBrowserMajorVersion(bd, 97);
@@ -661,7 +715,8 @@ public class BrowserDetailsTest extends TestCase {
         assertAndroid(bd, 10, -1);
     }
 
-    public void testEdgeIOS() {
+    @Test
+    void testEdgeIOS() {
         BrowserDetails bd = new BrowserDetails(EDGE_97_IOS);
         assertEdge(bd);
         assertBrowserMajorVersion(bd, 97);
@@ -669,7 +724,8 @@ public class BrowserDetailsTest extends TestCase {
         assertIPhone(bd);
     }
 
-    public void testEclipseMac_safari91() {
+    @Test
+    void testEclipseMac_safari91() {
         BrowserDetails bd = new BrowserDetails(ECLIPSE_MAC_SAFARI_91);
         assertWebKit(bd);
         assertSafari(bd);
@@ -680,7 +736,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testEclipseMac_safari90() {
+    @Test
+    void testEclipseMac_safari90() {
         BrowserDetails bd = new BrowserDetails(ECLIPSE_MAC_SAFARI_90);
         assertWebKit(bd);
         assertSafari(bd);
@@ -691,7 +748,8 @@ public class BrowserDetailsTest extends TestCase {
 
     }
 
-    public void testHeadlessChrome() {
+    @Test
+    void testHeadlessChrome() {
         String userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/60.0.3112.101 Safari/537.36";
         BrowserDetails bd = new BrowserDetails(userAgent);
         assertWebKit(bd);
@@ -702,7 +760,8 @@ public class BrowserDetailsTest extends TestCase {
         assertLinux(bd);
     }
 
-    public void testOpera65() {
+    @Test
+    void testOpera65() {
         String userAgent = OPERA115_WINDOWS;
         BrowserDetails bd = new BrowserDetails(userAgent);
         assertWebKit(bd);
@@ -713,32 +772,37 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testIos11FacebookBrowser() {
+    @Test
+    void testIos11FacebookBrowser() {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_11_FACEBOOK_BROWSER);
         assertWebKit(bd);
         assertEngineVersion(bd, 605.1f);
     }
 
-    public void testIos11Firefox() {
+    @Test
+    void testIos11Firefox() {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_11_FIREFOX);
         assertWebKit(bd);
         assertEngineVersion(bd, 604.3f);
     }
 
-    public void testCommonDesktopUserAgents() throws IOException {
+    @Test
+    void testCommonDesktopUserAgents() throws IOException {
         UserAgent[] agents = getUserAgentDetails(
                 "common-desktop-useragents.json");
 
         assertAgentDetails(agents);
     }
 
-    public void testMobileUserAgents() throws IOException {
+    @Test
+    void testMobileUserAgents() throws IOException {
         UserAgent[] agents = getUserAgentDetails("mobile-useragents.json");
 
         assertAgentDetails(agents);
     }
 
-    public void testByteSpiderWebCrawler() {
+    @Test
+    void testByteSpiderWebCrawler() {
         BrowserDetails bd = new BrowserDetails(BYTE_SPIDER);
         assertWebKit(bd);
         assertSafari(bd);
@@ -748,7 +812,8 @@ public class BrowserDetailsTest extends TestCase {
         assertAndroid(bd, 5, 0);
     }
 
-    public void testDuckDuckBot1() {
+    @Test
+    void testDuckDuckBot1() {
         BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT);
         assertUnspecifiedBrowser(bd);
         assertBrowserMajorVersion(bd, -1);
@@ -757,7 +822,8 @@ public class BrowserDetailsTest extends TestCase {
         assertAndroid(bd, 5, 169);
     }
 
-    public void testDuckDuckBot2() {
+    @Test
+    void testDuckDuckBot2() {
         BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT_2);
         assertBrowserMajorVersion(bd, 130);
         assertBrowserMinorVersion(bd, 0);
@@ -765,7 +831,8 @@ public class BrowserDetailsTest extends TestCase {
         assertAndroid(bd, 14, -1);
     }
 
-    public void testDuckDuckBot3() {
+    @Test
+    void testDuckDuckBot3() {
         BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT_3);
         assertUnspecifiedBrowser(bd);
         assertBrowserMajorVersion(bd, -1);
@@ -802,12 +869,12 @@ public class BrowserDetailsTest extends TestCase {
             assertOs(bd, agent.os);
             BrowserVersion versions = getMinorMajorVersion(
                     agent.browserVersion);
-            Assert.assertEquals(
-                    "Major version differs on userAgent " + agent.ua,
-                    versions.browserMajorVersion, bd.getBrowserMajorVersion());
-            Assert.assertEquals(
-                    "Minor version differs on userAgent " + agent.ua,
-                    versions.browserMinorVersion, bd.getBrowserMinorVersion());
+            assertEquals(versions.browserMajorVersion,
+                    bd.getBrowserMajorVersion(),
+                    "Major version differs on userAgent " + agent.ua);
+            assertEquals(versions.browserMinorVersion,
+                    bd.getBrowserMinorVersion(),
+                    "Minor version differs on userAgent " + agent.ua);
         }
     }
 
@@ -1021,7 +1088,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isAndroid());
         assertFalse(browserDetails.isChromeOS());
-        Assert.assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
+        assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
     }
 
     private void assertLinux(BrowserDetails browserDetails) {

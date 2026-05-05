@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,42 +19,50 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-public class ReflectionsClassFinderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ReflectionsClassFinderTest {
 
     private static final String CLASS_TEMPLATE = "package %s;\n" + "\n"
             + "import com.vaadin.flow.component.dependency.NpmPackage;\n" + "\n"
             + "import com.vaadin.flow.component.Component;\n" + "\n"
             + "@NpmPackage(value = \"@vaadin/something\", version = \"%s\")\n"
             + "public class %s extends Component {\n" + "}\n";
-    @Rule
-    public TemporaryFolder externalModules = new TemporaryFolder();
+    @TempDir
+    Path externalModules;
 
     URL[] urls;
     private ClassFinder.DefaultClassFinder defaultClassFinder;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         urls = new URL[] {
                 createTestModule("module-1", "com.vaadin.flow.test.last",
                         "ComponentN", "3.0.0"),
@@ -73,7 +81,7 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void getSubTypesOf_orderIsDeterministic() {
+    void getSubTypesOf_orderIsDeterministic() {
         List<String> a1 = toList(new ReflectionsClassFinder(urls)
                 .getSubTypesOf(Component.class));
         List<String> a2 = toList(
@@ -83,26 +91,26 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getSubTypesOf(Component.class));
 
-        Assert.assertEquals(a1, a2);
-        Assert.assertEquals(a2, a3);
+        assertEquals(a1, a2);
+        assertEquals(a2, a3);
     }
 
     @Test
-    public void getSubTypesOf_rejectNotVaadinKnownPackages() throws Exception {
+    void getSubTypesOf_rejectNotVaadinKnownPackages() throws Exception {
         urls = Arrays.copyOf(urls, urls.length + 1);
         urls[urls.length - 1] = createTestModule("module-4",
                 "org.springframework.feature.ui", "SpringUIComponent", "2.0.0");
         Set<String> result = new ReflectionsClassFinder(urls)
                 .getSubTypesOf(Component.class).stream().map(Class::getName)
                 .collect(Collectors.toSet());
-        Assert.assertFalse(
-                "Classes from know not-UI packages should be rejected by default",
+        assertFalse(
                 result.contains(
-                        "org.springframework.feature.ui.SpringUIComponent"));
+                        "org.springframework.feature.ui.SpringUIComponent"),
+                "Classes from know not-UI packages should be rejected by default");
     }
 
     @Test
-    public void getSubTypesOf_defaultRejectDisabled_scansAllPackages()
+    void getSubTypesOf_defaultRejectDisabled_scansAllPackages()
             throws Exception {
         urls = Arrays.copyOf(urls, urls.length + 1);
         urls[urls.length - 1] = createTestModule("module-4",
@@ -113,10 +121,10 @@ public class ReflectionsClassFinderTest {
             Set<String> result = new ReflectionsClassFinder(urls)
                     .getSubTypesOf(Component.class).stream().map(Class::getName)
                     .collect(Collectors.toSet());
-            Assert.assertTrue(
-                    "Classes from know not-UI packages should be found when default rejection is disabled",
+            assertTrue(
                     result.contains(
-                            "org.springframework.feature.ui.SpringUIComponent"));
+                            "org.springframework.feature.ui.SpringUIComponent"),
+                    "Classes from know not-UI packages should be found when default rejection is disabled");
         } finally {
             System.clearProperty(
                     ReflectionsClassFinder.DISABLE_DEFAULT_PACKAGE_FILTER);
@@ -124,7 +132,7 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void getAnnotatedClasses_orderIsDeterministic() {
+    void getAnnotatedClasses_orderIsDeterministic() {
         List<String> a1 = toList(new ReflectionsClassFinder(urls)
                 .getAnnotatedClasses(NpmPackage.class));
         List<String> a2 = toList(
@@ -134,21 +142,20 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getAnnotatedClasses(NpmPackage.class));
 
-        Assert.assertEquals(a1, a2);
-        Assert.assertEquals(a2, a3);
+        assertEquals(a1, a2);
+        assertEquals(a2, a3);
     }
 
     @Test
-    public void getSubTypesOf_order_sameAsDefaultClassFinder() {
-        Assert.assertEquals(
-                toList(defaultClassFinder.getSubTypesOf(Component.class)),
+    void getSubTypesOf_order_sameAsDefaultClassFinder() {
+        assertEquals(toList(defaultClassFinder.getSubTypesOf(Component.class)),
                 toList(new ReflectionsClassFinder(urls)
                         .getSubTypesOf(Component.class)));
     }
 
     @Test
-    public void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
-        Assert.assertEquals(
+    void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
+        assertEquals(
                 toList(defaultClassFinder
                         .getAnnotatedClasses(NpmPackage.class)),
                 toList(new ReflectionsClassFinder(urls)
@@ -156,22 +163,20 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void notExistingDirectory_noExceptionThrown() throws Exception {
-        Path notExistingDir = Files.createTempDirectory("test")
-                .resolve(Path.of("target", "classes"));
+    void notExistingDirectory_noExceptionThrown() throws Exception {
+        Path notExistingDir = externalModules
+                .resolve(Path.of("not-existing", "target", "classes"));
         // ClassGraph should handle non-existing directories gracefully
         ReflectionsClassFinder finder = new ReflectionsClassFinder(
                 notExistingDir.toUri().toURL());
         // Verify scan completed successfully (returns empty set, not null)
         Set<Class<?>> result = finder.getAnnotatedClasses(NpmPackage.class);
-        Assert.assertNotNull(
-                "Scan should complete even with non-existing directory",
-                result);
+        assertNotNull(result,
+                "Scan should complete even with non-existing directory");
     }
 
     @Test
-    public void getAnnotatedClasses_findsRepeatableAnnotations()
-            throws Exception {
+    void getAnnotatedClasses_findsRepeatableAnnotations() throws Exception {
         // When a @Repeatable annotation is used multiple times, Java wraps
         // them in the container annotation. The finder should detect this and
         // find classes annotated with the container when searching for the
@@ -187,9 +192,8 @@ public class ReflectionsClassFinderTest {
         Class<?> testClass = classLoader.loadClass(
                 "com.vaadin.flow.test.repeatable.ComponentWithMultipleNpmPackages");
 
-        Assert.assertTrue(
-                "Should find class with repeatable NpmPackage annotations through container",
-                result.contains(testClass));
+        assertTrue(result.contains(testClass),
+                "Should find class with repeatable NpmPackage annotations through container");
     }
 
     private URL createRepeatableAnnotationTestModule() throws IOException {
@@ -203,10 +207,18 @@ public class ReflectionsClassFinderTest {
                 + "@NpmPackage(value = \"@vaadin/test-package-3\", version = \"3.0.0\")\n"
                 + "public class %s extends Component {\n}\n", pkg, className);
 
-        File sources = externalModules.newFolder("repeatable-test/src");
-        File sourcePkg = externalModules
-                .newFolder("repeatable-test/src/" + pkg.replace('.', '/'));
-        File buildDir = externalModules.newFolder("repeatable-test/target");
+        File sources = Files
+                .createDirectories(
+                        externalModules.resolve("repeatable-test/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules.resolve(
+                        "repeatable-test/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve("repeatable-test/target"))
+                .toFile();
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
         Files.writeString(sourceFile, classSource, StandardCharsets.UTF_8);
@@ -221,10 +233,17 @@ public class ReflectionsClassFinderTest {
 
     private URL createTestModule(String moduleName, String pkg,
             String className, String npmPackageVersion) throws IOException {
-        File sources = externalModules.newFolder(moduleName + "/src");
-        File sourcePkg = externalModules
-                .newFolder(moduleName + "/src/" + pkg.replace('.', '/'));
-        File buildDir = externalModules.newFolder(moduleName + "/target");
+        File sources = Files
+                .createDirectories(externalModules.resolve(moduleName + "/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules
+                        .resolve(moduleName + "/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve(moduleName + "/target"))
+                .toFile();
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
         Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
@@ -233,11 +252,82 @@ public class ReflectionsClassFinderTest {
         return buildDir.toURI().toURL();
     }
 
+    // See https://github.com/vaadin/flow/issues/15458
+    @Test
+    void getResource_jarUrlDisablesCaching() throws Exception {
+        String pkg = "com.vaadin.flow.test.jar";
+        String className = "TestComponent";
+
+        File jarFile = Files
+                .createFile(externalModules.resolve("test-component.jar"))
+                .toFile();
+        createTestJar(jarFile, "jar-v1", pkg, className, "1.0.0");
+
+        try (ReflectionsClassFinder finder = new ReflectionsClassFinder(
+                jarFile.toURI().toURL())) {
+            URL resource = finder.getResource(
+                    pkg.replace('.', '/') + "/" + className + ".class");
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
+
+            URLConnection conn = resource.openConnection();
+            assertFalse(conn.getUseCaches(),
+                    "jar: URL connections should have caching disabled "
+                            + "to prevent stale JarFileFactory entries "
+                            + "under Gradle daemon");
+            // Verify the resource is still readable
+            try (InputStream is = conn.getInputStream()) {
+                assertTrue(is.read() != -1,
+                        "Should be able to read class bytes");
+            }
+        }
+    }
+
+    private void createTestJar(File jarFile, String moduleName, String pkg,
+            String className, String npmPackageVersion) throws IOException {
+        // Compile the class to a temp directory
+        File sources = Files
+                .createDirectories(externalModules.resolve(moduleName + "/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules
+                        .resolve(moduleName + "/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve(moduleName + "/target"))
+                .toFile();
+
+        Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
+        Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
+                npmPackageVersion, className), StandardCharsets.UTF_8);
+        compile(sourceFile.toFile(), sources, buildDir);
+
+        // Package compiled classes into a JAR
+        try (JarOutputStream jos = new JarOutputStream(
+                new FileOutputStream(jarFile))) {
+            Path classesRoot = buildDir.toPath();
+            try (var walker = Files.walk(classesRoot)) {
+                walker.filter(Files::isRegularFile).forEach(classFile -> {
+                    String entryName = classesRoot.relativize(classFile)
+                            .toString().replace(File.separatorChar, '/');
+                    try {
+                        jos.putNextEntry(new JarEntry(entryName));
+                        jos.write(Files.readAllBytes(classFile));
+                        jos.closeEntry();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+    }
+
     private void compile(File sourceFile, File sourcePath, File outputPath) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
                 "-sourcepath", sourcePath.getPath(), sourceFile.getPath());
-        Assert.assertEquals("Failed to compile " + sourceFile, 0, result);
+        assertEquals(0, result, "Failed to compile " + sourceFile);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -92,12 +93,11 @@ abstract class AbstractUpdateImports implements Runnable {
             + "<style%s>${$css_%1$d}</style>" + CSS_POST;
     private static final String INJECT_CSS = CSS_IMPORT
             + "%ninjectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);%n";
+    private static final Pattern CSS_IMPORT_PATTERN = Pattern
+            .compile("import \\$cssFromFile_(\\d+) from '(.+?)'");
     private static final Pattern INJECT_CSS_PATTERN = Pattern
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
-
-    private static final String TAILWIND_IMPORT = "./"
-            + FrontendUtils.TAILWIND_JS;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -116,8 +116,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
 
-    private FrontendDependenciesScanner scanner;
-
     private ClassFinder classFinder;
 
     final File generatedFlowImports;
@@ -129,26 +127,24 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final GeneratedFilesSupport generatedFilesSupport;
 
-    AbstractUpdateImports(Options options,
-            FrontendDependenciesScanner scanner) {
-        this(options, scanner, new GeneratedFilesSupport());
+    AbstractUpdateImports(Options options) {
+        this(options, new GeneratedFilesSupport());
     }
 
-    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+    AbstractUpdateImports(Options options,
             GeneratedFilesSupport generatedFilesSupport) {
         this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
-        this.scanner = scanner;
         this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
-                scanner.getTheme());
+                options.getFrontendDependenciesScanner().getTheme());
 
         generatedFlowImports = FrontendUtils
                 .getFlowGeneratedImports(options.getFrontendDirectory());
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
-        var generatedFolder = FrontendUtils
+        File generatedFolder = FrontendUtils
                 .getFrontendGeneratedFolder(options.getFrontendDirectory());
         appShellImports = new File(generatedFolder,
                 FrontendUtils.APP_SHELL_IMPORTS_NAME);
@@ -168,7 +164,8 @@ abstract class AbstractUpdateImports implements Runnable {
         getLogger().debug("Start updating imports file and chunk files.");
         long start = System.nanoTime();
 
-        Map<ChunkInfo, List<CssData>> css = scanner.getCss();
+        Map<ChunkInfo, List<CssData>> css = options
+                .getFrontendDependenciesScanner().getCss();
         Map<ChunkInfo, List<String>> javascript = getMergedJavascript();
 
         Map<File, List<String>> output = process(css, javascript);
@@ -185,6 +182,8 @@ abstract class AbstractUpdateImports implements Runnable {
         long start = System.nanoTime();
 
         Map<ChunkInfo, List<String>> javascript;
+        final FrontendDependenciesScanner scanner = options
+                .getFrontendDependenciesScanner();
         Map<ChunkInfo, List<String>> modules = scanner.getModules();
         Map<ChunkInfo, List<String>> scripts = scanner.getScripts();
 
@@ -272,7 +271,82 @@ abstract class AbstractUpdateImports implements Runnable {
                 Collections.emptyList()));
         merged.addAll(outputFiles.getOrDefault(generatedFlowImports,
                 Collections.emptyList()));
-        return merged.stream().distinct().toList();
+        return removeDuplicateCssImports(merged);
+    }
+
+    /**
+     * Removes duplicate CSS imports from the merged web component output. Moves
+     * imports to the top, then scans for CSS import lines that share the same
+     * file path but have different variable indices (from different output
+     * files). Keeps only the first import for each path, remaps variable
+     * references in duplicate processing lines to use the kept index, and
+     * deduplicates lines that became identical after remapping.
+     * <p>
+     * Note: the same CSS file can be imported multiple times with different
+     * processing instructions (e.g. {@code @CssImport(value="bar.css",
+     * themeFor="x")} producing {@code registerStyles('x', $css_5, ...)} and
+     * {@code @CssImport(value="bar.css", include="y")} producing
+     * {@code addCssBlock(`<style include="y">${$css_5}</style>`)}). After
+     * remapping, these lines remain distinct because their content differs, so
+     * both registrations are preserved.
+     */
+    private static List<String> removeDuplicateCssImports(List<String> lines) {
+        // Deduplicate identical lines and move imports to the top
+        List<String> result = new ArrayList<>(
+                lines.stream().distinct().toList());
+        moveImportsToTop(result);
+
+        Map<String, String> pathToFirstIndex = new LinkedHashMap<>();
+        Map<String, String> remappedIndices = new LinkedHashMap<>();
+
+        // Remove duplicate import lines immediately
+        Iterator<String> it = result.iterator();
+        while (it.hasNext()) {
+            String line = it.next();
+            if (!line.startsWith("import ") && !line.isBlank()) {
+                break;
+            }
+            Matcher m = CSS_IMPORT_PATTERN.matcher(line);
+            if (m.find()) {
+                String first = pathToFirstIndex.putIfAbsent(m.group(2),
+                        m.group(1));
+                if (first != null) {
+                    remappedIndices.put(m.group(1), first);
+                    it.remove();
+                }
+            }
+        }
+
+        if (remappedIndices.isEmpty()) {
+            return result;
+        }
+
+        // Build a single pattern matching all duplicate indices.
+        // (?!\d) prevents _1 from matching _10
+        String indexAlt = String.join("|", remappedIndices.keySet());
+        Pattern pattern = Pattern
+                .compile("(\\$cssFromFile_|\\$css_|flow_css_mod_)(" + indexAlt
+                        + ")(?!\\d)");
+
+        // Remap processing lines and deduplicate results
+        LinkedHashSet<String> deduplicated = new LinkedHashSet<>();
+        for (String line : result) {
+            String remapped = pattern.matcher(line)
+                    .replaceAll(mr -> Matcher.quoteReplacement(
+                            mr.group(1) + remappedIndices.get(mr.group(2))));
+            deduplicated.add(remapped);
+        }
+        return new ArrayList<>(deduplicated);
+    }
+
+    // Move all import lines to the top, before any non-import lines
+    private static void moveImportsToTop(List<String> lines) {
+        if (!lines.isEmpty()) {
+            List<String> imports = new ArrayList<>(lines);
+            imports.removeIf(line -> !line.startsWith("import "));
+            lines.removeIf(line -> line.startsWith("import "));
+            lines.addAll(0, imports);
+        }
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -415,11 +489,19 @@ abstract class AbstractUpdateImports implements Runnable {
         cssLineOffset += appShellCssLines.size();
         if (!appShellCssLines.isEmpty()) {
             appShellLines.add(IMPORT_INJECT);
+            appShellLines.add(THEMABLE_MIXIN_IMPORT);
             appShellLines.addAll(appShellCssLines);
         }
         if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
-            appShellLines.add(String.format(IMPORT_TEMPLATE, TAILWIND_IMPORT));
+            String importPath = "Frontend/"
+                    + options.getFrontendDirectory().toPath()
+                            .relativize(options.getFrontendGeneratedFolder()
+                                    .toPath())
+                            .toString()
+                    + "/" + FrontendUtils.TAILWIND_JS;
+            appShellLines.add(String.format(IMPORT_TEMPLATE, importPath));
         }
+        moveImportsToTop(appShellLines);
         files.put(appShellImports, appShellLines);
         files.put(appShellDefinitions, Collections.singletonList("export {}"));
 
@@ -440,11 +522,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     getCssLines(webComponentCssData, cssLineOffset));
         }
 
-        // Move all imports to the top
-        List<String> copy = new ArrayList<>(mainLines);
-        copy.removeIf(line -> !line.startsWith("import "));
-        mainLines.removeIf(line -> line.startsWith("import "));
-        mainLines.addAll(0, copy);
+        moveImportsToTop(mainLines);
 
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
@@ -634,7 +712,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
-        AbstractTheme theme = scanner.getTheme();
+        AbstractTheme theme = options.getFrontendDependenciesScanner()
+                .getTheme();
 
         Set<String> visited = new HashSet<>();
 

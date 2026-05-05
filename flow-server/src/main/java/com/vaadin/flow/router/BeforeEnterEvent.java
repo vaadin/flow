@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.util.List;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
 /**
@@ -39,7 +40,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeEnterEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, layouts);
         errorEvent = event instanceof ErrorNavigationEvent;
@@ -57,7 +59,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeEnterEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
@@ -83,8 +86,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            <code>null</code>
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<? extends Component> navigationTarget,
+            UI ui, List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
         errorEvent = false;
     }
@@ -110,7 +113,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            <code>null</code>
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
+            Location location, Class<? extends Component> navigationTarget,
             RouteParameters parameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, parameters, ui,

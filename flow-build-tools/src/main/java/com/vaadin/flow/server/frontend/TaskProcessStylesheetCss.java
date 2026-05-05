@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -184,17 +184,14 @@ public class TaskProcessStylesheetCss implements FallibleCommand {
     private void processCssFile(File cssFile) throws IOException {
         getLogger().debug("Processing CSS file: {}", cssFile.getName());
 
-        // Get node_modules folder for resolving npm package imports
         File nodeModulesFolder = options.getNodeModulesFolder();
 
-        // Inline @import statements for local files and node_modules
-        String content = CssBundler.inlineImports(cssFile.getParentFile(),
-                cssFile, null, nodeModulesFolder);
+        // Inline @import statements and rewrite relative url() references so
+        // they remain correct after imports are inlined into the entry file.
+        String content = CssBundler.inlineImportsForStaticResourcesRelative(
+                cssFile.getParentFile(), cssFile, nodeModulesFolder);
 
-        // Minify the CSS
         content = CssBundler.minifyCss(content);
-
-        // Write back to the same file
         Files.writeString(cssFile.toPath(), content);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,16 +20,18 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -38,7 +40,7 @@ import com.vaadin.flow.component.internal.ComponentTracker.Location;
  * Note that if you reformat this file, the tests will need to be adjusted as
  * they track line numbers.
  */
-public class ComponentTrackerTest {
+class ComponentTrackerTest {
 
     @Tag("component1")
     public static class Component1 extends Component {
@@ -54,39 +56,39 @@ public class ComponentTrackerTest {
     private Object previousDisabled;
     private Field disabledField;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         disabledField = ComponentTracker.class.getDeclaredField("disabled");
         disabledField.setAccessible(true);
         previousDisabled = disabledField.get(null);
         disabledField.set(null, false);
     }
 
-    @After
-    public void teardown() throws Exception {
+    @AfterEach
+    void teardown() throws Exception {
         disabledField.set(null, previousDisabled);
     }
 
     @Test
-    public void createLocationTracked() {
+    void createLocationTracked() {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 72;
+        int c1Line = 74;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
     }
 
     @Test
-    public void attachLocationTracked() {
+    void attachLocationTracked() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Component c3 = new Component1();
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 83;
+        int c1Line = 85;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 
@@ -103,12 +105,12 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void offsetApplied() {
+    void offsetApplied() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        int c1Line = 107;
+        int c1Line = 109;
         assertCreateLocation(c1, c1Line, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
@@ -121,7 +123,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void memoryIsReleased() throws Exception {
+    void memoryIsReleased() throws Exception {
         Field createThrowableField = ComponentTracker.class
                 .getDeclaredField("createThrowable");
         Field attachThrowableField = ComponentTracker.class
@@ -136,15 +138,15 @@ public class ComponentTrackerTest {
 
         new Layout(new Component1());
 
-        Assert.assertEquals(2, createMap.size());
-        Assert.assertEquals(1, attachMap.size());
+        assertEquals(2, createMap.size());
+        assertEquals(1, attachMap.size());
 
-        Assert.assertTrue(isCleared(createMap));
-        Assert.assertTrue(isCleared(attachMap));
+        assertTrue(isCleared(createMap));
+        assertTrue(isCleared(attachMap));
     }
 
     @Test
-    public void ordinalValueSet() {
+    void ordinalValueSet() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -155,7 +157,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void attachOrderChangesOrdinal() {
+    void attachOrderChangesOrdinal() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -166,7 +168,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void createOrderChangesOrdinal() {
+    void createOrderChangesOrdinal() {
         Component c2 = new Component1();
         Component1 c1 = new Component1();
         Layout layout = new Layout();
@@ -177,11 +179,11 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
+    void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
         var components = new Component[] { new Component1(), new Component1() };
         new Layout(components);
-        assertCreateLocation(components[0], 181, getClass().getName());
-        assertCreateLocation(components[1], 181, getClass().getName());
+        assertCreateLocation(components[0], 183, getClass().getName());
+        assertCreateLocation(components[1], 183, getClass().getName());
         assertCreateLocationOrdinalValueLower(components[0], components[1]);
         assertAttachLocationOrdinalValueLower(components[0], components[1]);
     }
@@ -200,26 +202,26 @@ public class ComponentTrackerTest {
     private void assertCreateLocation(Component c, int lineNumber,
             String name) {
         ComponentTracker.Location location = ComponentTracker.findCreate(c);
-        Assert.assertEquals(lineNumber, location.lineNumber());
-        Assert.assertEquals(name, location.className());
+        assertEquals(lineNumber, location.lineNumber());
+        assertEquals(name, location.className());
 
         Location locationFromArray = getLocationFromArray(
                 ComponentTracker.findCreateLocations(c));
-        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
-        Assert.assertEquals(name, locationFromArray.className());
+        assertEquals(lineNumber, locationFromArray.lineNumber());
+        assertEquals(name, locationFromArray.className());
     }
 
     private void assertAttachLocation(Component c, int lineNumber,
             String name) {
         ComponentTracker.Location location = ComponentTracker.findAttach(c);
-        Assert.assertEquals(lineNumber, location.lineNumber());
-        Assert.assertEquals(name, location.className());
+        assertEquals(lineNumber, location.lineNumber());
+        assertEquals(name, location.className());
 
         Location locationFromArray = getLocationFromArray(
                 ComponentTracker.findAttachLocations(c));
 
-        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
-        Assert.assertEquals(name, locationFromArray.className());
+        assertEquals(lineNumber, locationFromArray.lineNumber());
+        assertEquals(name, locationFromArray.className());
     }
 
     private Location getLocationFromArray(Location[] locations) {
@@ -237,14 +239,14 @@ public class ComponentTrackerTest {
                 .apply(componentWithLowerOrdinalVal);
         Location locationC2 = findLocationFn
                 .apply(componentWithHigherOrdinalVal);
-        Assert.assertTrue(locationC2.ordinal() > locationC1.ordinal());
+        assertTrue(locationC2.ordinal() > locationC1.ordinal());
 
         Location locationFromArrayC1 = getLocationFromArray(
                 findLocationArrFn.apply(componentWithLowerOrdinalVal));
         Location locationFromArrayC2 = getLocationFromArray(
                 findLocationArrFn.apply(componentWithHigherOrdinalVal));
 
-        Assert.assertTrue(
+        assertTrue(
                 locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
     }
 

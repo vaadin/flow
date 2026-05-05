@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
@@ -62,18 +62,6 @@ export enum MessageType {
   ERROR = 'error'
 }
 
-interface Message {
-  id: number;
-  type: MessageType;
-  message: string;
-  details?: string;
-  link?: string;
-  persistentId?: string;
-  dontShowAgain: boolean;
-  dontShowAgainMessage?: string;
-  deleted: boolean;
-}
-
 type DevToolsConf = {
   enable: boolean;
   url: string;
@@ -81,10 +69,19 @@ type DevToolsConf = {
   backend?: string;
   liveReloadPort?: number;
   token?: string;
+  usageStatisticsEnabled?: boolean;
 };
 
 // @ts-ignore
 const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
+
+import {
+  captureScrollPositions,
+  refreshWithScrollPreservation,
+  registerRefreshUIHandler,
+  restoreScrollPositions,
+  ScrollSnapshot
+} from './hotswap-scroll';
 
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
@@ -606,18 +603,11 @@ export class VaadinDevTools extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
-  @query('.window')
-  private root!: HTMLElement;
-
   @state()
   componentPickActive: boolean = false;
 
   private javaConnection?: LiveReloadConnection;
   private frontendConnection?: WebSocketConnection;
-
-  private nextMessageId: number = 1;
-
-  private transitionDuration: number = 0;
 
   elementTelemetry() {
     let data = {};
@@ -651,22 +641,10 @@ export class VaadinDevTools extends LitElement {
     const onConnectionError = (msg: string) => console.error(msg);
     const onReload = (strategy: string = 'reload') => {
       if (strategy === 'refresh' || strategy === 'full-refresh') {
-        const anyVaadin = window.Vaadin as any;
-        // TODO: do it in Flow client. Maybe raise a custom vaadin-refresh-ui event
-        //  and handle it in Flow client?
-        Object.keys(anyVaadin.Flow.clients)
-          .filter((key) => key !== 'TypeScript')
-          .map((id) => anyVaadin.Flow.clients[id])
-          .forEach((client) => {
-            if (client.sendEventMessage) {
-              client.sendEventMessage(1, 'ui-refresh', {
-                fullRefresh: strategy === 'full-refresh'
-              });
-            } else {
-              console.warn('Ignoring ui-refresh event for application ', id);
-            }
-          });
+        refreshWithScrollPreservation(strategy === 'full-refresh');
       } else {
+        const scrollSnapshot = captureScrollPositions();
+        window.sessionStorage.setItem('vaadin-hotswap-scroll', JSON.stringify(scrollSnapshot));
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
         window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
@@ -704,10 +682,21 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
+    const wsUrl = this.getDedicatedWebSocketUrl();
+    if (!wsUrl) {
+      return;
+    }
+    const frontendConnection = new WebSocketConnection(wsUrl);
     frontendConnection.onHandshake = () => {
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
+      }
+      if (this.conf.usageStatisticsEnabled === false) {
+        localStorage.setItem('vaadin.statistics.optout', 'true');
+        localStorage.removeItem('vaadin.statistics.basket');
+        localStorage.removeItem('vaadin.statistics.firstuse');
+      } else {
+        localStorage.removeItem('vaadin.statistics.optout');
       }
       this.elementTelemetry();
     };
@@ -740,8 +729,12 @@ export class VaadinDevTools extends LitElement {
     const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
     links.forEach((link) => {
       let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
-      if (filePath && filePath.includes(path)) {
-        link.remove();
+      if (filePath) {
+        // Strip query string and fragment for comparison
+        const cleanPath = filePath.split(/[?#]/)[0];
+        if (cleanPath === path || cleanPath.endsWith('/' + path)) {
+          link.remove();
+        }
       }
     });
   }
@@ -808,27 +801,26 @@ export class VaadinDevTools extends LitElement {
     this.bodyShadowRoot = document.body.attachShadow({ mode: 'closed' });
     this.bodyShadowRoot.innerHTML = '<slot></slot>';
 
-    this.conf = (window.Vaadin as any).devToolsConf || this.conf;
+    this.conf = (window as any).Vaadin?.devToolsConf || this.conf;
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
-      const now = new Date();
-      const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
-        -2
-      )}:${`0${now.getSeconds()}`.slice(-2)}`;
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
-    this.transitionDuration = parseInt(
-      window.getComputedStyle(this).getPropertyValue('--dev-tools-transition-duration'),
-      10
-    );
+    const savedScroll = window.sessionStorage.getItem('vaadin-hotswap-scroll');
+    if (savedScroll !== null) {
+      window.sessionStorage.removeItem('vaadin-hotswap-scroll');
+      restoreScrollPositions(JSON.parse(savedScroll) as ScrollSnapshot);
+    }
+
+    registerRefreshUIHandler();
 
     const windowAny = window as any;
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    const anyVaadin = window.Vaadin as any;
+    const anyVaadin = (window as any).Vaadin;
     if (anyVaadin.devToolsPlugins) {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
       anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };

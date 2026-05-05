@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -22,8 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
@@ -43,7 +42,13 @@ import com.vaadin.flow.templatemodel.TemplateModelTest.TemplateWithInclude.Model
 import com.vaadin.flow.templatemodel.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
 import com.vaadin.flow.templatemodel.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
 
-public class ModelDescriptorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ModelDescriptorTest {
 
     // All properties in Bean.java
     private static final Collection<String> beanProperties = Collections
@@ -52,7 +57,7 @@ public class ModelDescriptorTest {
                     "doubleObject", "string"));
 
     @Test
-    public void primitiveProperties() {
+    void primitiveProperties() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(BasicTypeModel.class);
 
@@ -69,145 +74,140 @@ public class ModelDescriptorTest {
 
         Set<String> propertyNames = descriptor.getPropertyNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(expectedTypes.keySet(), propertyNames);
+        assertEquals(expectedTypes.keySet(), propertyNames);
 
-        expectedTypes.forEach((propertyName, expectedType) -> Assert.assertSame(
+        expectedTypes.forEach((propertyName, expectedType) -> assertSame(
                 expectedType, descriptor.getPropertyType(propertyName)));
     }
 
     @Test
-    public void missingProperty() {
+    void missingProperty() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(BasicTypeModel.class);
-        Assert.assertFalse(descriptor.hasProperty("foo"));
-    }
-
-    @Test(expected = InvalidTemplateModelException.class)
-    public void unsupported() {
-        ModelDescriptor.get(NotSupportedModel.class);
+        assertFalse(descriptor.hasProperty("foo"));
     }
 
     @Test
-    public void beanProperty() {
+    void unsupported() {
+        assertThrows(InvalidTemplateModelException.class,
+                () -> ModelDescriptor.get(NotSupportedModel.class));
+    }
+
+    @Test
+    void beanProperty() {
         ModelDescriptor<?> descriptor = ModelDescriptor.get(BeanModel.class);
 
-        Assert.assertEquals(1, descriptor.getPropertyNames().count());
+        assertEquals(1, descriptor.getPropertyNames().count());
 
         BeanModelType<?> beanPropertyType = (BeanModelType<?>) descriptor
                 .getPropertyType("bean");
 
-        Assert.assertSame(Bean.class, beanPropertyType.getProxyType());
+        assertSame(Bean.class, beanPropertyType.getProxyType());
     }
 
     @Test
-    public void listInsideList() {
+    void listInsideList() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ListInsideListBeanModel.class);
 
-        Assert.assertEquals(1, descriptor.getPropertyNames().count());
+        assertEquals(1, descriptor.getPropertyNames().count());
 
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
         Type javaType = listPropertyType.getJavaType();
 
-        Assert.assertTrue("Expected instanceof ParameterizedType for List",
-                javaType instanceof ParameterizedType);
+        assertTrue(javaType instanceof ParameterizedType,
+                "Expected instanceof ParameterizedType for List");
 
         javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
 
-        Assert.assertTrue(
-                "Expected instanceof ParameterizedType for List in List",
-                javaType instanceof ParameterizedType);
+        assertTrue(javaType instanceof ParameterizedType,
+                "Expected instanceof ParameterizedType for List in List");
 
-        Assert.assertEquals(Bean.class,
+        assertEquals(Bean.class,
                 ((ParameterizedType) javaType).getActualTypeArguments()[0]);
 
-        Assert.assertTrue(
-                listPropertyType.getItemType() instanceof ListModelType<?>);
+        assertTrue(listPropertyType.getItemType() instanceof ListModelType<?>);
 
         ListModelType<?> type = (ListModelType<?>) listPropertyType
                 .getItemType();
 
-        Assert.assertTrue(type.getItemType() instanceof BeanModelType<?>);
+        assertTrue(type.getItemType() instanceof BeanModelType<?>);
 
         BeanModelType<?> modelType = (BeanModelType<?>) type.getItemType();
 
-        Assert.assertSame(Bean.class, modelType.getProxyType());
+        assertSame(Bean.class, modelType.getProxyType());
     }
 
     @Test
-    public void listInsideListInsideList() {
+    void listInsideListInsideList() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ListInsideListInsideList.class);
 
-        Assert.assertEquals(1, descriptor.getPropertyNames().count());
+        assertEquals(1, descriptor.getPropertyNames().count());
 
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
         Type javaType = listPropertyType.getJavaType();
 
-        Assert.assertTrue("Expected instanceof ParameterizedType for List",
-                javaType instanceof ParameterizedType);
+        assertTrue(javaType instanceof ParameterizedType,
+                "Expected instanceof ParameterizedType for List");
         javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
 
-        Assert.assertTrue(
-                "Expected instanceof ParameterizedType for List in List",
-                javaType instanceof ParameterizedType);
+        assertTrue(javaType instanceof ParameterizedType,
+                "Expected instanceof ParameterizedType for List in List");
         javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
 
-        Assert.assertTrue(
-                "Expected instanceof ParameterizedType for List in List in List",
-                javaType instanceof ParameterizedType);
-        Assert.assertEquals(Bean.class,
+        assertTrue(javaType instanceof ParameterizedType,
+                "Expected instanceof ParameterizedType for List in List in List");
+        assertEquals(Bean.class,
                 ((ParameterizedType) javaType).getActualTypeArguments()[0]);
 
-        Assert.assertTrue(
-                listPropertyType.getItemType() instanceof ListModelType<?>);
+        assertTrue(listPropertyType.getItemType() instanceof ListModelType<?>);
 
         ListModelType<?> type = (ListModelType<?>) listPropertyType
                 .getItemType();
 
-        Assert.assertTrue(type.getItemType() instanceof ListModelType<?>);
+        assertTrue(type.getItemType() instanceof ListModelType<?>);
 
         type = (ListModelType<?>) type.getItemType();
 
-        Assert.assertTrue(type.getItemType() instanceof BeanModelType<?>);
+        assertTrue(type.getItemType() instanceof BeanModelType<?>);
 
         BeanModelType<?> modelType = (BeanModelType<?>) type.getItemType();
 
-        Assert.assertSame(Bean.class, modelType.getProxyType());
+        assertSame(Bean.class, modelType.getProxyType());
     }
 
     @Test
-    public void listProperty() {
+    void listProperty() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ListBeanModel.class);
 
-        Assert.assertEquals(1, descriptor.getPropertyNames().count());
+        assertEquals(1, descriptor.getPropertyNames().count());
 
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
-        Assert.assertTrue(
-                listPropertyType.getItemType() instanceof BeanModelType<?>);
+        assertTrue(listPropertyType.getItemType() instanceof BeanModelType<?>);
 
         BeanModelType<?> modelType = (BeanModelType<?>) listPropertyType
                 .getItemType();
 
-        Assert.assertSame(Bean.class, modelType.getProxyType());
+        assertSame(Bean.class, modelType.getProxyType());
     }
 
     @Test
-    public void subBeans() {
+    void subBeans() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(SubBeansModel.class);
 
         // Check that we discovered properties from an interface "bean"
         BeanModelType<?> beanType = (BeanModelType<?>) descriptor
                 .getPropertyType("bean");
-        Assert.assertEquals(
+        assertEquals(
                 Stream.of("beanClass", "value", "bean")
                         .collect(Collectors.toSet()),
                 beanType.getPropertyNames().collect(Collectors.toSet()));
@@ -215,12 +215,12 @@ public class ModelDescriptorTest {
         // Check that we discovered properties both from SubBean and SuperBean
         BeanModelType<?> subBeanType = (BeanModelType<?>) descriptor
                 .getPropertyType("beanClass");
-        Assert.assertTrue(subBeanType.hasProperty("visible"));
-        Assert.assertTrue(subBeanType.hasProperty("subBean"));
+        assertTrue(subBeanType.hasProperty("visible"));
+        assertTrue(subBeanType.hasProperty("subBean"));
     }
 
     @Test
-    public void exclude() {
+    void exclude() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithExclude.class);
 
@@ -231,12 +231,12 @@ public class ModelDescriptorTest {
         expectedProperties.remove("doubleValue");
         expectedProperties.remove("booleanObject");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void include() {
+    void include() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithInclude.class);
 
@@ -246,12 +246,12 @@ public class ModelDescriptorTest {
         Set<String> expectedProperties = new HashSet<>(
                 Arrays.asList("doubleValue", "booleanObject"));
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void excludeAndInclude() {
+    void excludeAndInclude() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithExcludeAndInclude.class);
 
@@ -260,12 +260,12 @@ public class ModelDescriptorTest {
 
         Set<String> expectedProperties = Collections.singleton("booleanObject");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void excludeAndIncludeSubclass() {
+    void excludeAndIncludeSubclass() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithExcludeAndIncludeSubclass.class);
 
@@ -274,12 +274,12 @@ public class ModelDescriptorTest {
 
         Set<String> expectedProperties = Collections.singleton("doubleValue");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void excludeForSubBean() {
+    void excludeForSubBean() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithExcludeForSubBean.class);
 
@@ -289,17 +289,17 @@ public class ModelDescriptorTest {
         BeanModelType<?> beanType = (BeanModelType<?>) containerType
                 .getPropertyType("bean1");
 
-        Assert.assertFalse(containerType.hasProperty("bean2"));
+        assertFalse(containerType.hasProperty("bean2"));
 
         Set<String> expectedProperties = new HashSet<>(beanProperties);
         expectedProperties.remove("booleanObject");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void includeForSubBean() {
+    void includeForSubBean() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithIncludeForSubBean.class);
 
@@ -309,80 +309,80 @@ public class ModelDescriptorTest {
         BeanModelType<?> beanType = (BeanModelType<?>) containerType
                 .getPropertyType("bean1");
 
-        Assert.assertFalse(containerType.hasProperty("bean2"));
+        assertFalse(containerType.hasProperty("bean2"));
 
         Set<String> expectedProperties = Collections.singleton("booleanObject");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void excludeOnList() {
+    void excludeOnList() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithExcludeOnList.class);
 
         ListModelType<?> beansType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
-        Assert.assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
+        assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
 
         BeanModelType<?> beanType = (BeanModelType<?>) beansType.getItemType();
 
         Set<String> expectedProperties = new HashSet<>(beanProperties);
         expectedProperties.remove("intValue");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void includeOnList() {
+    void includeOnList() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ModelWithIncludeOnList.class);
 
         ListModelType<?> beansType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
-        Assert.assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
+        assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
         BeanModelType<?> beanType = (BeanModelType<?>) beansType.getItemType();
 
         Set<String> expectedProperties = Collections.singleton("intValue");
 
-        Assert.assertEquals(expectedProperties,
+        assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
     }
 
     @Test
-    public void basicComplexModelType_intAndInteger() {
+    void basicComplexModelType_intAndInteger() {
         assertComplexModeType(int.class, 1, 2);
         assertComplexModeType(Integer.class, 3, 4);
     }
 
     @Test
-    public void basicComplexModelType_intAndInteger_numberFromClient() {
+    void basicComplexModelType_intAndInteger_numberFromClient() {
         ComplexModelType<?> type = BasicComplexModelType.get(Integer.class)
                 .get();
 
         StateNode stateNode = type.applicationToModel(2.0d, null);
         Object applicationValue = type.modelToApplication(stateNode);
 
-        Assert.assertEquals(Integer.valueOf(2), applicationValue);
+        assertEquals(Integer.valueOf(2), applicationValue);
     }
 
     @Test
-    public void basicComplexModelType_booleabAndBoolean() {
+    void basicComplexModelType_booleabAndBoolean() {
         assertComplexModeType(boolean.class, true, false);
         assertComplexModeType(Boolean.class, false, true);
     }
 
     @Test
-    public void basicComplexModelType_doubleAndDouble() {
+    void basicComplexModelType_doubleAndDouble() {
         assertComplexModeType(double.class, 1.2, 2.3);
         assertComplexModeType(Double.class, 3.4, 4.5);
     }
 
     @Test
-    public void basicComplexModelType_String() {
+    void basicComplexModelType_String() {
         assertComplexModeType(String.class, "foo", "bar");
     }
 
@@ -391,12 +391,12 @@ public class ModelDescriptorTest {
         Optional<ComplexModelType<?>> type = BasicComplexModelType.get(clazz);
         StateNode stateNode = type.get().applicationToModel(wrappedValue, null);
 
-        Assert.assertEquals(wrappedValue,
+        assertEquals(wrappedValue,
                 stateNode.getFeature(BasicTypeValue.class).getValue());
 
         stateNode.getFeature(BasicTypeValue.class).setValue(value);
         Object modelValue = type.get().modelToApplication(stateNode);
-        Assert.assertEquals(value, modelValue);
+        assertEquals(value, modelValue);
 
     }
 

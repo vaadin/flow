@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,9 +46,11 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -245,6 +247,13 @@ public class UidlWriter implements Serializable {
             dependencyJson.put(Dependency.KEY_CONTENTS,
                     getDependencyContents(dependency.getUrl(), context));
             dependencyJson.remove(Dependency.KEY_URL);
+        } else if (dependency.getType() == Dependency.Type.STYLESHEET && context
+                .getService().getDeploymentConfiguration().isProductionMode()) {
+            String hash = ResourceContentHash
+                    .getContentHash(context.getService(), dependency.getUrl());
+            dependencyJson.put(Dependency.KEY_URL,
+                    UrlUtil.appendQueryParameter(dependency.getUrl(),
+                            ApplicationConstants.CONTENT_HASH_PARAMETER, hash));
         }
         return dependencyJson;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -54,14 +53,11 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
         assertDownloadedContent("plus-link", "file%2B.jpg");
     }
 
-    // Ignored due to
-    // https://github.com/jetty/jetty.project/issues/9444#issuecomment-1677068428
     @Test
-    @Ignore
     public void getDynamicVaadinPercentResource() throws IOException {
         open();
 
-        assertDownloadedContent("percent-link", "file%25.jpg");
+        assertDownloadedContent("percent-link", "file_.jpg");
     }
 
     @Test

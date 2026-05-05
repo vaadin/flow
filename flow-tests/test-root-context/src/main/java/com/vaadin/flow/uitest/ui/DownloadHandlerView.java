@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -130,10 +130,27 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 
+        DownloadHandler percentDownloadHandler = new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                event.getWriter().print("foo");
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return "file%.jpg";
+            }
+        };
+
+        Anchor percentDownload = new Anchor("", "Percent DownloadHandler");
+        percentDownload.setHref(percentDownloadHandler);
+        percentDownload.setId("download-handler-percent");
+
         add(handlerDownload, fileDownload, fileDownloadUnicodeName,
                 fileDownloadUnicodeNameWithQuote, classDownload,
                 servletDownload, inputStreamDownload, inputStreamErrorDownload,
-                inputStreamExceptionDownload, inputStreamCallbackError);
+                inputStreamExceptionDownload, inputStreamCallbackError,
+                percentDownload);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {

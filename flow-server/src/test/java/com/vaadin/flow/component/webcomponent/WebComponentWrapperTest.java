@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,9 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -37,10 +36,13 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebComponentWrapperTest {
+class WebComponentWrapperTest {
 
     private static final String MSG_PROPERTY = "message";
     private static final String INT_PROPERTY = "integer-value";
@@ -52,8 +54,8 @@ public class WebComponentWrapperTest {
     private WebComponentExporter<MyComponent> exporter;
     private WebComponentWrapper wrapper;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         element = new Element("tag");
         exporter = new MyComponentExporter();
 
@@ -67,44 +69,43 @@ public class WebComponentWrapperTest {
     }
 
     @Test
-    public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
+    void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("MyMessage"));
 
-        Assert.assertEquals("Message field should have updated with new value",
-                "MyMessage", component.message);
+        assertEquals("MyMessage", component.message,
+                "Message field should have updated with new value");
 
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(10));
 
-        Assert.assertEquals(
-                "IntegerValue field should contain a matching integer value",
-                10, component.integerValue);
+        assertEquals(10, component.integerValue,
+                "IntegerValue field should contain a matching integer value");
     }
 
     @Test
-    public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
+    void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("one"));
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(2));
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("three"));
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        assertEquals(3, component.oldMessages.size(),
+                "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        assertEquals(3, component.oldIntegers.size(),
+                "Three integer messages should have come through");
 
-        Assert.assertEquals("String messages arrived in correct order",
-                Arrays.asList("", "one", "three"), component.oldMessages);
+        assertEquals(Arrays.asList("", "one", "three"), component.oldMessages,
+                "String messages arrived in correct order");
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+                "Integer messages arrived in correct order");
 
     }
 
     @Test
-    public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
+    void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
         WebComponentBinding<MyExtension> binding = constructWrapperAndGetBinding(
                 new MyExtensionExporter(), null, null);
 
@@ -116,23 +117,24 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        assertEquals(3, component.oldMessages.size(),
+                "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        assertEquals(3, component.oldIntegers.size(),
+                "Three integer messages should have come through");
 
-        Assert.assertEquals("String messages arrived in correct order",
+        assertEquals(
                 Arrays.asList("Extended ", "Extended one", "Extended three"),
-                component.oldMessages);
+                component.oldMessages,
+                "String messages arrived in correct order");
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+                "Integer messages arrived in correct order");
     }
 
     @Test
-    public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
+    void extendedExporter_propertiesAreOverwrittenAndAvailable() {
         WebComponentBinding<MyComponent> binding = constructWrapperAndGetBinding(
                 new ExtendedExporter(), null, null);
 
@@ -145,26 +147,26 @@ public class WebComponentWrapperTest {
         wrapper.sync(BOOLEAN_PROPERTY, JacksonUtils.writeValue(true));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        assertEquals(3, component.oldMessages.size(),
+                "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        assertEquals(3, component.oldIntegers.size(),
+                "Three integer messages should have come through");
 
-        Assert.assertEquals("String messages arrived in correct order",
-                Arrays.asList("Default", "one", "three"),
-                component.oldMessages);
+        assertEquals(Arrays.asList("Default", "one", "three"),
+                component.oldMessages,
+                "String messages arrived in correct order");
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+                "Integer messages arrived in correct order");
 
-        Assert.assertTrue("Boolean property should have been set to true",
-                component.booleanValue);
+        assertTrue(component.booleanValue,
+                "Boolean property should have been set to true");
     }
 
     @Test
-    public void disconnectReconnect_componentIsNotCleaned() {
+    void disconnectReconnect_componentIsNotCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
@@ -174,19 +176,19 @@ public class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertTrue("Wrapper should still be connected on the server",
-                wrapper.getParent().isPresent());
+        assertTrue(wrapper.getParent().isPresent(),
+                "Wrapper should still be connected on the server");
 
         wrapper.reconnect();
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assert.assertTrue("Wrapper should stay connected on the server",
-                wrapper.getParent().isPresent());
+        assertTrue(wrapper.getParent().isPresent(),
+                "Wrapper should stay connected on the server");
     }
 
     @Test
-    public void disconnectOnClient_componentIsCleaned() {
+    void disconnectOnClient_componentIsCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
@@ -196,14 +198,13 @@ public class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertTrue("Wrapper should still be connected on the server",
-                wrapper.getParent().isPresent());
+        assertTrue(wrapper.getParent().isPresent(),
+                "Wrapper should still be connected on the server");
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assert.assertFalse(
-                "Wrapper should have been disconnected also on the server",
-                wrapper.getParent().isPresent());
+        assertFalse(wrapper.getParent().isPresent(),
+                "Wrapper should have been disconnected also on the server");
     }
 
     /**

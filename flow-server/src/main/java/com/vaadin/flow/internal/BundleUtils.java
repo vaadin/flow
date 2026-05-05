@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,18 +96,23 @@ public final class BundleUtils {
             return cached;
         }
 
-        InputStream stats = BundleUtils.class.getClassLoader()
-                .getResourceAsStream("META-INF/VAADIN/config/stats.json");
-        if (stats == null) {
-            cached = JacksonUtils.createObjectNode();
-        } else {
-            try {
-                cached = JacksonUtils.readTree(StringUtil.toUTF8String(stats));
-            } catch (IOException e) {
-                getLogger().warn(
-                        "Unable to parse META-INF/VAADIN/config/stats.json", e);
+        try (InputStream stats = BundleUtils.class.getClassLoader()
+                .getResourceAsStream("META-INF/VAADIN/config/stats.json")) {
+            if (stats == null) {
                 cached = JacksonUtils.createObjectNode();
+            } else {
+                try {
+                    cached = JacksonUtils
+                            .readTree(StringUtil.toUTF8String(stats));
+                } catch (IOException e) {
+                    getLogger().warn(
+                            "Unable to parse META-INF/VAADIN/config/stats.json",
+                            e);
+                    cached = JacksonUtils.createObjectNode();
+                }
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
         cachedStatsJson = cached;

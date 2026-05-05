@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -30,18 +28,19 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateWebComponentBootstrapTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateWebComponentBootstrapTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendDirectory;
     private File generatedImports;
     private TaskGenerateWebComponentBootstrap taskGenerateWebComponentBootstrap;
 
-    @Before
-    public void setup() throws Exception {
-        frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
+    @BeforeEach
+    void setup() throws Exception {
+        frontendDirectory = new File(temporaryFolder, DEFAULT_FRONTEND_DIR);
         generatedImports = FrontendUtils
                 .getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
@@ -58,29 +57,28 @@ public class TaskGenerateWebComponentBootstrapTest {
     }
 
     @Test
-    public void should_importGeneratedImports()
-            throws ExecutionFailedException {
+    void should_importGeneratedImports() throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import 'Frontend/generated/flow/"
+        assertTrue(content.contains("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
     }
 
     @Test
-    public void should_importAndInitializeFlowClient()
+    void should_importAndInitializeFlowClient()
             throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
+        assertTrue(content.contains(
                 "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                         + "FlowClient.js';\n" + "init()"));
     }
 
     @Test
-    public void should_importFeatureFlagTS() throws ExecutionFailedException {
+    void should_importFeatureFlagTS() throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
+        assertTrue(content.contains(
                 String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
     }
 

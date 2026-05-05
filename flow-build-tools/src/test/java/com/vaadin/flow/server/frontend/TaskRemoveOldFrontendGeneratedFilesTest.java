@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,29 +25,31 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.file.AccumulatorPathVisitor;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.tests.util.MockOptions;
 
-public class TaskRemoveOldFrontendGeneratedFilesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskRemoveOldFrontendGeneratedFilesTest {
+
+    @TempDir
+    File temporaryFolder;
     private File generatedFolder;
     private Options options;
 
-    @Before
-    public void setUp() throws Exception {
-        options = new MockOptions(temporaryFolder.getRoot());
+    @BeforeEach
+    void setUp() throws Exception {
+        options = new MockOptions(temporaryFolder);
         generatedFolder = options.getFrontendGeneratedFolder();
     }
 
     @Test
-    public void execute_shouldDeleteNotGenerateFrontedFiles() throws Exception {
+    void execute_shouldDeleteNotGenerateFrontedFiles() throws Exception {
         TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
                 options);
 
@@ -79,8 +81,7 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_existingFiles_nothingTracked_deleteAll()
-            throws Exception {
+    void execute_existingFiles_nothingTracked_deleteAll() throws Exception {
         for (File file : Set.of(new File(generatedFolder, "test.txt"),
                 generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt"))
                         .toFile(),
@@ -96,12 +97,12 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
                 options);
         task.setGeneratedFileSupport(new GeneratedFilesSupport());
         task.execute();
-        Assert.assertFalse("Generated folder has not been deleted",
-                generatedFolder.exists());
+        assertFalse(generatedFolder.exists(),
+                "Generated folder has not been deleted");
     }
 
     @Test
-    public void execute_frontendGeneratedFolderNotExistsAtTaskCreation_nothingIsDeleted()
+    void execute_frontendGeneratedFolderNotExistsAtTaskCreation_nothingIsDeleted()
             throws Exception {
         Files.deleteIfExists(generatedFolder.toPath());
         TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
@@ -126,7 +127,7 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_missingGeneratedFileSupport_nothingIsDeleted()
+    void execute_missingGeneratedFileSupport_nothingIsDeleted()
             throws Exception {
 
         Set<File> files = Set.of(new File(generatedFolder, "test.txt"),
@@ -149,27 +150,52 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_knownFiles_notDeleted() throws Exception {
+    void execute_knownFiles_notDeleted() throws Exception {
+        Path hillaGeneratedFilesIndex = generatedFolder.toPath()
+                .resolve("generated-file-list.txt");
+
         Set<File> knownFiles = Set.of(generatedFolder.toPath()
-                .resolve(Path.of("flow", "generated-flow-imports.js")).toFile(),
+                .resolve(Path.of("flow", FrontendUtils.IMPORTS_NAME)).toFile(),
                 generatedFolder.toPath()
-                        .resolve(Path.of("flow", "generated-flow-imports.d.ts"))
+                        .resolve(Path.of("flow",
+                                FrontendUtils.IMPORTS_D_TS_NAME))
                         .toFile(),
                 generatedFolder.toPath()
                         .resolve(Path.of("flow",
-                                "generated-flow-webcomponent-imports.js"))
+                                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME))
                         .toFile(),
-                new File(generatedFolder, "routes.tsx"),
-                new File(generatedFolder, "routes.ts"),
+                new File(generatedFolder, FrontendUtils.ROUTES_TSX),
+                new File(generatedFolder, FrontendUtils.ROUTES_TS),
                 generatedFolder.toPath().resolve(Path.of("flow", "Flow.tsx"))
                         .toFile(),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_DEV_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_INDEX),
+                new File(generatedFolder,
+                        FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME),
+                new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_NAME),
                 new File(generatedFolder, "file-routes.ts"),
+                new File(generatedFolder, "file-routes.json"),
                 new File(generatedFolder, "css.generated.js"),
-                new File(generatedFolder, "css.generated.d.ts"));
+                new File(generatedFolder, "css.generated.d.ts"),
+                hillaGeneratedFilesIndex.toFile(),
+                new File(generatedFolder, "hilla-1.js"),
+                new File(generatedFolder, "hilla-2.js"),
+                generatedFolder.toPath().resolve(Path.of("sub", "hilla-3.js"))
+                        .toFile());
+
         for (File file : knownFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
+        Files.writeString(hillaGeneratedFilesIndex, """
+                hilla-1.js
+                hilla-2.js
+                sub/hilla-3.js
+                """);
 
         TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
                 options);
@@ -180,8 +206,7 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_entriesInGeneratedFileList_notDeleted()
-            throws Exception {
+    void execute_entriesInGeneratedFileList_notDeleted() throws Exception {
         Set<File> generatedFiles = new HashSet<>(
                 Set.of(new File(generatedFolder, "test.txt"),
                         generatedFolder.toPath()
@@ -215,13 +240,13 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
             throws IOException {
         AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
         Files.walkFileTree(generatedFolder.toPath(), visitor);
-        Assert.assertEquals(
-                "Expect exactly currently generated files to exists",
+        assertEquals(
                 Stream.of(expectedFiles).map(
                         f -> generatedFolder.toPath().relativize(f.toPath()))
                         .collect(Collectors.toSet()),
                 Set.copyOf(visitor.relativizeFiles(generatedFolder.toPath(),
-                        false, null)));
+                        false, null)),
+                "Expect exactly currently generated files to exists");
     }
 
 }

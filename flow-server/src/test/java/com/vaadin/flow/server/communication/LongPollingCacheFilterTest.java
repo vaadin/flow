@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,13 +29,17 @@ import org.atmosphere.cpr.Broadcaster;
 import org.atmosphere.cpr.BroadcasterCache;
 import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-public class LongPollingCacheFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class LongPollingCacheFilterTest {
 
     static final String RESOURCE_UUID = "resourceUUID";
     LongPollingCacheFilter filter = new LongPollingCacheFilter();
@@ -49,20 +53,20 @@ public class LongPollingCacheFilterTest {
     private AtmosphereResourceSessionFactory sessionFactory;
 
     @Test
-    public void filter_notPushMessage_continueWithCurrentMessage() {
+    void filter_notPushMessage_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(5);
         simulatePushConnection();
         BroadcastAction action = filter.filter("broadcasterId", resource,
                 nonPushMessage, message);
-        Assert.assertEquals(ACTION.CONTINUE, action.action());
-        Assert.assertSame("Message should not be altered by filter", message,
-                action.message());
+        assertEquals(ACTION.CONTINUE, action.action());
+        assertSame(message, action.message(),
+                "Message should not be altered by filter");
         verifyMessageIsNotCached();
     }
 
     @Test
-    public void filter_notLongPollingTransport_continueWithCurrentMessage() {
+    void filter_notLongPollingTransport_continueWithCurrentMessage() {
         setSeenServerSyncIdHeader(5);
         simulatePushConnection();
         Stream.of(AtmosphereResource.TRANSPORT.values())
@@ -71,43 +75,40 @@ public class LongPollingCacheFilterTest {
                     setTransport(transport);
                     BroadcastAction action = filter.filter("broadcasterId",
                             resource, originalMessage, message);
-                    Assert.assertEquals(ACTION.CONTINUE, action.action());
-                    Assert.assertSame(
+                    assertEquals(ACTION.CONTINUE, action.action());
+                    assertSame(message, action.message(),
                             "Message should not be altered by filter when transport is "
-                                    + transport,
-                            message, action.message());
+                                    + transport);
                 });
         verifyMessageIsNotCached();
     }
 
     @Test
-    public void filter_syncIdCheckDisabled_continueWithCurrentMessage() {
+    void filter_syncIdCheckDisabled_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(-1);
         BroadcastAction action = filter.filter("broadcasterId", resource,
                 originalMessage, message);
-        Assert.assertEquals(ACTION.CONTINUE, action.action());
-        Assert.assertSame(
-                "Message should not be altered by filter if syncId check is disabled",
-                message, action.message());
+        assertEquals(ACTION.CONTINUE, action.action());
+        assertSame(message, action.message(),
+                "Message should not be altered by filter if syncId check is disabled");
         verifyMessageIsNotCached();
     }
 
     @Test
-    public void filter_missingLastSeenServerSyncId_continueWithCurrentMessage() {
+    void filter_missingLastSeenServerSyncId_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         simulatePushConnection();
         BroadcastAction action = filter.filter("broadcasterId", resource,
                 originalMessage, message);
-        Assert.assertEquals(ACTION.CONTINUE, action.action());
-        Assert.assertSame(
-                "Message should not be altered by filter if server sync id header is missing",
-                message, action.message());
+        assertEquals(ACTION.CONTINUE, action.action());
+        assertSame(message, action.message(),
+                "Message should not be altered by filter if server sync id header is missing");
         verifyMessageIsNotCached();
     }
 
     @Test
-    public void filter_messageAlreadySeen_abort() {
+    void filter_messageAlreadySeen_abort() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(5, 6);
         simulatePushConnection();
@@ -115,44 +116,41 @@ public class LongPollingCacheFilterTest {
         // seen server sync id == push message server sync id
         BroadcastAction action = filter.filter("broadcasterId", resource,
                 originalMessage, message);
-        Assert.assertEquals("Expecting message seen on client to be skipped",
-                ACTION.ABORT, action.action());
-        Assert.assertSame(
-                "Message should not be altered by filter when aborting",
-                message, action.message());
+        assertEquals(ACTION.ABORT, action.action(),
+                "Expecting message seen on client to be skipped");
+        assertSame(message, action.message(),
+                "Message should not be altered by filter when aborting");
 
         // seen server sync id > push message server sync id
         simulatePushConnection();
         action = filter.filter("broadcasterId", resource, originalMessage,
                 message);
-        Assert.assertEquals("Expecting message seen on client to be skipped",
-                ACTION.ABORT, action.action());
-        Assert.assertSame(
-                "Message should not be altered by filter when aborting",
-                message, action.message());
+        assertEquals(ACTION.ABORT, action.action(),
+                "Expecting message seen on client to be skipped");
+        assertSame(message, action.message(),
+                "Message should not be altered by filter when aborting");
         verifyMessageIsNotCached();
     }
 
     @Test
-    public void filter_messageNotYetSeen_addToCacheAndContinue() {
+    void filter_messageNotYetSeen_addToCacheAndContinue() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(2);
         simulatePushConnection();
         String broadcasterId = "broadcasterId";
         BroadcastAction action = filter.filter(broadcasterId, resource,
                 originalMessage, message);
-        Assert.assertEquals("Expecting message not seen on client to be sent",
-                ACTION.CONTINUE, action.action());
-        Assert.assertSame(
-                "Message should not be altered by filter when continuing",
-                message, action.message());
+        assertEquals(ACTION.CONTINUE, action.action(),
+                "Expecting message not seen on client to be sent");
+        assertSame(message, action.message(),
+                "Message should not be altered by filter when continuing");
         Mockito.verify(cache).addToCache(ArgumentMatchers.eq(broadcasterId),
                 ArgumentMatchers.eq(RESOURCE_UUID),
                 ArgumentMatchers.argThat(m -> m.message() == originalMessage));
     }
 
     @Test
-    public void onConnect_longPollingAndSeenServerSyncIdHeaderSent_sessionAttributeStored() {
+    void onConnect_longPollingAndSeenServerSyncIdHeaderSent_sessionAttributeStored() {
         int syncId = 5;
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(syncId);
@@ -160,26 +158,24 @@ public class LongPollingCacheFilterTest {
 
         AtmosphereResourceSession session = sessionFactory.getSession(resource,
                 false);
-        Assert.assertNotNull(
-                "Expecting AtmosphereResourceSession to exist, but was not created",
-                session);
-        Assert.assertEquals(session.getAttribute(
+        assertNotNull(session,
+                "Expecting AtmosphereResourceSession to exist, but was not created");
+        assertEquals(session.getAttribute(
                 LongPollingCacheFilter.SEEN_SERVER_SYNC_ID), syncId);
     }
 
     @Test
-    public void onConnect_seenServerSyncIdHeaderMissing_sessionAttributeNotSet() {
+    void onConnect_seenServerSyncIdHeaderMissing_sessionAttributeNotSet() {
         simulatePushConnection();
 
         AtmosphereResourceSession session = sessionFactory.getSession(resource,
                 false);
-        Assert.assertNull(
-                "AtmosphereResourceSession exist, but was server sync id was not sent",
-                session);
+        assertNull(session,
+                "AtmosphereResourceSession exist, but was server sync id was not sent");
     }
 
     @Test
-    public void onConnect_notLongPollingTransport_sessionAttributeNotSet() {
+    void onConnect_notLongPollingTransport_sessionAttributeNotSet() {
         setSeenServerSyncIdHeader(5);
         AtmosphereResourceSession session = sessionFactory.getSession(resource,
                 false);
@@ -189,15 +185,14 @@ public class LongPollingCacheFilterTest {
                 .forEach(transport -> {
                     setTransport(transport);
                     simulatePushConnection();
-                    Assert.assertNull(
-                            "AtmosphereResourceSession exist, but transport is not LONG POLLING",
-                            session);
+                    assertNull(session,
+                            "AtmosphereResourceSession exist, but transport is not LONG POLLING");
                 });
 
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);

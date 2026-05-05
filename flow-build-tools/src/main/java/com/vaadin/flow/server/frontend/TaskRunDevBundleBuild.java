@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -208,11 +208,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             int errorCode = process.waitFor();
 
             if (errorCode != 0) {
-                logger.error("Command `{}` failed:\n{}", commandString,
-                        toolOutput);
-                throw new ExecutionFailedException(
+                ExecutionFailedException exception = new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
-                                + " build exited with a non zero status");
+                                + " build exited with a non zero status:\n"
+                                + toolOutput);
+                logger.error("Command `{}` failed", commandString, exception);
+                throw exception;
             } else {
                 logger.info("Development frontend bundle built");
             }

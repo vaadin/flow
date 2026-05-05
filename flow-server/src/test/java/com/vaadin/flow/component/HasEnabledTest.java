@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HasEnabledTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HasEnabledTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component
@@ -27,22 +29,22 @@ public class HasEnabledTest {
     }
 
     @Test
-    public void enabledComponent_isEnabledReturnsTrue() {
+    void enabledComponent_isEnabledReturnsTrue() {
         TestComponent component = new TestComponent();
 
-        Assert.assertTrue(component.isEnabled());
+        assertTrue(component.isEnabled());
     }
 
     @Test
-    public void explicitlyDisabledComponent_isEnabledReturnsFalse() {
+    void explicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 
-        Assert.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
     @Test
-    public void implicitlyDisabledComponent_isEnabledReturnsFalse() {
+    void implicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
 
         TestComponent parent = new TestComponent();
@@ -50,11 +52,11 @@ public class HasEnabledTest {
 
         parent.add(component);
 
-        Assert.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
     @Test
-    public void implicitlyDisabledComponent_detach_componentBecomesEnabled() {
+    void implicitlyDisabledComponent_detach_componentBecomesEnabled() {
         TestComponent component = new TestComponent();
 
         TestComponent parent = new TestComponent();
@@ -64,11 +66,11 @@ public class HasEnabledTest {
 
         parent.remove(component);
 
-        Assert.assertTrue(component.isEnabled());
+        assertTrue(component.isEnabled());
     }
 
     @Test
-    public void explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
+    void explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 
@@ -77,11 +79,11 @@ public class HasEnabledTest {
 
         parent.setEnabled(false);
 
-        Assert.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
 
         parent.setEnabled(true);
 
-        Assert.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
 }

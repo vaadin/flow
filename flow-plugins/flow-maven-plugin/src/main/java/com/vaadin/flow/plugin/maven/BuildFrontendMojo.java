@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.apache.maven.artifact.Artifact;
@@ -151,10 +150,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        if (!BuildFrontendUtil.getTokenFile(this).exists()) {
+        File tokenFile = BuildFrontendUtil.getTokenFile(this);
+        if (!tokenFile.exists()) {
             // if not prepare-frontend token file exists propagate build info
             // to token file
-            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+            tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
         }
 
         Options options = new Options(null, getClassFinder(), npmFolder())
@@ -189,8 +189,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 if (cleanFrontendFiles()) {
                     cleanTask.execute();
                 }
-            } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
+            } catch (URISyntaxException | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
@@ -211,6 +210,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired,
                 commercialBannerRequired);
+
+        // Schedule the token file for deletion when the JVM exits so
+        // that running the application from an IDE after a production
+        // build does not pick up a stale productionMode=true token.
+        // Maven goals always re-execute so this does not affect
+        // subsequent builds.
+        if (tokenFile.exists()) {
+            tokenFile.deleteOnExit();
+        }
+
+        project.getProperties().setProperty(
+                FlowLifecycleParticipant.TOKEN_FILE_PATH_PROPERTY,
+                tokenFile.getAbsolutePath());
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");

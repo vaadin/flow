@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -100,7 +100,7 @@ public class SpringInstantiator extends DefaultInstantiator {
         } catch (NoSuchBeanDefinitionException ignored) {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
+                        .debug("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
                                 + "Cannot use Spring beans for I18N, falling back to the default behavior",
                                 I18NProvider.class.getSimpleName(),
                                 context.getBeanNamesForType(
@@ -117,7 +117,7 @@ public class SpringInstantiator extends DefaultInstantiator {
         } catch (NoSuchBeanDefinitionException ignored) {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
+                        .debug("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
                                 + "Cannot use Spring beans for Menu Access Control, falling back to the default behavior",
                                 MenuAccessControl.class.getSimpleName(),
                                 context.getBeanNamesForType(

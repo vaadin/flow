@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,14 +21,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ShortcutSerializationTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class ShortcutSerializationTest {
 
     @Test
-    public void addShortcutForLifecycleOwner_serializationWorks()
-            throws Exception {
+    void addShortcutForLifecycleOwner_serializationWorks() throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();
         Component[] components = new Component[] { ui };
@@ -37,11 +37,11 @@ public class ShortcutSerializationTest {
         }, Key.KEY_A);
 
         UI ui2 = (UI) deserialize(serialize(ui));
-        Assert.assertNotNull(ui2);
+        assertNotNull(ui2);
     }
 
     @Test
-    public void addAndRemoverShortcutForLifecycleOwner_serializationWorks()
+    void addAndRemoverShortcutForLifecycleOwner_serializationWorks()
             throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();
@@ -52,7 +52,7 @@ public class ShortcutSerializationTest {
         ui.remove(owner);
 
         UI ui2 = (UI) deserialize(serialize(ui));
-        Assert.assertNotNull(ui2);
+        assertNotNull(ui2);
     }
 
     private byte[] serialize(Object object) throws IOException {

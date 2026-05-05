@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,18 +21,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -60,21 +60,23 @@ import com.vaadin.tests.util.TestUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-public class WebComponentBootstrapHandlerViteTest {
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+class WebComponentBootstrapHandlerViteTest {
+    @TempDir
+    Path temporaryFolder;
     private File projectRootFolder;
 
     private DeploymentConfiguration deploymentConfiguration;
 
-    @Before
-    public void init() throws IOException {
-        projectRootFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void init() throws IOException {
+        projectRootFolder = Files.createTempDirectory(temporaryFolder, "temp")
+                .toFile();
         TestUtil.createWebComponentHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration = Mockito.mock();
@@ -97,7 +99,7 @@ public class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_skipMetaAndStyleHeaderElements()
+    void writeBootstrapPage_skipMetaAndStyleHeaderElements()
             throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
@@ -131,7 +133,7 @@ public class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+    void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
             throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
@@ -151,26 +153,27 @@ public class WebComponentBootstrapHandlerViteTest {
                 CoreMatchers.containsString("foo'bar%20%27?baz%22"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+    @Test
+    void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
             throws IOException {
-        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+        assertThrows(IllegalStateException.class, () -> {
+            WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        Element head = new Document("").head();
+            Element head = new Document("").head();
 
-        Element script = head.ownerDocument().createElement("script");
-        head.appendChild(script);
-        script.attr("src", "foo\"");
+            Element script = head.ownerDocument().createElement("script");
+            head.appendChild(script);
+            script.attr("src", "foo\"");
 
-        VaadinResponse response = getMockResponse(stream);
-        handler.writeBootstrapPage("", response, head, "");
+            VaadinResponse response = getMockResponse(stream);
+            handler.writeBootstrapPage("", response, head, "");
+        });
     }
 
     @Test
-    public void writeBootstrapPage_noPWA()
-            throws IOException, ServiceException {
+    void writeBootstrapPage_noPWA() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -228,7 +231,7 @@ public class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_devToolsDisabled()
+    void writeBootstrapPage_devToolsDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -258,13 +261,13 @@ public class WebComponentBootstrapHandlerViteTest {
         String result = stream.toString(StandardCharsets.UTF_8.name());
 
         int scriptIndex = result.indexOf("var hasScript = function(src)");
-        Assert.assertTrue(scriptIndex >= 0);
+        assertTrue(scriptIndex >= 0);
 
-        Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\" : false"));
+        assertTrue(result.contains("\\\"devToolsEnabled\\\" : false"));
     }
 
     @Test
-    public void writeBootstrapPage_spepe() throws Exception {
+    void writeBootstrapPage_spepe() throws Exception {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -278,24 +281,24 @@ public class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
+    void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         VaadinRequest request = mockRequest(false);
-        Assert.assertFalse(handler.canHandleRequest(request));
+        assertFalse(handler.canHandleRequest(request));
     }
 
     @Test
-    public void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
+    void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         VaadinRequest request = mockRequest(true);
-        Assert.assertTrue(handler.canHandleRequest(request));
+        assertTrue(handler.canHandleRequest(request));
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void writeBootstrapPage_withExportChunk()
+    void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -322,15 +325,14 @@ public class WebComponentBootstrapHandlerViteTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
-        Assert.assertFalse(
+        assertTrue(result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
+        assertFalse(
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void writeBootstrapPage_noExportChunk()
+    void writeBootstrapPage_noExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -360,12 +362,11 @@ public class WebComponentBootstrapHandlerViteTest {
 
         // no "export" chunk, expect "bundle" in result instead
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+        assertTrue(result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
     @Test
-    public void usageStatistics() throws IOException {
+    void usageStatistics() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
         VaadinSession session = new MockVaadinSession(service);
@@ -387,7 +388,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         handler.synchronizedHandleRequest(session, request, response);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+        assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
                 .getName().equals(Constants.STATISTICS_EXPORTED_WC)));
     }
 

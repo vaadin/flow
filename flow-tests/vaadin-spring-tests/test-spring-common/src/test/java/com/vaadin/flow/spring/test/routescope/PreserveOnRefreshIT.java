@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.flow.spring.test.routescope;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.spring.test.AbstractSpringTest;
 
@@ -32,10 +34,15 @@ public class PreserveOnRefreshIT extends AbstractSpringTest {
     public void routeScopedBeanIsPreservedAfterViewRefresh() {
         open();
 
-        String beanCall = findElement(By.id("preserve-on-refresh")).getText();
+        WebElement element = findElement(By.id("preserve-on-refresh"));
+        String beanCall = element.getText();
 
         // refresh
         getDriver().navigate().refresh();
+        // Wait for the old element to become stale (page unloads)
+        waitUntil(ExpectedConditions.stalenessOf(element));
+        // Wait for the new page to load and the element to reappear
+        waitForElementPresent(By.id("preserve-on-refresh"));
 
         Assert.assertEquals("Bean is not preserved after refresh", beanCall,
                 findElement(By.id("preserve-on-refresh")).getText());

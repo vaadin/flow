@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,10 +28,12 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class AttachExistingElementRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class AttachExistingElementRpcHandlerTest {
 
     @Test
-    public void handleNode_error() {
+    void handleNode_error() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
@@ -65,7 +66,7 @@ public class AttachExistingElementRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_requestedIdEqualsAssignedId() {
+    void handleNode_requestedIdEqualsAssignedId() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
@@ -103,7 +104,7 @@ public class AttachExistingElementRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_requestedIdAndAssignedIdAreDifferent() {
+    void handleNode_requestedIdAndAssignedIdAreDifferent() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
@@ -147,9 +148,9 @@ public class AttachExistingElementRpcHandlerTest {
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,
             AttachExistingElementFeature feature) {
         Mockito.verify(requested).setParent(null);
-        Assert.assertNull(feature.getParent(requested));
-        Assert.assertNull(feature.getCallback(requested));
-        Assert.assertNull(feature.getPreviousSibling(node));
+        assertNull(feature.getParent(requested));
+        assertNull(feature.getCallback(requested));
+        assertNull(feature.getPreviousSibling(node));
     }
 
 }

@@ -1,0 +1,18 @@
+import java.nio.file.*;
+
+logFile = basedir.toPath().resolve("build.log");
+if (!Files.exists(logFile, new LinkOption[0])) {
+    throw new RuntimeException("build.log not found");
+}
+logs = Files.readString(logFile);
+if (!logs.contains("Deleted flow-build-info.json from")) {
+    throw new RuntimeException(
+        "FlowLifecycleParticipant did not log deletion of flow-build-info.json.\n\n" + logs);
+}
+
+tokenFile = basedir.toPath().resolve(
+    "target/classes/META-INF/VAADIN/config/flow-build-info.json");
+if (Files.exists(tokenFile, new LinkOption[0])) {
+    throw new RuntimeException(
+        "flow-build-info.json was not deleted by FlowLifecycleParticipant: " + tokenFile);
+}

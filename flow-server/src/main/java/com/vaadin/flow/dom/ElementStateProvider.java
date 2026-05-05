@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,12 +20,13 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Handles storing and retrieval of the state information for an element using a
@@ -77,10 +78,9 @@ public interface ElementStateProvider extends Serializable {
      * @param attribute
      *            the name of the attribute
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      */
-    void bindAttributeSignal(Element owner, String attribute,
+    SignalBinding<String> bindAttributeSignal(Element owner, String attribute,
             Signal<String> signal);
 
     /**
@@ -235,6 +235,12 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Sets the given property to the given value.
+     * <p>
+     * If the property has an active signal binding with a non-null write
+     * callback, the new value is propagated to the signal via that callback
+     * instead of being stored directly. If the write callback is
+     * <code>null</code> (read-only binding), a
+     * {@link com.vaadin.flow.signals.BindingActiveException} is thrown.
      *
      * @param node
      *            the node containing the data
@@ -244,9 +250,9 @@ public interface ElementStateProvider extends Serializable {
      *            the property value
      * @param emitChange
      *            true to create a change event for the client side
-     * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is an existing binding for the given
-     *             property
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is an existing read-only signal binding for
+     *             the given property
      */
     void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange);
@@ -258,15 +264,14 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @param name
      *            the property name, not <code>null</code>
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is an existing binding for the given
      *             property
      */
     void removeProperty(StateNode node, String name);
 
     /**
-     * Binds the given signal to the given property. <code>null</code> signal
-     * unbinds existing binding.
+     * Binds the given signal to the given property.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
@@ -274,13 +279,16 @@ public interface ElementStateProvider extends Serializable {
      * @param name
      *            the property name, not <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    void bindPropertySignal(Element owner, String name, Signal<?> signal);
+    SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback);
 
     /**
      * Checks if the given property has been set.
@@ -461,16 +469,15 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Binds the given signal to the <code>visible</code> property.
-     * <code>null</code> signal unbinds existing binding.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
      *            <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      */
-    void bindVisibleSignal(Element owner, Signal<Boolean> signal);
+    SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal);
 
     /**
      * Sets the {@code node} visibility.

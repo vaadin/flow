@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -165,6 +165,30 @@ public class UrlUtil {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Appends a query parameter to the given URL. Uses {@code ?} if the URL has
+     * no query string yet, or {@code &} if it already has one. Returns the
+     * original URL unchanged if either {@code name} or {@code value} is
+     * {@code null}.
+     *
+     * @param url
+     *            the original URL
+     * @param name
+     *            the parameter name, or {@code null} to skip
+     * @param value
+     *            the parameter value, or {@code null} to skip
+     * @return the URL with the parameter appended, or the original URL if name
+     *         or value is {@code null}
+     */
+    public static String appendQueryParameter(String url, String name,
+            String value) {
+        if (name == null || value == null) {
+            return url;
+        }
+        char separator = url.contains("?") ? '&' : '?';
+        return url + separator + name + "=" + value;
     }
 
     /**

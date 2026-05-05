@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,10 +22,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ElementFactoryTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ElementFactoryTest {
 
     private Map<String, String> methodToTag = new HashMap<>();
 
@@ -43,14 +45,14 @@ public class ElementFactoryTest {
     }
 
     @Test
-    public void automatedTest() throws Exception {
+    void automatedTest() throws Exception {
         for (Method method : ElementFactory.class.getMethods()) {
             testMethod(method);
         }
     }
 
     @Test
-    public void createAnchor() {
+    void createAnchor() {
         String href = "hrefhref";
         String textContent = "textContent";
 
@@ -63,7 +65,7 @@ public class ElementFactoryTest {
     }
 
     @Test
-    public void createTextInput() {
+    void createTextInput() {
         String type = "typetype";
 
         assertElement("<input type='" + type + "'></input>",
@@ -72,7 +74,7 @@ public class ElementFactoryTest {
 
     private void assertElement(String expectedOuterHtml, Element createAnchor) {
         String actualHtml = getOuterHtml(createAnchor);
-        Assert.assertEquals(expectedOuterHtml, actualHtml);
+        assertEquals(expectedOuterHtml, actualHtml);
     }
 
     private String getOuterHtml(Element e) {
@@ -119,7 +121,7 @@ public class ElementFactoryTest {
                     "<" + expectedTag + ">textContent</" + expectedTag + ">",
                     element);
         } else {
-            Assert.fail("Untested method: " + method.getName() + "("
+            fail("Untested method: " + method.getName() + "("
                     + Stream.of(method.getParameterTypes())
                             .map(Class::getSimpleName)
                             .collect(Collectors.joining(","))

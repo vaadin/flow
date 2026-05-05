@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,9 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -36,37 +35,38 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class CurrentInstanceTest {
+class CurrentInstanceTest {
 
-    @Before
-    public void clearExistingThreadLocals() {
+    @BeforeEach
+    void clearExistingThreadLocals() {
         // Ensure no previous test left some thread locals hanging
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void testInitiallyCleared() throws Exception {
+    void testInitiallyCleared() throws Exception {
         assertCleared();
     }
 
     @Test
-    public void testClearedAfterRemove() throws Exception {
+    void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
     }
 
     @Test
-    public void testClearedWithClearAll() throws Exception {
+    void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
 
         assertCleared();
@@ -74,7 +74,7 @@ public class CurrentInstanceTest {
 
     private void assertCleared() throws SecurityException, NoSuchFieldException,
             IllegalAccessException {
-        Assert.assertNull(getInternalCurrentInstanceVariable().get());
+        assertNull(getInternalCurrentInstanceVariable().get());
     }
 
     @SuppressWarnings("unchecked")
@@ -103,7 +103,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoringNullUIWorks() throws Exception {
+    void testRestoringNullUIWorks() throws Exception {
         // First make sure current instance is empty
         CurrentInstance.clearAll();
 
@@ -117,7 +117,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoringNullSessionWorks() throws Exception {
+    void testRestoringNullSessionWorks() throws Exception {
         // First make sure current instance is empty
         CurrentInstance.clearAll();
 
@@ -133,8 +133,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoreWithGarbageCollectedValue()
-            throws InterruptedException {
+    void testRestoreWithGarbageCollectedValue() throws InterruptedException {
         VaadinSession session1 = new VaadinSession(
                 new MockVaadinServletService()) {
             @Override
@@ -158,23 +157,23 @@ public class CurrentInstanceTest {
         WeakReference<VaadinSession> ref = new WeakReference<>(session1);
 
         session1 = null;
-        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
+        assertTrue(TestUtil.isGarbageCollected(ref));
 
         CurrentInstance.restoreInstances(previous);
 
-        Assert.assertNull(VaadinSession.getCurrent());
+        assertNull(VaadinSession.getCurrent());
     }
 
     @Test
-    public void nonInheritableThreadLocals()
+    void nonInheritableThreadLocals()
             throws InterruptedException, ExecutionException {
         CurrentInstance.clearAll();
         CurrentInstance.set(CurrentInstanceTest.class, this);
 
-        Assert.assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
+        assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
 
         Callable<Void> runnable = () -> {
-            Assert.assertNull(CurrentInstance.get(CurrentInstanceTest.class));
+            assertNull(CurrentInstance.get(CurrentInstanceTest.class));
             return null;
         };
         ExecutorService service = Executors.newSingleThreadExecutor();

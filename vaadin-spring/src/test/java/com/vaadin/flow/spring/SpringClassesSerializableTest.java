@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,8 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -37,7 +36,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.scopes.TestBeanStore;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-public class SpringClassesSerializableTest extends ClassesSerializableTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private static String CAPTURE;
 
@@ -124,13 +126,13 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 super.getExcludedPatterns());
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         CAPTURE = null;
     }
 
     @Test
-    public void storeSerializableObject_objectIsRestoredAfterDeserialization()
+    void storeSerializableObject_objectIsRestoredAfterDeserialization()
             throws Throwable {
         TestBeanStore store = createStore();
 
@@ -139,17 +141,17 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
         TestBeanStore deserialized = serializeAndDeserialize(store);
 
         Object object = deserialized.get("foo", () -> null);
-        Assert.assertEquals("bar", object);
+        assertEquals("bar", object);
     }
 
     @Test
-    public void storeSerializableCallback_callbackIsRestoredAfterDeserialization()
+    void storeSerializableCallback_callbackIsRestoredAfterDeserialization()
             throws Throwable {
         TestBeanStore store = createStore();
 
         Callback callback = new Callback();
 
-        Assert.assertNull(CAPTURE);
+        assertNull(CAPTURE);
 
         store.registerDestructionCallback("foo", callback);
 
@@ -157,7 +159,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
         deserialized.destroy();
 
-        Assert.assertEquals("bar", CAPTURE);
+        assertEquals("bar", CAPTURE);
     }
 
     private TestBeanStore createStore() {

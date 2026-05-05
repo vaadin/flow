@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HasHelperTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class HasHelperTest {
 
     @Tag("div")
     public static class HasHelperComponent extends Component
@@ -26,51 +28,51 @@ public class HasHelperTest {
     }
 
     @Test
-    public void getHelperText() {
+    void getHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
-        Assert.assertNull(c.getHelperText());
+        assertNull(c.getHelperText());
     }
 
     @Test
-    public void getHelperComponent() {
+    void getHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
-        Assert.assertNull(c.getHelperComponent());
+        assertNull(c.getHelperComponent());
     }
 
     @Test
-    public void setHelperText() {
+    void setHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
-        Assert.assertEquals("helper", c.getHelperText());
+        assertEquals("helper", c.getHelperText());
     }
 
     @Test
-    public void setHelperComponent() {
+    void setHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
         final HasHelperComponent slotted = new HasHelperComponent();
         c.setHelperComponent(slotted);
-        Assert.assertEquals(slotted, c.getHelperComponent());
+        assertEquals(slotted, c.getHelperComponent());
     }
 
     @Test
-    public void removeHelperText() {
+    void removeHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
-        Assert.assertEquals("helper", c.getHelperText());
+        assertEquals("helper", c.getHelperText());
 
         c.setHelperText(null);
-        Assert.assertNull(c.getHelperText());
+        assertNull(c.getHelperText());
     }
 
     @Test
-    public void removeHelperComponent() {
+    void removeHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
         final HasHelperComponent slotted = new HasHelperComponent();
 
         c.setHelperComponent(slotted);
-        Assert.assertEquals(slotted, c.getHelperComponent());
+        assertEquals(slotted, c.getHelperComponent());
 
         c.setHelperComponent(null);
-        Assert.assertNull(c.getHelperComponent());
+        assertNull(c.getHelperComponent());
     }
 }

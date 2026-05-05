@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -244,9 +244,30 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
+        // Replace '%' with '_' to avoid ambiguous percent-encoding (%25)
+        // rejected by Jetty 12. The actual download filename is preserved
+        // in the Content-Disposition header, so this only affects the URL
+        // path used for resource lookup.
+        String safeName = sanitizeNameForUrl(name);
         return DYN_RES_PREFIX + UI.getCurrentOrThrow().getUIId()
                 + PATH_SEPARATOR + id + PATH_SEPARATOR
-                + UrlUtil.encodeURIComponent(name);
+                + UrlUtil.encodeURIComponent(safeName);
+    }
+
+    /**
+     * Replaces characters that would produce ambiguous percent-encodings in URL
+     * path segments.
+     *
+     * @param name
+     *            the resource name to sanitize
+     * @return the sanitized name, or the original value if {@code null} or
+     *         empty
+     */
+    static String sanitizeNameForUrl(String name) {
+        if (name == null || name.isEmpty()) {
+            return name;
+        }
+        return name.replace("%", "_");
     }
 
     private static Optional<URI> getPathUri(String path) {

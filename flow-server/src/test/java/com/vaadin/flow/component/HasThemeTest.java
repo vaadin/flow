@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,10 +19,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HasThemeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HasThemeTest {
 
     @Tag("div")
     public static class HasThemeComponent extends Component
@@ -31,7 +35,7 @@ public class HasThemeTest {
     }
 
     @Test
-    public void addThemeName() {
+    void addThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.addThemeName("foo");
         assertThemes(component, "foo");
@@ -45,7 +49,7 @@ public class HasThemeTest {
     }
 
     @Test
-    public void setThemeName_useThemeList() {
+    void setThemeName_useThemeList() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.setThemeName("foo bar");
 
@@ -54,7 +58,7 @@ public class HasThemeTest {
     }
 
     @Test
-    public void removeThemeName() {
+    void removeThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.setThemeName("foo Bar baz");
         component.removeThemeName("foo");
@@ -74,9 +78,9 @@ public class HasThemeTest {
     }
 
     @Test
-    public void setThemeName() {
+    void setThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assert.assertNull(component.getThemeName());
+        assertNull(component.getThemeName());
         component.setThemeName("foo");
         assertThemes(component, "foo");
         component.setThemeName("bar");
@@ -90,17 +94,17 @@ public class HasThemeTest {
     }
 
     @Test
-    public void getThemeName() {
+    void getThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assert.assertNull(component.getThemeName());
+        assertNull(component.getThemeName());
         component.setThemeName("foo");
-        Assert.assertEquals("foo", component.getThemeName());
+        assertEquals("foo", component.getThemeName());
         component.setThemeName("");
-        Assert.assertEquals("", component.getThemeName());
+        assertEquals("", component.getThemeName());
     }
 
     @Test
-    public void setThemeNameToggle() {
+    void setThemeNameToggle() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.setThemeName("foo", false);
         assertThemes(component);
@@ -118,28 +122,28 @@ public class HasThemeTest {
     }
 
     @Test
-    public void hasThemeName() {
+    void hasThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assert.assertFalse(component.hasThemeName("foo"));
+        assertFalse(component.hasThemeName("foo"));
         component.setThemeName("foo");
-        Assert.assertTrue(component.hasThemeName("foo"));
-        Assert.assertFalse(component.hasThemeName("fo"));
+        assertTrue(component.hasThemeName("foo"));
+        assertFalse(component.hasThemeName("fo"));
         component.setThemeName("foo bar");
-        Assert.assertTrue(component.hasThemeName("foo"));
-        Assert.assertTrue(component.hasThemeName("bar"));
+        assertTrue(component.hasThemeName("foo"));
+        assertTrue(component.hasThemeName("bar"));
 
     }
 
     @Test
-    public void getThemeList_elementThemeList() {
+    void getThemeList_elementThemeList() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
 
-        Assert.assertEquals(component.getElement().getThemeList().isEmpty(),
+        assertEquals(component.getElement().getThemeList().isEmpty(),
                 component.getThemeNames().isEmpty());
     }
 
     @Test
-    public void testAddThemeNames() {
+    void testAddThemeNames() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.addThemeNames();
         assertThemes(component);
@@ -150,7 +154,7 @@ public class HasThemeTest {
     }
 
     @Test
-    public void testRemoveThemeNames() {
+    void testRemoveThemeNames() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
         component.setThemeName("foo bar baz1 baz2 foo2 bar1");
 
@@ -168,7 +172,7 @@ public class HasThemeTest {
             String... expectedThemes) {
         Set<String> actual = c.getThemeNames();
         Set<String> expected = new HashSet<>(Arrays.asList(expectedThemes));
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
 }

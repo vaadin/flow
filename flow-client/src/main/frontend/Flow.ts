@@ -1,9 +1,10 @@
 import {
   ConnectionIndicator,
   ConnectionState,
-  ConnectionStateChangeListener,
-  ConnectionStateStore
+  type ConnectionStateChangeListener,
+  type ConnectionStateStore
 } from '@vaadin/common-frontend';
+import './Geolocation';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -128,9 +129,7 @@ export class Flow {
     this.baseRegex = new RegExp(
       `^${
         // IE11 does not support document.baseURI
-        escapeRegExp(
-          decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
-        )
+        escapeRegExp((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
       }`
     );
     this.appShellTitle = document.title;
@@ -179,13 +178,9 @@ export class Flow {
       'click',
       (_e) => {
         if (_e.target) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          if (_e.target.hasAttribute('router-link')) {
+          if (_e.composedPath().some((node) => node instanceof HTMLElement && node.hasAttribute('router-link'))) {
             this.navigation = 'link';
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+          } else if (_e.composedPath().some((node) => (node as Element).nodeName === 'A')) {
             this.navigation = 'client';
           }
         }
@@ -250,7 +245,7 @@ export class Flow {
     });
   }
 
-  // Send the remote call to `JavaScriptBootstrapUI` to render the flow
+  // Send the remote call to `UI` to render the flow
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
@@ -293,7 +288,10 @@ export class Flow {
   }
 
   private getFlowRoutePath(context: NavigationParameters | Location): string {
-    return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
+    // Don't decode the pathname here - let the server handle decoding
+    // individual path segments. This preserves the distinction between
+    // literal slashes (path separators) and encoded slashes (%2F, data).
+    return context.pathname.replace(this.baseRegex, '');
   }
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
     return (context.search && context.search.substring(1)) || '';
@@ -423,13 +421,13 @@ export class Flow {
       return Promise.resolve(initial);
     }
 
+    const browserDetails = await this.collectBrowserDetails();
+
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      // Collect browser details to send with init request as JSON
-      const browserDetails = this.collectBrowserDetails();
       const browserDetailsParam = browserDetails
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
@@ -462,7 +460,7 @@ export class Flow {
   }
 
   // Collects browser details parameters
-  private collectBrowserDetails(): Record<string, string> {
+  private async collectBrowserDetails(): Promise<Record<string, string>> {
     const params: Record<string, any> = {};
 
     /* Screen height and width */
@@ -552,6 +550,14 @@ export class Flow {
       themeName = 'aura';
     }
     params['v-tn'] = themeName;
+
+    /* Geolocation availability — guarded because tests may reset
+       window.Vaadin between runs, removing the namespace that
+       Geolocation.ts installs at import time. */
+    const geolocation = ($wnd.Vaadin.Flow as any)?.geolocation;
+    if (geolocation) {
+      params['v-ga'] = await geolocation.queryAvailability();
+    }
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

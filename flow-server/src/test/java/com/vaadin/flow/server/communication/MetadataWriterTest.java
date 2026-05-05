@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,9 +17,8 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,17 +28,18 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MetadataWriterTest {
+class MetadataWriterTest {
 
     private UI ui;
     private VaadinSession session;
     private SystemMessages messages;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         ui = Mockito.mock(UI.class);
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(session);
@@ -53,30 +53,30 @@ public class MetadataWriterTest {
     }
 
     @Test
-    public void writeAsyncTag() throws Exception {
+    void writeAsyncTag() throws Exception {
         assertMetadataOutput(false, true, "{\"async\":true}");
     }
 
     @Test
-    public void writeRepaintTag() throws Exception {
+    void writeRepaintTag() throws Exception {
         assertMetadataOutput(true, false, "{\"repaintAll\":true}");
     }
 
     @Test
-    public void writeRepaintAndAsyncTag() throws Exception {
+    void writeRepaintAndAsyncTag() throws Exception {
         assertMetadataOutput(true, true,
                 "{\"repaintAll\":true,\"async\":true}");
     }
 
     @Test
-    public void writeRedirectWithExpiredSession() throws Exception {
+    void writeRedirectWithExpiredSession() throws Exception {
         disableSessionExpirationMessages(messages);
 
         assertMetadataOutput(false, false, "{}");
     }
 
     @Test
-    public void writeRedirectWithActiveSession() throws Exception {
+    void writeRedirectWithActiveSession() throws Exception {
         WrappedSession wrappedSession = mock(WrappedSession.class);
         when(session.getSession()).thenReturn(wrappedSession);
 
@@ -87,7 +87,7 @@ public class MetadataWriterTest {
     }
 
     @Test
-    public void writeAsyncWithSystemMessages() throws IOException {
+    void writeAsyncWithSystemMessages() throws IOException {
         WrappedSession wrappedSession = mock(WrappedSession.class);
         when(session.getSession()).thenReturn(wrappedSession);
 
@@ -98,13 +98,13 @@ public class MetadataWriterTest {
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsOpen() throws Exception {
+    void writeSessionExpiredTag_sessionIsOpen() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
         assertMetadataOutput(false, false, "{}");
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsClosing() throws Exception {
+    void writeSessionExpiredTag_sessionIsClosing() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
 
@@ -113,7 +113,7 @@ public class MetadataWriterTest {
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsClosed() throws Exception {
+    void writeSessionExpiredTag_sessionIsClosed() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }
@@ -122,7 +122,7 @@ public class MetadataWriterTest {
             String expectedOutput) {
         ObjectNode meta = new MetadataWriter().createMetadata(ui, repaintAll,
                 async, messages);
-        Assert.assertEquals(expectedOutput, meta.toString());
+        assertEquals(expectedOutput, meta.toString());
     }
 
 }

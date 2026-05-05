@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,9 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntConsumer;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -257,55 +259,154 @@ public class Router implements Serializable {
             boolean forceInstantiation, boolean recreateLayoutChain) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
-        if (newState != null) {
-            NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state, false, forceInstantiation,
-                    recreateLayoutChain);
 
-            NavigationHandler handler = new NavigationStateRenderer(newState);
-            return handler.handle(navigationEvent);
+        NavigationEvent navigationEvent = null;
+        NavigationHandler handler = null;
+
+        if (newState != null) {
+            navigationEvent = new NavigationEvent(this, location, ui, trigger,
+                    state, false, forceInstantiation, recreateLayoutChain);
+
+            handler = new NavigationStateRenderer(newState);
         } else if (!location.getPath().isEmpty()) {
             Location slashToggledLocation = location.toggleTrailingSlash();
             NavigationState slashToggledState = getRouteResolver()
                     .resolve(new ResolveRequest(this, slashToggledLocation));
             if (slashToggledState != null) {
-                NavigationEvent navigationEvent = new NavigationEvent(this,
+                navigationEvent = new NavigationEvent(this,
                         slashToggledLocation, ui, trigger, state, false,
                         forceInstantiation, recreateLayoutChain);
 
-                NavigationHandler handler = new InternalRedirectHandler(
-                        slashToggledLocation);
-                return handler.handle(navigationEvent);
+                handler = new InternalRedirectHandler(slashToggledLocation);
             }
         }
 
-        throw new NotFoundException(
-                "Couldn't find route for '" + location.getPath() + "'");
+        if (navigationEvent == null || handler == null) {
+            throw new NotFoundException(
+                    "Couldn't find route for '" + location.getPath() + "'");
+        }
+
+        return executeNavigation(ui, location, navigationEvent, handler, null);
     }
 
-    private int handleExceptionNavigation(UI ui, Location location,
+    /**
+     * Render error view for exception. Finds view to render based on the
+     * exception type. Exception view is chosen for matching exception and if no
+     * match is found choose by extended type.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            current UI instance
+     * @param location
+     *            target location for failing navigation
+     * @param exception
+     *            exception thrown
+     * @param trigger
+     *            navigation trigger
+     * @param state
+     *            navigation state info
+     * @return the HTTP status code to return to the client if handling an
+     *         initial rendering request
+     */
+    public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
             BaseJsonNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
-        if (maybeLookupResult.isPresent()) {
-            ErrorTargetEntry lookupResult = maybeLookupResult.get();
+        if (maybeLookupResult.isEmpty()) {
+            // No error target available throw runtime exception
+            // this is usually only possible when routeRegistry is not
+            // ApplicationRouteRegistry
+            String message = String.format(
+                    "No error view found for exception '%s'",
+                    exception.getClass().getName());
+            throw new RuntimeException(message, exception);
+        }
 
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    exception.getMessage());
-            ErrorStateRenderer handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder(this)
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
+        ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
-                    this, location, ui, trigger, errorParameter, state);
+        ErrorParameter<?> errorParameter = new ErrorParameter<>(
+                lookupResult.getHandledExceptionType(), exception,
+                exception.getMessage());
+        ErrorStateRenderer handler = new ErrorStateRenderer(
+                new NavigationStateBuilder(this)
+                        .withTarget(lookupResult.getNavigationTarget())
+                        .build());
 
+        ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(this,
+                location, ui, trigger, errorParameter, state);
+
+        try {
             return handler.handle(navigationEvent);
-        } else {
-            throw new RuntimeException(exception);
+        } catch (Exception errorHandlingException) {
+            Logger logger = LoggerFactory.getLogger(Router.class);
+
+            // Error view threw an exception - fall back to
+            // InternalServerError
+            logger.error(
+                    "Exception occurred while rendering error view '{}' for '{}'. "
+                            + "Falling back to InternalServerError.",
+                    lookupResult.getNavigationTarget(), location.getPath(),
+                    errorHandlingException);
+
+            // Render InternalServerError as fallback with original
+            // exception as render error is logged
+            ErrorParameter<?> fallbackParameter = new ErrorParameter<>(
+                    Exception.class, exception, exception.getMessage());
+            ErrorStateRenderer fallbackHandler = new ErrorStateRenderer(
+                    new NavigationStateBuilder(this)
+                            .withTarget(InternalServerError.class).build());
+
+            ErrorNavigationEvent fallbackEvent = new ErrorNavigationEvent(this,
+                    location, ui, trigger, fallbackParameter, state);
+
+            // If InternalServerError also throws, let it propagate -
+            // nothing more we can do
+            return fallbackHandler.handle(fallbackEvent);
+        }
+    }
+
+    /**
+     * Execute navigation with a pre-resolved handler and optional success
+     * callback.
+     * <p>
+     * This method handles the common navigation pattern of setting navigation
+     * state, executing the handler, running a success callback, and properly
+     * handling exceptions via {@link #handleExceptionNavigation}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            the UI to update, not {@code null}
+     * @param location
+     *            the navigation location, not {@code null}
+     * @param navigationEvent
+     *            the navigation event to pass to the handler
+     * @param handler
+     *            the navigation handler to execute
+     * @param onSuccess
+     *            optional callback to run after successful navigation (before
+     *            clearing navigation state), may be {@code null}
+     * @return the HTTP status code resulting from the navigation
+     */
+    public int executeNavigation(UI ui, Location location,
+            NavigationEvent navigationEvent, NavigationHandler handler,
+            IntConsumer onSuccess) {
+        ui.getInternals().setLastHandledNavigation(location);
+        try {
+            int result = handler.handle(navigationEvent);
+            if (onSuccess != null) {
+                onSuccess.accept(result);
+            }
+            return result;
+        } catch (Exception exception) {
+            return handleExceptionNavigation(ui, location, exception,
+                    navigationEvent.getTrigger(),
+                    navigationEvent.getState().orElse(null));
+        } finally {
+            ui.getInternals().clearLastHandledNavigation();
         }
     }
 

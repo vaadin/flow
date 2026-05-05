@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,42 +22,45 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class CustomElementsTest {
+class CustomElementsTest {
     private CustomElements customElements;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         customElements = new CustomElements();
     }
 
     @Test
-    public void addSingleElement() {
+    void addSingleElement() {
         addElementsAndCheckResults(
                 Collections.singletonList(CustomElement.class),
                 Collections.singletonList(CustomElement.class));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addDifferentElements() {
-        addElementsAndCheckResults(
-                Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
-                Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class));
+    @Test
+    void addDifferentElements() {
+        assertThrows(IllegalStateException.class, () -> {
+            addElementsAndCheckResults(
+                    Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
+                    Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class));
+        });
     }
 
     @Test
-    public void addExtendingElements_superclassFirst() {
+    void addExtendingElements_superclassFirst() {
         addElementsAndCheckResults(
                 Arrays.asList(CustomElement.class, Tag1_Extend1.class,
                         Tag1_Extend2.class, Tag1_Extend3.class),
@@ -65,7 +68,7 @@ public class CustomElementsTest {
     }
 
     @Test
-    public void addExtendingElements_superclassLast() {
+    void addExtendingElements_superclassLast() {
         addElementsAndCheckResults(
                 Arrays.asList(Tag1_Extend1.class, Tag1_Extend2.class,
                         Tag1_Extend3.class, CustomElement.class),
@@ -73,7 +76,7 @@ public class CustomElementsTest {
     }
 
     @Test
-    public void addTwoExtendingWithDifferentTag() {
+    void addTwoExtendingWithDifferentTag() {
         addElementsAndCheckResults(
                 Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class),
                 Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class));

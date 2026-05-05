@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.vaadin.flow.dom.DisabledUpdateMode.ALWAYS;
 import static com.vaadin.flow.dom.DisabledUpdateMode.ONLY_WHEN_ENABLED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DisabledUpdateModeTest {
+class DisabledUpdateModeTest {
 
     @Test
-    public void permissiveOrdering() {
+    void permissiveOrdering() {
         assertMostPermissive(ALWAYS, ALWAYS, ALWAYS);
         assertMostPermissive(ALWAYS, ALWAYS, ONLY_WHEN_ENABLED);
         assertMostPermissive(ALWAYS, ALWAYS, null);
@@ -39,9 +39,9 @@ public class DisabledUpdateModeTest {
     private static void assertMostPermissive(DisabledUpdateMode expectedResult,
             DisabledUpdateMode first, DisabledUpdateMode second) {
 
-        Assert.assertEquals(expectedResult,
+        assertEquals(expectedResult,
                 DisabledUpdateMode.mostPermissive(first, second));
-        Assert.assertEquals(expectedResult,
+        assertEquals(expectedResult,
                 DisabledUpdateMode.mostPermissive(second, first));
     }
 }

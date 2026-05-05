@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,11 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -44,16 +42,18 @@ import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateBootstrapTest {
+class TaskGenerateBootstrapTest {
 
     private static final String DEV_TOOLS_IMPORT = "import '"
             + FrontendUtils.JAR_RESOURCES_IMPORT
             + "vaadin-dev-tools/vaadin-dev-tools.js';";
     private static final String CUSTOM_MODIFIER_CONTENT = "// custom modifier";
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private FrontendDependenciesScanner frontDeps;
     private File frontendFolder;
@@ -63,97 +63,97 @@ public class TaskGenerateBootstrapTest {
 
     public static class CustomModifier implements TypeScriptBootstrapModifier {
         @Override
-        public void modify(List<String> lines, Options options,
-                FrontendDependenciesScanner scanner) {
+        public void modify(List<String> lines, Options options) {
             lines.add(0, CUSTOM_MODIFIER_CONTENT);
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Set.of(this.getClass(), CustomModifier.class));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                 .createScanner(false, finder, false, null, true);
 
-        frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        frontendFolder = new File(temporaryFolder, FRONTEND);
+        frontendFolder.mkdirs();
         options = new MockOptions(finder, null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+                .withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(frontDeps);
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
     }
 
     @Test
-    public void should_importGeneratedIndexTS()
+    void should_importGeneratedIndexTS() throws ExecutionFailedException {
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        assertTrue(content.contains("import './index';"));
+    }
+
+    @Test
+    void shouldNot_importDevTools_inProduction()
             throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import './index';"));
+        assertFalse(content.contains(DEV_TOOLS_IMPORT));
     }
 
     @Test
-    public void shouldNot_importDevTools_inProduction()
-            throws ExecutionFailedException {
+    void should_importDevTools_inDevMode() throws ExecutionFailedException {
+        options.withProductionMode(false)
+                .withFrontendDependenciesScanner(frontDeps);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertFalse(content.contains(DEV_TOOLS_IMPORT));
+        assertTrue(content.contains(DEV_TOOLS_IMPORT));
     }
 
     @Test
-    public void should_importDevTools_inDevMode()
-            throws ExecutionFailedException {
-        options.withProductionMode(false);
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
-        taskGenerateBootstrap.execute();
-        String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(DEV_TOOLS_IMPORT));
-    }
-
-    @Test
-    public void should_importFrontendIndexTS()
+    void should_importFrontendIndexTS()
             throws ExecutionFailedException, IOException {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../index';"));
+        assertTrue(content.contains("import '../index';"));
     }
 
     @Test
-    public void should_importFrontendIndexTSX()
+    void should_importFrontendIndexTSX()
             throws ExecutionFailedException, IOException {
         new File(frontendFolder, INDEX_TSX).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../index';"));
+        assertTrue(content.contains("import '../index';"));
     }
 
     @Test
-    public void should_importFeatureFlagTS() throws ExecutionFailedException {
+    void should_importFeatureFlagTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
+        assertTrue(content.contains(
                 String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
     }
 
     @Test
-    public void should_importFeatureFlagTSBeforeModifiers()
+    void should_importFeatureFlagTSBeforeModifiers()
             throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         int featureFlagIndex = content.indexOf(
                 String.format("import './%s';", FEATURE_FLAGS_FILE_NAME));
         int modifierIndex = content.indexOf(CUSTOM_MODIFIER_CONTENT);
-        Assert.assertTrue("Feature flag import should be before any modifier",
-                featureFlagIndex < modifierIndex);
+        assertTrue(featureFlagIndex < modifierIndex,
+                "Feature flag import should be before any modifier");
     }
 
     @Test
-    public void should_load_AppTheme()
+    void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
-        options.withFrontendDirectory(frontendFolder).withProductionMode(true);
+        options.withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(getThemedDependency());
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 
@@ -161,13 +161,13 @@ public class TaskGenerateBootstrapTest {
                 "import { applyTheme } from './theme.js';",
                 "applyTheme(document);");
 
-        expectedContent.forEach(expectedLine -> Assert.assertTrue(
+        expectedContent.forEach(expectedLine -> assertTrue(
+                content.contains(expectedLine),
                 String.format(
                         "Bootstrap 'vaadin.ts' file is supposed to contain "
                                 + "the line: [%s],\nbut actually contains the "
                                 + "following: [%s]",
-                        expectedLine, content),
-                content.contains(expectedLine)));
+                        expectedLine, content)));
     }
 
     private FrontendDependencies getThemedDependency()

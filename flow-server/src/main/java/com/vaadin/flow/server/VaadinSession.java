@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,6 +54,9 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -83,9 +86,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Default locale of the session.
+     * Locale value used for serialization. The signal is the runtime source of
+     * truth; this field is only used to persist the value across serialization.
      */
     private Locale locale = Locale.getDefault();
+
+    private transient ValueSignal<Locale> localeSignal = new ValueSignal<>(
+            locale);
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -135,6 +142,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private long lastUnlocked;
 
     private long lastLocked;
+
+    private transient Transaction sessionScopedTransaction;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -383,7 +392,31 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Locale getLocale() {
         checkHasLock();
-        return locale;
+        return localeSignal.peek();
+    }
+
+    /**
+     * Gets a read-only signal that holds the current locale of this session.
+     * <p>
+     * Use {@link Signal#get()} to read the locale reactively (creates a
+     * dependency when called inside a signal effect). Use {@link #getLocale()}
+     * for non-reactive reads. To change the locale, use
+     * {@link #setLocale(Locale)}.
+     * <p>
+     * The signal can be used for two-way binding with a field component by
+     * passing {@link #setLocale(Locale)} as the write callback:
+     *
+     * <pre>
+     * localeDropdown.bindValue(session.localeSignal(), session::setLocale);
+     * </pre>
+     *
+     * @return a read-only signal holding the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public Signal<Locale> localeSignal() {
+        checkHasLock();
+        return localeSignal.asReadonly();
     }
 
     /**
@@ -400,6 +433,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
         checkHasLock();
         this.locale = locale;
+        localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
@@ -671,6 +705,23 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the session-scoped write-through transaction, creating it lazily if
+     * needed. The transaction provides repeatable-read guarantees for shared
+     * signal operations while the session lock is held.
+     * <p>
+     * The session lock must be held when calling this method.
+     *
+     * @return the session-scoped transaction, not <code>null</code>
+     */
+    Transaction getOrCreateSessionScopedTransaction() {
+        assert hasLock();
+        if (sessionScopedTransaction == null) {
+            sessionScopedTransaction = Transaction.createWriteThrough();
+        }
+        return sessionScopedTransaction;
+    }
+
+    /**
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
@@ -750,6 +801,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
@@ -1093,6 +1145,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
+            localeSignal = new ValueSignal<>(locale);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);

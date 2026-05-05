@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -31,7 +30,12 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-public class DefaultInstantiatorTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DefaultInstantiatorTest {
 
     @Tag(Tag.A)
     public static class TestComponent extends Component {
@@ -39,7 +43,7 @@ public class DefaultInstantiatorTest {
     }
 
     @Test
-    public void createComponent_dontDependOnGetOrCreate() {
+    void createComponent_dontDependOnGetOrCreate() {
         DefaultInstantiator instantiator = Mockito
                 .mock(DefaultInstantiator.class);
 
@@ -49,14 +53,14 @@ public class DefaultInstantiatorTest {
         TestComponent component = instantiator
                 .createComponent(TestComponent.class);
 
-        Assert.assertNotNull(component);
+        assertNotNull(component);
 
         Mockito.verify(instantiator, Mockito.times(0))
                 .getOrCreate(Mockito.any());
     }
 
     @Test
-    public void getOrCreate_lookupHasObject_returnObjectFromLookup() {
+    void getOrCreate_lookupHasObject_returnObjectFromLookup() {
         VaadinService service = Mockito.mock(VaadinService.class);
         Lookup lookup = mockLookup(service);
 
@@ -65,36 +69,36 @@ public class DefaultInstantiatorTest {
         Mockito.when(lookup.lookup(List.class)).thenReturn(new ArrayList<>());
 
         List<?> list = instantiator.getOrCreate(List.class);
-        Assert.assertTrue(list instanceof ArrayList);
+        assertTrue(list instanceof ArrayList);
     }
 
     @Test
-    public void getOrCreate_lookupHasNoObject_createNewObject() {
+    void getOrCreate_lookupHasNoObject_createNewObject() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
 
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
         TestComponent component = instantiator.getOrCreate(TestComponent.class);
-        Assert.assertNotNull(component);
+        assertNotNull(component);
     }
 
     @Test
-    public void getApplicationClass_regularClass_getsSameClass() {
+    void getApplicationClass_regularClass_getsSameClass() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
 
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
         TestComponent instance = instantiator.getOrCreate(TestComponent.class);
-        Assert.assertSame(TestComponent.class,
+        assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
+        assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_syntheticClass_getsApplicationClass()
+    void getApplicationClass_syntheticClass_getsApplicationClass()
             throws Exception {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
@@ -109,10 +113,10 @@ public class DefaultInstantiatorTest {
         TestComponent instance = syntheticClass.getDeclaredConstructor()
                 .newInstance();
 
-        Assert.assertNotSame(TestComponent.class, instance.getClass());
-        Assert.assertSame(TestComponent.class,
+        assertNotSame(TestComponent.class, instance.getClass());
+        assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
+        assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 

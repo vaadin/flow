@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,79 +17,56 @@ package com.vaadin.flow.dom;
 
 import java.util.LinkedList;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Base class for unit testing Signals. Enables feature flag, mocks
- * VaadinService, VaadinSession and UI before each test. VaadinSession's error
- * handler is customized to add any errors to {@link #events} list (including
- * errors caught in Signal effects).
+ * Base class for unit testing Signals. Mocks VaadinService, VaadinSession and
+ * UI before each test. VaadinSession's error handler is customized to add any
+ * errors to {@link #events} list (including errors caught in Signal effects).
  */
 public abstract class SignalsUnitTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
     protected LinkedList<ErrorEvent> events;
 
-    @BeforeClass
+    private MockUI ui;
+
+    @BeforeAll
     public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         events = mockLockedSessionWithErrorHandler();
     }
 
-    @After
+    @AfterEach
     public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
+        assertTrue(events.isEmpty());
         CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
+        events = null;
+        ui = null;
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
@@ -97,8 +74,11 @@ public abstract class SignalsUnitTest {
 
         var session = new MockVaadinSession(service);
         session.lock();
+        VaadinSession.setCurrent(session);
 
-        var ui = new MockUI(session);
+        // UI is set to field to avoid too eager GC due to WeakReference in
+        // CurrentInstance.
+        ui = new MockUI(session);
         var events = new LinkedList<ErrorEvent>();
         session.setErrorHandler(events::add);
 

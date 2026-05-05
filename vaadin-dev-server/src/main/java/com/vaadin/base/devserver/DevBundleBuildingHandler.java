@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -45,6 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
 public final class DevBundleBuildingHandler implements DevModeHandler {
 
     private final transient CompletableFuture<Void> buildCompletedFuture;
+    private final AtomicReference<String> devServerFailure = new AtomicReference<>();
 
     public DevBundleBuildingHandler(
             CompletableFuture<Void> buildCompletedFuture) {
@@ -91,7 +92,7 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         return AbstractDevServerRunner.handleRequestInternal(session, request,
-                response, buildCompletedFuture, new AtomicBoolean());
+                response, buildCompletedFuture, devServerFailure);
     }
 
     /**

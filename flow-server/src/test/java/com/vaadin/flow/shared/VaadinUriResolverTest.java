@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.shared;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VaadinUriResolverTest {
+class VaadinUriResolverTest {
 
     private final class NullContextVaadinUriResolver extends VaadinUriResolver {
         public String resolveVaadinUri(String uri) {
@@ -28,7 +28,7 @@ public class VaadinUriResolverTest {
     }
 
     @Test
-    public void testContextProtocol() {
+    void testContextProtocol() {
         NullContextVaadinUriResolver resolver = new NullContextVaadinUriResolver();
         assertEquals("http://someplace/my-component.html",
                 resolver.resolveVaadinUri("context://my-component.html"));

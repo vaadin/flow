@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,9 +23,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -54,7 +53,13 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-public class UIInternalsTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class UIInternalsTest {
 
     @Mock
     UI ui;
@@ -124,8 +129,8 @@ public class UIInternalsTest {
         }
     }
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
@@ -134,37 +139,34 @@ public class UIInternalsTest {
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
-        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
     }
 
     @Test
-    public void heartbeatTimestampSet_heartbeatListenersAreCalled() {
+    void heartbeatTimestampSet_heartbeatListenersAreCalled() {
         List<Long> heartbeats = new ArrayList<>();
         Registration registration = internals.addHeartbeatListener(
                 event -> heartbeats.add(event.getHeartbeatTime()));
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertEquals("Heartbeat listener should have fired", 1,
-                heartbeats.size());
+        assertEquals(1, heartbeats.size(),
+                "Heartbeat listener should have fired");
 
         registration.remove();
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertEquals(
-                "Heartbeat listener should been removed and no new event recorded",
-                1, heartbeats.size());
+        assertEquals(1, heartbeats.size(),
+                "Heartbeat listener should been removed and no new event recorded");
     }
 
     @Test
-    public void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
+    void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
         AtomicReference<Registration> reference = new AtomicReference<>();
         AtomicInteger runCount = new AtomicInteger();
 
@@ -175,17 +177,15 @@ public class UIInternalsTest {
         reference.set(registration);
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
-        Assert.assertEquals("Listener should have been run once", 1,
-                runCount.get());
+        assertEquals(1, runCount.get(), "Listener should have been run once");
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
-        Assert.assertEquals(
-                "Listener should not have been run again since it was removed",
-                1, runCount.get());
+        assertEquals(1, runCount.get(),
+                "Listener should not have been run again since it was removed");
     }
 
     @Test
-    public void showRouteTarget_clientSideBootstrap() {
+    void showRouteTarget_clientSideBootstrap() {
         PushConfiguration pushConfig = setUpInitialPush();
 
         internals.showRouteTarget(Mockito.mock(Location.class),
@@ -195,7 +195,7 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void showRouteTarget_navigateToAnotherViewWithinSameLayoutHierarchy_detachedRouterLayoutChildrenRemoved() {
+    void showRouteTarget_navigateToAnotherViewWithinSameLayoutHierarchy_detachedRouterLayoutChildrenRemoved() {
         MainLayout mainLayout = new MainLayout();
         SubLayout subLayout = new SubLayout();
         FirstView firstView = new FirstView();
@@ -214,52 +214,47 @@ public class UIInternalsTest {
         // Initial router layouts hierarchy is checked here in order to be
         // sure the sub layout and it's child view is in place BEFORE
         // navigation and old content cleanup
-        Assert.assertArrayEquals("Unexpected initial router targets chain",
-                new HasElement[] { firstView, subLayout, mainLayout },
-                activeRouterTargetsChain.toArray());
+        assertArrayEquals(new HasElement[] { firstView, subLayout, mainLayout },
+                activeRouterTargetsChain.toArray(),
+                "Unexpected initial router targets chain");
 
-        Assert.assertEquals(
-                "Expected one child element for main layout before navigation",
-                1, mainLayout.getElement().getChildren().count());
+        assertEquals(1, mainLayout.getElement().getChildren().count(),
+                "Expected one child element for main layout before navigation");
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         Element subLayoutElement = mainLayout.getElement().getChildren()
                 .findFirst().get();
-        Assert.assertEquals("Unexpected sub layout element", SubLayout.ID,
-                subLayoutElement.getAttribute("id"));
-        Assert.assertEquals(
-                "Expected one child element for sub layout before navigation",
-                1, subLayoutElement.getChildren().count());
+        assertEquals(SubLayout.ID, subLayoutElement.getAttribute("id"),
+                "Unexpected sub layout element");
+        assertEquals(1, subLayoutElement.getChildren().count(),
+                "Expected one child element for sub layout before navigation");
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         Element firstViewElement = subLayoutElement.getChildren().findFirst()
                 .get();
-        Assert.assertEquals("Unexpected first view element", FirstView.ID,
-                firstViewElement.getAttribute("id"));
+        assertEquals(FirstView.ID, firstViewElement.getAttribute("id"),
+                "Unexpected first view element");
 
         // Trigger navigation
         internals.showRouteTarget(location, anotherView, newLayouts);
         activeRouterTargetsChain = internals.getActiveRouterTargetsChain();
-        Assert.assertArrayEquals(
-                "Unexpected router targets chain after navigation",
-                new HasElement[] { anotherView, mainLayout },
-                activeRouterTargetsChain.toArray());
+        assertArrayEquals(new HasElement[] { anotherView, mainLayout },
+                activeRouterTargetsChain.toArray(),
+                "Unexpected router targets chain after navigation");
 
         // Check that the old content (sub layout) is detached and it's
         // children are also detached
-        Assert.assertEquals(
-                "Expected one child element for main layout after navigation",
-                1, mainLayout.getElement().getChildren().count());
+        assertEquals(1, mainLayout.getElement().getChildren().count(),
+                "Expected one child element for main layout after navigation");
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         Element anotherViewElement = mainLayout.getElement().getChildren()
                 .findFirst().get();
-        Assert.assertEquals("Unexpected another view element", AnotherView.ID,
-                anotherViewElement.getAttribute("id"));
-        Assert.assertEquals(
-                "Expected no child elements for sub layout after navigation", 0,
-                subLayout.getElement().getChildren().count());
+        assertEquals(AnotherView.ID, anotherViewElement.getAttribute("id"),
+                "Unexpected another view element");
+        assertEquals(0, subLayout.getElement().getChildren().count(),
+                "Expected no child elements for sub layout after navigation");
     }
 
     @Test
-    public void showRouteTarget_navigateToAnotherLayoutHierarchy_detachedLayoutHierarchyChildrenRemoved() {
+    void showRouteTarget_navigateToAnotherLayoutHierarchy_detachedLayoutHierarchyChildrenRemoved() {
         MainLayout mainLayout = new MainLayout();
         SubLayout subLayout = new SubLayout();
         FirstView firstView = new FirstView();
@@ -279,23 +274,20 @@ public class UIInternalsTest {
         internals.showRouteTarget(location, anotherView, newLayouts);
         List<HasElement> activeRouterTargetsChain = internals
                 .getActiveRouterTargetsChain();
-        Assert.assertArrayEquals(
-                "Unexpected router targets chain after navigation",
-                new HasElement[] { anotherView, anotherLayout },
-                activeRouterTargetsChain.toArray());
+        assertArrayEquals(new HasElement[] { anotherView, anotherLayout },
+                activeRouterTargetsChain.toArray(),
+                "Unexpected router targets chain after navigation");
 
         // Check that both main layout, sub layout and it's child view are
         // detached
-        Assert.assertEquals(
-                "Expected no child elements for main layout after navigation",
-                0, mainLayout.getElement().getChildren().count());
-        Assert.assertEquals(
-                "Expected no child elements for sub layout after navigation", 0,
-                subLayout.getElement().getChildren().count());
+        assertEquals(0, mainLayout.getElement().getChildren().count(),
+                "Expected no child elements for main layout after navigation");
+        assertEquals(0, subLayout.getElement().getChildren().count(),
+                "Expected no child elements for sub layout after navigation");
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
+    void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -312,7 +304,7 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
+    void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -331,7 +323,7 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
+    void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         node1.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -355,7 +347,7 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -371,12 +363,11 @@ public class UIInternalsTest {
 
         invocation.complete(JacksonCodec.encodeWithTypeInfo("OK"));
 
-        Assert.assertEquals(0,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -393,12 +384,11 @@ public class UIInternalsTest {
         invocation.completeExceptionally(
                 JacksonCodec.encodeWithTypeInfo("ERROR"));
 
-        Assert.assertEquals(0,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -414,12 +404,11 @@ public class UIInternalsTest {
 
         invocation.cancelExecution();
 
-        Assert.assertEquals(0,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -435,12 +424,11 @@ public class UIInternalsTest {
 
         node.setParent(null);
 
-        Assert.assertEquals(0,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
+    void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -462,12 +450,11 @@ public class UIInternalsTest {
                 ArgumentMatchers.any(SerializableConsumer.class));
 
         node.setParent(null);
-        Assert.assertEquals(0,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
     }
 
     @Test
-    public void isDirty_noPendingJsInvocation_returnsFalse() {
+    void isDirty_noPendingJsInvocation_returnsFalse() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -476,18 +463,17 @@ public class UIInternalsTest {
         childrenList.add(0, node1);
         childrenList.add(1, node2);
 
-        Assert.assertTrue("Nodes added, expecting dirty UI",
-                internals.isDirty());
+        assertTrue(internals.isDirty(), "Nodes added, expecting dirty UI");
         internals.getStateTree().collectChanges(node -> {
         });
         internals.dumpPendingJavaScriptInvocations();
 
-        Assert.assertFalse("Changes collected, expecting UI not to be dirty",
-                internals.isDirty());
+        assertFalse(internals.isDirty(),
+                "Changes collected, expecting UI not to be dirty");
     }
 
     @Test
-    public void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
+    void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -499,19 +485,18 @@ public class UIInternalsTest {
         internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node1,
                 new UIInternals.JavaScriptInvocation("")));
 
-        Assert.assertTrue("Pending JS invocations, expecting dirty UI",
-                internals.isDirty());
+        assertTrue(internals.isDirty(),
+                "Pending JS invocations, expecting dirty UI");
         internals.getStateTree().collectChanges(node -> {
         });
         internals.dumpPendingJavaScriptInvocations();
 
-        Assert.assertFalse(
-                "No pending JS invocations to send to the client, expecting UI not to be dirty",
-                internals.isDirty());
+        assertFalse(internals.isDirty(),
+                "No pending JS invocations to send to the client, expecting UI not to be dirty");
     }
 
     @Test
-    public void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
+    void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -525,44 +510,41 @@ public class UIInternalsTest {
         internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node2,
                 new UIInternals.JavaScriptInvocation("")));
 
-        Assert.assertTrue("Pending JS invocations, expecting dirty UI",
-                internals.isDirty());
+        assertTrue(internals.isDirty(),
+                "Pending JS invocations, expecting dirty UI");
         internals.getStateTree().collectChanges(node -> {
         });
         internals.dumpPendingJavaScriptInvocations();
 
-        Assert.assertFalse(
-                "No pending JS invocations to send to the client, expecting UI not to be dirty",
-                internals.isDirty());
+        assertFalse(internals.isDirty(),
+                "No pending JS invocations to send to the client, expecting UI not to be dirty");
     }
 
     @Test
-    public void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
+    void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
         internals.setTitle("new title");
-        Assert.assertEquals("new title", internals.getTitle());
+        assertEquals("new title", internals.getTitle());
 
-        Assert.assertEquals("one pending JavaScript invocation should exist", 1,
-                internals.getPendingJavaScriptInvocations().count());
+        assertEquals(1, internals.getPendingJavaScriptInvocations().count(),
+                "one pending JavaScript invocation should exist");
 
         var pendingJavaScriptInvocation = internals
                 .getPendingJavaScriptInvocations().findFirst().orElse(null);
-        Assert.assertNotNull("pendingJavaScriptInvocation should not be null",
-                pendingJavaScriptInvocation);
-        Assert.assertEquals("new title", pendingJavaScriptInvocation
-                .getInvocation().getParameters().get(0));
-        Assert.assertTrue("document.title should be set via JavaScript",
+        assertNotNull(pendingJavaScriptInvocation,
+                "pendingJavaScriptInvocation should not be null");
+        assertEquals("new title", pendingJavaScriptInvocation.getInvocation()
+                .getParameters().get(0));
+        assertTrue(
                 pendingJavaScriptInvocation.getInvocation().getExpression()
-                        .contains("document.title = $0"));
-        Assert.assertTrue(
-                "window.Vaadin.documentTitleSignal.value should be set conditionally via JavaScript",
-                pendingJavaScriptInvocation.getInvocation().getExpression()
-                        .contains(
-                                """
-                                            if(window?.Vaadin?.documentTitleSignal) {
-                                                window.Vaadin.documentTitleSignal.value = $0;
-                                            }
-                                        """
-                                        .stripIndent()));
+                        .contains("document.title = $0"),
+                "document.title should be set via JavaScript");
+        assertTrue(pendingJavaScriptInvocation.getInvocation().getExpression()
+                .contains("""
+                            if(window?.Vaadin?.documentTitleSignal) {
+                                window.Vaadin.documentTitleSignal.value = $0;
+                            }
+                        """.stripIndent()),
+                "window.Vaadin.documentTitleSignal.value should be set conditionally via JavaScript");
     }
 
     private PushConfiguration setUpInitialPush() {
@@ -578,7 +560,7 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void getDeploymentConfiguration() {
+    void getDeploymentConfiguration() {
         AlwaysLockedVaadinSession session = Mockito
                 .mock(AlwaysLockedVaadinSession.class);
         MockVaadinServletService mockVaadinServletService = Mockito
@@ -596,6 +578,6 @@ public class UIInternalsTest {
 
         Mockito.verify(session).getService();
         Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
-        Assert.assertEquals(config, result);
+        assertEquals(config, result);
     }
 }

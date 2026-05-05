@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -173,14 +173,18 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         try {
             File projectFolder = config.getProjectFolder();
             File resourceFolder = config.getJavaResourceFolder();
-            List<String> locations = Stream.concat(Stream
+            File jarResourcesFolder = FrontendUtils
+                    .getJarResourcesFolder(config.getFrontendFolder());
+            List<String> locations = Stream.of(Stream
                     .of("META-INF/resources", "resources", "static", "public")
                     .map(location -> new File(resourceFolder, location)),
-                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    Stream.of(new File(projectFolder, "src/main/webapp"),
+                            jarResourcesFolder))
+                    .flatMap(s -> s)
                     .filter(root -> root.exists() && root.isDirectory())
                     .filter(File::exists)
-                    .map(staticResourceFolder -> FrontendUtils
-                            .getUnixPath(staticResourceFolder.toPath()))
+                    .map(staticResourceFolder -> FrontendUtils.getUnixPath(
+                            staticResourceFolder.toPath().normalize()))
                     .toList();
             registerWatcherShutdownCommand(
                     new PublicResourcesLiveUpdater(locations, context));

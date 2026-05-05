@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -116,6 +116,15 @@ public class CssLoadingView extends Div {
         lumo.addClassNames("compare", "bg-contrast");
         add(wrap("lumo", lumo));
 
+        // Regression target for https://github.com/vaadin/flow/issues/24164:
+        // .relurl-test-target's background-image is defined in
+        // webapp/relurl-test/views/messages.css using a relative
+        // url('../images/dot.svg'). The IT asserts that this url resolves
+        // to /relurl-test/images/dot.svg.
+        Div relurlTestTarget = new Div();
+        relurlTestTarget.setId("relurlTestTarget");
+        relurlTestTarget.addClassName("relurl-test-target");
+        add(relurlTestTarget);
     }
 
     private Component wrap(String id, Component component) {

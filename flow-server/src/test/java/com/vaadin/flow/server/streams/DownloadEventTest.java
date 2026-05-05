@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,8 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.EncodeUtil;
@@ -26,20 +26,20 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
-public class DownloadEventTest {
+class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
     }
 
     @Test
-    public void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
+    void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "test.txt";
@@ -49,7 +49,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_nonEmptyFileName_setsContentDispositionEncodedFilenameQuotedToResponse() {
+    void setFileName_nonEmptyFileName_setsContentDispositionEncodedFilenameQuotedToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "test üñîçødë.txt";
@@ -60,7 +60,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_emptyFileName_setsContentDispositionToResponse() {
+    void setFileName_emptyFileName_setsContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "";
@@ -69,7 +69,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_blankFileName_setsContentDispositionToResponse() {
+    void setFileName_blankFileName_setsContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "   ";
@@ -78,7 +78,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_nullFileName_doesNotSetContentDispositionToResponse() {
+    void setFileName_nullFileName_doesNotSetContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.setFileName(null);
@@ -87,7 +87,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_headerAlreadySet_doesNotOverrideHeader() {
+    void setFileName_headerAlreadySet_doesNotOverrideHeader() {
         Mockito.when(response.containsHeader("Content-Disposition"))
                 .thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
@@ -98,7 +98,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_noFileName_setsContentDispositionInlineToResponse() {
+    void inline_noFileName_setsContentDispositionInlineToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline();
@@ -106,7 +106,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_withASCIIFileName_setsContentDispositionInlineWithFilenameToResponse() {
+    void inline_withASCIIFileName_setsContentDispositionInlineWithFilenameToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "document.pdf";
@@ -116,7 +116,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_withNonASCIIFileName_setsContentDispositionInlineWithEncodedFilenameToResponse() {
+    void inline_withNonASCIIFileName_setsContentDispositionInlineWithEncodedFilenameToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "dökümänt üñîçødë.pdf";
@@ -128,7 +128,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_nullFileName_setsContentDispositionInlineToResponse() {
+    void inline_nullFileName_setsContentDispositionInlineToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline(null);
@@ -136,7 +136,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_emptyFileName_setsContentDispositionInlineToResponse() {
+    void inline_emptyFileName_setsContentDispositionInlineToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("");
@@ -144,7 +144,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_blankFileName_setsContentDispositionInlineToResponse() {
+    void inline_blankFileName_setsContentDispositionInlineToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("   ");
@@ -152,7 +152,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_headerAlreadySet_doesNotOverrideHeader() {
+    void inline_headerAlreadySet_doesNotOverrideHeader() {
         Mockito.when(response.containsHeader("Content-Disposition"))
                 .thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
@@ -163,7 +163,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void inline_withFileNameHeaderAlreadySet_doesNotOverrideHeader() {
+    void inline_withFileNameHeaderAlreadySet_doesNotOverrideHeader() {
         Mockito.when(response.containsHeader("Content-Disposition"))
                 .thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
@@ -174,7 +174,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setContentType_setsContentTypeToResponse() {
+    void setContentType_setsContentTypeToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String contentType = "application/pdf";
@@ -183,7 +183,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setContentLenght_setsContentLengthToResponse() {
+    void setContentLenght_setsContentLengthToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         int contentLength = 1024;
@@ -192,7 +192,7 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setContentLenght_unknownLength_doesNotSetContentLengthToResponse() {
+    void setContentLenght_unknownLength_doesNotSetContentLengthToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         int contentLength = -1;

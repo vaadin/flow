@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,6 +47,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
@@ -56,6 +57,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -86,6 +88,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -230,7 +233,12 @@ public class UIInternals implements Serializable {
 
     private ExtendedClientDetails extendedClientDetails = null;
 
+    private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
+            GeolocationAvailability.UNKNOWN);
+
     private ArrayDeque<Component> modalComponentStack;
+
+    private Element wrapperElement;
 
     /**
      * Creates a new instance for the given UI.
@@ -1049,6 +1057,13 @@ public class UIInternals implements Serializable {
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
 
+        VaadinService service = session.getService();
+        if (!service.getDeploymentConfiguration().isProductionMode()) {
+            dependencies.getStyleSheets()
+                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(styleSheet.value()));
+        }
+
         warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
@@ -1201,6 +1216,21 @@ public class UIInternals implements Serializable {
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
                     refreshRouteChain || hasModalComponent());
         }
+    }
+
+    /**
+     * Checks if an error view is currently being displayed. An error view is a
+     * component that implements HasErrorParameter.
+     *
+     * @return true if showing an error view, false otherwise
+     */
+    public boolean isShowingErrorView() {
+        if (routerTargetChain.isEmpty()) {
+            return false;
+        }
+        // The first element in the chain is the actual view component
+        HasElement target = routerTargetChain.get(0);
+        return target instanceof com.vaadin.flow.router.HasErrorParameter;
     }
 
     /**
@@ -1378,6 +1408,30 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Returns the reactive signal holding the geolocation availability for this
+     * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
+     * client bootstrap report, then transitions to the value the browser
+     * reports and reflects subsequent updates. Application code reads it via
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilitySignal()}.
+     *
+     * @return the availability signal
+     */
+    public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
+        return geolocationAvailabilitySignal;
+    }
+
+    /**
+     * Updates the geolocation availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     */
+    public void setGeolocationAvailability(
+            GeolocationAvailability availability) {
+        this.geolocationAvailabilitySignal.set(availability);
+    }
+
+    /**
      * Check if we have a modal component defined for the UI.
      *
      * @return {@code true} if modal component is defined
@@ -1510,5 +1564,25 @@ public class UIInternals implements Serializable {
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
+    }
+
+    /**
+     * Create flow reference for the client outlet element if not already
+     * generated.
+     */
+    public void createWrapperElement() {
+        if (this.wrapperElement == null) {
+            this.wrapperElement = new Element(getContainerTag());
+            getUI().wrapperElement = this.wrapperElement;
+        }
+    }
+
+    /**
+     * Get outlet element reference wrapper if set.
+     * 
+     * @return wrapperElement if set else {@code null}
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -76,7 +76,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * <pre>
  * {@code
- * com.vaadin.flow.hotswap.Hotswapper.register(this);
+ * com.vaadin.base.devserver.hotswap.Hotswapper.register(this);
  * }
  * </pre>
  * <p>
@@ -616,17 +616,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
         sessions.add(ui.getSession());
-        ui.getPage().executeJs(
-                """
-                        const $wnd = window;
-                        window.addEventListener('vaadin-refresh-ui', (ev) => {
-                            const senderFn = $wnd.Vaadin?.Flow?.clients[$0]?.sendEventMessage;
-                            if (senderFn) {
-                                senderFn(1, "ui-refresh", ev.detail);
-                            }
-                        });
-                        """,
-                ui.getInternals().getAppId());
     }
 
     /**

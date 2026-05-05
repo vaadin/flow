@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,30 +15,32 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-public class BundleUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BundleUtilsTest {
 
     private List<AutoCloseable> closeOnTearDown = new ArrayList<>();
+    @TempDir
+    Path temporaryFolder;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         for (AutoCloseable closeable : closeOnTearDown) {
             try {
                 closeable.close();
@@ -49,55 +51,54 @@ public class BundleUtilsTest {
     }
 
     @Test
-    public void frontendImportVariantsIncluded() {
+    void frontendImportVariantsIncluded() {
         mockStatsJson("Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains("Frontend/foo.js"));
-        Assert.assertTrue(bundleImports.contains("foo.js"));
-        Assert.assertTrue(bundleImports.contains("./foo.js"));
+        assertTrue(bundleImports.contains("Frontend/foo.js"));
+        assertTrue(bundleImports.contains("foo.js"));
+        assertTrue(bundleImports.contains("./foo.js"));
     }
 
     @Test
-    public void jarImportVariantsIncluded() {
+    void jarImportVariantsIncluded() {
         mockStatsJson("Frontend/generated/jar-resources/my/addon.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports
+        assertTrue(bundleImports
                 .contains("Frontend/generated/jar-resources/my/addon.js"));
-        Assert.assertTrue(bundleImports.contains("./my/addon.js"));
-        Assert.assertTrue(bundleImports.contains("my/addon.js"));
+        assertTrue(bundleImports.contains("./my/addon.js"));
+        assertTrue(bundleImports.contains("my/addon.js"));
     }
 
     @Test
-    public void frontendInTheMiddleNotTouched() {
+    void frontendInTheMiddleNotTouched() {
         mockStatsJson("my/Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertEquals(Set.of("my/Frontend/foo.js"), bundleImports);
+        assertEquals(Set.of("my/Frontend/foo.js"), bundleImports);
     }
 
     @Test
-    public void themeVariantsHandled() {
+    void themeVariantsHandled() {
         mockStatsJson("@foo/bar/theme/lumo/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(
-                bundleImports.contains("@foo/bar/theme/lumo/file.js"));
-        Assert.assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
+        assertTrue(bundleImports.contains("@foo/bar/theme/lumo/file.js"));
+        assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
     }
 
     @Test
-    public void themeVariantsFromJarHandled() {
+    void themeVariantsFromJarHandled() {
         mockStatsJson("Frontend/generated/jar-resources/theme/lumo/file.js",
                 "Frontend/generated/jar-resources/theme/material/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains(
+        assertTrue(bundleImports.contains(
                 "Frontend/generated/jar-resources/theme/lumo/file.js"));
-        Assert.assertTrue(bundleImports.contains(
+        assertTrue(bundleImports.contains(
                 "Frontend/generated/jar-resources/theme/material/file.js"));
-        Assert.assertTrue(bundleImports.contains("./src/file.js"));
+        assertTrue(bundleImports.contains("./src/file.js"));
     }
 
     private void mockStatsJson(String... imports) {
@@ -121,34 +122,34 @@ public class BundleUtilsTest {
     }
 
     @Test
-    public void loadStatsJson_cachesResult_returnsSameInstance() {
+    void loadStatsJson_cachesResult_returnsSameInstance() {
         // First call loads and caches
         ObjectNode first = BundleUtils.loadStatsJson();
         // Second call returns cached instance
         ObjectNode second = BundleUtils.loadStatsJson();
-        Assert.assertSame("Should return cached instance on second call", first,
-                second);
+        assertSame(first, second,
+                "Should return cached instance on second call");
     }
 
     @Test
-    public void loadStatsJson_cachedResultIsConsistent() {
+    void loadStatsJson_cachedResultIsConsistent() {
         ObjectNode first = BundleUtils.loadStatsJson();
         ObjectNode second = BundleUtils.loadStatsJson();
 
         // Verify both have same content (whether same instance or not)
-        Assert.assertEquals("Cached result should be consistent",
-                first.toString(), second.toString());
+        assertEquals(first.toString(), second.toString(),
+                "Cached result should be consistent");
     }
 
     @Test
-    public void isPreCompiledProductionBundle_usesCachedStats() {
+    void isPreCompiledProductionBundle_usesCachedStats() {
         // Call multiple times
         boolean first = BundleUtils.isPreCompiledProductionBundle();
         boolean second = BundleUtils.isPreCompiledProductionBundle();
         boolean third = BundleUtils.isPreCompiledProductionBundle();
 
         // All should return same result
-        Assert.assertEquals("Should return consistent results", first, second);
-        Assert.assertEquals("Should return consistent results", second, third);
+        assertEquals(first, second, "Should return consistent results");
+        assertEquals(second, third, "Should return consistent results");
     }
 }

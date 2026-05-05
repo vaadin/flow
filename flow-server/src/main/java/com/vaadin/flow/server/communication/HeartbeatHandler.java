@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -69,10 +69,6 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             // iOS 6 Safari requires this
             // (https://github.com/vaadin/framework/issues/3226)
             response.setHeader("Cache-Control", "no-cache");
-            // If Content-Type is not set, browsers assume text/html and may
-            // complain about the empty response body
-            // (https://github.com/vaadin/framework/issues/4167)
-            response.setHeader("Content-Type", "text/plain");
         } else {
             response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "UI not found");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -70,9 +70,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
+                "com\\.vaadin\\.flow\\.internal\\.ResourceContentHash",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
-                "com\\.vaadin\\.signals\\..*",
+                "com\\.vaadin\\.flow\\.signals\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
                 "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.stats..*",
@@ -206,7 +207,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
-                "com\\.vaadin\\.flow\\.component\\.ComponentEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",

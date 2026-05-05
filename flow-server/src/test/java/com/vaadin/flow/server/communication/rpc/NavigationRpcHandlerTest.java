@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -26,15 +26,15 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class NavigationRpcHandlerTest {
+class NavigationRpcHandlerTest {
 
     private UI ui;
     private History.HistoryStateChangeHandler historyStateChangeHandler;
     private NavigationRpcHandler rpcHandler;
     private ObjectNode invocation;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         ui = new UI();
         historyStateChangeHandler = Mockito
                 .mock(History.HistoryStateChangeHandler.class);
@@ -50,7 +50,7 @@ public class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleRouterLinkClick_navigationTriggered() {
+    void handleRouterLinkClick_navigationTriggered() {
         invocation.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, true);
         rpcHandler.handle(ui, invocation);
 
@@ -60,7 +60,7 @@ public class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleRouterLinkClick_uiIsInert_navigationTriggered() {
+    void handleRouterLinkClick_uiIsInert_navigationTriggered() {
         ui.addModal(new RouterLink());
         ui.getInternals().getStateTree().collectChanges(nodeChange -> {
         });
@@ -74,7 +74,7 @@ public class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleHistoryChange_uiIsInert_navigationTriggered() {
+    void handleHistoryChange_uiIsInert_navigationTriggered() {
         ui.addModal(new RouterLink());
         rpcHandler.handle(ui, invocation);
 

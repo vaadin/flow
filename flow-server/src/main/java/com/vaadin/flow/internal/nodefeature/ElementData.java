@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,8 +21,9 @@ import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Map of basic element information.
@@ -48,8 +49,8 @@ public class ElementData extends NodeMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding) {
-            return ((SignalBinding) value).value();
+        if (value instanceof InternalSignalBinding) {
+            return ((InternalSignalBinding) value).value();
         } else {
             return value;
         }
@@ -121,7 +122,7 @@ public class ElementData extends NodeMap {
     public boolean isVisible() {
         var value = get(NodeProperties.VISIBLE);
         return !Boolean.FALSE
-                .equals(value instanceof SignalBinding signalBinding
+                .equals(value instanceof InternalSignalBinding signalBinding
                         ? signalBinding.value()
                         : value);
     }
@@ -151,28 +152,28 @@ public class ElementData extends NodeMap {
 
     /**
      * Binds the given signal to the <code>visible</code> property.
-     * <code>null</code> signal unbinds existing binding.
      *
      * @param owner
      *            the element owning the property, not <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
      */
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
-        bindSignal(owner, NodeProperties.VISIBLE, signal,
-                (element, value) -> putVisibleSignalValue(value));
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
+        return bindSignal(owner, NodeProperties.VISIBLE, signal,
+                (element, value) -> putVisibleSignalValue(value), null);
     }
 
     private void putVisibleSignalValue(Boolean value) {
         boolean booleanValue = (value != null) ? value : Boolean.FALSE;
         if (hasSignal(NodeProperties.VISIBLE)) {
-            SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
-            put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
-                    b.registration(), booleanValue));
+            InternalSignalBinding b = (InternalSignalBinding) super.get(
+                    NodeProperties.VISIBLE);
+            put(NodeProperties.VISIBLE,
+                    new InternalSignalBinding(b.signal(), booleanValue, null));
         } else {
             put(NodeProperties.VISIBLE, booleanValue);
         }

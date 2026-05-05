@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class HasPlaceholderTest {
+class HasPlaceholderTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component
@@ -29,28 +29,28 @@ public class HasPlaceholderTest {
     }
 
     @Test
-    public void withoutPlaceholderComponent_getPlaceholderReturnsNull() {
+    void withoutPlaceholderComponent_getPlaceholderReturnsNull() {
         TestComponent component = new TestComponent();
 
         assertNull(component.getPlaceholder());
     }
 
     @Test
-    public void withNullPlaceholder_getPlaceholderReturnsEmptyString() {
+    void withNullPlaceholder_getPlaceholderReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setPlaceholder(null);
         assertEquals("", component.getPlaceholder());
     }
 
     @Test
-    public void withEmptyPlaceholder_getPlaceholderReturnsEmptyString() {
+    void withEmptyPlaceholder_getPlaceholderReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setPlaceholder("");
         assertEquals("", component.getPlaceholder());
     }
 
     @Test
-    public void setPlaceholder() {
+    void setPlaceholder() {
         TestComponent component = new TestComponent();
         component.setPlaceholder("test Placeholder");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,21 +15,22 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @TestPropertySource(properties = { "server.port = 1235" })
-public class DevModeBrowserLauncherServletMappingTest
+class DevModeBrowserLauncherServletMappingTest
         extends AbstractDevModeBrowserLauncherTest {
 
     @Test
-    public void getUrl_withContextPath_givesUrlWithContextPathAndNoUrlMapping() {
+    void getUrl_withContextPath_givesUrlWithContextPathAndNoUrlMapping() {
         MockServletContext ctx = (MockServletContext) app.getServletContext();
         ctx.setContextPath("/contextpath");
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1235/contextpath/", url);
+        assertEquals("http://localhost:1235/contextpath/", url);
     }
 
 }

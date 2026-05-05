@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,34 +15,34 @@
  */
 package com.vaadin.flow.data.converter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class IntegerToDoubleConverterTest {
+class IntegerToDoubleConverterTest {
 
     IntegerToDoubleConverter converter = new IntegerToDoubleConverter();
 
     @Test
-    public void testNullConversionToModel() {
+    void testNullConversionToModel() {
         assertEquals(converter.convertToModel(null, null), Result.ok(null));
     }
 
     @Test
-    public void testNullConversionToPresentation() {
+    void testNullConversionToPresentation() {
         assertNull(converter.convertToPresentation(null, null));
     }
 
     @Test
-    public void testConvertToModel() {
+    void testConvertToModel() {
         assertEquals(Result.ok(42.0), converter.convertToModel(42, null));
     }
 
     @Test
-    public void testConvertToPresentation() {
+    void testConvertToPresentation() {
         assertEquals(Integer.valueOf(42),
                 converter.convertToPresentation(42.0, null));
     }

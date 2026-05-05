@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -34,7 +34,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public class RouteNotFoundErrorTest {
+class RouteNotFoundErrorTest {
 
     @Tag(Tag.A)
     private static class RouteTarget extends Component {
@@ -42,7 +42,7 @@ public class RouteNotFoundErrorTest {
     }
 
     @Test
-    public void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
+    void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
         BeforeEnterEvent event = createEvent(true);
@@ -83,7 +83,7 @@ public class RouteNotFoundErrorTest {
     }
 
     @Test
-    public void setErrorParameter_devMode_noRoutes() {
+    void setErrorParameter_devMode_noRoutes() {
         RouteNotFoundError page = new RouteNotFoundError();
         BeforeEnterEvent event = createEvent(false);
 
