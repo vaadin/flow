@@ -60,45 +60,15 @@ class TableRowContainerTest {
     }
 
     @Test
-    void getRow() {
-        var row0 = new TableRow();
-        var row1 = new TableRow();
-        var row2 = new TableRow();
-        container.addRows(row0, row1, row2);
-        AssertUtils.assertEquals(row0, container.getRow(0).orElseThrow(),
-                "Row 0 does not match");
-        AssertUtils.assertEquals(row1, container.getRow(1).orElseThrow(),
-                "Row 1 does not match");
-        AssertUtils.assertEquals(row2, container.getRow(2).orElseThrow(),
-                "Row 2 does not match");
-    }
-
-    @Test
-    void getNonExistentRow() {
-        container.addRow();
-        assertTrue(container.getRow(0).isPresent());
-        assertTrue(container.getRow(1).isEmpty());
-    }
-
-    @Test
-    void getRowIndex() {
-        for (int i = 0; i < 10; i++) {
-            container.addRow();
-            var row = container.getRow(i).orElseThrow();
-            int rowIndex = container.getRowIndex(row);
-            assertEquals(i, rowIndex);
-        }
-    }
-
-    @Test
     void insertRow() {
         var row0 = new TableRow();
         var row1 = new TableRow();
         var row2 = new TableRow();
         container.addRows(row0, row1, row2);
         var newRow = container.insertRow(1);
-        assertEquals(4, container.getRowCount());
-        AssertUtils.assertEquals(newRow, container.getRow(1).orElseThrow(),
+        var rows = container.getRows();
+        assertEquals(4, rows.size());
+        AssertUtils.assertEquals(newRow, rows.get(1),
                 "New row must be inserted at given position");
     }
 
@@ -108,21 +78,7 @@ class TableRowContainerTest {
         container.addRow();
         container.addRow();
         container.removeAllRows();
-        assertEquals(0, container.getRowCount());
-    }
-
-    @Test
-    void removeRowByIndex() {
-        var row0 = container.addRow();
-        var row1 = container.addRow();
-        var row2 = container.addRow();
-        container.removeRow(1);
-        assertTrue(row1.getParent().isEmpty());
-        assertEquals(2, container.getRowCount());
-        AssertUtils.assertEquals(row0, container.getRow(0).orElseThrow(),
-                "row0 must not be removed");
-        AssertUtils.assertEquals(row2, container.getRow(1).orElseThrow(),
-                "row2 must not be removed");
+        assertEquals(0, container.getRows().size());
     }
 
     @Test
@@ -135,7 +91,7 @@ class TableRowContainerTest {
         container.removeRows(row1, row3);
         assertTrue(row1.getParent().isEmpty());
         assertTrue(row3.getParent().isEmpty());
-        assertEquals(3, container.getRowCount());
+        assertEquals(3, container.getRows().size());
         AssertUtils.assertEquals(container, row0.getParent().orElseThrow(),
                 "row0 must not be removed");
         AssertUtils.assertEquals(container, row2.getParent().orElseThrow(),
@@ -151,20 +107,10 @@ class TableRowContainerTest {
         container.addRow();
         var newRow = new TableRow();
         container.replaceRow(1, newRow);
-        assertEquals(3, container.getRowCount());
-        AssertUtils.assertEquals(newRow, container.getRow(1).orElseThrow(),
+        var rows = container.getRows();
+        assertEquals(3, rows.size());
+        AssertUtils.assertEquals(newRow, rows.get(1),
                 "Row must be replaced with new row");
-    }
-
-    @Test
-    void getRowCount() {
-        assertEquals(0, container.getRowCount());
-        container.addRow();
-        assertEquals(1, container.getRowCount());
-        container.addRow();
-        assertEquals(2, container.getRowCount());
-        container.removeRow(0);
-        assertEquals(1, container.getRowCount());
     }
 
 }

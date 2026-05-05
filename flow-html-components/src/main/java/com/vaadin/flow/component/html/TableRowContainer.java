@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,18 +44,6 @@ interface TableRowContainer extends HasElement {
     }
 
     /**
-     * Get the index of a given row.
-     *
-     * @param row
-     *            the row to get the index of.
-     * @return the index of the row, or -1 if the row is not a child of this
-     *         container.
-     */
-    default int getRowIndex(TableRow row) {
-        return getElement().indexOfChild(row.getElement());
-    }
-
-    /**
      * Returns a list of all the rows.
      *
      * @return all the rows in the container.
@@ -64,19 +51,6 @@ interface TableRowContainer extends HasElement {
     default List<TableRow> getRows() {
         return rowComponents().filter(c -> c instanceof TableRow)
                 .map(c -> (TableRow) c).collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the row at the given index.
-     *
-     * @param index
-     *            the index of the row. Must be greater than or equal to 0 and
-     *            less than the size of the container.
-     * @return the row at position {@code index}.
-     */
-    default Optional<TableRow> getRow(int index) {
-        return rowComponents().filter(c -> c instanceof TableRow)
-                .map(c -> (TableRow) c).skip(index).findFirst();
     }
 
     /**
@@ -129,17 +103,6 @@ interface TableRowContainer extends HasElement {
     }
 
     /**
-     * Remove the row at the given index.
-     *
-     * @param index
-     *            the position of the row to remove.
-     */
-    default void removeRow(int index) {
-        getRow(index)
-                .ifPresent(row -> getElement().removeChild(row.getElement()));
-    }
-
-    /**
      * Remove all the rows in the container.
      */
     default void removeAllRows() {
@@ -156,15 +119,6 @@ interface TableRowContainer extends HasElement {
      */
     default void replaceRow(int index, TableRow row) {
         getElement().setChild(index, row.getElement());
-    }
-
-    /**
-     * Returns the number of rows in the container.
-     *
-     * @return the row count.
-     */
-    default long getRowCount() {
-        return rowComponents().filter(c -> c instanceof TableRow).count();
     }
 
 }

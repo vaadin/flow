@@ -203,24 +203,6 @@ class TableTest extends ComponentTest {
     }
 
     @Test
-    void getBodyByIndex() {
-        var component = (Table) getComponent();
-        var body = component.getBody(0);
-        assertEquals(1, component.getChildren().count());
-        var secondCallBody = component.getBody(0);
-        assertEquals(1, component.getChildren().count());
-        AssertUtils.assertEquals(body, secondCallBody,
-                "No new body should've been created");
-    }
-
-    @Test
-    void getNonExistentBodyByIndex() {
-        var component = (Table) getComponent();
-        assertThrows(IndexOutOfBoundsException.class,
-                () -> component.getBody(1));
-    }
-
-    @Test
     void getBodies() {
         var component = (Table) getComponent();
         for (int i = 0; i < 10; i++) {
@@ -231,31 +213,6 @@ class TableTest extends ComponentTest {
             AssertUtils.assertEquals(component, body.getParent().orElseThrow(),
                     "Body is not a child of table");
         }
-    }
-
-    @Test
-    void removeBody() {
-        var component = (Table) getComponent();
-        for (int i = 0; i < 10; i++) {
-            component.addBody();
-        }
-        var bodies = component.getBodies();
-        for (int i = 0; i < 10; i++) {
-            component.removeBody();
-            assertTrue(bodies.get(i).getParent().isEmpty());
-        }
-    }
-
-    @Test
-    void removeBodyByIndex() {
-        var component = (Table) getComponent();
-        var body0 = component.addBody();
-        var body1 = component.addBody();
-        var body2 = component.addBody();
-        component.removeBody(1);
-        assertTrue(body0.getParent().isPresent());
-        assertTrue(body1.getParent().isEmpty());
-        assertTrue(body2.getParent().isPresent());
     }
 
     @Test
@@ -276,7 +233,7 @@ class TableTest extends ComponentTest {
         TableRow row = table.addRow();
         assertTrue(table.findHead().isEmpty());
         assertEquals(1, table.getBodies().size());
-        assertEquals(1, table.getBody().getRowCount());
+        assertEquals(1, table.getBody().getRows().size());
         AssertUtils.assertEquals(table.getBody(), row.getParent().orElseThrow(),
                 "row must live inside the auto-created tbody");
     }
@@ -297,7 +254,7 @@ class TableTest extends ComponentTest {
         var table = (Table) getComponent();
         TableRow row = table.addHeaderRow("Name", "Age");
         assertTrue(table.findHead().isPresent());
-        assertEquals(1, table.getHead().getRowCount());
+        assertEquals(1, table.getHead().getRows().size());
         assertEquals(2, row.getHeaderCells().size());
         assertEquals("Name", row.getHeaderCells().get(0).getText());
     }
@@ -307,7 +264,7 @@ class TableTest extends ComponentTest {
         var table = (Table) getComponent();
         TableRow row = table.addFooterRow("Total", "55");
         assertTrue(table.findFoot().isPresent());
-        assertEquals(1, table.getFoot().getRowCount());
+        assertEquals(1, table.getFoot().getRows().size());
         assertEquals(2, row.getDataCells().size());
     }
 
@@ -324,8 +281,8 @@ class TableTest extends ComponentTest {
         table.addRow("Bob", "25", "Green");
 
         assertEquals("People", table.getCaptionText());
-        assertEquals(1, table.getHead().getRowCount());
-        assertEquals(2, table.getBody().getRowCount());
+        assertEquals(1, table.getHead().getRows().size());
+        assertEquals(2, table.getBody().getRows().size());
 
         var children = table.getChildren().toList();
         assertEquals(table.getCaption(), children.get(0));
@@ -339,7 +296,7 @@ class TableTest extends ComponentTest {
         var r1 = new TableRow();
         var r2 = new TableRow();
         table.addRows(r1, r2);
-        assertEquals(2, table.getBody().getRowCount());
+        assertEquals(2, table.getBody().getRows().size());
         AssertUtils.assertEquals(table.getBody(), r1.getParent().orElseThrow(),
                 "r1 must be a child of tbody");
         AssertUtils.assertEquals(table.getBody(), r2.getParent().orElseThrow(),
@@ -471,9 +428,9 @@ class TableTest extends ComponentTest {
         assertTrue(table.findHead().isPresent());
         assertEquals(1, table.getBodies().size());
         assertTrue(table.findFoot().isPresent());
-        assertEquals(0, table.getHead().getRowCount());
-        assertEquals(0, table.getBody().getRowCount());
-        assertEquals(0, table.getFoot().getRowCount());
+        assertEquals(0, table.getHead().getRows().size());
+        assertEquals(0, table.getBody().getRows().size());
+        assertEquals(0, table.getFoot().getRows().size());
     }
 
     @Test

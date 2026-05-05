@@ -282,24 +282,6 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
-     * Returns the {@code <tbody>} element at a given position relative to other
-     * {@code <tbody>} elements.
-     *
-     * @param index
-     *            the position of the body element relative to other body
-     *            elements.
-     * @return the table body component at the given position. If the position
-     *         is 0 and there are no body elements present, a new one is created
-     *         and returned.
-     */
-    public TableBody getBody(int index) {
-        if (index == 0) {
-            return getBody();
-        }
-        return bodies.get(index);
-    }
-
-    /**
      * Adds a new body element to the table, positioned after the existing
      * bodies and before the foot (if any).
      *
@@ -322,23 +304,6 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
         if (bodies.remove(body)) {
             getElement().removeChild(body.getElement());
         }
-    }
-
-    /**
-     * Removes a body element at a given position.
-     *
-     * @param index
-     *            the position of the body element to remove.
-     */
-    public void removeBody(int index) {
-        removeBody(bodies.get(index));
-    }
-
-    /**
-     * Removes the first body element in the list of bodies of this table.
-     */
-    public void removeBody() {
-        removeBody(0);
     }
 
     /**
