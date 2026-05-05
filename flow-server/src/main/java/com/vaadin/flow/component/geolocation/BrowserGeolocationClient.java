@@ -36,12 +36,9 @@ import com.vaadin.flow.shared.Registration;
 /**
  * {@link GeolocationClient} implementation backed by the real browser
  * Geolocation API via {@code window.Vaadin.Flow.geolocation} and DOM events.
- * This is the default implementation injected at facade construction time;
- * external browserless test drivers replace it via
- * {@link Geolocation#setClient(GeolocationClient)}.
- * <p>
- * <b>Framework internal.</b> Application code does not reference this class
- * directly.
+ * This is the default implementation used when no
+ * {@link GeolocationClientFactory} is registered through
+ * {@link com.vaadin.flow.di.Lookup Lookup}.
  */
 @NullMarked
 final class BrowserGeolocationClient implements GeolocationClient {

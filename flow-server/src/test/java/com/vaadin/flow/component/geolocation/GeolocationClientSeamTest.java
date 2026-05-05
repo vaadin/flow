@@ -22,10 +22,14 @@ import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -36,9 +40,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the {@link Geolocation#setClient(GeolocationClient)} +
- * {@link GeolocationTracker#handle()} seam — the framework-internal API surface
- * used by external browserless test drivers.
+ * Tests the {@link GeolocationClient} seam — both the public
+ * {@link GeolocationClientFactory} extension point that external test drivers
+ * and native bridges register through {@link Lookup}, and the package-private
+ * {@link Geolocation#setClient(GeolocationClient)} replacement that
+ * flow-server's own tests use.
  */
 class GeolocationClientSeamTest {
 
@@ -51,6 +57,22 @@ class GeolocationClientSeamTest {
 
     @Tag("div")
     private static class TestComponent extends Component {
+    }
+
+    @Test
+    void lookupFactory_resolvedAtConstruction_clientReceivesGetCalls() {
+        FakeClient fake = new FakeClient();
+        VaadinService service = VaadinService.getCurrent();
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(GeolocationClientFactory.class))
+                .thenReturn(unused -> fake);
+
+        UI freshUi = new MockUI();
+        freshUi.getGeolocation().get(outcome -> {
+        });
+
+        assertEquals(1, fake.getCalls.size(),
+                "factory-produced client should receive get() calls");
     }
 
     @Test
