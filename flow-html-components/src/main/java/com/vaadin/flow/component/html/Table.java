@@ -342,6 +342,48 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
+     * Returns every {@link TableRow} in this table — the head's rows, then the
+     * rows of each body in order, then the foot's rows — matching the document
+     * order exposed by the browser DOM's {@code HTMLTableElement.rows}. Useful
+     * for "iterate all rows" or "count rows" cases; for structural work go
+     * through {@link #getHead()}, {@link #getBody()} or {@link #getFoot()}
+     * directly.
+     *
+     * @return an unmodifiable list of all rows in the table.
+     */
+    public List<TableRow> getRows() {
+        List<TableRow> all = new ArrayList<>();
+        if (head != null) {
+            all.addAll(head.getRows());
+        }
+        for (TableBody body : bodies) {
+            all.addAll(body.getRows());
+        }
+        if (foot != null) {
+            all.addAll(foot.getRows());
+        }
+        return Collections.unmodifiableList(all);
+    }
+
+    /**
+     * Removes every row from this table's head, bodies and foot. The section
+     * elements themselves ({@code <thead>}, {@code <tbody>}, {@code <tfoot>})
+     * and any column groups are kept; use {@link #removeHead()},
+     * {@link #removeBody(TableBody)} or {@link #removeFoot()} to drop those.
+     */
+    public void removeAllRows() {
+        if (head != null) {
+            head.removeAllRows();
+        }
+        for (TableBody body : bodies) {
+            body.removeAllRows();
+        }
+        if (foot != null) {
+            foot.removeAllRows();
+        }
+    }
+
+    /**
      * Appends a new empty row to this table's body, creating an implicit
      * {@code <tbody>} if none exists yet. Mirrors the HTML pattern of placing
      * <code>&lt;tr&gt;</code> elements directly inside a

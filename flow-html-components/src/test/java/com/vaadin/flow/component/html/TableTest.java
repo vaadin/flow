@@ -421,6 +421,69 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void getRows_emptyWhenNoSections() {
+        var table = (Table) getComponent();
+        assertTrue(table.getRows().isEmpty());
+    }
+
+    @Test
+    void getRows_returnsHeadBodiesFootInOrder() {
+        var table = (Table) getComponent();
+        var headRow = table.addHeaderRow("Name");
+        var bodyRow1 = table.addRow("Alice");
+        var bodyRow2 = table.addRow("Bob");
+        var footRow = table.addFooterRow("Total");
+
+        var rows = table.getRows();
+        assertEquals(List.of(headRow, bodyRow1, bodyRow2, footRow), rows);
+    }
+
+    @Test
+    void getRows_concatenatesMultipleBodies() {
+        var table = (Table) getComponent();
+        var b1Row = table.getBody().addRow();
+        var b2Row = table.addBody().addRow();
+        var rows = table.getRows();
+        assertEquals(List.of(b1Row, b2Row), rows);
+    }
+
+    @Test
+    void getRows_isUnmodifiable() {
+        var table = (Table) getComponent();
+        table.addRow();
+        var rows = table.getRows();
+        assertThrows(UnsupportedOperationException.class,
+                () -> rows.add(new TableRow()));
+    }
+
+    @Test
+    void removeAllRows_clearsRowsButKeepsSections() {
+        var table = (Table) getComponent();
+        table.addHeaderRow("h");
+        table.addRow("b1");
+        table.addRow("b2");
+        table.addFooterRow("f");
+
+        table.removeAllRows();
+
+        assertTrue(table.getRows().isEmpty());
+        // Sections themselves remain
+        assertTrue(table.findHead().isPresent());
+        assertEquals(1, table.getBodies().size());
+        assertTrue(table.findFoot().isPresent());
+        assertEquals(0, table.getHead().getRowCount());
+        assertEquals(0, table.getBody().getRowCount());
+        assertEquals(0, table.getFoot().getRowCount());
+    }
+
+    @Test
+    void removeAllRows_isNoOpOnEmptyTable() {
+        var table = (Table) getComponent();
+        table.removeAllRows();
+        assertTrue(table.getRows().isEmpty());
+    }
+
+    @Test
     void doesNotExposeGenericAddComponent() {
         var component = (Table) getComponent();
         // The strict Table API must not expose generic add(Component) or
