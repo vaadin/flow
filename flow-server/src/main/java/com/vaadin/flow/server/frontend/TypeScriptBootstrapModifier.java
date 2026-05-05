@@ -39,4 +39,17 @@ public interface TypeScriptBootstrapModifier extends Serializable {
             FrontendDependenciesScanner frontendDependenciesScanner) {
     }
 
+    /**
+     * Modifies the bootstrap typescript by mutating the parameter.
+     *
+     * @param bootstrapTypeScript
+     *            the input typescript split into lines
+     * @param options
+     *            options used by the build
+     */
+    default void modify(List<String> bootstrapTypeScript, Options options) {
+        modify(bootstrapTypeScript, options,
+                options.getFrontendDependenciesScanner());
+    }
+
 }
