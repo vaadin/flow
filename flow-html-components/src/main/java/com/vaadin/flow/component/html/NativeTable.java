@@ -27,12 +27,12 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;table&gt;</code> element.
  * <p>
- * <b>Deprecated.</b> This component extends
- * {@link HtmlContainer} and therefore exposes a generic {@code add(Component)}
- * API that allows constructing structurally invalid tables. Use {@link Table}
- * instead, which extends {@link com.vaadin.flow.component.HtmlComponent} and
- * exposes only spec-compliant operations
- * (see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
+ * <b>Deprecated.</b> This component extends {@link HtmlContainer} and therefore
+ * exposes a generic {@code add(Component)} API that allows constructing
+ * structurally invalid tables. Use {@link Table} instead, which extends
+ * {@link com.vaadin.flow.component.HtmlComponent} and exposes only
+ * spec-compliant operations (see
+ * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  * HTML</a>).
  *
  * @since 24.4

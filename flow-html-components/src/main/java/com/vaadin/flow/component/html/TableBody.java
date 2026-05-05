@@ -22,10 +22,10 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;tbody&gt;</code> element.
  * <p>
- * Per the
- * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
- * specification</a>, a {@code <tbody>} may only contain {@code <tr>} elements.
- * This component therefore extends {@link HtmlComponent} (rather than
+ * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
+ * HTML specification</a>, a {@code <tbody>} may only contain
+ * <code>&lt;tr&gt;</code> elements. This component therefore extends
+ * {@link HtmlComponent} (rather than
  * {@link com.vaadin.flow.component.HtmlContainer}) and exposes only
  * {@link TableRow}-specific operations through {@link TableRowContainer}.
  *

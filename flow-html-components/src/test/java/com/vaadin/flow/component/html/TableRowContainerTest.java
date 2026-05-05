@@ -55,8 +55,7 @@ class TableRowContainerTest {
         assertEquals(10, rows.size());
         for (int i = 0; i < 10; i++) {
             AssertUtils.assertEquals(rows.get(i).getElement(),
-                    container.getElement().getChild(i),
-                    "row does not match");
+                    container.getElement().getChild(i), "row does not match");
         }
     }
 

@@ -135,7 +135,8 @@ interface TableRowContainer extends HasElement {
      *            the position of the row to remove.
      */
     default void removeRow(int index) {
-        getRow(index).ifPresent(row -> getElement().removeChild(row.getElement()));
+        getRow(index)
+                .ifPresent(row -> getElement().removeChild(row.getElement()));
     }
 
     /**
