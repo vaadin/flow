@@ -43,10 +43,12 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.converter.BigDecimalToDoubleConverter;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.DoubleRangeValidator;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
@@ -1524,6 +1526,28 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         validation = bind.validate();
         assertFalse(validation.isError());
         assertEquals(30, item.getAge());
+    }
+
+    @Test
+    void nullBigDecimalForPrimitiveDoubleField_showsValidationError() {
+        Binder<ExampleDouble> binder = new Binder<>(ExampleDouble.class);
+        TestTextField field = new TestTextField();
+        Binder.Binding<ExampleDouble, ?> binding = binder.forField(field)
+                .withConverter(new StringToBigDecimalConverter(""))
+                .withConverter(new BigDecimalToDoubleConverter())
+                .withValidator(new DoubleRangeValidator(
+                        "Value must be between 0 and 99.999", 0d, 99.999))
+                .bind("value");
+        binder.setBean(new ExampleDouble());
+
+        field.setValue("");
+
+        BindingValidationStatus<?> status = binding.validate();
+        assertTrue(status.isError());
+        assertEquals(
+                "Null value cannot be assigned to a primitive bean property. "
+                        + "Use asRequired() to prevent null values.",
+                status.getMessage().get());
     }
 
     @Test
@@ -3028,6 +3052,18 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 ((DecimalFormat) format).setMinimumFractionDigits(2);
             }
             return format;
+        }
+    }
+
+    private static class ExampleDouble {
+        private double value;
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
         }
     }
 

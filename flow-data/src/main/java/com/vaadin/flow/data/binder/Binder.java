@@ -1252,6 +1252,17 @@ public class Binder<BEAN> implements Serializable {
                     });
         }
 
+        @SuppressWarnings("unchecked")
+        private Converter<TARGET, Object> createConverterForPrimitive(
+                Class<?> boxedType) {
+            return Converter.from(value -> value == null ? Result.error(
+                    "Null value cannot be assigned to a primitive bean property. "
+                            + "Use asRequired() to prevent null values.")
+                    : Result.of(() -> boxedType.cast(value), exception -> {
+                        throw new RuntimeException(exception);
+                    }), propertyValue -> (TARGET) propertyValue);
+        }
+
         @SuppressWarnings({ "unchecked", "rawtypes" })
         private Binding<BEAN, TARGET> bind(String propertyName,
                 boolean readOnly) {
@@ -1273,8 +1284,11 @@ public class Binder<BEAN> implements Serializable {
                         propertyName + " does not have an accessible setter");
             }
 
-            BindingBuilder<BEAN, ?> finalBinding = withConverter(
-                    createConverter(definition.getType()), false);
+            boolean isPrimitive = definition instanceof AbstractBeanPropertyDefinition<?, ?> abpd
+                    && abpd.getDescriptor().getPropertyType().isPrimitive();
+            BindingBuilder<BEAN, ?> finalBinding = withConverter(isPrimitive
+                    ? createConverterForPrimitive(definition.getType())
+                    : createConverter(definition.getType()), false);
 
             finalBinding = getBinder().configureBinding(finalBinding,
                     definition);
