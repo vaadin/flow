@@ -18,6 +18,7 @@ package com.vaadin.flow.component.geolocation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -105,6 +108,29 @@ class GeolocationClientSeamTest {
                 "handle() should return null after stop()");
     }
 
+    @Test
+    void get_callbackReceivesUnknownErrorWhenClientFutureFailsExceptionally() {
+        FakeClient fake = new FakeClient();
+        fake.nextGetResult = CompletableFuture
+                .failedFuture(new RuntimeException(
+                        "Client-side geolocation.get failed: boom"));
+        ui.getGeolocation().setClient(fake);
+
+        AtomicReference<@Nullable GeolocationOutcome> received = new AtomicReference<>();
+        ui.getGeolocation().get(received::set);
+
+        GeolocationOutcome outcome = received.get();
+        assertNotNull(outcome,
+                "callback must fire even when the JS bridge fails");
+        GeolocationError err = assertInstanceOf(GeolocationError.class, outcome,
+                "infra failure should surface as a GeolocationError");
+        assertEquals(GeolocationErrorCode.UNKNOWN, err.errorCode(),
+                "error code should be UNKNOWN for client-bridge failures");
+        assertFalse(err.message().contains("boom"),
+                "synthesized message must not leak the wrapped exception text;"
+                        + " the cause is logged at DEBUG instead");
+    }
+
     /**
      * Minimal in-test fake. Records get() calls and serves a sentinel
      * WatchHandle from startWatch.
@@ -113,12 +139,15 @@ class GeolocationClientSeamTest {
         final List<@Nullable GeolocationOptions> getCalls = new ArrayList<>();
         boolean closed;
         GeolocationClient.@Nullable WatchHandle lastWatchHandle;
+        @Nullable
+        CompletableFuture<GeolocationOutcome> nextGetResult;
 
         @Override
         public CompletableFuture<GeolocationOutcome> get(
                 @Nullable GeolocationOptions options) {
             getCalls.add(options);
-            return new CompletableFuture<>();
+            CompletableFuture<GeolocationOutcome> result = nextGetResult;
+            return result != null ? result : new CompletableFuture<>();
         }
 
         @Override
