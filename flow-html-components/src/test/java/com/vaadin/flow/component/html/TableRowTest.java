@@ -22,7 +22,6 @@ import com.vaadin.flow.component.HasOrderedComponents;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TableRowTest extends ComponentTest {
     // Most tests in super class
@@ -39,12 +38,6 @@ public class TableRowTest extends ComponentTest {
                 "TableRow must not implement HasComponents");
         assertFalse(row instanceof HasOrderedComponents,
                 "TableRow must not implement HasOrderedComponents");
-    }
-
-    @Test
-    void constructor_rejectsNonCellChildren() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new TableRow(new Paragraph("not a cell")));
     }
 
     @Test
@@ -101,13 +94,6 @@ public class TableRowTest extends ComponentTest {
         row.addCells(th, td);
         assertEquals(1, row.getHeaderCells().size());
         assertEquals(1, row.getDataCells().size());
-    }
-
-    @Test
-    void addCells_rejectsNonCellComponent() {
-        TableRow row = new TableRow();
-        assertThrows(IllegalArgumentException.class,
-                () -> row.addCells(new Paragraph("nope")));
     }
 
     @Test

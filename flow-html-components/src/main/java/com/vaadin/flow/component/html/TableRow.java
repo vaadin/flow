@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -52,20 +51,13 @@ public class TableRow extends HtmlComponent
      * Creates a new table row with the given cells.
      *
      * @param cells
-     *            the cells to add. Each cell must be either a {@link TableDataCell}
-     *            or a {@link TableHeaderCell}.
+     *            the cells to add — each a {@link TableDataCell} or
+     *            {@link TableHeaderCell}.
      */
-    public TableRow(Component... cells) {
+    public TableRow(TableCell... cells) {
         super();
-        for (Component cell : cells) {
-            if (cell instanceof TableDataCell || cell instanceof TableHeaderCell) {
-                getElement().appendChild(cell.getElement());
-            } else {
-                throw new IllegalArgumentException(
-                        "A <tr> may only contain <td> (TableDataCell) or <th> "
-                                + "(TableHeaderCell) children, not "
-                                + cell.getClass().getName());
-            }
+        for (TableCell cell : cells) {
+            getElement().appendChild(cell.getElement());
         }
     }
 
@@ -189,11 +181,9 @@ public class TableRow extends HtmlComponent
      *
      * @return a list of all cells in this row.
      */
-    public List<Component> getCells() {
-        return getChildren()
-                .filter(c -> c instanceof TableDataCell
-                        || c instanceof TableHeaderCell)
-                .collect(Collectors.toList());
+    public List<TableCell> getCells() {
+        return getChildren().filter(c -> c instanceof TableCell)
+                .map(c -> (TableCell) c).collect(Collectors.toList());
     }
 
     /**
@@ -231,11 +221,9 @@ public class TableRow extends HtmlComponent
      *            the position of the cell.
      * @return the cell at the given position
      */
-    public Optional<Component> getCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof TableDataCell
-                        || c instanceof TableHeaderCell)
-                .skip(index).findFirst();
+    public Optional<TableCell> getCell(int index) {
+        return getChildren().filter(c -> c instanceof TableCell)
+                .map(c -> (TableCell) c).skip(index).findFirst();
     }
 
     /**
@@ -324,26 +312,16 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Appends pre-built cells to this row. Each cell must be either a
-     * {@link TableDataCell} or a {@link TableHeaderCell}.
+     * Appends pre-built cells to this row.
      *
      * @param cells
-     *            the cells to add.
+     *            the cells to add — each a {@link TableDataCell} or
+     *            {@link TableHeaderCell}.
      * @return this row, for fluent chaining.
-     * @throws IllegalArgumentException
-     *             if any of the given components is neither a
-     *             {@link TableDataCell} nor a {@link TableHeaderCell}.
      */
-    public TableRow addCells(Component... cells) {
-        for (Component cell : cells) {
-            if (cell instanceof TableDataCell || cell instanceof TableHeaderCell) {
-                getElement().appendChild(cell.getElement());
-            } else {
-                throw new IllegalArgumentException(
-                        "A <tr> may only contain <td> (TableDataCell) or <th> "
-                                + "(TableHeaderCell) children, not "
-                                + cell.getClass().getName());
-            }
+    public TableRow addCells(TableCell... cells) {
+        for (TableCell cell : cells) {
+            getElement().appendChild(cell.getElement());
         }
         return this;
     }
