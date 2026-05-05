@@ -77,8 +77,7 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
-        testValues.put(TableHeaderCell.Scope.class,
-                TableHeaderCell.Scope.COL);
+        testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -412,7 +411,8 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        return HtmlComponent.class.isAssignableFrom(cls);
+        return HtmlComponent.class.isAssignableFrom(cls)
+                && !Modifier.isAbstract(cls.getModifiers());
     }
 
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(

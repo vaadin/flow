@@ -94,6 +94,24 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Add a header cell to this row that labels the row itself, with
+     * {@code scope="row"} set on the resulting {@code <th>}. This is a
+     * shortcut for the common pattern of using a leading {@code <th>} as a
+     * row label, which assistive technologies announce as the header for
+     * the data cells in the same row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} element with {@code scope="row"}.
+     */
+    public TableHeaderCell addRowHeaderCell(String text) {
+        TableHeaderCell cell = new TableHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROW);
+        getElement().appendChild(cell.getElement());
+        return cell;
+    }
+
+    /**
      * Insert a new header cell into a given position.
      *
      * @param position

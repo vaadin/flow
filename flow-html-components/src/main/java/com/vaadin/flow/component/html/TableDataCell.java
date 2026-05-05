@@ -19,22 +19,18 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Component representing a <code>&lt;td&gt;</code> element (a table data
- * cell).
+ * Component representing a <code>&lt;td&gt;</code> element (a table data cell).
+ * Inherits {@code colspan}/{@code rowspan} support from {@link TableCell}.
  *
  * @since 25.2
  */
 @Tag(Tag.TD)
-public class TableDataCell extends HtmlContainer
+public class TableDataCell extends TableCell
         implements ClickNotifier<TableDataCell> {
-
-    final String ATTRIBUTE_COLSPAN = "colspan";
-    final String ATTRIBUTE_ROWSPAN = "rowspan";
 
     /**
      * Creates a new empty table cell component.
@@ -79,84 +75,9 @@ public class TableDataCell extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not <code>null</code>
      * @see #bindText(Signal)
-     *
-     * @since 25.1
      */
     public TableDataCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");
         bindText(textSignal);
-    }
-
-    /**
-     * Set the colspan of this cell.
-     *
-     * @param colspan
-     *            a non-negative integer value that indicates how many columns
-     *            the data cell spans or extends.
-     */
-    public void setColspan(int colspan) {
-        if (colspan < 0) {
-            throw new IllegalArgumentException(
-                    "colspan must be a non-negative integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_COLSPAN, String.valueOf(colspan));
-    }
-
-    /**
-     * Returns the colspan value of this cell.
-     *
-     * @return the current value of the colspan attribute. Default is 1.
-     */
-    public int getColspan() {
-        String colspan = getElement().getAttribute(ATTRIBUTE_COLSPAN);
-        if (colspan == null) {
-            colspan = "1";
-        }
-        return Integer.parseInt(colspan);
-    }
-
-    /**
-     * Reset colspan to its default value of 1.
-     */
-    public void resetColspan() {
-        getElement().removeAttribute(ATTRIBUTE_COLSPAN);
-    }
-
-    /**
-     * Sets the rowspan for this cell.
-     *
-     * @param rowspan
-     *            a non-negative integer value that indicates for how many rows
-     *            the data cell spans or extends. If its value is set to 0, it
-     *            extends until the end of the table grouping section
-     *            ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even if
-     *            implicitly defined), that the cell belongs to.
-     */
-    public void setRowspan(int rowspan) {
-        if (rowspan < 0) {
-            throw new IllegalArgumentException(
-                    "rowspan must be a non-negative integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_ROWSPAN, String.valueOf(rowspan));
-    }
-
-    /**
-     * Returns the rowspan value of this cell.
-     *
-     * @return the current value of the rowspan attribute. Default is 1.
-     */
-    public int getRowspan() {
-        String rowspan = getElement().getAttribute(ATTRIBUTE_ROWSPAN);
-        if (rowspan == null) {
-            rowspan = "1";
-        }
-        return Integer.parseInt(rowspan);
-    }
-
-    /**
-     * Resets the rowspan to its default value of 1.
-     */
-    public void resetRowspan() {
-        getElement().removeAttribute(ATTRIBUTE_ROWSPAN);
     }
 }

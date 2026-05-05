@@ -22,17 +22,19 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;table&gt;</code> element.
  * <p>
- * Per the
- * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
- * specification</a>, a {@code <table>} may contain (in order): an optional
- * {@code <caption>}, an optional {@code <thead>}, zero or more {@code <tbody>}
- * elements, and an optional {@code <tfoot>}. This component therefore extends
+ * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
+ * HTML specification</a>, a <code>&lt;table&gt;</code> may contain (in order):
+ * an optional <code>&lt;caption&gt;</code>, zero or more
+ * <code>&lt;colgroup&gt;</code> elements, an optional
+ * <code>&lt;thead&gt;</code>, zero or more <code>&lt;tbody&gt;</code> elements,
+ * and an optional <code>&lt;tfoot&gt;</code>. This component therefore extends
  * {@link HtmlComponent} (rather than
  * {@link com.vaadin.flow.component.HtmlContainer}) and exposes only the
  * structured operations required to build a valid table — child components are
@@ -44,6 +46,7 @@ import com.vaadin.flow.component.Tag;
 public class Table extends HtmlComponent implements ClickNotifier<Table> {
 
     private TableCaption caption;
+    private final List<TableColumnGroup> columnGroups = new LinkedList<>();
     private TableHead head;
     private final List<TableBody> bodies = new LinkedList<>();
     private TableFoot foot;
@@ -79,8 +82,8 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
-     * Returns the caption text for this table, or an empty string if no
-     * caption has been set.
+     * Returns the caption text for this table, or an empty string if no caption
+     * has been set.
      *
      * @return the table's caption text.
      */
@@ -100,6 +103,20 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
+     * Appends the given components to this table's caption, creating it if none
+     * exists yet. Useful for richer captions containing inline markup.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public TableCaption addCaption(Component... components) {
+        TableCaption c = getCaption();
+        c.add(components);
+        return c;
+    }
+
+    /**
      * Remove the caption from this table.
      */
     public void removeCaption() {
@@ -110,8 +127,70 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
+     * Appends a new empty {@code <colgroup>} to this table.
+     *
+     * @return the newly created column group.
+     */
+    public TableColumnGroup addColumnGroup() {
+        TableColumnGroup group = new TableColumnGroup();
+        getElement().insertChild(columnGroupAppendIndex(), group.getElement());
+        columnGroups.add(group);
+        return group;
+    }
+
+    /**
+     * Appends an existing {@code <colgroup>} to this table.
+     *
+     * @param group
+     *            the column group to add.
+     * @return the same group, for fluent chaining.
+     */
+    public TableColumnGroup addColumnGroup(TableColumnGroup group) {
+        getElement().insertChild(columnGroupAppendIndex(), group.getElement());
+        columnGroups.add(group);
+        return group;
+    }
+
+    /**
+     * Appends a new {@code <colgroup>} populated with the given columns.
+     *
+     * @param columns
+     *            the columns to place inside the new group.
+     * @return the newly created column group.
+     */
+    public TableColumnGroup addColumnGroup(TableColumn... columns) {
+        TableColumnGroup group = new TableColumnGroup();
+        getElement().insertChild(columnGroupAppendIndex(), group.getElement());
+        columnGroups.add(group);
+        group.addColumns(columns);
+        return group;
+    }
+
+    /**
+     * Returns the column groups attached to this table, in document order.
+     *
+     * @return an unmodifiable list of column groups.
+     */
+    public List<TableColumnGroup> getColumnGroups() {
+        return Collections.unmodifiableList(new ArrayList<>(columnGroups));
+    }
+
+    /**
+     * Removes a column group from this table.
+     *
+     * @param group
+     *            the group to remove.
+     */
+    public void removeColumnGroup(TableColumnGroup group) {
+        if (columnGroups.remove(group)) {
+            getElement().removeChild(group.getElement());
+        }
+    }
+
+    /**
      * Returns the head of this table. Creates a new one if none was present,
-     * inserted at the correct position (after the caption if any).
+     * inserted at the correct position (after the caption and any column
+     * groups).
      *
      * @return this table's {@code <thead>} element.
      */
@@ -198,15 +277,15 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     }
 
     /**
-     * Returns the {@code <tbody>} element at a given position relative to
-     * other {@code <tbody>} elements.
+     * Returns the {@code <tbody>} element at a given position relative to other
+     * {@code <tbody>} elements.
      *
      * @param index
      *            the position of the body element relative to other body
      *            elements.
      * @return the table body component at the given position. If the position
-     *         is 0 and there are no body elements present, a new one is
-     *         created and returned.
+     *         is 0 and there are no body elements present, a new one is created
+     *         and returned.
      */
     public TableBody getBody(int index) {
         if (index == 0) {
@@ -260,8 +339,9 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
     /**
      * Appends a new empty row to this table's body, creating an implicit
      * {@code <tbody>} if none exists yet. Mirrors the HTML pattern of placing
-     * {@code <tr>} elements directly inside a {@code <table>} (the browser
-     * auto-wraps them in {@code <tbody>}).
+     * <code>&lt;tr&gt;</code> elements directly inside a
+     * <code>&lt;table&gt;</code> (the browser auto-wraps them in
+     * {@code <tbody>}).
      *
      * @return the newly created row.
      */
@@ -271,7 +351,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
 
     /**
      * Appends a new row containing the given texts as data cells
-     * ({@code <td>}) to this table's body, creating an implicit
+     * (<code>&lt;td&gt;</code>) to this table's body, creating an implicit
      * {@code <tbody>} if none exists yet.
      *
      * @param cellTexts
@@ -307,8 +387,8 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
 
     /**
      * Appends a new row containing the given texts as header cells
-     * ({@code <th>}) to this table's {@code <thead>}, creating it if none
-     * exists yet.
+     * (<code>&lt;th&gt;</code>) to this table's {@code <thead>}, creating it if
+     * none exists yet.
      *
      * @param cellTexts
      *            the text content for each header cell.
@@ -343,8 +423,8 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
 
     /**
      * Appends a new row containing the given texts as data cells
-     * ({@code <td>}) to this table's {@code <tfoot>}, creating it if none
-     * exists yet.
+     * (<code>&lt;td&gt;</code>) to this table's {@code <tfoot>}, creating it if
+     * none exists yet.
      *
      * @param cellTexts
      *            the text content for each data cell.
@@ -367,12 +447,24 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
         getFoot().addRows(rows);
     }
 
+    private int columnGroupAppendIndex() {
+        int index = columnGroups.size();
+        if (caption != null) {
+            index++;
+        }
+        return index;
+    }
+
     private int headIndex() {
-        return caption == null ? 0 : 1;
+        int index = columnGroups.size();
+        if (caption != null) {
+            index++;
+        }
+        return index;
     }
 
     private int bodyAppendIndex() {
-        int index = bodies.size();
+        int index = bodies.size() + columnGroups.size();
         if (caption != null) {
             index++;
         }

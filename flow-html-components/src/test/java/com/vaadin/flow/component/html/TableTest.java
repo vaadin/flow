@@ -186,8 +186,8 @@ class TableTest extends ComponentTest {
         component.getFoot();
         var body = component.addBody();
         assertEquals(0, component.getChildren().toList().indexOf(body));
-        assertEquals(1, component.getChildren().toList()
-                .indexOf(component.getFoot()));
+        assertEquals(1,
+                component.getChildren().toList().indexOf(component.getFoot()));
     }
 
     @Test
@@ -277,8 +277,7 @@ class TableTest extends ComponentTest {
         assertTrue(table.findHead().isEmpty());
         assertEquals(1, table.getBodies().size());
         assertEquals(1, table.getBody().getRowCount());
-        AssertUtils.assertEquals(table.getBody(),
-                row.getParent().orElseThrow(),
+        AssertUtils.assertEquals(table.getBody(), row.getParent().orElseThrow(),
                 "row must live inside the auto-created tbody");
     }
 
@@ -345,6 +344,80 @@ class TableTest extends ComponentTest {
                 "r1 must be a child of tbody");
         AssertUtils.assertEquals(table.getBody(), r2.getParent().orElseThrow(),
                 "r2 must be a child of tbody");
+    }
+
+    @Test
+    void addCaption_createsAndAppendsComponents() {
+        var table = (Table) getComponent();
+        var span = new Span("Cars");
+        var caption = table.addCaption(span);
+        assertEquals(1, caption.getComponentCount());
+        assertEquals(span, caption.getComponentAt(0));
+        assertEquals(table.getCaption(), caption);
+    }
+
+    @Test
+    void addColumnGroup_insertedAfterCaptionBeforeHead() {
+        var table = (Table) getComponent();
+        table.getCaption();
+        table.getHead();
+        var group = table.addColumnGroup();
+        var children = table.getChildren().toList();
+        assertEquals(table.getCaption(), children.get(0));
+        assertEquals(group, children.get(1));
+        assertEquals(table.getHead(), children.get(2));
+    }
+
+    @Test
+    void addColumnGroup_beforeHeadEvenIfHeadAddedLater() {
+        var table = (Table) getComponent();
+        var group = table.addColumnGroup();
+        var head = table.getHead();
+        var children = table.getChildren().toList();
+        assertEquals(group, children.get(0));
+        assertEquals(head, children.get(1));
+    }
+
+    @Test
+    void addColumnGroup_withColumns() {
+        var table = (Table) getComponent();
+        var c1 = new TableColumn();
+        var c2 = new TableColumn(2);
+        var group = table.addColumnGroup(c1, c2);
+        assertEquals(2, group.getColumns().size());
+        assertEquals(List.of(group), table.getColumnGroups());
+    }
+
+    @Test
+    void multipleColumnGroups_appearInInsertionOrder() {
+        var table = (Table) getComponent();
+        var g1 = table.addColumnGroup();
+        var g2 = table.addColumnGroup();
+        var children = table.getChildren().toList();
+        assertEquals(g1, children.get(0));
+        assertEquals(g2, children.get(1));
+    }
+
+    @Test
+    void removeColumnGroup() {
+        var table = (Table) getComponent();
+        var g1 = table.addColumnGroup();
+        var g2 = table.addColumnGroup();
+        table.removeColumnGroup(g1);
+        assertEquals(List.of(g2), table.getColumnGroups());
+        assertTrue(g1.getParent().isEmpty());
+    }
+
+    @Test
+    void bodyAppendIndex_accountsForColumnGroups() {
+        // caption + 2 colgroups + thead → tbody must land at index 4
+        var table = (Table) getComponent();
+        table.setCaptionText("x");
+        table.addColumnGroup();
+        table.addColumnGroup();
+        table.getHead();
+        var body = table.addBody();
+        assertEquals(4, table.getChildren().toList().indexOf(body));
     }
 
     @Test

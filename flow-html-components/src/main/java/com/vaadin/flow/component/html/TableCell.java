@@ -1,0 +1,125 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.component.html;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlContainer;
+
+/**
+ * Common superclass for table cell components ({@link TableDataCell} and
+ * {@link TableHeaderCell}). Provides shared support for the {@code colspan} and
+ * {@code rowspan} attributes which apply equally to <code>&lt;td&gt;</code> and
+ * <code>&lt;th&gt;</code> per the
+ * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
+ * specification</a>.
+ *
+ * @since 25.2
+ */
+public abstract class TableCell extends HtmlContainer {
+
+    private static final String ATTRIBUTE_COLSPAN = "colspan";
+    private static final String ATTRIBUTE_ROWSPAN = "rowspan";
+
+    /**
+     * Creates a new empty cell component.
+     */
+    protected TableCell() {
+        super();
+    }
+
+    /**
+     * Creates a new cell with the given children components.
+     *
+     * @param components
+     *            the children components.
+     */
+    protected TableCell(Component... components) {
+        super(components);
+    }
+
+    /**
+     * Set the colspan of this cell.
+     *
+     * @param colspan
+     *            a non-negative integer value that indicates how many columns
+     *            the cell spans or extends.
+     */
+    public void setColspan(int colspan) {
+        if (colspan < 0) {
+            throw new IllegalArgumentException(
+                    "colspan must be a non-negative integer value");
+        }
+        getElement().setAttribute(ATTRIBUTE_COLSPAN, String.valueOf(colspan));
+    }
+
+    /**
+     * Returns the colspan value of this cell.
+     *
+     * @return the current value of the colspan attribute. Default is 1.
+     */
+    public int getColspan() {
+        String colspan = getElement().getAttribute(ATTRIBUTE_COLSPAN);
+        if (colspan == null) {
+            colspan = "1";
+        }
+        return Integer.parseInt(colspan);
+    }
+
+    /**
+     * Reset colspan to its default value of 1.
+     */
+    public void resetColspan() {
+        getElement().removeAttribute(ATTRIBUTE_COLSPAN);
+    }
+
+    /**
+     * Sets the rowspan for this cell.
+     *
+     * @param rowspan
+     *            a non-negative integer value that indicates for how many rows
+     *            the cell spans or extends. If its value is set to 0, it
+     *            extends until the end of the table grouping section
+     *            ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even if
+     *            implicitly defined), that the cell belongs to.
+     */
+    public void setRowspan(int rowspan) {
+        if (rowspan < 0) {
+            throw new IllegalArgumentException(
+                    "rowspan must be a non-negative integer value");
+        }
+        getElement().setAttribute(ATTRIBUTE_ROWSPAN, String.valueOf(rowspan));
+    }
+
+    /**
+     * Returns the rowspan value of this cell.
+     *
+     * @return the current value of the rowspan attribute. Default is 1.
+     */
+    public int getRowspan() {
+        String rowspan = getElement().getAttribute(ATTRIBUTE_ROWSPAN);
+        if (rowspan == null) {
+            rowspan = "1";
+        }
+        return Integer.parseInt(rowspan);
+    }
+
+    /**
+     * Resets the rowspan to its default value of 1.
+     */
+    public void resetRowspan() {
+        getElement().removeAttribute(ATTRIBUTE_ROWSPAN);
+    }
+}

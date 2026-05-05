@@ -109,4 +109,14 @@ public class TableRowTest extends ComponentTest {
         assertThrows(IllegalArgumentException.class,
                 () -> row.addCells(new Paragraph("nope")));
     }
+
+    @Test
+    void addRowHeaderCell_setsScopeRow() {
+        TableRow row = new TableRow();
+        TableHeaderCell th = row.addRowHeaderCell("Cucumber");
+        assertEquals("Cucumber", th.getText());
+        assertEquals(TableHeaderCell.Scope.ROW, th.getScope().orElseThrow());
+        assertEquals(1, row.getHeaderCells().size());
+        assertEquals(th, row.getHeaderCells().get(0));
+    }
 }

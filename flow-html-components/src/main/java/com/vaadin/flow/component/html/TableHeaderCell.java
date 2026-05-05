@@ -20,17 +20,18 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Component representing a <code>&lt;th&gt;</code> element.
+ * Component representing a <code>&lt;th&gt;</code> element. Inherits
+ * {@code colspan}/{@code rowspan} support from {@link TableCell} and adds the
+ * {@code scope} attribute specific to header cells.
  *
  * @since 25.2
  */
 @Tag(Tag.TH)
-public class TableHeaderCell extends HtmlContainer
+public class TableHeaderCell extends TableCell
         implements ClickNotifier<TableHeaderCell> {
 
     /**
@@ -75,12 +76,15 @@ public class TableHeaderCell extends HtmlContainer
     }
 
     /**
-     * The {@code scope} attribute on a {@code <th>} element specifies which
-     * cells the header relates to, helping screen readers convey the table's
-     * structure.
+     * The {@code scope} attribute on a <code>&lt;th&gt;</code> element
+     * specifies which cells the header relates to, helping screen readers
+     * convey the table's structure.
      */
     public enum Scope {
-        ROW("row"), COL("col"), ROWGROUP("rowgroup"), COLGROUP("colgroup"),
+        ROW("row"),
+        COL("col"),
+        ROWGROUP("rowgroup"),
+        COLGROUP("colgroup"),
         AUTO("auto");
 
         private final String value;

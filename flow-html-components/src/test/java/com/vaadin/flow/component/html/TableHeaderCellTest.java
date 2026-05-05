@@ -36,6 +36,14 @@ public class TableHeaderCellTest extends ComponentTest {
         super.setup();
     }
 
+    @Override
+    protected void addProperties() {
+        super.addProperties();
+        // Inherited from TableCell — same semantics as TableDataCell
+        addProperty("colspan", int.class, 1, 2, false, false);
+        addProperty("rowspan", int.class, 1, 2, false, false);
+    }
+
     @Test
     void scope_unsetByDefault() {
         TableHeaderCell th = (TableHeaderCell) getComponent();
@@ -57,5 +65,23 @@ public class TableHeaderCellTest extends ComponentTest {
         th.setScope(null);
         assertTrue(th.getScope().isEmpty());
         assertEquals(null, th.getElement().getAttribute("scope"));
+    }
+
+    @Test
+    void colspan_inheritedFromTableCell() {
+        TableHeaderCell th = (TableHeaderCell) getComponent();
+        assertEquals(1, th.getColspan());
+        th.setColspan(3);
+        assertEquals(3, th.getColspan());
+        assertEquals("3", th.getElement().getAttribute("colspan"));
+    }
+
+    @Test
+    void rowspan_inheritedFromTableCell() {
+        TableHeaderCell th = (TableHeaderCell) getComponent();
+        assertEquals(1, th.getRowspan());
+        th.setRowspan(2);
+        assertEquals(2, th.getRowspan());
+        assertEquals("2", th.getElement().getAttribute("rowspan"));
     }
 }
