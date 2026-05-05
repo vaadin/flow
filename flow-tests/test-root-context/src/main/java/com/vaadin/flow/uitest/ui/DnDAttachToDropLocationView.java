@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -98,10 +98,8 @@ public class DnDAttachToDropLocationView extends Div {
             setActive(true);
             addDropListener(event -> {
                 // Calculate position accounting for where user grabbed the item
-                int x = event.getOffsetX()
-                        - event.getDragStartOffsetX().orElse(0);
-                int y = event.getOffsetY()
-                        - event.getDragStartOffsetY().orElse(0);
+                int x = event.getOffsetX() - event.getDragStartOffsetX();
+                int y = event.getOffsetY() - event.getDragStartOffsetY();
 
                 String color = (String) event.getDragData().orElse("gray");
                 ColoredItem dropped = new ColoredItem("Item " + (++itemCounter),

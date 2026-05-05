@@ -187,7 +187,7 @@ class DragSourceTest extends AbstractDnDUnitTest {
         DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         assertThrows(IllegalStateException.class,
                 () -> ComponentUtil.fireEvent(component, startEvent));
     }
@@ -212,6 +212,29 @@ class DragSourceTest extends AbstractDnDUnitTest {
         ComponentUtil.fireEvent(component, endEvent);
 
         assertNull(ui.getActiveDragSourceComponent());
+    }
+
+    @Test
+    void testDragSource_dragStartOffsets_exposedOnDropEvent() {
+        RouterLink source = new RouterLink();
+        ui.add(source);
+        DragSource.create(source);
+
+        RouterLink target = new RouterLink();
+        ui.add(target);
+        DropTarget<RouterLink> dropTarget = DropTarget.create(target);
+
+        ComponentUtil.fireEvent(source,
+                new DragStartEvent<>(source, true, 0, 0, 17, 42));
+
+        AtomicReference<DropEvent<RouterLink>> eventCapture = new AtomicReference<>();
+        dropTarget.addDropListener(eventCapture::set);
+        ComponentUtil.fireEvent(target,
+                new DropEvent<>(target, true, "all", 0, 0, 0, 0));
+
+        DropEvent<RouterLink> dropEvent = eventCapture.get();
+        assertEquals(17, dropEvent.getDragStartOffsetX());
+        assertEquals(42, dropEvent.getDragStartOffsetY());
     }
 
 }

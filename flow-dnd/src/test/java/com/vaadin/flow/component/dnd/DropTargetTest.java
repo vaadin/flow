@@ -178,7 +178,7 @@ class DropTargetTest extends AbstractDnDUnitTest {
         DropTarget.create(component);
 
         assertThrows(IllegalStateException.class,
-                () -> new DropEvent<>(component, true, "all"));
+                () -> new DropEvent<>(component, true, "all", 0, 0, 0, 0));
     }
 
     @Test

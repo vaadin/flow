@@ -164,12 +164,12 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      * they were grabbed (not where the cursor is), subtract this value from
      * {@link #getOffsetX()}.
      *
-     * @return the drag start x offset if drag source is in the same UI,
-     *         otherwise empty
+     * @return the drag start x offset if the drag source is in the same UI,
+     *         otherwise {@code 0}
      */
-    public Optional<Integer> getDragStartOffsetX() {
+    public int getDragStartOffsetX() {
         return getDragSourceComponent().map(component -> (Integer) ComponentUtil
-                .getData(component, DndUtil.DRAG_START_OFFSET_X_KEY));
+                .getData(component, DndUtil.DRAG_START_OFFSET_X_KEY)).orElse(0);
     }
 
     /**
@@ -181,11 +181,11 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      * they were grabbed (not where the cursor is), subtract this value from
      * {@link #getOffsetY()}.
      *
-     * @return the drag start y offset if drag source is in the same UI,
-     *         otherwise empty
+     * @return the drag start y offset if the drag source is in the same UI,
+     *         otherwise {@code 0}
      */
-    public Optional<Integer> getDragStartOffsetY() {
+    public int getDragStartOffsetY() {
         return getDragSourceComponent().map(component -> (Integer) ComponentUtil
-                .getData(component, DndUtil.DRAG_START_OFFSET_Y_KEY));
+                .getData(component, DndUtil.DRAG_START_OFFSET_Y_KEY)).orElse(0);
     }
 }
