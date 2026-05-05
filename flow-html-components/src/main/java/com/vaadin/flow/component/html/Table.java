@@ -27,7 +27,9 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;table&gt;</code> element.
+ * Component representing a <code>&lt;table&gt;</code> element — a
+ * two-dimensional grid of cells with optional header, body and footer sections,
+ * captioning and column-level styling.
  * <p>
  * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  * HTML specification</a>, a <code>&lt;table&gt;</code> may contain (in order):
@@ -40,6 +42,9 @@ import com.vaadin.flow.component.Tag;
  * structured operations required to build a valid table — child components are
  * inserted at the correct position automatically.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table">MDN:
+ *      &lt;table&gt; — The Table element</a>
  * @since 25.2
  */
 @Tag(Tag.TABLE)

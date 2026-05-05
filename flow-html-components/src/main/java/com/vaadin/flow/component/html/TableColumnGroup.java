@@ -22,17 +22,28 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;colgroup&gt;</code> element which defines
- * a group of columns within a {@link Table}.
+ * Component representing a <code>&lt;colgroup&gt;</code> element — a group of
+ * columns inside a {@link Table}, used to apply attributes (most often a class
+ * for CSS) to several columns at once. Only a limited subset of CSS applies to
+ * column groups: {@code background}, {@code border} (with
+ * {@code border-collapse: collapse}), {@code visibility: collapse} and
+ * {@code width}.
  * <p>
  * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
- * HTML specification</a>, a {@code <colgroup>} either has a {@code span}
- * attribute (and no {@code <col>} children), or contains zero or more
- * {@code <col>} children (and no {@code span} attribute). This component
- * therefore extends {@link HtmlComponent} (rather than
- * {@link com.vaadin.flow.component.HtmlContainer}) and exposes only operations
- * for managing {@link TableColumn} children plus the {@code span} attribute.
+ * HTML specification</a>, a {@code <colgroup>} is used in one of two modes:
+ * either it carries a {@code span} attribute and has no children, or it
+ * contains zero or more {@code <col>} children and has no {@code span}
+ * attribute. This component therefore extends {@link HtmlComponent} (rather
+ * than {@link com.vaadin.flow.component.HtmlContainer}) and exposes only
+ * operations for managing {@link TableColumn} children plus the {@code span}
+ * attribute. {@code <colgroup>} elements must be placed after the optional
+ * {@code <caption>} and before any {@code <thead>}, {@code <tbody>},
+ * {@code <tfoot>} or <code>&lt;tr&gt;</code>; the {@link Table} inserts them at
+ * the correct position automatically.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/colgroup">MDN:
+ *      &lt;colgroup&gt; — The Table Column Group element</a>
  * @since 25.2
  */
 @Tag(Tag.COLGROUP)
@@ -122,9 +133,10 @@ public class TableColumnGroup extends HtmlComponent {
     }
 
     /**
-     * Sets the {@code span} attribute on this column group. Per the HTML
-     * specification, the {@code span} attribute is only valid when the group
-     * has no {@code <col>} children.
+     * Sets the {@code span} attribute — how many consecutive columns this group
+     * covers when used without {@link TableColumn} children. Per the HTML
+     * specification, {@code span} is only valid on a {@code <colgroup>} that
+     * has no {@code <col>} children. The default is {@code 1}.
      *
      * @param span
      *            a positive integer.

@@ -23,12 +23,17 @@ import com.vaadin.flow.component.HtmlContainer;
 
 /**
  * Common superclass for table cell components ({@link TableDataCell} and
- * {@link TableHeaderCell}). Provides shared support for the {@code colspan} and
- * {@code rowspan} attributes which apply equally to <code>&lt;td&gt;</code> and
- * <code>&lt;th&gt;</code> per the
+ * {@link TableHeaderCell}). Provides shared support for the attributes that
+ * apply equally to <code>&lt;td&gt;</code> and <code>&lt;th&gt;</code> per the
  * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
- * specification</a>.
+ * specification</a>: {@code colspan}, {@code rowspan} and {@code headers}.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/td">MDN:
+ *      &lt;td&gt;</a>
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/th">MDN:
+ *      &lt;th&gt;</a>
  * @since 25.2
  */
 public abstract class TableCell extends HtmlContainer {
@@ -55,11 +60,12 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Set the colspan of this cell.
+     * Sets the {@code colspan} attribute — how many columns this cell spans.
+     * The default is {@code 1}. Browsers clamp values higher than 1000 back to
+     * {@code 1}.
      *
      * @param colspan
-     *            a non-negative integer value that indicates how many columns
-     *            the cell spans or extends.
+     *            a non-negative integer.
      */
     public void setColspan(int colspan) {
         if (colspan < 0) {
@@ -90,14 +96,14 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Sets the rowspan for this cell.
+     * Sets the {@code rowspan} attribute — how many rows this cell spans. The
+     * default is {@code 1}. A value of {@code 0} extends the cell until the end
+     * of its grouping section ({@code <thead>}, {@code <tbody>} or
+     * {@code <tfoot>}, even if implicitly defined). Browsers clip values above
+     * 65534.
      *
      * @param rowspan
-     *            a non-negative integer value that indicates for how many rows
-     *            the cell spans or extends. If its value is set to 0, it
-     *            extends until the end of the table grouping section
-     *            ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even if
-     *            implicitly defined), that the cell belongs to.
+     *            a non-negative integer.
      */
     public void setRowspan(int rowspan) {
         if (rowspan < 0) {
@@ -128,15 +134,16 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Sets the {@code headers} attribute on this cell, used by assistive
-     * technologies to associate this cell with the header cells (the
-     * <code>&lt;th&gt;</code> elements) that describe it. The values are the
-     * {@code id} attributes of those header cells.
+     * Sets the {@code headers} attribute — a list of ids referring to the
+     * <code>&lt;th&gt;</code> cells that label this cell. Assistive
+     * technologies use it to read out the right headers when navigating complex
+     * tables, where {@link TableHeaderCell#setScope(TableHeaderCell.Scope)
+     * scope} alone isn't enough to disambiguate.
      * <p>
      * Passing no arguments (or an empty array) removes the attribute.
      *
      * @param ids
-     *            the IDs of the header cells, in any order.
+     *            the ids of the header cells, in any order.
      */
     public void setHeaders(String... ids) {
         if (ids == null || ids.length == 0) {

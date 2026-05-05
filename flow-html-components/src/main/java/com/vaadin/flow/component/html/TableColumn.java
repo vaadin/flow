@@ -19,10 +19,23 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;col&gt;</code> element, used to define
- * column-level styling and attributes inside a {@link TableColumnGroup}. The
- * {@code <col>} element is a void element and may not have any children.
+ * Component representing a <code>&lt;col&gt;</code> element — a column (or
+ * range of columns, via {@link #setSpan(int)}) inside a
+ * {@link TableColumnGroup}. Use it to apply column-wide styling without
+ * repeating it on every cell: a class or id on a {@code <col>} can target all
+ * the data cells in that column.
+ * <p>
+ * {@code <col>} is a void element (no children, no end tag) and is only valid
+ * inside a {@code <colgroup>} that does not itself carry a {@code span}
+ * attribute. Only a limited subset of CSS applies to columns:
+ * {@code background}, {@code border} (with {@code border-collapse: collapse}),
+ * {@code visibility: collapse} and {@code width}. Text and font properties do
+ * not inherit into the cells — style those on <code>&lt;td&gt;</code> or
+ * <code>&lt;th&gt;</code> instead.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/col">MDN:
+ *      &lt;col&gt; — The Table Column element</a>
  * @since 25.2
  */
 @Tag(Tag.COL)
@@ -50,8 +63,10 @@ public class TableColumn extends HtmlComponent {
     }
 
     /**
-     * Sets the number of consecutive columns this {@code <col>} element applies
-     * to.
+     * Sets the {@code span} attribute — how many consecutive columns this
+     * {@code <col>} element covers. The default is {@code 1}. Use it to apply
+     * the same styling or attributes across a range of columns without writing
+     * one {@code <col>} per column.
      *
      * @param span
      *            a positive integer.
