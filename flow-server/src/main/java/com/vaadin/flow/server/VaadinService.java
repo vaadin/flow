@@ -2554,10 +2554,12 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Returns a URL to the static resource at the given URI or null if no file
-     * found.
+     * found. The path must start with a {@code /} character for servlet-based
+     * implementations, as required by the Jakarta Servlet specification for
+     * {@code ServletContext.getResource()}.
      *
      * @param url
-     *            the URL for the resource
+     *            the URL for the resource, must start with {@code /}
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
