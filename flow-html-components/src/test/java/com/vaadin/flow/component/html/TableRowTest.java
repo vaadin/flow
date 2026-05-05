@@ -97,6 +97,16 @@ public class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void removeCell_dropsFromRow() {
+        TableRow row = new TableRow();
+        TableHeaderCell th = row.addHeaderCell("Name");
+        TableDataCell td = row.addDataCell("Alice");
+        row.removeCell(th);
+        assertEquals(1, row.getCells().size());
+        assertEquals(td, row.getCells().get(0));
+    }
+
+    @Test
     void addRowHeaderCell_setsScopeRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addRowHeaderCell("Cucumber");

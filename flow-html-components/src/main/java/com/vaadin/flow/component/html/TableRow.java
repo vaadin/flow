@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -175,9 +174,10 @@ public class TableRow extends HtmlComponent
 
     /**
      * Returns all cells in this row, in document order — both
-     * {@link TableDataCell} and {@link TableHeaderCell} entries combined. Pairs
-     * with {@link #getCell(int)}; for kind-specific lists use
-     * {@link #getDataCells()} or {@link #getHeaderCells()}.
+     * {@link TableDataCell} and {@link TableHeaderCell} entries combined. For
+     * kind-specific lists use {@link #getDataCells()} or
+     * {@link #getHeaderCells()}; index into any of these lists with
+     * {@code .get(i)}.
      *
      * @return a list of all cells in this row.
      */
@@ -187,98 +187,13 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Returns the header cell at a given position relative to other header
-     * cells.
+     * Removes a cell from this row.
      *
-     * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
-     * @return the header cell at the given position (relative to other header
-     *         cells).
+     * @param cell
+     *            the cell to remove.
      */
-    public Optional<TableHeaderCell> getHeaderCell(int index) {
-        return getChildren().filter(c -> c instanceof TableHeaderCell)
-                .map(c -> (TableHeaderCell) c).skip(index).findFirst();
-    }
-
-    /**
-     * Returns the data cell at a given position relative to other data cells.
-     *
-     * @param index
-     *            the position of the data cell relative to other data cells.
-     * @return the data cell at the given position (relative to other data
-     *         cells).
-     */
-    public Optional<TableDataCell> getDataCell(int index) {
-        return getChildren().filter(c -> c instanceof TableDataCell)
-                .map(c -> (TableDataCell) c).skip(index).findFirst();
-    }
-
-    /**
-     * Returns the cell at a given position.
-     *
-     * @param index
-     *            the position of the cell.
-     * @return the cell at the given position
-     */
-    public Optional<TableCell> getCell(int index) {
-        return getChildren().filter(c -> c instanceof TableCell)
-                .map(c -> (TableCell) c).skip(index).findFirst();
-    }
-
-    /**
-     * Removes the cell at a given position.
-     *
-     * @param index
-     *            the position of the cell to remove
-     */
-    public void removeCell(int index) {
-        getCell(index).ifPresent(
-                c -> getElement().removeChild(c.getElement()));
-    }
-
-    /**
-     * Removes the header cell at a position relative to other header cells.
-     *
-     * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
-     */
-    public void removeHeaderCell(int index) {
-        getHeaderCell(index).ifPresent(
-                c -> getElement().removeChild(c.getElement()));
-    }
-
-    /**
-     * Removes a header cell.
-     *
-     * @param headerCell
-     *            the header cell to remove.
-     */
-    public void removeHeaderCell(TableHeaderCell headerCell) {
-        getElement().removeChild(headerCell.getElement());
-    }
-
-    /**
-     * Removes the data cell at a given position relative to other data cells.
-     *
-     * @param index
-     *            the position of the data cell to remove relative to other data
-     *            cells.
-     */
-    public void removeDataCell(int index) {
-        getDataCell(index).ifPresent(
-                c -> getElement().removeChild(c.getElement()));
-    }
-
-    /**
-     * Removes a data cell.
-     *
-     * @param dataCell
-     *            the data cell to remove.
-     */
-    public void removeDataCell(TableDataCell dataCell) {
-        getElement().removeChild(dataCell.getElement());
+    public void removeCell(TableCell cell) {
+        getElement().removeChild(cell.getElement());
     }
 
     /**
