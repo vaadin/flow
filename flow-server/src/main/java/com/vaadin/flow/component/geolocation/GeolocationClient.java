@@ -28,15 +28,15 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Port between the {@link Geolocation} facade and whatever delivers actual
  * position data — the browser in production, an in-memory test driver in unit
- * tests, a native bridge in a hybrid mobile/desktop shell.
+ * tests.
  * <p>
- * Replacement clients are installed at facade construction time by registering
- * a {@link GeolocationClientFactory} via Java's service loader (a
- * {@code META-INF/services/com.vaadin.flow.component.geolocation.GeolocationClientFactory}
- * file). Vaadin's {@link com.vaadin.flow.di.Lookup Lookup} resolves the factory
- * and {@link Geolocation} hands the resulting client every {@link #get},
- * {@link #startWatch} and {@link #subscribeAvailability} call. When no factory
- * is registered, {@code Geolocation} uses the built-in browser-backed client.
+ * <b>Framework internal.</b> Application code does not implement this interface
+ * directly. Replacement clients are installed at facade construction time by
+ * registering a {@link GeolocationClientFactory} through Vaadin's
+ * {@link com.vaadin.flow.di.Lookup Lookup}; {@link Geolocation} then hands the
+ * resulting client every {@link #get}, {@link #startWatch} and
+ * {@link #subscribeAvailability} call. When no factory is registered,
+ * {@code Geolocation} uses the built-in browser-backed client.
  * <p>
  * <b>Threading:</b> all callbacks on this interface (the future returned by
  * {@link #get}, the {@code onUpdate} consumer passed to {@link #startWatch},

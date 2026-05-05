@@ -25,6 +25,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.Signal;
 
@@ -120,8 +121,7 @@ public class Geolocation implements Serializable {
      * has one throws.
      * <p>
      * The underlying {@link GeolocationClient} is resolved through
-     * {@link Lookup}: if a {@link GeolocationClientFactory} is registered (via
-     * {@code META-INF/services}), its
+     * {@link Lookup}: if a {@link GeolocationClientFactory} is registered, its
      * {@link GeolocationClientFactory#create(UI)} produces the client.
      * Otherwise the built-in browser-backed client is used.
      *
@@ -164,7 +164,11 @@ public class Geolocation implements Serializable {
         if (service == null) {
             return null;
         }
-        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        Lookup lookup = context.getAttribute(Lookup.class);
         if (lookup == null) {
             return null;
         }

@@ -39,6 +39,9 @@ import com.vaadin.flow.shared.Registration;
  * This is the default implementation used when no
  * {@link GeolocationClientFactory} is registered through
  * {@link com.vaadin.flow.di.Lookup Lookup}.
+ * <p>
+ * <b>Framework internal.</b> Application code does not reference this class
+ * directly.
  */
 @NullMarked
 final class BrowserGeolocationClient implements GeolocationClient {

@@ -23,23 +23,18 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 
 /**
- * Factory SPI that produces {@link GeolocationClient} instances per {@link UI}.
- * Resolved via {@link Lookup} when a {@link Geolocation} facade is constructed:
- * a single factory registered via Java's service loader (a
- * {@code META-INF/services/com.vaadin.flow.component.geolocation.GeolocationClientFactory}
- * file) replaces the built-in browser-backed client for every {@code UI} in the
- * application.
+ * <b>Framework internal.</b> Factory SPI that produces
+ * {@link GeolocationClient} instances per {@link UI}, resolved via
+ * {@link Lookup} when a {@link Geolocation} facade is constructed. When a
+ * factory is registered the resulting client replaces the built-in
+ * browser-backed client for every {@code UI} in the application; when none is,
+ * {@code Geolocation} uses the browser-backed client.
  * <p>
- * Use cases for registering a factory:
- * <ul>
- * <li>In-memory test drivers that drive {@code Geolocation} without a real
- * browser.</li>
- * <li>Native bridges in hybrid mobile/desktop shells (Cordova, Electron,
- * Capacitor) that report positions through a non-DOM channel.</li>
- * </ul>
- * Application code does not implement this interface directly — registering a
- * factory replaces the client for the whole application, so it is an
- * integration concern, not a per-call API.
+ * Used by external browserless test drivers to swap the production wire client
+ * for an in-memory driver in environments where package-private cross-JAR
+ * access is unreliable (split-classloader topologies such as Quarkus).
+ * Application code does not reference this interface directly. May be renamed
+ * or removed in a future release.
  */
 @NullMarked
 public interface GeolocationClientFactory extends Serializable {
