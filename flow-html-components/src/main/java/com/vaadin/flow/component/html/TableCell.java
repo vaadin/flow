@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 
@@ -32,6 +35,7 @@ public abstract class TableCell extends HtmlContainer {
 
     private static final String ATTRIBUTE_COLSPAN = "colspan";
     private static final String ATTRIBUTE_ROWSPAN = "rowspan";
+    private static final String ATTRIBUTE_HEADERS = "headers";
 
     /**
      * Creates a new empty cell component.
@@ -121,5 +125,73 @@ public abstract class TableCell extends HtmlContainer {
      */
     public void resetRowspan() {
         getElement().removeAttribute(ATTRIBUTE_ROWSPAN);
+    }
+
+    /**
+     * Sets the {@code headers} attribute on this cell, used by assistive
+     * technologies to associate this cell with the header cells (the
+     * <code>&lt;th&gt;</code> elements) that describe it. The values are the
+     * {@code id} attributes of those header cells.
+     * <p>
+     * Passing no arguments (or an empty array) removes the attribute.
+     *
+     * @param ids
+     *            the IDs of the header cells, in any order.
+     */
+    public void setHeaders(String... ids) {
+        if (ids == null || ids.length == 0) {
+            getElement().removeAttribute(ATTRIBUTE_HEADERS);
+            return;
+        }
+        for (String id : ids) {
+            Objects.requireNonNull(id, "header id must not be null");
+        }
+        getElement().setAttribute(ATTRIBUTE_HEADERS, String.join(" ", ids));
+    }
+
+    /**
+     * Convenience overload that takes header cells directly and uses their
+     * {@code id} attributes. Each cell must have an id set.
+     *
+     * @param headerCells
+     *            the header cells whose ids should be referenced.
+     * @throws IllegalArgumentException
+     *             if any of the given cells does not have an id set.
+     */
+    public void setHeaders(TableHeaderCell... headerCells) {
+        if (headerCells == null || headerCells.length == 0) {
+            getElement().removeAttribute(ATTRIBUTE_HEADERS);
+            return;
+        }
+        String[] ids = new String[headerCells.length];
+        for (int i = 0; i < headerCells.length; i++) {
+            TableHeaderCell cell = headerCells[i];
+            ids[i] = cell.getId()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Header cell must have an id to be referenced via the headers attribute"));
+        }
+        setHeaders(ids);
+    }
+
+    /**
+     * Returns the IDs of the header cells associated with this cell via the
+     * {@code headers} attribute, or an empty {@link Optional} if the attribute
+     * is not set.
+     *
+     * @return the parsed list of header IDs.
+     */
+    public Optional<String[]> getHeaders() {
+        String value = getElement().getAttribute(ATTRIBUTE_HEADERS);
+        if (value == null || value.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(value.split("\\s+"));
+    }
+
+    /**
+     * Removes the {@code headers} attribute from this cell.
+     */
+    public void resetHeaders() {
+        getElement().removeAttribute(ATTRIBUTE_HEADERS);
     }
 }

@@ -75,6 +75,7 @@ class HtmlComponentSmokeTest {
         testValues.put(IFrame.SandboxType[].class,
                 new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
                         IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(String[].class, new String[] { "a", "b" });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
         testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
@@ -246,6 +247,15 @@ class HtmlComponentSmokeTest {
         if ((method.getDeclaringClass() == NativeTable.class
                 || method.getDeclaringClass() == Table.class)
                 && method.getName().startsWith("setCaptionText")) {
+            return true;
+        }
+
+        // TableCell.setHeaders has two overloads — the String... variant is
+        // exercised normally; the TableHeaderCell... convenience overload
+        // resolves IDs from cells and is covered by the focused unit test.
+        if (method.getDeclaringClass() == TableCell.class
+                && method.getName().equals("setHeaders")
+                && method.getParameterTypes()[0] == TableHeaderCell[].class) {
             return true;
         }
 
