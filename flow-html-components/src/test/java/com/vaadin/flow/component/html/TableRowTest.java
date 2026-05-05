@@ -122,6 +122,27 @@ public class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void addCells_listOverloadMatchesVarargs() {
+        TableRow row = new TableRow();
+        TableDataCell td = new TableDataCell("a");
+        TableHeaderCell th = new TableHeaderCell("h");
+        row.addCells(java.util.List.of(td, th));
+
+        assertEquals(2, row.getCells().size());
+        assertEquals(td, row.getCells().get(0));
+        assertEquals(th, row.getCells().get(1));
+    }
+
+    @Test
+    void addDataCells_listOverloadMatchesVarargs() {
+        TableRow row = new TableRow();
+        row.addDataCells(java.util.List.of("a", "b", "c"));
+        assertEquals(3, row.getDataCells().size());
+        assertEquals("a", row.getDataCells().get(0).getText());
+        assertEquals("c", row.getDataCells().get(2).getText());
+    }
+
+    @Test
     void removeCell_dropsFromRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addHeaderCell("Name");

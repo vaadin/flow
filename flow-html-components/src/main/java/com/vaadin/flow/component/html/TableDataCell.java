@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -46,6 +47,16 @@ public class TableDataCell extends TableCell
      *            the children components.
      */
     public TableDataCell(Component... components) {
+        super(components);
+    }
+
+    /**
+     * List equivalent of {@link #TableDataCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public TableDataCell(List<? extends Component> components) {
         super(components);
     }
 

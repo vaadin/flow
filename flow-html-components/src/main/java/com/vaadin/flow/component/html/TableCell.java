@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -57,6 +60,16 @@ public abstract class TableCell extends HtmlContainer {
      */
     protected TableCell(Component... components) {
         super(components);
+    }
+
+    /**
+     * List equivalent of {@link #TableCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    protected TableCell(List<? extends Component> components) {
+        super(components.toArray(Component[]::new));
     }
 
     /**
@@ -146,7 +159,18 @@ public abstract class TableCell extends HtmlContainer {
      *            the ids of the header cells, in any order.
      */
     public void setHeaders(String... ids) {
-        if (ids == null || ids.length == 0) {
+        setHeaders(ids == null ? List.of() : Arrays.asList(ids));
+    }
+
+    /**
+     * List equivalent of {@link #setHeaders(String...)}. An empty list (or
+     * {@code null}) clears the attribute.
+     *
+     * @param ids
+     *            the ids of the header cells, in any order.
+     */
+    public void setHeaders(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
             return;
         }
@@ -166,16 +190,27 @@ public abstract class TableCell extends HtmlContainer {
      *             if any of the given cells does not have an id set.
      */
     public void setHeaders(TableHeaderCell... headerCells) {
-        if (headerCells == null || headerCells.length == 0) {
+        setHeadersByCells(
+                headerCells == null ? List.of() : Arrays.asList(headerCells));
+    }
+
+    /**
+     * List equivalent of {@link #setHeaders(TableHeaderCell...)}.
+     *
+     * @param headerCells
+     *            the header cells whose ids should be referenced.
+     * @throws IllegalArgumentException
+     *             if any of the given cells does not have an id set.
+     */
+    public void setHeadersByCells(List<? extends TableHeaderCell> headerCells) {
+        if (headerCells == null || headerCells.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
             return;
         }
-        String[] ids = new String[headerCells.length];
-        for (int i = 0; i < headerCells.length; i++) {
-            TableHeaderCell cell = headerCells[i];
-            ids[i] = cell.getId()
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Header cell must have an id to be referenced via the headers attribute"));
+        List<String> ids = new ArrayList<>(headerCells.size());
+        for (TableHeaderCell cell : headerCells) {
+            ids.add(cell.getId().orElseThrow(() -> new IllegalArgumentException(
+                    "Header cell must have an id to be referenced via the headers attribute")));
         }
         setHeaders(ids);
     }

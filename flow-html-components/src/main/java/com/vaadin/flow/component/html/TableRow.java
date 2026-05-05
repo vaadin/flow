@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,16 @@ public class TableRow extends HtmlComponent
      *            {@code <td>}) to place in this row.
      */
     public TableRow(Component... components) {
+        this(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #TableRow(Component...)}.
+     *
+     * @param components
+     *            the cells or wrap-target components for this row.
+     */
+    public TableRow(List<? extends Component> components) {
         super();
         appendAsCells(components);
     }
@@ -213,6 +224,17 @@ public class TableRow extends HtmlComponent
      * @return this row, for fluent chaining.
      */
     public TableRow addDataCells(String... cellTexts) {
+        return addDataCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addDataCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addDataCells(List<String> cellTexts) {
         for (String text : cellTexts) {
             addDataCell(text);
         }
@@ -228,6 +250,17 @@ public class TableRow extends HtmlComponent
      * @return this row, for fluent chaining.
      */
     public TableRow addHeaderCells(String... cellTexts) {
+        return addHeaderCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addHeaderCells(List<String> cellTexts) {
         for (String text : cellTexts) {
             addHeaderCell(text);
         }
@@ -245,11 +278,22 @@ public class TableRow extends HtmlComponent
      * @return this row, for fluent chaining.
      */
     public TableRow addCells(Component... components) {
+        return addCells(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCells(Component...)}.
+     *
+     * @param components
+     *            the cells or wrap-target components.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addCells(List<? extends Component> components) {
         appendAsCells(components);
         return this;
     }
 
-    private void appendAsCells(Component... components) {
+    private void appendAsCells(Iterable<? extends Component> components) {
         for (Component c : components) {
             TableCell cell = (c instanceof TableCell tc) ? tc
                     : new TableDataCell(c);

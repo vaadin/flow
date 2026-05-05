@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -58,6 +59,16 @@ public class TableHeaderCell extends TableCell
      *            the children components.
      */
     public TableHeaderCell(Component... components) {
+        super(components);
+    }
+
+    /**
+     * List equivalent of {@link #TableHeaderCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public TableHeaderCell(List<? extends Component> components) {
         super(components);
     }
 

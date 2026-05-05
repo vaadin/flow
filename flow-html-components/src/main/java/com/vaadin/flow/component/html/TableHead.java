@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
@@ -49,6 +51,17 @@ public class TableHead extends HtmlComponent
      *            the rows to add.
      */
     public TableHead(TableRow... rows) {
+        super();
+        addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #TableHead(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public TableHead(List<? extends TableRow> rows) {
         super();
         addRows(rows);
     }

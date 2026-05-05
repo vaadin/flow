@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -116,8 +117,19 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the caption.
      */
     public TableCaption addCaption(Component... components) {
+        return addCaption(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCaption(Component...)}.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public TableCaption addCaption(List<? extends Component> components) {
         TableCaption c = getCaption();
-        c.add(components);
+        c.add(components.toArray(Component[]::new));
         return c;
     }
 
@@ -164,6 +176,18 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the newly created column group.
      */
     public TableColumnGroup addColumnGroup(TableColumn... columns) {
+        return addColumnGroup(Arrays.asList(columns));
+    }
+
+    /**
+     * List equivalent of {@link #addColumnGroup(TableColumn...)}.
+     *
+     * @param columns
+     *            the columns to place inside the new group.
+     * @return the newly created column group.
+     */
+    public TableColumnGroup addColumnGroup(
+            List<? extends TableColumn> columns) {
         TableColumnGroup group = new TableColumnGroup();
         getElement().insertChild(columnGroupAppendIndex(), group.getElement());
         columnGroups.add(group);
@@ -371,6 +395,17 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the newly created row.
      */
     public TableRow addRow(String... cellTexts) {
+        return addRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public TableRow addRow(List<String> cellTexts) {
         TableRow row = getBody().addRow();
         row.addDataCells(cellTexts);
         return row;
@@ -384,6 +419,16 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      *            the rows to add.
      */
     public void addRows(TableRow... rows) {
+        getBody().addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addRows(List<? extends TableRow> rows) {
         getBody().addRows(rows);
     }
 
@@ -407,6 +452,17 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the newly created row.
      */
     public TableRow addHeaderRow(String... cellTexts) {
+        return addHeaderRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return the newly created row.
+     */
+    public TableRow addHeaderRow(List<String> cellTexts) {
         TableRow row = getHead().addRow();
         row.addHeaderCells(cellTexts);
         return row;
@@ -420,6 +476,16 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      *            the rows to add.
      */
     public void addHeaderRows(TableRow... rows) {
+        getHead().addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addHeaderRows(List<? extends TableRow> rows) {
         getHead().addRows(rows);
     }
 
@@ -443,6 +509,17 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the newly created row.
      */
     public TableRow addFooterRow(String... cellTexts) {
+        return addFooterRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public TableRow addFooterRow(List<String> cellTexts) {
         TableRow row = getFoot().addRow();
         row.addDataCells(cellTexts);
         return row;
@@ -456,6 +533,16 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      *            the rows to add.
      */
     public void addFooterRows(TableRow... rows) {
+        getFoot().addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addFooterRows(List<? extends TableRow> rows) {
         getFoot().addRows(rows);
     }
 

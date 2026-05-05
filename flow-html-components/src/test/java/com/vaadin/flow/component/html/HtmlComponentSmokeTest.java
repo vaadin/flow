@@ -250,12 +250,14 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
-        // TableCell.setHeaders has two overloads — the String... variant is
-        // exercised normally; the TableHeaderCell... convenience overload
-        // resolves IDs from cells and is covered by the focused unit test.
-        if (method.getDeclaringClass() == TableCell.class
-                && method.getName().equals("setHeaders")
-                && method.getParameterTypes()[0] == TableHeaderCell[].class) {
+        // TableCell.setHeaders has multiple overloads (String..., String list,
+        // TableHeaderCell...). The String[] variant is exercised normally to
+        // cover the bean property; the others have non-matching getter types
+        // or no matching getter and are covered by focused unit tests.
+        if (method.getDeclaringClass() == TableCell.class && (method.getName()
+                .equals("setHeadersByCells")
+                || (method.getName().equals("setHeaders")
+                        && method.getParameterTypes()[0] != String[].class))) {
             return true;
         }
 

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,16 @@ public class TableColumnGroup extends HtmlComponent {
      *            the columns to add.
      */
     public TableColumnGroup(TableColumn... columns) {
+        this(Arrays.asList(columns));
+    }
+
+    /**
+     * List equivalent of {@link #TableColumnGroup(TableColumn...)}.
+     *
+     * @param columns
+     *            the columns to add.
+     */
+    public TableColumnGroup(List<? extends TableColumn> columns) {
         super();
         addColumns(columns);
     }
@@ -100,6 +111,16 @@ public class TableColumnGroup extends HtmlComponent {
      *            the columns to add.
      */
     public void addColumns(TableColumn... columns) {
+        addColumns(Arrays.asList(columns));
+    }
+
+    /**
+     * List equivalent of {@link #addColumns(TableColumn...)}.
+     *
+     * @param columns
+     *            the columns to add.
+     */
+    public void addColumns(List<? extends TableColumn> columns) {
         for (TableColumn column : columns) {
             getElement().appendChild(column.getElement());
         }
