@@ -97,6 +97,31 @@ public class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void constructor_wrapsNonCellComponentsInDataCell() {
+        Span span = new Span("hi");
+        TableHeaderCell th = new TableHeaderCell("Name");
+        TableRow row = new TableRow(span, th);
+
+        assertEquals(2, row.getCells().size());
+        // span got wrapped in a new TableDataCell
+        TableDataCell wrapper = row.getDataCells().get(0);
+        assertEquals(span, wrapper.getChildren().findFirst().orElseThrow());
+        // header cell preserved as-is
+        assertEquals(th, row.getHeaderCells().get(0));
+    }
+
+    @Test
+    void addCells_wrapsNonCellComponentsInDataCell() {
+        TableRow row = new TableRow();
+        Span span = new Span("hi");
+        row.addCells(span);
+
+        assertEquals(1, row.getDataCells().size());
+        assertEquals(span, row.getDataCells().get(0).getChildren().findFirst()
+                .orElseThrow());
+    }
+
+    @Test
     void removeCell_dropsFromRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addHeaderCell("Name");

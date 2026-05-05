@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -30,8 +31,13 @@ import com.vaadin.flow.component.Tag;
  * specification</a>, a {@code <tr>} may only contain {@code <td>} or
  * {@code <th>} elements. This component therefore extends
  * {@link HtmlComponent} (rather than
- * {@link com.vaadin.flow.component.HtmlContainer}) and exposes only methods for
- * adding {@link TableDataCell} and {@link TableHeaderCell} children.
+ * {@link com.vaadin.flow.component.HtmlContainer}) so the structural
+ * invariant is preserved.
+ * <p>
+ * The {@link #TableRow(Component...) constructor} and {@link #addCells} accept
+ * any {@link Component}: {@link TableCell} subclasses ({@link TableDataCell},
+ * {@link TableHeaderCell}) are placed as-is, and any other component is
+ * automatically wrapped in a new {@link TableDataCell}.
  *
  * @since 25.2
  */
@@ -47,17 +53,19 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Creates a new table row with the given cells.
+     * Creates a new table row with the given children. Any {@link TableCell}
+     * argument ({@link TableDataCell} or {@link TableHeaderCell}) is added
+     * as-is; any other component is wrapped in a new {@link TableDataCell}
+     * — convenient for building rows from arbitrary content without the
+     * boilerplate of explicit {@code new TableDataCell(...)} wrappers.
      *
-     * @param cells
-     *            the cells to add — each a {@link TableDataCell} or
-     *            {@link TableHeaderCell}.
+     * @param components
+     *            the cells (used as-is) or other components (wrapped in
+     *            {@code <td>}) to place in this row.
      */
-    public TableRow(TableCell... cells) {
+    public TableRow(Component... components) {
         super();
-        for (TableCell cell : cells) {
-            getElement().appendChild(cell.getElement());
-        }
+        appendAsCells(components);
     }
 
     /**
@@ -227,18 +235,26 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Appends pre-built cells to this row.
+     * Appends children to this row. Any {@link TableCell} argument
+     * ({@link TableDataCell} or {@link TableHeaderCell}) is added as-is;
+     * any other component is wrapped in a new {@link TableDataCell}.
      *
-     * @param cells
-     *            the cells to add — each a {@link TableDataCell} or
-     *            {@link TableHeaderCell}.
+     * @param components
+     *            the cells (used as-is) or other components (wrapped in
+     *            {@code <td>}) to append.
      * @return this row, for fluent chaining.
      */
-    public TableRow addCells(TableCell... cells) {
-        for (TableCell cell : cells) {
+    public TableRow addCells(Component... components) {
+        appendAsCells(components);
+        return this;
+    }
+
+    private void appendAsCells(Component... components) {
+        for (Component c : components) {
+            TableCell cell = (c instanceof TableCell tc) ? tc
+                    : new TableDataCell(c);
             getElement().appendChild(cell.getElement());
         }
-        return this;
     }
 
 }
