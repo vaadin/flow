@@ -182,11 +182,14 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Returns a list of all cells in this row.
+     * Returns all cells in this row, in document order — both
+     * {@link TableDataCell} and {@link TableHeaderCell} entries combined. Pairs
+     * with {@link #getCell(int)}; for kind-specific lists use
+     * {@link #getDataCells()} or {@link #getHeaderCells()}.
      *
      * @return a list of all cells in this row.
      */
-    public List<Component> getAllCells() {
+    public List<Component> getCells() {
         return getChildren()
                 .filter(c -> c instanceof TableDataCell
                         || c instanceof TableHeaderCell)

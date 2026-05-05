@@ -52,7 +52,7 @@ public class TableRowTest extends ComponentTest {
         TableDataCell td = new TableDataCell("data");
         TableHeaderCell th = new TableHeaderCell("hdr");
         TableRow row = new TableRow(th, td);
-        assertEquals(2, row.getAllCells().size());
+        assertEquals(2, row.getCells().size());
         assertEquals(1, row.getDataCells().size());
         assertEquals(1, row.getHeaderCells().size());
     }
