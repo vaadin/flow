@@ -137,7 +137,6 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      * container using absolute or relative positioning.
      *
      * @return the x coordinate relative to the drop target element
-     * @since 25.1
      */
     public int getOffsetX() {
         return offsetX;
@@ -151,7 +150,6 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      * container using absolute or relative positioning.
      *
      * @return the y coordinate relative to the drop target element
-     * @since 25.1
      */
     public int getOffsetY() {
         return offsetY;
@@ -168,7 +166,6 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      *
      * @return the drag start x offset if drag source is in the same UI,
      *         otherwise empty
-     * @since 25.1
      */
     public Optional<Integer> getDragStartOffsetX() {
         return getDragSourceComponent().map(component -> (Integer) ComponentUtil
@@ -186,7 +183,6 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      *
      * @return the drag start y offset if drag source is in the same UI,
      *         otherwise empty
-     * @since 25.1
      */
     public Optional<Integer> getDragStartOffsetY() {
         return getDragSourceComponent().map(component -> (Integer) ComponentUtil
