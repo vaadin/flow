@@ -16,35 +16,40 @@
 package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;tbody&gt;</code> element.
+ * <p>
+ * Per the
+ * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
+ * specification</a>, a {@code <tbody>} may only contain {@code <tr>} elements.
+ * This component therefore extends {@link HtmlComponent} (rather than
+ * {@link com.vaadin.flow.component.HtmlContainer}) and exposes only
+ * {@link TableRow}-specific operations through {@link TableRowContainer}.
  *
- * @since 24.4
- * @deprecated since 25.2; use {@link TableBody} instead.
+ * @since 25.2
  */
-@Deprecated
 @Tag(Tag.TBODY)
-public class NativeTableBody extends HtmlContainer
-        implements NativeTableRowContainer, ClickNotifier<NativeTableBody> {
+public class TableBody extends HtmlComponent
+        implements TableRowContainer, ClickNotifier<TableBody> {
 
     /**
      * Creates a new empty table body.
      */
-    public NativeTableBody() {
+    public TableBody() {
         super();
     }
 
     /**
-     * Creates a new table body with the given children components.
+     * Creates a new table body with the given rows.
      *
-     * @param components
-     *            the children components.
+     * @param rows
+     *            the rows to add.
      */
-    public NativeTableBody(Component... components) {
-        super(components);
+    public TableBody(TableRow... rows) {
+        super();
+        addRows(rows);
     }
 }

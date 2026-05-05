@@ -24,15 +24,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Component representing a <code>&lt;td&gt;</code> element.
+ * Component representing a <code>&lt;td&gt;</code> element (a table data
+ * cell).
  *
- * @since 24.4
- * @deprecated since 25.2; use {@link TableDataCell} instead.
+ * @since 25.2
  */
-@Deprecated
 @Tag(Tag.TD)
-public class NativeTableCell extends HtmlContainer
-        implements ClickNotifier<NativeTableCell> {
+public class TableDataCell extends HtmlContainer
+        implements ClickNotifier<TableDataCell> {
 
     final String ATTRIBUTE_COLSPAN = "colspan";
     final String ATTRIBUTE_ROWSPAN = "rowspan";
@@ -40,7 +39,7 @@ public class NativeTableCell extends HtmlContainer
     /**
      * Creates a new empty table cell component.
      */
-    public NativeTableCell() {
+    public TableDataCell() {
         super();
     }
 
@@ -50,7 +49,7 @@ public class NativeTableCell extends HtmlContainer
      * @param components
      *            the children components.
      */
-    public NativeTableCell(Component... components) {
+    public TableDataCell(Component... components) {
         super(components);
     }
 
@@ -60,7 +59,7 @@ public class NativeTableCell extends HtmlContainer
      * @param text
      *            the text.
      */
-    public NativeTableCell(String text) {
+    public TableDataCell(String text) {
         super();
         setText(text);
     }
@@ -83,7 +82,7 @@ public class NativeTableCell extends HtmlContainer
      *
      * @since 25.1
      */
-    public NativeTableCell(Signal<String> textSignal) {
+    public TableDataCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");
         bindText(textSignal);
     }
