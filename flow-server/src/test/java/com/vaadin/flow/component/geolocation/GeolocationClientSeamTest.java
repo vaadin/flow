@@ -149,7 +149,7 @@ class GeolocationClientSeamTest {
                 "onSuccess must stay silent when the bridge fails");
         assertEquals(GeolocationErrorCode.UNKNOWN, err.errorCode(),
                 "error code should be UNKNOWN for client-bridge failures");
-        assertFalse(err.message().contains("boom"),
+        assertFalse(err.debugInfo().contains("boom"),
                 "synthesized message must not leak the wrapped exception text;"
                         + " the cause is logged at DEBUG instead");
     }

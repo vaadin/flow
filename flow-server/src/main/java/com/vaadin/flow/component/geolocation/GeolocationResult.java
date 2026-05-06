@@ -33,7 +33,7 @@ import java.io.Serializable;
  * switch (watcher.positionSignal().get()) {
  * case GeolocationPending p -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
- * case GeolocationError err -&gt; showError(err.message());
+ * case GeolocationError err -&gt; showError(err.errorCode());
  * }
  * </pre>
  */

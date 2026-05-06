@@ -117,7 +117,7 @@ public class GeolocationView extends AbstractDivView {
                 }, err -> {
                     Div out = new Div();
                     out.setId("getResult");
-                    out.setText("error=" + err.code() + ":" + err.message());
+                    out.setText("error=" + err.code() + ":" + err.debugInfo());
                     add(out);
                 }));
 
@@ -133,7 +133,7 @@ public class GeolocationView extends AbstractDivView {
                     Div out = new Div();
                     out.setId("getErrorResult");
                     out.setText(
-                            "error=" + err.errorCode() + ":" + err.message());
+                            "error=" + err.errorCode() + ":" + err.debugInfo());
                     add(out);
                 }, new GeolocationOptions(null, null, 9999)));
 
@@ -184,7 +184,7 @@ public class GeolocationView extends AbstractDivView {
                         Div out = new Div();
                         out.setId("listenerError");
                         out.setText("error=" + err.errorCode() + ":"
-                                + err.message());
+                                + err.debugInfo());
                         add(out);
                     });
                 });

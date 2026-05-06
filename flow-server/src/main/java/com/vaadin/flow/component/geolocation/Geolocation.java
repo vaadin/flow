@@ -62,8 +62,8 @@ import com.vaadin.flow.signals.Signal;
  *
  * <pre>
  * GeolocationWatcher watcher = Geolocation.watchPosition(this);
- * watcher.addPositionListener(pos -&gt; repository.save(pos),
- *         err -&gt; LOGGER.warn("location error: {}", err.message()));
+ * watcher.addPositionListener(pos -&gt; repository.save(pos), err -&gt; LOGGER
+ *         .warn("location error: {} ({})", err.errorCode(), err.debugInfo()));
  * </pre>
  *
  * <p>
@@ -75,7 +75,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * status.bindText(signal.map(result -&gt; switch (result) {
  * case GeolocationPending p -&gt; "Waiting for first reading…";
- * case GeolocationError err -&gt; "Error: " + err.message();
+ * case GeolocationError err -&gt; "Could not locate you.";
  * default -&gt; "";
  * }));
  *

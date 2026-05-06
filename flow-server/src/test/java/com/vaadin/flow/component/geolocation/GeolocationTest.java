@@ -116,7 +116,7 @@ class GeolocationTest {
                 GeolocationError.class);
 
         assertEquals(error.code(), result.code());
-        assertEquals(error.message(), result.message());
+        assertEquals(error.debugInfo(), result.debugInfo());
     }
 
     @Test
@@ -274,7 +274,7 @@ class GeolocationTest {
                 .peek();
         assertEquals(GeolocationErrorCode.PERMISSION_DENIED.code(),
                 error.code());
-        assertEquals("User denied geolocation", error.message());
+        assertEquals("User denied geolocation", error.debugInfo());
     }
 
     @Test
