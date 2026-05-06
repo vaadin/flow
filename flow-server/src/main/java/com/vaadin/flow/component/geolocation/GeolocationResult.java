@@ -29,9 +29,9 @@ import java.io.Serializable;
  * <li>{@link GeolocationPosition} — a successful reading.</li>
  * <li>{@link GeolocationError} — the browser reported an error.</li>
  * </ul>
- * For the one-shot {@link Geolocation#get} callback use the narrower
- * {@link GeolocationOutcome}, which excludes {@link GeolocationPending}
- * (one-shot requests never produce that value).
+ * One-shot {@link Geolocation#get} requests never produce
+ * {@link GeolocationPending}; they deliver the position and the error through
+ * separate callbacks instead.
  * <p>
  * The sealed hierarchy is designed for exhaustive pattern matching. A
  * {@code switch} covering the three permitted variants is guaranteed complete

@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -41,11 +42,15 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * <b>Two usage modes:</b>
  * <ul>
- * <li>{@link #get(SerializableConsumer)} — one-shot position request. Use this
- * when the application only needs to know the user's location at a single
- * moment (e.g. on a button click). The callback receives a
- * {@link GeolocationOutcome} — either a {@link GeolocationPosition} or a
- * {@link GeolocationError}.</li>
+ * <li>{@link #get(SerializableConsumer, SerializableConsumer)} — one-shot
+ * position request. Use this when the application only needs to know the user's
+ * location at a single moment (e.g. on a button click). Takes a pair of
+ * callbacks — one for a successful {@link GeolocationPosition}, one for a
+ * {@link GeolocationError} — mirroring the W3C
+ * {@code getCurrentPosition(success, error)} pair and matching
+ * {@link GeolocationTracker#addPositionListener
+ * GeolocationTracker.addPositionListener}. An overload accepts a trailing
+ * {@link GeolocationOptions} for accuracy / timeout / cache-age tuning.</li>
  * <li>{@link #track(Component)} — continuous tracking that keeps the server
  * updated as the user moves. Returns a {@link GeolocationTracker} whose
  * {@link GeolocationTracker#valueSignal() valueSignal()} is a reactive signal
@@ -75,13 +80,10 @@ import com.vaadin.flow.signals.Signal;
  * <pre>
  * Button locate = new Button("Use my location");
  * locate.addClickListener(
- *         e -&gt; UI.getCurrent().getGeolocation().get(outcome -&gt; {
- *             switch (outcome) {
- *             case GeolocationPosition pos -&gt; showNearest(
- *                     pos.coords().latitude(), pos.coords().longitude());
- *             case GeolocationError err -&gt; showManualEntry();
- *             }
- *         }));
+ *         e -&gt; UI.getCurrent().getGeolocation()
+ *                 .get(pos -&gt; showNearest(pos.coords().latitude(),
+ *                         pos.coords().longitude()),
+ *                         err -&gt; showManualEntry()));
  * </pre>
  *
  * <p>
@@ -176,21 +178,29 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Requests the user's current position once. The callback receives a
-     * {@link GeolocationOutcome} — either a {@link GeolocationPosition} or a
-     * {@link GeolocationError}. Use {@code switch} pattern matching on the
-     * outcome; no dead "pending" arm is needed because one-shot requests never
-     * produce that value.
+     * Requests the user's current position once. On a successful reading
+     * {@code onSuccess} is invoked with the {@link GeolocationPosition}; if the
+     * browser reports an error instead {@code onError} is invoked with the
+     * {@link GeolocationError}. The pair mirrors the W3C
+     * {@code getCurrentPosition(success, error)} signature and matches
+     * {@link GeolocationTracker#addPositionListener
+     * GeolocationTracker.addPositionListener}, so callers can share the same
+     * handler shape between one-shot and watch APIs.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
-     * the first call; after the user responds, the callback is invoked on the
-     * UI thread.
+     * the first call; after the user responds, exactly one of the callbacks is
+     * invoked on the UI thread.
      *
-     * @param callback
-     *            invoked with the outcome once the browser reports it
+     * @param onSuccess
+     *            invoked with the position on a successful reading; not
+     *            {@code null}
+     * @param onError
+     *            invoked with the error if the browser reports one; not
+     *            {@code null}
      */
-    public void get(SerializableConsumer<GeolocationOutcome> callback) {
-        get(null, callback);
+    public void get(SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<GeolocationError> onError) {
+        get(onSuccess, onError, null);
     }
 
     /**
@@ -199,25 +209,35 @@ public class Geolocation implements Serializable {
      * See {@link GeolocationOptions} for the available settings.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
-     * the first call; after the user responds, the callback is invoked on the
-     * UI thread.
+     * the first call; after the user responds, exactly one of the callbacks is
+     * invoked on the UI thread.
      *
+     * @param onSuccess
+     *            invoked with the position on a successful reading; not
+     *            {@code null}
+     * @param onError
+     *            invoked with the error if the browser reports one; not
+     *            {@code null}
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
      *            the browser defaults
-     * @param callback
-     *            invoked with the outcome once the browser reports it
      */
-    public void get(@Nullable GeolocationOptions options,
-            SerializableConsumer<GeolocationOutcome> callback) {
+    public void get(SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<GeolocationError> onError,
+            @Nullable GeolocationOptions options) {
+        Objects.requireNonNull(onSuccess, "onSuccess callback cannot be null");
+        Objects.requireNonNull(onError, "onError callback cannot be null");
         client.get(options).whenComplete((outcome, error) -> {
             if (error != null) {
                 LOGGER.debug("Geolocation get() failed", error);
-                callback.accept(new GeolocationError(
+                onError.accept(new GeolocationError(
                         GeolocationErrorCode.UNKNOWN.code(),
                         "Client-side geolocation bridge failure"));
-            } else {
-                callback.accept(outcome);
+                return;
+            }
+            switch (outcome) {
+            case GeolocationPosition position -> onSuccess.accept(position);
+            case GeolocationError outcomeError -> onError.accept(outcomeError);
             }
         });
     }

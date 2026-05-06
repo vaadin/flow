@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.geolocation.GeolocationError;
 import com.vaadin.flow.component.geolocation.GeolocationOptions;
 import com.vaadin.flow.component.geolocation.GeolocationPosition;
 import com.vaadin.flow.component.geolocation.GeolocationTracker;
@@ -106,35 +105,36 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         NativeButton getButton = createButton("Get Position", "getButton",
-                e -> UI.getCurrent().getGeolocation().get(outcome -> {
+                e -> UI.getCurrent().getGeolocation().get(pos -> {
                     Div out = new Div();
                     out.setId("getResult");
-                    switch (outcome) {
-                    case GeolocationPosition pos ->
-                        out.setText("lat=" + pos.coords().latitude() + ", lon="
-                                + pos.coords().longitude());
-                    case GeolocationError error -> out.setText(
+                    out.setText("lat=" + pos.coords().latitude() + ", lon="
+                            + pos.coords().longitude());
+                    add(out);
+                }, error -> {
+                    Div out = new Div();
+                    out.setId("getResult");
+                    out.setText(
                             "error=" + error.code() + ":" + error.message());
-                    }
                     add(out);
                 }));
 
-        // Uses the mock's "maximumAge == -1 → error" trigger to exercise
+        // Uses the mock's "maximumAge == 9999 → error" trigger to exercise
         // the error branch.
         NativeButton getErrorButton = createButton("Get Position (error)",
-                "getErrorButton", e -> UI.getCurrent().getGeolocation().get(
-                        new GeolocationOptions(null, null, 9999), outcome -> {
-                            Div out = new Div();
-                            out.setId("getErrorResult");
-                            switch (outcome) {
-                            case GeolocationPosition pos -> out.setText(
-                                    "unexpected position: " + pos.coords());
-                            case GeolocationError error ->
-                                out.setText("error=" + error.errorCode() + ":"
-                                        + error.message());
-                            }
-                            add(out);
-                        }));
+                "getErrorButton",
+                e -> UI.getCurrent().getGeolocation().get(pos -> {
+                    Div out = new Div();
+                    out.setId("getErrorResult");
+                    out.setText("unexpected position: " + pos.coords());
+                    add(out);
+                }, error -> {
+                    Div out = new Div();
+                    out.setId("getErrorResult");
+                    out.setText("error=" + error.errorCode() + ":"
+                            + error.message());
+                    add(out);
+                }, new GeolocationOptions(null, null, 9999)));
 
         NativeButton trackButton = createButton("Track Position", "trackButton",
                 e -> {
