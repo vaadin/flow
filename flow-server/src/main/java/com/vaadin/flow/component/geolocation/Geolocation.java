@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -104,25 +107,10 @@ public class Geolocation implements Serializable {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Geolocation.class);
 
-    /**
-     * Wire shape of a one-shot get() answer: always exactly one of the two
-     * result fields is populated, plus the availability reported alongside so
-     * the server can refresh the cache inline.
-     */
-    private record GetResult(@Nullable GeolocationPosition position,
-            @Nullable GeolocationError error,
-            @Nullable String availability) implements Serializable {
-    }
-
-    /**
-     * Wire shape of a permission-change push from the client.
-     */
-    private record AvailabilityDetail(
-            @Nullable String availability) implements Serializable {
-    }
-
     private final UI ui;
     private final Signal<GeolocationAvailability> availabilityReadOnly;
+
+    private GeolocationClient client;
 
     /**
      * Creates a new Geolocation facade bound to the given UI.
@@ -131,6 +119,11 @@ public class Geolocation implements Serializable {
      * {@link UI#getGeolocation()} and should not instantiate this class
      * directly — attempting to create a second instance for a UI that already
      * has one throws.
+     * <p>
+     * The underlying {@link GeolocationClient} is resolved through
+     * {@link Lookup}: if a {@link GeolocationClientFactory} is registered, its
+     * {@link GeolocationClientFactory#create(UI)} produces the client.
+     * Otherwise the built-in browser-backed client is used.
      *
      * @param ui
      *            the UI this facade belongs to
@@ -146,15 +139,40 @@ public class Geolocation implements Serializable {
         this.ui = ui;
         this.availabilityReadOnly = ui.getInternals()
                 .getGeolocationAvailabilitySignal().asReadonly();
-        // Listen for client-side permissionchange events so the cached
-        // availability stays current without requiring a get()/track()
-        // call to refresh it.
-        ui.getElement()
-                .addEventListener("vaadin-geolocation-availability-change",
-                        e -> setAvailability(
-                                e.getEventDetail(AvailabilityDetail.class)
-                                        .availability()))
-                .addEventDetail().allowInert();
+        this.client = resolveClient(ui);
+        wireClient(this.client);
+    }
+
+    private static GeolocationClient resolveClient(UI ui) {
+        GeolocationClientFactory factory = lookupFactory(ui);
+        if (factory != null) {
+            return factory.create(ui);
+        }
+        GeolocationAvailability seed = ui.getInternals()
+                .getGeolocationAvailabilitySignal().peek();
+        if (seed == null) {
+            seed = GeolocationAvailability.UNKNOWN;
+        }
+        return new BrowserGeolocationClient(ui, seed);
+    }
+
+    private static @Nullable GeolocationClientFactory lookupFactory(UI ui) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null && ui.getSession() != null) {
+            service = ui.getSession().getService();
+        }
+        if (service == null) {
+            return null;
+        }
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup == null) {
+            return null;
+        }
+        return lookup.lookup(GeolocationClientFactory.class);
     }
 
     /**
@@ -192,18 +210,16 @@ public class Geolocation implements Serializable {
      */
     public void get(@Nullable GeolocationOptions options,
             SerializableConsumer<GeolocationOutcome> callback) {
-        ui.getElement()
-                .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
-                        options)
-                .then(GetResult.class, result -> {
-                    setAvailability(result.availability());
-                    if (result.position() != null) {
-                        callback.accept(result.position());
-                    } else if (result.error() != null) {
-                        callback.accept(result.error());
-                    }
-                }, err -> LOGGER.debug("Client-side geolocation.get failed: {}",
-                        err));
+        client.get(options).whenComplete((outcome, error) -> {
+            if (error != null) {
+                LOGGER.debug("Geolocation get() failed", error);
+                callback.accept(new GeolocationError(
+                        GeolocationErrorCode.UNKNOWN.code(),
+                        "Client-side geolocation bridge failure"));
+            } else {
+                callback.accept(outcome);
+            }
+        });
     }
 
     /**
@@ -265,7 +281,7 @@ public class Geolocation implements Serializable {
      */
     public GeolocationTracker track(Component owner,
             @Nullable GeolocationOptions options) {
-        return new GeolocationTracker(ui, owner, options);
+        return new GeolocationTracker(owner, options, client);
     }
 
     /**
@@ -317,15 +333,16 @@ public class Geolocation implements Serializable {
         return availabilityReadOnly;
     }
 
-    private void setAvailability(@Nullable String value) {
-        if (value == null) {
-            return;
-        }
-        try {
-            ui.getInternals().setGeolocationAvailability(
-                    GeolocationAvailability.valueOf(value));
-        } catch (IllegalArgumentException ignored) {
-            // Unknown value — leave the previous cached value untouched.
-        }
+    void setClient(GeolocationClient client) {
+        this.client.close();
+        this.client = client;
+        wireClient(client);
+    }
+
+    private void wireClient(GeolocationClient client) {
+        ui.getInternals()
+                .setGeolocationAvailability(client.currentAvailability());
+        client.subscribeAvailability(
+                next -> ui.getInternals().setGeolocationAvailability(next));
     }
 }

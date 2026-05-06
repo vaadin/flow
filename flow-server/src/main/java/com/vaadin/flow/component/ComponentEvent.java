@@ -57,6 +57,38 @@ public class ComponentEvent<T extends Component> extends EventObject {
     }
 
     /**
+     * Gets the UI the source component is attached to.
+     * <p>
+     * This is a convenience for {@code getSource().getUI().get()} when the
+     * event is fired while the source is attached to a UI, which is the common
+     * case.
+     * <p>
+     * If the source component is not currently attached to a UI, this method
+     * throws an {@link IllegalStateException}. This can happen, for example,
+     * when an initial value is set on a field before it is added to the UI and
+     * a value-change listener is invoked. If your listener can run while the
+     * source is detached, use {@code getSource().getUI()} instead, which
+     * returns an {@link java.util.Optional} and lets you handle the detached
+     * case explicitly.
+     *
+     * @return the UI the source component is attached to, never {@code null}
+     * @throws IllegalStateException
+     *             if the source component is not currently attached to a UI
+     */
+    public UI getUI() {
+        T source = getSource();
+        if (source instanceof UI ui) {
+            return ui;
+        }
+        return source.getUI()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Cannot resolve UI for event source " + source
+                                + ": the component is not currently attached "
+                                + "to a UI. Use getSource().getUI() to handle "
+                                + "the detached case explicitly."));
+    }
+
+    /**
      * Checks if this event originated from the client side.
      *
      * @return <code>true</code> if the event originated from the client side,
