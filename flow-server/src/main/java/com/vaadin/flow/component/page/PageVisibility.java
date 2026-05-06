@@ -29,10 +29,12 @@ package com.vaadin.flow.component.page;
 public enum PageVisibility {
 
     /**
-     * No value has been reported by the browser yet. Only observed between
-     * server attach and the completion of the first client handshake; after
-     * bootstrap, the signal transitions to one of the other values and never
-     * returns to {@code UNKNOWN}.
+     * No value has been reported by the browser yet. Used only as the initial
+     * value of the signal before the first client handshake delivers the real
+     * one. In normal request handling the signal is seeded before any user code
+     * (UI initialization, {@code UIInitListener}, component attach) runs, so
+     * this value is essentially never observed in practice; once a real value
+     * has arrived, the signal never returns to {@code UNKNOWN}.
      */
     UNKNOWN,
 

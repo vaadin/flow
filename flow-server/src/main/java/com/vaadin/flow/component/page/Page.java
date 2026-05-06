@@ -499,14 +499,14 @@ public class Page implements Serializable {
      * VISIBLE_NOT_FOCUSED} (tab shown but behind another window or another
      * application has focus), {@link PageVisibility#HIDDEN HIDDEN} (tab in
      * background, minimized, or on a different virtual desktop), and
-     * {@link PageVisibility#UNKNOWN UNKNOWN} (held briefly between server
-     * attach and the first client handshake).
+     * {@link PageVisibility#UNKNOWN UNKNOWN} (the initial value, replaced with
+     * a real one before any user code observes the signal).
      * <p>
-     * The signal value is seeded from the initial client bootstrap, so code
-     * that reads it from {@code onAttach} sees the real state rather than a
-     * placeholder. Subscribe with {@code Signal.effect(owner, ...)} to react to
-     * changes; call {@code pageVisibilitySignal().peek()} for a snapshot
-     * outside a reactive context, and {@code .get()} inside one.
+     * The signal value is seeded from the initial client bootstrap, so user
+     * code always sees a real value. Subscribe with
+     * {@code Signal.effect(owner, ...)} to react to changes; call
+     * {@code pageVisibilitySignal().peek()} for a snapshot outside a reactive
+     * context, and {@code .get()} inside one.
      * <p>
      * <b>Reliability caveats.</b> The value is best-effort:
      * <ul>
