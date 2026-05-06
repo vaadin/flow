@@ -67,6 +67,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
@@ -396,6 +397,12 @@ public abstract class AbstractNavigationStateRenderer
      */
     private void handleAfterNavigationEvents(UI ui,
             RouteParameters parameters) {
+        ui.getInternals()
+                .updateRouterState(new RouterState(
+                        locationChangeEvent.getLocation(), parameters,
+                        ui.getInternals().getActiveRouterTargetsChain(),
+                        navigationState.getNavigationTarget()));
+
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
         afterNavigationHandlers
