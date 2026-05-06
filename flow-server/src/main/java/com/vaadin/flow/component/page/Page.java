@@ -502,9 +502,8 @@ public class Page implements Serializable {
      * {@link PageVisibility#UNKNOWN UNKNOWN} (held briefly between server
      * attach and the first client handshake).
      * <p>
-     * The underlying DOM listener is installed lazily on first access. The
-     * signal value is seeded from the initial client bootstrap, so code that
-     * reads it from {@code onAttach} sees the real state rather than a
+     * The signal value is seeded from the initial client bootstrap, so code
+     * that reads it from {@code onAttach} sees the real state rather than a
      * placeholder. Subscribe with {@code Signal.effect(owner, ...)} to react to
      * changes; call {@code pageVisibilitySignal().peek()} for a snapshot
      * outside a reactive context, and {@code .get()} inside one.

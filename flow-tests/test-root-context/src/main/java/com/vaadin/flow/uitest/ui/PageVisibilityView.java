@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.PageVisibility;
@@ -36,12 +38,11 @@ public class PageVisibilityView extends AbstractDivView {
 
         Signal<PageVisibility> signal = UI.getCurrent().getPage()
                 .pageVisibilitySignal();
-        int[] count = { 0 };
+        AtomicInteger count = new AtomicInteger();
         Signal.effect(this, () -> {
             PageVisibility v = signal.get();
-            int n = ++count[0];
             state.setText(v.name());
-            updates.setText(String.valueOf(n));
+            updates.setText(String.valueOf(count.incrementAndGet()));
         });
     }
 }
