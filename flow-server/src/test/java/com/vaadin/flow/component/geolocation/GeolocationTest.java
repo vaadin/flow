@@ -637,7 +637,7 @@ class GeolocationTest {
     @Test
     void availability_unknownBeforeAnyReport() {
         assertEquals(GeolocationAvailability.UNKNOWN,
-                ui.getGeolocation().availabilitySignal().peek());
+                ui.getGeolocation().availabilityHintSignal().peek());
     }
 
     @Test
@@ -646,7 +646,7 @@ class GeolocationTest {
                 .setGeolocationAvailability(GeolocationAvailability.GRANTED);
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getGeolocation().availabilitySignal().peek());
+                ui.getGeolocation().availabilityHintSignal().peek());
     }
 
     @Test

@@ -19,7 +19,7 @@ package com.vaadin.flow.component.geolocation;
  * Whether the browser can read the user's location right now, and if so what
  * permission state the origin has.
  * <p>
- * Returned by {@link Geolocation#availabilitySignal()}. Reading the value does
+ * Held by {@link Geolocation#availabilityHintSignal()}. Reading the value does
  * <b>not</b> show a permission dialog — it reports whether a dialog would
  * appear on the next {@link Geolocation#getPosition} or
  * {@link Geolocation#watchPosition} call, or whether the call would fail
@@ -62,7 +62,7 @@ public enum GeolocationAvailability {
     /**
      * The browser did not report a permission state. Treat this as "do not
      * auto-fetch; wait for the user to take an explicit action". Safari always
-     * returns this value because it does not implement permission querying for
+     * surfaces this value because it does not implement permission querying for
      * geolocation.
      */
     UNKNOWN,
