@@ -36,9 +36,9 @@ import com.vaadin.flow.shared.Registration;
 /**
  * {@link GeolocationClient} implementation backed by the real browser
  * Geolocation API via {@code window.Vaadin.Flow.geolocation} and DOM events.
- * This is the default implementation injected at facade construction time;
- * external browserless test drivers replace it via
- * {@link Geolocation#setClient(GeolocationClient)}.
+ * This is the default implementation used when no
+ * {@link GeolocationClientFactory} is registered through
+ * {@link com.vaadin.flow.di.Lookup Lookup}.
  * <p>
  * <b>Framework internal.</b> Application code does not reference this class
  * directly.
@@ -171,8 +171,13 @@ final class BrowserGeolocationClient implements GeolocationClient {
                     .addEventDetail().allowInert();
             el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
                     options, watchKey).then(ignored -> {
-                    }, err -> LOGGER.debug(
-                            "Client-side geolocation.watch failed: {}", err));
+                    }, err -> {
+                        LOGGER.debug("Client-side geolocation.watch failed: {}",
+                                err);
+                        onUpdate.accept(new GeolocationError(
+                                GeolocationErrorCode.UNKNOWN.code(),
+                                "Client-side geolocation bridge failure"));
+                    });
         }
 
         @Override
