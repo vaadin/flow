@@ -18,7 +18,6 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.ConnectionIndicator;
-import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
@@ -66,7 +65,6 @@ public class LoadingIndicatorStateHandler {
      * a non-silent request starts.
      */
     public void startLoading() {
-        Console.log("loading: start " + showLoading);
         if (!showLoading) {
             // The next request is muted, do not show loading.
             return;
@@ -80,7 +78,6 @@ public class LoadingIndicatorStateHandler {
      * when active requests finish.
      */
     public void stopLoading() {
-        Console.log("loading: stop " + showLoading + ", activeRequest: " + registry.getRequestResponseTracker().hasActiveRequest());
         if (registry.getRequestResponseTracker().hasActiveRequest()) {
             // Some request is in progress, skip the current stop.
             return;
@@ -110,7 +107,6 @@ public class LoadingIndicatorStateHandler {
         boolean silent = JsonConstants.RPC_EVENT_TYPE.equals(rpcType)
                 && eventType != null && SILENT_EVENT_TYPES.has(eventType);
         if (!silent) {
-            Console.log("loading: queue " + rpcType + " " + eventType);
             showLoading = true;
         }
     }
@@ -125,7 +121,8 @@ public class LoadingIndicatorStateHandler {
 
         loading = showLoading;
         // Setting the loading state directly using
-        // `ConnectionIndicator.setState()` interferes with other loading parties
+        // `ConnectionIndicator.setState()` interferes with other loading
+        // parties
         // (Flow router, Hilla requests), therefore `.loadingStarted()` /
         // `.loadingFinished()` are preferred.
         if (loading) {
