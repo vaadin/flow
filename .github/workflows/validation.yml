@@ -301,6 +301,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -317,10 +318,16 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - name: Checkout base branch for API comparison
+      - name: Resolve merge base with target branch
+        id: merge-base
         run: |
-          echo "Checking out base branch: ${{ env._BASE_REF }}"
-          git clone --depth 1 --branch ${{ env._BASE_REF }} ${{ github.event.repository.clone_url }} ../base-build
+          git fetch --no-tags origin "${_BASE_REF}"
+          MERGE_BASE=$(git merge-base HEAD "origin/${_BASE_REF}")
+          echo "Merge base with ${_BASE_REF}: ${MERGE_BASE}"
+          echo "merge_base_sha=${MERGE_BASE}" >> "$GITHUB_OUTPUT"
+      - name: Create worktree at merge base for API comparison
+        run: |
+          git worktree add --detach ../base-build "${{ steps.merge-base.outputs.merge_base_sha }}"
       - name: Determine base version
         id: base-version
         working-directory: ../base-build
@@ -331,7 +338,7 @@ jobs:
       - name: Build base version locally
         working-directory: ../base-build
         run: |
-          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env._BASE_REF }}"
+          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
           mvn clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
@@ -361,11 +368,11 @@ jobs:
         with:
           name: apidiff-reports
           path: apidiff/
-      - name: Cleanup base build directory
+      - name: Cleanup base build worktree
         if: always()
         run: |
-          echo "Cleaning up base build directory"
-          rm -rf ../base-build
+          echo "Cleaning up base build worktree"
+          git worktree remove --force ../base-build || rm -rf ../base-build
       - name: Report API DIFF to GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
