@@ -16,10 +16,14 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -53,6 +57,9 @@ public class GeolocationTracker implements Serializable {
             Boolean.FALSE);
     private final Signal<Boolean> activeSignalReadOnly = activeSignal
             .asReadonly();
+
+    private final List<SerializableConsumer<GeolocationPosition>> positionListeners = new ArrayList<>();
+    private final List<SerializableConsumer<GeolocationError>> errorListeners = new ArrayList<>();
 
     private final Component owner;
     private final @Nullable GeolocationOptions options;
@@ -112,6 +119,43 @@ public class GeolocationTracker implements Serializable {
     }
 
     /**
+     * Adds a listener pair that is notified on every reading the browser
+     * reports. The listener-based equivalent of subscribing to
+     * {@link #valueSignal()} for callers that prefer plain callbacks over
+     * signals.
+     * <p>
+     * On every successful reading {@code onSuccess} is invoked with the
+     * {@link GeolocationPosition}. If the browser reports an error instead
+     * {@code onError} is invoked with the {@link GeolocationError}. The initial
+     * {@link GeolocationPending} state is never delivered to listeners — they
+     * only see real outcomes, mirroring the W3C
+     * {@code watchPosition(success, error)} pair.
+     * <p>
+     * Listeners survive {@link #stop()} / {@link #resume()} cycles; remove them
+     * via {@link Registration#remove()} on the returned registration. Both
+     * callbacks are invoked on the UI thread.
+     *
+     * @param onSuccess
+     *            invoked with each successful position reading; not
+     *            {@code null}
+     * @param onError
+     *            invoked when the browser reports an error; not {@code null}
+     * @return a registration that removes both listeners when called
+     */
+    public Registration addPositionListener(
+            SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<GeolocationError> onError) {
+        Objects.requireNonNull(onSuccess, "onSuccess listener cannot be null");
+        Objects.requireNonNull(onError, "onError listener cannot be null");
+        positionListeners.add(onSuccess);
+        errorListeners.add(onError);
+        return () -> {
+            positionListeners.remove(onSuccess);
+            errorListeners.remove(onError);
+        };
+    }
+
+    /**
      * Starts, or resumes, the underlying browser watch.
      * <p>
      * Called automatically from the constructor so that a freshly created
@@ -129,8 +173,31 @@ public class GeolocationTracker implements Serializable {
         activeSignal.set(Boolean.TRUE);
         valueSignal.set(new GeolocationPending());
 
-        handle = client.startWatch(owner, options, valueSignal::set);
+        handle = client.startWatch(owner, options, this::handleResult);
         detachRegistration = owner.addDetachListener(e -> stop());
+    }
+
+    private void handleResult(GeolocationResult result) {
+        valueSignal.set(result);
+        switch (result) {
+        case GeolocationPosition position -> {
+            for (SerializableConsumer<GeolocationPosition> listener : new ArrayList<>(
+                    positionListeners)) {
+                listener.accept(position);
+            }
+        }
+        case GeolocationError error -> {
+            for (SerializableConsumer<GeolocationError> listener : new ArrayList<>(
+                    errorListeners)) {
+                listener.accept(error);
+            }
+        }
+        case GeolocationPending pending -> {
+            // Intentionally not dispatched to listeners — Pending is the
+            // initial state set by resume(), not an outcome the W3C
+            // watchPosition(success, error) pair would fire.
+        }
+        }
     }
 
     /**
