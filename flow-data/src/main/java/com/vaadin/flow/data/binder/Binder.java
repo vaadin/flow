@@ -1257,7 +1257,7 @@ public class Binder<BEAN> implements Serializable {
                 Class<?> boxedType) {
             return Converter.from(value -> value == null ? Result.error(
                     "Null value cannot be assigned to a primitive bean property. "
-                            + "Use asRequired() to prevent null values.")
+                            + "Use asRequired() before any converter to prevent null values.")
                     : Result.of(() -> boxedType.cast(value), exception -> {
                         throw new RuntimeException(exception);
                     }), propertyValue -> (TARGET) propertyValue);
