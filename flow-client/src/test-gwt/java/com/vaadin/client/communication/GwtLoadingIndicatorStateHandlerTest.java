@@ -17,6 +17,7 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.shared.JsonConstants;
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -73,7 +74,13 @@ public class GwtLoadingIndicatorStateHandlerTest extends ClientEngineTestBase {
                     setServiceUrl("");
                     setContextRootUrl("/");
                 }});
-                set(StateTree.class, stateTree = new StateTree(this));
+                set(StateTree.class, stateTree = new StateTree(this) {{
+                    getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
+                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY).setValue((double)3);
+                    // keep the timer from interfering with the test:
+                    getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
+                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
+                }});
                 set(RequestResponseTracker.class,
                         new RequestResponseTracker(this));
                 set(ConnectionStateHandler.class,
@@ -207,33 +214,6 @@ public class GwtLoadingIndicatorStateHandlerTest extends ClientEngineTestBase {
                                              $wnd.unsubscribeUri =  uri;
                                          };
                                          }-*/;
-
-    private static native void createDummyConnectionState()
-    /*-{
-      if (!$wnd.Vaadin) {
-        $wnd.Vaadin = {};
-      }
-      if (!$wnd.Vaadin.connectionState) {
-        $wnd.Vaadin.connectionState = {
-          state: 'connected',
-          requestCount: 0,
-          loadingStarted: function() {
-            this.state = 'loading';
-            this.requestCount++;
-          },
-          loadingFinished: function() {
-            if (this.requestCount == 0) { return; }
-            this.requestCount--;
-            if (this.requestCount == 0) { this.state = 'connected'; }
-          },
-          loadingFailed: function() {
-            if (this.requestCount == 0) { return; }
-            this.requestCount--;
-            if (this.requestCount == 0) { this.state = 'connection-lost'; }
-          }
-        };
-      }
-    }-*/;
 
     private native void initScheduler(SchedulerImpl scheduler)
     /*-{

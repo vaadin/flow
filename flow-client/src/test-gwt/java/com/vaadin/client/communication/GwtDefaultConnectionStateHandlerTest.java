@@ -108,13 +108,4 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
         return new Event(type);
     }-*/;
 
-    private static native void createDummyConnectionState()
-    /*-{
-      if (!$wnd.Vaadin) {
-        $wnd.Vaadin = {};
-      }
-      if (!$wnd.Vaadin.connectionState) {
-        $wnd.Vaadin.connectionState = { state: 'connected' };
-      }
-    }-*/;
 }
