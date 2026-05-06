@@ -71,6 +71,7 @@ import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -840,6 +841,37 @@ public class UI extends Component
      */
     public Signal<Locale> localeSignal() {
         return localeSignal.asReadonly();
+    }
+
+    /**
+     * Gets a read-only signal that holds the current {@link RouterState} of
+     * this UI.
+     * <p>
+     * The signal value is updated whenever a navigation completes, immediately
+     * before {@link AfterNavigationListener}s are notified, so reactive
+     * consumers and listeners observe the same state. Use {@link Signal#get()}
+     * to read reactively (creates a dependency when called inside a
+     * {@link Signal#effect}). Use {@link Signal#peek()} for a non-reactive
+     * snapshot.
+     * <p>
+     * Before the first navigation completes, the value is a {@code
+     * RouterState} with an empty {@link Location}, empty
+     * {@link RouteParameters}, an empty active chain and a {@code null}
+     * navigation target.
+     * <p>
+     * Fine-grained projections can be derived with {@link Signal#map}, for
+     * example:
+     *
+     * <pre>
+     * Signal&lt;Location&gt; locationSignal = ui.routerStateSignal()
+     *         .map(RouterState::location);
+     * </pre>
+     *
+     * @return a read-only signal holding the current router state, never
+     *         {@code null}
+     */
+    public Signal<RouterState> routerStateSignal() {
+        return internals.getRouterStateSignal();
     }
 
     /**
