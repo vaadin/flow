@@ -231,6 +231,34 @@ class GeolocationTest {
     }
 
     @Test
+    void track_signalSurfacesUnknownErrorWhenWatchExecuteJsFails() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationTracker tracker = ui.getGeolocation().track(component);
+
+        PendingJavaScriptInvocation watchInvocation = ui
+                .dumpPendingJsInvocations().stream()
+                .filter(inv -> inv.getInvocation().getExpression()
+                        .contains("geolocation.watch"))
+                .reduce((a, b) -> b).orElseThrow();
+        watchInvocation.completeExceptionally(
+                JacksonUtils.createNode("module not loaded"));
+
+        GeolocationResult value = tracker.valueSignal().peek();
+        GeolocationError err = assertInstanceOf(GeolocationError.class, value,
+                "watch executeJs failure must surface as a GeolocationError"
+                        + " on the tracker's valueSignal");
+        assertEquals(GeolocationErrorCode.UNKNOWN, err.errorCode());
+        assertFalse(err.message().contains("module not loaded"),
+                "synthesized message must not leak the wrapped client text;"
+                        + " the cause is logged at DEBUG instead");
+        assertTrue(tracker.activeSignal().peek(),
+                "activeSignal stays true on infra failure — its contract"
+                        + " is tied to resume()/stop(), not data flow");
+    }
+
+    @Test
     void track_signalUpdatesOnPositionEvent() {
         TestComponent component = new TestComponent();
         ui.add(component);

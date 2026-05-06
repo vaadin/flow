@@ -171,8 +171,13 @@ final class BrowserGeolocationClient implements GeolocationClient {
                     .addEventDetail().allowInert();
             el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
                     options, watchKey).then(ignored -> {
-                    }, err -> LOGGER.debug(
-                            "Client-side geolocation.watch failed: {}", err));
+                    }, err -> {
+                        LOGGER.debug("Client-side geolocation.watch failed: {}",
+                                err);
+                        onUpdate.accept(new GeolocationError(
+                                GeolocationErrorCode.UNKNOWN.code(),
+                                "Client-side geolocation bridge failure"));
+                    });
         }
 
         @Override

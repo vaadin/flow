@@ -213,6 +213,9 @@ public class Geolocation implements Serializable {
         client.get(options).whenComplete((outcome, error) -> {
             if (error != null) {
                 LOGGER.debug("Geolocation get() failed", error);
+                callback.accept(new GeolocationError(
+                        GeolocationErrorCode.UNKNOWN.code(),
+                        "Client-side geolocation bridge failure"));
             } else {
                 callback.accept(outcome);
             }
