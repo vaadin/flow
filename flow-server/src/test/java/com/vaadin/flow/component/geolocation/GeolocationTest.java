@@ -565,6 +565,35 @@ class GeolocationTest {
     }
 
     @Test
+    void addPositionListener_survivesStopResume() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationTracker tracker = ui.getGeolocation().track(component);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        tracker.addPositionListener(positions::add, err -> {
+        });
+
+        tracker.stop();
+        tracker.resume();
+
+        ObjectNode posData = JacksonUtils.createObjectNode();
+        ObjectNode posDetail = JacksonUtils.createObjectNode();
+        ObjectNode coords = JacksonUtils.createObjectNode();
+        coords.put("latitude", 60.0);
+        coords.put("longitude", 25.0);
+        coords.put("accuracy", 10.0);
+        posDetail.set("coords", coords);
+        posDetail.put("timestamp", 1700000000000L);
+        posData.set("event.detail", posDetail);
+        fireEvent(component.getElement(), "vaadin-geolocation-position",
+                posData);
+
+        assertEquals(1, positions.size());
+        assertEquals(60.0, positions.get(0).coords().latitude());
+    }
+
+    @Test
     void addPositionListener_pendingIsSilent() {
         TestComponent component = new TestComponent();
         ui.add(component);
