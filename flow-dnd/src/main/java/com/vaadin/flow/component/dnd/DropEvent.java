@@ -52,6 +52,29 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      *            side, <code>false</code> otherwise
      * @param effectAllowed
      *            the effect allowed by the drag source
+     * @deprecated since 25.2, for removal. Use
+     *             {@link #DropEvent(Component, boolean, String, int, int, int, int)}
+     *             which also captures the pointer's client and drop-target
+     *             offset coordinates. When this constructor is used,
+     *             {@link #getClientX()}, {@link #getClientY()},
+     *             {@link #getOffsetX()} and {@link #getOffsetY()} return
+     *             {@code 0}.
+     */
+    @Deprecated(since = "25.2", forRemoval = true)
+    public DropEvent(T source, boolean fromClient, String effectAllowed) {
+        this(source, fromClient, effectAllowed, 0, 0, 0, 0);
+    }
+
+    /**
+     * Creates a server side drop event.
+     *
+     * @param source
+     *            Component that received the drop.
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
+     * @param effectAllowed
+     *            the effect allowed by the drag source
      * @param clientX
      *            the x coordinate of the mouse pointer relative to the viewport
      * @param clientY
