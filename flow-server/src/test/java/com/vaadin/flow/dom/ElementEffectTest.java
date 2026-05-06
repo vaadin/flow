@@ -1247,7 +1247,7 @@ class ElementEffectTest {
         assertEquals(IllegalStateException.class,
                 event.getThrowable().getClass());
         assertEquals(
-                "HasComponents.bindChildren childFactory must not return null",
+                "HasComponentsOfType.bindChildren childFactory must not return null",
                 event.getThrowable().getMessage());
     }
 
