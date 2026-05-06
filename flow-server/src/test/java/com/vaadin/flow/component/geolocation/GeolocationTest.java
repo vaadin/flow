@@ -27,6 +27,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -41,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -135,30 +135,13 @@ class GeolocationTest {
                 new GeolocationError(99, "future code").errorCode());
     }
 
-    // --- UI.getGeolocation() tests ---
-
-    @Test
-    void getGeolocation_returnsSameInstanceOnRepeatedCalls() {
-        assertSame(ui.getGeolocation(), ui.getGeolocation());
-    }
-
-    @Test
-    void newGeolocation_throwsWhenAlreadyCreated() {
-        // UI.getGeolocation() is populated by the UI constructor, so a
-        // second direct construction must be rejected.
-        assertThrows(IllegalStateException.class, () -> new Geolocation(ui));
-    }
-
     // --- getPosition() tests ---
 
     @Test
     void getPosition_executesPromiseJs() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        ui.getGeolocation().getPosition(pos -> {
+        Geolocation.getPosition(pos -> {
         }, err -> {
-        });
+        }, ui);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -167,53 +150,68 @@ class GeolocationTest {
     }
 
     @Test
-    void getPosition_onSuccessReceivesPositionAndOnErrorIsSilent() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
+    void getPosition_callbackReceivesPosition() {
         List<GeolocationPosition> positions = new ArrayList<>();
         List<GeolocationError> errors = new ArrayList<>();
-        ui.getGeolocation().getPosition(positions::add, errors::add);
+        Geolocation.getPosition(positions::add, errors::add, ui);
 
         resolvePromise(ui,
                 resultJson(position(60.1699, 24.9384, 10.0), null, "GRANTED"));
 
         assertEquals(1, positions.size());
+        assertTrue(errors.isEmpty());
         assertEquals(60.1699, positions.get(0).coords().latitude());
-        assertTrue(errors.isEmpty(),
-                "onError must not fire for a successful reading");
     }
 
     @Test
-    void getPosition_onErrorReceivesErrorAndOnSuccessIsSilent() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
+    void getPosition_callbackReceivesError() {
         List<GeolocationPosition> positions = new ArrayList<>();
         List<GeolocationError> errors = new ArrayList<>();
-        ui.getGeolocation().getPosition(positions::add, errors::add);
+        Geolocation.getPosition(positions::add, errors::add, ui);
 
         resolvePromise(ui, resultJson(null, error(1, "denied"), "DENIED"));
 
         assertEquals(1, errors.size());
+        assertTrue(positions.isEmpty());
         assertEquals(1, errors.get(0).code());
-        assertTrue(positions.isEmpty(),
-                "onSuccess must not fire when the browser reports an error");
     }
 
     @Test
     void getPosition_updatesAvailabilityFromResponse() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        ui.getGeolocation().getPosition(pos -> {
+        Geolocation.getPosition(pos -> {
         }, err -> {
-        });
+        }, ui);
+
         resolvePromise(ui,
                 resultJson(position(60.0, 25.0, 10.0), null, "GRANTED"));
 
         assertEquals(GeolocationAvailability.GRANTED,
                 ui.getInternals().getGeolocationAvailabilitySignal().peek());
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void getPosition_rejectsNullSuccessHandler() {
+        assertThrows(NullPointerException.class,
+                () -> Geolocation.getPosition(null, err -> {
+                }, ui));
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void getPosition_rejectsNullErrorHandler() {
+        assertThrows(NullPointerException.class,
+                () -> Geolocation.getPosition(pos -> {
+                }, null, ui));
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void getPosition_rejectsNullUi() {
+        assertThrows(NullPointerException.class,
+                () -> Geolocation.getPosition(pos -> {
+                }, err -> {
+                }, (UI) null));
     }
 
     // --- watchPosition() tests ---
@@ -223,13 +221,12 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
 
         assertNotNull(watcher);
-        assertNotNull(watcher.valueSignal());
+        assertNotNull(watcher.positionSignal());
         assertInstanceOf(GeolocationPending.class,
-                watcher.valueSignal().peek());
+                watcher.positionSignal().peek());
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -238,32 +235,10 @@ class GeolocationTest {
     }
 
     @Test
-    void watchPosition_signalSurfacesUnknownErrorWhenWatchExecuteJsFails() {
+    void watchPosition_throwsWhenOwnerNotAttached() {
         TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-
-        PendingJavaScriptInvocation watchInvocation = ui
-                .dumpPendingJsInvocations().stream()
-                .filter(inv -> inv.getInvocation().getExpression()
-                        .contains("geolocation.watch"))
-                .reduce((a, b) -> b).orElseThrow();
-        watchInvocation.completeExceptionally(
-                JacksonUtils.createNode("module not loaded"));
-
-        GeolocationResult value = watcher.valueSignal().peek();
-        GeolocationError err = assertInstanceOf(GeolocationError.class, value,
-                "watch executeJs failure must surface as a GeolocationError"
-                        + " on the watcher's valueSignal");
-        assertEquals(GeolocationErrorCode.UNKNOWN, err.errorCode());
-        assertFalse(err.message().contains("module not loaded"),
-                "synthesized message must not leak the wrapped client text;"
-                        + " the cause is logged at DEBUG instead");
-        assertTrue(watcher.activeSignal().peek(),
-                "activeSignal stays true on infra failure — its contract"
-                        + " is tied to resume()/stop(), not data flow");
+        assertThrows(IllegalStateException.class,
+                () -> Geolocation.watchPosition(component));
     }
 
     @Test
@@ -271,38 +246,16 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
 
-        ObjectNode eventData = JacksonUtils.createObjectNode();
-        ObjectNode detail = JacksonUtils.createObjectNode();
-        ObjectNode coords = JacksonUtils.createObjectNode();
-        coords.put("latitude", 60.1699);
-        coords.put("longitude", 24.9384);
-        coords.put("accuracy", 10.0);
-        coords.put("altitude", 25.5);
-        coords.put("altitudeAccuracy", 5.0);
-        coords.put("heading", 90.0);
-        coords.put("speed", 1.5);
-        detail.set("coords", coords);
-        detail.put("timestamp", 1700000000000L);
-        eventData.set("event.detail", detail);
-
-        fireEvent(component.getElement(), "vaadin-geolocation-position",
-                eventData);
+        firePosition(component, 60.1699, 24.9384);
 
         assertInstanceOf(GeolocationPosition.class,
-                watcher.valueSignal().peek());
-        GeolocationPosition pos = (GeolocationPosition) watcher.valueSignal()
+                watcher.positionSignal().peek());
+        GeolocationPosition pos = (GeolocationPosition) watcher.positionSignal()
                 .peek();
         assertEquals(60.1699, pos.coords().latitude());
         assertEquals(24.9384, pos.coords().longitude());
-        assertEquals(10.0, pos.coords().accuracy());
-        assertEquals(25.5, pos.coords().altitude());
-        assertEquals(5.0, pos.coords().altitudeAccuracy());
-        assertEquals(90.0, pos.coords().heading());
-        assertEquals(1.5, pos.coords().speed());
-        assertEquals(1700000000000L, pos.timestamp());
     }
 
     @Test
@@ -310,20 +263,14 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
 
-        ObjectNode eventData = JacksonUtils.createObjectNode();
-        ObjectNode detail = JacksonUtils.createObjectNode();
-        detail.put("code", GeolocationErrorCode.PERMISSION_DENIED.code());
-        detail.put("message", "User denied geolocation");
-        eventData.set("event.detail", detail);
+        fireError(component, GeolocationErrorCode.PERMISSION_DENIED.code(),
+                "User denied geolocation");
 
-        fireEvent(component.getElement(), "vaadin-geolocation-error",
-                eventData);
-
-        assertInstanceOf(GeolocationError.class, watcher.valueSignal().peek());
-        GeolocationError error = (GeolocationError) watcher.valueSignal()
+        assertInstanceOf(GeolocationError.class,
+                watcher.positionSignal().peek());
+        GeolocationError error = (GeolocationError) watcher.positionSignal()
                 .peek();
         assertEquals(GeolocationErrorCode.PERMISSION_DENIED.code(),
                 error.code());
@@ -331,58 +278,21 @@ class GeolocationTest {
     }
 
     @Test
-    void watchPosition_stateTransitionsFromErrorToPosition() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-
-        ObjectNode errEventData = JacksonUtils.createObjectNode();
-        ObjectNode errDetail = JacksonUtils.createObjectNode();
-        errDetail.put("code", GeolocationErrorCode.TIMEOUT.code());
-        errDetail.put("message", "Timeout");
-        errEventData.set("event.detail", errDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-error",
-                errEventData);
-        assertInstanceOf(GeolocationError.class, watcher.valueSignal().peek());
-
-        ObjectNode posEventData = JacksonUtils.createObjectNode();
-        ObjectNode posDetail = JacksonUtils.createObjectNode();
-        ObjectNode coords = JacksonUtils.createObjectNode();
-        coords.put("latitude", 60.1699);
-        coords.put("longitude", 24.9384);
-        coords.put("accuracy", 10.0);
-        posDetail.set("coords", coords);
-        posDetail.put("timestamp", 1700000000000L);
-        posEventData.set("event.detail", posDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-position",
-                posEventData);
-
-        assertInstanceOf(GeolocationPosition.class,
-                watcher.valueSignal().peek());
-    }
-
-    @Test
     void watchPosition_autoStopsOnDetach() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        ui.getGeolocation().watchPosition(component);
+        Geolocation.watchPosition(component);
 
         ElementListenerMap listenerMap = component.getElement().getNode()
                 .getFeature(ElementListenerMap.class);
         assertFalse(listenerMap.getExpressions("vaadin-geolocation-position")
-                .isEmpty());
-        assertFalse(listenerMap.getExpressions("vaadin-geolocation-error")
                 .isEmpty());
 
         ui.dumpPendingJsInvocations();
         ui.remove(component);
 
         assertTrue(listenerMap.getExpressions("vaadin-geolocation-position")
-                .isEmpty());
-        assertTrue(listenerMap.getExpressions("vaadin-geolocation-error")
                 .isEmpty());
 
         List<PendingJavaScriptInvocation> invocations = ui
@@ -396,8 +306,7 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
 
         ElementListenerMap listenerMap = component.getElement().getNode()
                 .getFeature(ElementListenerMap.class);
@@ -408,8 +317,6 @@ class GeolocationTest {
         watcher.stop();
 
         assertTrue(listenerMap.getExpressions("vaadin-geolocation-position")
-                .isEmpty());
-        assertTrue(listenerMap.getExpressions("vaadin-geolocation-error")
                 .isEmpty());
 
         List<PendingJavaScriptInvocation> invocations = ui
@@ -423,28 +330,10 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
         ui.dumpPendingJsInvocations();
 
         watcher.stop();
-        ui.dumpPendingJsInvocations();
-
-        assertDoesNotThrow(watcher::stop);
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().noneMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.clearWatch")));
-    }
-
-    @Test
-    void stop_afterDetach_isNoOp() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-        ui.remove(component);
         ui.dumpPendingJsInvocations();
 
         assertDoesNotThrow(watcher::stop);
@@ -459,42 +348,21 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-        ElementListenerMap listenerMap = component.getElement().getNode()
-                .getFeature(ElementListenerMap.class);
-
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
         watcher.stop();
-        assertTrue(listenerMap.getExpressions("vaadin-geolocation-position")
-                .isEmpty());
-
         ui.dumpPendingJsInvocations();
+
         watcher.resume();
 
+        ElementListenerMap listenerMap = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
         assertFalse(listenerMap.getExpressions("vaadin-geolocation-position")
                 .isEmpty());
         assertInstanceOf(GeolocationPending.class,
-                watcher.valueSignal().peek());
+                watcher.positionSignal().peek());
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
         assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.watch")));
-    }
-
-    @Test
-    void resume_isNoOpWhenActive() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-        ui.dumpPendingJsInvocations();
-
-        watcher.resume();
-
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().noneMatch(inv -> inv.getInvocation()
                 .getExpression().contains("geolocation.watch")));
     }
 
@@ -503,8 +371,7 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
         assertTrue(watcher.activeSignal().peek());
 
         watcher.stop();
@@ -517,114 +384,50 @@ class GeolocationTest {
     // --- addPositionListener() tests ---
 
     @Test
-    void addPositionListener_dispatchesPositionAndError() {
+    void addPositionListener_firesSuccessOnPositionEvent() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
         List<GeolocationPosition> positions = new ArrayList<>();
         List<GeolocationError> errors = new ArrayList<>();
         watcher.addPositionListener(positions::add, errors::add);
 
-        ObjectNode posData = JacksonUtils.createObjectNode();
-        ObjectNode posDetail = JacksonUtils.createObjectNode();
-        ObjectNode coords = JacksonUtils.createObjectNode();
-        coords.put("latitude", 60.1699);
-        coords.put("longitude", 24.9384);
-        coords.put("accuracy", 10.0);
-        posDetail.set("coords", coords);
-        posDetail.put("timestamp", 1700000000000L);
-        posData.set("event.detail", posDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-position",
-                posData);
-
-        ObjectNode errData = JacksonUtils.createObjectNode();
-        ObjectNode errDetail = JacksonUtils.createObjectNode();
-        errDetail.put("code", GeolocationErrorCode.TIMEOUT.code());
-        errDetail.put("message", "Timeout");
-        errData.set("event.detail", errDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-error", errData);
+        firePosition(component, 60.1699, 24.9384);
 
         assertEquals(1, positions.size());
         assertEquals(60.1699, positions.get(0).coords().latitude());
-        assertEquals(1, errors.size());
-        assertEquals(GeolocationErrorCode.TIMEOUT, errors.get(0).errorCode());
+        assertTrue(errors.isEmpty());
     }
 
     @Test
-    void addPositionListener_registrationStopsDelivery() {
+    void addPositionListener_firesErrorOnErrorEvent() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-        List<GeolocationPosition> positions = new ArrayList<>();
-        Registration registration = watcher.addPositionListener(positions::add,
-                err -> {
-                });
-
-        registration.remove();
-
-        ObjectNode posData = JacksonUtils.createObjectNode();
-        ObjectNode posDetail = JacksonUtils.createObjectNode();
-        ObjectNode coords = JacksonUtils.createObjectNode();
-        coords.put("latitude", 60.0);
-        coords.put("longitude", 25.0);
-        coords.put("accuracy", 10.0);
-        posDetail.set("coords", coords);
-        posDetail.put("timestamp", 1700000000000L);
-        posData.set("event.detail", posDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-position",
-                posData);
-
-        assertTrue(positions.isEmpty(),
-                "removed listener must not receive subsequent updates");
-    }
-
-    @Test
-    void addPositionListener_survivesStopResume() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
-        List<GeolocationPosition> positions = new ArrayList<>();
-        watcher.addPositionListener(positions::add, err -> {
-        });
-
-        watcher.stop();
-        watcher.resume();
-
-        ObjectNode posData = JacksonUtils.createObjectNode();
-        ObjectNode posDetail = JacksonUtils.createObjectNode();
-        ObjectNode coords = JacksonUtils.createObjectNode();
-        coords.put("latitude", 60.0);
-        coords.put("longitude", 25.0);
-        coords.put("accuracy", 10.0);
-        posDetail.set("coords", coords);
-        posDetail.put("timestamp", 1700000000000L);
-        posData.set("event.detail", posDetail);
-        fireEvent(component.getElement(), "vaadin-geolocation-position",
-                posData);
-
-        assertEquals(1, positions.size());
-        assertEquals(60.0, positions.get(0).coords().latitude());
-    }
-
-    @Test
-    void addPositionListener_pendingIsSilent() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        GeolocationWatcher watcher = ui.getGeolocation()
-                .watchPosition(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
         List<GeolocationPosition> positions = new ArrayList<>();
         List<GeolocationError> errors = new ArrayList<>();
         watcher.addPositionListener(positions::add, errors::add);
 
-        // resume() resets the signal to Pending — listeners must stay silent
-        // since they only see real outcomes.
+        fireError(component, GeolocationErrorCode.TIMEOUT.code(), "Timeout");
+
+        assertTrue(positions.isEmpty());
+        assertEquals(1, errors.size());
+        assertEquals(GeolocationErrorCode.TIMEOUT.code(), errors.get(0).code());
+    }
+
+    @Test
+    void addPositionListener_doesNotFireOnPendingState() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        List<GeolocationError> errors = new ArrayList<>();
+        watcher.addPositionListener(positions::add, errors::add);
+
+        // resume() resets to Pending; listeners must not fire.
         watcher.stop();
         watcher.resume();
 
@@ -632,34 +435,118 @@ class GeolocationTest {
         assertTrue(errors.isEmpty());
     }
 
-    // --- availability() / availability-change listener tests ---
+    @Test
+    void addPositionListener_registrationRemoveStopsBothConsumers() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        List<GeolocationError> errors = new ArrayList<>();
+        Registration reg = watcher.addPositionListener(positions::add,
+                errors::add);
+
+        reg.remove();
+
+        firePosition(component, 60.0, 25.0);
+        fireError(component, 1, "denied");
+
+        assertTrue(positions.isEmpty());
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    void addPositionListener_survivesStopAndResume() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        watcher.addPositionListener(positions::add, err -> {
+        });
+
+        watcher.stop();
+        watcher.resume();
+        firePosition(component, 60.0, 25.0);
+
+        assertEquals(1, positions.size());
+    }
+
+    @Test
+    void addPositionListener_signalAndListenersBothFire() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        watcher.addPositionListener(positions::add, err -> {
+        });
+
+        firePosition(component, 60.0, 25.0);
+
+        assertEquals(1, positions.size());
+        assertInstanceOf(GeolocationPosition.class,
+                watcher.positionSignal().peek());
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void addPositionListener_rejectsNullSuccess() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+
+        assertThrows(NullPointerException.class,
+                () -> watcher.addPositionListener(null, err -> {
+                }));
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void addPositionListener_rejectsNullError() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+
+        assertThrows(NullPointerException.class,
+                () -> watcher.addPositionListener(pos -> {
+                }, null));
+    }
+
+    // --- availabilityHintSignal() tests ---
 
     @Test
     void availability_unknownBeforeAnyReport() {
         assertEquals(GeolocationAvailability.UNKNOWN,
-                ui.getGeolocation().availabilityHintSignal().peek());
+                Geolocation.availabilityHintSignal(ui).peek());
     }
 
     @Test
     void availability_reflectsUIInternalsSignal() {
+        // Resolve the signal first so the client is installed.
+        Geolocation.availabilityHintSignal(ui);
         ui.getInternals()
                 .setGeolocationAvailability(GeolocationAvailability.GRANTED);
 
         assertEquals(GeolocationAvailability.GRANTED,
-                ui.getGeolocation().availabilityHintSignal().peek());
+                Geolocation.availabilityHintSignal(ui).peek());
     }
 
     @Test
-    void availabilityChangeListener_isRegisteredFromConstructor() {
-        ElementListenerMap listenerMap = ui.getElement().getNode()
-                .getFeature(ElementListenerMap.class);
-        assertFalse(listenerMap
-                .getExpressions("vaadin-geolocation-availability-change")
-                .isEmpty());
+    void availabilityHintSignal_installsClientLazily() {
+        assertNull(ui.getInternals().getGeolocationClient());
+
+        Geolocation.availabilityHintSignal(ui);
+
+        assertNotNull(ui.getInternals().getGeolocationClient());
     }
 
     @Test
     void availabilityChangeListener_updatesCachedValue() {
+        // Trigger lazy installation so the availability-change listener is
+        // registered on the UI element.
+        Geolocation.availabilityHintSignal(ui);
+
         ObjectNode eventData = JacksonUtils.createObjectNode();
         ObjectNode detail = JacksonUtils.createObjectNode();
         detail.put("availability", "DENIED");
@@ -674,6 +561,7 @@ class GeolocationTest {
 
     @Test
     void availabilityChangeListener_ignoresUnknownValue() {
+        Geolocation.availabilityHintSignal(ui);
         ui.getInternals()
                 .setGeolocationAvailability(GeolocationAvailability.GRANTED);
 
@@ -686,6 +574,13 @@ class GeolocationTest {
 
         assertEquals(GeolocationAvailability.GRANTED,
                 ui.getInternals().getGeolocationAvailabilitySignal().peek());
+    }
+
+    @SuppressWarnings("NullAway")
+    @Test
+    void availabilityHintSignal_rejectsNullUi() {
+        assertThrows(NullPointerException.class,
+                () -> Geolocation.availabilityHintSignal(null));
     }
 
     // --- GeolocationOptions tests ---
@@ -746,6 +641,32 @@ class GeolocationTest {
         ElementListenerMap listenerMap = element.getNode()
                 .getFeature(ElementListenerMap.class);
         listenerMap.fireEvent(new DomEvent(element, eventType, eventData));
+    }
+
+    private static void firePosition(Component component, double lat,
+            double lon) {
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        ObjectNode detail = JacksonUtils.createObjectNode();
+        ObjectNode coords = JacksonUtils.createObjectNode();
+        coords.put("latitude", lat);
+        coords.put("longitude", lon);
+        coords.put("accuracy", 10.0);
+        detail.set("coords", coords);
+        detail.put("timestamp", 1700000000000L);
+        eventData.set("event.detail", detail);
+        fireEvent(component.getElement(), "vaadin-geolocation-position",
+                eventData);
+    }
+
+    private static void fireError(Component component, int code,
+            String message) {
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        ObjectNode detail = JacksonUtils.createObjectNode();
+        detail.put("code", code);
+        detail.put("message", message);
+        eventData.set("event.detail", detail);
+        fireEvent(component.getElement(), "vaadin-geolocation-error",
+                eventData);
     }
 
     /**

@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.geolocation.GeolocationOptions;
 import com.vaadin.flow.component.geolocation.GeolocationPosition;
 import com.vaadin.flow.component.geolocation.GeolocationWatcher;
@@ -27,8 +28,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.GeolocationView", layout = ViewTestLayout.class)
 public class GeolocationView extends AbstractDivView {
 
-    private GeolocationWatcher watcher;
-    private int trackUpdateCount;
+    private GeolocationWatcher signalWatcher;
+    private GeolocationWatcher listenerWatcher;
+    private int signalUpdateCount;
+    private int listenerUpdateCount;
 
     @Override
     protected void onShow() {
@@ -105,48 +108,47 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         NativeButton getButton = createButton("Get Position", "getButton",
-                e -> e.getUI().getGeolocation().getPosition(pos -> {
+                e -> Geolocation.getPosition(pos -> {
                     Div out = new Div();
                     out.setId("getResult");
                     out.setText("lat=" + pos.coords().latitude() + ", lon="
                             + pos.coords().longitude());
                     add(out);
-                }, error -> {
+                }, err -> {
                     Div out = new Div();
                     out.setId("getResult");
-                    out.setText(
-                            "error=" + error.code() + ":" + error.message());
+                    out.setText("error=" + err.code() + ":" + err.message());
                     add(out);
                 }));
 
         // Uses the mock's "maximumAge == 9999 → error" trigger to exercise
         // the error branch.
         NativeButton getErrorButton = createButton("Get Position (error)",
-                "getErrorButton",
-                e -> e.getUI().getGeolocation().getPosition(pos -> {
+                "getErrorButton", e -> Geolocation.getPosition(pos -> {
                     Div out = new Div();
                     out.setId("getErrorResult");
                     out.setText("unexpected position: " + pos.coords());
                     add(out);
-                }, error -> {
+                }, err -> {
                     Div out = new Div();
                     out.setId("getErrorResult");
-                    out.setText("error=" + error.errorCode() + ":"
-                            + error.message());
+                    out.setText(
+                            "error=" + err.errorCode() + ":" + err.message());
                     add(out);
                 }, new GeolocationOptions(null, null, 9999)));
 
-        NativeButton trackButton = createButton("Track Position", "trackButton",
-                e -> {
-                    watcher = e.getUI().getGeolocation().watchPosition(this);
-                    trackUpdateCount = 0;
+        NativeButton trackButton = createButton("Track Position (signal)",
+                "trackButton", e -> {
+                    signalWatcher = Geolocation.watchPosition(this);
+                    signalUpdateCount = 0;
                     getElement().addEventListener("vaadin-geolocation-position",
                             ev -> {
-                                var value = watcher.valueSignal().peek();
-                                if (value instanceof GeolocationPosition pos) {
-                                    trackUpdateCount++;
+                                if (signalWatcher.positionSignal()
+                                        .peek() instanceof GeolocationPosition pos) {
+                                    signalUpdateCount++;
                                     Div out = new Div();
-                                    out.setId("trackResult" + trackUpdateCount);
+                                    out.setId(
+                                            "trackResult" + signalUpdateCount);
                                     out.setText("lat=" + pos.coords().latitude()
                                             + ", lon="
                                             + pos.coords().longitude());
@@ -157,16 +159,49 @@ public class GeolocationView extends AbstractDivView {
 
         NativeButton stopButton = createButton("Stop tracking", "stopButton",
                 e -> {
-                    if (watcher != null) {
-                        watcher.stop();
+                    if (signalWatcher != null) {
+                        signalWatcher.stop();
                         Div out = new Div();
                         out.setId("stopResult");
-                        out.setText("stopped after " + trackUpdateCount
+                        out.setText("stopped after " + signalUpdateCount
                                 + " updates");
                         add(out);
                     }
                 });
 
-        add(getButton, getErrorButton, trackButton, stopButton);
+        NativeButton listenerButton = createButton("Track Position (listener)",
+                "listenerButton", e -> {
+                    listenerWatcher = Geolocation.watchPosition(this);
+                    listenerUpdateCount = 0;
+                    listenerWatcher.addPositionListener(pos -> {
+                        listenerUpdateCount++;
+                        Div out = new Div();
+                        out.setId("listenerResult" + listenerUpdateCount);
+                        out.setText("lat=" + pos.coords().latitude() + ", lon="
+                                + pos.coords().longitude());
+                        add(out);
+                    }, err -> {
+                        Div out = new Div();
+                        out.setId("listenerError");
+                        out.setText("error=" + err.errorCode() + ":"
+                                + err.message());
+                        add(out);
+                    });
+                });
+
+        NativeButton stopListenerButton = createButton(
+                "Stop tracking (listener)", "stopListenerButton", e -> {
+                    if (listenerWatcher != null) {
+                        listenerWatcher.stop();
+                        Div out = new Div();
+                        out.setId("stopListenerResult");
+                        out.setText("stopped after " + listenerUpdateCount
+                                + " updates");
+                        add(out);
+                    }
+                });
+
+        add(getButton, getErrorButton, trackButton, stopButton, listenerButton,
+                stopListenerButton);
     }
 }

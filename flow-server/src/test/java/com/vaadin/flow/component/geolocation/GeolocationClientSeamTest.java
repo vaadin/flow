@@ -27,7 +27,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinService;
@@ -44,9 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Tests the {@link GeolocationClient} seam — both the public
  * {@link GeolocationClientFactory} extension point that external test drivers
- * and native bridges register through {@link Lookup}, and the package-private
- * {@link Geolocation#setClient(GeolocationClient)} replacement that
- * flow-server's own tests use.
+ * and native bridges register through {@link Lookup}, and the
+ * {@link com.vaadin.flow.component.internal.UIInternals#setGeolocationClient(GeolocationClient)}
+ * direct-install seam used by flow-server's own tests and by the
+ * {@link GeolocationWatcher#handle()} accessor.
  */
 class GeolocationClientSeamTest {
 
@@ -62,54 +62,54 @@ class GeolocationClientSeamTest {
     }
 
     @Test
-    void lookupFactory_resolvedAtConstruction_clientReceivesGetCalls() {
+    void lookupFactory_resolvedOnFirstUse_clientReceivesGetCalls() {
         FakeClient fake = new FakeClient();
         VaadinService service = VaadinService.getCurrent();
         Lookup lookup = service.getContext().getAttribute(Lookup.class);
         Mockito.when(lookup.lookup(GeolocationClientFactory.class))
                 .thenReturn(unused -> fake);
 
-        UI freshUi = new MockUI();
-        freshUi.getGeolocation().getPosition(pos -> {
+        MockUI freshUi = new MockUI();
+        Geolocation.getPosition(pos -> {
         }, err -> {
-        });
+        }, freshUi);
 
         assertEquals(1, fake.getCalls.size(),
-                "factory-produced client should receive get() calls");
+                "factory-produced client should receive getPosition() calls");
     }
 
     @Test
-    void setClient_routesGetThroughInstalledClient() {
+    void setGeolocationClient_routesGetThroughInstalledClient() {
         FakeClient fake = new FakeClient();
-        ui.getGeolocation().setClient(fake);
+        ui.getInternals().setGeolocationClient(fake);
 
-        ui.getGeolocation().getPosition(pos -> {
+        Geolocation.getPosition(pos -> {
         }, err -> {
-        });
+        }, ui);
 
         assertEquals(1, fake.getCalls.size(),
-                "get() should route through the installed client");
+                "getPosition() should route through the installed client");
     }
 
     @Test
-    void setClient_closesPreviousClient() {
+    void setGeolocationClient_closesPreviousClient() {
         FakeClient first = new FakeClient();
         FakeClient second = new FakeClient();
-        ui.getGeolocation().setClient(first);
-        ui.getGeolocation().setClient(second);
+        ui.getInternals().setGeolocationClient(first);
+        ui.getInternals().setGeolocationClient(second);
 
         assertTrue(first.closed,
-                "previous client should be closed when setClient replaces it");
+                "previous client should be closed when setGeolocationClient replaces it");
     }
 
     @Test
     void watchPosition_handleComesFromCurrentClient() {
         FakeClient fake = new FakeClient();
-        ui.getGeolocation().setClient(fake);
+        ui.getInternals().setGeolocationClient(fake);
 
         TestComponent owner = new TestComponent();
         ui.add(owner);
-        GeolocationWatcher watcher = ui.getGeolocation().watchPosition(owner);
+        GeolocationWatcher watcher = Geolocation.watchPosition(owner);
 
         GeolocationClient.WatchHandle handle = watcher.handle();
         assertNotNull(handle, "watcher should expose its watch handle");
@@ -120,11 +120,11 @@ class GeolocationClientSeamTest {
     @Test
     void watchPosition_handleIsNullAfterStop() {
         FakeClient fake = new FakeClient();
-        ui.getGeolocation().setClient(fake);
+        ui.getInternals().setGeolocationClient(fake);
 
         TestComponent owner = new TestComponent();
         ui.add(owner);
-        GeolocationWatcher watcher = ui.getGeolocation().watchPosition(owner);
+        GeolocationWatcher watcher = Geolocation.watchPosition(owner);
         watcher.stop();
 
         assertNull(watcher.handle(),
@@ -137,13 +137,13 @@ class GeolocationClientSeamTest {
         fake.nextGetResult = CompletableFuture
                 .failedFuture(new RuntimeException(
                         "Client-side geolocation.get failed: boom"));
-        ui.getGeolocation().setClient(fake);
+        ui.getInternals().setGeolocationClient(fake);
 
         AtomicReference<@Nullable GeolocationPosition> position = new AtomicReference<>();
-        AtomicReference<@Nullable GeolocationError> error = new AtomicReference<>();
-        ui.getGeolocation().getPosition(position::set, error::set);
+        AtomicReference<@Nullable GeolocationError> received = new AtomicReference<>();
+        Geolocation.getPosition(position::set, received::set, ui);
 
-        GeolocationError err = error.get();
+        GeolocationError err = received.get();
         assertNotNull(err, "onError must fire even when the JS bridge fails");
         assertNull(position.get(),
                 "onSuccess must stay silent when the bridge fails");

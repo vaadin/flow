@@ -18,27 +18,19 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 /**
- * Anything a watcher can currently hold — a successful reading, an error, or
- * the initial "waiting for first reading" state.
- * <p>
- * Held by the signal exposed by {@link GeolocationWatcher#valueSignal()}. A
- * {@code GeolocationResult} is always exactly one of three things:
+ * The value held by {@link GeolocationWatcher#positionSignal()} — a successful
+ * reading, an error, or the initial "waiting for first reading" state. Always
+ * exactly one of:
  * <ul>
- * <li>{@link GeolocationPending} — the initial state of a newly started
- * watcher, before the browser has reported anything.</li>
+ * <li>{@link GeolocationPending} — initial state, before the browser has
+ * reported anything.</li>
  * <li>{@link GeolocationPosition} — a successful reading.</li>
  * <li>{@link GeolocationError} — the browser reported an error.</li>
  * </ul>
- * One-shot {@link Geolocation#getPosition} requests never produce
- * {@link GeolocationPending}; they deliver the position and the error through
- * separate callbacks instead.
- * <p>
- * The sealed hierarchy is designed for exhaustive pattern matching. A
- * {@code switch} covering the three permitted variants is guaranteed complete
- * at compile time.
+ * The sealed hierarchy supports exhaustive pattern matching:
  *
  * <pre>
- * switch (watcher.valueSignal().get()) {
+ * switch (watcher.positionSignal().get()) {
  * case GeolocationPending p -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());

@@ -19,14 +19,14 @@ package com.vaadin.flow.component.geolocation;
  * A failed location reading: the request did not produce a
  * {@link GeolocationPosition}.
  * <p>
- * This is one of the three possible values of a
- * {@link GeolocationWatcher#valueSignal()} signal, and the value passed to the
- * error callback of {@link Geolocation#getPosition Geolocation.getPosition}.
- * Typical application code switches on {@link #errorCode()} to react to the
- * specific reason:
+ * Delivered to the error consumer of
+ * {@link Geolocation#getPosition(com.vaadin.flow.function.SerializableConsumer, com.vaadin.flow.function.SerializableConsumer)}
+ * and held by the {@link GeolocationWatcher#positionSignal()} signal. Typical
+ * application code switches on {@link #errorCode()} to react to the specific
+ * reason:
  *
  * <pre>
- * ui.getGeolocation().getPosition(pos -&gt; showNearest(pos), err -&gt; {
+ * Geolocation.getPosition(pos -&gt; showOnMap(pos), err -&gt; {
  *     switch (err.errorCode()) {
  *     case PERMISSION_DENIED -&gt;
  *         showExplanation("Location is blocked for this site.");

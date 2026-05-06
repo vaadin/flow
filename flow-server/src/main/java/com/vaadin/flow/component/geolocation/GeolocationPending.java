@@ -16,11 +16,10 @@
 package com.vaadin.flow.component.geolocation;
 
 /**
- * The initial state of a newly started watching session, held by
- * {@link GeolocationWatcher#valueSignal()} until the browser reports its first
- * position or error. One-shot {@link Geolocation#getPosition} requests never
- * produce this value — they deliver a position or an error through separate
- * callbacks.
+ * The initial state of a newly started watch session, held by
+ * {@link GeolocationWatcher#positionSignal()} until the browser reports its
+ * first position or error. One-shot {@link Geolocation#getPosition} callers
+ * never observe this value.
  */
 public record GeolocationPending() implements GeolocationResult {
 }
