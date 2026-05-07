@@ -149,7 +149,7 @@ public class GwtLoadingIndicatorStateHandlerTest extends ClientEngineTestBase {
     public void test_regularUiEventFlow_loadingVisible() {
         final String[] regularEvents = new String[] { "click", "change", "submit" };
         for (String event : regularEvents) {
-            handler.processMessage(JsonConstants.RPC_EVENT_TYPE, "click");
+            handler.processMessage(JsonConstants.RPC_TYPE_EVENT, "click");
             handler.startLoading();
 
             assertEquals(ConnectionIndicator.LOADING, ConnectionIndicator.getState());
@@ -164,7 +164,7 @@ public class GwtLoadingIndicatorStateHandlerTest extends ClientEngineTestBase {
         final String[] mutedEvents = new String[] { "mousemove", "touchmove",
                 "drag", "keydown", "keyup", "keypress", "wheel", "scroll", "input" };
         for (String event : mutedEvents) {
-            handler.processMessage(JsonConstants.RPC_EVENT_TYPE, event);
+            handler.processMessage(JsonConstants.RPC_TYPE_EVENT, event);
             handler.startLoading();
 
             assertEquals(ConnectionIndicator.CONNECTED, ConnectionIndicator.getState());

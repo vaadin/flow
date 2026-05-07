@@ -104,7 +104,7 @@ public class LoadingIndicatorStateHandler {
     public void processMessage(String rpcType, String eventType) {
         // Require at least one non-silent message to indicate loading for
         // the next request.
-        boolean silent = JsonConstants.RPC_EVENT_TYPE.equals(rpcType)
+        boolean silent = JsonConstants.RPC_TYPE_EVENT.equals(rpcType)
                 && eventType != null && SILENT_EVENT_TYPES.has(eventType);
         if (!silent) {
             showLoading = true;
