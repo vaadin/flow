@@ -19,12 +19,10 @@ import jakarta.servlet.GenericServlet;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -338,13 +336,15 @@ public class VaadinServletService extends VaadinService {
         URL url = servletContext.getResource(path);
         if (url != null && Optional.ofNullable(servletContext.getServerInfo())
                 .orElse("").contains("jetty/12.")) {
-            // Making sure that resource exists before returning it. Jetty
-            // 12 may return URL for non-existing resource.
-            try {
-                if (!Files.exists(Path.of(url.toURI()))) {
-                    url = null;
-                }
-            } catch (URISyntaxException e) {
+            // Jetty 12 may return URLs for non-existing resources. Probe the
+            // URL by opening a stream: this works uniformly for file: URLs
+            // and for jar:file:...!/entry URLs without requiring a NIO
+            // FileSystem to be mounted for the JAR (which Path.of(jarUri)
+            // would need, breaking on Jetty 12.1.9 where classpath JARs are
+            // no longer kept mounted in the JVM-wide cache).
+            try (InputStream probe = url.openStream()) {
+                // resource exists
+            } catch (IOException e) {
                 url = null;
             }
         }
