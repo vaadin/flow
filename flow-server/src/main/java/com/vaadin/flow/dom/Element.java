@@ -42,6 +42,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ElementSizeObserver;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -80,19 +81,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @since 1.0
  */
 public class Element extends Node<Element> {
-
-    /**
-     * Represents the size of an element as observed by the browser's
-     * {@code ResizeObserver} API.
-     *
-     * @param width
-     *            the element width in pixels
-     * @param height
-     *            the element height in pixels
-     */
-    public record Size(int width, int height) implements Serializable {
-    }
-
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";

@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -34,7 +35,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 @NullMarked
 public class SizeSignalFeature extends ServerSideFeature {
 
-    private @Nullable ValueSignal<Element.Size> signal;
+    private @Nullable ValueSignal<Size> signal;
     private boolean observerRegistered;
 
     /**
@@ -51,9 +52,9 @@ public class SizeSignalFeature extends ServerSideFeature {
      * Returns the underlying value signal, allocating it on first access with a
      * default value of {@code Size(0, 0)}.
      */
-    public ValueSignal<Element.Size> getOrCreateSignal() {
+    public ValueSignal<Size> getOrCreateSignal() {
         if (signal == null) {
-            signal = new ValueSignal<>(new Element.Size(0, 0));
+            signal = new ValueSignal<>(new Size(0, 0));
         }
         return signal;
     }

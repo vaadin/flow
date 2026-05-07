@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -42,7 +43,7 @@ class ElementSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Element.Size> signal = div.getElement().sizeSignal();
+        Signal<Size> signal = div.getElement().sizeSignal();
         assertFalse(signal instanceof ValueSignal,
                 "sizeSignal() should return a read-only signal");
     }
@@ -53,8 +54,8 @@ class ElementSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Element.Size> signal = div.getElement().sizeSignal();
-        assertEquals(new Element.Size(0, 0), signal.peek());
+        Signal<Size> signal = div.getElement().sizeSignal();
+        assertEquals(new Size(0, 0), signal.peek());
     }
 
     @Test
@@ -63,12 +64,12 @@ class ElementSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Element.Size> first = div.getElement().sizeSignal();
-        Signal<Element.Size> second = div.getElement().sizeSignal();
+        Signal<Size> first = div.getElement().sizeSignal();
+        Signal<Size> second = div.getElement().sizeSignal();
         // Both wrappers read from the same underlying ValueSignal
         fireElementResizeEvent(ui, 0, 640, 480);
-        assertEquals(new Element.Size(640, 480), first.peek());
-        assertEquals(new Element.Size(640, 480), second.peek());
+        assertEquals(new Size(640, 480), first.peek());
+        assertEquals(new Size(640, 480), second.peek());
     }
 
     @Test
@@ -77,14 +78,14 @@ class ElementSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Element.Size> signal = div.getElement().sizeSignal();
-        assertEquals(new Element.Size(0, 0), signal.peek());
+        Signal<Size> signal = div.getElement().sizeSignal();
+        assertEquals(new Size(0, 0), signal.peek());
 
         fireElementResizeEvent(ui, 0, 800, 600);
-        assertEquals(new Element.Size(800, 600), signal.peek());
+        assertEquals(new Size(800, 600), signal.peek());
 
         fireElementResizeEvent(ui, 0, 1024, 768);
-        assertEquals(new Element.Size(1024, 768), signal.peek());
+        assertEquals(new Size(1024, 768), signal.peek());
     }
 
     private void fireElementResizeEvent(MockUI ui, int elementId, int width,

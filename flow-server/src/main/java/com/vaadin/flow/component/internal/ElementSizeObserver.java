@@ -22,6 +22,7 @@ import java.util.Map;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -43,8 +44,8 @@ public class ElementSizeObserver implements Serializable {
     private static final String EVENT_NAME = "vaadin-component-resize";
 
     private final Element uiElement;
-    private final Map<Integer, ValueSignal<Element.Size>> idToSignal = new HashMap<>();
-    private final Map<ValueSignal<Element.Size>, Integer> signalToId = new HashMap<>();
+    private final Map<Integer, ValueSignal<Size>> idToSignal = new HashMap<>();
+    private final Map<ValueSignal<Size>, Integer> signalToId = new HashMap<>();
     private int nextId = 0;
 
     /**
@@ -75,12 +76,12 @@ public class ElementSizeObserver implements Serializable {
                     .get("event.sizes");
             for (String idStr : sizes.propertyNames()) {
                 int id = Integer.parseInt(idStr);
-                ValueSignal<Element.Size> signal = idToSignal.get(id);
+                ValueSignal<Size> signal = idToSignal.get(id);
                 if (signal != null) {
                     ObjectNode size = (ObjectNode) sizes.get(idStr);
                     int w = size.get("w").intValue();
                     int h = size.get("h").intValue();
-                    signal.set(new Element.Size(w, h));
+                    signal.set(new Size(w, h));
                 }
             }
         }).addEventData("event.sizes").debounce(100).allowInert();
@@ -95,7 +96,7 @@ public class ElementSizeObserver implements Serializable {
      * @param signal
      *            the signal to update
      */
-    public void observe(Element element, ValueSignal<Element.Size> signal) {
+    public void observe(Element element, ValueSignal<Size> signal) {
         int id = nextId++;
         idToSignal.put(id, signal);
         signalToId.put(signal, id);
@@ -111,7 +112,7 @@ public class ElementSizeObserver implements Serializable {
      * @param signal
      *            the signal whose element should stop being observed
      */
-    public void unobserve(ValueSignal<Element.Size> signal) {
+    public void unobserve(ValueSignal<Size> signal) {
         Integer id = signalToId.remove(signal);
         if (id != null) {
             idToSignal.remove(id);
