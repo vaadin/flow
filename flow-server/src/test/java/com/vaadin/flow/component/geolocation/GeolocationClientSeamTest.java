@@ -140,10 +140,10 @@ class GeolocationClientSeamTest {
         ui.getGeolocation().setClient(fake);
 
         AtomicReference<@Nullable GeolocationPosition> position = new AtomicReference<>();
-        AtomicReference<@Nullable GeolocationError> received = new AtomicReference<>();
-        ui.getGeolocation().get(position::set, received::set);
+        AtomicReference<@Nullable GeolocationError> error = new AtomicReference<>();
+        ui.getGeolocation().get(position::set, error::set);
 
-        GeolocationError err = received.get();
+        GeolocationError err = error.get();
         assertNotNull(err, "onError must fire even when the JS bridge fails");
         assertNull(position.get(),
                 "onSuccess must stay silent when the bridge fails");

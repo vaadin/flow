@@ -80,7 +80,7 @@ import com.vaadin.flow.signals.Signal;
  * <pre>
  * Button locate = new Button("Use my location");
  * locate.addClickListener(
- *         e -&gt; UI.getCurrent().getGeolocation()
+ *         e -&gt; e.getUI().getGeolocation()
  *                 .get(pos -&gt; showNearest(pos.coords().latitude(),
  *                         pos.coords().longitude()),
  *                         err -&gt; showManualEntry()));

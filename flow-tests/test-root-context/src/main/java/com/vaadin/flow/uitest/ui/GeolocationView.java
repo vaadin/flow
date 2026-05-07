@@ -105,7 +105,7 @@ public class GeolocationView extends AbstractDivView {
                         """);
 
         NativeButton getButton = createButton("Get Position", "getButton",
-                e -> UI.getCurrent().getGeolocation().get(pos -> {
+                e -> e.getUI().getGeolocation().get(pos -> {
                     Div out = new Div();
                     out.setId("getResult");
                     out.setText("lat=" + pos.coords().latitude() + ", lon="
@@ -122,8 +122,7 @@ public class GeolocationView extends AbstractDivView {
         // Uses the mock's "maximumAge == 9999 → error" trigger to exercise
         // the error branch.
         NativeButton getErrorButton = createButton("Get Position (error)",
-                "getErrorButton",
-                e -> UI.getCurrent().getGeolocation().get(pos -> {
+                "getErrorButton", e -> e.getUI().getGeolocation().get(pos -> {
                     Div out = new Div();
                     out.setId("getErrorResult");
                     out.setText("unexpected position: " + pos.coords());

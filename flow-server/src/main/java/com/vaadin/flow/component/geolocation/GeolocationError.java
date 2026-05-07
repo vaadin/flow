@@ -33,7 +33,7 @@ package com.vaadin.flow.component.geolocation;
  *     case POSITION_UNAVAILABLE -&gt;
  *         showRetry("Could not determine your location.");
  *     case TIMEOUT -&gt; showRetry("Location request took too long.");
- *     case UNKNOWN -&gt; showGenericError(err.message());
+ *     case UNKNOWN -&gt; showGenericError("Could not read your location.");
  *     }
  * });
  * </pre>
