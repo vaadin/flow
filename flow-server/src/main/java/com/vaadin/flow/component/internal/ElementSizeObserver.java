@@ -21,51 +21,50 @@ import java.util.Map;
 
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * Per-UI shared ResizeObserver manager that tracks component sizes using a
- * single browser {@code ResizeObserver} instance.
+ * Per-UI shared ResizeObserver manager that tracks element sizes using a single
+ * browser {@code ResizeObserver} instance.
  * <p>
  * One instance is created per UI, lazily via {@link #get(UI)} when the first
- * component's size is observed. A single browser {@code ResizeObserver} is used
+ * element's size is observed. A single browser {@code ResizeObserver} is used
  * to track all observed elements, dispatching a custom
  * {@code "vaadin-component-resize"} event on the UI element with aggregated
  * size data.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class ComponentSizeObserver implements Serializable {
+public class ElementSizeObserver implements Serializable {
 
     private static final String EVENT_NAME = "vaadin-component-resize";
 
     private final Element uiElement;
-    private final Map<Integer, ValueSignal<Component.Size>> idToSignal = new HashMap<>();
-    private final Map<ValueSignal<Component.Size>, Integer> signalToId = new HashMap<>();
+    private final Map<Integer, ValueSignal<Element.Size>> idToSignal = new HashMap<>();
+    private final Map<ValueSignal<Element.Size>, Integer> signalToId = new HashMap<>();
     private int nextId = 0;
 
     /**
-     * Returns the ComponentSizeObserver for the given UI, creating it lazily.
+     * Returns the ElementSizeObserver for the given UI, creating it lazily.
      *
      * @param ui
      *            the UI to get the observer for
      * @return the observer instance
      */
-    public static ComponentSizeObserver get(UI ui) {
-        ComponentSizeObserver observer = ComponentUtil.getData(ui,
-                ComponentSizeObserver.class);
+    public static ElementSizeObserver get(UI ui) {
+        ElementSizeObserver observer = ComponentUtil.getData(ui,
+                ElementSizeObserver.class);
         if (observer == null) {
-            observer = new ComponentSizeObserver(ui);
-            ComponentUtil.setData(ui, ComponentSizeObserver.class, observer);
+            observer = new ElementSizeObserver(ui);
+            ComponentUtil.setData(ui, ElementSizeObserver.class, observer);
         }
         return observer;
     }
 
-    private ComponentSizeObserver(UI ui) {
+    private ElementSizeObserver(UI ui) {
         this.uiElement = ui.getElement();
 
         uiElement.executeJs(
@@ -76,12 +75,12 @@ public class ComponentSizeObserver implements Serializable {
                     .get("event.sizes");
             for (String idStr : sizes.propertyNames()) {
                 int id = Integer.parseInt(idStr);
-                ValueSignal<Component.Size> signal = idToSignal.get(id);
+                ValueSignal<Element.Size> signal = idToSignal.get(id);
                 if (signal != null) {
                     ObjectNode size = (ObjectNode) sizes.get(idStr);
                     int w = size.get("w").intValue();
                     int h = size.get("h").intValue();
-                    signal.set(new Component.Size(w, h));
+                    signal.set(new Element.Size(w, h));
                 }
             }
         }).addEventData("event.sizes").debounce(100).allowInert();
@@ -96,7 +95,7 @@ public class ComponentSizeObserver implements Serializable {
      * @param signal
      *            the signal to update
      */
-    public void observe(Element element, ValueSignal<Component.Size> signal) {
+    public void observe(Element element, ValueSignal<Element.Size> signal) {
         int id = nextId++;
         idToSignal.put(id, signal);
         signalToId.put(signal, id);
@@ -107,12 +106,12 @@ public class ComponentSizeObserver implements Serializable {
     }
 
     /**
-     * Stops observing the component associated with the given signal.
+     * Stops observing the element associated with the given signal.
      *
      * @param signal
-     *            the signal whose component should stop being observed
+     *            the signal whose element should stop being observed
      */
-    public void unobserve(ValueSignal<Component.Size> signal) {
+    public void unobserve(ValueSignal<Element.Size> signal) {
         Integer id = signalToId.remove(signal);
         if (id != null) {
             idToSignal.remove(id);

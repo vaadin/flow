@@ -42,6 +42,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.ElementSizeObserver;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -54,7 +56,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.internal.nodefeature.SizeSignalFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -64,6 +68,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -75,6 +80,19 @@ import com.vaadin.flow.signals.Signal;
  * @since 1.0
  */
 public class Element extends Node<Element> {
+
+    /**
+     * Represents the size of an element as observed by the browser's
+     * {@code ResizeObserver} API.
+     *
+     * @param width
+     *            the element width in pixels
+     * @param height
+     *            the element height in pixels
+     */
+    public record Size(int width, int height) implements Serializable {
+    }
+
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
@@ -1649,6 +1667,49 @@ public class Element extends Node<Element> {
                                 .onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as observed
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on first access. It automatically starts
+     * observing when the element is attached and stops when detached. The
+     * initial value is {@code Size(0, 0)} until the browser reports the actual
+     * size.
+     * <p>
+     * The returned signal is read-only.
+     *
+     * @return a read-only signal with the current element size
+     */
+    public Signal<Size> sizeSignal() {
+        SizeSignalFeature feature = getNode()
+                .getFeature(SizeSignalFeature.class);
+        ValueSignal<Size> signal = feature.getOrCreateSignal();
+        if (!feature.isObserverRegistered()) {
+            feature.markObserverRegistered();
+            registerSizeObservation(signal);
+        }
+        return signal.asReadonly();
+    }
+
+    private void registerSizeObservation(ValueSignal<Size> signal) {
+        ElementAttachListener attachListener = attach -> {
+            UI ui = ((StateTree) getNode().getOwner()).getUI();
+            ElementSizeObserver.get(ui).observe(this, signal);
+
+            Registration[] detachReg = new Registration[1];
+            detachReg[0] = addDetachListener(detach -> {
+                if (!ui.isClosing()) {
+                    ElementSizeObserver.get(ui).unobserve(signal);
+                }
+                detachReg[0].remove();
+            });
+        };
+        addAttachListener(attachListener);
+        if (getNode().isAttached()) {
+            attachListener.onAttach(new ElementAttachEvent(this));
+        }
     }
 
     @Override

@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.dom;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
@@ -29,7 +30,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class ComponentSizeSignalTest {
+class ElementSizeSignalTest {
 
     @Tag(Tag.DIV)
     private static class TestDiv extends Component {
@@ -41,7 +42,7 @@ class ComponentSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Component.Size> signal = div.sizeSignal();
+        Signal<Element.Size> signal = div.getElement().sizeSignal();
         assertFalse(signal instanceof ValueSignal,
                 "sizeSignal() should return a read-only signal");
     }
@@ -52,8 +53,8 @@ class ComponentSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Component.Size> signal = div.sizeSignal();
-        assertEquals(new Component.Size(0, 0), signal.get());
+        Signal<Element.Size> signal = div.getElement().sizeSignal();
+        assertEquals(new Element.Size(0, 0), signal.peek());
     }
 
     @Test
@@ -62,12 +63,12 @@ class ComponentSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Component.Size> first = div.sizeSignal();
-        Signal<Component.Size> second = div.sizeSignal();
+        Signal<Element.Size> first = div.getElement().sizeSignal();
+        Signal<Element.Size> second = div.getElement().sizeSignal();
         // Both wrappers read from the same underlying ValueSignal
-        fireComponentResizeEvent(ui, 0, 640, 480);
-        assertEquals(new Component.Size(640, 480), first.get());
-        assertEquals(new Component.Size(640, 480), second.get());
+        fireElementResizeEvent(ui, 0, 640, 480);
+        assertEquals(new Element.Size(640, 480), first.peek());
+        assertEquals(new Element.Size(640, 480), second.peek());
     }
 
     @Test
@@ -76,17 +77,17 @@ class ComponentSizeSignalTest {
         TestDiv div = new TestDiv();
         ui.add(div);
 
-        Signal<Component.Size> signal = div.sizeSignal();
-        assertEquals(new Component.Size(0, 0), signal.get());
+        Signal<Element.Size> signal = div.getElement().sizeSignal();
+        assertEquals(new Element.Size(0, 0), signal.peek());
 
-        fireComponentResizeEvent(ui, 0, 800, 600);
-        assertEquals(new Component.Size(800, 600), signal.get());
+        fireElementResizeEvent(ui, 0, 800, 600);
+        assertEquals(new Element.Size(800, 600), signal.peek());
 
-        fireComponentResizeEvent(ui, 0, 1024, 768);
-        assertEquals(new Component.Size(1024, 768), signal.get());
+        fireElementResizeEvent(ui, 0, 1024, 768);
+        assertEquals(new Element.Size(1024, 768), signal.peek());
     }
 
-    private void fireComponentResizeEvent(MockUI ui, int componentId, int width,
+    private void fireElementResizeEvent(MockUI ui, int elementId, int width,
             int height) {
         ObjectNode eventData = JacksonUtils.createObjectNode();
 
@@ -94,7 +95,7 @@ class ComponentSizeSignalTest {
         ObjectNode sizeEntry = JacksonUtils.createObjectNode();
         sizeEntry.put("w", width);
         sizeEntry.put("h", height);
-        sizes.set(String.valueOf(componentId), sizeEntry);
+        sizes.set(String.valueOf(elementId), sizeEntry);
 
         eventData.set("event.sizes", sizes);
         eventData.put(JsonConstants.EVENT_DATA_PHASE,

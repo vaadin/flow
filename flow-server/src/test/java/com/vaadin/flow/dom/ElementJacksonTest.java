@@ -178,6 +178,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("bindText");
         ignore.add("bindVisible");
 
+        // returns a read-only Signal
+        ignore.add("sizeSignal");
+
         // returns void
         ignore.add("flashClass");
 

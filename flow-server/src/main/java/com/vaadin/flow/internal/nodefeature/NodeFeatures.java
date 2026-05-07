@@ -147,6 +147,11 @@ public final class NodeFeatures {
      */
     public static final int SIGNAL_BINDING = 27;
 
+    /**
+     * Id for {@link SizeSignalFeature}.
+     */
+    public static final int SIZE_SIGNAL = 28;
+
     private NodeFeatures() {
         // Only static
     }
