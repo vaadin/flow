@@ -131,8 +131,18 @@ jobs:
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -ntp -T 1C $ARGS"
-          set -x -e -o pipefail
-          $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
@@ -209,13 +219,27 @@ jobs:
             $cmd -T 1C || $cmd
           fi
       - name: Run ITs
+        timeout-minutes: 22
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
-          set -x -e -o pipefail
-          $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-it-tests-${{matrix.current}}.out
+          # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
+          # Spring Boot fork that spring-boot:stop failed to kill) can't pin
+          # the step open by holding the pipe to tee.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
         if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
