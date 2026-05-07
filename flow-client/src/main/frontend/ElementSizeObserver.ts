@@ -14,43 +14,43 @@
  * the License.
  */
 
-interface VaadinComponentSize {
+interface VaadinElementSize {
   w: number;
   h: number;
 }
 
 interface UiElementWithObserver extends HTMLElement {
-  _componentSizeObserver?: ResizeObserver;
+  _elementSizeObserver?: ResizeObserver;
 }
 
 interface ObservedElement extends Element {
-  _componentSizeId?: number;
+  _elementSizeId?: number;
 }
 
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
-$wnd.Vaadin.Flow.componentSizeObserver = {
+$wnd.Vaadin.Flow.elementSizeObserver = {
   /**
    * Creates a shared ResizeObserver on the given UI element. Size changes
-   * are dispatched as "vaadin-component-resize" custom events on the UI
-   * element, with a `sizes` property mapping component IDs to their new
+   * are dispatched as "vaadin-element-resize" custom events on the UI
+   * element, with a `sizes` property mapping element IDs to their new
    * width and height.
    */
   init(uiElement: UiElementWithObserver): void {
-    uiElement._componentSizeObserver = new ResizeObserver((entries) => {
-      const sizes: Record<number, VaadinComponentSize> = {};
+    uiElement._elementSizeObserver = new ResizeObserver((entries) => {
+      const sizes: Record<number, VaadinElementSize> = {};
       for (const entry of entries) {
         const target = entry.target as ObservedElement;
-        if (target.isConnected && entry.contentBoxSize && target._componentSizeId !== undefined) {
-          sizes[target._componentSizeId] = {
+        if (target.isConnected && entry.contentBoxSize && target._elementSizeId !== undefined) {
+          sizes[target._elementSizeId] = {
             w: Math.round(entry.contentRect.width),
             h: Math.round(entry.contentRect.height)
           };
         }
       }
       if (Object.keys(sizes).length > 0) {
-        const event = new Event('vaadin-component-resize') as Event & { sizes: typeof sizes };
+        const event = new Event('vaadin-element-resize') as Event & { sizes: typeof sizes };
         event.sizes = sizes;
         uiElement.dispatchEvent(event);
       }
@@ -61,8 +61,8 @@ $wnd.Vaadin.Flow.componentSizeObserver = {
    * Starts observing the given element with the given numeric ID.
    */
   observe(uiElement: UiElementWithObserver, element: ObservedElement, id: number): void {
-    element._componentSizeId = id;
-    uiElement._componentSizeObserver?.observe(element);
+    element._elementSizeId = id;
+    uiElement._elementSizeObserver?.observe(element);
   }
 };
 

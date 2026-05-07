@@ -170,7 +170,7 @@ anything else:
 - **Global state and helper functions live under `window.Vaadin.Flow`**
   (e.g. `window.Vaadin.Flow.geolocation`,
   `window.Vaadin.Flow.pageVisibility`,
-  `window.Vaadin.Flow.componentSizeObserver`). Use annotations on
+  `window.Vaadin.Flow.elementSizeObserver`). Use annotations on
   `UI.java` for scripts that need to run globally.
 - **`init(element)` installers must be idempotent.** A facade may call
   `window.Vaadin.Flow.xxx.init(this)` more than once per UI element

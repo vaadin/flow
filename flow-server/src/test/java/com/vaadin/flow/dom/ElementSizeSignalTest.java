@@ -104,6 +104,6 @@ class ElementSizeSignalTest {
 
         ui.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(ui.getElement(),
-                        "vaadin-component-resize", eventData));
+                        "vaadin-element-resize", eventData));
     }
 }

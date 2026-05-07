@@ -34,14 +34,14 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * One instance is created per UI, lazily via {@link #get(UI)} when the first
  * element's size is observed. A single browser {@code ResizeObserver} is used
  * to track all observed elements, dispatching a custom
- * {@code "vaadin-component-resize"} event on the UI element with aggregated
- * size data.
+ * {@code "vaadin-element-resize"} event on the UI element with aggregated size
+ * data.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class ElementSizeObserver implements Serializable {
 
-    private static final String EVENT_NAME = "vaadin-component-resize";
+    private static final String EVENT_NAME = "vaadin-element-resize";
 
     private final Element uiElement;
     private final Map<Integer, ValueSignal<Size>> idToSignal = new HashMap<>();
@@ -68,8 +68,8 @@ public class ElementSizeObserver implements Serializable {
     private ElementSizeObserver(UI ui) {
         this.uiElement = ui.getElement();
 
-        uiElement.executeJs(
-                "window.Vaadin.Flow.componentSizeObserver.init(this)");
+        uiElement
+                .executeJs("window.Vaadin.Flow.elementSizeObserver.init(this)");
 
         uiElement.addEventListener(EVENT_NAME, event -> {
             ObjectNode sizes = (ObjectNode) event.getEventData()
@@ -102,7 +102,7 @@ public class ElementSizeObserver implements Serializable {
         signalToId.put(signal, id);
 
         uiElement.executeJs(
-                "window.Vaadin.Flow.componentSizeObserver.observe(this, $0, $1)",
+                "window.Vaadin.Flow.elementSizeObserver.observe(this, $0, $1)",
                 element, id);
     }
 
