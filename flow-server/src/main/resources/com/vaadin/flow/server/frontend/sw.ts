@@ -2,7 +2,7 @@
 
 self.__WB_DISABLE_DEV_LOGS = true;
 
-importScripts('sw-runtime-resources-precache.js');
+self.importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
 import { matchPrecache, precacheAndRoute, getCacheKeyForURL } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';

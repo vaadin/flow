@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class CaseUtilTest {
 
     @Test
-    public void upperCaseUnderscoreToHumanFriendly() {
+    void upperCaseUnderscoreToHumanFriendly() {
         assertNull(CaseUtil.upperCaseUnderscoreToHumanFriendly(null));
         assertEquals("", CaseUtil.upperCaseUnderscoreToHumanFriendly(""));
         assertEquals("My Bean Container", CaseUtil
@@ -38,7 +38,7 @@ class CaseUtilTest {
     }
 
     @Test
-    public void capitalize() {
+    void capitalize() {
         assertNull(CaseUtil.capitalize(null));
         assertEquals("", CaseUtil.capitalize(""));
         assertEquals("Great", CaseUtil.capitalize("great"));

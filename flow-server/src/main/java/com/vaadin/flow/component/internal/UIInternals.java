@@ -47,6 +47,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
@@ -76,8 +77,10 @@ import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -87,6 +90,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -198,6 +203,12 @@ public class UIInternals implements Serializable {
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
+    private final ValueSignal<RouterState> routerStateSignal = new ValueSignal<>(
+            new RouterState(new Location(""), RouteParameters.empty(),
+                    Collections.emptyList(), null));
+    private final Signal<RouterState> readonlyRouterStateSignal = routerStateSignal
+            .asReadonly();
+
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
@@ -230,6 +241,9 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
+
+    private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
+            GeolocationAvailability.UNKNOWN);
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -972,6 +986,30 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Gets the cached read-only {@link Signal} that holds the current
+     * {@link RouterState} for this UI. Backs
+     * {@link com.vaadin.flow.component.UI#routerStateSignal()}.
+     *
+     * @return the read-only router state signal, not <code>null</code>
+     */
+    public Signal<RouterState> getRouterStateSignal() {
+        return readonlyRouterStateSignal;
+    }
+
+    /**
+     * Updates the {@link RouterState} value held by this UI's router state
+     * signal. Called by the navigation pipeline whenever a navigation
+     * completes, immediately before {@link AfterNavigationListener}s are
+     * notified.
+     *
+     * @param state
+     *            the new router state, not <code>null</code>
+     */
+    public void updateRouterState(RouterState state) {
+        routerStateSignal.set(state);
+    }
+
+    /**
      * Gets the VaadinSession to which the related UI is attached.
      *
      * <p>
@@ -1400,6 +1438,30 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Returns the reactive signal holding the geolocation availability for this
+     * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
+     * client bootstrap report, then transitions to the value the browser
+     * reports and reflects subsequent updates. Application code reads it via
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilitySignal()}.
+     *
+     * @return the availability signal
+     */
+    public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
+        return geolocationAvailabilitySignal;
+    }
+
+    /**
+     * Updates the geolocation availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     */
+    public void setGeolocationAvailability(
+            GeolocationAvailability availability) {
+        this.geolocationAvailabilitySignal.set(availability);
     }
 
     /**

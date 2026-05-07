@@ -55,7 +55,7 @@ class WebComponentWrapperTest {
     private WebComponentWrapper wrapper;
 
     @BeforeEach
-    public void init() {
+    void init() {
         element = new Element("tag");
         exporter = new MyComponentExporter();
 
@@ -69,7 +69,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
+    void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("MyMessage"));
 
         assertEquals("MyMessage", component.message,
@@ -82,7 +82,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
+    void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("one"));
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(2));
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("three"));
@@ -105,7 +105,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
+    void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
         WebComponentBinding<MyExtension> binding = constructWrapperAndGetBinding(
                 new MyExtensionExporter(), null, null);
 
@@ -134,7 +134,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
+    void extendedExporter_propertiesAreOverwrittenAndAvailable() {
         WebComponentBinding<MyComponent> binding = constructWrapperAndGetBinding(
                 new ExtendedExporter(), null, null);
 
@@ -166,7 +166,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void disconnectReconnect_componentIsNotCleaned() {
+    void disconnectReconnect_componentIsNotCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
@@ -188,7 +188,7 @@ class WebComponentWrapperTest {
     }
 
     @Test
-    public void disconnectOnClient_componentIsCleaned() {
+    void disconnectOnClient_componentIsCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);

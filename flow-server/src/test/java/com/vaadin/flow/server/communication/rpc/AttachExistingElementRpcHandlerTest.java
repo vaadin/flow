@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class AttachExistingElementRpcHandlerTest {
 
     @Test
-    public void handleNode_error() {
+    void handleNode_error() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
@@ -66,7 +66,7 @@ class AttachExistingElementRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_requestedIdEqualsAssignedId() {
+    void handleNode_requestedIdEqualsAssignedId() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
@@ -104,7 +104,7 @@ class AttachExistingElementRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_requestedIdAndAssignedIdAreDifferent() {
+    void handleNode_requestedIdAndAssignedIdAreDifferent() {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;

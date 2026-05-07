@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CustomElementNameValidatorTest {
 
     @Test
-    public void testInvalidElementNames() {
+    void testInvalidElementNames() {
         Stream.of("", "foo", "annotation-xml", "0-foo", "-foo", "foo-$",
                 "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩",
                 "5th-element")
@@ -40,7 +40,7 @@ class CustomElementNameValidatorTest {
     }
 
     @Test
-    public void testValidNamesWithoutErrorOrWarning() {
+    void testValidNamesWithoutErrorOrWarning() {
         Stream.of("foo-bar", "custom-element", "date-field", "dos-box",
                 "home-4-good")
                 .forEach(name -> assertTrue(
@@ -51,7 +51,7 @@ class CustomElementNameValidatorTest {
     }
 
     @Test
-    public void testValidButWithWarning() {
+    void testValidButWithWarning() {
         Stream.of("polymer-", "x-", "ng-", "unicorn-", "unicorn-ø", "uni--corn",
                 "uni-----corn", "uni-co___rn", "uni-co.rn", "uni-corné",
                 "xml-unicorn", "não-tém", "foo-bår")

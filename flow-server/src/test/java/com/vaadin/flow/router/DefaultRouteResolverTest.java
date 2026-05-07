@@ -57,7 +57,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void basic_route_navigation_target_resolved_correctly()
+    void basic_route_navigation_target_resolved_correctly()
             throws InvalidRouteConfigurationException {
 
         setRoutes(router.getRegistry(),
@@ -83,7 +83,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void no_route_found_resolves_to_null() {
+    void no_route_found_resolves_to_null() {
         assertNull(
                 resolver.resolve(new ResolveRequest(router,
                         new Location("Not a configured location"))),
@@ -91,7 +91,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void string_url_parameter_correctly_set_to_state()
+    void string_url_parameter_correctly_set_to_state()
             throws InvalidRouteConfigurationException {
         setRoutes(router.getRegistry(),
                 Collections.singleton(GreetingNavigationTarget.class));
@@ -102,7 +102,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void route_precedence_with_parameters()
+    void route_precedence_with_parameters()
             throws InvalidRouteConfigurationException {
         setRoutes(router.getRegistry(),
                 Stream.of(GreetingNavigationTarget.class,
@@ -116,7 +116,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void wrong_number_of_parameters_does_not_match()
+    void wrong_number_of_parameters_does_not_match()
             throws InvalidRouteConfigurationException {
         setRoutes(router.getRegistry(),
                 Collections.singleton(GreetingNavigationTarget.class));
@@ -126,7 +126,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void clientRouteRequest_getDefinedLayout() {
+    void clientRouteRequest_getDefinedLayout() {
         String path = "route";
 
         router.getRegistry().setLayout(DefaultLayout.class);
@@ -146,7 +146,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void clientRouteRequest_getDefinedLayoutAndParentLayouts() {
+    void clientRouteRequest_getDefinedLayoutAndParentLayouts() {
         String path = "route";
 
         router.getRegistry().setLayout(DefaultWithParentLayout.class);
@@ -172,7 +172,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void clientRouteRequest_withRouteParameters_getDefinedLayout() {
+    void clientRouteRequest_withRouteParameters_getDefinedLayout() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
@@ -217,7 +217,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void clientRouteRequest_withRouteParameters_noLayout() {
+    void clientRouteRequest_withRouteParameters_noLayout() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
@@ -258,7 +258,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
      * AmbiguousRouteConfigurationException.
      */
     @Test
-    public void clientRouteRequest_withRouteParameters_ambiguousRoutesFirstAddedWins() {
+    void clientRouteRequest_withRouteParameters_ambiguousRoutesFirstAddedWins() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
@@ -310,7 +310,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     }
 
     @Test
-    public void clientRouteRequest_noLayoutForPath_Throws() {
+    void clientRouteRequest_noLayoutForPath_Throws() {
         String path = "route";
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito

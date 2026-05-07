@@ -28,42 +28,42 @@ class WebBrowserTest {
     private WebBrowser browser = new WebBrowser();
 
     @Test
-    public void isLinux_noDetails_returnsFalse() {
+    void isLinux_noDetails_returnsFalse() {
         assertFalse(browser.isLinux());
     }
 
     @Test
-    public void isMacOSX_noDetails_returnsFalse() {
+    void isMacOSX_noDetails_returnsFalse() {
         assertFalse(browser.isMacOSX());
     }
 
     @Test
-    public void isWindows_noDetails_returnsFalse() {
+    void isWindows_noDetails_returnsFalse() {
         assertFalse(browser.isWindows());
     }
 
     @Test
-    public void isWindowsPhone_noDetails_returnsFalse() {
+    void isWindowsPhone_noDetails_returnsFalse() {
         assertFalse(browser.isWindowsPhone());
     }
 
     @Test
-    public void isAndroid_noDetails_returnsFalse() {
+    void isAndroid_noDetails_returnsFalse() {
         assertFalse(browser.isAndroid());
     }
 
     @Test
-    public void isIPhone_noDetails_returnsFalse() {
+    void isIPhone_noDetails_returnsFalse() {
         assertFalse(browser.isIPhone());
     }
 
     @Test
-    public void isChromeOS_noDetails_returnsFalse() {
+    void isChromeOS_noDetails_returnsFalse() {
         assertFalse(browser.isChromeOS());
     }
 
     @Test
-    public void isSafariOnMac_userDetails_returnsTrue() {
+    void isSafariOnMac_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6_2) AppleWebKit/611.3.10.1.5 (KHTML, like Gecko) Version/14.1.2 Safari/611.3.10.1.5");
 
@@ -73,7 +73,7 @@ class WebBrowserTest {
     }
 
     @Test
-    public void isChromeOnWindows_userDetails_returnsTrue() {
+    void isChromeOnWindows_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
@@ -83,7 +83,7 @@ class WebBrowserTest {
     }
 
     @Test
-    public void isOperaOnWindows_userDetails_returnsTrue() {
+    void isOperaOnWindows_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0");
 
@@ -93,7 +93,7 @@ class WebBrowserTest {
     }
 
     @Test
-    public void isFirefoxOnAndroid_userDetails_returnsTrue() {
+    void isFirefoxOnAndroid_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Android; Tablet; rv:33.0) Gecko/33.0 Firefox/33.0");
 

@@ -28,7 +28,7 @@ class AtmosphereVersionTest {
      * classpath
      */
     @Test
-    public void testAtmosphereVersion() {
+    void testAtmosphereVersion() {
         assertEquals(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
                 Version.getRawVersion());
     }

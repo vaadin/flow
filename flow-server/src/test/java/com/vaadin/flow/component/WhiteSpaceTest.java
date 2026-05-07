@@ -24,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class WhiteSpaceTest {
 
     @Test
-    public void toString_styleValueIsReturned() {
+    void toString_styleValueIsReturned() {
         assertEquals("nowrap", WhiteSpace.NOWRAP.toString());
         assertEquals("pre-line", WhiteSpace.PRE_LINE.toString());
     }
 
     @Test
-    public void forString_enumIsReturned() {
+    void forString_enumIsReturned() {
         assertEquals(WhiteSpace.NORMAL, WhiteSpace.forString("normal"));
         assertEquals(WhiteSpace.PRE_WRAP, WhiteSpace.forString("pre-wrap"));
     }

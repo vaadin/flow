@@ -44,18 +44,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CurrentInstanceTest {
 
     @BeforeEach
-    public void clearExistingThreadLocals() {
+    void clearExistingThreadLocals() {
         // Ensure no previous test left some thread locals hanging
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void testInitiallyCleared() throws Exception {
+    void testInitiallyCleared() throws Exception {
         assertCleared();
     }
 
     @Test
-    public void testClearedAfterRemove() throws Exception {
+    void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
         assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
@@ -64,7 +64,7 @@ class CurrentInstanceTest {
     }
 
     @Test
-    public void testClearedWithClearAll() throws Exception {
+    void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
         assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
@@ -103,7 +103,7 @@ class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoringNullUIWorks() throws Exception {
+    void testRestoringNullUIWorks() throws Exception {
         // First make sure current instance is empty
         CurrentInstance.clearAll();
 
@@ -117,7 +117,7 @@ class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoringNullSessionWorks() throws Exception {
+    void testRestoringNullSessionWorks() throws Exception {
         // First make sure current instance is empty
         CurrentInstance.clearAll();
 
@@ -133,8 +133,7 @@ class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoreWithGarbageCollectedValue()
-            throws InterruptedException {
+    void testRestoreWithGarbageCollectedValue() throws InterruptedException {
         VaadinSession session1 = new VaadinSession(
                 new MockVaadinServletService()) {
             @Override
@@ -166,7 +165,7 @@ class CurrentInstanceTest {
     }
 
     @Test
-    public void nonInheritableThreadLocals()
+    void nonInheritableThreadLocals()
             throws InterruptedException, ExecutionException {
         CurrentInstance.clearAll();
         CurrentInstance.set(CurrentInstanceTest.class, this);

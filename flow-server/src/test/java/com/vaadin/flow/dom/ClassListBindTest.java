@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ClassListBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesClass() {
+    void bindingMirrorsSignalWhileAttached_toggleAddsRemovesClass() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -52,7 +52,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
+    void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -71,7 +71,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void manualAddRemoveForBoundName_throwsBindingActiveException() {
+    void manualAddRemoveForBoundName_throwsBindingActiveException() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -88,7 +88,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_throwsWhenBindingsActive() {
+    void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -99,7 +99,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setAttributeClass_throwsWhenBindingsActive() {
+    void setAttributeClass_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
@@ -111,7 +111,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -120,7 +120,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void rebinding_alreadyBound_throws() {
+    void rebinding_alreadyBound_throws() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> s1 = new ValueSignal<>(true);
@@ -135,7 +135,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void internalUpdatesDoNotThrowOrRecurse() {
+    void internalUpdatesDoNotThrowOrRecurse() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -155,7 +155,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void lazyInitSignalBindingFeature() {
+    void lazyInitSignalBindingFeature() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         element.getClassList().add("spin");

@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ParameterDeserializerTest {
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         assertFalse(ParameterDeserializer.isAnnotatedParameter(Simple.class,
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
@@ -32,7 +32,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void testInterface() {
+    void testInterface() {
         assertFalse(ParameterDeserializer.isAnnotatedParameter(Normal.class,
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
@@ -40,7 +40,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void parameterizedViaClass() {
+    void parameterizedViaClass() {
         assertFalse(ParameterDeserializer.isAnnotatedParameter(
                 ParameterizedViaSuperClass.class, OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
@@ -49,7 +49,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void parameterizedViaInterface() {
+    void parameterizedViaInterface() {
         assertFalse(ParameterDeserializer.isAnnotatedParameter(
                 ParameterizedClass.class, OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
@@ -57,7 +57,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void testGenericInterface() {
+    void testGenericInterface() {
         assertFalse(ParameterDeserializer.isAnnotatedParameter(Generic.class,
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
@@ -65,7 +65,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void getClassType_concreteClass_parameterFromInterface() {
+    void getClassType_concreteClass_parameterFromInterface() {
         Class<?> type = ParameterDeserializer.getClassType(Simple.class);
         assertEquals(String.class, type);
         type = ParameterDeserializer.getClassType(SimpleAnnotated.class);
@@ -73,7 +73,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void getClassType_concreteClass_parameterFromExtendedInterface() {
+    void getClassType_concreteClass_parameterFromExtendedInterface() {
         Class<?> type = ParameterDeserializer.getClassType(Normal.class);
         assertEquals(String.class, type);
         type = ParameterDeserializer.getClassType(NormalAnnotated.class);
@@ -81,7 +81,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void getClassType_concreteClass_parameterFromSuperclass() {
+    void getClassType_concreteClass_parameterFromSuperclass() {
         Class<?> type = ParameterDeserializer
                 .getClassType(ParameterizedViaSuperClass.class);
         assertEquals(String.class, type);
@@ -91,7 +91,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void getClassType_parameterizedClass_parameterFromInterface() {
+    void getClassType_parameterizedClass_parameterFromInterface() {
         Class<?> type = ParameterDeserializer
                 .getClassType(ParameterizedClass.class);
         assertEquals(String.class, type);
@@ -101,7 +101,7 @@ class ParameterDeserializerTest {
     }
 
     @Test
-    public void getClassType_parameterizedClass_parameterFromParameterizedInterface() {
+    void getClassType_parameterizedClass_parameterFromParameterizedInterface() {
         Class<?> type = ParameterDeserializer.getClassType(Generic.class);
         assertEquals(String.class, type);
         type = ParameterDeserializer.getClassType(GenericAnnotated.class);

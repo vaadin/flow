@@ -27,7 +27,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-public class RoutingTestBase {
+class RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
@@ -108,7 +108,7 @@ public class RoutingTestBase {
     protected Router router;
 
     @BeforeEach
-    public void init() throws NoSuchFieldException, SecurityException,
+    void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         router = new Router(new TestRouteRegistry());
     }

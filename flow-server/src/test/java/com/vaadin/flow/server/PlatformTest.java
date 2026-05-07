@@ -37,18 +37,18 @@ class PlatformTest {
     Path temporary;
 
     @BeforeEach
-    public void rememberContextClassLoader() {
+    void rememberContextClassLoader() {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
     @AfterEach
-    public void restoreContextClassLoader() {
+    void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
     }
 
     @BeforeEach
     @AfterEach
-    public void cleanMemoizedValues() {
+    void cleanMemoizedValues() {
         Platform.hillaVersion = null;
         Platform.vaadinVersion = null;
     }
@@ -90,12 +90,12 @@ class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinVersionReturnsEmptyOptionalWhenVaadinNotOnClasspath() {
+    void testGetVaadinVersionReturnsEmptyOptionalWhenVaadinNotOnClasspath() {
         assertEquals(Optional.empty(), Platform.getVaadinVersion());
     }
 
     @Test
-    public void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath()
+    void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath()
             throws Exception {
         fakeVaadinHilla("24.1.0", null);
         assertEquals(Optional.of("24.1.0"), Platform.getVaadinVersion());
@@ -106,12 +106,12 @@ class PlatformTest {
     }
 
     @Test
-    public void testGetHillaVersionReturnsEmptyOptionalWhenHillaNotOnClasspath() {
+    void testGetHillaVersionReturnsEmptyOptionalWhenHillaNotOnClasspath() {
         assertEquals(Optional.empty(), Platform.getHillaVersion());
     }
 
     @Test
-    public void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
+    void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
             throws Exception {
         fakeVaadinHilla(null, "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());
@@ -122,7 +122,7 @@ class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath()
+    void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath()
             throws Exception {
         fakeVaadinHilla("24.0.0", "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());

@@ -23,7 +23,7 @@ import org.mockito.Mockito;
 class VaadinServletRequestTest {
 
     @Test
-    public void getContentLengthLong_delegateToServletRequestGetContentLengthLong() {
+    void getContentLengthLong_delegateToServletRequestGetContentLengthLong() {
         HttpServletRequest servletRequest = Mockito
                 .mock(HttpServletRequest.class);
 

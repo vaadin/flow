@@ -54,14 +54,13 @@ class I18NUtilTest {
     private ClassLoader mockLoader;
 
     @BeforeEach
-    public void init() throws IOException {
+    void init() throws IOException {
         MockitoAnnotations.openMocks(this);
         resources = Files.createTempDirectory(temporaryFolder, "temp").toFile();
     }
 
     @Test
-    public void foundResourceFolder_returnsExpectedLocales()
-            throws IOException {
+    void foundResourceFolder_returnsExpectedLocales() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
@@ -98,7 +97,7 @@ class I18NUtilTest {
     }
 
     @Test
-    public void noTranslationFiles_returnsEmptyList() throws IOException {
+    void noTranslationFiles_returnsEmptyList() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
@@ -109,8 +108,7 @@ class I18NUtilTest {
     }
 
     @Test
-    public void onlyDefaultTranslationFile_returnsEmptyList()
-            throws IOException {
+    void onlyDefaultTranslationFile_returnsEmptyList() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
@@ -126,8 +124,7 @@ class I18NUtilTest {
     }
 
     @Test
-    public void onlyDefaultTranslationFile_returnsTrueForDefault()
-            throws IOException {
+    void onlyDefaultTranslationFile_returnsTrueForDefault() throws IOException {
         File translations = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
         translations.mkdirs();
@@ -145,7 +142,7 @@ class I18NUtilTest {
     }
 
     @Test
-    public void noTranslationFilesInExistingFolder_returnsFalseForDefault()
+    void noTranslationFilesInExistingFolder_returnsFalseForDefault()
             throws IOException {
         File translations = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
@@ -159,7 +156,7 @@ class I18NUtilTest {
     }
 
     @Test
-    public void translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
 
@@ -182,7 +179,7 @@ class I18NUtilTest {
     // Open Liberty may use 'wsjar' as protocol of JAR resources
     // https://openliberty.io/docs/latest/reference/config/classloading.html
     @Test
-    public void openliberty_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void openliberty_translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
 
@@ -256,7 +253,7 @@ class I18NUtilTest {
 
     // vfs:/content/my.war/WEB-INF/classes/vaadin-i18n/
     @Test
-    public void jbossVfs_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+    void jbossVfs_translationFilesInJar_returnsTrueForDefault_findsLanguages()
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
         JarFile jarFile = new JarFile(path.toFile());

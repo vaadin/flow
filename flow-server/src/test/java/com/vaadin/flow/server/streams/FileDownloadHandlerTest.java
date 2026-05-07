@@ -59,7 +59,7 @@ class FileDownloadHandlerTest {
     private Element owner;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
@@ -88,7 +88,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_listenersInvoked()
+    void transferProgressListener_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
@@ -142,7 +142,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException {
         List<String> invocations = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.forFile(
@@ -193,7 +193,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    public void inline_setFileNameInvokedByDefault()
+    void inline_setFileNameInvokedByDefault()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
         DownloadHandler handler = DownloadHandler
@@ -217,7 +217,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    public void attachment_doesNotSetFileNameWhenInlined()
+    void attachment_doesNotSetFileNameWhenInlined()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
         DownloadHandler handler = DownloadHandler
@@ -242,7 +242,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+    void handleSetToInline_contentDispositionIsInlineWithFilename()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
         DownloadHandler handler = DownloadHandler

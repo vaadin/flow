@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SystemMessagesTest {
 
     @Test
-    public void syncError_defaultValues() {
+    void syncError_defaultValues() {
         SystemMessages messages = new CustomizedSystemMessages();
 
         assertNull(messages.getSyncErrorURL(), "Default URL should be null");
@@ -40,7 +40,7 @@ class SystemMessagesTest {
     }
 
     @Test
-    public void syncError_notificationEnabled_returnsCaptionAndMessage() {
+    void syncError_notificationEnabled_returnsCaptionAndMessage() {
         SystemMessages messages = new CustomizedSystemMessages();
 
         // By default, notification is enabled
@@ -50,7 +50,7 @@ class SystemMessagesTest {
     }
 
     @Test
-    public void customizedSyncError_notificationDisabled_returnsNullCaptionAndMessage() {
+    void customizedSyncError_notificationDisabled_returnsNullCaptionAndMessage() {
         CustomizedSystemMessages messages = new CustomizedSystemMessages();
 
         messages.setSyncErrorNotificationEnabled(false);
@@ -66,7 +66,7 @@ class SystemMessagesTest {
     }
 
     @Test
-    public void customizedSyncError_urlNotAffectedByNotificationEnabled() {
+    void customizedSyncError_urlNotAffectedByNotificationEnabled() {
         CustomizedSystemMessages messages = new CustomizedSystemMessages();
 
         messages.setSyncErrorURL("/redirect-url");

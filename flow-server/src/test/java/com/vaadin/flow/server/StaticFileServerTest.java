@@ -133,13 +133,13 @@ class StaticFileServerTest implements Serializable {
     }
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         // must be cleared before running this class
         CurrentInstance.clearAll();
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         request = Mockito.mock(HttpServletRequest.class);
         response = Mockito.mock(HttpServletResponse.class);
         // No header == getDateHeader returns -1 (Mockito default is 0)
@@ -205,7 +205,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void getRequestFilename() {
+    void getRequestFilename() {
         // Context path should not affect the filename in any way
         for (String contextPath : new String[] { "", "/foo", "/foo/bar" }) {
             // /* servlet
@@ -233,7 +233,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void getRequestFilename_shouldAlwaysBeResolvedAsRootResourceForServiceWorkerRequest() {
+    void getRequestFilename_shouldAlwaysBeResolvedAsRootResourceForServiceWorkerRequest() {
         for (String swFile : new String[] { "/sw.js", "/sw.js.gz" }) {
             assertEquals(swFile, getRequestFilename("", "", swFile));
             assertEquals(swFile, getRequestFilename("", "/foo", swFile));
@@ -289,7 +289,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isResourceRequest() throws Exception {
+    void isResourceRequest() throws Exception {
         fileServer.writeResponse = false;
         setupRequestURI("", "/static", "/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
@@ -298,7 +298,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isResourceRequestWithContextPath() throws Exception {
+    void isResourceRequestWithContextPath() throws Exception {
         fileServer.writeResponse = false;
         setupRequestURI("/foo", "/static", "/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
@@ -307,14 +307,14 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isNotResourceRequest() throws Exception {
+    void isNotResourceRequest() throws Exception {
         setupRequestURI("", "", null);
         Mockito.when(servletContext.getResource("/")).thenReturn(null);
         assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void directoryIsNotResourceRequest() throws Exception {
+    void directoryIsNotResourceRequest() throws Exception {
         fileServer.writeResponse = false;
         final Path folder = Files.createTempDirectory("test");
 
@@ -361,7 +361,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
+    void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
             throws IOException {
         fileServer.writeResponse = false;
         assertTrue(StaticFileServer.openFileSystems.isEmpty(),
@@ -395,7 +395,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isStaticResource_jarInAJar_detectsAsStaticResources()
+    void isStaticResource_jarInAJar_detectsAsStaticResources()
             throws IOException {
         fileServer.writeResponse = false;
         assertTrue(StaticFileServer.openFileSystems.isEmpty(),
@@ -468,7 +468,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void openFileServerExistsForZip_openingNewDoesNotFail()
+    void openFileServerExistsForZip_openingNewDoesNotFail()
             throws IOException, URISyntaxException {
         assertTrue(StaticFileServer.openFileSystems.isEmpty(),
                 "Can not run concurrently with other test");
@@ -496,7 +496,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
+    void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
             throws IOException, URISyntaxException {
         assertTrue(StaticFileServer.openFileSystems.isEmpty(),
                 "Can not run concurrently with other test");
@@ -538,9 +538,8 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void concurrentRequestsToJarResources_checksAreCorrect()
-            throws IOException, InterruptedException, ExecutionException,
-            URISyntaxException {
+    void concurrentRequestsToJarResources_checksAreCorrect() throws IOException,
+            InterruptedException, ExecutionException, URISyntaxException {
         fileServer.writeResponse = false;
         assertTrue(StaticFileServer.openFileSystems.isEmpty(),
                 "Can not run concurrently with other test");
@@ -665,7 +664,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void isNotResourceRequestWithContextPath() throws Exception {
+    void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "", "/");
         Mockito.when(servletContext.getResource("/")).thenReturn(new URL("file",
                 "", -1,
@@ -684,7 +683,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void writeModificationTimestampBrowserHasLatest()
+    void writeModificationTimestampBrowserHasLatest()
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = true;
         Long modificationTimestamp = writeModificationTime();
@@ -692,7 +691,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void writeModificationTimestampBrowserDoesNotHaveLatest()
+    void writeModificationTimestampBrowserDoesNotHaveLatest()
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = false;
         Long modificationTimestamp = writeModificationTime();
@@ -722,19 +721,19 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void browserHasNewestVersionUnknownModificiationTime() {
+    void browserHasNewestVersionUnknownModificiationTime() {
         assertFalse(fileServer.browserHasNewestVersion(request, -1));
     }
 
     @Test
-    public void browserHasNewestVersionInvalidModificiationTime() {
+    void browserHasNewestVersionInvalidModificiationTime() {
         assertThrows(AssertionError.class, () -> {
             fileServer.browserHasNewestVersion(request, -2);
         });
     }
 
     @Test
-    public void browserHasNewestVersionNoIfModifiedSinceHeader() {
+    void browserHasNewestVersionNoIfModifiedSinceHeader() {
         long fileModifiedTime = 0;
 
         assertFalse(
@@ -742,7 +741,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void browserHasNewestVersionOlderIfModifiedSinceHeader() {
+    void browserHasNewestVersionOlderIfModifiedSinceHeader() {
         long browserIfModifiedSince = 123L;
         long fileModifiedTime = 124L;
         Mockito.when(request.getDateHeader("If-Modified-Since"))
@@ -753,7 +752,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void browserHasNewestVersionNewerIfModifiedSinceHeader() {
+    void browserHasNewestVersionNewerIfModifiedSinceHeader() {
         long browserIfModifiedSince = 125L;
         long fileModifiedTime = 124L;
         Mockito.when(request.getDateHeader("If-Modified-Since"))
@@ -764,14 +763,14 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void writeCacheHeadersCacheResource() {
+    void writeCacheHeadersCacheResource() {
         fileServer.overrideCacheTime = 12;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         assertTrue(headers.get("Cache-Control").contains("max-age=12"));
     }
 
     @Test
-    public void nonProductionMode_writeCacheHeadersCacheResource_noCache() {
+    void nonProductionMode_writeCacheHeadersCacheResource_noCache() {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         fileServer.overrideCacheTime = 12;
@@ -780,7 +779,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void writeCacheHeadersDoNotCacheResource() {
+    void writeCacheHeadersDoNotCacheResource() {
         fileServer.overrideCacheTime = 0;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         assertTrue(headers.get("Cache-Control").contains("max-age=0"));
@@ -788,7 +787,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void nonProductionMode_writeCacheHeadersDoNotCacheResource() {
+    void nonProductionMode_writeCacheHeadersDoNotCacheResource() {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         fileServer.overrideCacheTime = 0;
@@ -797,7 +796,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void productionMode_writeCacheHeaders_withVersionParam_oneYearCache() {
+    void productionMode_writeCacheHeaders_withVersionParam_oneYearCache() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(request
                 .getParameter(ApplicationConstants.CONTENT_HASH_PARAMETER))
@@ -809,7 +808,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void getCacheTime() {
+    void getCacheTime() {
         int oneYear = 60 * 60 * 24 * 365;
         assertEquals(oneYear, fileServer.getCacheTime("somefile.cache.js"));
         assertEquals(oneYear,
@@ -821,14 +820,14 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveNonExistingStaticResource() throws IOException {
+    void serveNonExistingStaticResource() throws IOException {
         setupRequestURI("", "", "/nonexisting/file.js");
 
         assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void serveStaticResource() throws IOException {
+    void serveStaticResource() throws IOException {
         setupRequestURI("", "/some", "/file.js");
         String fileData = "function() {eval('foo');};";
 
@@ -841,7 +840,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void contextAndServletPath_serveStaticBundleBuildResource()
+    void contextAndServletPath_serveStaticBundleBuildResource()
             throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", "/servlet", pathInfo);
@@ -849,52 +848,49 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void ServletPath_serveStaticBundleBuildResource()
-            throws IOException {
+    void ServletPath_serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextPath_serveStaticBundleBuildResource()
-            throws IOException {
+    void contextPath_serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", "", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void serveStaticBundleBuildResource() throws IOException {
+    void serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("", "", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextAndServletPath_serveStaticFileResource()
-            throws IOException {
+    void contextAndServletPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("/context", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void ServletPath_serveStaticFileResource() throws IOException {
+    void ServletPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextPath_serveStaticFileResource() throws IOException {
+    void contextPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("/context", "", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void serveStaticFileResource() throws IOException {
+    void serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("", "", pathInfo);
         assertBundleBuildResource(pathInfo);
@@ -945,64 +941,63 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/../vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
+    void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..");
     }
 
     @Test
-    public void serveStaticResource_uriWithPercent_isServed()
-            throws IOException {
+    void serveStaticResource_uriWithPercent_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/100%.pdf";
         setupRequestURI("", "", pathInfo);
         String fileData = "contents";
@@ -1021,7 +1016,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void customStaticBuildResource_isServed() throws IOException {
+    void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
         String fileData = "function() {eval('foo');};";
@@ -1040,7 +1035,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void nonexistingStaticBuildResource_notServed() throws IOException {
+    void nonexistingStaticBuildResource_notServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
@@ -1053,7 +1048,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void staticManifestPathResource_isServed() throws IOException {
+    void staticManifestPathResource_isServed() throws IOException {
         String pathInfo = "/sw.js";
         setupRequestURI("", "", pathInfo);
         String fileData = "function() {eval('foo');};";
@@ -1069,8 +1064,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void staticManifestPathIndexHtmlResource_notServed()
-            throws IOException {
+    void staticManifestPathIndexHtmlResource_notServed() throws IOException {
         String pathInfo = "/index.html";
         setupRequestURI("", "", pathInfo);
         String fileData = "function() {eval('foo');};";
@@ -1085,7 +1079,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void customStatsJson_isServedFromServlet() throws IOException {
+    void customStatsJson_isServedFromServlet() throws IOException {
         String pathInfo = "/VAADIN/build/stats.json";
         setupRequestURI("", "/servlet", pathInfo);
         String fileData = "function() {eval('foo');};";
@@ -1129,7 +1123,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResourceBrowserHasLatest() throws IOException {
+    void serveStaticResourceBrowserHasLatest() throws IOException {
         long browserLatest = 123L;
         long fileModified = 123L;
 
@@ -1148,8 +1142,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPath()
-            throws IOException {
+    void serveStaticResourceFromWebjarWithIncorrectPath() throws IOException {
         Mockito.when(configuration.getBooleanProperty(
                 StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
                 .thenReturn(true);
@@ -1165,7 +1158,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled()
+    void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled()
             throws IOException {
         Mockito.when(configuration.getBooleanProperty(
                 StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
@@ -1181,7 +1174,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void getStaticResource_delegateToVaadinService()
+    void getStaticResource_delegateToVaadinService()
             throws MalformedURLException {
         URL url = new URL("http://bar");
         Mockito.when(servletService.getStaticResource("foo")).thenReturn(url);
@@ -1192,7 +1185,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResource_projectThemeResourceRequest_serveFromFrontend()
+    void serveStaticResource_projectThemeResourceRequest_serveFromFrontend()
             throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
@@ -1213,7 +1206,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResource_externalThemeResourceRequest_serveFromBundle()
+    void serveStaticResource_externalThemeResourceRequest_serveFromBundle()
             throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
@@ -1234,7 +1227,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResource_themeResourceRequest_productionMode_notServeFromBundleNorFromFrontend()
+    void serveStaticResource_themeResourceRequest_productionMode_notServeFromBundleNorFromFrontend()
             throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
@@ -1252,7 +1245,7 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void frameworkStaticFolder_withoutEndingSlash_doesNotServeStaticResource()
+    void frameworkStaticFolder_withoutEndingSlash_doesNotServeStaticResource()
             throws IOException {
         // Test framework static folders without / at the end,
         // that they do not return a result

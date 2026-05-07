@@ -53,7 +53,7 @@ class LongPollingCacheFilterTest {
     private AtmosphereResourceSessionFactory sessionFactory;
 
     @Test
-    public void filter_notPushMessage_continueWithCurrentMessage() {
+    void filter_notPushMessage_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(5);
         simulatePushConnection();
@@ -66,7 +66,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void filter_notLongPollingTransport_continueWithCurrentMessage() {
+    void filter_notLongPollingTransport_continueWithCurrentMessage() {
         setSeenServerSyncIdHeader(5);
         simulatePushConnection();
         Stream.of(AtmosphereResource.TRANSPORT.values())
@@ -84,7 +84,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void filter_syncIdCheckDisabled_continueWithCurrentMessage() {
+    void filter_syncIdCheckDisabled_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(-1);
         BroadcastAction action = filter.filter("broadcasterId", resource,
@@ -96,7 +96,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void filter_missingLastSeenServerSyncId_continueWithCurrentMessage() {
+    void filter_missingLastSeenServerSyncId_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         simulatePushConnection();
         BroadcastAction action = filter.filter("broadcasterId", resource,
@@ -108,7 +108,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void filter_messageAlreadySeen_abort() {
+    void filter_messageAlreadySeen_abort() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(5, 6);
         simulatePushConnection();
@@ -133,7 +133,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void filter_messageNotYetSeen_addToCacheAndContinue() {
+    void filter_messageNotYetSeen_addToCacheAndContinue() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(2);
         simulatePushConnection();
@@ -150,7 +150,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void onConnect_longPollingAndSeenServerSyncIdHeaderSent_sessionAttributeStored() {
+    void onConnect_longPollingAndSeenServerSyncIdHeaderSent_sessionAttributeStored() {
         int syncId = 5;
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         setSeenServerSyncIdHeader(syncId);
@@ -165,7 +165,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void onConnect_seenServerSyncIdHeaderMissing_sessionAttributeNotSet() {
+    void onConnect_seenServerSyncIdHeaderMissing_sessionAttributeNotSet() {
         simulatePushConnection();
 
         AtmosphereResourceSession session = sessionFactory.getSession(resource,
@@ -175,7 +175,7 @@ class LongPollingCacheFilterTest {
     }
 
     @Test
-    public void onConnect_notLongPollingTransport_sessionAttributeNotSet() {
+    void onConnect_notLongPollingTransport_sessionAttributeNotSet() {
         setSeenServerSyncIdHeader(5);
         AtmosphereResourceSession session = sessionFactory.getSession(resource,
                 false);
@@ -192,7 +192,7 @@ class LongPollingCacheFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);

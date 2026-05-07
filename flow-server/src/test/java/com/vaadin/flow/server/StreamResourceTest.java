@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class StreamResourceTest {
 
     @Test
-    public void getDefaultContentTypeResolver() {
+    void getDefaultContentTypeResolver() {
         StreamResource resource = new StreamResource("foo",
                 () -> makeEmptyStream());
         ContentTypeResolver resolver = resource.getContentTypeResolver();
@@ -43,7 +43,7 @@ class StreamResourceTest {
     }
 
     @Test
-    public void setContentTypeResolver() {
+    void setContentTypeResolver() {
         StreamResource resource = new StreamResource("foo",
                 () -> makeEmptyStream());
         resource.setContentTypeResolver((res, context) -> "bar");
@@ -54,7 +54,7 @@ class StreamResourceTest {
     }
 
     @Test
-    public void setContentType() {
+    void setContentType() {
         StreamResource resource = new StreamResource("foo",
                 () -> makeEmptyStream());
         resource.setContentType("bar");
@@ -65,7 +65,7 @@ class StreamResourceTest {
     }
 
     @Test
-    public void setHeader_headerIsInHeadersListAndGetterReturnsTheValue() {
+    void setHeader_headerIsInHeadersListAndGetterReturnsTheValue() {
         StreamResource resource = new StreamResource("foo",
                 () -> makeEmptyStream());
 

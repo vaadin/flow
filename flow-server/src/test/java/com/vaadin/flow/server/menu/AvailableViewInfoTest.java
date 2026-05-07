@@ -47,7 +47,7 @@ class AvailableViewInfoTest {
     String detailAsString;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         mapper = new ObjectMapper();
         menuData = new MenuData("title", 1.0, false, "icon", null);
         badge = new Badge("New!", "green");
@@ -56,13 +56,13 @@ class AvailableViewInfoTest {
     }
 
     @Test
-    public void testEquality() {
+    void testEquality() {
         assertEquals(createInfo(true, true), createInfo(true, true),
                 "Two instance created the same way are not equal");
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         var info = createInfo(true, true);
 
         var baos = new ByteArrayOutputStream();
@@ -79,7 +79,7 @@ class AvailableViewInfoTest {
     }
 
     @Test
-    public void testJsonSerialization() throws JacksonException {
+    void testJsonSerialization() throws JacksonException {
         var info = createInfo(true, true);
         var json = mapper.writeValueAsString(info);
         assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),
@@ -87,7 +87,7 @@ class AvailableViewInfoTest {
     }
 
     @Test
-    public void testJsonSerializationNull() throws JacksonException {
+    void testJsonSerializationNull() throws JacksonException {
         var info = createInfo(true, false);
         var json = mapper.writeValueAsString(info);
         assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),

@@ -36,7 +36,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_elementAttached_updatesWithSignal() {
+    void bindPlaceholder_elementAttached_updatesWithSignal() {
         TestComponent component = new TestComponent();
         // Attach component so that Element.bindProperty becomes active
         UI.getCurrent().add(component);
@@ -56,7 +56,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_elementNotAttached_bindingInactive() {
+    void bindPlaceholder_elementNotAttached_bindingInactive() {
         TestComponent component = new TestComponent();
         // Not attached yet
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -69,7 +69,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_attachAfterBinding_activatesAndAppliesLatest() {
+    void bindPlaceholder_attachAfterBinding_activatesAndAppliesLatest() {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
@@ -84,7 +84,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_elementDetached_bindingInactive_andReactivatesOnAttach() {
+    void bindPlaceholder_elementDetached_bindingInactive_andReactivatesOnAttach() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -101,7 +101,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_nullSignal_throwsNPE() {
+    void bindPlaceholder_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -110,7 +110,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setPlaceholder_whileBindingActive_throwsBindingActiveException() {
+    void setPlaceholder_whileBindingActive_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -122,7 +122,7 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_againWhileActive_throwsBindingActiveException() {
+    void bindPlaceholder_againWhileActive_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");

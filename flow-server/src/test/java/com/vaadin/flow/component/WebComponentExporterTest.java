@@ -46,14 +46,14 @@ class WebComponentExporterTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setUp() {
+    void setUp() {
         exporter = new MyComponentExporter();
         config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
     }
 
     @Test
-    public void addProperty_differentTypes() {
+    void addProperty_differentTypes() {
         exporter.addProperty("int", 1);
         exporter.addProperty("string", "string");
         exporter.addProperty("boolean", true);
@@ -75,7 +75,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void addProperty_propertyWithTheSameNameGetsOverwritten() {
+    void addProperty_propertyWithTheSameNameGetsOverwritten() {
         exporter.addProperty("int", 1);
 
         assertTrue(config.hasProperty("int"));
@@ -89,12 +89,12 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_getTag() {
+    void configuration_getTag() {
         assertEquals(TAG, config.getTag());
     }
 
     @Test
-    public void configuration_getPropertyType_differentTypes() {
+    void configuration_getPropertyType_differentTypes() {
         exporter.addProperty("int", 1);
         exporter.addProperty("string", "string");
         exporter.addProperty("boolean", true);
@@ -107,7 +107,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_deliverPropertyUpdate() {
+    void configuration_deliverPropertyUpdate() {
         exporter.addProperty("int", 0).onChange(MyComponent::update);
 
         WebComponentBinding<MyComponent> binding = config
@@ -123,7 +123,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_getPropertyDataSet() {
+    void configuration_getPropertyDataSet() {
         exporter.addProperty("int", 1);
         exporter.addProperty("string", "string");
         exporter.addProperty("boolean", true);
@@ -135,14 +135,14 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_getComponentClass() {
+    void configuration_getComponentClass() {
         assertEquals(MyComponent.class, config.getComponentClass(),
                 "Component class should be MyComponent.class");
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void configuration_createWebComponentBinding() {
+    void configuration_createWebComponentBinding() {
         exporter = new MyComponentExporter() {
             @Override
             public void configureInstance(
@@ -171,7 +171,7 @@ class WebComponentExporterTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void configuration_createWebComponentBinding_overridesDefaultValues() {
+    void configuration_createWebComponentBinding_overridesDefaultValues() {
         exporter.addProperty("value", 1).onChange(MyComponent::update);
 
         config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
@@ -188,7 +188,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_bindProxy_withoutInstanceConfigurator() {
+    void configuration_bindProxy_withoutInstanceConfigurator() {
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), JacksonUtils.createObjectNode());
@@ -202,7 +202,7 @@ class WebComponentExporterTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
+    void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
         SharedTagExporter sharedTagExporter = new SharedTagExporter();
         WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(sharedTagExporter);
@@ -214,7 +214,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_hasProperty() {
+    void configuration_hasProperty() {
         exporter.addProperty("int", 1);
         exporter.addProperty("string", "string");
         exporter.addProperty("boolean", true);
@@ -229,7 +229,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void configuration_callAddProperty_throws() {
+    void configuration_callAddProperty_throws() {
         AddPropertyInsideConfigureInstance exporter = new AddPropertyInsideConfigureInstance();
         WebComponentConfiguration<?> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
@@ -241,7 +241,7 @@ class WebComponentExporterTest {
     }
 
     @Test
-    public void exporterConstructorThrowsIfNoComponentDefined() {
+    void exporterConstructorThrowsIfNoComponentDefined() {
         assertThrows(IllegalStateException.class, () -> {
             NoComponentExporter exporter = new NoComponentExporter();
         });

@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EventRpcHandlerTest {
 
     @Test
-    public void testElementEventNoData() throws Exception {
+    void testElementEventNoData() throws Exception {
         TestComponent c = new TestComponent();
         Element element = c.getElement();
         UI ui = new UI();
@@ -49,7 +49,7 @@ class EventRpcHandlerTest {
     }
 
     @Test
-    public void testElementEventData() throws Exception {
+    void testElementEventData() throws Exception {
         TestComponent c = new TestComponent();
         Element element = c.getElement();
         UI ui = new UI();

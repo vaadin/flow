@@ -31,7 +31,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setWidthFloat() {
+    void setWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setWidth(100, unit);
@@ -40,7 +40,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setMinWidthFloat() {
+    void setMinWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinWidth(100, unit);
@@ -49,7 +49,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setMaxWidthFloat() {
+    void setMaxWidthFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxWidth(100, unit);
@@ -58,7 +58,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setHeightFloat() {
+    void setHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setHeight(100, unit);
@@ -67,7 +67,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setMinHeightFloat() {
+    void setMinHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinHeight(100, unit);
@@ -76,7 +76,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void setMaxHeightFloat() {
+    void setMaxHeightFloat() {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxHeight(100, unit);
@@ -85,7 +85,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void getUnit() {
+    void getUnit() {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             Optional<Unit> theUnit = Unit.getUnit(cssSize);
@@ -95,7 +95,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void getSize() {
+    void getSize() {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             float size = Unit.getSize(cssSize);
@@ -109,7 +109,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void getSizeException() {
+    void getSizeException() {
         assertThrows(NumberFormatException.class, () -> {
             String cssSize = "10a0px";
             float size = Unit.getSize(cssSize);
@@ -117,7 +117,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void getSizeNoUnit() {
+    void getSizeNoUnit() {
         assertThrows(IllegalArgumentException.class, () -> {
             String cssSize = "100";
             float size = Unit.getSize(cssSize);
@@ -125,7 +125,7 @@ class HasSizeUnitTest {
     }
 
     @Test
-    public void getSizeNoValidUnit() {
+    void getSizeNoValidUnit() {
         assertThrows(IllegalArgumentException.class, () -> {
             String cssSize = "100p";
             float size = Unit.getSize(cssSize);

@@ -70,7 +70,7 @@ class BootstrapContextTest {
     }
 
     @BeforeEach
-    public void setUp() throws ServiceException {
+    void setUp() throws ServiceException {
         MockVaadinSession session = new MockVaadinSession();
         session.lock();
         ui = new UI();
@@ -78,7 +78,7 @@ class BootstrapContextTest {
     }
 
     @Test
-    public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
+    void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 MainView.class, Collections.emptyList());
         Mockito.when(request
@@ -97,7 +97,7 @@ class BootstrapContextTest {
     }
 
     @Test
-    public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
+    void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 OtherView.class, Collections.singletonList(MainView.class));
         Mockito.when(request
@@ -116,7 +116,7 @@ class BootstrapContextTest {
     }
 
     @Test
-    public void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
+    void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");
@@ -138,7 +138,7 @@ class BootstrapContextTest {
     }
 
     @Test
-    public void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
+    void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");

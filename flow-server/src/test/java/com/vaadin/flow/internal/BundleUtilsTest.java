@@ -40,7 +40,7 @@ class BundleUtilsTest {
     Path temporaryFolder;
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         for (AutoCloseable closeable : closeOnTearDown) {
             try {
                 closeable.close();
@@ -51,7 +51,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void frontendImportVariantsIncluded() {
+    void frontendImportVariantsIncluded() {
         mockStatsJson("Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
@@ -61,7 +61,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void jarImportVariantsIncluded() {
+    void jarImportVariantsIncluded() {
         mockStatsJson("Frontend/generated/jar-resources/my/addon.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
@@ -72,7 +72,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void frontendInTheMiddleNotTouched() {
+    void frontendInTheMiddleNotTouched() {
         mockStatsJson("my/Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
@@ -80,7 +80,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void themeVariantsHandled() {
+    void themeVariantsHandled() {
         mockStatsJson("@foo/bar/theme/lumo/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
@@ -89,7 +89,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void themeVariantsFromJarHandled() {
+    void themeVariantsFromJarHandled() {
         mockStatsJson("Frontend/generated/jar-resources/theme/lumo/file.js",
                 "Frontend/generated/jar-resources/theme/material/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
@@ -122,7 +122,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void loadStatsJson_cachesResult_returnsSameInstance() {
+    void loadStatsJson_cachesResult_returnsSameInstance() {
         // First call loads and caches
         ObjectNode first = BundleUtils.loadStatsJson();
         // Second call returns cached instance
@@ -132,7 +132,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void loadStatsJson_cachedResultIsConsistent() {
+    void loadStatsJson_cachedResultIsConsistent() {
         ObjectNode first = BundleUtils.loadStatsJson();
         ObjectNode second = BundleUtils.loadStatsJson();
 
@@ -142,7 +142,7 @@ class BundleUtilsTest {
     }
 
     @Test
-    public void isPreCompiledProductionBundle_usesCachedStats() {
+    void isPreCompiledProductionBundle_usesCachedStats() {
         // Call multiple times
         boolean first = BundleUtils.isPreCompiledProductionBundle();
         boolean second = BundleUtils.isPreCompiledProductionBundle();

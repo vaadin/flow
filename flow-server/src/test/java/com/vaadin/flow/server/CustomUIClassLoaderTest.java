@@ -66,7 +66,7 @@ class CustomUIClassLoaderTest {
      *             if thrown
      */
     @Test
-    public void testWithDefaultClassLoader() throws Exception {
+    void testWithDefaultClassLoader() throws Exception {
         VaadinSession application = createStubApplication();
 
         Class<? extends UI> uiClass = BootstrapHandler
@@ -115,7 +115,7 @@ class CustomUIClassLoaderTest {
      *             if thrown
      */
     @Test
-    public void testWithClassLoader() throws Exception {
+    void testWithClassLoader() throws Exception {
         LoggingClassLoader loggingClassLoader = new LoggingClassLoader();
 
         Class<? extends UI> uiClass = BootstrapHandler

@@ -43,17 +43,17 @@ class ElementUtilTest {
     private StateTree stateTree;
 
     @Test
-    public void isNullValidAttribute() {
+    void isNullValidAttribute() {
         assertFalse(ElementUtil.isValidAttributeName(null));
     }
 
     @Test
-    public void isEmptyValidAttribute() {
+    void isEmptyValidAttribute() {
         assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
     @Test
-    public void isUpperCaseValidAttribute() {
+    void isUpperCaseValidAttribute() {
         assertThrows(AssertionError.class, () -> {
             // isValidAttributeName is designed to only be called with lowercase
             // attribute names
@@ -62,13 +62,13 @@ class ElementUtilTest {
     }
 
     @Test
-    public void componentNotInitiallyAttached() {
+    void componentNotInitiallyAttached() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.getComponent().isPresent());
     }
 
     @Test
-    public void attachToComponent() {
+    void attachToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
@@ -76,7 +76,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void attachComponentToTextElement() {
+    void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
@@ -84,7 +84,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void attachTwiceToComponent() {
+    void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
@@ -93,14 +93,14 @@ class ElementUtilTest {
     }
 
     @Test
-    public void attachToNull() {
+    void attachToNull() {
         Element e = ElementFactory.createDiv();
         assertThrows(IllegalArgumentException.class,
                 () -> ElementUtil.setComponent(e, null));
     }
 
     @Test
-    public void attachTwoComponents() {
+    void attachTwoComponents() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         Component c2 = Mockito.mock(Component.class);
@@ -110,7 +110,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void toAndFromJsoup() {
+    void toAndFromJsoup() {
         final String EXPECTED_TEXT_1 = "Some text";
         final String EXPECTED_TEXT_2 = "Other text";
 
@@ -147,7 +147,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void isValidTagName_validTagNames() {
+    void isValidTagName_validTagNames() {
         assertTrue(ElementUtil.isValidTagName("foo"));
         assertTrue(ElementUtil.isValidTagName("foo-bar"));
         assertTrue(ElementUtil.isValidTagName("foo_bar"));
@@ -158,7 +158,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void isValidTagName_invalidTagNames() {
+    void isValidTagName_invalidTagNames() {
         assertFalse(ElementUtil.isValidTagName("1foo"));
         assertFalse(ElementUtil.isValidTagName("-foo"));
         assertFalse(ElementUtil.isValidTagName("_foo"));
@@ -168,7 +168,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void parentIsInert_childIgnoresParentInert_allThePermutations() {
+    void parentIsInert_childIgnoresParentInert_allThePermutations() {
         setupElementHierarchy();
 
         assertFalse(isIgnoreParentInert(child),
@@ -215,7 +215,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void parentInert_grandChildIgnoresInert_notInert() {
+    void parentInert_grandChildIgnoresInert_notInert() {
         setupElementHierarchy();
 
         ElementUtil.setInert(parent, true);
@@ -241,7 +241,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void parentInertGrandChildIgnores_statesChangedAtSameTime_changesApplied() {
+    void parentInertGrandChildIgnores_statesChangedAtSameTime_changesApplied() {
         setupElementHierarchy();
 
         ElementUtil.setInert(parent, true);
@@ -254,12 +254,12 @@ class ElementUtilTest {
     }
 
     @Test
-    public void parentInert_siblingIgnoresInheritingInert_siblingInert() {
+    void parentInert_siblingIgnoresInheritingInert_siblingInert() {
         final Element sibling = ElementFactory.createDiv();
     }
 
     @Test
-    public void elementsUpdateSameData() {
+    void elementsUpdateSameData() {
         Element te = new Element("testelem");
         Element e = ElementUtil.from(te.getNode()).orElse(null);
 
@@ -268,7 +268,7 @@ class ElementUtilTest {
     }
 
     @Test
-    public void getElementFromInvalidNode() {
+    void getElementFromInvalidNode() {
         StateNode node = new StateNode(ElementPropertyMap.class);
         assertFalse(ElementUtil.from(node).isPresent());
     }

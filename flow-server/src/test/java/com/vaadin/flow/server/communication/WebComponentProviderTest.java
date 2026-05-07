@@ -90,7 +90,7 @@ class WebComponentProviderTest {
 
     @BeforeEach
     @SuppressWarnings("java:S1872") // FeatureFlagsWrapper is protected class
-    public void init() {
+    void init() {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
                                     // some tests
@@ -133,12 +133,12 @@ class WebComponentProviderTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void nonHandledPaths_handlerInformsNotHandled() throws IOException {
+    void nonHandledPaths_handlerInformsNotHandled() throws IOException {
         Mockito.when(request.getPathInfo()).thenReturn(null);
         assertFalse(provider.canHandleRequest(request),
                 "Provider shouldn't handle null path");
@@ -153,7 +153,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void faultyTag_handlerInformsNotHandled() throws IOException {
+    void faultyTag_handlerInformsNotHandled() throws IOException {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component" + "/extensionless-component");
 
@@ -177,7 +177,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void webComponentNotPresent_responseReturns404() throws IOException {
+    void webComponentNotPresent_responseReturns404() throws IOException {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
@@ -192,7 +192,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void webComponentGenerator_responseGetsResult() throws IOException {
+    void webComponentGenerator_responseGetsResult() throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.spy(new ByteArrayOutputStream());
@@ -220,7 +220,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void providesDifferentGeneratedHTMLForEachExportedComponent()
+    void providesDifferentGeneratedHTMLForEachExportedComponent()
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
@@ -259,7 +259,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void setExporters_exportersHasVariousPushes_throws() {
+    void setExporters_exportersHasVariousPushes_throws() {
         assertThrows(IllegalStateException.class, () -> {
             WebComponentConfigurationRegistry registry = setupConfigurations(
                     ThemedComponentExporter.class,
@@ -268,7 +268,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void setExporters_exportersHasOnePush_pushIsSet() {
+    void setExporters_exportersHasOnePush_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
@@ -276,7 +276,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
+    void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
@@ -287,7 +287,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
+    void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
         WebComponentProvider handler = new WebComponentProvider();
 
         VaadinRequest request = mockRequest(false);
@@ -295,7 +295,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    public void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
+    void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
         WebComponentProvider handler = new WebComponentProvider();
 
         VaadinRequest request = mockRequest(true);

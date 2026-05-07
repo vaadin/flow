@@ -275,6 +275,8 @@ public class SystemErrorHandler {
             String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
+        // Set the popover attribute for native popovers.
+        systemErrorContainer.setAttribute("popover", "manual");
         systemErrorContainer.setClassName("v-system-error");
 
         if (caption != null) {
@@ -311,9 +313,20 @@ public class SystemErrorHandler {
         } else {
             document.getBody().appendChild(systemErrorContainer);
         }
+        showPopover(systemErrorContainer);
 
         return systemErrorContainer;
     }
+
+    // @formatter:off
+    private native void showPopover(Element el) 
+    /*-{
+        var fn = el && el.showPopover;
+        if (typeof fn === "function") {
+            fn.call(el);
+        }
+    }-*/;
+    // @formatter:on
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {

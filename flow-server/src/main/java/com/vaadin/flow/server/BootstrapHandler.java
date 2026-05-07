@@ -1388,9 +1388,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
             try {
                 JsonNode json = JacksonUtils.readTree(browserDetailsJson);
-                ExtendedClientDetails details = ExtendedClientDetails
-                        .fromJson(ui, json);
-                ui.getInternals().setExtendedClientDetails(details);
+                ExtendedClientDetails.updateFromJson(ui, json);
             } catch (Exception e) {
                 // Log and continue without browser details
                 getLogger().debug(
@@ -1565,8 +1563,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "position: absolute;" +
                 "color: black;" +
                 "background: white;" +
-                "top: 1em;" +
-                "right: 1em;" +
+                "margin-top: 1em;" +
+                "margin-right: 1em;" +
                 "border: 1px solid black;" +
                 "padding: 1em;" +
                 "z-index: 10000;" +

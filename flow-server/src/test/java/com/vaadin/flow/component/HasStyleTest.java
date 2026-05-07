@@ -38,7 +38,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void addClassName() {
+    void addClassName() {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassName("foo");
         assertClasses(component, "foo");
@@ -52,7 +52,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void setClassName_useClassList() {
+    void setClassName_useClassList() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo bar");
 
@@ -61,7 +61,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void removeClassName() {
+    void removeClassName() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo Bar baz");
         component.removeClassName("foo");
@@ -81,7 +81,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void setClassName() {
+    void setClassName() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo");
         assertClasses(component, "foo");
@@ -101,7 +101,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void getClassName() {
+    void getClassName() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo");
         assertEquals("foo", component.getClassName());
@@ -110,7 +110,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void setClassNameToggle() {
+    void setClassNameToggle() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo", false);
         assertClasses(component);
@@ -128,7 +128,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void hasClassName() {
+    void hasClassName() {
         HasStyleComponent component = new HasStyleComponent();
         assertFalse(component.hasClassName("foo"));
         component.setClassName("foo");
@@ -141,7 +141,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void getClassList_elementClassList() {
+    void getClassList_elementClassList() {
         HasStyleComponent component = new HasStyleComponent();
 
         assertEquals(component.getElement().getClassList(),
@@ -149,7 +149,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void testAddClassNames() {
+    void testAddClassNames() {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassNames();
         assertClasses(component);
@@ -167,7 +167,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void testRemoveClassNames() {
+    void testRemoveClassNames() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo bar baz1 baz2 foo2 bar1");
 
@@ -182,7 +182,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void addClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
+    void addClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassNames("   foo  bar    baz");
 
@@ -195,7 +195,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void removeClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
+    void removeClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassNames("foo", "bar", "baz");
         component.removeClassNames("   foo  bar    baz");
@@ -205,35 +205,35 @@ class HasStyleTest {
     }
 
     @Test
-    public void addClassNames_addEmptyClassName_throws() {
+    void addClassNames_addEmptyClassName_throws() {
         HasStyleComponent component = new HasStyleComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> component.addClassNames(" "));
     }
 
     @Test
-    public void addClassNames_addNullClassName_throws() {
+    void addClassNames_addNullClassName_throws() {
         HasStyleComponent component = new HasStyleComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> component.addClassNames(null, null));
     }
 
     @Test
-    public void removeClassNames_removeEmptyClassName_throws() {
+    void removeClassNames_removeEmptyClassName_throws() {
         HasStyleComponent component = new HasStyleComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> component.removeClassNames(" "));
     }
 
     @Test
-    public void removeClassNames_removeNullClassName_throws() {
+    void removeClassNames_removeNullClassName_throws() {
         HasStyleComponent component = new HasStyleComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> component.removeClassNames(null, null));
     }
 
     @Test
-    public void setColorScheme_setsInlineStyleProperty() {
+    void setColorScheme_setsInlineStyleProperty() {
         HasStyleComponent component = new HasStyleComponent();
 
         component.getStyle().setColorScheme(ColorScheme.Value.DARK);
@@ -250,7 +250,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void getColorScheme_retrievesSetValue() {
+    void getColorScheme_retrievesSetValue() {
         HasStyleComponent component = new HasStyleComponent();
 
         component.getStyle().setColorScheme(ColorScheme.Value.DARK);
@@ -263,7 +263,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void setColorScheme_nullClearsProperty() {
+    void setColorScheme_nullClearsProperty() {
         HasStyleComponent component = new HasStyleComponent();
 
         component.getStyle().setColorScheme(ColorScheme.Value.DARK);
@@ -277,7 +277,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void setColorScheme_normalClearsProperty() {
+    void setColorScheme_normalClearsProperty() {
         HasStyleComponent component = new HasStyleComponent();
 
         component.getStyle().setColorScheme(ColorScheme.Value.DARK);
@@ -291,7 +291,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void colorScheme_roundtripWorks() {
+    void colorScheme_roundtripWorks() {
         HasStyleComponent component = new HasStyleComponent();
 
         for (ColorScheme.Value value : ColorScheme.Value.values()) {
@@ -306,7 +306,7 @@ class HasStyleTest {
     }
 
     @Test
-    public void getColorScheme_notSet_returnsNormal() {
+    void getColorScheme_notSet_returnsNormal() {
         HasStyleComponent component = new HasStyleComponent();
         assertEquals(ColorScheme.Value.NORMAL,
                 component.getStyle().getColorScheme());

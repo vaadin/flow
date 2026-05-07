@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class JavaScriptInvocationTest {
     @Test
-    public void testSerializable() {
+    void testSerializable() {
         JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
                 "expression", "string", JacksonUtils.writeValue("jsonString"));
 

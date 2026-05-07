@@ -201,7 +201,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         assertNull(System.getSecurityManager());
 
         MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
@@ -219,13 +219,13 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         service = null;
         VaadinService.setCurrent(null);
     }
 
     @Test
-    public void methodIsInvoked() {
+    void methodIsInvoked() {
         ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
@@ -235,7 +235,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodIsNotInvokedWhenInert() {
+    void methodIsNotInvokedWhenInert() {
         ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
@@ -245,7 +245,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodIsInvokedWhenInertAndInertAllowed() {
+    void methodIsInvokedWhenInertAndInertAllowed() {
         ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "methodThatCanBeCalledWhenInert",
@@ -255,7 +255,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodIsInvokedOnCompositeContent() {
+    void methodIsInvokedOnCompositeContent() {
         CompositeOfComponentWithCompute composite = new CompositeOfComponentWithCompute();
         ComponentWithCompute component = composite.getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
@@ -266,7 +266,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodIsInvokectOnCompositeOfComposite() {
+    void methodIsInvokectOnCompositeOfComposite() {
         CompositeOfComposite composite = new CompositeOfComposite();
         ComponentWithCompute component = composite.getContent().getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
@@ -277,7 +277,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithDecoderParameters_convertableValues_methodIsInvoked() {
+    void methodWithDecoderParameters_convertableValues_methodIsInvoked() {
         ArrayNode params = JacksonUtils.createArrayNode();
         params.add("264");
         params.add("MRS");
@@ -295,7 +295,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithDecoderParameters_nonConvertableValues_methodIsInvoked() {
+    void methodWithDecoderParameters_nonConvertableValues_methodIsInvoked() {
         assertThrows(IllegalArgumentException.class, () -> {
             ArrayNode params = JacksonUtils.createArrayNode();
             params.add("264.1");
@@ -312,7 +312,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithoutArgs_argsProvided() {
+    void methodWithoutArgs_argsProvided() {
         assertThrows(IllegalArgumentException.class, () -> {
             ArrayNode args = JacksonUtils.createArrayNode();
             args.add(true);
@@ -323,7 +323,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void promiseSuccess() {
+    void promiseSuccess() {
         int promiseId = 4;
 
         ArrayNode args = JacksonUtils.createArrayNode();
@@ -365,7 +365,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void promiseFailure() {
+    void promiseFailure() {
         int promiseId = 4;
 
         ArrayNode args = JacksonUtils.createArrayNode();
@@ -410,7 +410,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithVarArg_acceptNoValues() {
+    void methodWithVarArg_acceptNoValues() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
@@ -421,7 +421,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithJsonValueIsInvoked() {
+    void methodWithJsonValueIsInvoked() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         ObjectNode json = JacksonUtils.createObjectNode();
@@ -438,7 +438,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithJacksonJsonValueIsInvoked() {
+    void methodWithJacksonJsonValueIsInvoked() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         ObjectNode json = JacksonUtils.createObjectNode();
@@ -455,7 +455,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithSeveralArgsAndVarArg_acceptNoValues() {
+    void methodWithSeveralArgsAndVarArg_acceptNoValues() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         ArrayNode firstArg = JacksonUtils.createArrayNode();
@@ -476,7 +476,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithVarArg_acceptOneValue() {
+    void methodWithVarArg_acceptOneValue() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         array.add("foo");
@@ -490,7 +490,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void methodWithVarArg_arrayIsCorrectlyHandled() {
+    void methodWithVarArg_arrayIsCorrectlyHandled() {
         ArrayNode array = JacksonUtils.createArrayNode();
 
         ArrayNode value = JacksonUtils.createArrayNode();
@@ -506,7 +506,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void nullValueShouldReturnZeroForPrimitive() {
+    void nullValueShouldReturnZeroForPrimitive() {
         ArrayNode array = JacksonUtils.createArrayNode();
         array.add(JacksonUtils.nullNode());
         MethodWithParameters component = new MethodWithParameters();
@@ -522,7 +522,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void noClientCallableMethodException() {
+    void noClientCallableMethodException() {
         assertThrows(IllegalStateException.class, () -> {
             ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
@@ -532,7 +532,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void noMethodException() {
+    void noMethodException() {
         assertThrows(IllegalStateException.class, () -> {
             ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
@@ -542,7 +542,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void enabledElement_methodIsInvoked() {
+    void enabledElement_methodIsInvoked() {
         UI ui = new UI();
         ComponentWithCompute component = new ComponentWithCompute();
         ui.add(component);
@@ -553,7 +553,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_ClientCallableIsNotInvoked() {
+    void disabledElement_ClientCallableIsNotInvoked() {
         UI ui = new UI();
         ComponentWithCompute component = new ComponentWithCompute();
         ui.add(component);
@@ -566,7 +566,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_clientDelegateAllowsRPC_methodIsInvoked() {
+    void disabledElement_clientDelegateAllowsRPC_methodIsInvoked() {
         UI ui = new UI();
         EnabledHandler component = new EnabledHandler();
         ui.add(component);

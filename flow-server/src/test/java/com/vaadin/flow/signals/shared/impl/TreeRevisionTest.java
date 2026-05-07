@@ -29,7 +29,7 @@ import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TreeRevisionTest {
+class TreeRevisionTest {
     private static class MutableTestRevision extends TreeRevision {
         public MutableTestRevision() {
             super(Id.ZERO,

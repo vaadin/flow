@@ -181,12 +181,14 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
+     * @param <T>
+     *            the type of the signal value
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    public SignalBinding<?> bindSignal(Element owner, String name,
-            Signal<?> signal, SerializableConsumer<?> writeCallback) {
+    public <T> SignalBinding<T> bindSignal(Element owner, String name,
+            Signal<T> signal, SerializableConsumer<?> writeCallback) {
         return super.bindSignal(owner, name, signal,
                 (element, value) -> setPropertyFromSignal(name, value),
                 writeCallback);

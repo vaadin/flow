@@ -27,14 +27,14 @@ class ConstantPoolTest {
     private ConstantPool constantPool = new ConstantPool();
 
     @Test
-    public void newConstantPool_noNewItems() {
+    void newConstantPool_noNewItems() {
         assertFalse(constantPool.hasNewConstants());
         assertEquals(0,
                 JacksonUtils.getKeys(constantPool.dumpConstants()).size());
     }
 
     @Test
-    public void valueIsRegistered() {
+    void valueIsRegistered() {
         ConstantPoolKey reference = new ConstantPoolKey(
                 JacksonUtils.createObjectNode());
 
@@ -49,7 +49,7 @@ class ConstantPoolTest {
     }
 
     @Test
-    public void sameValue_sameId() {
+    void sameValue_sameId() {
         ConstantPoolKey reference = new ConstantPoolKey(
                 JacksonUtils.createObjectNode());
 
@@ -64,7 +64,7 @@ class ConstantPoolTest {
     }
 
     @Test
-    public void differentValue_differentId() {
+    void differentValue_differentId() {
         ConstantPoolKey reference = new ConstantPoolKey(
                 JacksonUtils.createObjectNode());
 
@@ -79,7 +79,7 @@ class ConstantPoolTest {
     }
 
     @Test
-    public void constantPoolKey_exportedDirectly_idCreated() {
+    void constantPoolKey_exportedDirectly_idCreated() {
         final ConstantPoolKey constantPoolKey = new ConstantPoolKey(
                 JacksonUtils.createObjectNode());
         final ObjectNode message = JacksonUtils.createObjectNode();

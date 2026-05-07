@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SharedNodeSignalTest extends SignalTestBase {
+class SharedNodeSignalTest extends SignalTestBase {
 
     @Test
     void constructor_initialValue_isEmpty() {

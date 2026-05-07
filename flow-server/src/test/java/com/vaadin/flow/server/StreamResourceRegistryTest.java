@@ -46,7 +46,7 @@ class StreamResourceRegistryTest {
     private VaadinSession session;
 
     @BeforeEach
-    public void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException {
         service = new MockVaadinServletService();
         session = new VaadinSession(service) {
             @Override
@@ -61,12 +61,12 @@ class StreamResourceRegistryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void registerResource_registrationResultCanBeFound() {
+    void registerResource_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
@@ -86,7 +86,7 @@ class StreamResourceRegistryTest {
     }
 
     @Test
-    public void registerElementResourceHandler_registrationResultCanBeFound() {
+    void registerElementResourceHandler_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         ElementRequestHandler handler = (request, response, session, owner) -> {
@@ -106,7 +106,7 @@ class StreamResourceRegistryTest {
     }
 
     @Test
-    public void unregisterResource_resourceIsRemoved() {
+    void unregisterResource_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
@@ -127,7 +127,7 @@ class StreamResourceRegistryTest {
     }
 
     @Test
-    public void unregisterElementResourceHandler_resourceIsRemoved() {
+    void unregisterElementResourceHandler_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         ElementRequestHandler handler = (request, response, session, owner) -> {
@@ -151,7 +151,7 @@ class StreamResourceRegistryTest {
     }
 
     @Test
-    public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
+    void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource1 = new StreamResource("name",
@@ -175,17 +175,17 @@ class StreamResourceRegistryTest {
     }
 
     @Test
-    public void getResourceUriIsEncoded_withQueryParams() {
+    void getResourceUriIsEncoded_withQueryParams() {
         assertResourceUriIsEncoded("a?b=c d&e", "a%3Fb%3Dc%20d%26e");
     }
 
     @Test
-    public void getResourceUriIsEncoded_withContainingPlus() {
+    void getResourceUriIsEncoded_withContainingPlus() {
         assertResourceUriIsEncoded("image++.svg", "image%2B%2B.svg");
     }
 
     @Test
-    public void getResourceUriIsEncoded_withSimpleSpace() {
+    void getResourceUriIsEncoded_withSimpleSpace() {
         assertResourceUriIsEncoded("my file.png", "my%20file.png");
     }
 

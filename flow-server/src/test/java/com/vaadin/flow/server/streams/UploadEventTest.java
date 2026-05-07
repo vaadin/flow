@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,7 +45,7 @@ class UploadEventTest {
     private Element owner;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
@@ -56,7 +56,7 @@ class UploadEventTest {
     }
 
     @Test
-    public void testInitialState_notRejected() {
+    void testInitialState_notRejected() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
@@ -67,7 +67,7 @@ class UploadEventTest {
     }
 
     @Test
-    public void testReject_withDefaultMessage() {
+    void testReject_withDefaultMessage() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
@@ -79,7 +79,7 @@ class UploadEventTest {
     }
 
     @Test
-    public void testReject_withCustomMessage() {
+    void testReject_withCustomMessage() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.zip", 100L, "application/zip", owner, null);
 
@@ -92,7 +92,7 @@ class UploadEventTest {
     }
 
     @Test
-    public void testGetInputStream_rejectedUpload_throwsException() {
+    void testGetInputStream_rejectedUpload_throwsException() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
@@ -110,7 +110,7 @@ class UploadEventTest {
     }
 
     @Test
-    public void testGetInputStream_beforeRejection_works() {
+    void testGetInputStream_beforeRejection_works() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 

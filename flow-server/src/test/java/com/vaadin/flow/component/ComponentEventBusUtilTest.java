@@ -49,7 +49,7 @@ class ComponentEventBusUtilTest {
     }
 
     @Test
-    public void domEvent_constructorCached() {
+    void domEvent_constructorCached() {
         ReflectionCache<ComponentEvent<?>, ?> cache = ComponentEventBusUtil.cache;
         TestComponent component = new TestComponent();
         cache.clear();
@@ -60,7 +60,7 @@ class ComponentEventBusUtilTest {
     }
 
     @Test
-    public void domEvent_dataExpressionCached() {
+    void domEvent_dataExpressionCached() {
         TestComponent component = new TestComponent();
         ReflectionCache<ComponentEvent<?>, ?> cache = ComponentEventBusUtil.cache;
         cache.clear();
@@ -71,7 +71,7 @@ class ComponentEventBusUtilTest {
     }
 
     @Test
-    public void domEvent_innerEventClass() {
+    void domEvent_innerEventClass() {
         try {
             ComponentEventBusUtil.getEventConstructor(InnerClass.class);
         } catch (IllegalArgumentException exception) {
@@ -83,14 +83,14 @@ class ComponentEventBusUtilTest {
     }
 
     @Test
-    public void domEvent_nestedEventClass() {
+    void domEvent_nestedEventClass() {
         Constructor<NestedClass> ctor = ComponentEventBusUtil
                 .getEventConstructor(NestedClass.class);
         assertNotNull(ctor);
     }
 
     @Test
-    public void domEvent_localEventClass() {
+    void domEvent_localEventClass() {
         @DomEvent("dom-event")
         class LocalClass extends ComponentEvent<Component> {
 

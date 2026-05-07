@@ -62,7 +62,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         response = mocks.createResponse();
         session = mocks.getSession();
@@ -70,32 +70,31 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mocks.cleanup();
     }
 
     @Test
-    public void should_handleRequest_when_initTypeRequest() throws Exception {
+    void should_handleRequest_when_initTypeRequest() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         assertTrue(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
-    public void should_not_handleRequest_when_pathInfo_set() throws Exception {
+    void should_not_handleRequest_when_pathInfo_set() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/foo",
                 "v-r=init&foo");
         assertFalse(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
-    public void should_not_handleRequest_if_not_initTypeRequest()
-            throws Exception {
+    void should_not_handleRequest_if_not_initTypeRequest() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=bar");
         assertFalse(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
-    public void should_produceValidJsonResponse() throws Exception {
+    void should_produceValidJsonResponse() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/",
                 "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
@@ -125,7 +124,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_initialize_UI() throws Exception {
+    void should_initialize_UI() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/",
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
@@ -135,7 +134,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_attachViewTo_UiContainer() throws Exception {
+    void should_attachViewTo_UiContainer() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/",
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
@@ -159,7 +158,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_respondPushScript_when_enabledInDeploymentConfiguration()
+    void should_respondPushScript_when_enabledInDeploymentConfiguration()
             throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
@@ -177,8 +176,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_respondPushScript_when_nonRootServletPath()
-            throws Exception {
+    void should_respondPushScript_when_nonRootServletPath() throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
         VaadinRequest request = mocks.createRequest(mocks, "/", "/vaadin/",
@@ -195,7 +193,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_invoke_modifyPushConfiguration() throws Exception {
+    void should_invoke_modifyPushConfiguration() throws Exception {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
@@ -208,8 +206,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_respondPushScript_when_annotatedInAppShell()
-            throws Exception {
+    void should_respondPushScript_when_annotatedInAppShell() throws Exception {
         VaadinServletContext context = new VaadinServletContext(
                 mocks.getServletContext());
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
@@ -230,7 +227,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_badLocation_noUiCreated()
+    void synchronizedHandleRequest_badLocation_noUiCreated()
             throws IOException {
         final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
 
@@ -252,7 +249,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_noLocationParameter_noUiCreated()
+    void synchronizedHandleRequest_noLocationParameter_noUiCreated()
             throws IOException {
         final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
 

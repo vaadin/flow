@@ -87,7 +87,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         System.setProperty("user.dir",
                 temporaryFolder.toFile().getAbsolutePath());
         tokenFile = new File(temporaryFolder.toFile(),
@@ -100,24 +100,24 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         tokenFile.delete();
     }
 
     @BeforeAll
-    public static void setupBeforeClass() {
+    static void setupBeforeClass() {
         globalUserDirValue = System.getProperty("user.dir");
     }
 
     @AfterAll
-    public static void tearDownAfterClass() {
+    static void tearDownAfterClass() {
         if (globalUserDirValue != null) {
             System.setProperty("user.dir", globalUserDirValue);
         }
     }
 
     @Test
-    public void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
+    void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
 
         Map<String, String> servletConfigParams = new HashMap<>(
@@ -140,8 +140,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void servletWithNoEnclosingUI_hasDefaultUiInConfig()
-            throws Exception {
+    void servletWithNoEnclosingUI_hasDefaultUiInConfig() throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
         Map<String, String> servletConfigParams = new HashMap<>(
@@ -161,7 +160,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void servletConfigParametersOverrideServletContextParameters()
+    void servletConfigParametersOverrideServletContextParameters()
             throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
@@ -199,7 +198,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void servletConfigParameters_nullValues_ignored() throws Exception {
+    void servletConfigParameters_nullValues_ignored() throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
         Map<String, String> servletConfigParams = new HashMap<>(
@@ -220,7 +219,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_readConfigurationFromTokenFile() throws Exception {
+    void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": true", "}"));
 
@@ -230,7 +229,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
+    void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
@@ -246,7 +245,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
+    void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
@@ -260,7 +259,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
+    void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
         java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"));
         String tempFolder = temporaryFolder.toFile().getAbsolutePath()
@@ -278,8 +277,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
-            throws Exception {
+    void shouldNotThrow_tokenFileFrontendFolderInDevMode() throws Exception {
         java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"))
                 .toFile();
         String tempFolder = temporaryFolder.toFile().getAbsolutePath()
@@ -295,7 +293,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldNotThrow_tokenFileFoldersExist() throws Exception {
+    void shouldNotThrow_tokenFileFoldersExist() throws Exception {
         java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"))
                 .toFile();
         java.nio.file.Files
@@ -314,7 +312,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig() {
+    void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig() {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
@@ -347,7 +345,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_valuesAreTakenFromservletConfigAndTokenFile_valuesFromTokenFileOverridenByServletConfig()
+    void createInitParameters_valuesAreTakenFromservletConfigAndTokenFile_valuesFromTokenFileOverridenByServletConfig()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
@@ -457,7 +455,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedProperties()
+    void createInitParameters_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedProperties()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
@@ -480,7 +478,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedProperties()
+    void createInitParameters_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedProperties()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
@@ -501,7 +499,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_tokenFileIsSetViaContext_setPropertyFromTokenFile()
+    void createInitParameters_tokenFileIsSetViaContext_setPropertyFromTokenFile()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
@@ -556,7 +554,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void externalStatsFileTrue_predefinedValuesAreNotOverridden_productionMode()
+    void externalStatsFileTrue_predefinedValuesAreNotOverridden_productionMode()
             throws Exception {
         // note that this situation shouldn't happen that the other
         // settings would be against the external usage.
@@ -578,7 +576,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_readDevModeProperties() throws Exception {
+    void createInitParameters_readDevModeProperties() throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
@@ -592,7 +590,7 @@ class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
+    void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));

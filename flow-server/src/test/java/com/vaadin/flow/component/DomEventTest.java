@@ -45,7 +45,7 @@ class DomEventTest {
     }
 
     @Test
-    public void bareAnnotation() {
+    void bareAnnotation() {
         assertSettings(BareAnnotation.class, null, 0);
     }
 
@@ -57,7 +57,7 @@ class DomEventTest {
     }
 
     @Test
-    public void filter() {
+    void filter() {
         assertSettings(FilterEvent.class, "a == b", 0);
     }
 
@@ -72,7 +72,7 @@ class DomEventTest {
     }
 
     @Test
-    public void debouncePhases() {
+    void debouncePhases() {
         assertSettings(DebounceTimeoutPhasesEvent.class,
                 ElementListenerMap.ALWAYS_TRUE_FILTER, 200,
                 DebouncePhase.INTERMEDIATE, DebouncePhase.TRAILING);
@@ -87,7 +87,7 @@ class DomEventTest {
     }
 
     @Test
-    public void emptyPhases() {
+    void emptyPhases() {
         assertThrows(IllegalStateException.class, () -> {
             getEventSettings(DebounceEmptyPhasesEvent.class);
         });
@@ -101,7 +101,7 @@ class DomEventTest {
     }
 
     @Test
-    public void debounceFilter() {
+    void debounceFilter() {
         assertSettings(DebounceFilterEvent.class, "filter(event)", 300,
                 DebouncePhase.TRAILING);
     }

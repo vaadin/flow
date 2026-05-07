@@ -55,7 +55,7 @@ class DefaultApplicationConfigurationFactoryTest {
     Path temporaryFolder;
 
     @Test
-    public void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
+    void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -78,7 +78,7 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedContext()
+    void create_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
         String content = "{ \"externalStatsFile\":true }";
         VaadinContext context = mockTokenFileViaContextParam(content);
@@ -95,7 +95,7 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
+    void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
         String content = "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}";
         VaadinContext context = mockTokenFileViaContextParam(content);
@@ -114,7 +114,7 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileIsReadFromClassloader_externalStatsUrlIsReadFromTokenFile_predefinedContext()
+    void create_tokenFileIsReadFromClassloader_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -139,7 +139,7 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_propertiesAreReadFromContext() throws IOException {
+    void create_propertiesAreReadFromContext() throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
@@ -162,22 +162,21 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
+    void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
         assertTokenAttributeIsPropagatedToDeploymentConfiguration(
                 Constants.PREMIUM_FEATURES, true);
     }
 
     @Test
-    public void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
+    void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
         assertTokenAttributeIsPropagatedToDeploymentConfiguration(
                 Constants.COMMERCIAL_BANNER_TOKEN, true);
     }
 
     @Test
-    public void getMode_returnsLivereload_tailwindCssIsEnabled()
-            throws IOException {
+    void getMode_returnsLivereload_tailwindCssIsEnabled() throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,

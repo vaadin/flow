@@ -35,7 +35,7 @@ class NotifierTest {
     }
 
     @Test
-    public void addNotifiers() {
+    void addNotifiers() {
         // Just testing that adding notifiers actually compiles and doesn't
         // throw. Test is on purpose outside com.vaadin.flow.component to
         // uncover visibility problems.

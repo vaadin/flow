@@ -29,28 +29,28 @@ class HasPlaceholderTest {
     }
 
     @Test
-    public void withoutPlaceholderComponent_getPlaceholderReturnsNull() {
+    void withoutPlaceholderComponent_getPlaceholderReturnsNull() {
         TestComponent component = new TestComponent();
 
         assertNull(component.getPlaceholder());
     }
 
     @Test
-    public void withNullPlaceholder_getPlaceholderReturnsEmptyString() {
+    void withNullPlaceholder_getPlaceholderReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setPlaceholder(null);
         assertEquals("", component.getPlaceholder());
     }
 
     @Test
-    public void withEmptyPlaceholder_getPlaceholderReturnsEmptyString() {
+    void withEmptyPlaceholder_getPlaceholderReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setPlaceholder("");
         assertEquals("", component.getPlaceholder());
     }
 
     @Test
-    public void setPlaceholder() {
+    void setPlaceholder() {
         TestComponent component = new TestComponent();
         component.setPlaceholder("test Placeholder");
 

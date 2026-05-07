@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistrationTest {
     @Test
-    public void once_onlyCalledOnce() {
+    void once_onlyCalledOnce() {
         AtomicBoolean invoked = new AtomicBoolean();
         Command action = () -> {
             boolean calledPreviously = invoked.getAndSet(true);
@@ -51,7 +51,7 @@ class RegistrationTest {
     }
 
     @Test
-    public void combine_removesAll() {
+    void combine_removesAll() {
         AtomicBoolean firstRemoved = new AtomicBoolean();
         AtomicBoolean secondRemoved = new AtomicBoolean();
 
@@ -68,7 +68,7 @@ class RegistrationTest {
     }
 
     @Test
-    public void addAndRemove_addsAndRemoves() {
+    void addAndRemove_addsAndRemoves() {
         Collection<Object> collection = new ArrayList<>();
         Object o1 = new Object();
         Object o2 = new Object();

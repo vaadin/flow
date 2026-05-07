@@ -40,7 +40,7 @@ class WebComponentTest {
     private WebComponent<Component> webComponent;
 
     @BeforeEach
-    public void init() {
+    void init() {
         WebComponentBinding<Component> componentBinding = new WebComponentBinding<>(
                 mock(Component.class));
         webComponent = new WebComponent<>(componentBinding, new Element("tag"));
@@ -54,7 +54,7 @@ class WebComponentTest {
     }
 
     @Test
-    public void fireEvent_doesNotThrowOnNullObjectData() {
+    void fireEvent_doesNotThrowOnNullObjectData() {
         webComponent.fireEvent("name", (JsonNode) null);
     }
 
@@ -114,7 +114,7 @@ class WebComponentTest {
     }
 
     @Test
-    public void setProperty_attemptsToWriteSupportedTypes() {
+    void setProperty_attemptsToWriteSupportedTypes() {
         Element element = spy(new Element("tag"));
 
         // configurations

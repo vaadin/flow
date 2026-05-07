@@ -93,7 +93,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAlt()
+    void testGenerateEventModifierFilterWithModifierKeyAlt()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -107,7 +107,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltGr()
+    void testGenerateEventModifierFilterWithModifierKeyAltGr()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -120,7 +120,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
+    void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -134,7 +134,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
+    void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {
@@ -148,7 +148,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    public void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
+    void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
             throws InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, ClassNotFoundException,
             InstantiationException {

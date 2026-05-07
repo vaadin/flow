@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HighlightConditionsTest {
 
     @Test
-    public void locationPrefix_defaultRoute_emptyLocationMatches() {
+    void locationPrefix_defaultRoute_emptyLocationMatches() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
@@ -37,7 +37,7 @@ class HighlightConditionsTest {
     }
 
     @Test
-    public void locationPrefix_defaultRoute_nonEmptyLocationDoesNotMatch() {
+    void locationPrefix_defaultRoute_nonEmptyLocationDoesNotMatch() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
@@ -50,7 +50,7 @@ class HighlightConditionsTest {
     }
 
     @Test
-    public void locationPrefix_notDefaultRoute_prefixMatches() {
+    void locationPrefix_notDefaultRoute_prefixMatches() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
@@ -63,7 +63,7 @@ class HighlightConditionsTest {
     }
 
     @Test
-    public void locationPrefix_notDefaultRoute_nonPrefixDoesNotMatch() {
+    void locationPrefix_notDefaultRoute_nonPrefixDoesNotMatch() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);

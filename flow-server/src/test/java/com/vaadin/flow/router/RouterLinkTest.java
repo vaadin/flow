@@ -64,7 +64,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @BeforeEach
-    public void setUp() throws NoSuchFieldException, IllegalAccessException,
+    void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
         DeploymentConfiguration config = Mockito
@@ -91,7 +91,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_implicitCurrentVaadinServiceRouter() {
+    void createRouterLink_implicitCurrentVaadinServiceRouter() {
         // This method sets mock VaadinService instance which returns
         // Router from the UI.
         RouterLink link = new RouterLink("Show something", TestView.class,
@@ -106,7 +106,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void setRoute_attachedLink() {
+    void setRoute_attachedLink() {
         UI ui = new UI();
 
         RouterLink link = new RouterLink();
@@ -120,7 +120,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void setRoute_withoutRouter() {
+    void setRoute_withoutRouter() {
         RouterLink link = new RouterLink();
 
         ui.add(link);
@@ -132,7 +132,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void setRoute_withoutRouterWithParameter() {
+    void setRoute_withoutRouterWithParameter() {
         RouterLink link = new RouterLink();
 
         ui.add(link);
@@ -144,7 +144,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_explicitRouter() {
+    void createRouterLink_explicitRouter() {
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
         assertEquals("Show something", link.getText());
@@ -157,7 +157,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_withTargetViewNoText() {
+    void createRouterLink_withTargetViewNoText() {
         RouterLink link = new RouterLink(FooNavigationTarget.class);
         assertEquals("", link.getText());
         assertTrue(link.getElement()
@@ -169,7 +169,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_withTargetViewWithParameterNoText() {
+    void createRouterLink_withTargetViewWithParameterNoText() {
         RouterLink link = new RouterLink(TestView.class, "something");
         assertEquals("", link.getText());
         assertTrue(link.getElement()
@@ -181,7 +181,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_withTargetViewWithRouteParametersNoText() {
+    void createRouterLink_withTargetViewWithRouteParametersNoText() {
         RouteParameters routeParameters = HasUrlParameterFormat
                 .getParameters("something");
         RouterLink link = new RouterLink(TestView.class, routeParameters);
@@ -195,7 +195,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_explicitRouterWithTargetViewNoText() {
+    void createRouterLink_explicitRouterWithTargetViewNoText() {
         RouterLink link = new RouterLink(router, FooNavigationTarget.class);
         assertEquals("", link.getText());
         assertTrue(link.getElement()
@@ -207,7 +207,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_explicitRouterWithTargetViewWithParameterNoText() {
+    void createRouterLink_explicitRouterWithTargetViewWithParameterNoText() {
         RouterLink link = new RouterLink(router, TestView.class, "something");
         assertEquals("", link.getText());
         assertTrue(link.getElement()
@@ -219,7 +219,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createRouterLink_explicitRouterWithTargetViewWithRouteParametersNoText() {
+    void createRouterLink_explicitRouterWithTargetViewWithRouteParametersNoText() {
         RouteParameters routeParameters = HasUrlParameterFormat
                 .getParameters("something");
         RouterLink link = new RouterLink(router, TestView.class,
@@ -234,7 +234,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createReconfigureRouterLink_implicitCurrentVaadinServiceRouter() {
+    void createReconfigureRouterLink_implicitCurrentVaadinServiceRouter() {
         RouterLink link = new RouterLink("Show something", TestView.class,
                 "something");
 
@@ -248,7 +248,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void createReconfigureRouterLink_explicitRouter() {
+    void createReconfigureRouterLink_explicitRouter() {
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
 
@@ -262,7 +262,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void reconfigureRouterLink_attachedLink() {
+    void reconfigureRouterLink_attachedLink() {
         RouterLink link = new RouterLink();
         ui.add(link);
 
@@ -276,7 +276,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void noImplicitRouter() {
+    void noImplicitRouter() {
         VaadinService service = VaadinService.getCurrent();
         Mockito.when(service.getRouter()).thenReturn(null);
         assertThrows(IllegalStateException.class,
@@ -284,12 +284,12 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLink_withoutRouter_WithRouteParameters() {
+    void routerLink_withoutRouter_WithRouteParameters() {
         assertRouterLinkRouteParameters(false);
     }
 
     @Test
-    public void routerLink_WithRouteParameters() {
+    void routerLink_WithRouteParameters() {
         assertRouterLinkRouteParameters(true);
     }
 
@@ -340,7 +340,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkCreationForNormalRouteTarget()
+    void routerLinkCreationForNormalRouteTarget()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -348,7 +348,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkCreationForUrlParameterRouteTarget()
+    void routerLinkCreationForUrlParameterRouteTarget()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Greeting",
                 GreetingNavigationTarget.class, "hello");
@@ -356,7 +356,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkDefaultHighlightCondition()
+    void routerLinkDefaultHighlightCondition()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -369,7 +369,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkSameLocationHighlightCondition()
+    void routerLinkSameLocationHighlightCondition()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -383,7 +383,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkLocationPrefixHighlightCondition()
+    void routerLinkLocationPrefixHighlightCondition()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -401,7 +401,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkClearOldHighlightAction()
+    void routerLinkClearOldHighlightAction()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -414,7 +414,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkClassNameHightlightAction()
+    void routerLinkClassNameHightlightAction()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -428,7 +428,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkThemeHightlightAction()
+    void routerLinkThemeHightlightAction()
             throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -442,8 +442,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkQueryParameters()
-            throws InvalidRouteConfigurationException {
+    void routerLinkQueryParameters() throws InvalidRouteConfigurationException {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
 
@@ -465,7 +464,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLinkToNotRouterTarget_throwsIAE() {
+    void routerLinkToNotRouterTarget_throwsIAE() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class, () -> {
                     new RouterLink("", Foo.class);

@@ -148,7 +148,7 @@ class ClientCallableBeanSupportTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         VaadinService service = mocks.getService();
         service.init();
@@ -161,12 +161,12 @@ class ClientCallableBeanSupportTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mocks.cleanup();
     }
 
     @Test
-    public void testSimpleBeanParameter() throws Exception {
+    void testSimpleBeanParameter() throws Exception {
         ComponentWithClientCallableMethods component = new ComponentWithClientCallableMethods();
         ui.add(component);
 
@@ -193,7 +193,7 @@ class ClientCallableBeanSupportTest {
     }
 
     @Test
-    public void testBeanListParameter() throws Exception {
+    void testBeanListParameter() throws Exception {
         ComponentWithClientCallableMethods component = new ComponentWithClientCallableMethods();
         ui.add(component);
 
@@ -235,7 +235,7 @@ class ClientCallableBeanSupportTest {
     }
 
     @Test
-    public void testNestedBeanParameter() throws Exception {
+    void testNestedBeanParameter() throws Exception {
         ComponentWithClientCallableMethods component = new ComponentWithClientCallableMethods();
         ui.add(component);
 
@@ -268,7 +268,7 @@ class ClientCallableBeanSupportTest {
     }
 
     @Test
-    public void testIntegerListParameter() throws Exception {
+    void testIntegerListParameter() throws Exception {
         ComponentWithClientCallableMethods component = new ComponentWithClientCallableMethods();
         ui.add(component);
 

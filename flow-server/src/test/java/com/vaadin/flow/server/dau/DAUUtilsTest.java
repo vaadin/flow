@@ -59,13 +59,13 @@ class DAUUtilsTest {
     private String subscriptionKey;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         if (subscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey", subscriptionKey);
         } else {
@@ -74,7 +74,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void trackUser_uidlRequest_deferTracking() {
+    void trackUser_uidlRequest_deferTracking() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -105,7 +105,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void trackUser_notUidlRequest_track() {
+    void trackUser_notUidlRequest_track() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -136,7 +136,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
+    void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
         try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
                 .mockStatic(DauIntegration.class)) {
             VaadinService service = VaadinServiceDauTest
@@ -162,7 +162,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void jsonEnforcementResponse_customMessages() {
+    void jsonEnforcementResponse_customMessages() {
         try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
                 .mockStatic(DauIntegration.class)) {
             EnforcementNotificationMessages expectedMessages = new EnforcementNotificationMessages(
@@ -196,7 +196,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void trackDAU_trackingIntegratedWithRequest_noEnforcement() {
+    void trackDAU_trackingIntegratedWithRequest_noEnforcement() {
         MocksForTrackDAU mocks = new MocksForTrackDAU();
         VaadinService service = mocks.service;
         HttpServletRequest request = mocks.request;
@@ -220,7 +220,7 @@ class DAUUtilsTest {
     }
 
     @Test
-    public void trackDAU_trackingIntegratedWithRequest_enforcement() {
+    void trackDAU_trackingIntegratedWithRequest_enforcement() {
         MocksForTrackDAU mocks = new MocksForTrackDAU();
         VaadinService service = mocks.service;
         HttpServletRequest request = mocks.request;

@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UniqueSerializableTest implements Serializable {
 
     @Test
-    public void testUniqueness() {
+    void testUniqueness() {
         UniqueSerializable o1 = new UniqueSerializable() {
         };
         UniqueSerializable o2 = new UniqueSerializable() {
@@ -36,7 +36,7 @@ class UniqueSerializableTest implements Serializable {
     }
 
     @Test
-    public void testSerialization() {
+    void testSerialization() {
         UniqueSerializable o1 = new UniqueSerializable() {
         };
         UniqueSerializable d1 = (UniqueSerializable) SerializationUtils

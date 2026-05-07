@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MutableTreeRevisionTest {
+class MutableTreeRevisionTest {
     private final MutableTreeRevision revision = new MutableTreeRevision(
             new Snapshot(Id.random(), false));
     private final Id commandId = Id.random();

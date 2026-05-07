@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ReflectToolsGetPrimitiveFieldValueTest {
     @Test
-    public void getFieldValueViaGetter() {
+    void getFieldValueViaGetter() {
         class MyClass {
             @SuppressWarnings("unused")
             public int field = 1;

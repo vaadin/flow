@@ -33,7 +33,7 @@ class ComponentUtilTest {
     private Component component = new TestDiv();
 
     @Test
-    public void setData_byString() {
+    void setData_byString() {
         assertNull(ComponentUtil.getData(component, "name"),
                 "There should initially not be any value");
 
@@ -53,7 +53,7 @@ class ComponentUtilTest {
     }
 
     @Test
-    public void setData_byClass() {
+    void setData_byClass() {
         Integer instance1 = new Integer(1);
         Integer instance2 = new Integer(2);
 
@@ -79,7 +79,7 @@ class ComponentUtilTest {
     }
 
     @Test
-    public void addListenerToComponent_hasListener_returnsTrue() {
+    void addListenerToComponent_hasListener_returnsTrue() {
         assertFalse(ComponentUtil.hasEventListener(component, PollEvent.class));
 
         Registration listener = ComponentUtil.addListener(component,
@@ -92,7 +92,7 @@ class ComponentUtilTest {
     }
 
     @Test
-    public void addListenerToComponent_getListeners_returnsCollection() {
+    void addListenerToComponent_getListeners_returnsCollection() {
         assertFalse(ComponentUtil.hasEventListener(component, PollEvent.class));
 
         Registration listener = ComponentUtil.addListener(component,
@@ -108,7 +108,7 @@ class ComponentUtilTest {
     }
 
     @Test
-    public void registerComponentClass_and_getComponentsByTag_shouldReturnCorrectComponent() {
+    void registerComponentClass_and_getComponentsByTag_shouldReturnCorrectComponent() {
         Class<? extends Component> testComponentClass = TestDiv.class;
         String testTag = "test-div";
 
@@ -124,7 +124,7 @@ class ComponentUtilTest {
     }
 
     @Test
-    public void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
+    void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
         String unregisteredTag = "unregistered-tag";
 
         Set<Class<? extends Component>> retrievedClasses = ComponentUtil

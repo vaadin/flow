@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class UILocaleSignalTest extends SignalsUnitTest {
 
     @Test
-    public void localeSignal_initialValue_matchesGetLocale() {
+    void localeSignal_initialValue_matchesGetLocale() {
         UI ui = UI.getCurrent();
         Signal<Locale> signal = ui.localeSignal();
 
@@ -42,7 +42,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_setLocale_signalUpdated() {
+    void localeSignal_setLocale_signalUpdated() {
         UI ui = UI.getCurrent();
         Signal<Locale> signal = ui.localeSignal();
 
@@ -63,7 +63,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_multipleLocaleChanges_signalFollows() {
+    void localeSignal_multipleLocaleChanges_signalFollows() {
         UI ui = UI.getCurrent();
         Signal<Locale> signal = ui.localeSignal();
 
@@ -78,7 +78,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_bindValue_updatesLocale() {
+    void localeSignal_bindValue_updatesLocale() {
         UI ui = UI.getCurrent();
         LocaleField field = new LocaleField();
         ui.add(field);
@@ -97,7 +97,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setLocale_uiLocaleIndependentFromSession() {
+    void setLocale_uiLocaleIndependentFromSession() {
         UI ui = UI.getCurrent();
 
         // Set UI to a locale different from the session

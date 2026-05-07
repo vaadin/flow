@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 class HeartbeatHandlerTest {
 
     @Test
-    public void synchronizedHandleRequest_uiPresent_setLastHeartbeatTimestampIsCalledOnce()
+    void synchronizedHandleRequest_uiPresent_setLastHeartbeatTimestampIsCalledOnce()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -59,7 +59,7 @@ class HeartbeatHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_uiPresent_noCacheHeaderSetAndContentTypeNotSet()
+    void synchronizedHandleRequest_uiPresent_noCacheHeaderSetAndContentTypeNotSet()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);

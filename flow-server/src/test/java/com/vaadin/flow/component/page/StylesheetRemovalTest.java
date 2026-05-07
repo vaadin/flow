@@ -49,7 +49,7 @@ class StylesheetRemovalTest {
     private DependencyList dependencyList;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ui = new MockUI();
         page = ui.getPage();
         internals = ui.getInternals();
@@ -57,7 +57,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void addStyleSheet_returnsNonNullRegistration() {
+    void addStyleSheet_returnsNonNullRegistration() {
         Registration reg1 = page.addStyleSheet("styles.css");
         Registration reg2 = page.addStyleSheet("styles.css", LoadMode.LAZY);
 
@@ -67,7 +67,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void addStyleSheet_returnsRegistration_thatRemovesStylesheet() {
+    void addStyleSheet_returnsRegistration_thatRemovesStylesheet() {
         String url = "http://example.com/style.css";
 
         // Add stylesheet
@@ -93,7 +93,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void stylesheetCanBeReAddedAfterRemoval() {
+    void stylesheetCanBeReAddedAfterRemoval() {
         String url = "http://example.com/reusable.css";
 
         Registration reg1 = page.addStyleSheet(url);
@@ -118,7 +118,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void stylesheetWithLoadMode_canBeReAddedWithDifferentMode() {
+    void stylesheetWithLoadMode_canBeReAddedWithDifferentMode() {
         String url = "http://example.com/lazy.css";
 
         // Add with LAZY mode
@@ -143,7 +143,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void multipleStylesheets_removeOne_othersRemainIntact() {
+    void multipleStylesheets_removeOne_othersRemainIntact() {
         String url1 = "http://example.com/style1.css";
         String url2 = "http://example.com/style2.css";
         String url3 = "http://example.com/style3.css";
@@ -179,7 +179,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void uidlWriter_includesStylesheetRemovals() {
+    void uidlWriter_includesStylesheetRemovals() {
         String url = "http://example.com/to-remove.css";
 
         // Add and get the dependency ID
@@ -212,7 +212,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void duplicateStylesheet_notAddedUntilRemovedFromCache() {
+    void duplicateStylesheet_notAddedUntilRemovedFromCache() {
         String url = "http://example.com/cached-style.css";
 
         // Add stylesheet
@@ -230,7 +230,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void duplicateStylesheet_firstRegistrationCanRemove() {
+    void duplicateStylesheet_firstRegistrationCanRemove() {
         String url = "http://example.com/duplicate.css";
 
         // Add stylesheet twice - both should use same ID
@@ -252,7 +252,7 @@ class StylesheetRemovalTest {
     }
 
     @Test
-    public void duplicateStylesheet_secondRegistrationCanRemove() {
+    void duplicateStylesheet_secondRegistrationCanRemove() {
         String url = "http://example.com/duplicate2.css";
 
         // Add stylesheet twice - both should use same ID

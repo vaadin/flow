@@ -35,7 +35,7 @@ class ShortcutEventTest {
             KeyModifier.ALT, KeyModifier.ALT_GRAPH);
 
     @Test
-    public void matches() {
+    void matches() {
         assertFalse(eventNoModifiers.matches(null),
                 "Null key should return false");
         assertFalse(eventNoModifiers.matches(Key.KEY_F, KeyModifier.ALT),

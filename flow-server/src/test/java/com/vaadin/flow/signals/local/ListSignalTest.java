@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ListSignalTest extends SignalTestBase {
+class ListSignalTest extends SignalTestBase {
 
     @Test
     void constructor_empty_emptyList() {
@@ -700,6 +700,100 @@ public class ListSignalTest extends SignalTestBase {
         Stream<String> stream = Signal.untracked(() -> signal.getValues());
 
         assertThrows(IllegalStateException.class, () -> stream.toList());
+    }
+
+    @Test
+    void insertAllLast_multipleValues_valuesAppended() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("existing");
+
+        List<ValueSignal<String>> created = signal
+                .insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(3, created.size());
+        assertValues(signal, "existing", "a", "b", "c");
+    }
+
+    @Test
+    void insertAllLast_emptyCollection_noChange() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("existing");
+
+        AtomicBoolean changed = new AtomicBoolean(false);
+        Usage usage = UsageTracker.track(signal::get);
+        usage.onNextChange(initial -> {
+            changed.set(true);
+            return false;
+        });
+
+        List<ValueSignal<String>> created = signal.insertAllLast(List.of());
+
+        assertTrue(created.isEmpty());
+        assertFalse(changed.get());
+        assertValues(signal, "existing");
+    }
+
+    @Test
+    void insertAllLast_singleNotification() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        AtomicInteger changeCount = new AtomicInteger();
+        Usage usage = UsageTracker.track(signal::get);
+        usage.onNextChange(initial -> {
+            changeCount.incrementAndGet();
+            return true;
+        });
+
+        signal.insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(1, changeCount.get());
+    }
+
+    @Test
+    void insertAllFirst_multipleValues_valuesAtStart() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("existing");
+
+        List<ValueSignal<String>> created = signal
+                .insertAllFirst(List.of("a", "b", "c"));
+
+        assertEquals(3, created.size());
+        assertValues(signal, "a", "b", "c", "existing");
+    }
+
+    @Test
+    void insertAllAt_validIndex_valuesInserted() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("first");
+        signal.insertLast("last");
+
+        List<ValueSignal<String>> created = signal.insertAllAt(1,
+                List.of("a", "b"));
+
+        assertEquals(2, created.size());
+        assertValues(signal, "first", "a", "b", "last");
+    }
+
+    @Test
+    void insertAllAt_invalidIndex_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("existing");
+
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.insertAllAt(5, List.of("a")));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.insertAllAt(-1, List.of("a")));
+    }
+
+    @Test
+    void insertAllLast_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertAllLast(List.of("a", "b"));
+            });
+        });
     }
 
     private static void assertValues(ListSignal<String> signal,

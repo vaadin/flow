@@ -114,7 +114,7 @@ class UploadHandlerTest {
     private TestComponent component;
 
     @BeforeEach
-    public void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
         ui = new MockUI() {
             @Override
@@ -152,12 +152,12 @@ class UploadHandlerTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled()
+    void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled()
             throws IOException {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
@@ -171,8 +171,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_filenameFromHeader_extractedCorrectly()
-            throws IOException {
+    void xhrUpload_filenameFromHeader_extractedCorrectly() throws IOException {
         final String[] capturedFilename = new String[1];
 
         UploadHandler handler = (event) -> {
@@ -187,8 +186,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_encodedFilename_decodedCorrectly()
-            throws IOException {
+    void xhrUpload_encodedFilename_decodedCorrectly() throws IOException {
         final String[] capturedFilename = new String[1];
 
         UploadHandler handler = (event) -> {
@@ -205,7 +203,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_contentTypeFromHeader_extractedCorrectly()
+    void xhrUpload_contentTypeFromHeader_extractedCorrectly()
             throws IOException {
         final String[] capturedContentType = new String[1];
 
@@ -223,7 +221,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_missingContentTypeHeader_defaultsToUnknown()
+    void xhrUpload_missingContentTypeHeader_defaultsToUnknown()
             throws IOException {
         final String[] capturedContentType = new String[1];
 
@@ -240,7 +238,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled()
+    void doUploadHandleXhrFilePost_unhappyPath_responseHandled()
             throws IOException {
         UploadHandler handler = (event) -> {
             throw new RuntimeException("Exception in xrh upload");
@@ -252,7 +250,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void createUploadHandlerToCopyStream_streamMatchesInput()
+    void createUploadHandlerToCopyStream_streamMatchesInput()
             throws IOException {
         String testString = "Test string for upload";
 
@@ -286,8 +284,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void createInMemoryUploadHandler_streamMatchesInput()
-            throws IOException {
+    void createInMemoryUploadHandler_streamMatchesInput() throws IOException {
         String testString = "Test string for upload";
 
         final byte[] testBytes = testString.getBytes();
@@ -319,8 +316,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void createTempFileUploadHandler_streamMatchesInput()
-            throws IOException {
+    void createTempFileUploadHandler_streamMatchesInput() throws IOException {
         String testString = "Test string for upload";
 
         final byte[] testBytes = testString.getBytes();
@@ -355,8 +351,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void createFileUploadHandler_streamMatchesInput()
-            throws IOException {
+    void createFileUploadHandler_streamMatchesInput() throws IOException {
         String testString = "Test string for upload";
 
         final byte[] testBytes = testString.getBytes();
@@ -394,7 +389,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void mulitpartData_forInputIterator_dataIsGottenCorrectly()
+    void mulitpartData_forInputIterator_dataIsGottenCorrectly()
             throws IOException, ServletException {
         List<String> outList = new ArrayList<>(2);
         List<String> fileNames = new ArrayList<>(2);
@@ -433,7 +428,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void mulitpartData_asParts_dataIsGottenCorrectly()
+    void mulitpartData_asParts_dataIsGottenCorrectly()
             throws IOException, ServletException {
         String testContent = "testBytes";
 
@@ -482,7 +477,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void responseHandled_calledAfterAllPartsHaveBeenHandled()
+    void responseHandled_calledAfterAllPartsHaveBeenHandled()
             throws IOException, ServletException {
 
         String testContent = "testBytes";
@@ -524,7 +519,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void responseHandled_calledAfterWholeStreamHasBeenHandled()
+    void responseHandled_calledAfterWholeStreamHasBeenHandled()
             throws IOException, ServletException {
 
         AtomicBoolean handled = new AtomicBoolean(false);
@@ -556,7 +551,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartRequest_responseHandled_calledWhenExceptionIsThrown()
+    void multipartRequest_responseHandled_calledWhenExceptionIsThrown()
             throws IOException, ServletException {
 
         String testContent = "testBytes";
@@ -597,7 +592,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartStreamRequest_responseHandled_calledWhenExceptionIsThrown()
+    void multipartStreamRequest_responseHandled_calledWhenExceptionIsThrown()
             throws IOException, ServletException {
 
         AtomicBoolean handled = new AtomicBoolean(false);
@@ -629,14 +624,14 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void doesNotRequireToCatchIOException() {
+    void doesNotRequireToCatchIOException() {
         UploadHandler handler = event -> {
             new FileInputStream(new File("foo"));
         };
     }
 
     @Test
-    public void singleUpload_startAndComplete_firesInternalEvents()
+    void singleUpload_startAndComplete_firesInternalEvents()
             throws IOException, ServletException {
         AtomicBoolean startFired = new AtomicBoolean(false);
         AtomicBoolean completeFired = new AtomicBoolean(false);
@@ -672,7 +667,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartStreamRequest_startAndComplete_firesInternalEvents()
+    void multipartStreamRequest_startAndComplete_firesInternalEvents()
             throws IOException, ServletException {
         AtomicInteger startFired = new AtomicInteger(0);
         AtomicInteger completeFired = new AtomicInteger(0);
@@ -699,7 +694,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartRequest_startAndComplete_firesInternalEvents()
+    void multipartRequest_startAndComplete_firesInternalEvents()
             throws IOException, ServletException {
         List<Part> parts = new ArrayList<>();
         parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
@@ -734,21 +729,21 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void fileUploadCallback_doesNotRequireCatch() {
+    void fileUploadCallback_doesNotRequireCatch() {
         new FileUploadHandler((meta, file) -> {
             new FileInputStream(file);
         }, uploadMetadata -> new File("foo"));
     }
 
     @Test
-    public void tmpUploadCallback_doesNotRequireCatch() {
+    void tmpUploadCallback_doesNotRequireCatch() {
         new TemporaryFileUploadHandler((meta, file) -> {
             new FileInputStream(file);
         });
     }
 
     @Test
-    public void inmemoryUploadCallback_doesNotRequireCatch() {
+    void inmemoryUploadCallback_doesNotRequireCatch() {
         new InMemoryUploadHandler((meta, data) -> {
             ByteArrayInputStream stream = new ByteArrayInputStream(data);
             stream.close();
@@ -756,8 +751,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_earlyRejection_returns422WithJson()
-            throws IOException {
+    void xhrUpload_earlyRejection_returns422WithJson() throws IOException {
         UploadHandler handler = (event) -> {
             if (!event.getFileName().endsWith(".png")) {
                 event.reject("Only PNG files are accepted");
@@ -775,7 +769,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_noRejection_returns200() throws IOException {
+    void xhrUpload_noRejection_returns200() throws IOException {
         UploadHandler handler = (event) -> {
             // Accept the file
         };
@@ -788,7 +782,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_rejectionWithDefaultMessage_usesDefaultMessage()
+    void xhrUpload_rejectionWithDefaultMessage_usesDefaultMessage()
             throws IOException {
         AtomicBoolean rejected = new AtomicBoolean(false);
 
@@ -810,7 +804,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartUpload_mixedAcceptReject_returns207WithJson()
+    void multipartUpload_mixedAcceptReject_returns207WithJson()
             throws IOException, ServletException {
         List<Part> parts = new ArrayList<>();
         parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
@@ -858,7 +852,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartUpload_allRejected_returns422()
+    void multipartUpload_allRejected_returns422()
             throws IOException, ServletException {
         List<Part> parts = new ArrayList<>();
         parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
@@ -890,7 +884,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartUpload_allAccepted_returns200()
+    void multipartUpload_allAccepted_returns200()
             throws IOException, ServletException {
         List<Part> parts = new ArrayList<>();
         parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
@@ -919,7 +913,7 @@ class UploadHandlerTest {
     }
 
     @Test
-    public void multipartUpload_earlyRejection_fileNotProcessed()
+    void multipartUpload_earlyRejection_fileNotProcessed()
             throws IOException, ServletException {
         List<Part> parts = new ArrayList<>();
         Part rejectedPart = createPart(createInputStream("content"),

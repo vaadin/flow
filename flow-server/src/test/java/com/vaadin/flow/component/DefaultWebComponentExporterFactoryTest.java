@@ -53,14 +53,14 @@ class DefaultWebComponentExporterFactoryTest {
     }
 
     @Test
-    public void ctor_nullArg_throws() {
+    void ctor_nullArg_throws() {
         assertThrows(NullPointerException.class, () -> {
             new DefaultWebComponentExporterFactory<Component>(null);
         });
     }
 
     @Test
-    public void createInnerClass_throws() {
+    void createInnerClass_throws() {
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 InnerClass.class);
 
@@ -72,7 +72,7 @@ class DefaultWebComponentExporterFactoryTest {
     }
 
     @Test
-    public void create_exporterHasNoTag_throws() {
+    void create_exporterHasNoTag_throws() {
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 NoSpecifiedTagClass.class);
         IllegalArgumentException ex = assertThrows(

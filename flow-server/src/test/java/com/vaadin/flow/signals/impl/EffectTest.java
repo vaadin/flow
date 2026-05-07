@@ -22,22 +22,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EffectTest extends SignalTestBase {
+class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_noSignalUsage_throws() {
@@ -773,5 +780,208 @@ public class EffectTest extends SignalTestBase {
 
         dispatcher.runPendingTasks();
         assertEquals(List.of("signal", "update"), invocations);
+    }
+
+    @Test
+    void ownerUI_sameUICurrent_notBackgroundChange() {
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effect.setOwnerUI(ui);
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0));
+
+        signal.set("update");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with same UI should not be background");
+    }
+
+    @Test
+    void ownerUI_noUICurrent_isBackgroundChange() {
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effect.setOwnerUI(ui);
+
+        assertEquals(1, backgroundChanges.size());
+
+        UI.setCurrent(null);
+        signal.set("from background");
+
+        assertEquals(2, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(1),
+                "Change without UI should be background");
+    }
+
+    @Test
+    void ownerUI_differentUICurrent_isBackgroundChange() {
+        UI uiA = Mockito.mock(UI.class);
+        UI uiB = Mockito.mock(UI.class);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> backgroundChangesA = new ArrayList<>();
+        List<Boolean> backgroundChangesB = new ArrayList<>();
+
+        UI.setCurrent(uiA);
+        Effect effectA = new Effect(ctx -> {
+            signal.get();
+            backgroundChangesA.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effectA.setOwnerUI(uiA);
+
+        UI.setCurrent(uiB);
+        Effect effectB = new Effect(ctx -> {
+            signal.get();
+            backgroundChangesB.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effectB.setOwnerUI(uiB);
+
+        assertEquals(1, backgroundChangesA.size());
+        assertEquals(1, backgroundChangesB.size());
+
+        // User A modifies the signal
+        UI.setCurrent(uiA);
+        signal.set("from user A");
+
+        assertEquals(2, backgroundChangesA.size());
+        assertFalse(backgroundChangesA.get(1),
+                "Change from own UI should not be background");
+
+        assertEquals(2, backgroundChangesB.size());
+        assertTrue(backgroundChangesB.get(1),
+                "Change from another UI should be background");
+    }
+
+    @Test
+    void noOwnerUI_fallsBackToVaadinRequestCheck() {
+        VaadinRequest mockRequest = Mockito.mock(VaadinRequest.class);
+        CurrentInstance.set(VaadinRequest.class, mockRequest);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        // Effect without ownerUI (like Signal.unboundEffect)
+        new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0));
+
+        // Change with VaadinRequest present — not background
+        signal.set("with request");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with VaadinRequest should not be background");
+
+        // Clear VaadinRequest — background
+        CurrentInstance.set(VaadinRequest.class, null);
+        signal.set("without request");
+
+        assertEquals(3, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(2),
+                "Change without VaadinRequest should be background");
+    }
+
+    @Test
+    void changeTracking_readSameSignalMultipleTimes_effectRunOnlyOnce() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            invocations.add(signal.get());
+            signal.get();
+            signal.get();
+        });
+
+        assertEquals(List.of("initial"), invocations);
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), invocations);
+
+        signal.set("again");
+        assertEquals(List.of("initial", "update", "again"), invocations);
+    }
+
+    @Test
+    void changeTracking_readMultipleDifferentSignals_effectRunsOncePerChange() {
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("a");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("b");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            invocations.add(signal1.get() + signal2.get());
+        });
+
+        assertEquals(List.of("ab"), invocations);
+
+        signal1.set("A");
+        assertEquals(List.of("ab", "Ab"), invocations);
+
+        signal2.set("B");
+        assertEquals(List.of("ab", "Ab", "AB"), invocations);
+    }
+
+    @Test
+    void changeTracking_multipleReadsFromTwoSignals_eachSignalChangeTriggersEffectOnce() {
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("a");
+        SharedValueSignal<Integer> signal2 = new SharedValueSignal<>(1);
+        AtomicInteger effectRunCount = new AtomicInteger(0);
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.unboundEffect(() -> {
+            effectRunCount.incrementAndGet();
+            // Read signal1 three times
+            String s1 = signal1.get();
+            signal1.get();
+            signal1.get();
+            // Read signal2 two times
+            Integer s2 = signal2.get();
+            signal2.get();
+            invocations.add(s1 + ":" + s2);
+        });
+
+        assertEquals(1, effectRunCount.get(),
+                "Effect should run exactly once initially");
+        assertEquals(List.of("a:1"), invocations);
+
+        signal1.set("b");
+        assertEquals(2, effectRunCount.get(),
+                "Effect should run exactly once when signal1 changes (despite 3 reads)");
+        assertEquals(List.of("a:1", "b:1"), invocations);
+
+        signal2.set(2);
+        assertEquals(3, effectRunCount.get(),
+                "Effect should run exactly once when signal2 changes (despite 2 reads)");
+        assertEquals(List.of("a:1", "b:1", "b:2"), invocations);
+
+        signal1.set("c");
+        assertEquals(4, effectRunCount.get(),
+                "Effect should run exactly once when signal1 changes again");
+        assertEquals(List.of("a:1", "b:1", "b:2", "c:2"), invocations);
+
+        signal2.set(3);
+        assertEquals(5, effectRunCount.get(),
+                "Effect should run exactly once when signal2 changes again");
+        assertEquals(List.of("a:1", "b:1", "b:2", "c:2", "c:3"), invocations);
     }
 }

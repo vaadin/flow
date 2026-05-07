@@ -50,6 +50,8 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @NotThreadSafe
 class StreamRequestHandlerTest {
@@ -62,7 +64,7 @@ class StreamRequestHandlerTest {
     private UI ui;
 
     @BeforeEach
-    public void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service) {
@@ -83,87 +85,99 @@ class StreamRequestHandlerTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void streamResourceNameEndsWithPluses_streamFactory_resourceIsStreamed()
+    void streamResourceNameEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameEndsWithPluses_resourceWriter_resourceIsStreamed()
+    void streamResourceNameEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPluses_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsSpaceEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory(
                 "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPluses_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsSpaceEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter(
                 "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test
-    public void streamResourceNameEndsInPlus_streamFactory_resourceIsStreamed()
+    void streamResourceNameEndsInPlus_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("end in plus", "readme+.md");
     }
 
     @Test
-    public void streamResourceNameEndsInPlus_resourceWriter_resourceIsStreamed()
+    void streamResourceNameEndsInPlus_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("end in plus", "readme+.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlus_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsPlus_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("plus in middle",
                 "readme+mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlus_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsPlus_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("plus in middle",
                 "readme+mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlusAndSpaces_streamFactory_resourceIsStreamed()
+    void streamResourceNameContainsPlusAndSpaces_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory("plus surrounded by spaces",
                 "readme + mine.md");
     }
 
     @Test
-    public void streamResourceNameContainsPlusAndSpaces_resourceWriter_resourceIsStreamed()
+    void streamResourceNameContainsPlusAndSpaces_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter("plus surrounded by spaces",
                 "readme + mine.md");
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
+    public void streamResourceNameContainsPercent_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("percent in name", "file%.txt");
+    }
+
+    @Test
+    public void streamResourceNameContainsPercent_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("percent in name", "file%.txt");
+    }
+
+    @Test
+    void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
         Mockito.verify(response).sendError(403, "Resource not available");
     }
 
     @Test
-    public void nodeDisabled_shouldReplyForDisabledUpdateModeAlways()
+    void nodeDisabled_shouldReplyForDisabledUpdateModeAlways()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
@@ -173,8 +187,7 @@ class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeInert_shouldRespondWithResourceNotAvailable()
-            throws IOException {
+    void nodeInert_shouldRespondWithResourceNotAvailable() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true);
         stateNodeStatesTestInternal(builder);
@@ -182,7 +195,7 @@ class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeInert_handlerShouldReplyForAllowInert() throws IOException {
+    void nodeInert_handlerShouldReplyForAllowInert() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true).withAllowInert(true);
         stateNodeStatesTestInternal(builder);
@@ -191,8 +204,7 @@ class StreamRequestHandlerTest {
     }
 
     @Test
-    public void nodeHidden_shouldRespondWithResourceNotAvailable()
-            throws IOException {
+    void nodeHidden_shouldRespondWithResourceNotAvailable() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withVisible(false);
         stateNodeStatesTestInternal(builder);
@@ -200,14 +212,14 @@ class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
+    void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
             throws IOException {
         stateNodeStatesTestInternal(true, false);
         Mockito.verify(response).sendError(403, "Resource not available");
     }
 
     @Test
-    public void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
+    void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
             throws IOException {
         stateNodeStatesTestInternal(true, true);
         Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
@@ -249,9 +261,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -270,9 +283,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -304,9 +318,10 @@ class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -319,6 +334,22 @@ class StreamRequestHandlerTest {
                 "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void sanitizeNameForUrl_percentIsReplaced() {
+        assertEquals("file_.txt",
+                StreamRequestHandler.sanitizeNameForUrl("file%.txt"));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_nullReturnsNull() {
+        assertNull(StreamRequestHandler.sanitizeNameForUrl(null));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_emptyReturnsEmpty() {
+        assertEquals("", StreamRequestHandler.sanitizeNameForUrl(""));
     }
 
     private static final class TestElementHandlerBuilder {

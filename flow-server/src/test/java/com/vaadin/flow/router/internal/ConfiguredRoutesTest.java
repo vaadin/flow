@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ConfiguredRoutesTest {
 
     @Test
-    public void emptyConfiguration_allGetMethodsWork() {
+    void emptyConfiguration_allGetMethodsWork() {
         ConfiguredRoutes configuration = new ConfiguredRoutes();
 
         assertFalse(configuration.hasTemplate(""),
@@ -61,7 +61,7 @@ class ConfiguredRoutesTest {
     }
 
     @Test
-    public void mutableConfiguration_makingImmutableHasCorrectData() {
+    void mutableConfiguration_makingImmutableHasCorrectData() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class,
@@ -87,7 +87,7 @@ class ConfiguredRoutesTest {
     }
 
     @Test
-    public void configuration_provides_target_url() {
+    void configuration_provides_target_url() {
         ConfigureRoutes edit = new ConfigureRoutes();
         edit.setRoute("foo/:foo", FooTarget.class);
         edit.setRoute("foo/:foo(qwe)", FooTarget.class);
@@ -127,7 +127,7 @@ class ConfiguredRoutesTest {
     }
 
     @Test
-    public void configuration_provides_formatted_url_template() {
+    void configuration_provides_formatted_url_template() {
         ConfigureRoutes config = new ConfigureRoutes();
 
         final String template = "/path/to" + "/:intType("
@@ -193,7 +193,7 @@ class ConfiguredRoutesTest {
     }
 
     @Test
-    public void configuration_provides_formatted_url_for_route_not_routeAlias() {
+    void configuration_provides_formatted_url_for_route_not_routeAlias() {
         ConfigureRoutes config = new ConfigureRoutes();
 
         config.setRoute(RouteTarget.class.getAnnotation(Route.class).value(),

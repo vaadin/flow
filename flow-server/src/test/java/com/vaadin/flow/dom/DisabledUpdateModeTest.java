@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DisabledUpdateModeTest {
 
     @Test
-    public void permissiveOrdering() {
+    void permissiveOrdering() {
         assertMostPermissive(ALWAYS, ALWAYS, ALWAYS);
         assertMostPermissive(ALWAYS, ALWAYS, ONLY_WHEN_ENABLED);
         assertMostPermissive(ALWAYS, ALWAYS, null);

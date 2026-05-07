@@ -50,7 +50,7 @@ class WebComponentExporterAwareValidatorTest {
     private ServletContext servletContext;
 
     @BeforeEach
-    public void init() {
+    void init() {
         annotationValidator = new WebComponentExporterAwareValidator();
         servletContext = Mockito.mock(ServletContext.class);
     }
@@ -90,7 +90,7 @@ class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void process_no_exception_is_thrown_for_correctly_setup_classes()
+    void process_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
                 .process(Stream.of(AbstractMain.class, WCExporter.class)
@@ -98,8 +98,7 @@ class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void process_all_failing_anotations_are_reported()
-            throws ServletException {
+    void process_all_failing_anotations_are_reported() throws ServletException {
         try {
             annotationValidator.process(
                     Collections.singleton(ThemeViewportWithParent.class),
@@ -112,7 +111,7 @@ class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void process_non_linked_push_throws() throws ServletException {
+    void process_non_linked_push_throws() throws ServletException {
         assertNon_linked_theme_throws(NonRoutePush.class, Push.class);
     }
 

@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-public class ListSignalNullabilityTest extends SignalTestBase {
+class ListSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void get_returnsNonNullList() {

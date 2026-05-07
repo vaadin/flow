@@ -62,31 +62,31 @@ class ConstantsUsageStatsEnvTest {
     }
 
     @Test
-    public void whenEnvNotSet_statsEnabledByDefault() throws Exception {
+    void whenEnvNotSet_statsEnabledByDefault() throws Exception {
         String out = runIsolated(false, null);
         assertEquals("true", out);
     }
 
     @Test
-    public void whenEnvFalse_statsDisabled() throws Exception {
+    void whenEnvFalse_statsDisabled() throws Exception {
         String out = runIsolated(true, "false");
         assertEquals("false", out);
     }
 
     @Test
-    public void whenEnvFALSE_statsDisabled() throws Exception {
+    void whenEnvFALSE_statsDisabled() throws Exception {
         String out = runIsolated(true, "FALSE");
         assertEquals("false", out);
     }
 
     @Test
-    public void whenEnvTrue_statsEnabled() throws Exception {
+    void whenEnvTrue_statsEnabled() throws Exception {
         String out = runIsolated(true, "true");
         assertEquals("true", out);
     }
 
     @Test
-    public void whenEnvRandom_statsEnabled() throws Exception {
+    void whenEnvRandom_statsEnabled() throws Exception {
         String out = runIsolated(true, "random-value");
         assertEquals("true", out);
     }

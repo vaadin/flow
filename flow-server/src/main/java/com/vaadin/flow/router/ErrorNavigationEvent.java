@@ -78,6 +78,35 @@ public class ErrorNavigationEvent extends NavigationEvent {
     }
 
     /**
+     * Creates a new navigation event with force instantiation flags.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param errorParameter
+     *            parameter containing navigation error information
+     * @param forceInstantiation
+     *            if set to {@code true}, the navigation target will always be
+     *            instantiated
+     * @param recreateLayoutChain
+     *            if set to {@code true}, the complete layout chain up to the
+     *            navigation target will be re-instantiated
+     */
+    public ErrorNavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, ErrorParameter<?> errorParameter,
+            boolean forceInstantiation, boolean recreateLayoutChain) {
+        super(router, location, ui, trigger, null, false, forceInstantiation,
+                recreateLayoutChain);
+        this.errorParameter = errorParameter;
+    }
+
+    /**
      * Gets the ErrorParameter if set.
      *
      * @return set error parameter or null if not set

@@ -86,7 +86,9 @@ class DevServerWatchDog {
 
     DevServerWatchDog() {
         watchDogServer = new WatchDogServer();
+    }
 
+    void start() {
         Thread serverThread = new Thread(watchDogServer);
         serverThread.setDaemon(true);
         serverThread.start();

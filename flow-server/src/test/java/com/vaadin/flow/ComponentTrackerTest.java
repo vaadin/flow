@@ -57,7 +57,7 @@ class ComponentTrackerTest {
     private Field disabledField;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         disabledField = ComponentTracker.class.getDeclaredField("disabled");
         disabledField.setAccessible(true);
         previousDisabled = disabledField.get(null);
@@ -65,12 +65,12 @@ class ComponentTrackerTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         disabledField.set(null, previousDisabled);
     }
 
     @Test
-    public void createLocationTracked() {
+    void createLocationTracked() {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
@@ -81,7 +81,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void attachLocationTracked() {
+    void attachLocationTracked() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Component c3 = new Component1();
@@ -105,7 +105,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void offsetApplied() {
+    void offsetApplied() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Component c3 = new Component1();
@@ -123,7 +123,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void memoryIsReleased() throws Exception {
+    void memoryIsReleased() throws Exception {
         Field createThrowableField = ComponentTracker.class
                 .getDeclaredField("createThrowable");
         Field attachThrowableField = ComponentTracker.class
@@ -146,7 +146,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void ordinalValueSet() {
+    void ordinalValueSet() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -157,7 +157,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void attachOrderChangesOrdinal() {
+    void attachOrderChangesOrdinal() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -168,7 +168,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void createOrderChangesOrdinal() {
+    void createOrderChangesOrdinal() {
         Component c2 = new Component1();
         Component1 c1 = new Component1();
         Layout layout = new Layout();
@@ -179,7 +179,7 @@ class ComponentTrackerTest {
     }
 
     @Test
-    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
+    void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
         var components = new Component[] { new Component1(), new Component1() };
         new Layout(components);
         assertCreateLocation(components[0], 183, getClass().getName());

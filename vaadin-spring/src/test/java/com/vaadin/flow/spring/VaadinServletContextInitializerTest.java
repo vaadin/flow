@@ -19,6 +19,12 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +35,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -36,6 +43,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -53,6 +62,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class VaadinServletContextInitializerTest {
@@ -214,6 +224,36 @@ class VaadinServletContextInitializerTest {
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
         assertEquals(TestErrorView.class, navigationTarget);
+    }
+
+    @Test
+    void customResourceLoader_classpathRootContainsUnicodeCombiningCharacter_resourcesAreMatched(
+            @TempDir Path tempDir) throws Exception {
+        Path classesRoot = tempDir.resolve("François")
+                .resolve("vaadin-c\u0327-repro").resolve("target/classes");
+        Path applicationClass = classesRoot
+                .resolve("com/example/application/Application.class");
+        Files.createDirectories(applicationClass.getParent());
+        Files.write(applicationClass, new byte[] { 0 });
+
+        try (URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { classesRoot.toUri().toURL() }, null)) {
+            Resource[] resources = new VaadinServletContextInitializer.CustomResourceLoader(
+                    new DefaultResourceLoader(classLoader)).getResources(
+                            "classpath*:com/example/application/**/*.class");
+
+            assertThat(resources).as(Arrays.toString(resources)).anySatisfy(
+                    resource -> assertThat(getResourcePath(resource)).endsWith(
+                            "/com/example/application/Application.class"));
+        }
+    }
+
+    private static String getResourcePath(Resource resource) {
+        try {
+            return resource.getURI().getPath();
+        } catch (IOException exception) {
+            throw new IllegalStateException(exception);
+        }
     }
 
     private Runnable initRouteNotFoundMocksAndGetContextInitializedMockCall(

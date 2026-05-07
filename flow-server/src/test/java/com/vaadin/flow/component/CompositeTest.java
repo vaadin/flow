@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
-public class CompositeTest {
+class CompositeTest {
 
     // layoutWithSingleComponentComposite (TestLayout)
     // - compositeWithComponent (CompositeWithComponent)
@@ -93,7 +93,7 @@ public class CompositeTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         compositeWithComponent = new CompositeWithComponent() {
             @Override
             public String toString() {
@@ -125,66 +125,66 @@ public class CompositeTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         VaadinService.setCurrent(null);
     }
 
     @Test
-    public void getElement_compositeAndCompositeComponent() {
+    void getElement_compositeAndCompositeComponent() {
         assertEquals(layoutInsideComposite.getElement(),
                 compositeWithComponent.getElement());
     }
 
     @Test
-    public void getParentElement_compositeInLayout() {
+    void getParentElement_compositeInLayout() {
         assertEquals(layoutWithSingleComponentComposite.getElement(),
                 compositeWithComponent.getElement().getParent());
     }
 
     @Test
-    public void getElementChildren_layoutWithComponentInComposite() {
+    void getElementChildren_layoutWithComponentInComposite() {
         assertElementChildren(layoutWithSingleComponentComposite.getElement(),
                 layoutInsideComposite.getElement());
     }
 
     @Test
-    public void getParent_compositeInLayout() {
+    void getParent_compositeInLayout() {
         assertEquals(layoutWithSingleComponentComposite,
                 compositeWithComponent.getParent().get());
     }
 
     @Test
-    public void getParent_componentInComposite() {
+    void getParent_componentInComposite() {
         assertEquals(compositeWithComponent,
                 layoutInsideComposite.getParent().get());
     }
 
     @Test
-    public void getParent_componentInLayoutInComposite() {
+    void getParent_componentInLayoutInComposite() {
         assertEquals(layoutInsideComposite,
                 componentInsideLayoutInsideComposite.getParent().get());
     }
 
     @Test
-    public void getChildren_layoutWithComposite() {
+    void getChildren_layoutWithComposite() {
         ComponentTest.assertChildren(layoutWithSingleComponentComposite,
                 compositeWithComponent);
     }
 
     @Test
-    public void getChildren_compositeWithComponent() {
+    void getChildren_compositeWithComponent() {
         ComponentTest.assertChildren(compositeWithComponent,
                 layoutInsideComposite);
     }
 
     @Test
-    public void getChildren_layoutInComposite() {
+    void getChildren_layoutInComposite() {
         ComponentTest.assertChildren(layoutInsideComposite,
                 componentInsideLayoutInsideComposite);
     }
 
     @Test
-    public void automaticCompositeContentType() {
+    void automaticCompositeContentType() {
         class CompositeWithGenericType extends Composite<TestComponent> {
         }
 
@@ -194,7 +194,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void compositeContentTypeWithVariableTypeParameter() {
+    void compositeContentTypeWithVariableTypeParameter() {
         class CompositeWithVariableType<C extends Component>
                 extends Composite<C> {
         }
@@ -207,7 +207,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void compositeContentTypeWithSpecifiedType() {
+    void compositeContentTypeWithSpecifiedType() {
         class CompositeWithCustomComponent
                 extends Composite<CustomComponent<List<String>>> {
         }
@@ -222,7 +222,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void compositeContentTypeWithTypeVariable() {
+    void compositeContentTypeWithTypeVariable() {
         class CompositeWithComposite
                 extends Composite<CompositeWithVariableType<TestComponent>> {
         }
@@ -232,7 +232,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void rawContentType() {
+    void rawContentType() {
         @SuppressWarnings("rawtypes")
         class CompositeWithRawType extends Composite {
         }
@@ -242,7 +242,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void noDefaultConstructor() {
+    void noDefaultConstructor() {
         class NoDefaultConstructor extends Composite<Text> {
         }
 
@@ -252,7 +252,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void compositeHierarchy() {
+    void compositeHierarchy() {
         class Class1<T extends Component> extends Composite<T> {
         }
         class Class2<T, V extends Component> extends Class1<V> {
@@ -274,7 +274,7 @@ public class CompositeTest {
     // --- layoutInsideComposite (TestLayout) content for compositeWithComponent
     // ---- componentInsideLayoutInsideComposite (TestComponent)
     @Test
-    public void attachDetachEvents_compositeHierarchy_correctOrder() {
+    void attachDetachEvents_compositeHierarchy_correctOrder() {
         UI ui = new UI();
 
         List<Component> attached = new ArrayList<>();
@@ -335,7 +335,7 @@ public class CompositeTest {
     }
 
     @Test
-    public void testOnAttachOnDetachAndEventsOrder() {
+    void testOnAttachOnDetachAndEventsOrder() {
         List<Integer> triggered = new ArrayList<>();
 
         Component component = new Component(new Element("div")) {

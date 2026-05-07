@@ -48,7 +48,7 @@ class VaadinServletContextTest {
     private Map<String, String> properties;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
@@ -76,7 +76,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void getAttributeWithProvider() {
+    void getAttributeWithProvider() {
         assertNull(context.getAttribute(String.class));
 
         String value = context.getAttribute(String.class,
@@ -89,20 +89,20 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void setNullAttributeNotAllowed() {
+    void setNullAttributeNotAllowed() {
         assertThrows(AssertionError.class, () -> {
             context.setAttribute(null);
         });
     }
 
     @Test
-    public void getMissingAttributeWithoutProvider() {
+    void getMissingAttributeWithoutProvider() {
         String value = context.getAttribute(String.class);
         assertNull(value);
     }
 
     @Test
-    public void setAndGetAttribute() {
+    void setAndGetAttribute() {
         String value = testAttributeProvider();
         context.setAttribute(value);
         String result = context.getAttribute(String.class);
@@ -120,7 +120,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void setValueBasedOnSuperType_implicitClass_notFound() {
+    void setValueBasedOnSuperType_implicitClass_notFound() {
         String value = testAttributeProvider();
         context.setAttribute(value);
 
@@ -130,7 +130,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void setValueBasedOnSuperType_explicitClass_found() {
+    void setValueBasedOnSuperType_explicitClass_found() {
         String value = testAttributeProvider();
         context.setAttribute(CharSequence.class, value);
 
@@ -140,7 +140,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void removeValue_removeMethod_valueIsRemoved() {
+    void removeValue_removeMethod_valueIsRemoved() {
         context.setAttribute(testAttributeProvider());
         context.removeAttribute(String.class);
 
@@ -149,7 +149,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void removeValue_setWithClass_valueIsRemoved() {
+    void removeValue_setWithClass_valueIsRemoved() {
         context.setAttribute(testAttributeProvider());
         context.setAttribute(String.class, null);
 
@@ -158,7 +158,7 @@ class VaadinServletContextTest {
     }
 
     @Test
-    public void getPropertyNames_returnsExpectedProperties() {
+    void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections
                 .list(context.getContextParameterNames());
         assertEquals(properties.size(), list.size(),

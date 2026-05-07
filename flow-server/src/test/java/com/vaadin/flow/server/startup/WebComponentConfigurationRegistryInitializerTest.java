@@ -68,7 +68,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     private VaadinContext context;
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(vaadinService.getContext()).thenReturn(context);
         Mockito.when(
@@ -89,12 +89,12 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void process() throws ServletException {
+    void process() throws ServletException {
         initializer.process(
                 Stream.of(MyComponentExporter.class, UserBoxExporter.class,
                         ExporterFactory.class).collect(Collectors.toSet()),
@@ -113,7 +113,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void process_noExceptionWithNullArguments() {
+    void process_noExceptionWithNullArguments() {
         try {
             initializer.process(null, servletContext);
         } catch (Exception e) {
@@ -125,7 +125,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void process_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
+    void process_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
         try {
             initializer.process(
                     Stream.of(MyComponentExporter.class, SiblingExporter.class)
@@ -138,7 +138,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void emptySet_noExceptionAndWebComponentsSet() {
+    void emptySet_noExceptionAndWebComponentsSet() {
         try {
             initializer.process(Collections.emptySet(), servletContext);
         } catch (Exception e) {
@@ -148,7 +148,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void duplicateNamesFoundprocess_exceptionIsThrown()
+    void duplicateNamesFoundprocess_exceptionIsThrown()
             throws ServletException {
         ServletException thrown = assertThrows(ServletException.class, () -> {
             initializer.process(Stream
@@ -162,7 +162,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void invalidCustomElementName_initializerThrowsException()
+    void invalidCustomElementName_initializerThrowsException()
             throws ServletException {
         ServletException thrown = assertThrows(ServletException.class, () -> {
             initializer.process(
@@ -179,7 +179,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void duplicatePropertyRegistration_doesNotCauseIssues()
+    void duplicatePropertyRegistration_doesNotCauseIssues()
             throws ServletException {
         initializer.process(
                 Collections.singleton(DuplicatePropertyExporter.class),
@@ -187,7 +187,7 @@ class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
+    void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
             throws ServletException {
         initializer.process(Collections.singleton(ExtendingExporter.class),
                 servletContext);

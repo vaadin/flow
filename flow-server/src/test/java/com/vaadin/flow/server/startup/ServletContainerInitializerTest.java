@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ServletContainerInitializerTest extends ClassFinder {
 
     @Test
-    public void servletContextHasNoLookup_deferredServletContextInitializersAttributeIsSet_processIsNotExecuted()
+    void servletContextHasNoLookup_deferredServletContextInitializersAttributeIsSet_processIsNotExecuted()
             throws ServletException {
         AtomicBoolean processIsExecuted = new AtomicBoolean();
         ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
@@ -72,7 +72,7 @@ class ServletContainerInitializerTest extends ClassFinder {
     }
 
     @Test
-    public void servletContextHasLookup_deferredServletContextInitializersAttributeIsNotSet_processIsExecuted()
+    void servletContextHasLookup_deferredServletContextInitializersAttributeIsNotSet_processIsExecuted()
             throws ServletException {
         AtomicBoolean processIsExecuted = new AtomicBoolean();
         ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
@@ -100,7 +100,7 @@ class ServletContainerInitializerTest extends ClassFinder {
     }
 
     @Test
-    public void anyServletContainerInitializerSubclassImplementsFixedServletContainerInitializer()
+    void anyServletContainerInitializerSubclassImplementsFixedServletContainerInitializer()
             throws IOException {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 

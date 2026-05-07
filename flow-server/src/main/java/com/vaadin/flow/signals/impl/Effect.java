@@ -23,11 +23,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
@@ -58,6 +60,8 @@ public class Effect implements Serializable {
     private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
+
+    private @Nullable UI ownerUI;
 
     private boolean firstRun = true;
     private volatile boolean invalidatedFromBackground = false;
@@ -135,6 +139,11 @@ public class Effect implements Serializable {
                 firstRun = false;
                 invalidatedFromBackground = false;
                 action.execute(ctx);
+            } catch (DeniedSignalUsageException e) {
+                // Programming error: signal.get() used in wrong context.
+                // Always propagate so the caller gets an immediate
+                // exception.
+                throw e;
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
@@ -172,17 +181,14 @@ public class Effect implements Serializable {
         activeEffects.get().add(this);
         try {
             boolean[] hasSignalUsage = { false };
+            // Ensure effect runs only once per change event, even if the same
+            // signal is read multiple times (each read registers a listener)
+            boolean[] changeHandled = { false };
             UsageTracker.track(action, usage -> {
                 hasSignalUsage[0] = true;
                 usages.add(usage);
-                // avoid lambda to allow proper deserialization
-                TransientListener usageListener = new TransientListener() {
-                    @Override
-                    public boolean invoke(boolean immediate) {
-                        return onDependencyChange(immediate);
-                    }
-                };
-                registrations.add(usage.onNextChange(usageListener));
+                registrations.add(usage
+                        .onNextChange(createChangeListener(changeHandled)));
             });
             if (!hasSignalUsage[0]) {
                 throw new MissingSignalUsageException(
@@ -192,6 +198,20 @@ public class Effect implements Serializable {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
         }
+    }
+
+    private TransientListener createChangeListener(boolean[] changeHandled) {
+        // avoid lambda to allow proper deserialization
+        return new TransientListener() {
+            @Override
+            public boolean invoke(boolean immediate) {
+                if (!changeHandled[0]) {
+                    changeHandled[0] = true;
+                    return onDependencyChange(immediate);
+                }
+                return false;
+            }
+        };
     }
 
     private boolean onDependencyChange(boolean immediate) {
@@ -206,7 +226,11 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
-        invalidatedFromBackground = VaadinRequest.getCurrent() == null;
+        if (ownerUI != null) {
+            invalidatedFromBackground = UI.getCurrent() != ownerUI;
+        } else {
+            invalidatedFromBackground = VaadinRequest.getCurrent() == null;
+        }
         scheduleInvalidate();
         return false;
     }
@@ -239,6 +263,21 @@ public class Effect implements Serializable {
     private void clearRegistrations() {
         registrations.forEach(Registration::remove);
         registrations.clear();
+    }
+
+    /**
+     * Sets the owner UI for this effect. When set, background change detection
+     * compares {@link UI#getCurrent()} against this UI instead of only checking
+     * for the presence of a {@link VaadinRequest}. This allows effects to
+     * correctly detect changes triggered by another user's session on a shared
+     * signal.
+     *
+     * @param ui
+     *            the owner UI, or {@code null} to fall back to
+     *            VaadinRequest-based detection
+     */
+    public void setOwnerUI(@Nullable UI ui) {
+        this.ownerUI = ui;
     }
 
     /**
@@ -289,8 +328,12 @@ public class Effect implements Serializable {
             // listener may still fire immediately if a change sneaks in
             // between the hasChanges check and the onNextChange call,
             // in which case firstRun is already set to true above.
+            // Ensure effect runs only once even if the same signal is
+            // registered multiple times
+            boolean[] changeHandled = { false };
             for (UsageTracker.Usage usage : usages) {
-                registrations.add(usage.onNextChange(this::onDependencyChange));
+                registrations.add(usage
+                        .onNextChange(createChangeListener(changeHandled)));
             }
             if (!invalidateScheduled.get()) {
                 // No invalidation was scheduled, so no change was

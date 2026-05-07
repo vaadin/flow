@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ShadowRootTest extends AbstractNodeTest {
 
     @Test
-    public void publicElementMethodsShouldReturnElement() {
+    void publicElementMethodsShouldReturnElement() {
         Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
@@ -55,7 +55,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void insertAtCurrentPositionNoOp() {
+    void insertAtCurrentPositionNoOp() {
         // Must have an UI to get attach events
         UI ui = new UI();
         ShadowRoot parent = ui.getElement().attachShadow();
@@ -68,19 +68,19 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void equalsSelf() {
+    void equalsSelf() {
         ShadowRoot root = createParentNode();
         assertTrue(root.equals(root));
     }
 
     @Test
-    public void notEqualsNull() {
+    void notEqualsNull() {
         ShadowRoot root = createParentNode();
         assertFalse(root.equals(null));
     }
 
     @Test
-    public void attachListener_parentAttach_childListenersTriggered() {
+    void attachListener_parentAttach_childListenersTriggered() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -132,7 +132,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void detachListener_parentDetach_childListenersTriggered() {
+    void detachListener_parentDetach_childListenersTriggered() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -173,7 +173,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attachListener_eventOrder_childFirst() {
+    void attachListener_eventOrder_childFirst() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -198,7 +198,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void detachListener_eventOrder_childFirst() {
+    void detachListener_eventOrder_childFirst() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -224,7 +224,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attachDetach_elementMoved_bothEventsTriggered() {
+    void attachDetach_elementMoved_bothEventsTriggered() {
         ShadowRoot bodyShadow = new UI().getElement().attachShadow();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -251,7 +251,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attachEvent_stateTreeCanFound() {
+    void attachEvent_stateTreeCanFound() {
         ShadowRoot bodyShadow = new UI().getElement().attachShadow();
         Element child = ElementFactory.createDiv();
 
@@ -269,7 +269,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void detachEvent_stateTreeCanFound() {
+    void detachEvent_stateTreeCanFound() {
         ShadowRoot bodyShadow = new UI().getElement().attachShadow();
         Element child = ElementFactory.createDiv();
         bodyShadow.appendChild(child);
@@ -289,13 +289,13 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getParentNode_parentNodeIsNull() {
+    void getParentNode_parentNodeIsNull() {
         ShadowRoot root = createParentNode();
         assertNull(root.getParentNode());
     }
 
     @Test
-    public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
+    void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor(false);
 
         Map<Node<?>, ElementType> map = new HashMap<>();
@@ -310,7 +310,7 @@ class ShadowRootTest extends AbstractNodeTest {
     }
 
     @Test
-    public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
+    void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor(true);
 
         Map<Node<?>, ElementType> map = new HashMap<>();

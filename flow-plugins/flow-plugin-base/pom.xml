@@ -35,11 +35,6 @@
       <version>4.8.184</version>
     </dependency>
     <dependency>
-      <groupId>org.zeroturnaround</groupId>
-      <artifactId>zt-exec</artifactId>
-      <version>1.12</version>
-    </dependency>
-    <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
@@ -52,7 +47,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>4.0.2</version>
+      <version>4.0.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

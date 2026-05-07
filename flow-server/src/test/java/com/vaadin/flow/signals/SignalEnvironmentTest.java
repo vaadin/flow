@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SignalEnvironmentTest extends SignalTestBase {
+class SignalEnvironmentTest extends SignalTestBase {
 
     @Test
     void registerAndUnregister_environmentIsUsedUntilUnregistered() {

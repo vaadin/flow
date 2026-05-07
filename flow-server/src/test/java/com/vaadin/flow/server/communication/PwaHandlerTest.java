@@ -46,13 +46,13 @@ class PwaHandlerTest {
     private final VaadinResponse response = Mockito.mock(VaadinResponse.class);
 
     @Test
-    public void handleRequest_noPwaRegistry_returnsFalse() throws IOException {
+    void handleRequest_noPwaRegistry_returnsFalse() throws IOException {
         PwaHandler handler = new PwaHandler(() -> null);
         assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsDisabled_returnsFalse()
+    void handleRequest_pwaRegistryConfigIsDisabled_returnsFalse()
             throws IOException {
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
@@ -63,7 +63,7 @@ class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsEnabled_pathIsPwaResource_returnsTrue()
+    void handleRequest_pwaRegistryConfigIsEnabled_pathIsPwaResource_returnsTrue()
             throws IOException {
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
@@ -81,7 +81,7 @@ class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsEnabled_handlerIsInitializedOnce()
+    void handleRequest_pwaRegistryConfigIsEnabled_handlerIsInitializedOnce()
             throws IOException {
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -103,7 +103,7 @@ class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_writeIconOnResponseFailure_doesNotThrow()
+    void handleRequest_writeIconOnResponseFailure_doesNotThrow()
             throws Exception {
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);

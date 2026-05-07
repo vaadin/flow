@@ -35,24 +35,24 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public abstract class AbstractNodeTest {
+abstract class AbstractNodeTest {
 
     @Test
-    public void insertWithNullParameter() {
+    void insertWithNullParameter() {
         Node<?> parent = createParentNode();
         assertThrows(IllegalArgumentException.class,
                 () -> parent.insertChild(0, (Element[]) null));
     }
 
     @Test
-    public void insertNullChild() {
+    void insertNullChild() {
         Node<?> parent = createParentNode();
         assertThrows(IllegalArgumentException.class,
                 () -> parent.insertChild(0, new Element[] { null }));
     }
 
     @Test
-    public void appendChildren() {
+    void appendChildren() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -73,7 +73,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void insertChildFirst() {
+    void insertChildFirst() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -84,7 +84,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void insertChildMiddle() {
+    void insertChildMiddle() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -96,7 +96,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void insertChildAsLast() {
+    void insertChildAsLast() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -108,7 +108,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void insertChildAfterLast() {
+    void insertChildAfterLast() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -119,7 +119,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildFirst() {
+    void removeChildFirst() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -131,7 +131,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildFirstIndex() {
+    void removeChildFirstIndex() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -143,7 +143,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildrenFirst() {
+    void removeChildrenFirst() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -155,7 +155,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildMiddle() {
+    void removeChildMiddle() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -167,7 +167,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildMiddleIndex() {
+    void removeChildMiddleIndex() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -179,7 +179,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildrenMiddle() {
+    void removeChildrenMiddle() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -192,7 +192,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildLast() {
+    void removeChildLast() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -204,7 +204,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildLastIndex() {
+    void removeChildLastIndex() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -216,7 +216,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildrenLast() {
+    void removeChildrenLast() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -229,7 +229,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeAllChildren() {
+    void removeAllChildren() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -242,7 +242,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeAllChildrenEmpty() {
+    void removeAllChildrenEmpty() {
         Node<?> parent = createParentNode();
         parent.removeAllChildren();
 
@@ -250,7 +250,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void testGetChildren() {
+    void testGetChildren() {
         Node<?> parent = createParentNode();
 
         Element child1 = ElementFactory.createDiv();
@@ -265,14 +265,14 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void testGetChildren_empty() {
+    void testGetChildren_empty() {
         Node<?> parent = createParentNode();
 
         assertEquals(0, parent.getChildren().count());
     }
 
     @Test
-    public void removeNonChild() {
+    void removeNonChild() {
         Node<?> parent = createParentNode();
         Element otherElement = new Element("other");
         assertThrows(IllegalArgumentException.class,
@@ -280,7 +280,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void getChild() {
+    void getChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -294,7 +294,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void getNegativeChild() {
+    void getNegativeChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -303,7 +303,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void getAfterLastChild() {
+    void getAfterLastChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -312,7 +312,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendChild() {
+    void appendChild() {
         Node<?> parent = createParentNode();
         Element child = new Element("child");
         parent.appendChild(child);
@@ -321,14 +321,14 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendNullChild() {
+    void appendNullChild() {
         Node<?> parent = createParentNode();
         assertThrows(IllegalArgumentException.class,
                 () -> parent.appendChild((Element[]) null));
     }
 
     @Test
-    public void replaceNullChild() {
+    void replaceNullChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
@@ -337,14 +337,14 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeNullChild() {
+    void removeNullChild() {
         Node<?> parent = createParentNode();
         assertThrows(IllegalArgumentException.class,
                 () -> parent.removeChild((Element[]) null));
     }
 
     @Test
-    public void replaceBeforeFirstChild() {
+    void replaceBeforeFirstChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -354,7 +354,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void setForEmptyParent() {
+    void setForEmptyParent() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         parent.setChild(0, child1);
@@ -362,7 +362,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void replaceAfterLastChild() {
+    void replaceAfterLastChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -372,7 +372,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void replaceAfterAfterLastChild() {
+    void replaceAfterAfterLastChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
@@ -382,7 +382,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void replaceChildWithItself() {
+    void replaceChildWithItself() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
@@ -400,7 +400,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildBeforeFirst() {
+    void removeChildBeforeFirst() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
@@ -409,7 +409,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeChildAfterLast() {
+    void removeChildAfterLast() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
@@ -418,7 +418,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendAttachedChild() {
+    void appendAttachedChild() {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
@@ -433,7 +433,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void indexOfChild_firstChild() {
+    void indexOfChild_firstChild() {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
@@ -442,7 +442,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void indexOfChild_childInTheMiddle() {
+    void indexOfChild_childInTheMiddle() {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createAnchor();
@@ -453,7 +453,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void indexOfChild_notAChild() {
+    void indexOfChild_notAChild() {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
 
@@ -461,7 +461,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendFirstChildToOwnParent() {
+    void appendFirstChildToOwnParent() {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
@@ -472,7 +472,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendLastChildToOwnParent() {
+    void appendLastChildToOwnParent() {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
@@ -483,7 +483,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendManyChildrenToOwnParent() {
+    void appendManyChildrenToOwnParent() {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
@@ -495,7 +495,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void appendExistingAndNewChildren() {
+    void appendExistingAndNewChildren() {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
@@ -507,7 +507,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void insertAttachedChild() {
+    void insertAttachedChild() {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
@@ -523,7 +523,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void setAttachedChild() {
+    void setAttachedChild() {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
@@ -539,7 +539,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void removeFromParent() {
+    void removeFromParent() {
         Node<?> parent = createParentNode();
         Element otherElement = new Element("other");
         parent.appendChild(otherElement);
@@ -549,7 +549,7 @@ public abstract class AbstractNodeTest {
     }
 
     @Test
-    public void replaceFirstChild() {
+    void replaceFirstChild() {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");

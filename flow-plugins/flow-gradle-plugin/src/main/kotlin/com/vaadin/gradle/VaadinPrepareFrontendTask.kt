@@ -76,13 +76,16 @@ public abstract class VaadinPrepareFrontendTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinPrepareFrontend() {
-        //val adapter = GradlePluginAdapter(this, config, true)
-        // Remove Frontend/generated folder to get clean files copied/generated
-        logger.debug("Running the vaadinPrepareFrontend task with effective configuration ${adapter.get().config}")
-        val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter.get())
+        try {
+            // Remove Frontend/generated folder to get clean files copied/generated
+            logger.debug("Running the vaadinPrepareFrontend task with effective configuration ${adapter.get().config}")
+            val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter.get())
 
-        logger.info("Generated token file $tokenFile")
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
-        BuildFrontendUtil.prepareFrontend(adapter.get())
+            logger.info("Generated token file $tokenFile")
+            check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+            BuildFrontendUtil.prepareFrontend(adapter.get())
+        } finally {
+            adapter.get().closeClassFinder()
+        }
     }
 }

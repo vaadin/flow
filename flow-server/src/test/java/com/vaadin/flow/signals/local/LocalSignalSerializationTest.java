@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class LocalSignalSerializationTest {
+class LocalSignalSerializationTest {
 
     private void assertSerializeAndDeserialize(Object obj) {
         try {
@@ -62,7 +62,7 @@ public class LocalSignalSerializationTest {
     }
 
     @Test
-    public void valueSignal_serializable() {
+    void valueSignal_serializable() {
         ValueSignal<String> signal = new ValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 

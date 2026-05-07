@@ -52,7 +52,7 @@ class AnnotationValidatorTest {
     private ServletContext servletContext;
 
     @BeforeEach
-    public void init() {
+    void init() {
         annotationValidator = new AnnotationValidator();
         servletContext = Mockito.mock(ServletContext.class);
     }
@@ -97,7 +97,7 @@ class AnnotationValidatorTest {
     }
 
     @Test
-    public void onStartUp_all_failing_anotations_are_reported()
+    void onStartUp_all_failing_anotations_are_reported()
             throws ServletException {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class,
@@ -128,7 +128,7 @@ class AnnotationValidatorTest {
     }
 
     @Test
-    public void onStartUp_all_failing_annotations_are_marked_for_class()
+    void onStartUp_all_failing_annotations_are_marked_for_class()
             throws ServletException {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class,
@@ -144,7 +144,7 @@ class AnnotationValidatorTest {
     }
 
     @Test
-    public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
+    void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
                 .process(Stream.of(MultiAnnotation.class, AbstractMain.class)
@@ -191,7 +191,7 @@ class AnnotationValidatorTest {
     }
 
     @Test
-    public void selfReferencesAreRemoved() {
+    void selfReferencesAreRemoved() {
         HandlesTypesTest annotationTest = new HandlesTypesTest();
         assertTypes(annotationTest, Set.of(Viewport.class), Set.of());
         assertTypes(annotationTest,

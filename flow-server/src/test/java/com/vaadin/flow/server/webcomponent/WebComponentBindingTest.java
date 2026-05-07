@@ -35,7 +35,7 @@ class WebComponentBindingTest {
     private WebComponentBinding binding;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         component = new MyComponent();
         binding = new WebComponentBinding<>(component);
         PropertyConfigurationImpl<MyComponent, Integer> integerProperty = new PropertyConfigurationImpl<>(
@@ -49,12 +49,12 @@ class WebComponentBindingTest {
     }
 
     @Test
-    public void getComponent() {
+    void getComponent() {
         assertEquals(component, binding.getComponent());
     }
 
     @Test
-    public void getPropertyType() {
+    void getPropertyType() {
         assertEquals(Integer.class, binding.getPropertyType("int"));
         assertEquals(ObjectNode.class, binding.getPropertyType("json"));
 
@@ -62,7 +62,7 @@ class WebComponentBindingTest {
     }
 
     @Test
-    public void hasProperty() {
+    void hasProperty() {
         assertTrue(binding.hasProperty("int"));
         assertTrue(binding.hasProperty("json"));
 
@@ -70,7 +70,7 @@ class WebComponentBindingTest {
     }
 
     @Test
-    public void updateValue() {
+    void updateValue() {
         binding.updateProperty("int", 5);
         assertEquals(5, component.integer);
 
@@ -82,7 +82,7 @@ class WebComponentBindingTest {
     }
 
     @Test
-    public void updateValueJackson() {
+    void updateValueJackson() {
         binding.updateProperty("int", 5);
         assertEquals(5, component.integer);
 

@@ -184,7 +184,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         mocks.getService().getRouter().getRegistry().setRoute("clean",
                 Clean.class, Collections.emptyList());
@@ -230,12 +230,12 @@ class JavaScriptBootstrapUITest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         mocks.cleanup();
     }
 
     @Test
-    public void should_allow_navigation() {
+    void should_allow_navigation() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER,
@@ -253,7 +253,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_navigate_when_endingSlash() {
+    void should_navigate_when_endingSlash() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/clean/", "", "",
                 null, ""));
         assertEquals(Tag.HEADER,
@@ -263,14 +263,14 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void getChildren_should_notReturnAnEmptyList() {
+    void getChildren_should_notReturnAnEmptyList() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(1, ui.getChildren().count());
     }
 
     @Test
-    public void addRemoveComponent_clientSideRouting_addsToBody() {
+    void addRemoveComponent_clientSideRouting_addsToBody() {
         final Element uiElement = ui.getElement();
 
         ui.browserNavigate(
@@ -302,7 +302,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
+    void addComponent_clientSideRouterAndNavigation_componentsRemain() {
         final Element uiElement = ui.getElement();
         // trigger route via client
         ui.browserNavigate(
@@ -322,7 +322,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_prevent_navigation_on_dirty() {
+    void should_prevent_navigation_on_dirty() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
         assertEquals(Tag.SPAN,
@@ -344,7 +344,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_remove_content_on_leaveNavigation() {
+    void should_remove_content_on_leaveNavigation() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER,
@@ -359,7 +359,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_keep_content_on_leaveNavigation_postpone() {
+    void should_keep_content_on_leaveNavigation_postpone() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
         assertEquals(Tag.SPAN,
@@ -376,7 +376,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_handle_forward_to_client_side_view_on_beforeEnter() {
+    void should_handle_forward_to_client_side_view_on_beforeEnter() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToClientSideViewOnBeforeEnter", "", "", null, ""));
 
@@ -384,7 +384,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
+    void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToClientSideViewOnBeforeLeave", "", "", null, ""));
 
@@ -392,7 +392,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_not_handle_forward_to_client_side_view_on_reroute() {
+    void should_not_handle_forward_to_client_side_view_on_reroute() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToClientSideViewOnReroute", "", "", null, ""));
 
@@ -400,7 +400,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_handle_forward_to_server_side_view_on_beforeEnter_and_update_url() {
+    void should_handle_forward_to_server_side_view_on_beforeEnter_and_update_url() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToServerSideViewOnBeforeEnter", "", "", null, ""));
 
@@ -422,7 +422,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_show_error_page() {
+    void should_show_error_page() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/err", "", "", null, ""));
         assertEquals(Tag.DIV,
@@ -432,7 +432,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_invoke_clientRoute_when_navigationHasNotBeenStarted() {
+    void should_invoke_clientRoute_when_navigationHasNotBeenStarted() {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
@@ -447,7 +447,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
+    void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
@@ -505,7 +505,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_not_notify_clientRoute_when_navigatingToTheSame() {
+    void should_not_notify_clientRoute_when_navigatingToTheSame() {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
@@ -522,7 +522,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void server_should_not_doClientRoute_when_navigatingToServer() {
+    void server_should_not_doClientRoute_when_navigatingToServer() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER,
@@ -559,7 +559,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_updatePageTitle_when_serverNavigation() {
+    void should_updatePageTitle_when_serverNavigation() {
         ui.navigate("empty");
         assertNull(ui.getInternals().getTitle());
         ui.navigate("product");
@@ -567,7 +567,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_updatePageTitle_when_serverNavigationToProxyViewClass() {
+    void should_updatePageTitle_when_serverNavigationToProxyViewClass() {
         ui.navigate("empty");
         assertNull(ui.getInternals().getTitle());
         ui.navigate("proxy-product");
@@ -575,7 +575,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_removeTitle_when_noAppShellTitle() {
+    void should_removeTitle_when_noAppShellTitle() {
         ui.navigate("empty");
         assertNull(ui.getInternals().getTitle());
         ui.navigate("dirty");
@@ -583,7 +583,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_restoreIndexHtmlTitle() {
+    void should_restoreIndexHtmlTitle() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "empty", "",
                 "app-shell-title", null, ""));
         assertEquals("", ui.getInternals().getTitle());
@@ -593,7 +593,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void should_not_share_dynamic_app_title_for_different_UIs() {
+    void should_not_share_dynamic_app_title_for_different_UIs() {
         String dynamicTitle = UUID.randomUUID().toString();
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "clean", "",
                 dynamicTitle, null, ""));
@@ -612,7 +612,7 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void navigate_firsClientSideRoutingThrows_navigationInProgressIsReset_secondClientSideRoutingWorks() {
+    void navigate_firsClientSideRoutingThrows_navigationInProgressIsReset_secondClientSideRoutingWorks() {
         VaadinSession session = Mockito.mock(VaadinSession.class);
 
         VaadinService service = Mockito.mock(VaadinService.class);

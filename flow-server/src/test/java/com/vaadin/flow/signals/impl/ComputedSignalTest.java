@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * reasons, this class tests both cached signals and the "new" computed signals
  * that do no caching.
  */
-public class ComputedSignalTest extends SignalTestBase {
+class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void cached_constantCallback_throws() {

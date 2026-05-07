@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WebComponentExporterUtilsTest {
 
     @Test
-    public void getFactories_notEligibleExportersAreFiltered_factoriesAreReturned() {
+    void getFactories_notEligibleExportersAreFiltered_factoriesAreReturned() {
 
         Set<WebComponentExporterFactory> factories = WebComponentExporterUtils
                 .getFactories(new HashSet<>(Arrays.asList(GoodExporter.class,

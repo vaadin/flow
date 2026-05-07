@@ -17,9 +17,13 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.local.ValueSignal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class TextTest {
 
@@ -164,5 +168,21 @@ class TextTest {
                 .contains("Cannot set the Text component class"));
         assertTrue(ex.getMessage()
                 .contains("because it doesn't represent an HTML Element"));
+    }
+
+    @Test
+    void lazyInitSignalBindingFeature() {
+        Text text = new Text("text");
+        text.getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> fail(
+                        "SignalBindingFeature should not be initialized before binding a signal"));
+
+        text.bindText(new ValueSignal<>("text"));
+
+        text.getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .orElseThrow(() -> new AssertionError(
+                        "SignalBindingFeature should be initialized after binding a signal"));
     }
 }

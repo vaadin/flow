@@ -25,21 +25,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RangeTest {
 
     @Test
-    public void startAfterEndTest() {
+    void startAfterEndTest() {
         assertThrows(IllegalArgumentException.class, () -> {
             Range.between(10, 9);
         });
     }
 
     @Test
-    public void negativeLengthTest() {
+    void negativeLengthTest() {
         assertThrows(IllegalArgumentException.class, () -> {
             Range.withLength(10, -1);
         });
     }
 
     @Test
-    public void constructorEquivalenceTest() {
+    void constructorEquivalenceTest() {
         assertEquals(Range.withOnly(10), Range.between(10, 11),
                 "10 == [10,11[");
         assertEquals(Range.between(10, 20), Range.withLength(10, 10),
@@ -49,7 +49,7 @@ class RangeTest {
     }
 
     @Test
-    public void boundsTest() {
+    void boundsTest() {
         {
             final Range range = Range.between(0, 10);
             assertEquals(0, range.getStart(), "between(0, 10) start");
@@ -71,7 +71,7 @@ class RangeTest {
 
     @Test
     @SuppressWarnings("boxing")
-    public void equalsTest() {
+    void equalsTest() {
         final Range range1 = Range.between(0, 10);
         final Range range2 = Range.withLength(0, 11);
 
@@ -81,7 +81,7 @@ class RangeTest {
     }
 
     @Test
-    public void containsTest() {
+    void containsTest() {
         final int start = 0;
         final int end = 10;
         final Range range = Range.between(start, end);
@@ -98,7 +98,7 @@ class RangeTest {
     }
 
     @Test
-    public void emptyTest() {
+    void emptyTest() {
         assertTrue(Range.between(0, 0).isEmpty(), "[0..0[ should be empty");
         assertTrue(Range.withLength(0, 0).isEmpty(),
                 "Range of length 0 should be empty");
@@ -110,7 +110,7 @@ class RangeTest {
     }
 
     @Test
-    public void splitTest() {
+    void splitTest() {
         final Range startRange = Range.between(0, 10);
         final Range[] splitRanges = startRange.splitAt(5);
         assertEquals(Range.between(0, 5), splitRanges[0],
@@ -120,7 +120,7 @@ class RangeTest {
     }
 
     @Test
-    public void split_valueBefore() {
+    void split_valueBefore() {
         Range range = Range.between(10, 20);
         Range[] splitRanges = range.splitAt(5);
 
@@ -129,7 +129,7 @@ class RangeTest {
     }
 
     @Test
-    public void split_valueAfter() {
+    void split_valueAfter() {
         Range range = Range.between(10, 20);
         Range[] splitRanges = range.splitAt(25);
 
@@ -138,7 +138,7 @@ class RangeTest {
     }
 
     @Test
-    public void emptySplitTest() {
+    void emptySplitTest() {
         final Range range = Range.between(5, 10);
         final Range[] split1 = range.splitAt(0);
         assertTrue(split1[0].isEmpty(), "split1, [0]");
@@ -150,14 +150,14 @@ class RangeTest {
     }
 
     @Test
-    public void lengthTest() {
+    void lengthTest() {
         assertEquals(5, Range.withLength(10, 5).length(), "withLength length");
         assertEquals(5, Range.between(10, 15).length(), "between length");
         assertEquals(1, Range.withOnly(10).length(), "withOnly 10 length");
     }
 
     @Test
-    public void intersectsTest() {
+    void intersectsTest() {
         assertTrue(Range.between(0, 10).intersects(Range.between(5, 15)),
                 "[0..10[ intersects [5..15[");
         assertTrue(!Range.between(0, 10).intersects(Range.between(10, 20)),
@@ -165,7 +165,7 @@ class RangeTest {
     }
 
     @Test
-    public void intersects_emptyInside() {
+    void intersects_emptyInside() {
         assertTrue(Range.between(5, 5).intersects(Range.between(0, 10)),
                 "[5..5[ does intersect with [0..10[");
         assertTrue(Range.between(0, 10).intersects(Range.between(5, 5)),
@@ -173,7 +173,7 @@ class RangeTest {
     }
 
     @Test
-    public void intersects_emptyOutside() {
+    void intersects_emptyOutside() {
         assertTrue(!Range.between(15, 15).intersects(Range.between(0, 10)),
                 "[15..15[ does not intersect with [0..10[");
         assertTrue(!Range.between(0, 10).intersects(Range.between(15, 15)),
@@ -181,7 +181,7 @@ class RangeTest {
     }
 
     @Test
-    public void subsetTest() {
+    void subsetTest() {
         assertTrue(Range.between(5, 10).isSubsetOf(Range.between(0, 20)),
                 "[5..10[ is subset of [0..20[");
 
@@ -193,12 +193,12 @@ class RangeTest {
     }
 
     @Test
-    public void offsetTest() {
+    void offsetTest() {
         assertEquals(Range.between(5, 15), Range.between(0, 10).offsetBy(5));
     }
 
     @Test
-    public void rangeStartsBeforeTest() {
+    void rangeStartsBeforeTest() {
         final Range former = Range.between(0, 5);
         final Range latter = Range.between(1, 5);
         assertTrue(former.startsBefore(latter),
@@ -211,7 +211,7 @@ class RangeTest {
     }
 
     @Test
-    public void rangeStartsAfterTest() {
+    void rangeStartsAfterTest() {
         final Range former = Range.between(0, 5);
         final Range latter = Range.between(5, 10);
         assertTrue(latter.startsAfter(former),
@@ -224,7 +224,7 @@ class RangeTest {
     }
 
     @Test
-    public void rangeEndsBeforeTest() {
+    void rangeEndsBeforeTest() {
         final Range former = Range.between(0, 5);
         final Range latter = Range.between(5, 10);
         assertTrue(former.endsBefore(latter),
@@ -237,7 +237,7 @@ class RangeTest {
     }
 
     @Test
-    public void rangeEndsAfterTest() {
+    void rangeEndsAfterTest() {
         final Range former = Range.between(1, 5);
         final Range latter = Range.between(1, 6);
         assertTrue(latter.endsAfter(former), "latter should end after former");
@@ -249,35 +249,35 @@ class RangeTest {
     }
 
     @Test
-    public void combine_notOverlappingFirstSmaller() {
+    void combine_notOverlappingFirstSmaller() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(11, 20);
         assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
-    public void combine_notOverlappingSecondLarger() {
+    void combine_notOverlappingSecondLarger() {
         Range r1 = Range.between(11, 20);
         Range r2 = Range.between(0, 10);
         assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
-    public void combine_firstEmptyNotOverlapping() {
+    void combine_firstEmptyNotOverlapping() {
         Range r1 = Range.between(15, 15);
         Range r2 = Range.between(0, 10);
         assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
-    public void combine_secondEmptyNotOverlapping() {
+    void combine_secondEmptyNotOverlapping() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(15, 15);
         assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
-    public void combine_barelyOverlapping() {
+    void combine_barelyOverlapping() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(10, 20);
 
@@ -291,7 +291,7 @@ class RangeTest {
     }
 
     @Test
-    public void combine_subRange() {
+    void combine_subRange() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(2, 8);
 
@@ -304,7 +304,7 @@ class RangeTest {
     }
 
     @Test
-    public void combine_intersecting() {
+    void combine_intersecting() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(5, 15);
 
@@ -319,7 +319,7 @@ class RangeTest {
     }
 
     @Test
-    public void combine_emptyInside() {
+    void combine_emptyInside() {
         Range r1 = Range.between(0, 10);
         Range r2 = Range.between(5, 5);
 
@@ -332,7 +332,7 @@ class RangeTest {
     }
 
     @Test
-    public void expand_basic() {
+    void expand_basic() {
         Range r1 = Range.between(5, 10);
         Range r2 = r1.expand(2, 3);
 
@@ -340,7 +340,7 @@ class RangeTest {
     }
 
     @Test
-    public void expand_negativeLegal() {
+    void expand_negativeLegal() {
         Range r1 = Range.between(5, 10);
 
         Range r2 = r1.expand(-2, -2);
@@ -354,21 +354,21 @@ class RangeTest {
     }
 
     @Test
-    public void expand_negativeIllegal1() {
+    void expand_negativeIllegal1() {
         Range r1 = Range.between(5, 10);
         // Should throw because the start would contract beyond the end
         assertThrows(IllegalArgumentException.class, () -> r1.expand(-3, -3));
     }
 
     @Test
-    public void expand_negativeIllegal2() {
+    void expand_negativeIllegal2() {
         Range r1 = Range.between(5, 10);
         // Should throw because the end would contract beyond the start
         assertThrows(IllegalArgumentException.class, () -> r1.expand(3, -9));
     }
 
     @Test
-    public void restrictTo_fullyInside() {
+    void restrictTo_fullyInside() {
         Range r1 = Range.between(5, 10);
         Range r2 = Range.between(4, 11);
 
@@ -377,7 +377,7 @@ class RangeTest {
     }
 
     @Test
-    public void restrictTo_fullyOutside() {
+    void restrictTo_fullyOutside() {
         Range r1 = Range.between(4, 11);
         Range r2 = Range.between(5, 10);
 
@@ -386,7 +386,7 @@ class RangeTest {
     }
 
     @Test
-    public void restrictTo_notInterstecting() {
+    void restrictTo_notInterstecting() {
         Range r1 = Range.between(5, 10);
         Range r2 = Range.between(15, 20);
 
@@ -400,7 +400,7 @@ class RangeTest {
     }
 
     @Test
-    public void restrictTo_startOutside() {
+    void restrictTo_startOutside() {
         Range r1 = Range.between(5, 10);
         Range r2 = Range.between(7, 15);
 
@@ -412,7 +412,7 @@ class RangeTest {
     }
 
     @Test
-    public void restrictTo_endOutside() {
+    void restrictTo_endOutside() {
         Range r1 = Range.between(5, 10);
         Range r2 = Range.between(4, 7);
 
@@ -424,7 +424,7 @@ class RangeTest {
     }
 
     @Test
-    public void restrictTo_empty() {
+    void restrictTo_empty() {
         Range r1 = Range.between(5, 10);
         Range r2 = Range.between(0, 0);
 

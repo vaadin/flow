@@ -60,7 +60,7 @@ class SerializationTest {
     Runnable cleaner;
 
     @BeforeEach
-    public void enabledSerializationDebugInfo() {
+    void enabledSerializationDebugInfo() {
         String extendedDebugInfo = System
                 .getProperty("sun.io.serialization.extendedDebugInfo");
         System.setProperty("sun.io.serialization.extendedDebugInfo", "true");
@@ -75,15 +75,14 @@ class SerializationTest {
     }
 
     @AfterEach
-    public void restore() {
+    void restore() {
         if (cleaner != null) {
             cleaner.run();
         }
     }
 
     @Test
-    public void testSerializeVaadinSession_accessQueueIsRecreated()
-            throws Exception {
+    void testSerializeVaadinSession_accessQueueIsRecreated() throws Exception {
         VaadinService vaadinService = new MockVaadinService(true);
         VaadinSession session = new VaadinSession(vaadinService);
 
@@ -94,7 +93,7 @@ class SerializationTest {
     }
 
     @Test
-    public void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_deserializedSessionHasNoUIs()
+    void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_deserializedSessionHasNoUIs()
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(false);
 
@@ -105,7 +104,7 @@ class SerializationTest {
     }
 
     @Test
-    public void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_streamResources_deserializedSessionHasNoUIs()
+    void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_streamResources_deserializedSessionHasNoUIs()
             throws Exception {
 
         VaadinService vaadinService = new MockVaadinService(false, false);
@@ -141,7 +140,7 @@ class SerializationTest {
     }
 
     @Test
-    public void testSerializeVaadinSession_notProductionMode_enableDevModeSerialization_deserializedSessionHasUI()
+    void testSerializeVaadinSession_notProductionMode_enableDevModeSerialization_deserializedSessionHasUI()
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(true);
 
@@ -154,7 +153,7 @@ class SerializationTest {
     }
 
     @Test
-    public void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients()
+    void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients()
             throws Exception {
         VaadinService vaadinService = new MockVaadinService(false, true);
         VaadinSession session = Mockito.spy(new VaadinSession(vaadinService));
@@ -172,8 +171,7 @@ class SerializationTest {
     // Covers serialization of UI scoped beans, e.g. in Kubernetes Kit
     // https://github.com/vaadin/flow/issues/19967
     // https://github.com/vaadin/kubernetes-kit/issues/140
-    public void serializeUI_currentUI_availableDuringSerialization()
-            throws Exception {
+    void serializeUI_currentUI_availableDuringSerialization() throws Exception {
         VaadinSession deserializeSession = serializeAndDeserializeWithUI(true,
                 true, ui -> ui.add(new MyComponent()));
         MyComponent deserializedComponent = deserializeSession.getUIs()
@@ -190,7 +188,7 @@ class SerializationTest {
     // Covers serialization of UI scoped beans, e.g. in Kubernetes Kit
     // https://github.com/vaadin/flow/issues/19967
     // https://github.com/vaadin/kubernetes-kit/issues/140
-    public void serializeUI_currentVaadinSession_availableDuringSerialization()
+    void serializeUI_currentVaadinSession_availableDuringSerialization()
             throws Exception {
         VaadinSession deserializeSession = serializeAndDeserializeWithUI(true,
                 true,

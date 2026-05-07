@@ -67,7 +67,7 @@ class UidlRequestHandlerTest {
     private UidlRequestHandler handler;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         outputStream = Mockito.mock(OutputStream.class);
@@ -77,7 +77,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void writeSessionExpired() throws Exception {
+    void writeSessionExpired() throws Exception {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
@@ -105,7 +105,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void writeSessionExpired_whenUINotFound() throws IOException {
+    void writeSessionExpired_whenUINotFound() throws IOException {
 
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -126,7 +126,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void clientRequestsPreviousIdAndPayload_resendPreviousResponse()
+    void clientRequestsPreviousIdAndPayload_resendPreviousResponse()
             throws IOException {
 
         UI ui = getUi();
@@ -188,7 +188,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_modifyUidl_when_MPR() throws Exception {
+    void should_modifyUidl_when_MPR() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -209,7 +209,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_changeURL_when_v7LocationProvided() throws Exception {
+    void should_changeURL_when_v7LocationProvided() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -229,8 +229,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_updateHash_when_v7LocationNotProvided()
-            throws Exception {
+    void should_updateHash_when_v7LocationNotProvided() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -250,7 +249,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_modify_non_MPR_Uidl() throws Exception {
+    void should_not_modify_non_MPR_Uidl() throws Exception {
         UI ui = getUi();
 
         handler = spy(new UidlRequestHandler());
@@ -274,7 +273,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_update_browser_history_if_no_hash_in_location()
+    void should_not_update_browser_history_if_no_hash_in_location()
             throws Exception {
         UI ui = getUi();
 
@@ -292,7 +291,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
+    void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -323,7 +322,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_MessageIdSyncException_returnsSyncErrorResponse()
+    void synchronizedHandleRequest_MessageIdSyncException_returnsSyncErrorResponse()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -369,7 +368,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_MessageIdSyncException_usesCustomMessages()
+    void synchronizedHandleRequest_MessageIdSyncException_usesCustomMessages()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
@@ -418,7 +417,7 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_MessageIdSyncException_notificationDisabled_silentRefresh()
+    void synchronizedHandleRequest_MessageIdSyncException_notificationDisabled_silentRefresh()
             throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);

@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VaadinServletTest {
 
     @Test
-    public void testGetLastPathParameter() {
+    void testGetLastPathParameter() {
         assertEquals("",
                 VaadinServlet.getLastPathParameter("http://myhost.com"));
         assertEquals(";a",
@@ -83,7 +83,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_superInitCalledOnce() throws ServletException {
+    void init_superInitCalledOnce() throws ServletException {
         AtomicBoolean called = new AtomicBoolean();
         VaadinServlet servlet = new VaadinServlet() {
 
@@ -105,8 +105,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_passDifferentConfigInstance_throws()
-            throws ServletException {
+    void init_passDifferentConfigInstance_throws() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
         ServletConfig config = mockConfig();
@@ -117,8 +116,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_noLookup_servletIsNotInitialized()
-            throws ServletException {
+    void init_noLookup_servletIsNotInitialized() throws ServletException {
         AtomicBoolean called = new AtomicBoolean();
         VaadinServlet servlet = new VaadinServlet() {
 
@@ -135,8 +133,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_contextHasLookup_servletIsInitialized()
-            throws ServletException {
+    void init_contextHasLookup_servletIsInitialized() throws ServletException {
         AtomicBoolean called = new AtomicBoolean();
         VaadinServlet servlet = new VaadinServlet() {
 
@@ -168,7 +165,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_initServlet_CurrentInstanceClearAllIsCalled()
+    void init_initServlet_CurrentInstanceClearAllIsCalled()
             throws ServletException {
         try {
             VaadinServlet servlet = new VaadinServlet() {
@@ -212,7 +209,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_initOnlyConfig_CurrentInstanceClearAllIsCalled()
+    void init_initOnlyConfig_CurrentInstanceClearAllIsCalled()
             throws ServletException {
         try {
             VaadinServlet servlet = new VaadinServlet() {
@@ -234,7 +231,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_appClassLoaderIsSet() throws ServletException {
+    void init_appClassLoaderIsSet() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
         ServletConfig config = mockConfig();
@@ -254,7 +251,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_contextInitializationIsExecuted() throws ServletException {
+    void init_contextInitializationIsExecuted() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
         ServletConfig config = mockConfig();
@@ -276,7 +273,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void init_initIsCalledAfterDestroy_passDifferentConfigInstance_servletIsInitialized()
+    void init_initIsCalledAfterDestroy_passDifferentConfigInstance_servletIsInitialized()
             throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
@@ -294,7 +291,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
+    void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
             throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
@@ -308,7 +305,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
+    void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
         VaadinServlet servlet = new VaadinServlet();
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
@@ -332,7 +329,7 @@ class VaadinServletTest {
     }
 
     @Test
-    public void destroy_servletConfigAvailableInServbiceDestroy()
+    void destroy_servletConfigAvailableInServbiceDestroy()
             throws ServletException {
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
         VaadinServlet servlet = new VaadinServlet() {

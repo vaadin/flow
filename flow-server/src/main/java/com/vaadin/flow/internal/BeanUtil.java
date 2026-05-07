@@ -89,11 +89,29 @@ public final class BeanUtil implements Serializable {
                         .getReadMethod().getDeclaringClass().isInterface()) {
                     continue;
                 }
+                // Merge read/write methods from separate descriptors
+                descriptor = mergeDescriptors(existing, descriptor);
             }
             descriptors.put(name, descriptor);
         }
 
         return new ArrayList<>(descriptors.values());
+    }
+
+    private static PropertyDescriptor mergeDescriptors(
+            PropertyDescriptor existing, PropertyDescriptor incoming) {
+        Method read = incoming.getReadMethod() != null
+                ? incoming.getReadMethod()
+                : existing.getReadMethod();
+        Method write = incoming.getWriteMethod() != null
+                ? incoming.getWriteMethod()
+                : existing.getWriteMethod();
+        try {
+            return new PropertyDescriptor(incoming.getName(), read, write);
+        } catch (IntrospectionException e) {
+            // Fall back to incoming if merge fails
+            return incoming;
+        }
     }
 
     private static List<PropertyDescriptor> internalGetBeanPropertyDescriptors(

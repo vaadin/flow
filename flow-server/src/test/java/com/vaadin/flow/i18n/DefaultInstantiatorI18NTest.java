@@ -52,7 +52,7 @@ class DefaultInstantiatorI18NTest {
     private ClassLoader urlClassLoader;
 
     @BeforeEach
-    public void init()
+    void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
         File resources = Files.createTempDirectory(temporaryFolder, "temp")
                 .toFile();
@@ -66,14 +66,14 @@ class DefaultInstantiatorI18NTest {
     }
 
     @AfterEach
-    public void cleanup() throws NoSuchFieldException, IllegalAccessException {
+    void cleanup() throws NoSuchFieldException, IllegalAccessException {
         ResourceBundle.clearCache(urlClassLoader);
         I18NProviderTest.clearI18NProviderField();
         VaadinService.setCurrent(null);
     }
 
     @Test
-    public void translationFileOnClasspath_instantiateDefaultI18N()
+    void translationFileOnClasspath_instantiateDefaultI18N()
             throws IOException {
 
         createTranslationFiles(translations);
@@ -126,8 +126,7 @@ class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void onlyDefaultTranslation_instantiateDefaultI18N()
-            throws IOException {
+    void onlyDefaultTranslation_instantiateDefaultI18N() throws IOException {
         File file = new File(translations,
                 DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
         Files.writeString(file.toPath(), "title=Default lang",
@@ -174,8 +173,7 @@ class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void onlyLangTransalation_nonExistingLangReturnsKey()
-            throws IOException {
+    void onlyLangTransalation_nonExistingLangReturnsKey() throws IOException {
         File file = new File(translations,
                 DefaultI18NProvider.BUNDLE_FILENAME + "_ja.properties");
         Files.writeString(file.toPath(), "title=No Default",
@@ -209,7 +207,7 @@ class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translate_withoutProvider_returnsKey() {
+    void translate_withoutProvider_returnsKey() {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
 
@@ -222,7 +220,7 @@ class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translationFilesOnClassPath_getI18NProvider_usesThreadContextClassLoader()
+    void translationFilesOnClassPath_getI18NProvider_usesThreadContextClassLoader()
             throws IOException {
         createTranslationFiles(translations);
 

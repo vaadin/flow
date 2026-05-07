@@ -33,35 +33,35 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class AttachTemplateChildRpcHandlerTest {
 
     @Test
-    public void handleNode_attachById_elementNotFound() {
+    void handleNode_attachById_elementNotFound() {
         assertThrows(IllegalStateException.class, () -> {
             doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
         });
     }
 
     @Test
-    public void handleNode_attachCustomElement_elementNotFound() {
+    void handleNode_attachCustomElement_elementNotFound() {
         assertThrows(IllegalStateException.class, () -> {
             doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
         });
     }
 
     @Test
-    public void handleNode_attachByIdExistingRequest_throwReservedId() {
+    void handleNode_attachByIdExistingRequest_throwReservedId() {
         assertThrows(IllegalStateException.class, () -> {
             doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
         });
     }
 
     @Test
-    public void handleNode_attachCustonElementCustomId_throwReservedId() {
+    void handleNode_attachCustonElementCustomId_throwReservedId() {
         assertThrows(IllegalStateException.class, () -> {
             doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
         });
     }
 
     @Test
-    public void handleNode_success_throwIllegalInvocation() {
+    void handleNode_success_throwIllegalInvocation() {
         assertThrows(IllegalArgumentException.class, () -> {
             assertHandleNode(1, JacksonUtils.createNode("id"));
         });

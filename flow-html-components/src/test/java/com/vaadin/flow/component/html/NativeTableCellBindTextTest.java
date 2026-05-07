@@ -25,10 +25,10 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NativeTableCellBindTextTest extends SignalsUnitTest {
+class NativeTableCellBindTextTest extends SignalsUnitTest {
 
     @Test
-    public void bindText_updatesTextOnSignalChange() {
+    void bindText_updatesTextOnSignalChange() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
@@ -43,7 +43,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_setTextWhileBindingActive_throws() {
+    void bindText_setTextWhileBindingActive_throws() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
@@ -55,7 +55,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_nullSignal_throwsNPE() {
+    void bindText_nullSignal_throwsNPE() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
@@ -63,7 +63,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void constructorWithSignal_bindsText() {
+    void constructorWithSignal_bindsText() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         NativeTableCell cell = new NativeTableCell(signal);
         UI.getCurrent().add(cell);

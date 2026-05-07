@@ -30,12 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExtendedClientDetailsTest {
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void initializeWithClientValues_gettersReturnExpectedValues() {
+    void initializeWithClientValues_gettersReturnExpectedValues() {
         final ExtendedClientDetails details = new ExtendBuilder()
                 .buildDetails();
 
@@ -62,7 +62,7 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void differentNavigatorPlatformDetails_isIPadReturnsExpectedValue() {
+    void differentNavigatorPlatformDetails_isIPadReturnsExpectedValue() {
         ExtendBuilder detailsBuilder = new ExtendBuilder();
 
         ExtendedClientDetails details = detailsBuilder.buildDetails();
@@ -86,7 +86,7 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void differentNavigatorPlatformDetails_Ipod_isIOSReturnsExpectedValue() {
+    void differentNavigatorPlatformDetails_Ipod_isIOSReturnsExpectedValue() {
         ExtendedClientDetails details = new ExtendBuilder()
                 .setNavigatorPlatform("iPod ..").buildDetails();
 
@@ -102,7 +102,7 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_isIPad_returnsTrue() {
+    void isIOS_isIPad_returnsTrue() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
@@ -112,7 +112,7 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_notIPadIsIPhone_returnsTrue() {
+    void isIOS_notIPadIsIPhone_returnsTrue() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
@@ -129,7 +129,7 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_notIPad_notIsIPhone_returnsFalse() {
+    void isIOS_notIPad_notIsIPhone_returnsFalse() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();

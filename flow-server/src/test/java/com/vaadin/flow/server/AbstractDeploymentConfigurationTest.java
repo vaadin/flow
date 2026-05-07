@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AbstractDeploymentConfigurationTest {
 
     @Test
-    public void getUIClass_returnsUIParameterPropertyValue() {
+    void getUIClass_returnsUIParameterPropertyValue() {
         String ui = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER,
                 ui);
@@ -46,7 +46,7 @@ class AbstractDeploymentConfigurationTest {
     }
 
     @Test
-    public void getClassLoader_returnsClassloaderPropertyValue() {
+    void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
         assertEquals(classLoader, config.getClassLoaderName(),

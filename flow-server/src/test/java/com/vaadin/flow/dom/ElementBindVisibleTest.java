@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ElementBindVisibleTest extends SignalsUnitTest {
 
     @Test
-    public void bindVisible_elementAttachedBefore_bindingActive() {
+    void bindVisible_elementAttachedBefore_bindingActive() {
         Element element = new Element("foo");
         // attach before bindVisible
         UI.getCurrent().getElement().appendChild(element);
@@ -41,7 +41,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementAttachedAfter_bindingActive() {
+    void bindVisible_elementAttachedAfter_bindingActive() {
         Element element = new Element("foo");
         assertTrue(element.isVisible());
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -54,7 +54,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementAttached_bindingActive() {
+    void bindVisible_elementAttached_bindingActive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -74,7 +74,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementNotAttached_bindingInactive() {
+    void bindVisible_elementNotAttached_bindingInactive() {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
@@ -84,7 +84,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementDetached_bindingInactive() {
+    void bindVisible_elementDetached_bindingInactive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -97,7 +97,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_elementReAttached_bindingActivate() {
+    void bindVisible_elementReAttached_bindingActivate() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -111,7 +111,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_setVisibleAndBindVisibleWhileBindingIsActive_throwException() {
+    void bindVisible_setVisibleAndBindVisibleWhileBindingIsActive_throwException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         element.bindVisible(new ValueSignal<>(true));
@@ -125,7 +125,7 @@ class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_nullSignal_throwsNPE() {
+    void bindVisible_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 

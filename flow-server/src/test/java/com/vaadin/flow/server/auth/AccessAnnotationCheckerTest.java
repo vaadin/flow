@@ -76,7 +76,7 @@ class AccessAnnotationCheckerTest {
     private AccessAnnotationChecker accessAnnotationChecker;
 
     @BeforeEach
-    public void before() {
+    void before() {
         accessAnnotationChecker = new AccessAnnotationChecker();
     }
 
@@ -95,7 +95,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_NoSecurityAnnotationsPresent()
+    void should_ReturnEnclosingClassAsSecurityTarget_When_NoSecurityAnnotationsPresent()
             throws Exception {
         class Test {
             public void test() {
@@ -106,7 +106,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_OnlyClassHasSecurityAnnotations()
+    void should_ReturnEnclosingClassAsSecurityTarget_When_OnlyClassHasSecurityAnnotations()
             throws Exception {
         @AnonymousAllowed
         class Test {
@@ -118,7 +118,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void should_ReturnMethodAsSecurityTarget_When_OnlyMethodHasSecurityAnnotations()
+    void should_ReturnMethodAsSecurityTarget_When_OnlyMethodHasSecurityAnnotations()
             throws Exception {
         class Test {
             @AnonymousAllowed
@@ -131,7 +131,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void should_ReturnMethodAsSecurityTarget_When_BothClassAndMethodHaveSecurityAnnotations()
+    void should_ReturnMethodAsSecurityTarget_When_BothClassAndMethodHaveSecurityAnnotations()
             throws Exception {
         @AnonymousAllowed
         class Test {
@@ -145,7 +145,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void specialViewsMustBeAccessible() {
+    void specialViewsMustBeAccessible() {
         CurrentInstance.set(VaadinRequest.class,
                 new VaadinServletRequest(createRequest(null), null));
         assertTrue(
@@ -156,7 +156,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void anonymousAccessAllowed() throws Exception {
+    void anonymousAccessAllowed() throws Exception {
         HttpServletRequest anonRequest = createRequest(null);
 
         verifyMethodAccessAllowed(AnonymousAllowedClass.class, anonRequest,
@@ -184,7 +184,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void loggedInUserAccessAllowed() throws Exception {
+    void loggedInUserAccessAllowed() throws Exception {
         HttpServletRequest loggedInURequest = createRequest(USER_PRINCIPAL);
 
         verifyMethodAccessAllowed(AnonymousAllowedClass.class, loggedInURequest,
@@ -213,7 +213,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void userRoleAccessAllowed() throws Exception {
+    void userRoleAccessAllowed() throws Exception {
         HttpServletRequest userRoleRequest = createRequest(USER_PRINCIPAL,
                 "user");
 
@@ -249,7 +249,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void userAndAdminRoleAccessAllowed() throws Exception {
+    void userAndAdminRoleAccessAllowed() throws Exception {
         HttpServletRequest adminRoleRequest = createRequest(USER_PRINCIPAL,
                 "user", "admin");
 
@@ -292,7 +292,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void adminRoleAccessAllowed() throws Exception {
+    void adminRoleAccessAllowed() throws Exception {
         HttpServletRequest adminRoleRequest = createRequest(USER_PRINCIPAL,
                 "admin");
 
@@ -329,7 +329,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void hasClassAccessNoCurrentRequest() {
+    void hasClassAccessNoCurrentRequest() {
         assertThrows(IllegalStateException.class, () -> {
             CurrentInstance.clearAll();
             accessAnnotationChecker.hasAccess(AnonymousAllowedClass.class);
@@ -337,7 +337,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void hasMethodAccessNoCurrentRequest() throws Exception {
+    void hasMethodAccessNoCurrentRequest() throws Exception {
         assertThrows(IllegalStateException.class, () -> {
             CurrentInstance.clearAll();
             accessAnnotationChecker.hasAccess(
@@ -346,7 +346,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void hasClassAccessUsingCurrentRequest() {
+    void hasClassAccessUsingCurrentRequest() {
         try {
             CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
                     createRequest(USER_PRINCIPAL), null));
@@ -357,7 +357,7 @@ class AccessAnnotationCheckerTest {
     }
 
     @Test
-    public void hasMethodAccessUsingCurrentRequest() throws Exception {
+    void hasMethodAccessUsingCurrentRequest() throws Exception {
         try {
             CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
                     createRequest(USER_PRINCIPAL), null));

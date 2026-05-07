@@ -74,7 +74,7 @@ class WebComponentBootstrapHandlerViteTest {
     private DeploymentConfiguration deploymentConfiguration;
 
     @BeforeEach
-    public void init() throws IOException {
+    void init() throws IOException {
         projectRootFolder = Files.createTempDirectory(temporaryFolder, "temp")
                 .toFile();
         TestUtil.createWebComponentHtmlStub(projectRootFolder);
@@ -99,7 +99,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_skipMetaAndStyleHeaderElements()
+    void writeBootstrapPage_skipMetaAndStyleHeaderElements()
             throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
@@ -133,7 +133,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+    void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
             throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
@@ -154,7 +154,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+    void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
             throws IOException {
         assertThrows(IllegalStateException.class, () -> {
             WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
@@ -173,8 +173,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_noPWA()
-            throws IOException, ServiceException {
+    void writeBootstrapPage_noPWA() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -232,7 +231,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_devToolsDisabled()
+    void writeBootstrapPage_devToolsDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -268,7 +267,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_spepe() throws Exception {
+    void writeBootstrapPage_spepe() throws Exception {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -282,7 +281,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
+    void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         VaadinRequest request = mockRequest(false);
@@ -290,7 +289,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
+    void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         VaadinRequest request = mockRequest(true);
@@ -299,7 +298,7 @@ class WebComponentBootstrapHandlerViteTest {
 
     @Disabled
     @Test
-    public void writeBootstrapPage_withExportChunk()
+    void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -333,7 +332,7 @@ class WebComponentBootstrapHandlerViteTest {
 
     @Disabled
     @Test
-    public void writeBootstrapPage_noExportChunk()
+    void writeBootstrapPage_noExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
@@ -367,7 +366,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void usageStatistics() throws IOException {
+    void usageStatistics() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
         VaadinSession session = new MockVaadinSession(service);

@@ -32,7 +32,7 @@ import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class SignalCommandTest {
+class SignalCommandTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private Set<Class<?>> assertedTypes = new HashSet<>();
 

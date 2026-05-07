@@ -18,7 +18,7 @@ function getElementPath(el: Element): string {
       parts.unshift('#' + CSS.escape(current.id));
       break;
     }
-    const parent = current.parentElement;
+    const parent: Element | null = current.parentElement;
     if (!parent) break;
     let index = 1;
     let sibling: Element | null = current.previousElementSibling;

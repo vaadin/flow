@@ -35,7 +35,7 @@ class HasTextTest {
     private HasText hasText = Mockito.mock(HasText.class);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Element element = ElementFactory.createDiv();
         Mockito.when(hasText.getElement()).thenReturn(element);
 
@@ -46,7 +46,7 @@ class HasTextTest {
     }
 
     @Test
-    public void setWhiteSpace_styleIsSet() {
+    void setWhiteSpace_styleIsSet() {
         hasText.setWhiteSpace(WhiteSpace.NOWRAP);
 
         assertEquals("nowrap",
@@ -54,25 +54,25 @@ class HasTextTest {
     }
 
     @Test
-    public void getWhiteSpace_getStyleValue() {
+    void getWhiteSpace_getStyleValue() {
         hasText.getElement().getStyle().setWhiteSpace(Style.WhiteSpace.INHERIT);
         assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_noStyleIsSet_normalIsReturned() {
+    void getWhiteSpace_noStyleIsSet_normalIsReturned() {
         assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_notStandardValue_nullIsReturned() {
+    void getWhiteSpace_notStandardValue_nullIsReturned() {
         hasText.getElement().getStyle().set("white-space", "foo");
 
         assertEquals(null, hasText.getWhiteSpace());
     }
 
     @Test
-    public void setText_throwsWhenChildrenBindingActive() {
+    void setText_throwsWhenChildrenBindingActive() {
         SignalBindingFeature feature = hasText.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
         feature.setBinding(SignalBindingFeature.CHILDREN,
@@ -83,7 +83,7 @@ class HasTextTest {
     }
 
     @Test
-    public void bindText_throwsWhenChildrenBindingActive() {
+    void bindText_throwsWhenChildrenBindingActive() {
         SignalBindingFeature feature = hasText.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
         feature.setBinding(SignalBindingFeature.CHILDREN,

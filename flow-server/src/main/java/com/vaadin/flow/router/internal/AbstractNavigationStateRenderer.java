@@ -40,6 +40,7 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.SignalFieldTransfer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -66,6 +67,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
@@ -142,8 +144,19 @@ public abstract class AbstractNavigationStateRenderer
         Optional<HasElement> currentInstance = forceInstantiation
                 ? Optional.empty()
                 : findActiveRouteTarget(event, isRouteTargetType);
-        return (T) currentInstance.orElseGet(
+        T routeTarget = (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
+
+        if (forceInstantiation
+                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
+                && !ui.getSession().getConfiguration().isProductionMode()) {
+            findActiveRouteTarget(event, isRouteTargetType)
+                    .ifPresent(oldInstance -> SignalFieldTransfer
+                            .transferLocalSignalValues(oldInstance,
+                                    routeTarget));
+        }
+
+        return routeTarget;
     }
 
     protected Optional<HasElement> findActiveRouteTarget(NavigationEvent event,
@@ -384,6 +397,12 @@ public abstract class AbstractNavigationStateRenderer
      */
     private void handleAfterNavigationEvents(UI ui,
             RouteParameters parameters) {
+        ui.getInternals()
+                .updateRouterState(new RouterState(
+                        locationChangeEvent.getLocation(), parameters,
+                        ui.getInternals().getActiveRouterTargetsChain(),
+                        navigationState.getNavigationTarget()));
+
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
         afterNavigationHandlers
@@ -942,7 +961,9 @@ public abstract class AbstractNavigationStateRenderer
 
             return new ErrorNavigationEvent(event.getSource(),
                     event.getLocation(), event.getUI(),
-                    NavigationTrigger.PROGRAMMATIC, errorParameter);
+                    NavigationTrigger.PROGRAMMATIC, errorParameter,
+                    event.isForceInstantiation(),
+                    event.isRecreateLayoutChain());
         }
 
         String url;
@@ -983,7 +1004,8 @@ public abstract class AbstractNavigationStateRenderer
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
+                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true,
+                event.isForceInstantiation(), event.isRecreateLayoutChain());
     }
 
     /**

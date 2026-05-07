@@ -33,12 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WebComponentGeneratorTest {
 
     @Test
-    public void generatedReplacementMapContainsExpectedEntriesIncludingUi() {
+    void generatedReplacementMapContainsExpectedEntriesIncludingUi() {
         assertGeneratedReplacementMapContainsExpectedEntries(true);
     }
 
     @Test
-    public void generatedReplacementMapContainsExpectedEntriesExcludingUi() {
+    void generatedReplacementMapContainsExpectedEntriesExcludingUi() {
         assertGeneratedReplacementMapContainsExpectedEntries(false);
     }
 
@@ -133,7 +133,7 @@ class WebComponentGeneratorTest {
     }
 
     @Test
-    public void providesJSModulesInNpmMode() {
+    void providesJSModulesInNpmMode() {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
@@ -155,7 +155,7 @@ class WebComponentGeneratorTest {
     }
 
     @Test
-    public void providedJSModuleContainsCorrectThemeReplacements() {
+    void providedJSModuleContainsCorrectThemeReplacements() {
         String module = WebComponentGenerator
                 .generateModule(new DefaultWebComponentExporterFactory<>(
                         MyComponentExporter.class), "", "my-theme");

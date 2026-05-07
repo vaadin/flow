@@ -31,7 +31,7 @@ import static org.hamcrest.core.Is.is;
 class DependencyTest {
 
     @Test
-    public void checkJsonSerialization_3ArgsCTor() {
+    void checkJsonSerialization_3ArgsCTor() {
         Dependency dependency = new Dependency(Dependency.Type.JAVASCRIPT,
                 "url", LoadMode.INLINE);
 
@@ -39,7 +39,7 @@ class DependencyTest {
     }
 
     @Test
-    public void dynamicDependency_hasLazyMode() {
+    void dynamicDependency_hasLazyMode() {
         Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
                 "foo");
 
@@ -53,7 +53,7 @@ class DependencyTest {
     }
 
     @Test
-    public void checkJsonSerialization_2ArgsCTor() {
+    void checkJsonSerialization_2ArgsCTor() {
         Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
                 "foo");
 

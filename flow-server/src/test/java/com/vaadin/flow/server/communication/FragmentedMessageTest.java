@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FragmentedMessageTest {
 
     @Test
-    public void shortMessageCompleteImmediately() throws IOException {
+    void shortMessageCompleteImmediately() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
         assertTrue(
                 msg.append(new StringReader("Hello".length() + "|" + "Hello")));
@@ -39,7 +39,7 @@ class FragmentedMessageTest {
     }
 
     @Test
-    public void longMessageConcatenated() throws IOException {
+    void longMessageConcatenated() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
         String text = "HelloWorld".repeat(1700);
         String textWithLength = text.length() + "|" + text;
@@ -61,7 +61,7 @@ class FragmentedMessageTest {
     }
 
     @Test
-    public void lengthEqualsLimitHandledCorrectly() throws IOException {
+    void lengthEqualsLimitHandledCorrectly() throws IOException {
         FragmentedMessage msg = new FragmentedMessage();
         int length = (PushConstants.WEBSOCKET_BUFFER_SIZE
                 - String.valueOf(PushConstants.WEBSOCKET_BUFFER_SIZE).length()

@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class StringUtilTest {
 
     @Test
-    public void commentRemoval_handlesCommentsCorrectly() {
+    void commentRemoval_handlesCommentsCorrectly() {
         String singleLineBlock = StringUtil
                 .removeComments("return html'/* single line block comment*/';");
 
@@ -51,7 +51,7 @@ class StringUtilTest {
     }
 
     @Test
-    public void commentRemoval_emojiInString_removalDoesnotThrowResultIsTheSame() {
+    void commentRemoval_emojiInString_removalDoesnotThrowResultIsTheSame() {
         String initialTemplate = "import { html } from '@polymer/polymer/lib/utils/html-tag.js';\n"
                 + "class EmployeeForm extends PolymerElement {\n"
                 + "  static get template() {\n" + "    return html`\n"
@@ -65,13 +65,13 @@ class StringUtilTest {
     }
 
     @Test
-    public void removeComments_commentsWithAsterisksInside_commentIsRemoved() {
+    void removeComments_commentsWithAsterisksInside_commentIsRemoved() {
         String result = StringUtil.removeComments("/* comment **/ ;");
         assertEquals(" ;", result);
     }
 
     @Test
-    public void removeJsComments_handlesApostropheAsInString() {
+    void removeJsComments_handlesApostropheAsInString() {
         String httpImport = "import 'http://localhost:56445/files/transformed/@vaadin/vaadin-text-field/vaadin-text-field.js';";
 
         assertEquals(httpImport, StringUtil.removeComments(httpImport, true),
@@ -109,7 +109,7 @@ class StringUtilTest {
     }
 
     @Test
-    public void stripSuffix() {
+    void stripSuffix() {
         assertEquals("foo", StringUtil.stripSuffix("foo", "bar"));
         assertEquals("foo", StringUtil.stripSuffix("foobar", "bar"));
         assertEquals("foobar", StringUtil.stripSuffix("foobarbar", "bar"));

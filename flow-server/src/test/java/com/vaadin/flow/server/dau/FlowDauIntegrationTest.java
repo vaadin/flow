@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FlowDauIntegrationTest {
 
     @Test
-    public void generateNewCookie_setsUpExpectedParameters() {
+    void generateNewCookie_setsUpExpectedParameters() {
         try (MockedStatic<DauIntegration> key = Mockito
                 .mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
@@ -51,7 +51,7 @@ class FlowDauIntegrationTest {
     }
 
     @Test
-    public void generateNewCookie_notSecureRequest_cookieNotSecure() {
+    void generateNewCookie_notSecureRequest_cookieNotSecure() {
         try (MockedStatic<DauIntegration> key = Mockito
                 .mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");

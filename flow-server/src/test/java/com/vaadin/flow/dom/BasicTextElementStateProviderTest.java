@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BasicTextElementStateProviderTest {
 
     @Test
-    public void createStateNode_stateNodeHasRequiredElementDataFeature() {
+    void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicTextElementStateProvider
                 .createStateNode("foo");
         assertTrue(stateNode.isReportedFeature(TextNodeMap.class));

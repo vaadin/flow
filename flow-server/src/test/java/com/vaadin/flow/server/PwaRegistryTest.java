@@ -49,7 +49,7 @@ class PwaRegistryTest {
     private static List<PwaIcon> splashIconsForAppleDevices;
 
     @BeforeAll
-    public static void initPwaWithCustomIconPath() throws IOException {
+    static void initPwaWithCustomIconPath() throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithCustomIconPath.class.getAnnotation(PWA.class));
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
@@ -58,7 +58,7 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaIconIsGeneratedBasedOnClasspathIcon_servletContextHasNoResources()
+    void pwaIconIsGeneratedBasedOnClasspathIcon_servletContextHasNoResources()
             throws IOException {
         // PWA annotation has default value for "iconPath" but servlet context
         // has no resource for that path, in that case the ClassPath URL will be
@@ -111,12 +111,12 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithCustomBaseIconPath_splashScreenIconForAllSupportedAppleDevicesAndOrientationsAreGenerated() {
+    void pwaWithCustomBaseIconPath_splashScreenIconForAllSupportedAppleDevicesAndOrientationsAreGenerated() {
         assertEquals(26, splashIconsForAppleDevices.size());
     }
 
     @Test
-    public void pwaWithCustomBaseIconPath_splashScreenIconForAppleDevices_areGeneratedBasedOnIconPath() {
+    void pwaWithCustomBaseIconPath_splashScreenIconForAppleDevices_areGeneratedBasedOnIconPath() {
         boolean customBaseNameUsedInIconGeneration = splashIconsForAppleDevices
                 .stream().allMatch(
                         icon -> icon.getHref().startsWith("icons/splash/foo"));
@@ -124,7 +124,7 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithCustomBaseIconPath_splashScreenIconForIPadDevices_includeBothOrientations() {
+    void pwaWithCustomBaseIconPath_splashScreenIconForIPadDevices_includeBothOrientations() {
         // iPad Pro 12.9
         Predicate<PwaIcon> iPadPro129 = icon -> (icon.getWidth() == 2048
                 && icon.getHeight() == 2732)
@@ -192,7 +192,7 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithCustomBaseIconPath_splashScreenIconForIPhoneDevices_includeBothOrientations() {
+    void pwaWithCustomBaseIconPath_splashScreenIconForIPhoneDevices_includeBothOrientations() {
         // iPhone 13 Pro Max, iPhone 12 Pro Max
         Predicate<PwaIcon> iPhone13ProMaxAnd12ProMax = icon -> (icon
                 .getWidth() == 1284 && icon.getHeight() == 2778)
@@ -299,7 +299,7 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+    void pwaWithCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithCustomOfflinePath.class.getAnnotation(PWA.class));
@@ -310,7 +310,7 @@ class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithoutCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+    void pwaWithoutCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaRegistryTest.class.getAnnotation(PWA.class));

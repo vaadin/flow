@@ -68,7 +68,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @BeforeEach
-    public void init() {
+    void init() {
         VaadinService service = mock(VaadinService.class);
         context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
@@ -84,19 +84,19 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void assertWebComponentRegistry() {
+    void assertWebComponentRegistry() {
         assertNotNull(registry);
     }
 
     @Test
-    public void assertRegistryIsSingleton() {
+    void assertRegistryIsSingleton() {
         assertSame(registry,
                 WebComponentConfigurationRegistry.getInstance(context),
                 "WebComponentConfigurationRegistry instance should be singleton");
     }
 
     @Test
-    public void setConfigurations_allCanBeFoundInRegistry() {
+    void setConfigurations_allCanBeFoundInRegistry() {
         assertTrue(
                 registry.setConfigurations(createConfigurations(
                         MyComponentExporter.class, UserBoxExporter.class)),
@@ -118,7 +118,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
+    void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class));
 
@@ -137,7 +137,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void getWebComponentConfigurationsForComponent() {
+    void getWebComponentConfigurationsForComponent() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class,
                         MyComponentExporter2.class, UserBoxExporter.class));
@@ -155,7 +155,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void setConfigurationsTwice_onlyFirstSetIsAccepted() {
+    void setConfigurationsTwice_onlyFirstSetIsAccepted() {
         Set<WebComponentConfiguration<? extends Component>> configs1st = createConfigurations(
                 MyComponentExporter.class);
 
@@ -178,7 +178,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void getConfigurations_uninitializedReturnsEmptySet() {
+    void getConfigurations_uninitializedReturnsEmptySet() {
         WebComponentConfigurationRegistry uninitializedRegistry = new WebComponentConfigurationRegistry();
 
         Set<?> set = uninitializedRegistry.getConfigurations();
@@ -187,7 +187,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void hasConfigurations() {
+    void hasConfigurations() {
         registry.setConfigurations(
                 createConfigurations(MyComponentExporter.class,
                         MyComponentExporter2.class, UserBoxExporter.class));
@@ -197,7 +197,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void hasConfigurations_noConfigurations() {
+    void hasConfigurations_noConfigurations() {
         assertFalse(registry.hasConfigurations(),
                 "New registry should have no configurations");
 
@@ -208,7 +208,7 @@ class WebComponentConfigurationRegistryTest {
     }
 
     @Test
-    public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
+    void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 10;
 

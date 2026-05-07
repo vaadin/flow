@@ -37,13 +37,13 @@ class CssBundlerTest {
     private File themeFolder;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         themesFolder = Files.createTempDirectory("cssbundlertest").toFile();
         themeFolder = new File(themesFolder, "my-theme");
     }
 
     @Test
-    public void differentImportSyntaxesSupported() throws Exception {
+    void differentImportSyntaxesSupported() throws Exception {
         String[] validImports = new String[] { //
                 // The typical you actually use
                 "@import url(foo.css);", //
@@ -67,7 +67,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void layerImportsNotHandled() throws IOException {
+    void layerImportsNotHandled() throws IOException {
         assertImportNotHandled("@import url('foo.css') layer(foo);");
         assertImportNotHandled("@import url('foo.css') layer(foo) ;");
         assertImportNotHandled("@import 'theme.css' layer(utilities);");
@@ -77,7 +77,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void conditionalImportsNotHandled() throws IOException {
+    void conditionalImportsNotHandled() throws IOException {
         assertImportNotHandled("@import url('foo.css') print;");
         assertImportNotHandled("@import url('bluish.css') print, screen;");
         assertImportNotHandled("@import \"common.css\" screen;");
@@ -86,7 +86,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void relativeUrlsRewritten() throws IOException {
+    void relativeUrlsRewritten() throws IOException {
         writeCss("background-image: url('foo/bar.png');", "styles.css");
         createThemeFile("foo/bar.png");
 
@@ -111,7 +111,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void relativeUrlsWithExtraInfoRewritten() throws IOException {
+    void relativeUrlsWithExtraInfoRewritten() throws IOException {
         writeCss(
                 """
                         @font-face {
@@ -136,7 +136,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void relativeUrlsInSubFolderRewritten() throws IOException {
+    void relativeUrlsInSubFolderRewritten() throws IOException {
         writeCss("@import url('sub/sub.css');", "styles.css");
         writeCss("background-image: url('./file.png');", "sub/sub.css");
         createThemeFile("sub/file.png");
@@ -148,7 +148,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void dollarAndBackslashWorks() throws IOException {
+    void dollarAndBackslashWorks() throws IOException {
         String css = "body { content: '$\\'}";
         writeCss("@import 'other.css';", "styles.css");
         writeCss(css, "other.css");
@@ -159,7 +159,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void unhandledImportsAreMovedToTop() throws IOException {
+    void unhandledImportsAreMovedToTop() throws IOException {
         writeCss("body {background: blue};", "other.css");
         writeCss(
                 """
@@ -194,7 +194,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void themeAssetsRelativeUrlsRewritten() throws IOException {
+    void themeAssetsRelativeUrlsRewritten() throws IOException {
         createThemeJson("""
                 {
                   "assets": {
@@ -221,8 +221,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void themeAssetsRelativeUrlsInSubFolderRewritten()
-            throws IOException {
+    void themeAssetsRelativeUrlsInSubFolderRewritten() throws IOException {
         createThemeJson("""
                 {
                   "assets": {
@@ -258,7 +257,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void relativeUrl_notThemeResourceNotAssets_notRewritten()
+    void relativeUrl_notThemeResourceNotAssets_notRewritten()
             throws IOException {
         createThemeJson("""
                 {
@@ -295,7 +294,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void ignoreCommentedRules() throws Exception {
+    void ignoreCommentedRules() throws Exception {
         File cssFile = writeCss("""
                 /*
                 @import url('a.css');
@@ -366,14 +365,14 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_removesComments() {
+    void minifyCss_removesComments() {
         String css = "/* comment */ .class { color: red; }";
         String result = CssBundler.minifyCss(css);
         assertEquals(".class{color: red}", result);
     }
 
     @Test
-    public void minifyCss_doesNotRemoveContentComment() {
+    void minifyCss_doesNotRemoveContentComment() {
         String css = """
                 .selector {
                   content: "/* not a comment, should not remove */";
@@ -386,7 +385,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_removesMultilineComments() {
+    void minifyCss_removesMultilineComments() {
         String css = """
                 /* This is a
                    multiline comment */
@@ -397,21 +396,21 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_collapsesWhitespace() {
+    void minifyCss_collapsesWhitespace() {
         String css = ".class   {   color:   red;   }";
         String result = CssBundler.minifyCss(css);
         assertEquals(".class{color: red}", result);
     }
 
     @Test
-    public void minifyCss_removesTrailingSemicolons() {
+    void minifyCss_removesTrailingSemicolons() {
         String css = ".class { color: red; }";
         String result = CssBundler.minifyCss(css);
         assertEquals(".class{color: red}", result);
     }
 
     @Test
-    public void minifyCss_handlesMultipleRules() {
+    void minifyCss_handlesMultipleRules() {
         String css = """
                 .class1 { color: red; }
                 .class2 { background: blue; }
@@ -421,7 +420,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_handlesCalc_noRemovalOfWhitespace() {
+    void minifyCss_handlesCalc_noRemovalOfWhitespace() {
         String css = """
                 span.test::before {
                     content: "";
@@ -441,14 +440,14 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_preservesSelectorsWithCombinators() {
+    void minifyCss_preservesSelectorsWithCombinators() {
         String css = ".parent > .child { color: red; }";
         String result = CssBundler.minifyCss(css);
         assertEquals(".parent>.child{color: red}", result);
     }
 
     @Test
-    public void minifyCss_keyframes() {
+    void minifyCss_keyframes() {
         String content = """
                 @-webkit-keyframes configuratorFlyLeft {
                 	0% {left: 0;}
@@ -466,7 +465,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_CSSMediaQueriesHandled() {
+    void minifyCss_CSSMediaQueriesHandled() {
         String content = """
                 @media (max-width: 1200px) {
                     legend {
@@ -480,14 +479,14 @@ class CssBundlerTest {
     }
 
     @Test
-    public void minifyCss_handlesEmptyInput() {
+    void minifyCss_handlesEmptyInput() {
         assertEquals("", CssBundler.minifyCss(""));
         assertEquals("", CssBundler.minifyCss("   "));
         assertEquals("", CssBundler.minifyCss("/* only comment */"));
     }
 
     @Test
-    public void inlineImports_resolvesNodeModulesImport() throws IOException {
+    void inlineImports_resolvesNodeModulesImport() throws IOException {
         // Create a node_modules structure
         File nodeModules = new File(themesFolder, "node_modules");
         File packageDir = new File(nodeModules, "some-package");
@@ -512,8 +511,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void inlineImports_prefersRelativeOverNodeModules()
-            throws IOException {
+    void inlineImports_prefersRelativeOverNodeModules() throws IOException {
         // Create a node_modules structure
         File nodeModules = new File(themesFolder, "node_modules");
         File packageDir = new File(nodeModules, "local");
@@ -546,8 +544,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void inlineImports_handlesNullNodeModulesFolder()
-            throws IOException {
+    void inlineImports_handlesNullNodeModulesFolder() throws IOException {
         writeCss("@import 'nonexistent/styles.css';\n.main { color: red; }",
                 "styles.css");
 
@@ -563,7 +560,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void cyclicImportsDoNotCauseStackOverflow() throws IOException {
+    void cyclicImportsDoNotCauseStackOverflow() throws IOException {
         // a.css imports b.css, b.css imports a.css
         writeCss("@import 'b.css';\n.from-a { color: red; }", "a.css");
         writeCss("@import 'a.css';\n.from-b { color: blue; }", "b.css");
@@ -582,8 +579,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void transitiveCyclicImportsDoNotCauseStackOverflow()
-            throws IOException {
+    void transitiveCyclicImportsDoNotCauseStackOverflow() throws IOException {
         // a.css -> b.css -> c.css -> a.css
         writeCss("@import 'b.css';\n.from-a { color: red; }", "a.css");
         writeCss("@import 'c.css';\n.from-b { color: blue; }", "b.css");
@@ -602,7 +598,7 @@ class CssBundlerTest {
     }
 
     @Test
-    public void selfImportDoesNotCauseStackOverflow() throws IOException {
+    void selfImportDoesNotCauseStackOverflow() throws IOException {
         // a.css imports itself
         writeCss("@import 'a.css';\n.from-a { color: red; }", "a.css");
         writeCss("@import 'a.css';", "styles.css");
@@ -617,7 +613,140 @@ class CssBundlerTest {
     }
 
     @Test
-    public void cyclicImportsInNestedFoldersDoNotCauseStackOverflow()
+    void inlineImportsForStaticResourcesRelative_rewritesUrlFromNestedImport()
+            throws IOException {
+        writeCss("@import url('./views/messages.css');", "styles.css");
+        writeCss(".icon { mask-image: url(\"../images/foo.svg\"); }",
+                "views/messages.css");
+        createThemeFile("images/foo.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/foo.svg')"),
+                "Expected url rewritten to 'images/foo.svg' but got: "
+                        + result);
+        assertFalse(result.contains("../images/"),
+                "Expected '../images/' to be rewritten away but got: "
+                        + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_entryFileUrlNormalized()
+            throws IOException {
+        // Use double quotes and a leading "./" — both should be normalized
+        // away so that the rewrite path is actually exercised.
+        writeCss("background-image: url(\"./images/foo.svg\");", "styles.css");
+        createThemeFile("images/foo.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/foo.svg')"),
+                "Expected url normalized to single-quoted 'images/foo.svg' but got: "
+                        + result);
+        assertFalse(result.contains("./images/"),
+                "Expected leading './' to be normalized away but got: "
+                        + result);
+        assertFalse(result.contains("url(\""),
+                "Expected double-quoted url to be rewritten to single quotes but got: "
+                        + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_absoluteAndProtocolUrlsUnchanged()
+            throws IOException {
+        writeCss("""
+                background-image: url('/static/foo.svg');
+                background-image: url('https://cdn.example.com/bar.svg');
+                background-image: url('data:image/svg+xml;base64,AAAA');
+                """, "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('/static/foo.svg')"),
+                "Absolute url should be unchanged: " + result);
+        assertTrue(result.contains("url('https://cdn.example.com/bar.svg')"),
+                "Protocol url should be unchanged: " + result);
+        assertTrue(result.contains("url('data:image/svg+xml;base64,AAAA')"),
+                "Data url should be unchanged: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_nonExistentFileUnchanged()
+            throws IOException {
+        writeCss("background-image: url('images/missing.svg');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('images/missing.svg')"),
+                "Non-existent file url should be unchanged: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_urlEscapingBaseFolderUnchanged()
+            throws IOException {
+        // Create a file outside the themeFolder (base folder for the rewrite)
+        File outside = new File(themesFolder, "outside.svg");
+        outside.getParentFile().mkdirs();
+        outside.createNewFile();
+
+        writeCss("background-image: url('../outside.svg');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('../outside.svg')"),
+                "Url targeting outside base folder should be left untouched: "
+                        + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_deepNestedImport()
+            throws IOException {
+        writeCss("@import url('a/b/c/x.css');", "styles.css");
+        writeCss(".deep { background: url(\"../../../img/y.svg\"); }",
+                "a/b/c/x.css");
+        createThemeFile("img/y.svg");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), null);
+
+        assertTrue(result.contains("url('img/y.svg')"),
+                "Expected url rewritten to 'img/y.svg' but got: " + result);
+    }
+
+    @Test
+    void inlineImportsForStaticResourcesRelative_nodeModulesUrlsLeftUntouched()
+            throws IOException {
+        // CSS imported from node_modules typically references sibling assets
+        // inside the same package using relative paths. Those targets live
+        // outside the entry file's base folder, so the rewriter must leave
+        // the urls alone — otherwise we would invent a path the runtime
+        // cannot serve.
+        File nodeModulesFolder = new File(themesFolder, "node_modules");
+        File pkgFolder = new File(nodeModulesFolder, "some-pkg");
+        pkgFolder.mkdirs();
+        File pkgCss = new File(pkgFolder, "pkg.css");
+        FileUtils.writeStringToFile(pkgCss,
+                ".pkg { background: url('./icon.svg'); }",
+                StandardCharsets.UTF_8);
+        new File(pkgFolder, "icon.svg").createNewFile();
+
+        writeCss("@import url('some-pkg/pkg.css');", "styles.css");
+
+        String result = CssBundler.inlineImportsForStaticResourcesRelative(
+                themeFolder, getThemeFile("styles.css"), nodeModulesFolder);
+
+        assertTrue(result.contains("url('./icon.svg')"),
+                "Url inside node_modules CSS should be left untouched but got: "
+                        + result);
+    }
+
+    @Test
+    void cyclicImportsInNestedFoldersDoNotCauseStackOverflow()
             throws IOException {
         // styles.css imports sub/a.css
         // sub/a.css imports ../b.css (back to root)

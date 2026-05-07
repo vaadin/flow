@@ -25,10 +25,10 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NativeDetailsBindTextTest extends SignalsUnitTest {
+class NativeDetailsBindTextTest extends SignalsUnitTest {
 
     @Test
-    public void bindSummaryText_updatesTextOnSignalChange() {
+    void bindSummaryText_updatesTextOnSignalChange() {
         NativeDetails details = new NativeDetails();
         UI.getCurrent().add(details);
 
@@ -43,7 +43,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindSummaryText_setSummaryTextWhileBindingActive_throws() {
+    void bindSummaryText_setSummaryTextWhileBindingActive_throws() {
         NativeDetails details = new NativeDetails();
         UI.getCurrent().add(details);
 
@@ -55,7 +55,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindSummaryText_nullSignal_throwsNPE() {
+    void bindSummaryText_nullSignal_throwsNPE() {
         NativeDetails details = new NativeDetails();
         UI.getCurrent().add(details);
 
@@ -64,7 +64,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void constructorWithSignal_bindsSummaryText() {
+    void constructorWithSignal_bindsSummaryText() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         NativeDetails details = new NativeDetails(signal);
         UI.getCurrent().add(details);
@@ -76,7 +76,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void constructorWithSignalAndContent_bindsSummaryTextAndSetsContent() {
+    void constructorWithSignalAndContent_bindsSummaryTextAndSetsContent() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         Span content = new Span("content");
         NativeDetails details = new NativeDetails(signal, content);

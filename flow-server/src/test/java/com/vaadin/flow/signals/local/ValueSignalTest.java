@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ValueSignalTest extends SignalTestBase {
+class ValueSignalTest extends SignalTestBase {
 
     @Test
     void constructor_initialValue_initialValueUsed() {

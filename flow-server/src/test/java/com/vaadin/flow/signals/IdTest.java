@@ -24,7 +24,7 @@ import tools.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class IdTest {
+class IdTest {
     @Test
     void randomId_isRandom() {
         // Test will fail once every 18 quintillion times or so

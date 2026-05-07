@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ShadowRootStateProviderTest {
 
     @Test
-    public void supportsSelfCreatedNode() {
+    void supportsSelfCreatedNode() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
@@ -36,13 +36,13 @@ class ShadowRootStateProviderTest {
     }
 
     @Test
-    public void doesNotSupportEmptyNode() {
+    void doesNotSupportEmptyNode() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         assertFalse(provider.supports(new StateNode()));
     }
 
     @Test
-    public void createShadowRootNode_originalNodeIsInitialized() {
+    void createShadowRootNode_originalNodeIsInitialized() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
@@ -51,7 +51,7 @@ class ShadowRootStateProviderTest {
     }
 
     @Test
-    public void getParent_parentIsHostElement() {
+    void getParent_parentIsHostElement() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);

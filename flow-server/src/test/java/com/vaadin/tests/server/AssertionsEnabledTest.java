@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AssertionsEnabledTest {
     @Test
-    public void testAssertionsEnabled() {
+    void testAssertionsEnabled() {
         boolean assertFailed = false;
         try {
             assert false;

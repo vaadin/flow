@@ -42,7 +42,7 @@ class RouteNotFoundErrorTest {
     }
 
     @Test
-    public void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
+    void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
         BeforeEnterEvent event = createEvent(true);
@@ -83,7 +83,7 @@ class RouteNotFoundErrorTest {
     }
 
     @Test
-    public void setErrorParameter_devMode_noRoutes() {
+    void setErrorParameter_devMode_noRoutes() {
         RouteNotFoundError page = new RouteNotFoundError();
         BeforeEnterEvent event = createEvent(false);
 

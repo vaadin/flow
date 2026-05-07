@@ -129,7 +129,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void testCreateInstance() {
+    void testCreateInstance() {
         OkToCreate instance = ReflectTools.createInstance(OkToCreate.class);
 
         assertNotNull(instance);
@@ -138,7 +138,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void testCreateInstance_varArgsCtor() {
+    void testCreateInstance_varArgsCtor() {
         VarArgsCtor instance = ReflectTools.createInstance(VarArgsCtor.class);
 
         assertNotNull(instance);
@@ -147,42 +147,42 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void createNonStaticInnerClass() {
+    void createNonStaticInnerClass() {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                 NonStaticInnerClass.class);
     }
 
     @Test
-    public void createPrivateInnerClass() {
+    void createPrivateInnerClass() {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                 PrivateInnerClass.class);
     }
 
     @Test
-    public void createStaticInnerPrivateConstructorClass() {
+    void createStaticInnerPrivateConstructorClass() {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
                 StaticInnerPrivateConstructorClass.class);
     }
 
     @Test
-    public void createStaticInnerConstructorNeedsParamsClass() {
+    void createStaticInnerConstructorNeedsParamsClass() {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
                 StaticInnerConstructorNeedsParamsClass.class);
     }
 
     @Test
-    public void createConstructorThrowsExceptionClass() {
+    void createConstructorThrowsExceptionClass() {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                 ConstructorThrowsExceptionClass.class);
     }
 
     @Test
-    public void localClass() {
+    void localClass() {
         class LocalClass {
         }
         assertError(ReflectTools.CREATE_INSTANCE_FAILED_LOCAL_CLASS,
@@ -190,7 +190,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void createProxyForNonStaticInnerClass() {
+    void createProxyForNonStaticInnerClass() {
         Class<NonStaticInnerClass> originalClass = NonStaticInnerClass.class;
         Class<?> proxyClass = createProxyClass(originalClass);
 
@@ -277,7 +277,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void getGenericInterfaceClass() {
+    void getGenericInterfaceClass() {
         Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
                 HasInterface.class, TestInterface.class);
 
@@ -290,7 +290,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void getGenericInterfaceClasses() {
+    void getGenericInterfaceClasses() {
 
         List<Class<?>> genericInterfaceTypes = ReflectTools
                 .getGenericInterfaceTypes(HasInterface.class,
@@ -323,37 +323,37 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findCommonBaseType_sameType() {
+    void findCommonBaseType_sameType() {
         assertSame(Number.class,
                 ReflectTools.findCommonBaseType(Number.class, Number.class));
     }
 
     @Test
-    public void findCommonBaseType_aExtendsB() {
+    void findCommonBaseType_aExtendsB() {
         assertSame(Number.class,
                 ReflectTools.findCommonBaseType(Integer.class, Number.class));
     }
 
     @Test
-    public void findCommonBaseType_bExtendsA() {
+    void findCommonBaseType_bExtendsA() {
         assertSame(Number.class,
                 ReflectTools.findCommonBaseType(Number.class, Integer.class));
     }
 
     @Test
-    public void findCommonBaseType_commonBase() {
+    void findCommonBaseType_commonBase() {
         assertSame(Number.class,
                 ReflectTools.findCommonBaseType(Double.class, Integer.class));
     }
 
     @Test
-    public void findCommonBaseType_noCommonBase() {
+    void findCommonBaseType_noCommonBase() {
         assertSame(Object.class,
                 ReflectTools.findCommonBaseType(String.class, Number.class));
     }
 
     @Test
-    public void findCommonBaseType_interfaceNotSupported() {
+    void findCommonBaseType_interfaceNotSupported() {
         var exception = assertThrows(IllegalArgumentException.class,
                 () -> ReflectTools.findCommonBaseType(Comparable.class,
                         Object.class));
@@ -362,7 +362,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findCommonBaseType_primitiveNotSupported() {
+    void findCommonBaseType_primitiveNotSupported() {
         var exception = assertThrows(IllegalArgumentException.class,
                 () -> ReflectTools.findCommonBaseType(int.class, Object.class));
 
@@ -371,7 +371,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
+    void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
         List<Method> setters = ReflectTools.getSetterMethods(Category.class)
                 .collect(Collectors.toList());
         assertEquals(1, setters.size());
@@ -381,7 +381,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
+    void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
         CustomClassLoader loader = new CustomClassLoader();
         ClassLoader ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(loader, loader).get();
@@ -400,7 +400,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
+    void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader child = new CustomClassLoader(parent);
         ClassLoader ret = ReflectTools
@@ -410,7 +410,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenLoadersShareParent() {
+    void findClosestCommonClassLoaderAncestor_findsAncestor_whenLoadersShareParent() {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader childA = new CustomClassLoader(parent);
         CustomClassLoader childB = new CustomClassLoader(parent);
@@ -421,7 +421,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenAncestorsAreOnDifferentLevels() {
+    void findClosestCommonClassLoaderAncestor_findsAncestor_whenAncestorsAreOnDifferentLevels() {
         CustomClassLoader grandParent = new CustomClassLoader();
         CustomClassLoader parent = new CustomClassLoader(grandParent);
         CustomClassLoader childA = new CustomClassLoader(parent);
@@ -434,7 +434,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void findClosestCommonClassLoaderAncestor_empty_whenEitherOrBothNull() {
+    void findClosestCommonClassLoaderAncestor_empty_whenEitherOrBothNull() {
         CustomClassLoader loader = new CustomClassLoader();
 
         Optional<ClassLoader> ret;
@@ -450,40 +450,40 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void hasAnnotation_annotationPresents_returnsTrue() {
+    void hasAnnotation_annotationPresents_returnsTrue() {
         assertTrue(ReflectTools.hasAnnotation(ClassWithAnnotation.class,
                 TestAnnotation.class.getName()));
     }
 
     @Test
-    public void hasAnnotation_annotationIsAbsent_returnsFalse() {
+    void hasAnnotation_annotationIsAbsent_returnsFalse() {
         assertFalse(ReflectTools.hasAnnotation(ClassWithoutAnnotation.class,
                 TestAnnotation.class.getName()));
     }
 
     @Test
-    public void hasAnnotationWithSimpleName_annotationPresents_returnsTrue() {
+    void hasAnnotationWithSimpleName_annotationPresents_returnsTrue() {
         assertTrue(ReflectTools.hasAnnotationWithSimpleName(
                 ClassWithAnnotation.class,
                 TestAnnotation.class.getSimpleName()));
     }
 
     @Test
-    public void hasAnnotationWithSimpleName_annotationIsAbsent_returnsFalse() {
+    void hasAnnotationWithSimpleName_annotationIsAbsent_returnsFalse() {
         assertFalse(ReflectTools.hasAnnotationWithSimpleName(
                 ClassWithoutAnnotation.class,
                 TestAnnotation.class.getSimpleName()));
     }
 
     @Test
-    public void getAnnotationMethodValue_annotaitonHasMethod_theValueIsReturned() {
+    void getAnnotationMethodValue_annotaitonHasMethod_theValueIsReturned() {
         assertEquals("foo", ReflectTools.getAnnotationMethodValue(
                 ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
                 "value"));
     }
 
     @Test
-    public void getAnnotationMethodValue_annotationHasNoMethod_throws() {
+    void getAnnotationMethodValue_annotationHasNoMethod_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             ReflectTools.getAnnotationMethodValue(ClassWithAnnotation.class
                     .getAnnotation(TestAnnotation.class), "foo");
@@ -491,7 +491,7 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void getAnnotation_annotationPresents_returnsAnnotation() {
+    void getAnnotation_annotationPresents_returnsAnnotation() {
         Optional<Annotation> annotation = ReflectTools.getAnnotation(
                 ClassWithAnnotation.class, TestAnnotation.class.getName());
         assertTrue(annotation.isPresent());
@@ -501,25 +501,25 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void getAnnotation_annotationIsAbsent_returnsEmpty() {
+    void getAnnotation_annotationIsAbsent_returnsEmpty() {
         Optional<Annotation> annotation = ReflectTools.getAnnotation(
                 ClassWithoutAnnotation.class, TestAnnotation.class.getName());
         assertFalse(annotation.isPresent());
     }
 
     @Test
-    public void intefaceShouldNotBeInstantiableService() {
+    void intefaceShouldNotBeInstantiableService() {
         assertFalse(ReflectTools.isInstantiableService(TestInterface.class));
     }
 
     @Test
-    public void abstractClassShouldNotBeInstantiableService() {
+    void abstractClassShouldNotBeInstantiableService() {
         assertFalse(
                 ReflectTools.isInstantiableService(TestAbstractClass.class));
     }
 
     @Test
-    public void nonPublicClassShouldNotBeInstantiableService() {
+    void nonPublicClassShouldNotBeInstantiableService() {
         assertFalse(
                 ReflectTools.isInstantiableService(TestProtectedClass.class));
         assertFalse(ReflectTools
@@ -528,25 +528,25 @@ class ReflectToolsTest {
     }
 
     @Test
-    public void ClassWithoutNonArgConstructorShouldNotBeInstantiableService() {
+    void ClassWithoutNonArgConstructorShouldNotBeInstantiableService() {
         assertFalse(ReflectTools
                 .isInstantiableService(TestNoNonArgConstructorClass.class));
     }
 
     @Test
-    public void nonStaticInnerClassShouldNotBeInstantiableService() {
+    void nonStaticInnerClassShouldNotBeInstantiableService() {
         assertFalse(
                 ReflectTools.isInstantiableService(NonStaticInnerClass.class));
     }
 
     @Test
-    public void privateInnerClassShouldNotBeInstantiableService() {
+    void privateInnerClassShouldNotBeInstantiableService() {
         assertFalse(
                 ReflectTools.isInstantiableService(PrivateInnerClass.class));
     }
 
     @Test
-    public void normalSericieShouldBeInstantiableService() {
+    void normalSericieShouldBeInstantiableService() {
         assertTrue(ReflectTools.isInstantiableService(NormalService.class));
     }
 

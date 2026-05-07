@@ -35,7 +35,7 @@ class DefaultErrorHandlerTest {
     Logger logger;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         logger = Mockito
                 .spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
         loggerFactory = Mockito.mockStatic(LoggerFactory.class);
@@ -47,12 +47,12 @@ class DefaultErrorHandlerTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         loggerFactory.close();
     }
 
     @Test
-    public void error_acceptedException_errorHandled() {
+    void error_acceptedException_errorHandled() {
         DefaultErrorHandler errorHandler = Mockito
                 .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
                         MalformedURLException.class.getName())));
@@ -67,7 +67,7 @@ class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_ignoredException_notHandled() {
+    void error_ignoredException_notHandled() {
         DefaultErrorHandler errorHandler = Mockito
                 .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
                         MalformedURLException.class.getName(),
@@ -83,7 +83,7 @@ class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_subclassOfIgnoredException_errorHandled() {
+    void error_subclassOfIgnoredException_errorHandled() {
         DefaultErrorHandler errorHandler = Mockito.spy(
                 new DefaultErrorHandler(Set.of(IOException.class.getName())));
 
@@ -93,7 +93,7 @@ class DefaultErrorHandlerTest {
     }
 
     @Test
-    public void error_loggerAtDebugLevel_errorHandled() {
+    void error_loggerAtDebugLevel_errorHandled() {
         Mockito.reset(logger);
         Mockito.doReturn(true).when(logger).isDebugEnabled();
 

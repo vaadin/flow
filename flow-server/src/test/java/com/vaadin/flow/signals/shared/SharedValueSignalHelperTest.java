@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SharedValueSignalHelperTest extends SignalTestBase {
+class SharedValueSignalHelperTest extends SignalTestBase {
 
     record ImmutablePerson(String name, int age) {
         ImmutablePerson withName(String name) {

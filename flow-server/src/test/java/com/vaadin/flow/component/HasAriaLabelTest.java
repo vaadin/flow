@@ -29,28 +29,28 @@ class HasAriaLabelTest {
     }
 
     @Test
-    public void withoutAriaLabelComponent_getAriaLabelReturnsEmptyOptional() {
+    void withoutAriaLabelComponent_getAriaLabelReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
 
         assertFalse(component.getAriaLabel().isPresent());
     }
 
     @Test
-    public void withNullAriaLabel_getAriaLabelReturnsEmptyOptional() {
+    void withNullAriaLabel_getAriaLabelReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
         component.setAriaLabel(null);
         assertFalse(component.getAriaLabel().isPresent());
     }
 
     @Test
-    public void withEmptyAriaLabel_getAriaLabelReturnsEmptyString() {
+    void withEmptyAriaLabel_getAriaLabelReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setAriaLabel("");
         assertEquals("", component.getAriaLabel().get());
     }
 
     @Test
-    public void withAriaLabel_setAriaLabelToNullClearsAriaLabel() {
+    void withAriaLabel_setAriaLabelToNullClearsAriaLabel() {
         TestComponent component = new TestComponent();
         component.setAriaLabel("test AriaLabel");
 
@@ -59,7 +59,7 @@ class HasAriaLabelTest {
     }
 
     @Test
-    public void setAriaLabel() {
+    void setAriaLabel() {
         TestComponent component = new TestComponent();
         component.setAriaLabel("test AriaLabel");
 
@@ -67,28 +67,28 @@ class HasAriaLabelTest {
     }
 
     @Test
-    public void withoutAriaLabelledByComponent_getAriaLabelledByReturnsEmptyOptional() {
+    void withoutAriaLabelledByComponent_getAriaLabelledByReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
 
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
     @Test
-    public void withNullAriaLabelledBy_getAriaLabelledByReturnsEmptyOptional() {
+    void withNullAriaLabelledBy_getAriaLabelledByReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy(null);
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
     @Test
-    public void withEmptyAriaLabelledBy_getAriaLabelledByReturnsEmptyString() {
+    void withEmptyAriaLabelledBy_getAriaLabelledByReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("");
         assertEquals("", component.getAriaLabelledBy().get());
     }
 
     @Test
-    public void withAriaLabelledBy_setAriaLabelledByToNullClearsAriaLabelledBy() {
+    void withAriaLabelledBy_setAriaLabelledByToNullClearsAriaLabelledBy() {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("test AriaLabelledBy");
 
@@ -97,7 +97,7 @@ class HasAriaLabelTest {
     }
 
     @Test
-    public void setAriaLabelledBy() {
+    void setAriaLabelledBy() {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("test AriaLabelledBy");
 

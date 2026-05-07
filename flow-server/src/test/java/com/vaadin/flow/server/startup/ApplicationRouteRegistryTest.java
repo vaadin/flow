@@ -52,19 +52,19 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     private ApplicationRouteRegistry registry;
 
     @BeforeEach
-    public void init() {
+    void init() {
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));
     }
 
     @Test
-    public void assertApplicationRegistry() {
+    void assertApplicationRegistry() {
         assertEquals(ApplicationRouteRegistry.class,
                 getTestedRegistry().getClass());
     }
 
     @Test
-    public void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
+    void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
             throws InterruptedException, ExecutionException {
 
         List<Callable<Result>> callables = new ArrayList<>();
@@ -125,7 +125,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
+    void updateAndRemoveFromMultipleThreads_endResultAsExpected()
             throws InterruptedException, ExecutionException {
 
         getTestedRegistry().setRoute("home", MyRoute.class,
@@ -204,7 +204,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
+    void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
 
@@ -246,7 +246,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void routeChangeListener_correctChangesAreReturned() {
+    void routeChangeListener_correctChangesAreReturned() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
@@ -287,7 +287,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
+    void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
         getTestedRegistry().setRoute("", MyRoute.class,
                 Collections.emptyList());
 
@@ -331,7 +331,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+    void routeWithAliases_eventShowsCorrectlyAsRemoved() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
@@ -363,7 +363,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
-    public void setErrorNavigationTargets_abstractClassesAreIgnored() {
+    void setErrorNavigationTargets_abstractClassesAreIgnored() {
         registry.setErrorNavigationTargets(new HashSet<>(
                 Arrays.asList(ErrorView.class, AbstractErrorView.class)));
 

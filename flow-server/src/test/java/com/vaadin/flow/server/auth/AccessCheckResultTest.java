@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class AccessCheckResultTest {
 
     @Test
-    public void create_getsResultInstance() {
+    void create_getsResultInstance() {
         for (AccessCheckDecision decision : AccessCheckDecision.values()) {
             AccessCheckResult result = AccessCheckResult.create(decision,
                     decision.name());
@@ -33,31 +33,31 @@ class AccessCheckResultTest {
     }
 
     @Test
-    public void create_nullReason_throws() {
+    void create_nullReason_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> AccessCheckResult.create(null, "Something"));
     }
 
     @Test
-    public void create_denyWithoutReason_throws() {
+    void create_denyWithoutReason_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> AccessCheckResult.create(AccessCheckDecision.DENY, null));
     }
 
     @Test
-    public void create_rejectWithoutReason_throws() {
+    void create_rejectWithoutReason_throws() {
         assertThrows(IllegalArgumentException.class, () -> AccessCheckResult
                 .create(AccessCheckDecision.REJECT, null));
     }
 
     @Test
-    public void deny_noReason_throws() {
+    void deny_noReason_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> AccessCheckResult.deny(null));
     }
 
     @Test
-    public void reject_noReason_throws() {
+    void reject_noReason_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> AccessCheckResult.reject(null));
     }

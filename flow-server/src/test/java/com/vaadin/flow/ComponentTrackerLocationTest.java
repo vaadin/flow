@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ComponentTrackerLocationTest {
 
     @Test
-    public void findJavaFile_simpleClass() {
+    void findJavaFile_simpleClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -47,7 +47,7 @@ class ComponentTrackerLocationTest {
     }
 
     @Test
-    public void findJavaFile_simpleClass_dollarInPackage() {
+    void findJavaFile_simpleClass_dollarInPackage() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -65,7 +65,7 @@ class ComponentTrackerLocationTest {
     }
 
     @Test
-    public void findJavaFile_simpleClass_dollarInName() {
+    void findJavaFile_simpleClass_dollarInName() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -84,7 +84,7 @@ class ComponentTrackerLocationTest {
     }
 
     @Test
-    public void findJavaFile_innerClass() {
+    void findJavaFile_innerClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -103,7 +103,7 @@ class ComponentTrackerLocationTest {
     }
 
     @Test
-    public void findJavaFile_nestedInnerClass() {
+    void findJavaFile_nestedInnerClass() {
         File fakeSrcDir = new File("src");
         AbstractConfiguration configuration = Mockito
                 .mock(AbstractConfiguration.class);
@@ -122,7 +122,7 @@ class ComponentTrackerLocationTest {
     }
 
     @Test
-    public void findKotlinFile_simpleClass() {
+    void findKotlinFile_simpleClass() {
         File defaultJavaSrcDir = new File("src/main/java");
         File kotlinExpectedSrcDir = new File("src/main/kotlin");
         AbstractConfiguration configuration = Mockito

@@ -25,10 +25,10 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NativeLabelBindTextTest extends SignalsUnitTest {
+class NativeLabelBindTextTest extends SignalsUnitTest {
 
     @Test
-    public void bindText_updatesTextOnSignalChange() {
+    void bindText_updatesTextOnSignalChange() {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
@@ -43,7 +43,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_setTextWhileBindingActive_throws() {
+    void bindText_setTextWhileBindingActive_throws() {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
@@ -55,7 +55,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_nullSignal_throwsNPE() {
+    void bindText_nullSignal_throwsNPE() {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
@@ -63,7 +63,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void constructorWithSignal_bindsText() {
+    void constructorWithSignal_bindsText() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         NativeLabel label = new NativeLabel(signal);
         UI.getCurrent().add(label);

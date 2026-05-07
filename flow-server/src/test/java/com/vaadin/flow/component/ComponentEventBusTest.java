@@ -114,7 +114,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEvent_fire() {
+    void mappedDomEvent_fire() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
 
@@ -137,7 +137,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void serverEvent_fire() {
+    void serverEvent_fire() {
         AtomicInteger eventHandlerCalled = new AtomicInteger(0);
         AtomicReference<BigDecimal> dataValueInEvent = new AtomicReference<>(
                 new BigDecimal(0));
@@ -156,7 +156,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void serverNoDataEvent_fire() {
+    void serverNoDataEvent_fire() {
         TestComponent c = new TestComponent();
         EventTracker<ServerNoDataEvent> eventTracker = new EventTracker<>();
         c.addListener(ServerNoDataEvent.class, eventTracker);
@@ -166,19 +166,19 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void serverNoDataEvent_fire_noListeners() {
+    void serverNoDataEvent_fire_noListeners() {
         TestComponent c = new TestComponent();
         c.fireEvent(new ServerNoDataEvent(c, false));
     }
 
     @Test
-    public void mappedDomEvent_fire_noListeners() {
+    void mappedDomEvent_fire_noListeners() {
         TestComponent c = new TestComponent();
         fireDomEvent(c, "dom-event", createMinimalEventData());
     }
 
     @Test
-    public void mappedDomEvent_fire_missingData() {
+    void mappedDomEvent_fire_missingData() {
         TestComponent c = new TestComponent();
         EventTracker<MappedToDomEvent> eventListener = new EventTracker<>();
         c.addListener(MappedToDomEvent.class, eventListener);
@@ -193,7 +193,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithElementEventData_clientReportsElement_mapsElement() {
+    void mappedDomEventWithElementEventData_clientReportsElement_mapsElement() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -210,7 +210,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsTypeComponent_mapsComponent() {
+    void mappedDomEventWithComponentEventData_clientReportsTypeComponent_mapsComponent() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -227,7 +227,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsConcreteComponents_mapsComponents() {
+    void mappedDomEventWithComponentEventData_clientReportsConcreteComponents_mapsComponents() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -249,7 +249,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsMissingComponent_mapsComponentAndNull() {
+    void mappedDomEventWithComponentEventData_clientReportsMissingComponent_mapsComponentAndNull() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -280,7 +280,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsSiblingComponentToEventSource_mapsComponents() {
+    void mappedDomEventWithComponentEventData_clientReportsSiblingComponentToEventSource_mapsComponents() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -300,7 +300,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsElementMissing_returnsNull() {
+    void mappedDomEventWithComponentEventData_clientReportsElementMissing_returnsNull() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -317,7 +317,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithComponentEventData_clientReportsMissingNodeIdReported_returnsNull() {
+    void mappedDomEventWithComponentEventData_clientReportsMissingNodeIdReported_returnsNull() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent child = new TestComponent();
@@ -334,7 +334,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEventWithElementOrComponentEventData_clientReportsStateNodeForInvisibleComponent_returnsNull() {
+    void mappedDomEventWithElementOrComponentEventData_clientReportsStateNodeForInvisibleComponent_returnsNull() {
         final MockUI ui = new MockUI();
         final TestComponent component = new TestComponent();
         final TestComponent invisible = new TestComponent();
@@ -408,7 +408,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void domEvent_removeListener() {
+    void domEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         Registration remover = component.addListener(MappedToDomEvent.class,
@@ -427,7 +427,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void domEvent_fireClientEvent() {
+    void domEvent_fireClientEvent() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         component.addListener(MappedToDomEvent.class, eventTracker);
@@ -444,7 +444,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void domEvent_fireServerEvent() {
+    void domEvent_fireServerEvent() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         component.addListener(MappedToDomEvent.class, eventTracker);
@@ -461,7 +461,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void nonDomEvent_removeListener() {
+    void nonDomEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<ServerEvent> eventTracker = new EventTracker<>();
         Registration remover = component.addListener(ServerEvent.class,
@@ -475,7 +475,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void nonDomEvent_fireEvent() {
+    void nonDomEvent_fireEvent() {
         TestComponent component = new TestComponent();
         EventTracker<ServerEvent> eventTracker = new EventTracker<>();
         component.addListener(ServerEvent.class, eventTracker);
@@ -486,7 +486,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void domEvent_addListenerWithDomListenerConsumer() {
+    void domEvent_addListenerWithDomListenerConsumer() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         component.getEventBus().addListener(MappedToDomEvent.class,
@@ -494,7 +494,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void nonDomEvent_addListenerWithDomListenerConsumer_throws() {
+    void nonDomEvent_addListenerWithDomListenerConsumer_throws() {
         TestComponent component = new TestComponent();
         EventTracker<ServerEvent> eventTracker = new EventTracker<>();
         assertThrows(IllegalArgumentException.class,
@@ -506,7 +506,7 @@ class ComponentEventBusTest {
     private int calls = 0;
 
     @Test
-    public void domEvent_addSameListenerTwice() {
+    void domEvent_addSameListenerTwice() {
         TestComponent component = new TestComponent();
 
         ComponentEventListener<MappedToDomEvent> listener = e -> calls++;
@@ -540,7 +540,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void multipleEventsForSameDomEvent_removeListener() {
+    void multipleEventsForSameDomEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomNoDataEvent> eventTracker2 = new EventTracker<>();
@@ -562,7 +562,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void multipleEventsForSameDomEvent_fireEvent() {
+    void multipleEventsForSameDomEvent_fireEvent() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomNoDataEvent> eventTracker2 = new EventTracker<>();
@@ -582,7 +582,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void multipleListenersForSameEvent_fireEvent() {
+    void multipleListenersForSameEvent_fireEvent() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomEvent> eventTracker2 = new EventTracker<>();
@@ -604,7 +604,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void multipleListenersForSameEvent_removeListener() {
+    void multipleListenersForSameEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomEvent> eventTracker2 = new EventTracker<>();
@@ -628,7 +628,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void invalidEventConstructor_addListener() {
+    void invalidEventConstructor_addListener() {
         TestComponent c = new TestComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> c.addListener(InvalidMappedToDomEvent.class, e -> {
@@ -636,7 +636,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void invalidEventDataInConstructor_addListener() {
+    void invalidEventDataInConstructor_addListener() {
         TestComponent c = new TestComponent();
         assertThrows(IllegalArgumentException.class,
                 () -> c.addListener(MappedToDomInvalidEventData.class, e -> {
@@ -644,7 +644,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void multipleEventDataConstructors_addListener() {
+    void multipleEventDataConstructors_addListener() {
         TestComponent c = new TestComponent();
         assertThrows(IllegalArgumentException.class, () -> c
                 .addListener(MappedToDomEventMultipleConstructors.class, e -> {
@@ -652,21 +652,21 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void hasListeners_nullEventType_throws() {
+    void hasListeners_nullEventType_throws() {
         ComponentEventBus eventBus = new ComponentEventBus(new TestComponent());
         assertThrows(IllegalArgumentException.class,
                 () -> eventBus.hasListener(null));
     }
 
     @Test
-    public void getListeners_nullEventType_throws() {
+    void getListeners_nullEventType_throws() {
         ComponentEventBus eventBus = new ComponentEventBus(new TestComponent());
         assertThrows(IllegalArgumentException.class,
                 () -> eventBus.getListeners(null));
     }
 
     @Test
-    public void getListeners_eventType_listenersCollection() {
+    void getListeners_eventType_listenersCollection() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         Registration remover = component.addListener(MappedToDomEvent.class,
@@ -678,7 +678,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void getListeners_subclassOfEventType_listenersCollection() {
+    void getListeners_subclassOfEventType_listenersCollection() {
         TestComponent component = new TestComponent();
         EventTracker<KeyPressEvent> eventTracker = new EventTracker<>();
         EventTracker<KeyUpEvent> eventTracker2 = new EventTracker<>();
@@ -693,7 +693,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void getListeners_notExistingEventType_emptyListenersCollection() {
+    void getListeners_notExistingEventType_emptyListenersCollection() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         Registration remover = component.addListener(MappedToDomEvent.class,
@@ -704,7 +704,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void testFireEvent_noListeners_eventBusNotCreated() {
+    void testFireEvent_noListeners_eventBusNotCreated() {
         AtomicInteger eventBusCreated = new AtomicInteger();
         TestComponent c = new TestComponent() {
             @Override
@@ -719,7 +719,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void eventUnregisterListener_insideListener() {
+    void eventUnregisterListener_insideListener() {
         TestComponent c = new TestComponent();
         c.addListener(ServerEvent.class, e -> {
             e.unregisterListener();
@@ -730,7 +730,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void eventUnregisterListener_insideListenerTwiceThrows() {
+    void eventUnregisterListener_insideListenerTwiceThrows() {
         TestComponent c = new TestComponent();
         c.addListener(ServerEvent.class, e -> {
             e.unregisterListener();
@@ -741,7 +741,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void eventUnregisterListener_outsideListenerTwiceThrows() {
+    void eventUnregisterListener_outsideListenerTwiceThrows() {
         TestComponent c = new TestComponent();
         AtomicReference<ServerEvent> storedEvent = new AtomicReference<>();
         c.addListener(ServerEvent.class, e -> {
@@ -753,7 +753,7 @@ class ComponentEventBusTest {
     }
 
     @Test // #7826
-    public void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
+    void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
         final TestButton button = new TestButton();
         try (MockedStatic<MessageDigestUtil> util = Mockito
                 .mockStatic(MessageDigestUtil.class)) {
@@ -767,7 +767,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void addListener_nullListener_failFast() {
+    void addListener_nullListener_failFast() {
         final TestButton button = new TestButton();
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
@@ -777,7 +777,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void eventWithBeanParameter_beanDeserialized() {
+    void eventWithBeanParameter_beanDeserialized() {
         // Test that @EventData works with bean types, not just primitives
         TestComponent c = new TestComponent();
         EventTracker<EventWithBeanData> eventTracker = new EventTracker<>();
@@ -809,7 +809,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void inertElement_domEventWithoutAllowInert_listenerNotCalled() {
+    void inertElement_domEventWithoutAllowInert_listenerNotCalled() {
         TestComponent component = new TestComponent();
 
         // Make element inert first
@@ -830,7 +830,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void inertElement_domEventWithAllowInert_listenerCalled() {
+    void inertElement_domEventWithAllowInert_listenerCalled() {
         TestComponent component = new TestComponent();
 
         // Make element inert first
@@ -852,7 +852,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    public void nonInertElement_domEventWithAllowInert_listenerCalled() {
+    void nonInertElement_domEventWithAllowInert_listenerCalled() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEventWithAllowInert> eventTracker = new EventTracker<>();
         component.addListener(MappedToDomEventWithAllowInert.class,

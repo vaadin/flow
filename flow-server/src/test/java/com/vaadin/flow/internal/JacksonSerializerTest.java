@@ -307,7 +307,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeBasicTypes_returnJsonBasicTypes() {
+    void serializeBasicTypes_returnJsonBasicTypes() {
         JsonNode json = JacksonSerializer.toJson("someString");
         assertTrue(json instanceof StringNode,
                 "The JsonNode should be instanceof JsonString");
@@ -355,14 +355,14 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeNull_returnNull() {
+    void serializeNull_returnNull() {
         JsonNode json = JacksonSerializer.toJson((Object) null);
         assertTrue(json instanceof NullNode,
                 "The JsonNode should be instanceof JsonNull");
     }
 
     @Test
-    public void serializeEmptyObjectWithBasicTypes_returnJsonObjectWithEmptyProperties() {
+    void serializeEmptyObjectWithBasicTypes_returnJsonObjectWithEmptyProperties() {
         ObjectWithSimpleTypes bean = new ObjectWithSimpleTypes();
         JsonNode json = JacksonSerializer.toJson(bean);
         assertTrue(json instanceof ObjectNode,
@@ -410,7 +410,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializePopulatedObjectWithBasicTypes_returnJsonObjectWithDefinedProperties() {
+    void serializePopulatedObjectWithBasicTypes_returnJsonObjectWithDefinedProperties() {
         ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
 
         JsonNode json = JacksonSerializer.toJson(bean);
@@ -463,7 +463,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeEmptyObjectWithObjects_returnJsonObjectWithNullProperties() {
+    void serializeEmptyObjectWithObjects_returnJsonObjectWithNullProperties() {
         ObjectWithOtherObjects bean = new ObjectWithOtherObjects();
 
         JsonNode json = JacksonSerializer.toJson(bean);
@@ -488,7 +488,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeObjectWithObjects_returnJsonObjectWithPopulatedProperties() {
+    void serializeObjectWithObjects_returnJsonObjectWithPopulatedProperties() {
         ObjectWithOtherObjects bean = new ObjectWithOtherObjects();
         ObjectWithSimpleTypes innerBean = getPopulatedObjectWithSimpleTypes();
         bean.setObject1(innerBean);
@@ -582,7 +582,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeEmptyRecursiveObject_returnJsonObjectWithNullProperties() {
+    void serializeEmptyRecursiveObject_returnJsonObjectWithNullProperties() {
         RecursiveObject bean = new RecursiveObject();
 
         JsonNode json = JacksonSerializer.toJson(bean);
@@ -603,7 +603,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializePopulatedRecursiveObject_returnJsonObjectWithPopulatedProperties() {
+    void serializePopulatedRecursiveObject_returnJsonObjectWithPopulatedProperties() {
         final int recursions = 10;
         RecursiveObject bean = createRecusiveObject(recursions, 0);
 
@@ -630,7 +630,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeEmptyObjectWithBasicCollections_returnJsonObjectWithNullProperties() {
+    void serializeEmptyObjectWithBasicCollections_returnJsonObjectWithNullProperties() {
         ObjectWithBasicCollections bean = new ObjectWithBasicCollections();
 
         /*
@@ -668,7 +668,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeObjectWithCollections_returnJsonObjectWithPopulatedProperties() {
+    void serializeObjectWithCollections_returnJsonObjectWithPopulatedProperties() {
         ObjectWithBasicCollections bean = new ObjectWithBasicCollections();
 
         bean.setListOfStrings(Arrays.asList("string1", "string2"));
@@ -719,7 +719,7 @@ class JacksonSerializerTest {
     }
 
     @Test
-    public void serializeRecordWithRecordAndObject_returnJsonObjectWithPopulatedProperties() {
+    void serializeRecordWithRecordAndObject_returnJsonObjectWithPopulatedProperties() {
         SomeRecord record = new SomeRecord("someone", 42);
         ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
         RecordWithRecordAndObject mainRecord = new RecordWithRecordAndObject(

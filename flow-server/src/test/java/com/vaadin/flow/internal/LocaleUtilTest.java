@@ -43,7 +43,7 @@ class LocaleUtilTest {
     VaadinRequest request;
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         // request locales are returned as Enumeration
@@ -53,7 +53,7 @@ class LocaleUtilTest {
     }
 
     @Test
-    public void exact_match_provided_matches() {
+    void exact_match_provided_matches() {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(
                 request, Arrays.asList(Locale.ENGLISH, LOCALE_EN));
 
@@ -62,7 +62,7 @@ class LocaleUtilTest {
     }
 
     @Test
-    public void no_exact_match_returns_null() {
+    void no_exact_match_returns_null() {
         Optional<Locale> exactLocaleMatch = LocaleUtil
                 .getExactLocaleMatch(request, Arrays.asList(Locale.ENGLISH));
 
@@ -71,7 +71,7 @@ class LocaleUtilTest {
     }
 
     @Test
-    public void language_match_gets_correct_target_by_request_priority() {
+    void language_match_gets_correct_target_by_request_priority() {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
                 request, Arrays.asList(Locale.US, LOCALE_FI));
 
@@ -80,7 +80,7 @@ class LocaleUtilTest {
     }
 
     @Test
-    public void language_match_returns_null_when_no_match() {
+    void language_match_returns_null_when_no_match() {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
                 request, Arrays.asList(Locale.FRENCH, Locale.KOREA));
 

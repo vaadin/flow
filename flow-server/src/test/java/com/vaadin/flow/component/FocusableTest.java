@@ -39,7 +39,7 @@ class FocusableTest {
     private final FocusableTestComponent component = new FocusableTestComponent();
 
     @Test
-    public void focusUnattached_nothingScheduled() {
+    void focusUnattached_nothingScheduled() {
         component.focus();
 
         assertPendingInvocationCount(
@@ -48,7 +48,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focusBeforeAttach_executionScheduled() {
+    void focusBeforeAttach_executionScheduled() {
         component.focus();
         ui.add(component);
 
@@ -58,7 +58,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focusAfterAttach_executionScheduled() {
+    void focusAfterAttach_executionScheduled() {
         ui.add(component);
         component.focus();
 
@@ -68,7 +68,7 @@ class FocusableTest {
     }
 
     @Test
-    public void detachAfterFocus_nothingScheduled() {
+    void detachAfterFocus_nothingScheduled() {
         ui.add(component);
         component.focus();
         ui.remove(component);
@@ -85,7 +85,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withFocusVisible_generatesCorrectJS() {
+    void focus_withFocusVisible_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.VISIBLE);
 
@@ -112,7 +112,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withFocusNotVisible_generatesCorrectJS() {
+    void focus_withFocusNotVisible_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.NOT_VISIBLE);
 
@@ -137,7 +137,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withPreventScrollEnabled_generatesCorrectJS() {
+    void focus_withPreventScrollEnabled_generatesCorrectJS() {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
 
@@ -164,7 +164,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withPreventScrollDisabled_generatesCorrectJS() {
+    void focus_withPreventScrollDisabled_generatesCorrectJS() {
         ui.add(component);
         component.focus(PreventScroll.DISABLED);
 
@@ -189,7 +189,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withBothOptions_generatesCorrectJS() {
+    void focus_withBothOptions_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED);
 
@@ -216,7 +216,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withBothOptionsFalse_generatesCorrectJS() {
+    void focus_withBothOptionsFalse_generatesCorrectJS() {
         ui.add(component);
         component.focus(FocusVisible.NOT_VISIBLE, PreventScroll.DISABLED);
 
@@ -243,7 +243,7 @@ class FocusableTest {
     }
 
     @Test
-    public void focus_withoutOptions_generatesCorrectJS() {
+    void focus_withoutOptions_generatesCorrectJS() {
         ui.add(component);
         component.focus();
 

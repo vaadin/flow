@@ -60,7 +60,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     ServiceInitEvent event = new ServiceInitEvent(service);
 
     @Test
-    public void serviceInit_productionMode_licenseNotChecked() {
+    void serviceInit_productionMode_licenseNotChecked() {
         config.setProductionMode(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
                 .mockStatic(LicenseChecker.class)) {
@@ -70,7 +70,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsDisabled_validLicense_noAction() {
+    void serviceInit_devToolsDisabled_validLicense_noAction() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -89,7 +89,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsDisabled_missingOrInvalid_throws() {
+    void serviceInit_devToolsDisabled_missingOrInvalid_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -115,7 +115,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_missingLicense_delegateHandlingToDevTools() {
+    void serviceInit_devToolsEnabled_missingLicense_delegateHandlingToDevTools() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -157,7 +157,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
+    void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -212,7 +212,7 @@ class BaseLicenseCheckerServiceInitListenerTest {
     }
 
     @Test
-    public void serviceInit_devToolsEnabled_invalidLicense_throws() {
+    void serviceInit_devToolsEnabled_invalidLicense_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito

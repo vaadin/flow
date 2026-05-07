@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
 
     @Test
-    public void bindRequired_elementAttachedBefore_bindingActive() {
+    void bindRequired_elementAttachedBefore_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         assertFalse(component.isRequiredIndicatorVisible());
@@ -44,7 +44,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_elementAttachedAfter_bindingActive() {
+    void bindRequired_elementAttachedAfter_bindingActive() {
         TestComponent component = new TestComponent();
         assertFalse(component.isRequiredIndicatorVisible());
 
@@ -56,7 +56,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_elementAttached_bindingActive() {
+    void bindRequired_elementAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -75,7 +75,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_elementNotAttached_bindingInactive() {
+    void bindRequired_elementNotAttached_bindingInactive() {
         TestComponent component = new TestComponent();
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindRequiredIndicatorVisible(signal);
@@ -89,7 +89,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_elementDetached_bindingInactive() {
+    void bindRequired_elementDetached_bindingInactive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -101,7 +101,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_elementReAttached_bindingActivate() {
+    void bindRequired_elementReAttached_bindingActivate() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -114,7 +114,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_bindOrSetRequiredWhileBindingIsActive_throwException() {
+    void bindRequired_bindOrSetRequiredWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         component.bindRequiredIndicatorVisible(new ValueSignal<>(true));
@@ -127,7 +127,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_nullSignal_throwsNPE() {
+    void bindRequired_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -136,7 +136,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_nullSignalValue_setsRequiredToFalse() {
+    void bindRequired_nullSignalValue_setsRequiredToFalse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -149,7 +149,7 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindRequired_toggleSignalValue_requiredUpdates() {
+    void bindRequired_toggleSignalValue_requiredUpdates() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);

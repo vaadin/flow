@@ -21,16 +21,24 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
@@ -69,7 +77,7 @@ class VaadinServletServiceTest {
     private VaadinServlet servlet;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
@@ -77,12 +85,12 @@ class VaadinServletServiceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mocks.cleanup();
     }
 
     @Test
-    public void resolveNullThrows() {
+    void resolveNullThrows() {
         try {
             service.resolveResource(null);
             fail("null should not resolve");
@@ -92,14 +100,14 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void resolveResource() {
+    void resolveResource() {
         assertEquals("", service.resolveResource(""));
         assertEquals("foo", service.resolveResource("foo"));
         assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
-    public void resolveResourceNPM_production() {
+    void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
 
         assertEquals("", service.resolveResource(""));
@@ -108,7 +116,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo()
+    void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo()
             throws Exception {
         String location;
 
@@ -145,8 +153,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void init_classLoaderIsSetUsingServletContext()
-            throws ServiceException {
+    void init_classLoaderIsSetUsingServletContext() throws ServiceException {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         ServletContext context = Mockito.mock(ServletContext.class);
         when(servlet.getServletContext()).thenReturn(context);
@@ -177,7 +184,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getPwaRegistry_servletInitialized_getsRegistry() {
+    void getPwaRegistry_servletInitialized_getsRegistry() {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
@@ -189,7 +196,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getPwaRegistry_servletNotInitialized_getsNull() {
+    void getPwaRegistry_servletNotInitialized_getsNull() {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
@@ -288,7 +295,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void filtersAreCalledWhenHandlingARequest() throws Exception {
+    void filtersAreCalledWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override
             public TestVaadinServlet createVaadinServlet() {
@@ -330,6 +337,44 @@ class VaadinServletServiceTest {
                 "Filter was called on exception handling");
         assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
+    }
+
+    @Test
+    void getStaticResource_jarUrlOnJetty12_returnsUrlInsteadOfThrowing(
+            @TempDir Path tempDir) throws Exception {
+        // Reproduces the regression caused by Jetty 12.1.9 where
+        // ServletContext.getResource() returns a jar:file:... URL for
+        // resources packaged inside a JAR (e.g. vaadinPush.js in flow-push).
+        // Path.of(jar:URI) throws FileSystemNotFoundException because no
+        // FileSystem has been opened for the JAR, and the existence check in
+        // VaadinServletService.getStaticResource catches only
+        // URISyntaxException, so the unchecked exception escapes and the
+        // request fails with HTTP 500.
+        String resourcePath = "META-INF/resources/VAADIN/static/push/vaadinPush.js";
+        Path jarFile = tempDir
+                .resolve("flow-push-" + UUID.randomUUID() + ".jar");
+        try (JarOutputStream jar = new JarOutputStream(
+                Files.newOutputStream(jarFile))) {
+            jar.putNextEntry(new JarEntry(resourcePath));
+            jar.write("// push".getBytes(StandardCharsets.UTF_8));
+            jar.closeEntry();
+        }
+
+        URL jarResourceUrl = URI
+                .create("jar:" + jarFile.toUri() + "!/" + resourcePath).toURL();
+
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        when(servletContext.getServerInfo()).thenReturn("jetty/12.1.9");
+        when(servletContext.getResource("/VAADIN/static/push/vaadinPush.js"))
+                .thenReturn(jarResourceUrl);
+
+        URL resolved = VaadinServletService.getStaticResource(servletContext,
+                "/VAADIN/static/push/vaadinPush.js");
+
+        assertNotNull(resolved,
+                "An existing resource served from a JAR by Jetty 12 must be returned, "
+                        + "not lost to FileSystemNotFoundException");
+        assertEquals(jarResourceUrl, resolved);
     }
 
     static class ExceptionThrowingRequestHandler implements RequestHandler {

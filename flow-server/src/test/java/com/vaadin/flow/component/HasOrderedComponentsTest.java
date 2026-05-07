@@ -60,7 +60,7 @@ class HasOrderedComponentsTest {
     private TestComponentContianer contianer = new TestComponentContianer();
 
     @Test
-    public void indexOf_componentIsChild_returnsIndexOfChild() {
+    void indexOf_componentIsChild_returnsIndexOfChild() {
         Component comp = Mockito.mock(Component.class);
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
@@ -75,7 +75,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void indexOf_componentIsNotChild_returnsNegative() {
+    void indexOf_componentIsNotChild_returnsNegative() {
         Component comp = Mockito.mock(Component.class);
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
@@ -85,7 +85,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void indexOf_componentIsNull_throws() {
+    void indexOf_componentIsNull_throws() {
         Mockito.when(components.getChildren()).thenReturn(Stream.empty());
 
         assertThrows(IllegalArgumentException.class,
@@ -93,7 +93,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void getComponentCount_returnsChildrenSize() {
+    void getComponentCount_returnsChildrenSize() {
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
@@ -105,7 +105,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void getComponentAt_returnsComponentAtIndex() {
+    void getComponentAt_returnsComponentAtIndex() {
         Component comp = Mockito.mock(Component.class);
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
@@ -120,7 +120,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void getComponentAt_negativeIndex_throws() {
+    void getComponentAt_negativeIndex_throws() {
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
@@ -130,7 +130,7 @@ class HasOrderedComponentsTest {
     }
 
     @Test
-    public void getComponentAt_indexIsGreaterThanSize_throws() {
+    void getComponentAt_indexIsGreaterThanSize_throws() {
         Mockito.when(components.getChildren())
                 .thenReturn(Stream.of(Mockito.mock(Component.class)));
 

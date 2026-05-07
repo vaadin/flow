@@ -124,11 +124,13 @@ public class PwaTestIT extends ChromeDeviceTest {
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
 
         // For Vite search for the precache file as it is loaded at runtime
-        // and not compiled into sw.js during build
+        // and not compiled into sw.js during build.
+        // Check quote-agnostic since different bundlers use different quote
+        // styles (double, single, or backtick).
         Assert.assertTrue(
                 "Expected sw-runtime-resources-precache.js to be imported, but was not",
-                serviceWorkerJS.contains(
-                        "importScripts(\"sw-runtime-resources-precache.js\")"));
+                serviceWorkerJS.contains("importScripts(") && serviceWorkerJS
+                        .contains("sw-runtime-resources-precache.js"));
 
         serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
         serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);

@@ -30,13 +30,13 @@ class PropertyConfigurationImplTest {
     PropertyConfigurationImpl<MyComponent, Integer> intPropertyConf;
 
     @BeforeEach
-    public void init() {
+    void init() {
         intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class,
                 "int", Integer.class, 1);
     }
 
     @Test
-    public void onChange() {
+    void onChange() {
         intPropertyConf.onChange(MyComponent::setInt);
 
         MyComponent myComponent = new MyComponent();
@@ -48,7 +48,7 @@ class PropertyConfigurationImplTest {
     }
 
     @Test
-    public void onChange_throwsIfCalledTwice() {
+    void onChange_throwsIfCalledTwice() {
         assertThrows(IllegalStateException.class, () -> {
             intPropertyConf.onChange(MyComponent::setInt);
             intPropertyConf.onChange(MyComponent::setInt);
@@ -56,7 +56,7 @@ class PropertyConfigurationImplTest {
     }
 
     @Test
-    public void readOnly() {
+    void readOnly() {
         intPropertyConf.readOnly();
 
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
