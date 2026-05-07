@@ -646,11 +646,11 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install latest pnpm version as the minimum node requirement is
-            // now at nodejs 16.14.0
-            // see https://pnpm.io/installation#compatibility
+            // install the pinned pnpm version so behavior stays
+            // deterministic across environments instead of whatever npx
+            // happens to resolve as latest
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm");
+                    "--quiet", "pnpm@" + DEFAULT_PNPM_VERSION);
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
