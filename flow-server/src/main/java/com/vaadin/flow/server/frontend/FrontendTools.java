@@ -608,7 +608,13 @@ public class FrontendTools {
         List<String> pnpmCommand = getSuitablePnpm();
         assert !pnpmCommand.isEmpty();
         pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
+        // Force hoisted (flat npm-style) layout. CLI takes precedence over
+        // .npmrc, so this is unambiguous even if the project lacks the
+        // generated .npmrc. Replaces the previous --shamefully-hoist=true,
+        // which only controls the partial-hoist heuristic on top of the
+        // default isolated layout and did not consistently expose every
+        // transitive at the project root.
+        pnpmCommand.add("--config.node-linker=hoisted");
         return pnpmCommand;
     }
 

@@ -432,8 +432,9 @@ public class FrontendToolsTest {
     @Test
     public void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
-        // command line should contain --shamefully-hoist=true option
-        Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
+        // command line should force hoisted node-linker so transitive
+        // deps are always installed at the project root
+        Assert.assertTrue(executable.contains("--config.node-linker=hoisted"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
