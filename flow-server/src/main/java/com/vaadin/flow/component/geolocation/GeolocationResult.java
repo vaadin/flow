@@ -18,18 +18,18 @@ package com.vaadin.flow.component.geolocation;
 import java.io.Serializable;
 
 /**
- * Anything a tracker can currently hold — a successful reading, an error, or
+ * Anything a watcher can currently hold — a successful reading, an error, or
  * the initial "waiting for first reading" state.
  * <p>
- * Held by the signal exposed by {@link GeolocationTracker#valueSignal()}. A
+ * Held by the signal exposed by {@link GeolocationWatcher#valueSignal()}. A
  * {@code GeolocationResult} is always exactly one of three things:
  * <ul>
  * <li>{@link GeolocationPending} — the initial state of a newly started
- * tracker, before the browser has reported anything.</li>
+ * watcher, before the browser has reported anything.</li>
  * <li>{@link GeolocationPosition} — a successful reading.</li>
  * <li>{@link GeolocationError} — the browser reported an error.</li>
  * </ul>
- * One-shot {@link Geolocation#get} requests never produce
+ * One-shot {@link Geolocation#getPosition} requests never produce
  * {@link GeolocationPending}; they deliver the position and the error through
  * separate callbacks instead.
  * <p>
@@ -38,7 +38,7 @@ import java.io.Serializable;
  * at compile time.
  *
  * <pre>
- * switch (tracker.valueSignal().get()) {
+ * switch (watcher.valueSignal().get()) {
  * case GeolocationPending p -&gt; showSpinner();
  * case GeolocationPosition pos -&gt; map.setCenter(pos.coords());
  * case GeolocationError err -&gt; showError(err.message());

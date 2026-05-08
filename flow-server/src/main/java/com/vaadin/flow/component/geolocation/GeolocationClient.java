@@ -104,7 +104,7 @@ public interface GeolocationClient extends Serializable {
     void close();
 
     /**
-     * Handle to a tracker watch session. The handle is alive while the
+     * Handle to a watcher watch session. The handle is alive while the
      * underlying watch is active; calling {@link #stop()} idempotently tears it
      * down.
      */
