@@ -36,7 +36,6 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -71,7 +70,8 @@ class GeolocationClientSeamTest {
                 .thenReturn(unused -> fake);
 
         UI freshUi = new MockUI();
-        freshUi.getGeolocation().get(outcome -> {
+        freshUi.getGeolocation().get(pos -> {
+        }, err -> {
         });
 
         assertEquals(1, fake.getCalls.size(),
@@ -83,7 +83,8 @@ class GeolocationClientSeamTest {
         FakeClient fake = new FakeClient();
         ui.getGeolocation().setClient(fake);
 
-        ui.getGeolocation().get(outcome -> {
+        ui.getGeolocation().get(pos -> {
+        }, err -> {
         });
 
         assertEquals(1, fake.getCalls.size(),
@@ -131,21 +132,21 @@ class GeolocationClientSeamTest {
     }
 
     @Test
-    void get_callbackReceivesUnknownErrorWhenClientFutureFailsExceptionally() {
+    void get_onErrorReceivesUnknownErrorWhenClientFutureFailsExceptionally() {
         FakeClient fake = new FakeClient();
         fake.nextGetResult = CompletableFuture
                 .failedFuture(new RuntimeException(
                         "Client-side geolocation.get failed: boom"));
         ui.getGeolocation().setClient(fake);
 
-        AtomicReference<@Nullable GeolocationOutcome> received = new AtomicReference<>();
-        ui.getGeolocation().get(received::set);
+        AtomicReference<@Nullable GeolocationPosition> position = new AtomicReference<>();
+        AtomicReference<@Nullable GeolocationError> error = new AtomicReference<>();
+        ui.getGeolocation().get(position::set, error::set);
 
-        GeolocationOutcome outcome = received.get();
-        assertNotNull(outcome,
-                "callback must fire even when the JS bridge fails");
-        GeolocationError err = assertInstanceOf(GeolocationError.class, outcome,
-                "infra failure should surface as a GeolocationError");
+        GeolocationError err = error.get();
+        assertNotNull(err, "onError must fire even when the JS bridge fails");
+        assertNull(position.get(),
+                "onSuccess must stay silent when the bridge fails");
         assertEquals(GeolocationErrorCode.UNKNOWN, err.errorCode(),
                 "error code should be UNKNOWN for client-bridge failures");
         assertFalse(err.message().contains("boom"),

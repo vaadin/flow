@@ -18,22 +18,14 @@ package com.vaadin.flow.component.geolocation;
 /**
  * The actual answer to a geolocation request — either a successful reading or
  * an error. Narrower than {@link GeolocationResult}: the "waiting for first
- * reading" {@link GeolocationPending} state is excluded because one-shot
- * {@link Geolocation#get} never produces it.
+ * reading" {@link GeolocationPending} state is excluded because a one-shot
+ * request never produces it.
  * <p>
- * Returned to the callback of {@link Geolocation#get}. Use this instead of
- * {@link GeolocationResult} when you only need to handle the Position / Error
- * branches and want the {@code switch} to stay exhaustive without a dead
- * Pending arm.
- *
- * <pre>
- * ui.getGeolocation().get(outcome -&gt; {
- *     switch (outcome) {
- *     case GeolocationPosition pos -&gt; showNearest(pos);
- *     case GeolocationError err -&gt; showManualEntry();
- *     }
- * });
- * </pre>
+ * Used as the result type of the internal {@link GeolocationClient#get} future,
+ * where the sum-type encoding keeps Pending out of the contract. Application
+ * code rarely references this type directly: {@link Geolocation#get
+ * Geolocation.get} delivers the position or the error through separate
+ * callbacks.
  */
 public sealed interface GeolocationOutcome extends GeolocationResult
         permits GeolocationPosition, GeolocationError {
