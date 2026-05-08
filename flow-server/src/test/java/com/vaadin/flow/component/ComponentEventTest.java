@@ -61,4 +61,14 @@ class ComponentEventTest {
         assertEquals(true, exception.getMessage().contains("not")
                 && exception.getMessage().contains("attached"));
     }
+
+    @Test
+    void getUI_explicitlyProvided_returnsProvidedUI() {
+        MockUI ui = new MockUI();
+        TestComponent source = new TestComponent();
+        ComponentEvent<TestComponent> event = new ComponentEvent<>(source,
+                false, ui);
+
+        assertSame(ui, event.getUI());
+    }
 }
