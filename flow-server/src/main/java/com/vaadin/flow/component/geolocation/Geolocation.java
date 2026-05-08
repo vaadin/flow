@@ -95,6 +95,9 @@ public final class Geolocation implements Serializable {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Geolocation.class);
 
+    private static final GeolocationOptions DEFAULT_OPTIONS = new GeolocationOptions(
+            null, null, null);
+
     private Geolocation() {
         // utility class
     }
@@ -115,7 +118,8 @@ public final class Geolocation implements Serializable {
     public static void getPosition(
             SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError) {
-        getPosition(onSuccess, onError, null, UI.getCurrentOrThrow());
+        getPosition(onSuccess, onError, DEFAULT_OPTIONS,
+                UI.getCurrentOrThrow());
     }
 
     /**
@@ -129,17 +133,19 @@ public final class Geolocation implements Serializable {
      * @param onError
      *            invoked when the browser reports an error, never {@code null}
      * @param options
-     *            accuracy / timeout / cache-age tuning, or {@code null} for
-     *            browser defaults
+     *            accuracy / timeout / cache-age tuning, never {@code null};
+     *            pass an empty instance via
+     *            {@code GeolocationOptions.builder().build()} to use browser
+     *            defaults
      * @throws NullPointerException
-     *             if either consumer is {@code null}
+     *             if any argument is {@code null}
      * @throws IllegalStateException
      *             if there is no current UI
      */
     public static void getPosition(
             SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError,
-            @Nullable GeolocationOptions options) {
+            GeolocationOptions options) {
         getPosition(onSuccess, onError, options, UI.getCurrentOrThrow());
     }
 
@@ -161,7 +167,7 @@ public final class Geolocation implements Serializable {
     public static void getPosition(
             SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError, UI ui) {
-        getPosition(onSuccess, onError, null, ui);
+        getPosition(onSuccess, onError, DEFAULT_OPTIONS, ui);
     }
 
     /**
@@ -175,20 +181,22 @@ public final class Geolocation implements Serializable {
      * @param onError
      *            invoked when the browser reports an error, never {@code null}
      * @param options
-     *            accuracy / timeout / cache-age tuning, or {@code null} for
-     *            browser defaults
+     *            accuracy / timeout / cache-age tuning, never {@code null};
+     *            pass an empty instance via
+     *            {@code GeolocationOptions.builder().build()} to use browser
+     *            defaults
      * @param ui
      *            the UI to dispatch the request through, never {@code null}
      * @throws NullPointerException
-     *             if {@code onSuccess}, {@code onError}, or {@code ui} is
-     *             {@code null}
+     *             if any argument is {@code null}
      */
     public static void getPosition(
             SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError,
-            @Nullable GeolocationOptions options, UI ui) {
+            GeolocationOptions options, UI ui) {
         Objects.requireNonNull(onSuccess, "onSuccess must not be null");
         Objects.requireNonNull(onError, "onError must not be null");
+        Objects.requireNonNull(options, "options must not be null");
         Objects.requireNonNull(ui, "ui must not be null");
         client(ui).get(options).whenComplete((outcome, error) -> {
             if (error != null) {
@@ -240,7 +248,7 @@ public final class Geolocation implements Serializable {
      *             if {@code owner} is {@code null}
      */
     public static GeolocationWatcher watchPosition(Component owner) {
-        return watchPosition(owner, null);
+        return watchPosition(owner, DEFAULT_OPTIONS);
     }
 
     /**
@@ -254,15 +262,18 @@ public final class Geolocation implements Serializable {
      *            the component whose detach cancels the watch; the watch
      *            activates on the owner's first attach
      * @param options
-     *            accuracy / timeout / cache-age tuning, or {@code null} for
-     *            browser defaults
+     *            accuracy / timeout / cache-age tuning, never {@code null};
+     *            pass an empty instance via
+     *            {@code GeolocationOptions.builder().build()} to use browser
+     *            defaults
      * @return a watcher exposing the position stream and a stop/resume handle
      * @throws NullPointerException
-     *             if {@code owner} is {@code null}
+     *             if either argument is {@code null}
      */
     public static GeolocationWatcher watchPosition(Component owner,
-            @Nullable GeolocationOptions options) {
+            GeolocationOptions options) {
         Objects.requireNonNull(owner, "owner must not be null");
+        Objects.requireNonNull(options, "options must not be null");
         return new GeolocationWatcher(owner, options);
     }
 

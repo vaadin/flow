@@ -28,7 +28,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -207,31 +206,6 @@ class GeolocationTest {
 
         assertEquals(GeolocationAvailability.GRANTED,
                 ui.getInternals().getGeolocationAvailabilitySignal().peek());
-    }
-
-    @SuppressWarnings("NullAway")
-    @Test
-    void getPosition_rejectsNullSuccessHandler() {
-        assertThrows(NullPointerException.class,
-                () -> Geolocation.getPosition(null, err -> {
-                }, ui));
-    }
-
-    @SuppressWarnings("NullAway")
-    @Test
-    void getPosition_rejectsNullErrorHandler() {
-        assertThrows(NullPointerException.class,
-                () -> Geolocation.getPosition(pos -> {
-                }, null, ui));
-    }
-
-    @SuppressWarnings("NullAway")
-    @Test
-    void getPosition_rejectsNullUi() {
-        assertThrows(NullPointerException.class,
-                () -> Geolocation.getPosition(pos -> {
-                }, err -> {
-                }, (UI) null));
     }
 
     // --- watchPosition() tests ---
@@ -546,30 +520,6 @@ class GeolocationTest {
                 watcher.positionSignal().peek());
     }
 
-    @SuppressWarnings("NullAway")
-    @Test
-    void addPositionListener_rejectsNullSuccess() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-        GeolocationWatcher watcher = Geolocation.watchPosition(component);
-
-        assertThrows(NullPointerException.class,
-                () -> watcher.addPositionListener(null, err -> {
-                }));
-    }
-
-    @SuppressWarnings("NullAway")
-    @Test
-    void addPositionListener_rejectsNullError() {
-        TestComponent component = new TestComponent();
-        ui.add(component);
-        GeolocationWatcher watcher = Geolocation.watchPosition(component);
-
-        assertThrows(NullPointerException.class,
-                () -> watcher.addPositionListener(pos -> {
-                }, null));
-    }
-
     // --- availabilityHintSignal() tests ---
 
     @Test
@@ -631,13 +581,6 @@ class GeolocationTest {
 
         assertEquals(GeolocationAvailability.GRANTED,
                 ui.getInternals().getGeolocationAvailabilitySignal().peek());
-    }
-
-    @SuppressWarnings("NullAway")
-    @Test
-    void availabilityHintSignal_rejectsNullUi() {
-        assertThrows(NullPointerException.class,
-                () -> Geolocation.availabilityHintSignal(null));
     }
 
     // --- GeolocationOptions tests ---

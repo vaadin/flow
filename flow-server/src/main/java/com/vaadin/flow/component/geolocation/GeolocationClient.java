@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -46,11 +45,11 @@ public interface GeolocationClient extends Serializable {
      * has an answer (a position or an error).
      *
      * @param options
-     *            tuning options, or {@code null} for browser defaults
+     *            tuning options, never {@code null}; pass an empty
+     *            {@link GeolocationOptions} to use browser defaults
      * @return a future that completes with the outcome on the UI thread
      */
-    CompletableFuture<GeolocationOutcome> get(
-            @Nullable GeolocationOptions options);
+    CompletableFuture<GeolocationOutcome> get(GeolocationOptions options);
 
     /**
      * Starts a watch session bound to {@code owner}. Position and error pushes
@@ -61,13 +60,13 @@ public interface GeolocationClient extends Serializable {
      *            the component that owns this watch; detaching the component
      *            does not auto-stop the watch — the caller is responsible
      * @param options
-     *            tuning options, or {@code null} for browser defaults
+     *            tuning options, never {@code null}; pass an empty
+     *            {@link GeolocationOptions} to use browser defaults
      * @param onUpdate
      *            consumer invoked on the UI thread for every push
      * @return a handle for stopping the watch
      */
-    WatchHandle startWatch(Component owner,
-            @Nullable GeolocationOptions options,
+    WatchHandle startWatch(Component owner, GeolocationOptions options,
             SerializableConsumer<GeolocationResult> onUpdate);
 
     /**

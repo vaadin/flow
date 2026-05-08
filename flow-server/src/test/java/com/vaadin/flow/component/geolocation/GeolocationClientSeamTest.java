@@ -159,7 +159,7 @@ class GeolocationClientSeamTest {
      * WatchHandle from startWatch.
      */
     private static class FakeClient implements GeolocationClient {
-        final List<@Nullable GeolocationOptions> getCalls = new ArrayList<>();
+        final List<GeolocationOptions> getCalls = new ArrayList<>();
         boolean closed;
         GeolocationClient.@Nullable WatchHandle lastWatchHandle;
         @Nullable
@@ -167,7 +167,7 @@ class GeolocationClientSeamTest {
 
         @Override
         public CompletableFuture<GeolocationOutcome> get(
-                @Nullable GeolocationOptions options) {
+                GeolocationOptions options) {
             getCalls.add(options);
             CompletableFuture<GeolocationOutcome> result = nextGetResult;
             return result != null ? result : new CompletableFuture<>();
@@ -175,7 +175,7 @@ class GeolocationClientSeamTest {
 
         @Override
         public WatchHandle startWatch(Component owner,
-                @Nullable GeolocationOptions options,
+                GeolocationOptions options,
                 SerializableConsumer<GeolocationResult> onUpdate) {
             lastWatchHandle = new FakeWatchHandle();
             return lastWatchHandle;

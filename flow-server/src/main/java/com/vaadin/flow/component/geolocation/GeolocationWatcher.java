@@ -69,13 +69,13 @@ public class GeolocationWatcher implements Serializable {
     private final List<PositionListener> listeners = new ArrayList<>();
 
     private final Component owner;
-    private final @Nullable GeolocationOptions options;
+    private final GeolocationOptions options;
 
     private GeolocationClient.@Nullable WatchHandle handle;
     private @Nullable Registration detachRegistration;
     private @Nullable Registration pendingAttachActivation;
 
-    GeolocationWatcher(Component owner, @Nullable GeolocationOptions options) {
+    GeolocationWatcher(Component owner, GeolocationOptions options) {
         this.owner = owner;
         this.options = options;
         if (owner.getUI().isPresent()) {
