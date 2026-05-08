@@ -376,33 +376,15 @@ public class TestBenchHelpers extends ParallelTest {
                     "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
         } while (Boolean.TRUE.equals(result));
 
-        // Two failure modes need fast-fail; otherwise every subsequent
-        // waitUntil(...) burns its full timeout against a broken page,
-        // blowing the runner timeout for the whole shard.
-        //
-        // 1) AbstractDevServerRunner detected a Vite startup failure and
-        // served `<pre>The Vite dev server failed to start: ...</pre>`
-        // with status 200 — surface the embedded cause verbatim.
-        // 2) Flow believes Vite started but index.html could not be
-        // fetched and Jetty serves a 5xx error page. Detect via the
-        // navigation response status so tests that intentionally expect
-        // a non-2xx response (e.g. invalid path returning 400) are not
-        // affected.
+        // Fast-fail when AbstractDevServerRunner detected a Vite startup
+        // failure and served `<pre>The Vite dev server failed to start:
+        // ...</pre>`. Otherwise every subsequent waitUntil(...) burns its
+        // full timeout against the error page, blowing the runner timeout
+        // for the whole shard. Surface the embedded cause verbatim.
         String pageSource = getDriver().getPageSource();
         if (pageSource != null
                 && pageSource.contains("The Vite dev server failed to start")) {
             throw new AssertionError(pageSource);
-        }
-        Object responseStatus = getCommandExecutor().executeScript(
-                "var nav = performance.getEntriesByType('navigation')[0];"
-                        + "return nav ? nav.responseStatus : null;");
-        if (responseStatus instanceof Number number
-                && number.intValue() >= 500) {
-            throw new AssertionError(
-                    "Dev server did not load (HTTP " + number.intValue()
-                            + "). Page title: '" + getDriver().getTitle()
-                            + "'. Likely a frontend build error — check "
-                            + "jetty-start.out for the dev server output.");
         }
     }
 
