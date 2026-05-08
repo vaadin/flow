@@ -138,8 +138,7 @@ public class GeolocationView extends AbstractDivView {
 
         NativeButton trackButton = createButton("Track Position", "trackButton",
                 e -> {
-                    watcher = UI.getCurrent().getGeolocation()
-                            .watchPosition(this);
+                    watcher = e.getUI().getGeolocation().watchPosition(this);
                     trackUpdateCount = 0;
                     getElement().addEventListener("vaadin-geolocation-position",
                             ev -> {
