@@ -44,6 +44,10 @@ public interface GeolocationClient extends Serializable {
     /**
      * Issues a one-shot position request. The future completes once the client
      * has an answer (a position or an error).
+     *
+     * @param options
+     *            tuning options, or {@code null} for browser defaults
+     * @return a future that completes with the outcome on the UI thread
      */
     CompletableFuture<GeolocationOutcome> get(
             @Nullable GeolocationOptions options);
@@ -52,6 +56,15 @@ public interface GeolocationClient extends Serializable {
      * Starts a watch session bound to {@code owner}. Position and error pushes
      * are delivered via {@code onUpdate}. The returned handle is used to stop
      * the watch and to query whether it is still active.
+     *
+     * @param owner
+     *            the component that owns this watch; detaching the component
+     *            does not auto-stop the watch — the caller is responsible
+     * @param options
+     *            tuning options, or {@code null} for browser defaults
+     * @param onUpdate
+     *            consumer invoked on the UI thread for every push
+     * @return a handle for stopping the watch
      */
     WatchHandle startWatch(Component owner,
             @Nullable GeolocationOptions options,
@@ -60,6 +73,11 @@ public interface GeolocationClient extends Serializable {
     /**
      * Subscribes to availability changes. The returned registration removes the
      * subscription.
+     *
+     * @param onChange
+     *            consumer invoked on the UI thread for every availability
+     *            change
+     * @return a registration that removes the subscription when called
      */
     Registration subscribeAvailability(
             SerializableConsumer<GeolocationAvailability> onChange);
@@ -67,6 +85,8 @@ public interface GeolocationClient extends Serializable {
     /**
      * Returns the most recently observed availability. Implementations must
      * seed an initial value at construction; the result is never null.
+     *
+     * @return the current availability
      */
     GeolocationAvailability currentAvailability();
 
@@ -93,6 +113,8 @@ public interface GeolocationClient extends Serializable {
         /**
          * Returns whether the watch is currently active (has not yet been
          * stopped or auto-cancelled).
+         *
+         * @return {@code true} if the watch is still receiving updates
          */
         boolean isActive();
     }
