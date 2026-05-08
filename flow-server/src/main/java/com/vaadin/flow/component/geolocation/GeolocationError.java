@@ -20,21 +20,20 @@ package com.vaadin.flow.component.geolocation;
  * {@link GeolocationPosition}.
  * <p>
  * This is one of the three possible values of a
- * {@link GeolocationTracker#valueSignal()} signal, and one of the two values a
- * {@link Geolocation#get} callback can receive. Typical application code
- * switches on {@link #errorCode()} to react to the specific reason:
+ * {@link GeolocationWatcher#valueSignal()} signal, and the value passed to the
+ * error callback of {@link Geolocation#getPosition Geolocation.getPosition}.
+ * Typical application code switches on {@link #errorCode()} to react to the
+ * specific reason:
  *
  * <pre>
- * ui.getGeolocation().get(result -&gt; {
- *     if (result instanceof GeolocationError err) {
- *         switch (err.errorCode()) {
- *         case PERMISSION_DENIED -&gt;
- *             showExplanation("Location is blocked for this site.");
- *         case POSITION_UNAVAILABLE -&gt;
- *             showRetry("Could not determine your location.");
- *         case TIMEOUT -&gt; showRetry("Location request took too long.");
- *         case UNKNOWN -&gt; showGenericError(err.message());
- *         }
+ * ui.getGeolocation().getPosition(pos -&gt; showNearest(pos), err -&gt; {
+ *     switch (err.errorCode()) {
+ *     case PERMISSION_DENIED -&gt;
+ *         showExplanation("Location is blocked for this site.");
+ *     case POSITION_UNAVAILABLE -&gt;
+ *         showRetry("Could not determine your location.");
+ *     case TIMEOUT -&gt; showRetry("Location request took too long.");
+ *     case UNKNOWN -&gt; showGenericError("Could not read your location.");
  *     }
  * });
  * </pre>

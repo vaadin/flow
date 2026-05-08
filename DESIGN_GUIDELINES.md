@@ -31,9 +31,10 @@ holds `private final UI ui`, and all `executeJs` calls go through
 `ui.getElement()` or `ui.getPage()`. Follow the `Page` / `History`
 pattern. Enforce single-instance creation in the constructor if needed.
 
-If the facade hands out a stateful handle (e.g. `Geolocation.track()`
-returning a `GeolocationTracker`), make the handle's constructor
-**package-private** so application code cannot bypass the facade.
+If the facade hands out a stateful handle (e.g.
+`Geolocation.watchPosition()` returning a `GeolocationWatcher`), make the
+handle's constructor **package-private** so application code cannot bypass
+the facade.
 
 ### Keep internal mutators off user-facing classes
 
