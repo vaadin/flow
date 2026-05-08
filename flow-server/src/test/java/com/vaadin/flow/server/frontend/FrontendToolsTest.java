@@ -365,8 +365,7 @@ public class FrontendToolsTest {
         List<String> executable = tools.getPnpmExecutable();
         // command line should force hoisted node-linker so transitive
         // deps are always installed at the project root
-        Assert.assertTrue(
-                executable.contains("--config.node-linker=hoisted"));
+        Assert.assertTrue(executable.contains("--config.node-linker=hoisted"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
