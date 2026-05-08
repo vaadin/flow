@@ -60,10 +60,8 @@ import com.vaadin.flow.signals.Signal;
  * </ul>
  * <b>Availability check:</b>
  * <ul>
- * <li>{@link #availabilitySignal()} — reactive signal of whether the feature is
- * usable and what permission state the origin has. Subscribe with
- * {@code Signal.effect(owner, ...)} to react to changes, or call
- * {@code availabilitySignal().peek()} for a snapshot.</li>
+ * <li>{@link #availabilityHintSignal()} — best-effort hint about whether the
+ * feature is usable and what permission state the origin has.</li>
  * </ul>
  *
  * <p>
@@ -268,9 +266,10 @@ public class Geolocation implements Serializable {
      * {@link GeolocationWatcher#stop()} followed by
      * {@link GeolocationWatcher#resume()}, which installs a fresh browser
      * watch. Applications that want this to happen automatically can subscribe
-     * to {@link #availabilitySignal()} with {@code Signal.effect(owner, ...)}
-     * and trigger the stop/resume when the availability transitions back to
-     * {@link GeolocationAvailability#GRANTED GRANTED}.
+     * to {@link #availabilityHintSignal()} with
+     * {@code Signal.effect(owner, ...)} and trigger the stop/resume when the
+     * availability transitions back to {@link GeolocationAvailability#GRANTED
+     * GRANTED}.
      *
      * @param owner
      *            the component that owns this watching session; detaching the
@@ -306,51 +305,29 @@ public class Geolocation implements Serializable {
     }
 
     /**
-     * Returns a read-only signal holding the current geolocation availability —
-     * whether the Geolocation API is usable in this context and, if so, what
-     * permission state the origin has.
+     * Returns a read-only signal hinting at whether geolocation is usable for
+     * this UI. Useful for pre-rendering decisions like hiding a "Locate me"
+     * button on insecure contexts or auto-fetching on return visits when
+     * permission is already granted.
      * <p>
-     * Subscribe with {@code Signal.effect(owner, ...)} to react to availability
-     * changes (e.g. disabling a location button when the user revokes
-     * permission). For a snapshot read, call
-     * {@code availabilitySignal().peek()}; in an effect or reactive context,
-     * call {@code availabilitySignal().get()}.
-     * <p>
-     * The signal starts as {@link GeolocationAvailability#UNKNOWN UNKNOWN},
-     * transitions to the value reported during the initial client bootstrap,
-     * and updates on every {@link #getPosition} / {@link #watchPosition}
-     * outcome and on browser permission-change events where supported.
-     * <p>
-     * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
-     * it reflects what the browser last reported, and can be briefly stale in
-     * these cases:
+     * The value is best-effort and can be briefly stale:
      * <ul>
-     * <li>Between server attach and the completion of the first client
-     * handshake — holds {@link GeolocationAvailability#UNKNOWN UNKNOWN} during
-     * this short window, indistinguishable from a real UNKNOWN reported by the
-     * browser.</li>
-     * <li>On Safari, the permission state is never observable;
-     * {@link GeolocationAvailability#GRANTED GRANTED},
-     * {@link GeolocationAvailability#DENIED DENIED} and
-     * {@link GeolocationAvailability#PROMPT PROMPT} all surface as
-     * {@link GeolocationAvailability#UNKNOWN UNKNOWN}.
-     * {@link GeolocationAvailability#UNSUPPORTED UNSUPPORTED} is still reported
-     * correctly.</li>
-     * <li>On Firefox, permission changes the user makes in browser settings are
-     * not reliably propagated back — the signal can stay stale until the next
+     * <li>Safari does not report permission state — every state surfaces as
+     * {@link GeolocationAvailability#UNKNOWN UNKNOWN} (except
+     * {@link GeolocationAvailability#UNSUPPORTED UNSUPPORTED}, which is always
+     * reported correctly).</li>
+     * <li>Firefox does not reliably propagate permission changes the user makes
+     * in browser settings; the value can stay stale until the next
      * {@link #getPosition} or {@link #watchPosition} call.</li>
-     * <li>On Chromium, the value updates promptly when the user flips the site
-     * permission, but there is still a small propagation delay between the
-     * browser event and the cache update.</li>
+     * <li>Chromium has a small propagation delay between the browser permission
+     * event and the cache update.</li>
      * </ul>
-     * Treat the value as a hint for pre-rendering decisions (e.g. auto-fetching
-     * on return visits, hiding controls in unsupported contexts). For critical
-     * paths, call {@link #getPosition} and handle the authoritative result in
-     * the callback.
+     * For authoritative results, call {@link #getPosition} and inspect the
+     * outcome.
      *
-     * @return the availability signal
+     * @return the availability hint signal
      */
-    public Signal<GeolocationAvailability> availabilitySignal() {
+    public Signal<GeolocationAvailability> availabilityHintSignal() {
         return availabilityReadOnly;
     }
 

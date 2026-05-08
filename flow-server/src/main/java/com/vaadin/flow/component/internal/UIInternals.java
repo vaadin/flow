@@ -1445,7 +1445,7 @@ public class UIInternals implements Serializable {
      * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
      * client bootstrap report, then transitions to the value the browser
      * reports and reflects subsequent updates. Application code reads it via
-     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilitySignal()}.
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilityHintSignal()}.
      *
      * @return the availability signal
      */
