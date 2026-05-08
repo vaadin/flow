@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -52,11 +55,17 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class Page implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
+
     private final UI ui;
     private final History history;
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
+    private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
+            PageVisibility.UNKNOWN);
+    private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
+            .asReadonly();
 
     /**
      * Creates a page instance for the given UI.
@@ -67,6 +76,10 @@ public class Page implements Serializable {
     public Page(UI ui) {
         this.ui = ui;
         history = new History(ui);
+        ui.getElement()
+                .addEventListener("vaadin-page-visibility-change",
+                        e -> setPageVisibility(e.getEventDetail(String.class)))
+                .addEventDetail().debounce(100).allowInert();
     }
 
     /**
@@ -474,6 +487,67 @@ public class Page implements Serializable {
                         }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
+        }
+    }
+
+    /**
+     * Returns a read-only signal that tracks the browser tab's visibility and
+     * focus state.
+     * <p>
+     * The signal distinguishes between {@link PageVisibility#VISIBLE VISIBLE}
+     * (tab shown and focused), {@link PageVisibility#VISIBLE_NOT_FOCUSED
+     * VISIBLE_NOT_FOCUSED} (tab shown but behind another window or another
+     * application has focus), {@link PageVisibility#HIDDEN HIDDEN} (tab in
+     * background, minimized, or on a different virtual desktop), and
+     * {@link PageVisibility#UNKNOWN UNKNOWN} (the initial value, replaced with
+     * a real one before any user code observes the signal).
+     * <p>
+     * The signal value is seeded from the initial client bootstrap, so user
+     * code always sees a real value. Subscribe with
+     * {@code Signal.effect(owner, ...)} to react to changes; call
+     * {@code pageVisibilitySignal().peek()} for a snapshot outside a reactive
+     * context, and {@code .get()} inside one.
+     * <p>
+     * <b>Reliability caveats.</b> The value is best-effort:
+     * <ul>
+     * <li>Firefox defers the {@code visibilitychange} event while the window is
+     * blurred, so transitions from {@link PageVisibility#VISIBLE VISIBLE} to
+     * {@link PageVisibility#HIDDEN HIDDEN} may take up to half a second longer
+     * than on Chromium or Safari.</li>
+     * <li>The {@link PageVisibility#VISIBLE_NOT_FOCUSED VISIBLE_NOT_FOCUSED}
+     * distinction relies on {@code document.hasFocus()}, which is accurate in
+     * all supported browsers but depends on the OS reporting focus changes
+     * promptly — some window-manager configurations can delay it briefly.</li>
+     * <li>Rapid focus/blur bursts are intentionally coalesced
+     * ({@code debounce(100)}) so the signal settles once the sequence ends
+     * instead of firing on each intermediate state.</li>
+     * </ul>
+     *
+     * @return the read-only visibility signal
+     */
+    public Signal<PageVisibility> pageVisibilitySignal() {
+        return pageVisibilityReadOnly;
+    }
+
+    /**
+     * Sets the page visibility from a raw client-side value (e.g. from the
+     * bootstrap parameters or from a {@code vaadin-page-visibility-change} DOM
+     * event). {@code null} and unknown values are ignored — the latter is
+     * logged at debug level so a forward-compatible client value does not
+     * silently disappear.
+     *
+     * @param value
+     *            the raw value, or {@code null}
+     */
+    void setPageVisibility(String value) {
+        if (value == null) {
+            return;
+        }
+        try {
+            pageVisibilitySignal.set(PageVisibility.valueOf(value));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown page visibility value from client: {}",
+                    value);
         }
     }
 

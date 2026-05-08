@@ -156,7 +156,8 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        ui.getGeolocation().get(result -> {
+        ui.getGeolocation().get(pos -> {
+        }, err -> {
         });
 
         List<PendingJavaScriptInvocation> invocations = ui
@@ -166,35 +167,38 @@ class GeolocationTest {
     }
 
     @Test
-    void get_callbackReceivesPosition() {
+    void get_onSuccessReceivesPositionAndOnErrorIsSilent() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        List<GeolocationOutcome> received = new ArrayList<>();
-        ui.getGeolocation().get(received::add);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        List<GeolocationError> errors = new ArrayList<>();
+        ui.getGeolocation().get(positions::add, errors::add);
 
         resolvePromise(ui,
                 resultJson(position(60.1699, 24.9384, 10.0), null, "GRANTED"));
 
-        assertEquals(1, received.size());
-        assertInstanceOf(GeolocationPosition.class, received.get(0));
-        assertEquals(60.1699,
-                ((GeolocationPosition) received.get(0)).coords().latitude());
+        assertEquals(1, positions.size());
+        assertEquals(60.1699, positions.get(0).coords().latitude());
+        assertTrue(errors.isEmpty(),
+                "onError must not fire for a successful reading");
     }
 
     @Test
-    void get_callbackReceivesError() {
+    void get_onErrorReceivesErrorAndOnSuccessIsSilent() {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        List<GeolocationOutcome> received = new ArrayList<>();
-        ui.getGeolocation().get(received::add);
+        List<GeolocationPosition> positions = new ArrayList<>();
+        List<GeolocationError> errors = new ArrayList<>();
+        ui.getGeolocation().get(positions::add, errors::add);
 
         resolvePromise(ui, resultJson(null, error(1, "denied"), "DENIED"));
 
-        assertEquals(1, received.size());
-        assertInstanceOf(GeolocationError.class, received.get(0));
-        assertEquals(1, ((GeolocationError) received.get(0)).code());
+        assertEquals(1, errors.size());
+        assertEquals(1, errors.get(0).code());
+        assertTrue(positions.isEmpty(),
+                "onSuccess must not fire when the browser reports an error");
     }
 
     @Test
@@ -202,7 +206,8 @@ class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        ui.getGeolocation().get(result -> {
+        ui.getGeolocation().get(pos -> {
+        }, err -> {
         });
         resolvePromise(ui,
                 resultJson(position(60.0, 25.0, 10.0), null, "GRANTED"));

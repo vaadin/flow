@@ -42,6 +42,27 @@ public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
      * @param fromClient
      *            <code>true</code> if the event originated from the client
      *            side, <code>false</code> otherwise
+     * @deprecated since 25.2, for removal. Use
+     *             {@link #DragStartEvent(Component, boolean, int, int, int, int)}
+     *             which also captures the pointer's client and offset
+     *             coordinates. When this constructor is used,
+     *             {@link #getClientX()}, {@link #getClientY()},
+     *             {@link #getOffsetX()} and {@link #getOffsetY()} return
+     *             {@code 0}.
+     */
+    @Deprecated(since = "25.2", forRemoval = true)
+    public DragStartEvent(T source, boolean fromClient) {
+        this(source, fromClient, 0, 0, 0, 0);
+    }
+
+    /**
+     * Creates a drag start event.
+     *
+     * @param source
+     *            Component that is dragged.
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
      * @param clientX
      *            the x coordinate of the mouse pointer relative to the viewport
      * @param clientY
