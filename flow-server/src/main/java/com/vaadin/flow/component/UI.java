@@ -32,7 +32,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -136,8 +135,6 @@ public class UI extends Component
 
     private final Page page;
 
-    private final Geolocation geolocation;
-
     /*
      * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
      * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
@@ -168,7 +165,6 @@ public class UI extends Component
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
         page = new Page(this);
-        geolocation = new Geolocation(this);
     }
 
     /**
@@ -949,16 +945,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Returns the {@link Geolocation} facade for this UI, used to read the end
-     * user's physical location from the browser.
-     *
-     * @return the Geolocation facade
-     */
-    public Geolocation getGeolocation() {
-        return geolocation;
     }
 
     /**

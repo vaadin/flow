@@ -48,6 +48,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
+import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
@@ -244,6 +245,10 @@ public class UIInternals implements Serializable {
 
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
+
+    private GeolocationClient geolocationClient;
+
+    private Registration geolocationClientAvailabilityRegistration;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1462,6 +1467,43 @@ public class UIInternals implements Serializable {
     public void setGeolocationAvailability(
             GeolocationAvailability availability) {
         this.geolocationAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns the geolocation client currently bound to this UI, or
+     * {@code null} if none has been installed yet. Framework-internal:
+     * application code resolves the client through the static
+     * {@link com.vaadin.flow.component.geolocation.Geolocation} API, which
+     * lazily installs a default client on first use.
+     *
+     * @return the installed geolocation client, or {@code null}
+     */
+    public GeolocationClient getGeolocationClient() {
+        return geolocationClient;
+    }
+
+    /**
+     * Installs the given geolocation client on this UI, replacing any previous
+     * one. The previous client is closed; the availability signal is seeded
+     * with the new client's current availability and updated whenever the
+     * client reports a change. Framework-internal entry point used by the
+     * default {@code Geolocation} bootstrap and by external test drivers that
+     * substitute a browserless client.
+     *
+     * @param client
+     *            the client to install, never {@code null}
+     */
+    public void setGeolocationClient(GeolocationClient client) {
+        if (geolocationClient != null) {
+            geolocationClient.close();
+        }
+        if (geolocationClientAvailabilityRegistration != null) {
+            geolocationClientAvailabilityRegistration.remove();
+        }
+        geolocationClient = client;
+        setGeolocationAvailability(client.currentAvailability());
+        geolocationClientAvailabilityRegistration = client
+                .subscribeAvailability(this::setGeolocationAvailability);
     }
 
     /**

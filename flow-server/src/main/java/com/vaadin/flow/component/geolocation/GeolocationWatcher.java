@@ -23,34 +23,42 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * A handle to a geolocation watching session, returned by
- * {@link Geolocation#watchPosition(Component)} /
- * {@link Geolocation#watchPosition(Component, GeolocationOptions)}.
+ * A handle to a geolocation watch session, returned by
+ * {@link Geolocation#watchPosition(Component)} and its overload.
  * <p>
- * Exposes the latest {@link GeolocationResult} as a reactive signal via
- * {@link #valueSignal()}, and lets the application cancel watching via
- * {@link #stop()} or resume it via {@link #resume()}. The underlying browser
- * watch is also cancelled automatically when the owning component detaches, so
- * most applications never need to call {@code stop()} explicitly — it is
- * provided for "Stop watching" buttons and similar mid-view cancellation.
+ * Two ways to consume the stream of readings:
+ * <ul>
+ * <li>{@link #addPositionListener(SerializableConsumer, SerializableConsumer)}
+ * — non-reactive callback pair. Convenient when the destination is a service,
+ * repository, or anything that is not a UI component (e.g. a sports tracker
+ * that writes points to a database).</li>
+ * <li>{@link #positionSignal()} — reactive signal of {@link GeolocationResult}.
+ * Convenient when binding component state to the position via
+ * {@code Signal.effect} or {@code component.bindText(...)}.</li>
+ * </ul>
+ * The underlying browser watch is cancelled automatically when the owning
+ * component detaches; call {@link #stop()} to cancel sooner and
+ * {@link #resume()} to restart on the same handle. Bindings and listeners
+ * survive stop/resume cycles.
  * <p>
- * A watcher is reusable: after {@link #stop()} you can call {@link #resume()}
- * to resume watching on the same handle, and any effects or bindings subscribed
- * to {@link #valueSignal()} continue to work. Bind a toggle button's state to
- * {@link #activeSignal()} to let the UI react to start/stop without tracking
- * your own flag.
+ * The watch starts as soon as the owning component is attached to a UI: if the
+ * component is already attached when the watcher is created the watch starts
+ * immediately, otherwise it starts on first attach. Calling {@link #stop()}
+ * before the first attach cancels the pending activation; the watcher can still
+ * be activated later by calling {@link #resume()} on an attached owner.
  */
 public class GeolocationWatcher implements Serializable {
 
-    private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
+    private final ValueSignal<GeolocationResult> positionSignal = new ValueSignal<>(
             new GeolocationPending());
-    private final Signal<GeolocationResult> valueSignalReadOnly = valueSignal
+    private final Signal<GeolocationResult> positionSignalReadOnly = positionSignal
             .asReadonly();
 
     private final ValueSignal<Boolean> activeSignal = new ValueSignal<>(
@@ -58,163 +66,133 @@ public class GeolocationWatcher implements Serializable {
     private final Signal<Boolean> activeSignalReadOnly = activeSignal
             .asReadonly();
 
-    private final List<SerializableConsumer<GeolocationPosition>> positionListeners = new ArrayList<>();
-    private final List<SerializableConsumer<GeolocationError>> errorListeners = new ArrayList<>();
+    private final List<PositionListener> listeners = new ArrayList<>();
 
     private final Component owner;
-    private final @Nullable GeolocationOptions options;
-    private final GeolocationClient client;
+    private final GeolocationOptions options;
 
     private GeolocationClient.@Nullable WatchHandle handle;
     private @Nullable Registration detachRegistration;
+    private @Nullable Registration pendingAttachActivation;
 
-    GeolocationWatcher(Component owner, @Nullable GeolocationOptions options,
-            GeolocationClient client) {
+    GeolocationWatcher(Component owner, GeolocationOptions options) {
         this.owner = owner;
         this.options = options;
-        this.client = client;
-        resume();
+        if (owner.getUI().isPresent()) {
+            resume();
+        } else {
+            pendingAttachActivation = owner.addAttachListener(e -> {
+                cancelPendingAttachActivation();
+                resume();
+            });
+        }
     }
 
     /**
-     * Returns a read-only signal that holds the most recent watching result.
+     * Returns a read-only signal that holds the most recent reading.
      * <p>
-     * Combine with {@code Signal.effect(owner, ...)} or an attach listener to
-     * run code whenever the value changes — the effect re-runs automatically on
-     * every update and no manual event-listener bookkeeping is required. Inside
-     * an effect or another reactive context, call {@code valueSignal().get()}
-     * to read the current value and subscribe to further updates; outside a
-     * reactive context, call {@code valueSignal().peek()} to read a snapshot
-     * without subscribing.
-     * <p>
-     * The signal starts as {@link GeolocationPending} until the first reading
-     * arrives, then transitions to {@link GeolocationPosition} on every
-     * successful reading, or {@link GeolocationError} on failure. After
-     * {@link #stop()} (or after the owner detaches), the last value remains
-     * readable but the signal stops receiving updates. Calling
-     * {@link #resume()} resumes updates; the signal is reset to
-     * {@link GeolocationPending} on resume.
+     * Starts as {@link GeolocationPending} until the browser reports its first
+     * value, then transitions to {@link GeolocationPosition} on every
+     * successful reading or {@link GeolocationError} on failure. After
+     * {@link #stop()} the signal stops receiving updates but its last value
+     * stays readable; {@link #resume()} resets the value to
+     * {@link GeolocationPending} and resumes updates. Subscribers stay attached
+     * across stop/resume cycles.
      *
-     * @return a read-only signal reporting the latest result
+     * @return a read-only signal reporting the latest reading
      */
-    public Signal<GeolocationResult> valueSignal() {
-        return valueSignalReadOnly;
+    public Signal<GeolocationResult> positionSignal() {
+        return positionSignalReadOnly;
     }
 
     /**
-     * Returns a read-only signal that indicates whether the watcher is
-     * currently receiving updates. Flips to {@code true} on {@link #resume()}
-     * and to {@code false} on {@link #stop()} (or when the owner detaches).
-     * <p>
-     * Subscribe with {@code Signal.effect(owner, ...)} to bind a toggle
-     * button's label/state to the watcher without tracking a separate flag.
-     * Inside a reactive context, call {@code activeSignal().get()} to
-     * subscribe; outside a reactive context, call {@code activeSignal().peek()}
-     * for a snapshot.
+     * Returns a read-only signal indicating whether the watcher is currently
+     * receiving updates. Flips to {@code true} on {@link #resume()} and to
+     * {@code false} on {@link #stop()} (or when the owner detaches). Useful for
+     * binding a "Stop tracking" toggle's state without tracking a separate
+     * flag.
      *
-     * @return a read-only signal reporting whether watching is active
+     * @return a read-only signal reporting whether the watch is active
      */
     public Signal<Boolean> activeSignal() {
         return activeSignalReadOnly;
     }
 
     /**
-     * Adds a listener pair that is notified on every reading the browser
-     * reports. The listener-based equivalent of subscribing to
-     * {@link #valueSignal()} for callers that prefer plain callbacks over
-     * signals.
+     * Subscribes to position and error pushes from the watch.
      * <p>
-     * On every successful reading {@code onSuccess} is invoked with the
-     * {@link GeolocationPosition}. If the browser reports an error instead
-     * {@code onError} is invoked with the {@link GeolocationError}. The initial
-     * {@link GeolocationPending} state is never delivered to listeners — they
-     * only see real outcomes, mirroring the W3C
-     * {@code watchPosition(success, error)} pair.
+     * {@code onPosition} fires for every {@link GeolocationPosition} the
+     * browser reports. {@code onError} fires for every {@link GeolocationError}
+     * the browser reports. Neither fires for the initial
+     * {@link GeolocationPending} state. Listeners stay attached across
+     * {@link #stop()}/{@link #resume()} cycles; remove them through the
+     * returned {@link Registration}.
      * <p>
-     * Listeners survive {@link #stop()} / {@link #resume()} cycles; remove them
-     * via {@link Registration#remove()} on the returned registration. Both
-     * callbacks are invoked on the UI thread.
+     * Both consumers are required and must be non-null. To opt out of either
+     * notification, pass {@code pos -> {}} or {@code err -> {}} explicitly.
      *
-     * @param onSuccess
-     *            invoked with each successful position reading; not
-     *            {@code null}
+     * @param onPosition
+     *            invoked on every successful reading, never {@code null}
      * @param onError
-     *            invoked when the browser reports an error; not {@code null}
-     * @return a registration that removes both listeners when called
+     *            invoked on every error reading, never {@code null}
+     * @return a registration that removes both listeners when removed
+     * @throws NullPointerException
+     *             if either consumer is {@code null}
      */
     public Registration addPositionListener(
-            SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<GeolocationPosition> onPosition,
             SerializableConsumer<GeolocationError> onError) {
-        Objects.requireNonNull(onSuccess, "onSuccess listener cannot be null");
-        Objects.requireNonNull(onError, "onError listener cannot be null");
-        positionListeners.add(onSuccess);
-        errorListeners.add(onError);
-        return () -> {
-            positionListeners.remove(onSuccess);
-            errorListeners.remove(onError);
-        };
+        Objects.requireNonNull(onPosition, "onPosition must not be null");
+        Objects.requireNonNull(onError, "onError must not be null");
+        PositionListener listener = new PositionListener(onPosition, onError);
+        listeners.add(listener);
+        return () -> listeners.remove(listener);
     }
 
     /**
      * Starts, or resumes, the underlying browser watch.
      * <p>
-     * Called automatically from the constructor so that a freshly created
-     * watcher is immediately active. Call again after {@link #stop()} to resume
-     * watching on the same handle — any effects or bindings subscribed to
-     * {@link #valueSignal()} stay attached and start receiving new updates.
-     * <p>
-     * The signal is reset to {@link GeolocationPending} on every resume.
-     * Calling {@code resume()} on an already-running watcher is a no-op.
+     * Called automatically when the owner is attached to a UI: immediately if
+     * it is already attached when the watcher is created, otherwise on first
+     * attach. Call again after {@link #stop()} to resume on the same handle —
+     * bindings and listeners stay attached and start receiving updates again.
+     * The signal resets to {@link GeolocationPending} on every resume. Calling
+     * {@code resume()} on an already-running watcher is a no-op.
+     *
+     * @throws IllegalStateException
+     *             if the owner is not attached to a UI
      */
     public void resume() {
         if (activeSignal.peek()) {
             return;
         }
+        UI ui = owner.getUI()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Owner component must be attached to a UI before "
+                                + "resume() is called"));
+        GeolocationClient client = Geolocation.client(ui);
         activeSignal.set(Boolean.TRUE);
-        valueSignal.set(new GeolocationPending());
+        positionSignal.set(new GeolocationPending());
 
-        handle = client.startWatch(owner, options, this::handleResult);
+        handle = client.startWatch(owner, options, this::dispatch);
         detachRegistration = owner.addDetachListener(e -> stop());
-    }
-
-    private void handleResult(GeolocationResult result) {
-        valueSignal.set(result);
-        switch (result) {
-        case GeolocationPosition position -> {
-            for (SerializableConsumer<GeolocationPosition> listener : new ArrayList<>(
-                    positionListeners)) {
-                listener.accept(position);
-            }
-        }
-        case GeolocationError error -> {
-            for (SerializableConsumer<GeolocationError> listener : new ArrayList<>(
-                    errorListeners)) {
-                listener.accept(error);
-            }
-        }
-        case GeolocationPending pending -> {
-            // Intentionally not dispatched to listeners — Pending is the
-            // initial state set by resume(), not an outcome the W3C
-            // watchPosition(success, error) pair would fire.
-        }
-        }
     }
 
     /**
      * Cancels the underlying browser watch and tears down the server-side
-     * listeners.
+     * subscriptions.
      * <p>
-     * The browser stops reporting position updates and {@link #valueSignal()}
-     * stops changing. The last value remains readable. This is the way to end
-     * watching from application code (e.g. a "Stop" button) — leaving the view
-     * automatically calls this method, so there is no need to call it from a
-     * detach listener.
+     * The browser stops reporting updates and {@link #positionSignal()} stops
+     * changing. The last value remains readable. Detaching the owning component
+     * calls this automatically, so most applications never need to call it from
+     * a detach listener.
      * <p>
-     * Idempotent and always safe: calling it twice, or calling it on a watcher
-     * whose owner has already detached, does nothing extra. After
-     * {@code stop()} the watcher can be resumed with {@link #resume()}.
+     * Idempotent: calling it twice, or after the owner has already detached,
+     * does nothing extra. After {@code stop()} the watcher can be resumed with
+     * {@link #resume()}.
      */
     public void stop() {
+        cancelPendingAttachActivation();
         if (!activeSignal.peek()) {
             return;
         }
@@ -229,14 +207,48 @@ public class GeolocationWatcher implements Serializable {
         }
     }
 
+    private void cancelPendingAttachActivation() {
+        if (pendingAttachActivation != null) {
+            pendingAttachActivation.remove();
+            pendingAttachActivation = null;
+        }
+    }
+
     /**
      * Returns the active watch handle, or {@code null} if the watcher is not
-     * currently active.
+     * currently active. Framework-internal seam used by external test drivers
+     * to reach the underlying watch.
      *
-     * @return the active watch handle, or {@code null} if the watcher has been
-     *         stopped or auto-cancelled
+     * @return the active watch handle, or {@code null} if stopped
      */
     GeolocationClient.@Nullable WatchHandle handle() {
         return handle;
+    }
+
+    private void dispatch(GeolocationResult result) {
+        positionSignal.set(result);
+        if (listeners.isEmpty()) {
+            return;
+        }
+        UI ui = owner.getUI().orElseThrow();
+        List<PositionListener> snapshot = new ArrayList<>(listeners);
+        if (result instanceof GeolocationPosition position) {
+            for (PositionListener listener : snapshot) {
+                Geolocation.deliverSafely(ui,
+                        () -> listener.onPosition.accept(position));
+            }
+        } else if (result instanceof GeolocationError error) {
+            for (PositionListener listener : snapshot) {
+                Geolocation.deliverSafely(ui,
+                        () -> listener.onError.accept(error));
+            }
+        }
+    }
+
+    private record PositionListener(
+            SerializableConsumer<GeolocationPosition> onPosition,
+            SerializableConsumer<GeolocationError> onError)
+            implements
+                Serializable {
     }
 }

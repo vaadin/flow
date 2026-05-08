@@ -25,7 +25,7 @@ import com.vaadin.flow.di.Lookup;
 /**
  * <b>Framework internal.</b> Factory SPI that produces
  * {@link GeolocationClient} instances per {@link UI}, resolved via
- * {@link Lookup} when a {@link Geolocation} facade is constructed. When a
+ * {@link Lookup} the first time {@link Geolocation} is used for a UI. When a
  * factory is registered the resulting client replaces the built-in
  * browser-backed client for every {@code UI} in the application; when none is,
  * {@code Geolocation} uses the browser-backed client.
@@ -41,7 +41,7 @@ public interface GeolocationClientFactory extends Serializable {
 
     /**
      * Creates a {@link GeolocationClient} for the given UI. Called once per UI,
-     * the first time {@link UI#getGeolocation()} is invoked.
+     * the first time a {@link Geolocation} entry point is invoked for that UI.
      *
      * @param ui
      *            the UI for which the client is created
