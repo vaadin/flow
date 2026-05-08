@@ -223,6 +223,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         assertTrue(npmRcFile.exists());
         String content = Files.readString(npmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
+        assertTrue(content.contains("node-linker=hoisted"));
     }
 
     @Test
