@@ -807,9 +807,8 @@ public class NodeUpdaterTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         Assert.assertTrue("workbox-build override should be an object",
                 workboxBuildOverride.isObject());
-        Assert.assertTrue(
-                "workbox-build override should contain serialize-javascript",
-                workboxBuildOverride.has("serialize-javascript"));
+        Assert.assertTrue("workbox-build override should contain glob",
+                workboxBuildOverride.has("glob"));
     }
 
     @Test
