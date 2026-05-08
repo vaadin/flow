@@ -375,6 +375,31 @@ public class TestBenchHelpers extends ParallelTest {
             result = getCommandExecutor().executeScript(
                     "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
         } while (Boolean.TRUE.equals(result));
+
+        // Two failure modes need fast-fail; otherwise every subsequent
+        // waitUntil(...) burns its full timeout against a broken page,
+        // blowing the runner timeout for the whole shard.
+        //
+        // 1) AbstractDevServerRunner detected a Vite startup failure and
+        // served `<pre>The Vite dev server failed to start: ...</pre>`
+        // with the underlying cause embedded — surface it verbatim.
+        // 2) Otherwise Flow believes Vite started but index.html could not
+        // be fetched (Jetty serves a 500). window.Vaadin.Flow is absent
+        // on that page, which we use as a generic "no Vaadin bootstrap"
+        // signal.
+        String pageSource = getDriver().getPageSource();
+        if (pageSource != null
+                && pageSource.contains("The Vite dev server failed to start")) {
+            throw new AssertionError(pageSource);
+        }
+        Object vaadinPresent = getCommandExecutor().executeScript(
+                "return !!(window.Vaadin && window.Vaadin.Flow);");
+        if (!Boolean.TRUE.equals(vaadinPresent)) {
+            throw new AssertionError("Dev server did not load. Page title: '"
+                    + getDriver().getTitle()
+                    + "'. Likely a frontend build error — check "
+                    + "jetty-start.out for the dev server output.");
+        }
     }
 
     /**
