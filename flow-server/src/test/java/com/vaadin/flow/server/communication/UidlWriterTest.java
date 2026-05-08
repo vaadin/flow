@@ -282,13 +282,13 @@ class UidlWriterTest {
                 .filterLazyLoading(getDependenciesMap(response));
 
         assertEquals(4, dependenciesMap.size());
-        assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
+        assertDependency("context://childinterface1-" + CSS_STYLE_NAME,
+                CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("context://childinterface2-" + CSS_STYLE_NAME,
+                CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("context://child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
-        assertDependency("child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
-        assertDependency("child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
+        assertDependency("context://child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
     }
 
@@ -330,14 +330,14 @@ class UidlWriterTest {
                 hasSize(0));
 
         ObjectNode eagerDependency = eagerDependencies.get(0);
-        assertEquals("eager.css",
+        assertEquals("context://eager.css",
                 eagerDependency.get(Dependency.KEY_URL).textValue());
         assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
                 .valueOf(eagerDependency.get(Dependency.KEY_TYPE).textValue()));
 
         List<ObjectNode> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         ObjectNode lazyDependency = lazyDependencies.get(0);
-        assertEquals("lazy.css",
+        assertEquals("context://lazy.css",
                 lazyDependency.get(Dependency.KEY_URL).textValue());
         assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
                 .valueOf(lazyDependency.get(Dependency.KEY_TYPE).textValue()));
@@ -353,8 +353,8 @@ class UidlWriterTest {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
-        // Add resources so hash can be computed. Paths use leading '/' as
-        // required by ServletContext.getResource() per the servlet spec.
+        // Add resources so hash can be computed. Paths must match what
+        // resolveResource() produces for the @StyleSheet annotation values.
         mocks.getServlet().addServletContextResource("/eager.css",
                 "body { color: red; }");
         mocks.getServlet().addServletContextResource("/lazy.css",
@@ -386,7 +386,7 @@ class UidlWriterTest {
                 .findFirst().orElse(null);
         assertNotNull(eagerCss, "Should have an eager stylesheet dependency");
         String eagerUrl = eagerCss.get(Dependency.KEY_URL).textValue();
-        assertTrue(eagerUrl.matches("eager\\.css\\?"
+        assertTrue(eagerUrl.matches("context://eager\\.css\\?"
                 + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
                 "Eager stylesheet URL should contain hash: " + eagerUrl);
 
@@ -400,7 +400,7 @@ class UidlWriterTest {
                 .findFirst().orElse(null);
         assertNotNull(lazyCss, "Should have a lazy stylesheet dependency");
         String lazyUrl = lazyCss.get(Dependency.KEY_URL).textValue();
-        assertTrue(lazyUrl.matches("lazy\\.css\\?"
+        assertTrue(lazyUrl.matches("context://lazy\\.css\\?"
                 + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
                 "Lazy stylesheet URL should contain hash: " + lazyUrl);
 
@@ -501,6 +501,11 @@ class UidlWriterTest {
         for (String type : new String[] { "html", "js", "css" }) {
             mocks.getServlet().addServletContextResource("inline." + type,
                     "inline." + type);
+            // After context-root URL normalization the lookup uses a leading
+            // slash; register both variants so component-level inline content
+            // can be resolved.
+            mocks.getServlet().addServletContextResource("/inline." + type,
+                    "inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
@@ -529,16 +534,17 @@ class UidlWriterTest {
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
+        assertDependency("context://super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("anotherinterface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("context://anotherinterface-" + CSS_STYLE_NAME,
+                CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("interface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("context://interface-" + CSS_STYLE_NAME,
+                CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("context://" + CSS_STYLE_NAME, CSS_STYLE_NAME,
+                dependenciesMap);
     }
 
     private Map<String, ObjectNode> getDependenciesMap(ObjectNode response) {
