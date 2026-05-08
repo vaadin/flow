@@ -20,13 +20,13 @@ package com.vaadin.flow.component.geolocation;
  * {@link GeolocationPosition}.
  * <p>
  * This is one of the three possible values of a
- * {@link GeolocationTracker#valueSignal()} signal, and the value passed to the
- * error callback of {@link Geolocation#get Geolocation.get}. Typical
- * application code switches on {@link #errorCode()} to react to the specific
- * reason:
+ * {@link GeolocationWatcher#valueSignal()} signal, and the value passed to the
+ * error callback of {@link Geolocation#getPosition Geolocation.getPosition}.
+ * Typical application code switches on {@link #errorCode()} to react to the
+ * specific reason:
  *
  * <pre>
- * ui.getGeolocation().get(pos -&gt; showNearest(pos), err -&gt; {
+ * ui.getGeolocation().getPosition(pos -&gt; showNearest(pos), err -&gt; {
  *     switch (err.errorCode()) {
  *     case PERMISSION_DENIED -&gt;
  *         showExplanation("Location is blocked for this site.");

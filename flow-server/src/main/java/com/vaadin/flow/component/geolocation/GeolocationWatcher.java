@@ -29,24 +29,24 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * A handle to a geolocation tracking session, returned by
- * {@link Geolocation#track(Component)} /
- * {@link Geolocation#track(Component, GeolocationOptions)}.
+ * A handle to a geolocation watching session, returned by
+ * {@link Geolocation#watchPosition(Component)} /
+ * {@link Geolocation#watchPosition(Component, GeolocationOptions)}.
  * <p>
  * Exposes the latest {@link GeolocationResult} as a reactive signal via
- * {@link #valueSignal()}, and lets the application cancel tracking via
+ * {@link #valueSignal()}, and lets the application cancel watching via
  * {@link #stop()} or resume it via {@link #resume()}. The underlying browser
  * watch is also cancelled automatically when the owning component detaches, so
  * most applications never need to call {@code stop()} explicitly — it is
- * provided for "Stop tracking" buttons and similar mid-view cancellation.
+ * provided for "Stop watching" buttons and similar mid-view cancellation.
  * <p>
- * A tracker is reusable: after {@link #stop()} you can call {@link #resume()}
- * to resume tracking on the same handle, and any effects or bindings subscribed
+ * A watcher is reusable: after {@link #stop()} you can call {@link #resume()}
+ * to resume watching on the same handle, and any effects or bindings subscribed
  * to {@link #valueSignal()} continue to work. Bind a toggle button's state to
  * {@link #activeSignal()} to let the UI react to start/stop without tracking
  * your own flag.
  */
-public class GeolocationTracker implements Serializable {
+public class GeolocationWatcher implements Serializable {
 
     private final ValueSignal<GeolocationResult> valueSignal = new ValueSignal<>(
             new GeolocationPending());
@@ -68,7 +68,7 @@ public class GeolocationTracker implements Serializable {
     private GeolocationClient.@Nullable WatchHandle handle;
     private @Nullable Registration detachRegistration;
 
-    GeolocationTracker(Component owner, @Nullable GeolocationOptions options,
+    GeolocationWatcher(Component owner, @Nullable GeolocationOptions options,
             GeolocationClient client) {
         this.owner = owner;
         this.options = options;
@@ -77,7 +77,7 @@ public class GeolocationTracker implements Serializable {
     }
 
     /**
-     * Returns a read-only signal that holds the most recent tracking result.
+     * Returns a read-only signal that holds the most recent watching result.
      * <p>
      * Combine with {@code Signal.effect(owner, ...)} or an attach listener to
      * run code whenever the value changes — the effect re-runs automatically on
@@ -102,17 +102,17 @@ public class GeolocationTracker implements Serializable {
     }
 
     /**
-     * Returns a read-only signal that indicates whether the tracker is
+     * Returns a read-only signal that indicates whether the watcher is
      * currently receiving updates. Flips to {@code true} on {@link #resume()}
      * and to {@code false} on {@link #stop()} (or when the owner detaches).
      * <p>
      * Subscribe with {@code Signal.effect(owner, ...)} to bind a toggle
-     * button's label/state to the tracker without tracking a separate flag.
+     * button's label/state to the watcher without tracking a separate flag.
      * Inside a reactive context, call {@code activeSignal().get()} to
      * subscribe; outside a reactive context, call {@code activeSignal().peek()}
      * for a snapshot.
      *
-     * @return a read-only signal reporting whether tracking is active
+     * @return a read-only signal reporting whether watching is active
      */
     public Signal<Boolean> activeSignal() {
         return activeSignalReadOnly;
@@ -159,12 +159,12 @@ public class GeolocationTracker implements Serializable {
      * Starts, or resumes, the underlying browser watch.
      * <p>
      * Called automatically from the constructor so that a freshly created
-     * tracker is immediately active. Call again after {@link #stop()} to resume
-     * tracking on the same handle — any effects or bindings subscribed to
+     * watcher is immediately active. Call again after {@link #stop()} to resume
+     * watching on the same handle — any effects or bindings subscribed to
      * {@link #valueSignal()} stay attached and start receiving new updates.
      * <p>
      * The signal is reset to {@link GeolocationPending} on every resume.
-     * Calling {@code resume()} on an already-running tracker is a no-op.
+     * Calling {@code resume()} on an already-running watcher is a no-op.
      */
     public void resume() {
         if (activeSignal.peek()) {
@@ -206,13 +206,13 @@ public class GeolocationTracker implements Serializable {
      * <p>
      * The browser stops reporting position updates and {@link #valueSignal()}
      * stops changing. The last value remains readable. This is the way to end
-     * tracking from application code (e.g. a "Stop" button) — leaving the view
+     * watching from application code (e.g. a "Stop" button) — leaving the view
      * automatically calls this method, so there is no need to call it from a
      * detach listener.
      * <p>
-     * Idempotent and always safe: calling it twice, or calling it on a tracker
+     * Idempotent and always safe: calling it twice, or calling it on a watcher
      * whose owner has already detached, does nothing extra. After
-     * {@code stop()} the tracker can be resumed with {@link #resume()}.
+     * {@code stop()} the watcher can be resumed with {@link #resume()}.
      */
     public void stop() {
         if (!activeSignal.peek()) {
@@ -230,10 +230,10 @@ public class GeolocationTracker implements Serializable {
     }
 
     /**
-     * Returns the active watch handle, or {@code null} if the tracker is not
+     * Returns the active watch handle, or {@code null} if the watcher is not
      * currently active.
      *
-     * @return the active watch handle, or {@code null} if the tracker has been
+     * @return the active watch handle, or {@code null} if the watcher has been
      *         stopped or auto-cancelled
      */
     GeolocationClient.@Nullable WatchHandle handle() {

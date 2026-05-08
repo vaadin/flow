@@ -23,8 +23,8 @@ package com.vaadin.flow.component.geolocation;
  * <p>
  * Used as the result type of the internal {@link GeolocationClient#get} future,
  * where the sum-type encoding keeps Pending out of the contract. Application
- * code rarely references this type directly: {@link Geolocation#get
- * Geolocation.get} delivers the position or the error through separate
+ * code rarely references this type directly: {@link Geolocation#getPosition
+ * Geolocation.getPosition} delivers the position or the error through separate
  * callbacks.
  */
 public sealed interface GeolocationOutcome extends GeolocationResult

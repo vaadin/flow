@@ -70,7 +70,7 @@ class GeolocationClientSeamTest {
                 .thenReturn(unused -> fake);
 
         UI freshUi = new MockUI();
-        freshUi.getGeolocation().get(pos -> {
+        freshUi.getGeolocation().getPosition(pos -> {
         }, err -> {
         });
 
@@ -83,7 +83,7 @@ class GeolocationClientSeamTest {
         FakeClient fake = new FakeClient();
         ui.getGeolocation().setClient(fake);
 
-        ui.getGeolocation().get(pos -> {
+        ui.getGeolocation().getPosition(pos -> {
         }, err -> {
         });
 
@@ -103,36 +103,36 @@ class GeolocationClientSeamTest {
     }
 
     @Test
-    void track_handleComesFromCurrentClient() {
+    void watchPosition_handleComesFromCurrentClient() {
         FakeClient fake = new FakeClient();
         ui.getGeolocation().setClient(fake);
 
         TestComponent owner = new TestComponent();
         ui.add(owner);
-        GeolocationTracker tracker = ui.getGeolocation().track(owner);
+        GeolocationWatcher watcher = ui.getGeolocation().watchPosition(owner);
 
-        GeolocationClient.WatchHandle handle = tracker.handle();
-        assertNotNull(handle, "tracker should expose its watch handle");
+        GeolocationClient.WatchHandle handle = watcher.handle();
+        assertNotNull(handle, "watcher should expose its watch handle");
         assertSame(fake.lastWatchHandle, handle,
                 "handle should be the one returned by client.startWatch");
     }
 
     @Test
-    void track_handleIsNullAfterStop() {
+    void watchPosition_handleIsNullAfterStop() {
         FakeClient fake = new FakeClient();
         ui.getGeolocation().setClient(fake);
 
         TestComponent owner = new TestComponent();
         ui.add(owner);
-        GeolocationTracker tracker = ui.getGeolocation().track(owner);
-        tracker.stop();
+        GeolocationWatcher watcher = ui.getGeolocation().watchPosition(owner);
+        watcher.stop();
 
-        assertNull(tracker.handle(),
+        assertNull(watcher.handle(),
                 "handle() should return null after stop()");
     }
 
     @Test
-    void get_onErrorReceivesUnknownErrorWhenClientFutureFailsExceptionally() {
+    void getPosition_onErrorReceivesUnknownErrorWhenClientFutureFailsExceptionally() {
         FakeClient fake = new FakeClient();
         fake.nextGetResult = CompletableFuture
                 .failedFuture(new RuntimeException(
@@ -141,7 +141,7 @@ class GeolocationClientSeamTest {
 
         AtomicReference<@Nullable GeolocationPosition> position = new AtomicReference<>();
         AtomicReference<@Nullable GeolocationError> error = new AtomicReference<>();
-        ui.getGeolocation().get(position::set, error::set);
+        ui.getGeolocation().getPosition(position::set, error::set);
 
         GeolocationError err = error.get();
         assertNotNull(err, "onError must fire even when the JS bridge fails");

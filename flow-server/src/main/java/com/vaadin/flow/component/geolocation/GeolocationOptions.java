@@ -23,8 +23,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Tuning knobs for a geolocation request — controls the accuracy / battery /
- * speed / freshness trade-off of a single {@link Geolocation#get} or
- * {@link Geolocation#track} call.
+ * speed / freshness trade-off of a single {@link Geolocation#getPosition} or
+ * {@link Geolocation#watchPosition} call.
  * <p>
  * Every field is optional. A {@code null} field means "let the browser decide":
  * high accuracy defaults to {@code false}, timeout defaults to no timeout at

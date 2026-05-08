@@ -42,21 +42,21 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * <b>Two usage modes:</b>
  * <ul>
- * <li>{@link #get(SerializableConsumer, SerializableConsumer)} — one-shot
- * position request. Use this when the application only needs to know the user's
- * location at a single moment (e.g. on a button click). Takes a pair of
- * callbacks — one for a successful {@link GeolocationPosition}, one for a
+ * <li>{@link #getPosition(SerializableConsumer, SerializableConsumer)} —
+ * one-shot position request. Use this when the application only needs to know
+ * the user's location at a single moment (e.g. on a button click). Takes a pair
+ * of callbacks — one for a successful {@link GeolocationPosition}, one for a
  * {@link GeolocationError} — mirroring the W3C
  * {@code getCurrentPosition(success, error)} pair and matching
- * {@link GeolocationTracker#addPositionListener
- * GeolocationTracker.addPositionListener}. An overload accepts a trailing
+ * {@link GeolocationWatcher#addPositionListener
+ * GeolocationWatcher.addPositionListener}. An overload accepts a trailing
  * {@link GeolocationOptions} for accuracy / timeout / cache-age tuning.</li>
- * <li>{@link #track(Component)} — continuous tracking that keeps the server
- * updated as the user moves. Returns a {@link GeolocationTracker} whose
- * {@link GeolocationTracker#valueSignal() valueSignal()} is a reactive signal
+ * <li>{@link #watchPosition(Component)} — continuous watching that keeps the
+ * server updated as the user moves. Returns a {@link GeolocationWatcher} whose
+ * {@link GeolocationWatcher#valueSignal() valueSignal()} is a reactive signal
  * of {@link GeolocationResult}. The browser watch is automatically cancelled
- * when the owning component detaches; use {@link GeolocationTracker#stop()} to
- * cancel it sooner and {@link GeolocationTracker#resume()} to resume.</li>
+ * when the owning component detaches; use {@link GeolocationWatcher#stop()} to
+ * cancel it sooner and {@link GeolocationWatcher#resume()} to resume.</li>
  * </ul>
  * <b>Availability check:</b>
  * <ul>
@@ -80,19 +80,20 @@ import com.vaadin.flow.signals.Signal;
  * <pre>
  * Button locate = new Button("Use my location");
  * locate.addClickListener(
- *         e -&gt; e.getUI().getGeolocation()
- *                 .get(pos -&gt; showNearest(pos.coords().latitude(),
+ *         e -&gt; e.getUI().getGeolocation().getPosition(
+ *                 pos -&gt; showNearest(pos.coords().latitude(),
  *                         pos.coords().longitude()),
- *                         err -&gt; showManualEntry()));
+ *                 err -&gt; showManualEntry()));
  * </pre>
  *
  * <p>
- * <b>Tracking example:</b>
+ * <b>Watching example:</b>
  *
  * <pre>
- * GeolocationTracker tracker = UI.getCurrent().getGeolocation().track(this);
+ * GeolocationWatcher watcher = UI.getCurrent().getGeolocation()
+ *         .watchPosition(this);
  * Signal.effect(this, () -&gt; {
- *     switch (tracker.valueSignal().get()) {
+ *     switch (watcher.valueSignal().get()) {
  *     case GeolocationPending p -&gt; {
  *         // waiting for first reading
  *     }
@@ -183,8 +184,8 @@ public class Geolocation implements Serializable {
      * browser reports an error instead {@code onError} is invoked with the
      * {@link GeolocationError}. The pair mirrors the W3C
      * {@code getCurrentPosition(success, error)} signature and matches
-     * {@link GeolocationTracker#addPositionListener
-     * GeolocationTracker.addPositionListener}, so callers can share the same
+     * {@link GeolocationWatcher#addPositionListener
+     * GeolocationWatcher.addPositionListener}, so callers can share the same
      * handler shape between one-shot and watch APIs.
      * <p>
      * The call returns immediately. The browser may show a permission dialog on
@@ -198,9 +199,9 @@ public class Geolocation implements Serializable {
      *            invoked with the error if the browser reports one; not
      *            {@code null}
      */
-    public void get(SerializableConsumer<GeolocationPosition> onSuccess,
+    public void getPosition(SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError) {
-        get(onSuccess, onError, null);
+        getPosition(onSuccess, onError, null);
     }
 
     /**
@@ -222,14 +223,14 @@ public class Geolocation implements Serializable {
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
      *            the browser defaults
      */
-    public void get(SerializableConsumer<GeolocationPosition> onSuccess,
+    public void getPosition(SerializableConsumer<GeolocationPosition> onSuccess,
             SerializableConsumer<GeolocationError> onError,
             @Nullable GeolocationOptions options) {
         Objects.requireNonNull(onSuccess, "onSuccess callback cannot be null");
         Objects.requireNonNull(onError, "onError callback cannot be null");
         client.get(options).whenComplete((outcome, error) -> {
             if (error != null) {
-                LOGGER.debug("Geolocation get() failed", error);
+                LOGGER.debug("Geolocation getPosition() failed", error);
                 onError.accept(new GeolocationError(
                         GeolocationErrorCode.UNKNOWN.code(),
                         "Client-side geolocation bridge failure"));
@@ -247,8 +248,8 @@ public class Geolocation implements Serializable {
      * component's lifecycle.
      * <p>
      * The browser reports new positions whenever it detects movement. Each
-     * report is delivered to the returned tracker's
-     * {@link GeolocationTracker#valueSignal() valueSignal()} signal on the UI
+     * report is delivered to the returned watcher's
+     * {@link GeolocationWatcher#valueSignal() valueSignal()} signal on the UI
      * thread. The initial value is {@link GeolocationPending} until the first
      * reading arrives, then transitions to {@link GeolocationPosition} (updated
      * on every subsequent reading) or {@link GeolocationError}.
@@ -256,52 +257,52 @@ public class Geolocation implements Serializable {
      * The underlying browser watch is automatically cancelled when
      * {@code owner} detaches, so the application does not need to write cleanup
      * code for navigation. For cancelling while the view is still attached
-     * (e.g. a "Stop tracking" button), call {@link GeolocationTracker#stop()}
-     * on the returned tracker.
+     * (e.g. a "Stop watching" button), call {@link GeolocationWatcher#stop()}
+     * on the returned watcher.
      * <p>
      * <b>Permission-revoke caveat.</b> If the user revokes geolocation
      * permission while a watch is active and then grants it again, the browser
      * silently stops delivering position updates to the existing watch — this
      * is the W3C Geolocation API's documented behavior across browsers, not a
      * Flow-specific limitation. To recover after a revoke/regrant cycle, call
-     * {@link GeolocationTracker#stop()} followed by
-     * {@link GeolocationTracker#resume()}, which installs a fresh browser
+     * {@link GeolocationWatcher#stop()} followed by
+     * {@link GeolocationWatcher#resume()}, which installs a fresh browser
      * watch. Applications that want this to happen automatically can subscribe
      * to {@link #availabilitySignal()} with {@code Signal.effect(owner, ...)}
      * and trigger the stop/resume when the availability transitions back to
      * {@link GeolocationAvailability#GRANTED GRANTED}.
      *
      * @param owner
-     *            the component that owns this tracking session; detaching the
+     *            the component that owns this watching session; detaching the
      *            component automatically stops the watch
-     * @return a tracker whose {@link GeolocationTracker#valueSignal()} reports
-     *         progress and whose {@link GeolocationTracker#stop()} cancels the
+     * @return a watcher whose {@link GeolocationWatcher#valueSignal()} reports
+     *         progress and whose {@link GeolocationWatcher#stop()} cancels the
      *         watch
      */
-    public GeolocationTracker track(Component owner) {
-        return track(owner, null);
+    public GeolocationWatcher watchPosition(Component owner) {
+        return watchPosition(owner, null);
     }
 
     /**
      * Starts continuously watching the user's position with tuning options,
      * tied to the owner component's lifecycle. Behaves like
-     * {@link #track(Component)} but lets the caller request high accuracy, set
-     * a failure timeout, or accept cached readings. See
+     * {@link #watchPosition(Component)} but lets the caller request high
+     * accuracy, set a failure timeout, or accept cached readings. See
      * {@link GeolocationOptions} for the available settings.
      *
      * @param owner
-     *            the component that owns this tracking session; detaching the
+     *            the component that owns this watching session; detaching the
      *            component automatically stops the watch
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} to use
      *            the browser defaults
-     * @return a tracker whose {@link GeolocationTracker#valueSignal()} reports
-     *         progress and whose {@link GeolocationTracker#stop()} cancels the
+     * @return a watcher whose {@link GeolocationWatcher#valueSignal()} reports
+     *         progress and whose {@link GeolocationWatcher#stop()} cancels the
      *         watch
      */
-    public GeolocationTracker track(Component owner,
+    public GeolocationWatcher watchPosition(Component owner,
             @Nullable GeolocationOptions options) {
-        return new GeolocationTracker(owner, options, client);
+        return new GeolocationWatcher(owner, options, client);
     }
 
     /**
@@ -317,8 +318,8 @@ public class Geolocation implements Serializable {
      * <p>
      * The signal starts as {@link GeolocationAvailability#UNKNOWN UNKNOWN},
      * transitions to the value reported during the initial client bootstrap,
-     * and updates on every {@link #get} / {@link #track} outcome and on browser
-     * permission-change events where supported.
+     * and updates on every {@link #getPosition} / {@link #watchPosition}
+     * outcome and on browser permission-change events where supported.
      * <p>
      * <b>Reliability caveats.</b> The value is best-effort, not authoritative —
      * it reflects what the browser last reported, and can be briefly stale in
@@ -337,15 +338,15 @@ public class Geolocation implements Serializable {
      * correctly.</li>
      * <li>On Firefox, permission changes the user makes in browser settings are
      * not reliably propagated back — the signal can stay stale until the next
-     * {@link #get} or {@link #track} call.</li>
+     * {@link #getPosition} or {@link #watchPosition} call.</li>
      * <li>On Chromium, the value updates promptly when the user flips the site
      * permission, but there is still a small propagation delay between the
      * browser event and the cache update.</li>
      * </ul>
      * Treat the value as a hint for pre-rendering decisions (e.g. auto-fetching
      * on return visits, hiding controls in unsupported contexts). For critical
-     * paths, call {@link #get} and handle the authoritative result in the
-     * callback.
+     * paths, call {@link #getPosition} and handle the authoritative result in
+     * the callback.
      *
      * @return the availability signal
      */

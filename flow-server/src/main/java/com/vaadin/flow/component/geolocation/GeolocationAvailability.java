@@ -21,9 +21,9 @@ package com.vaadin.flow.component.geolocation;
  * <p>
  * Returned by {@link Geolocation#availabilitySignal()}. Reading the value does
  * <b>not</b> show a permission dialog — it reports whether a dialog would
- * appear on the next {@link Geolocation#get} or {@link Geolocation#track} call,
- * or whether the call would fail regardless because the feature is unusable in
- * this context.
+ * appear on the next {@link Geolocation#getPosition} or
+ * {@link Geolocation#watchPosition} call, or whether the call would fail
+ * regardless because the feature is unusable in this context.
  * <p>
  * Typical usage:
  * <ul>
@@ -39,8 +39,8 @@ package com.vaadin.flow.component.geolocation;
 public enum GeolocationAvailability {
     /**
      * The user has previously granted permission for this origin. A subsequent
-     * {@link Geolocation#get} or {@link Geolocation#track} call will proceed
-     * without showing a dialog.
+     * {@link Geolocation#getPosition} or {@link Geolocation#watchPosition} call
+     * will proceed without showing a dialog.
      */
     GRANTED,
 
@@ -53,8 +53,9 @@ public enum GeolocationAvailability {
     DENIED,
 
     /**
-     * Permission has not yet been decided. The next {@link Geolocation#get} or
-     * {@link Geolocation#track} call will show the browser's permission dialog.
+     * Permission has not yet been decided. The next
+     * {@link Geolocation#getPosition} or {@link Geolocation#watchPosition} call
+     * will show the browser's permission dialog.
      */
     PROMPT,
 

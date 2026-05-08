@@ -22,8 +22,8 @@ import java.time.Instant;
  * moment in time they were taken.
  * <p>
  * This is one of the three possible values of a
- * {@link GeolocationTracker#valueSignal()} signal, and the value passed to the
- * success callback of {@link Geolocation#get Geolocation.get}.
+ * {@link GeolocationWatcher#valueSignal()} signal, and the value passed to the
+ * success callback of {@link Geolocation#getPosition Geolocation.getPosition}.
  *
  * @param coords
  *            the latitude/longitude and related fields; see
