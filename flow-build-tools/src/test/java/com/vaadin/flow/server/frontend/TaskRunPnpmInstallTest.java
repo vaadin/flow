@@ -227,6 +227,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String content = FileUtils.readFileToString(npmRcFile,
                 StandardCharsets.UTF_8);
         assertTrue(content.contains("shamefully-hoist"));
+        assertTrue(content.contains("node-linker=hoisted"));
     }
 
     @Test
