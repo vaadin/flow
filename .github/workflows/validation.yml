@@ -254,7 +254,11 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ failure() || success() }}
+    # Use always() so this job runs on cancellation too. With
+    # failure() || success() it would be skipped when any matrix entry
+    # was cancelled, and a skipped required check satisfies branch
+    # protection — letting auto-merge proceed past a cancelled IT.
+    if: ${{ always() }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-24.04
     steps:
