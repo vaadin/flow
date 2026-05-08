@@ -16,13 +16,13 @@
 package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -42,7 +42,7 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  * @author Vaadin Ltd
  *
  */
-@Configuration
+@AutoConfiguration
 public class VaadinApplicationConfiguration {
 
     /**
