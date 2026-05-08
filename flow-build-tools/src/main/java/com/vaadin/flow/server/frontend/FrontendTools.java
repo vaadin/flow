@@ -70,7 +70,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.12.1";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.0.4";
+    public static final String DEFAULT_PNPM_VERSION = "11.0.8";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -364,7 +364,13 @@ public class FrontendTools {
         List<String> pnpmCommand = getSuitablePnpm();
         assert !pnpmCommand.isEmpty();
         pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
+        // Force hoisted (flat npm-style) layout. CLI takes precedence over
+        // .npmrc, so this is unambiguous even if the project lacks the
+        // generated .npmrc. Replaces the previous --shamefully-hoist=true,
+        // which only controls the partial-hoist heuristic on top of the
+        // default isolated layout and did not consistently expose every
+        // transitive at the project root.
+        pnpmCommand.add("--config.node-linker=hoisted");
         return pnpmCommand;
     }
 
@@ -646,11 +652,11 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install latest pnpm version as the minimum node requirement is
-            // now at nodejs 16.14.0
-            // see https://pnpm.io/installation#compatibility
+            // install the pinned pnpm version so behavior stays
+            // deterministic across environments instead of whatever npx
+            // happens to resolve as latest
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm");
+                    "--quiet", "pnpm@" + DEFAULT_PNPM_VERSION);
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "

@@ -16,8 +16,8 @@
 package com.vaadin.flow.component.dnd;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 
 /**
  * HTML5 drag start event, fired when the user starts dragging a drag source.
@@ -26,11 +26,13 @@ import com.vaadin.flow.component.DomEvent;
  *            Type of the component that is dragged.
  * @author Vaadin Ltd
  * @see DragSource#addDragStartListener(com.vaadin.flow.component.ComponentEventListener)
- * @author Vaadin Ltd
  * @since 2.0
  */
 @DomEvent("dragstart")
-public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
+public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
+
+    private final int offsetX;
+    private final int offsetY;
 
     /**
      * Creates a drag start event.
@@ -40,18 +42,72 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
      * @param fromClient
      *            <code>true</code> if the event originated from the client
      *            side, <code>false</code> otherwise
+     * @deprecated since 25.2, for removal. Use
+     *             {@link #DragStartEvent(Component, boolean, int, int, int, int)}
+     *             which also captures the pointer's client and offset
+     *             coordinates. When this constructor is used,
+     *             {@link #getClientX()}, {@link #getClientY()},
+     *             {@link #getOffsetX()} and {@link #getOffsetY()} return
+     *             {@code 0}.
      */
+    @Deprecated(since = "25.2", forRemoval = true)
     public DragStartEvent(T source, boolean fromClient) {
-        super(source, fromClient);
+        this(source, fromClient, 0, 0, 0, 0);
     }
 
     /**
-     * Returns the drag source component where the dragstart event occurred.
+     * Creates a drag start event.
      *
-     * @return Component which is dragged.
+     * @param source
+     *            Component that is dragged.
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
+     * @param clientX
+     *            the x coordinate of the mouse pointer relative to the viewport
+     * @param clientY
+     *            the y coordinate of the mouse pointer relative to the viewport
+     * @param offsetX
+     *            the x coordinate of the mouse pointer relative to the drag
+     *            source element
+     * @param offsetY
+     *            the y coordinate of the mouse pointer relative to the drag
+     *            source element
      */
-    public T getComponent() {
-        return getSource();
+    public DragStartEvent(T source, boolean fromClient,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY,
+            @EventData("event.offsetX") int offsetX,
+            @EventData("event.offsetY") int offsetY) {
+        super(source, fromClient, clientX, clientY);
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+    }
+
+    /**
+     * Gets the x coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items.
+     *
+     * @return the x coordinate relative to the drag source element
+     */
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    /**
+     * Gets the y coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items.
+     *
+     * @return the y coordinate relative to the drag source element
+     */
+    public int getOffsetY() {
+        return offsetY;
     }
 
     /**

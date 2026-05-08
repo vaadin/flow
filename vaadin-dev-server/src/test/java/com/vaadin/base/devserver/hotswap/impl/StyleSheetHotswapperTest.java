@@ -325,19 +325,34 @@ class StyleSheetHotswapperTest {
     @Test
     void onClassesChange_componentModifyAnnotation_updatesStylesheet()
             throws Exception {
-        var event = new HotswapClassSessionEvent(service, session,
-                Set.of(TestComponent.class), false);
-        hotswapper.onClassesChange(event);
-
         TestComponent component = new TestComponent();
         ui.add(component);
-        // simulate initial roundtrip
+        // Simulate the initial roundtrip. UIInternals registers the
+        // dependency keyed by the resolved (context://) URL, mirroring how
+        // bootstrap registers @StyleSheet values in production.
         ui.getInternals().addComponentDependencies(TestComponent.class);
 
-        int initialCount = countStylesheets();
-        assertTrue(hasStylesheet("styles/component.css"),
-                "Should have modified-component.css stylesheet");
+        // Capture the dependency id that the initial roundtrip produced so we
+        // can later assert that the hotswapper actually queues the original
+        // dependency for removal — i.e., that lookups during hotswap use the
+        // same canonical URL form the dependency was registered under.
+        Dependency originalDep = ui.getInternals().getDependencyList()
+                .getDependencyByUrl("context://styles/component.css",
+                        Dependency.Type.STYLESHEET);
+        assertTrue(originalDep != null,
+                "Initial component dependency should be registered with the "
+                        + "context:// prefix used by addComponentDependencies");
+        String originalDepId = originalDep.getId();
+        // Mark currently-known deps as already sent to the client so we can
+        // see only the deps that the hotswapper itself adds afterwards. Do
+        // NOT clear pendingStyleSheetRemovals — the test asserts on it.
         ui.getInternals().getDependencyList().clearPendingSendToClient();
+
+        // Mirror the real hot-reload sequence: the JVM agent fires
+        // HotswapClassEvent BEFORE the metadata cache is cleared so the
+        // hotswapper can capture the pre-redefinition stylesheets.
+        hotswapper.onClassesChange(new HotswapClassEvent(service,
+                Set.of(TestComponent.class), true));
 
         Class<?> componentClass = modifyStyleSheetAnnotation(
                 TestComponent.class, TestComponentModified.class);
@@ -346,14 +361,30 @@ class StyleSheetHotswapperTest {
         ui.remove(component);
         ui.add((Component) componentClass.getConstructor().newInstance());
 
-        event = new HotswapClassSessionEvent(service, session,
+        var event = new HotswapClassSessionEvent(service, session,
                 Set.of(componentClass), true);
         hotswapper.onClassesChange(event);
 
-        assertTrue(hasStylesheet("styles/modified-component.css"),
-                "Should have modified-component.css stylesheet");
-        assertEquals(initialCount, countStylesheets(),
-                "Should add one stylesheet");
+        // The new stylesheet must be present, with the same context:// prefix
+        // that addComponentDependencies uses so the browser receives a URL
+        // resolvable against the servlet context root.
+        assertTrue(
+                currentStylesheets().anyMatch(
+                        "context://styles/modified-component.css"::equals),
+                "New stylesheet should be registered with the resolved "
+                        + "context:// prefix");
+        // The stale dependency must be gone from the live list...
+        assertFalse(
+                currentStylesheets()
+                        .anyMatch(url -> url.endsWith("styles/component.css")),
+                "Old component.css stylesheet should be removed from the "
+                        + "dependency list");
+        // ...and queued for client-side removal.
+        assertTrue(
+                ui.getInternals().getPendingStyleSheetRemovals()
+                        .contains(originalDepId),
+                "Hotswapper should queue removal of the original stylesheet "
+                        + "dependency id");
 
         assertFalse(event.anyUIRequiresPageReload(),
                 "Should not require page reload");

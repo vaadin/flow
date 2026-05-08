@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.dnd;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 
@@ -31,7 +30,7 @@ import com.vaadin.flow.component.EventData;
  * @since 2.0
  */
 @DomEvent("dragend")
-public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
+public class DragEndEvent<T extends Component> extends AbstractDnDEvent<T> {
     private final DropEffect dropEffect;
 
     /**
@@ -44,10 +43,37 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      *            side, <code>false</code> otherwise
      * @param dropEffect
      *            Drop effect from {@code DataTransfer.dropEffect} object.
+     * @deprecated since 25.2, for removal. Use
+     *             {@link #DragEndEvent(Component, boolean, String, int, int)}
+     *             which also captures the pointer's client coordinates. When
+     *             this constructor is used, {@link #getClientX()} and
+     *             {@link #getClientY()} return {@code 0}.
+     */
+    @Deprecated(since = "25.2", forRemoval = true)
+    public DragEndEvent(T source, boolean fromClient, String dropEffect) {
+        this(source, fromClient, dropEffect, 0, 0);
+    }
+
+    /**
+     * Creates a drag end event.
+     *
+     * @param source
+     *            Component that was dragged.
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
+     * @param dropEffect
+     *            Drop effect from {@code DataTransfer.dropEffect} object.
+     * @param clientX
+     *            the x coordinate of the mouse pointer relative to the viewport
+     * @param clientY
+     *            the y coordinate of the mouse pointer relative to the viewport
      */
     public DragEndEvent(T source, boolean fromClient,
-            @EventData("event.dataTransfer.dropEffect") String dropEffect) {
-        super(source, fromClient);
+            @EventData("event.dataTransfer.dropEffect") String dropEffect,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY) {
+        super(source, fromClient, clientX, clientY);
         this.dropEffect = DropEffect.fromString(dropEffect);
     }
 
@@ -85,15 +111,6 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      */
     public boolean isSuccessful() {
         return getDropEffect() != DropEffect.NONE;
-    }
-
-    /**
-     * Returns the drag source component where the dragend event occurred.
-     *
-     * @return Component which was dragged.
-     */
-    public T getComponent() {
-        return getSource();
     }
 
     /**

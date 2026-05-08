@@ -15,26 +15,27 @@
  */
 package com.vaadin.flow.component.geolocation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A failed location reading: the request did not produce a
  * {@link GeolocationPosition}.
  * <p>
- * This is one of the three possible values of a
- * {@link GeolocationTracker#valueSignal()} signal, and one of the two values a
- * {@link Geolocation#get} callback can receive. Typical application code
- * switches on {@link #errorCode()} to react to the specific reason:
+ * Delivered to the error consumer of
+ * {@link Geolocation#getPosition(com.vaadin.flow.function.SerializableConsumer, com.vaadin.flow.function.SerializableConsumer)}
+ * and held by the {@link GeolocationWatcher#positionSignal()} signal. Typical
+ * application code switches on {@link #errorCode()} to react to the specific
+ * reason:
  *
  * <pre>
- * ui.getGeolocation().get(result -&gt; {
- *     if (result instanceof GeolocationError err) {
- *         switch (err.errorCode()) {
- *         case PERMISSION_DENIED -&gt;
- *             showExplanation("Location is blocked for this site.");
- *         case POSITION_UNAVAILABLE -&gt;
- *             showRetry("Could not determine your location.");
- *         case TIMEOUT -&gt; showRetry("Location request took too long.");
- *         case UNKNOWN -&gt; showGenericError(err.message());
- *         }
+ * Geolocation.getPosition(pos -&gt; showOnMap(pos), err -&gt; {
+ *     switch (err.errorCode()) {
+ *     case PERMISSION_DENIED -&gt;
+ *         showExplanation("Location is blocked for this site.");
+ *     case POSITION_UNAVAILABLE -&gt;
+ *         showRetry("Could not determine your location.");
+ *     case TIMEOUT -&gt; showRetry("Location request took too long.");
+ *     case UNKNOWN -&gt; showGenericError();
  *     }
  * });
  * </pre>
@@ -46,13 +47,16 @@ package com.vaadin.flow.component.geolocation;
  *            the raw numeric error code as reported by the browser.
  *            Applications should usually call {@link #errorCode()} instead of
  *            comparing this directly
- * @param message
- *            a human-readable message from the browser. Mainly useful for
- *            logging — the wording is not standardised and should not be shown
- *            to end users as-is
+ * @param debugInfo
+ *            a free-form description of the failure as reported by the browser.
+ *            Useful for log lines and bug reports — the wording is not
+ *            standardised across browsers and must not be shown to end users
+ *            as-is
  */
 public record GeolocationError(int code,
-        String message) implements GeolocationOutcome {
+        @JsonProperty("message") String debugInfo)
+        implements
+            GeolocationOutcome {
 
     /**
      * Returns the error reason as a typed enum suitable for exhaustive

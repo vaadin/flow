@@ -23,12 +23,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Tuning knobs for a geolocation request — controls the accuracy / battery /
- * speed / freshness trade-off of a single {@link Geolocation#get} or
- * {@link Geolocation#track} call.
+ * speed / freshness trade-off of a single {@link Geolocation#getPosition} or
+ * {@link Geolocation#watchPosition} call.
  * <p>
  * Every field is optional. A {@code null} field means "let the browser decide":
  * high accuracy defaults to {@code false}, timeout defaults to no timeout at
- * all, and cached readings are never accepted unless explicitly allowed.
+ * all, and cached readings are never accepted unless explicitly allowed. An
+ * instance with no fields set ({@code GeolocationOptions.builder().build()})
+ * therefore represents the browser defaults; the {@code Geolocation} overloads
+ * that take no {@code options} argument use the same instance internally.
  * <p>
  * Hand-written code should use {@link #builder()} rather than the canonical
  * constructor: the builder labels each setting at the call site and accepts
