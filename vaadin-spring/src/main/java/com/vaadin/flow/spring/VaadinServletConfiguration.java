@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.Ordered;
@@ -59,7 +60,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * @author Vaadin Ltd
  *
  */
-@AutoConfiguration
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @Conditional(RootMappedCondition.class)
 public class VaadinServletConfiguration {
 
