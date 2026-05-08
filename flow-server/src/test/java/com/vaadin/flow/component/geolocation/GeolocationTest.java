@@ -235,10 +235,22 @@ class GeolocationTest {
     }
 
     @Test
-    void watchPosition_throwsWhenOwnerNotAttached() {
+    void watchPosition_unattachedOwner_activatesOnFirstAttach() {
         TestComponent component = new TestComponent();
-        assertThrows(IllegalStateException.class,
-                () -> Geolocation.watchPosition(component));
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+
+        assertNull(watcher.handle(),
+                "watch must not start before owner is attached");
+        assertFalse(watcher.activeSignal().peek(),
+                "watcher must not be active before owner is attached");
+
+        ui.add(component);
+
+        assertNotNull(watcher.handle(),
+                "watch should start when owner attaches");
+        assertTrue(watcher.activeSignal().peek(),
+                "watcher should be active after owner attaches");
     }
 
     @Test

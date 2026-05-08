@@ -213,6 +213,11 @@ public final class Geolocation implements Serializable {
      * detaches; call {@link GeolocationWatcher#stop()} to cancel sooner and
      * {@link GeolocationWatcher#resume()} to resume.
      * <p>
+     * The watch starts as soon as {@code owner} is attached to a UI, so this
+     * method is safe to call from a view constructor: if the component is
+     * already attached the watch starts immediately, otherwise it starts on
+     * first attach.
+     * <p>
      * <b>Permission-revoke caveat.</b> If the user revokes geolocation
      * permission while a watch is active and then grants it again, the browser
      * silently stops delivering updates to the existing watch — this is the W3C
@@ -224,13 +229,11 @@ public final class Geolocation implements Serializable {
      * automatically.
      *
      * @param owner
-     *            the component whose detach cancels the watch; must be attached
-     *            to a UI
+     *            the component whose detach cancels the watch; the watch
+     *            activates on the owner's first attach
      * @return a watcher exposing the position stream and a stop/resume handle
      * @throws NullPointerException
      *             if {@code owner} is {@code null}
-     * @throws IllegalStateException
-     *             if {@code owner} is not attached to a UI
      */
     public static GeolocationWatcher watchPosition(Component owner) {
         return watchPosition(owner, null);
@@ -244,25 +247,19 @@ public final class Geolocation implements Serializable {
      * {@link GeolocationOptions} for the available settings.
      *
      * @param owner
-     *            the component whose detach cancels the watch; must be attached
-     *            to a UI
+     *            the component whose detach cancels the watch; the watch
+     *            activates on the owner's first attach
      * @param options
      *            accuracy / timeout / cache-age tuning, or {@code null} for
      *            browser defaults
      * @return a watcher exposing the position stream and a stop/resume handle
      * @throws NullPointerException
      *             if {@code owner} is {@code null}
-     * @throws IllegalStateException
-     *             if {@code owner} is not attached to a UI
      */
     public static GeolocationWatcher watchPosition(Component owner,
             @Nullable GeolocationOptions options) {
         Objects.requireNonNull(owner, "owner must not be null");
-        UI ui = owner.getUI()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Owner component must be attached to a UI before "
-                                + "watchPosition() is called"));
-        return new GeolocationWatcher(owner, options, client(ui));
+        return new GeolocationWatcher(owner, options);
     }
 
     /**
@@ -315,7 +312,7 @@ public final class Geolocation implements Serializable {
                 .asReadonly();
     }
 
-    private static GeolocationClient client(UI ui) {
+    static GeolocationClient client(UI ui) {
         GeolocationClient existing = ui.getInternals().getGeolocationClient();
         if (existing != null) {
             return existing;

@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -46,6 +47,12 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * component detaches; call {@link #stop()} to cancel sooner and
  * {@link #resume()} to restart on the same handle. Bindings and listeners
  * survive stop/resume cycles.
+ * <p>
+ * The watch starts as soon as the owning component is attached to a UI: if the
+ * component is already attached when the watcher is created the watch starts
+ * immediately, otherwise it starts on first attach. Calling {@link #stop()}
+ * before the first attach cancels the pending activation; the watcher can still
+ * be activated later by calling {@link #resume()} on an attached owner.
  */
 public class GeolocationWatcher implements Serializable {
 
@@ -63,17 +70,22 @@ public class GeolocationWatcher implements Serializable {
 
     private final Component owner;
     private final @Nullable GeolocationOptions options;
-    private final GeolocationClient client;
 
     private GeolocationClient.@Nullable WatchHandle handle;
     private @Nullable Registration detachRegistration;
+    private @Nullable Registration pendingAttachActivation;
 
-    GeolocationWatcher(Component owner, @Nullable GeolocationOptions options,
-            GeolocationClient client) {
+    GeolocationWatcher(Component owner, @Nullable GeolocationOptions options) {
         this.owner = owner;
         this.options = options;
-        this.client = client;
-        resume();
+        if (owner.getUI().isPresent()) {
+            resume();
+        } else {
+            pendingAttachActivation = owner.addAttachListener(e -> {
+                cancelPendingAttachActivation();
+                resume();
+            });
+        }
     }
 
     /**
@@ -140,17 +152,25 @@ public class GeolocationWatcher implements Serializable {
     /**
      * Starts, or resumes, the underlying browser watch.
      * <p>
-     * Called automatically from the constructor so a freshly created watcher is
-     * immediately active. Call again after {@link #stop()} to resume on the
-     * same handle — bindings and listeners stay attached and start receiving
-     * updates again. The signal resets to {@link GeolocationPending} on every
-     * resume. Calling {@code resume()} on an already-running watcher is a
-     * no-op.
+     * Called automatically when the owner is attached to a UI: immediately if
+     * it is already attached when the watcher is created, otherwise on first
+     * attach. Call again after {@link #stop()} to resume on the same handle —
+     * bindings and listeners stay attached and start receiving updates again.
+     * The signal resets to {@link GeolocationPending} on every resume. Calling
+     * {@code resume()} on an already-running watcher is a no-op.
+     *
+     * @throws IllegalStateException
+     *             if the owner is not attached to a UI
      */
     public void resume() {
         if (activeSignal.peek()) {
             return;
         }
+        UI ui = owner.getUI()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Owner component must be attached to a UI before "
+                                + "resume() is called"));
+        GeolocationClient client = Geolocation.client(ui);
         activeSignal.set(Boolean.TRUE);
         positionSignal.set(new GeolocationPending());
 
@@ -172,6 +192,7 @@ public class GeolocationWatcher implements Serializable {
      * {@link #resume()}.
      */
     public void stop() {
+        cancelPendingAttachActivation();
         if (!activeSignal.peek()) {
             return;
         }
@@ -183,6 +204,13 @@ public class GeolocationWatcher implements Serializable {
         if (detachRegistration != null) {
             detachRegistration.remove();
             detachRegistration = null;
+        }
+    }
+
+    private void cancelPendingAttachActivation() {
+        if (pendingAttachActivation != null) {
+            pendingAttachActivation.remove();
+            pendingAttachActivation = null;
         }
     }
 
