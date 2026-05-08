@@ -1322,7 +1322,7 @@ public class ComponentTest {
                 ui.getInternals().getDependencyList().getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
@@ -1337,7 +1337,7 @@ public class ComponentTest {
                 internals.getDependencyList().getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
@@ -1351,9 +1351,9 @@ public class ComponentTest {
                 dependencyList.getPendingSendToClient());
         assertEquals(2, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css2.css",
                 pendingDependencies);
 
         internals = new MockUI().getInternals();
@@ -1362,9 +1362,9 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css2.css",
                 pendingDependencies);
 
     }
@@ -1386,7 +1386,7 @@ public class ComponentTest {
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
