@@ -23,6 +23,7 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
@@ -33,6 +34,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -174,6 +176,24 @@ class GeolocationTest {
         assertEquals(1, errors.size());
         assertTrue(positions.isEmpty());
         assertEquals(1, errors.get(0).code());
+    }
+
+    @Test
+    void getPosition_callbackException_routesToErrorHandler() {
+        List<Throwable> caught = new ArrayList<>();
+        ErrorHandler handler = event -> caught.add(event.getThrowable());
+        Mockito.when(ui.getSession().getErrorHandler()).thenReturn(handler);
+
+        Geolocation.getPosition(pos -> {
+            throw new RuntimeException("boom");
+        }, err -> {
+        }, ui);
+
+        resolvePromise(ui,
+                resultJson(position(60.0, 25.0, 10.0), null, "GRANTED"));
+
+        assertEquals(1, caught.size());
+        assertEquals("boom", caught.get(0).getMessage());
     }
 
     @Test
@@ -427,6 +447,31 @@ class GeolocationTest {
         assertTrue(positions.isEmpty());
         assertEquals(1, errors.size());
         assertEquals(GeolocationErrorCode.TIMEOUT.code(), errors.get(0).code());
+    }
+
+    @Test
+    void addPositionListener_listenerException_routesToErrorHandlerAndContinues() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        List<Throwable> caught = new ArrayList<>();
+        ErrorHandler handler = event -> caught.add(event.getThrowable());
+        Mockito.when(ui.getSession().getErrorHandler()).thenReturn(handler);
+
+        GeolocationWatcher watcher = Geolocation.watchPosition(component);
+        List<GeolocationPosition> later = new ArrayList<>();
+        watcher.addPositionListener(pos -> {
+            throw new RuntimeException("boom");
+        }, err -> {
+        });
+        watcher.addPositionListener(later::add, err -> {
+        });
+
+        firePosition(component, 60.1699, 24.9384);
+
+        assertEquals(1, caught.size());
+        assertEquals("boom", caught.get(0).getMessage());
+        assertEquals(1, later.size(),
+                "later listener must still receive the reading after an earlier listener throws");
     }
 
     @Test

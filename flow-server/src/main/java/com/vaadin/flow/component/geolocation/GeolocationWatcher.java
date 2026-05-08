@@ -230,14 +230,17 @@ public class GeolocationWatcher implements Serializable {
         if (listeners.isEmpty()) {
             return;
         }
+        UI ui = owner.getUI().orElseThrow();
         List<PositionListener> snapshot = new ArrayList<>(listeners);
         if (result instanceof GeolocationPosition position) {
             for (PositionListener listener : snapshot) {
-                listener.onPosition.accept(position);
+                Geolocation.deliverSafely(ui,
+                        () -> listener.onPosition.accept(position));
             }
         } else if (result instanceof GeolocationError error) {
             for (PositionListener listener : snapshot) {
-                listener.onError.accept(error);
+                Geolocation.deliverSafely(ui,
+                        () -> listener.onError.accept(error));
             }
         }
     }

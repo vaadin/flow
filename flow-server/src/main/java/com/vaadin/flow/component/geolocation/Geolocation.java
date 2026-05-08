@@ -26,8 +26,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -190,15 +193,16 @@ public final class Geolocation implements Serializable {
         client(ui).get(options).whenComplete((outcome, error) -> {
             if (error != null) {
                 LOGGER.debug("Geolocation getPosition() failed", error);
-                onError.accept(new GeolocationError(
-                        GeolocationErrorCode.UNKNOWN.code(),
-                        "Client-side geolocation bridge failure"));
+                deliverSafely(ui,
+                        () -> onError.accept(new GeolocationError(
+                                GeolocationErrorCode.UNKNOWN.code(),
+                                "Client-side geolocation bridge failure")));
                 return;
             }
             if (outcome instanceof GeolocationPosition position) {
-                onSuccess.accept(position);
+                deliverSafely(ui, () -> onSuccess.accept(position));
             } else if (outcome instanceof GeolocationError errorOutcome) {
-                onError.accept(errorOutcome);
+                deliverSafely(ui, () -> onError.accept(errorOutcome));
             }
         });
     }
@@ -310,6 +314,27 @@ public final class Geolocation implements Serializable {
         client(ui);
         return ui.getInternals().getGeolocationAvailabilitySignal()
                 .asReadonly();
+    }
+
+    /**
+     * Runs {@code callback} and routes any {@link RuntimeException} it throws
+     * to the session's {@link ErrorHandler}, matching the behavior of other
+     * Flow listener APIs. Rethrows when no error handler is reachable (e.g.
+     * during session teardown) so the exception is not silently lost.
+     */
+    static void deliverSafely(UI ui, Runnable callback) {
+        try {
+            callback.run();
+        } catch (RuntimeException e) {
+            VaadinSession session = ui.getSession();
+            ErrorHandler handler = session == null ? null
+                    : session.getErrorHandler();
+            if (handler != null) {
+                handler.error(new ErrorEvent(e));
+            } else {
+                throw e;
+            }
+        }
     }
 
     static GeolocationClient client(UI ui) {
