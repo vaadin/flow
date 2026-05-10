@@ -78,22 +78,32 @@ public class FlowPlugin : Plugin<Project> {
                 val vaadinServletResourcesDirectory =
                     buildAdapter.servletResourceOutputDirectory()
                 val vaadinBuildFrontendOutputDirectory =
-                    vaadinServletResourcesDirectory.parentFile.parentFile
+                    vaadinServletResourcesDirectory.parentFile?.parentFile
 
-                // this will also catch the War task since it extends from Jar
+                val sourceSetResourcesDirectory =
+                    project.getBuildResourcesDir(config.sourceSetName.get())
+
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    task.dependsOn("vaadinBuildFrontend")
-                    task.from(vaadinBuildFrontendOutputDirectory) {
-                        task.vaadinBuildFrontendResourcesArchivePath()?.let { path ->
-                            it.into(path)
+                    if (task.isVaadinApplicationArchiveTask()) {
+                        task.dependsOn("vaadinBuildFrontend")
+                        if (vaadinBuildFrontendOutputDirectory != null &&
+                            vaadinBuildFrontendOutputDirectory.canonicalFile !=
+                            sourceSetResourcesDirectory.canonicalFile
+                        ) {
+                            task.from(vaadinBuildFrontendOutputDirectory) {
+                                task.vaadinBuildFrontendResourcesArchivePath()
+                                    ?.let { path ->
+                                        it.into(path)
+                                    }
+                            }
                         }
-                    }
-                    // Restore the production token before packaging in
-                    // case it was deleted by a previous build's cleanup.
-                    task.doFirst {
-                        val svc = (buildFrontendTask
-                            as VaadinBuildFrontendTask).getTokenService().orNull
-                        svc?.ensureToken()
+                        // Restore the production token before packaging in
+                        // case it was deleted by a previous build's cleanup.
+                        task.doFirst {
+                            val svc = (buildFrontendTask
+                                as VaadinBuildFrontendTask).getTokenService().orNull
+                            svc?.ensureToken()
+                        }
                     }
                 }
             } else if (config.alwaysExecutePrepareFrontend.get()) {
@@ -162,7 +172,9 @@ public class FlowPlugin : Plugin<Project> {
                 // all Jar/War packaging tasks have completed.
                 buildFrontendTask.usesService(tokenService)
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    task.usesService(tokenService)
+                    if (task.isVaadinApplicationArchiveTask()) {
+                        task.usesService(tokenService)
+                    }
                 }
             }
         }
@@ -183,9 +195,17 @@ public class FlowPlugin : Plugin<Project> {
     private fun Jar.vaadinBuildFrontendResourcesArchivePath(): String? {
         return when {
             this is War -> "WEB-INF/classes"
-            javaClass.name == "org.springframework.boot.gradle.tasks.bundling.BootJar" ->
-                "BOOT-INF/classes"
+            isSpringBootJar() -> "BOOT-INF/classes"
             else -> null
         }
     }
+
+    private fun Jar.isVaadinApplicationArchiveTask(): Boolean =
+        name == JavaPlugin.JAR_TASK_NAME || this is War || isSpringBootJar()
+
+    private fun Jar.isSpringBootJar(): Boolean =
+        generateSequence(javaClass as Class<*>) { it.superclass }
+            .any {
+                it.name == "org.springframework.boot.gradle.tasks.bundling.BootJar"
+            }
 }

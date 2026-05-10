@@ -47,6 +47,8 @@ internal class GradlePluginAdapter private constructor(
 
     private val projectDir = config.projectDir
     private val projectName = config.projectName
+    private val buildResourcesDir =
+        project.getBuildResourcesDir(config.sourceSetName.get())
     private val jarProject: Boolean =
         project.tasks.withType(War::class.java).isEmpty()
     private val jarFiles: FileCollection
@@ -232,15 +234,20 @@ internal class GradlePluginAdapter private constructor(
         // generate stuff to build/vaadin-generated.
         //
         // However, after processResources is done, anything generated into
-        // build/vaadin-generated would simply be ignored. In such case we therefore
-        // need to generate stuff directly to build/resources/main.
+        // build/vaadin-generated would simply be ignored. In such cases,
+        // production resources must either be generated to the task-owned
+        // frontend output tree or to the source set resources directory.
         if (isBeforeProcessResources) {
             return File(
                 config.resourceOutputDirectory.get(),
                 Constants.VAADIN_SERVLET_RESOURCES
             )
         }
-        return frontendOutputDirectory().parentFile
+        val frontendOutputDirectory = frontendOutputDirectory()
+        if (frontendOutputDirectory.hasVaadinWebappResourcesPath()) {
+            return frontendOutputDirectory.parentFile
+        }
+        return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
     }
 
     override fun webpackOutputDirectory(): File = frontendOutputDirectory()
@@ -258,6 +265,11 @@ internal class GradlePluginAdapter private constructor(
 
     override fun generateEmbeddableWebComponents(): Boolean =
         config.generateEmbeddableWebComponents.get()
+
+    private fun File.hasVaadinWebappResourcesPath(): Boolean =
+        path.replace(File.separatorChar, '/').removeSuffix("/").endsWith(
+            Constants.VAADIN_WEBAPP_RESOURCES.removeSuffix("/")
+        )
 
     override fun optimizeBundle(): Boolean = config.optimizeBundle.get()
 
