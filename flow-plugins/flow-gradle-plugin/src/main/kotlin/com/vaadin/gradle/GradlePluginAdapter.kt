@@ -46,8 +46,6 @@ internal class GradlePluginAdapter private constructor(
 
     private val projectDir = config.projectDir
     private val projectName = config.projectName
-    private val buildResourcesDir: File =
-        project.getBuildResourcesDir(config.sourceSetName.get())
     private val jarProject: Boolean =
         project.tasks.withType(War::class.java).isEmpty()
     private val jarFiles: FileCollection
@@ -241,7 +239,7 @@ internal class GradlePluginAdapter private constructor(
                 Constants.VAADIN_SERVLET_RESOURCES
             )
         }
-        return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
+        return frontendOutputDirectory().parentFile
     }
 
     override fun webpackOutputDirectory(): File = frontendOutputDirectory()

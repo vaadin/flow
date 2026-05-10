@@ -868,6 +868,41 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
+    fun buildFrontendBuildCacheRestoresProductionBundleForWar() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtWar, false)
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        File(testProject.dir, "build/libs").deleteRecursively()
+
+        result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectArchiveContainsVaadinBundle(testProject.builtWar, false)
+    }
+
+    @Test
     fun buildFrontendIncrementalBuilds_rerunsOnInputChange() {
         testProject.buildFile.writeText(
             """
