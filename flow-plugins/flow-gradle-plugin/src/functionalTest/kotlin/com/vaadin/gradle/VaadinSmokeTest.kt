@@ -85,7 +85,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskNotRan("vaadinPrepareFrontend")
         result.expectTaskNotRan("vaadinBuildFrontend")
 
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
         expect(false, build.toString()) { build.exists() }
     }
 
@@ -97,7 +97,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // vaadinPrepareFrontend
         result.expectTaskNotRan("vaadinPrepareFrontend")
 
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
         build.find("*.br", 4..10)

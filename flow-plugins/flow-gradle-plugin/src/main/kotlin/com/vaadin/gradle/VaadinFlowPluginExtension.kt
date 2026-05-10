@@ -419,12 +419,14 @@ public class PluginEffectiveConfiguration(
         extension.frontendOutputDirectory.convention(
             extension.webpackOutputDirectory
                 .convention(
-                    sourceSetName.map {
-                        File(
-                            project.getBuildResourcesDir(it),
-                            Constants.VAADIN_WEBAPP_RESOURCES
-                        )
-                    }
+                    project.layout.buildDirectory
+                        .dir("vaadin-build-frontend")
+                        .map {
+                            File(
+                                it.asFile,
+                                Constants.VAADIN_WEBAPP_RESOURCES
+                            )
+                        }
                 )
         )
 

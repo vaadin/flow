@@ -21,6 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.bundling.War
 import org.gradle.util.GradleVersion
 
 /**
@@ -72,13 +73,25 @@ public class FlowPlugin : Plugin<Project> {
                 // In production mode, vaadinBuildFrontend is self-contained
                 // and performs its own frontend preparation, so there is no
                 // need for vaadinPrepareFrontend to run beforehand.
+                val buildFrontendTask = project.tasks.getByName("vaadinBuildFrontend")
+                val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
+                val vaadinServletResourcesDirectory =
+                    buildAdapter.servletResourceOutputDirectory()
+                val vaadinBuildFrontendOutputDirectory =
+                    vaadinServletResourcesDirectory.parentFile.parentFile
+
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
+                    task.from(vaadinBuildFrontendOutputDirectory) {
+                        task.vaadinBuildFrontendResourcesArchivePath()?.let { path ->
+                            it.into(path)
+                        }
+                    }
                     // Restore the production token before packaging in
                     // case it was deleted by a previous build's cleanup.
                     task.doFirst {
-                        val svc = (project.tasks.getByName("vaadinBuildFrontend")
+                        val svc = (buildFrontendTask
                             as VaadinBuildFrontendTask).getTokenService().orNull
                         svc?.ensureToken()
                     }
@@ -164,6 +177,15 @@ public class FlowPlugin : Plugin<Project> {
                 "Vaadin plugin requires Gradle ${GRADLE_MINIMUM_SUPPORTED_VERSION} or later. "
                         + "The current version is ${currentVersion.version}."
             )
+        }
+    }
+
+    private fun Jar.vaadinBuildFrontendResourcesArchivePath(): String? {
+        return when {
+            this is War -> "WEB-INF/classes"
+            javaClass.name == "org.springframework.boot.gradle.tasks.bundling.BootJar" ->
+                "BOOT-INF/classes"
+            else -> null
         }
     }
 }
