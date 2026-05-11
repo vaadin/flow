@@ -2068,6 +2068,22 @@ public class ComponentTest {
     }
 
     @Test
+    public void requestFullscreen_attachedComponent_executesJs() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.requestFullscreen();
+
+        assertPendingJs(
+                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen");
+    }
+
+    @Test
+    public void requestFullscreen_detachedComponent_throws() {
+        EnabledDiv div = new EnabledDiv();
+        assertThrows(IllegalStateException.class, div::requestFullscreen);
+    }
+
+    @Test
     public void cannotMoveComponentsToOtherUI() {
         // tests https://github.com/vaadin/flow/issues/9376
         final UI otherUI = createMockedUI();

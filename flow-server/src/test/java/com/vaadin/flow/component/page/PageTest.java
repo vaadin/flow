@@ -502,4 +502,40 @@ class PageTest {
         page.setColorScheme(ColorScheme.Value.NORMAL);
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
+
+    @Test
+    void requestFullscreen_executesConnectorJs() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.requestFullscreen();
+
+        assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                capturedExpression.get());
+    }
+
+    @Test
+    void exitFullscreen_executesConnectorJs() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.exitFullscreen();
+
+        assertEquals("window.Vaadin.Flow.fullscreen.exitFullscreen()",
+                capturedExpression.get());
+    }
 }
