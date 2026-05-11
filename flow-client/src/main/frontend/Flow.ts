@@ -6,6 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import './WakeLock';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
