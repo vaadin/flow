@@ -18,7 +18,6 @@ package com.vaadin.flow.server.webpush;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.http.HttpResponse;
 import java.security.spec.InvalidKeySpecException;
 
 import com.interaso.webpush.VapidKeys;
@@ -108,8 +107,7 @@ public class WebPush {
      */
     public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {
-        SubscriptionState status = null;
-        HttpResponse<String> response = null;
+        SubscriptionState status;
         try {
             status = pushService.send(message.toJson(), subscription.endpoint(),
                     subscription.keys().p256dh(), subscription.keys().auth(),
@@ -122,7 +120,6 @@ public class WebPush {
         if (!SubscriptionState.ACTIVE.equals(status)) {
             getLogger().error(
                     "Failed to send web push notification, received status code: 404 or 410");
-            getLogger().error(String.join("\n", response.body()));
             throw new WebPushException(
                     "Sending of web push notification failed with status code 404 or 410");
         }
