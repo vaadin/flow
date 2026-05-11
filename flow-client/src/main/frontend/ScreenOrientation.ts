@@ -26,12 +26,13 @@ interface VaadinScreenOrientationDetail {
 }
 
 /**
- * Returns the current screen orientation type synchronously, or the empty
- * string if the Screen Orientation API is unavailable. Used by the bootstrap
- * path to seed the server-side signal without waiting for a DOM event.
+ * Returns the current screen orientation type synchronously, or
+ * {@code 'unsupported'} if the Screen Orientation API is unavailable. Used by
+ * the bootstrap path to seed the server-side signal without waiting for a DOM
+ * event.
  */
 export function currentScreenOrientationType(): string {
-  return screen.orientation?.type ?? '';
+  return screen.orientation?.type ?? 'unsupported';
 }
 
 /**
@@ -60,11 +61,35 @@ if (screen.orientation) {
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
+interface VaadinScreenOrientationLockResult {
+  success: boolean;
+  name?: string;
+  message?: string;
+}
+
 $wnd.Vaadin.Flow.screenOrientation = {
-  lock(type: string): Promise<void> {
-    return screen.orientation.lock(type as OrientationLockType);
+  // Always resolves so the server-side .then(success, error) chain only
+  // receives the "error" branch on a bridge failure (lost connection, etc.).
+  // Rejected DOMExceptions are folded into the resolved result so the server
+  // can decode them as a record without forfeiting the JS-bridge error arm.
+  lock(type: string): Promise<VaadinScreenOrientationLockResult> {
+    if (!screen.orientation || typeof screen.orientation.lock !== 'function') {
+      return Promise.resolve({
+        success: false,
+        name: 'NotSupportedError',
+        message: 'Screen Orientation API is not supported in this browser.'
+      });
+    }
+    return screen.orientation
+      .lock(type as OrientationLockType)
+      .then(() => ({ success: true }))
+      .catch((e: DOMException) => ({
+        success: false,
+        name: e.name ?? 'UnknownError',
+        message: e.message ?? ''
+      }));
   },
   unlock(): void {
-    screen.orientation.unlock();
+    screen.orientation?.unlock();
   }
 };

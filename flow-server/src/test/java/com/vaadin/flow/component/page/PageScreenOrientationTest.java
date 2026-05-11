@@ -16,6 +16,8 @@
 package com.vaadin.flow.component.page;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
@@ -33,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class PageScreenOrientationTest {
 
@@ -137,6 +140,46 @@ class PageScreenOrientationTest {
     }
 
     @Test
+    void lockOrientation_unsupportedIsRejected() {
+        Page page = new MockUI().getPage();
+        assertThrows(IllegalArgumentException.class,
+                () -> page.lockOrientation(ScreenOrientation.UNSUPPORTED));
+    }
+
+    @Test
+    void lockOrientation_successCallbackFires() {
+        MockUI ui = new MockUI();
+        AtomicBoolean success = new AtomicBoolean();
+        ui.getPage().lockOrientation(ScreenOrientation.LANDSCAPE_PRIMARY,
+                () -> success.set(true),
+                error -> fail("onError should not fire: " + error.message()));
+
+        ObjectNode result = JacksonUtils.createObjectNode();
+        result.put("success", true);
+        resolveLockPromise(ui, result);
+
+        assertTrue(success.get(),
+                "onSuccess must fire when the client resolves with success");
+    }
+
+    @Test
+    void lockOrientation_errorCallbackFires() {
+        MockUI ui = new MockUI();
+        AtomicReference<ScreenOrientationLockError> captured = new AtomicReference<>();
+        ui.getPage().lockOrientation(ScreenOrientation.LANDSCAPE_PRIMARY,
+                () -> fail("onSuccess should not fire"), captured::set);
+
+        ObjectNode result = JacksonUtils.createObjectNode();
+        result.put("success", false);
+        result.put("name", "SecurityError");
+        result.put("message", "Must be in fullscreen");
+        resolveLockPromise(ui, result);
+
+        assertEquals("SecurityError", captured.get().name());
+        assertEquals("Must be in fullscreen", captured.get().message());
+    }
+
+    @Test
     void unlockOrientation_executesCorrectJs() {
         MockUI ui = new MockUI();
         ui.getPage().unlockOrientation();
@@ -154,8 +197,44 @@ class PageScreenOrientationTest {
                 ScreenOrientation.fromClientValue("portrait-primary"));
         assertEquals(ScreenOrientation.LANDSCAPE_SECONDARY,
                 ScreenOrientation.fromClientValue("landscape-secondary"));
+        assertEquals(ScreenOrientation.UNSUPPORTED,
+                ScreenOrientation.fromClientValue("unsupported"));
         assertThrows(IllegalArgumentException.class,
-                () -> ScreenOrientation.fromClientValue("unknown"));
+                () -> ScreenOrientation.fromClientValue("diagonal-future"));
+    }
+
+    @Test
+    void isLandscape_isPortrait() {
+        assertTrue(ScreenOrientation.LANDSCAPE_PRIMARY.isLandscape());
+        assertTrue(ScreenOrientation.LANDSCAPE_SECONDARY.isLandscape());
+        assertFalse(ScreenOrientation.PORTRAIT_PRIMARY.isLandscape());
+        assertFalse(ScreenOrientation.UNKNOWN.isLandscape());
+        assertFalse(ScreenOrientation.UNSUPPORTED.isLandscape());
+
+        assertTrue(ScreenOrientation.PORTRAIT_PRIMARY.isPortrait());
+        assertTrue(ScreenOrientation.PORTRAIT_SECONDARY.isPortrait());
+        assertFalse(ScreenOrientation.LANDSCAPE_PRIMARY.isPortrait());
+        assertFalse(ScreenOrientation.UNKNOWN.isPortrait());
+        assertFalse(ScreenOrientation.UNSUPPORTED.isPortrait());
+    }
+
+    @Test
+    void setScreenOrientation_unsupportedFromBootstrap() {
+        MockUI ui = new MockUI();
+        ui.getPage().setScreenOrientation("unsupported", "0");
+        assertEquals(ScreenOrientation.UNSUPPORTED,
+                ui.getPage().screenOrientationSignal().peek().type(),
+                "Client-side 'unsupported' must be observable distinctly "
+                        + "from the pre-bootstrap UNKNOWN state");
+    }
+
+    private static void resolveLockPromise(MockUI ui, ObjectNode result) {
+        PendingJavaScriptInvocation invocation = ui.dumpPendingJsInvocations()
+                .stream()
+                .filter(inv -> inv.getInvocation().getExpression()
+                        .contains("screenOrientation.lock"))
+                .reduce((a, b) -> b).orElseThrow();
+        invocation.complete(result);
     }
 
     private void fireOrientationEvent(MockUI ui, String type, int angle) {

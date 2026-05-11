@@ -21,21 +21,29 @@ package com.vaadin.flow.component.page;
  * Mirrors the values reported by the browser's <a href=
  * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
  * Orientation API</a>, plus an {@link #UNKNOWN} sentinel used before the first
- * value has arrived from the client and on browsers that do not implement the
- * API.
+ * value has arrived from the client and an {@link #UNSUPPORTED} sentinel for
+ * browsers that do not implement the API.
  *
  * @see Page#screenOrientationSignal()
  */
 public enum ScreenOrientation {
 
     /**
-     * No value has been reported by the browser yet, or the browser does not
-     * implement the Screen Orientation API. Used as the initial value of the
-     * signal before the first client handshake delivers a real one. In normal
-     * request handling the signal is seeded before any user code runs, so this
-     * value is observed only when the API itself is unavailable.
+     * No value has been reported by the browser yet. Used as the initial value
+     * of the signal before the first client handshake delivers a real one. In
+     * normal request handling the signal is seeded before any user code runs,
+     * so this value is essentially never observed in practice; once a real
+     * value has arrived, the signal never returns to {@code UNKNOWN}.
      */
     UNKNOWN(""),
+
+    /**
+     * The browser does not implement the <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
+     * Orientation API</a>. Distinct from {@link #UNKNOWN} so callers can tell
+     * "no data yet" apart from "the platform will never produce data."
+     */
+    UNSUPPORTED("unsupported"),
 
     /**
      * The screen is in primary portrait orientation (the device is held upright
@@ -74,6 +82,28 @@ public enum ScreenOrientation {
      */
     public String getClientValue() {
         return clientValue;
+    }
+
+    /**
+     * Returns {@code true} for the two landscape orientations
+     * ({@link #LANDSCAPE_PRIMARY}, {@link #LANDSCAPE_SECONDARY}).
+     * {@link #UNKNOWN} and {@link #UNSUPPORTED} return {@code false}.
+     *
+     * @return whether this is a landscape orientation
+     */
+    public boolean isLandscape() {
+        return this == LANDSCAPE_PRIMARY || this == LANDSCAPE_SECONDARY;
+    }
+
+    /**
+     * Returns {@code true} for the two portrait orientations
+     * ({@link #PORTRAIT_PRIMARY}, {@link #PORTRAIT_SECONDARY}).
+     * {@link #UNKNOWN} and {@link #UNSUPPORTED} return {@code false}.
+     *
+     * @return whether this is a portrait orientation
+     */
+    public boolean isPortrait() {
+        return this == PORTRAIT_PRIMARY || this == PORTRAIT_SECONDARY;
     }
 
     /**
