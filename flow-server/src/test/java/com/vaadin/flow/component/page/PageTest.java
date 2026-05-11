@@ -517,7 +517,8 @@ class PageTest {
 
         page.requestFullscreen();
 
-        assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
                 capturedExpression.get());
     }
 
