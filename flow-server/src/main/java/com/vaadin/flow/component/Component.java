@@ -904,6 +904,45 @@ public abstract class Component
     }
 
     /**
+     * Requests that the browser display this component in fullscreen mode.
+     * <p>
+     * Because of how Vaadin theming and overlay components work, this method
+     * does not call {@code requestFullscreen()} on the component's element
+     * directly. Instead, it fullscreens the entire page
+     * ({@code document.documentElement}), moves the component into a wrapper
+     * element, and hides the rest of the view. When fullscreen is exited
+     * (either programmatically via
+     * {@link com.vaadin.flow.component.page.Page#exitFullscreen()} or by the
+     * user pressing Escape), the component is automatically restored to its
+     * original position in the DOM.
+     * <p>
+     * Note that browsers require transient user activation (e.g. a button
+     * click) to enter fullscreen mode. Calling this method from a server push
+     * or view constructor will not work. The fullscreen state can be observed
+     * via {@link com.vaadin.flow.component.page.Page#fullscreenSignal()}; calls
+     * made while the state is
+     * {@link com.vaadin.flow.component.page.FullscreenState#UNSUPPORTED
+     * UNSUPPORTED} are no-ops on the client.
+     *
+     * @throws IllegalStateException
+     *             if the component is not attached to a UI
+     * @see com.vaadin.flow.component.page.Page#requestFullscreen()
+     * @see com.vaadin.flow.component.page.Page#exitFullscreen()
+     * @see com.vaadin.flow.component.page.Page#fullscreenSignal()
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API">MDN
+     *      Fullscreen API</a>
+     */
+    public void requestFullscreen() {
+        UI ui = getUI().orElseThrow(() -> new IllegalStateException(
+                "Component must be attached to the UI to request fullscreen"));
+        Element wrapperElement = ui.getInternals().getWrapperElement();
+        ui.getElement().executeJs(
+                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                getElement(), wrapperElement);
+    }
+
+    /**
      * Traverses the component tree up and returns the first ancestor component
      * that matches the given type.
      *

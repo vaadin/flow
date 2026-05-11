@@ -499,6 +499,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
         ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
+        ui.getPage().setFullscreenState(getStringElseNull.apply("v-fs"));
         String ga = getStringElseNull.apply("v-ga");
         if (ga != null) {
             try {
