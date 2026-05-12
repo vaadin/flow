@@ -46,6 +46,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * Enabled feature flags are stored in
  * <code>vaadin-featureflags.properties</code> inside the resources folder
  * (<code>src/main/resources</code>).
+ *
+ * See {@link com.vaadin.flow.does.not.Exist} for related information.
  */
 public class FeatureFlags implements Serializable {
 
