@@ -1016,28 +1016,39 @@ class EffectTest extends SignalTestBase {
 
         AtomicReference<Throwable> threadAFailure = new AtomicReference<>();
         AtomicBoolean effectCreated = new AtomicBoolean();
+        // Once the deadlock is fixed, the writer's notifyObservers fires
+        // the just-installed observer synchronously and the effect action
+        // re-runs on the writer thread. Guard side effects so re-entry is
+        // safe.
+        AtomicBoolean racePrimed = new AtomicBoolean();
 
         Thread reader = new Thread(() -> {
             try {
                 new Effect(() -> {
                     // First read registers an observer on the signal.
                     signal.get();
-                    // Let the writer start its set() call.
-                    firstReadDone.countDown();
-                    writer.start();
-                    // Wait until the writer is BLOCKED entering the
-                    // synchronized Effect.invalidate. At that point the
-                    // writer holds the SignalTree lock; the next read on
-                    // this thread will need that lock while we still hold
-                    // the Effect monitor, completing the cycle.
-                    long deadline = System.currentTimeMillis() + 2000;
-                    while (System.currentTimeMillis() < deadline
-                            && writer.getState() != Thread.State.BLOCKED) {
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                            break;
+                    if (racePrimed.compareAndSet(false, true)) {
+                        // Let the writer start its set() call.
+                        firstReadDone.countDown();
+                        writer.start();
+                        // Wait until the writer is BLOCKED entering
+                        // Effect.invalidate (deadlock scenario) or has
+                        // already finished (fixed scenario). Either way
+                        // the next read happens after the writer has had
+                        // a chance to drive its side of the race.
+                        long deadline = System.currentTimeMillis() + 2000;
+                        while (System.currentTimeMillis() < deadline) {
+                            Thread.State state = writer.getState();
+                            if (state == Thread.State.BLOCKED
+                                    || state == Thread.State.TERMINATED) {
+                                break;
+                            }
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException ie) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
                     }
                     signal.get();
