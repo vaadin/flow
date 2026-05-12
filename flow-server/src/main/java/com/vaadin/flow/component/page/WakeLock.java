@@ -126,9 +126,8 @@ public final class WakeLock implements Serializable {
      * {@link #release()} has not been called, so the signal flips back to
      * {@code true} shortly after.
      * <p>
-     * Use {@code .get()} inside a {@link Signal#effect(Object, Runnable)} to
-     * react to changes and {@code .peek()} for a snapshot outside a reactive
-     * context.
+     * Use {@code Signal.effect(owner, ...)} to react to changes and
+     * {@code .peek()} for a snapshot outside a reactive context.
      *
      * @return the read-only active-state signal
      */
