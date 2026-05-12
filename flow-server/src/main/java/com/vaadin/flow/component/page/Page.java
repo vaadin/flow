@@ -592,7 +592,8 @@ public class Page implements Serializable {
      * {@link FullscreenState#FULLSCREEN FULLSCREEN} in response to a request
      * from a server push or view constructor.
      *
-     * <h2>Example: bind a toggle button</h2>
+     * <p>
+     * <b>Example: bind a toggle button</b>
      *
      * <pre>
      * Button toggle = new Button();
@@ -642,7 +643,8 @@ public class Page implements Serializable {
      * {@link FullscreenSessionState#EXITED_BY_CODE EXITED_BY_CODE} before the
      * new session is returned.
      *
-     * <h2>Example: react to lifecycle transitions</h2>
+     * <p>
+     * <b>Example: react to lifecycle transitions</b>
      *
      * <pre>
      * FullscreenSession session = ui.getPage().requestFullscreen();
