@@ -18,12 +18,14 @@ public class PnpmUsedIT {
 
     @Test
     public void pnpmIsUsed() {
-        File testPackage = new File("node_modules/lit");
+        // The previous check asserted that node_modules/lit is a symlink
+        // (pnpm isolated-mode signature). Since FrontendTools now forces
+        // --config.node-linker=hoisted to make transitive deps reachable
+        // at the project root, pnpm produces a flat layout and that
+        // symlink no longer exists. Presence of pnpm-lock.yaml is the
+        // remaining reliable signal that pnpm (not npm) ran the install.
+        File testPackage = new File("pnpm-lock.yaml");
         FileTestUtil.waitForFile(testPackage);
-        FileTestUtil.assertSymlink(testPackage,
-                "pnpm should have been used to install frontend dependencies but "
-                        + testPackage.getAbsolutePath()
-                        + " is a not a symlink like it should be");
     }
 
 }
