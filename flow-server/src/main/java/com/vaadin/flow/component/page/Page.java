@@ -607,9 +607,35 @@ public class Page implements Serializable {
      * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)
      * lock}, allowing the screen to follow the device orientation again. A
      * no-op on browsers that do not implement the Screen Orientation API.
+     * <p>
+     * Fire-and-forget: use {@link #unlockOrientation(SerializableRunnable)} to
+     * be notified when the browser has applied the unlock.
      */
     public void unlockOrientation() {
         executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
+    }
+
+    /**
+     * Releases a previous
+     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)
+     * lock} and notifies the given callback after the browser has applied the
+     * unlock. A no-op (but the callback still fires) on browsers that do not
+     * implement the Screen Orientation API.
+     * <p>
+     * Mirrors the callback shape of
+     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)}
+     * so cleanup flows ("leaving fullscreen — am I fully unlocked yet?") can be
+     * sequenced reactively rather than assuming the unlock has landed.
+     *
+     * @param onComplete
+     *            invoked on the UI thread once the unlock round-trip has
+     *            completed; not {@code null}
+     */
+    public void unlockOrientation(SerializableRunnable onComplete) {
+        Objects.requireNonNull(onComplete,
+                "onComplete callback cannot be null");
+        executeJs("window.Vaadin.Flow.screenOrientation.unlock()")
+                .then(ignored -> onComplete.run());
     }
 
     /**

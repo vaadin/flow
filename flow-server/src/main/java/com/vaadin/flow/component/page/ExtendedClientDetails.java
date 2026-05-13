@@ -422,6 +422,32 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns whether the browser implements the <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
+     * Orientation API</a>.
+     * <p>
+     * Mirrors the current state of {@link Page#screenOrientationSignal()}:
+     * {@code true} once the bootstrap has seeded the signal with a real
+     * orientation, {@code false} when the browser reports
+     * {@link ScreenOrientation#UNSUPPORTED} or before the client handshake has
+     * completed (signal is still {@link ScreenOrientation#UNKNOWN}). Lets
+     * callers decide synchronously whether to expose UI affordances that rely
+     * on the API (such as an orientation lock button) without subscribing to
+     * the signal first.
+     *
+     * @return {@code true} if the Screen Orientation API is available
+     */
+    public boolean isScreenOrientationSupported() {
+        if (ui == null) {
+            return false;
+        }
+        ScreenOrientation type = ui.getPage().screenOrientationSignal().peek()
+                .type();
+        return type != ScreenOrientation.UNKNOWN
+                && type != ScreenOrientation.UNSUPPORTED;
+    }
+
+    /**
      * Gets the theme name.
      *
      * @return the theme name (e.g., "lumo", "aura"), or empty string if not

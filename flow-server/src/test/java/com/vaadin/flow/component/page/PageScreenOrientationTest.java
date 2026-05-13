@@ -192,6 +192,23 @@ class PageScreenOrientationTest {
     }
 
     @Test
+    void unlockOrientation_completionCallbackFires() {
+        MockUI ui = new MockUI();
+        AtomicBoolean done = new AtomicBoolean();
+        ui.getPage().unlockOrientation(() -> done.set(true));
+
+        PendingJavaScriptInvocation invocation = ui.dumpPendingJsInvocations()
+                .stream()
+                .filter(inv -> inv.getInvocation().getExpression()
+                        .contains("screenOrientation.unlock"))
+                .reduce((a, b) -> b).orElseThrow();
+        invocation.complete(JacksonUtils.nullNode());
+
+        assertTrue(done.get(),
+                "onComplete must fire once the unlock round-trip resolves");
+    }
+
+    @Test
     void screenOrientation_fromClientValue() {
         assertEquals(ScreenOrientation.PORTRAIT_PRIMARY,
                 ScreenOrientation.fromClientValue("portrait-primary"));
@@ -226,6 +243,25 @@ class PageScreenOrientationTest {
                 ui.getPage().screenOrientationSignal().peek().type(),
                 "Client-side 'unsupported' must be observable distinctly "
                         + "from the pre-bootstrap UNKNOWN state");
+    }
+
+    @Test
+    void isScreenOrientationSupported_reflectsSignalState() {
+        MockUI ui = new MockUI();
+        ExtendedClientDetails details = ui.getPage().getExtendedClientDetails();
+
+        assertFalse(details.isScreenOrientationSupported(),
+                "Before bootstrap (UNKNOWN) the feature-detect must be "
+                        + "false so callers don't expose unusable UI");
+
+        ui.getPage().setScreenOrientation("unsupported", "0");
+        assertFalse(details.isScreenOrientationSupported(),
+                "UNSUPPORTED bootstrap value must yield false");
+
+        ui.getPage().setScreenOrientation("landscape-primary", "90");
+        assertTrue(details.isScreenOrientationSupported(),
+                "A real orientation from the bootstrap means the API is "
+                        + "available");
     }
 
     private static void resolveLockPromise(MockUI ui, ObjectNode result) {
