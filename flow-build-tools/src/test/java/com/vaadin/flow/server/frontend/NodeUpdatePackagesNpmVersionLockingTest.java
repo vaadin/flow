@@ -153,8 +153,8 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
 
         // vaadin.overrides tracks what Flow last wrote
         ObjectNode vaadinSection = (ObjectNode) packageJson.get(VAADIN_DEP_KEY);
-        vaadinSection.set(OVERRIDES, JacksonUtils.createObjectNode()
-                .put(TEST_DEPENDENCY, "0.0.1"));
+        vaadinSection.set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
