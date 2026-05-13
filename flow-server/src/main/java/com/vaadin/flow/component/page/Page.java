@@ -593,25 +593,22 @@ public class Page implements Serializable {
      * from a server push or view constructor.
      *
      * <p>
-     * <b>Example: bind a toggle button</b>
+     * <b>Example: toggle a CSS class while fullscreen</b>
      *
      * <pre>
-     * Button toggle = new Button();
      * Page page = UI.getCurrent().getPage();
-     * Signal&lt;FullscreenState&gt; state = page.fullscreenSignal();
+     * viewLayout.bindClassName("is-fullscreen", page.fullscreenSignal()
+     *         .map(s -&gt; s == FullscreenState.FULLSCREEN));
+     * </pre>
      *
-     * toggle.bindText(state.map(s -&gt; switch (s) {
-     * case FULLSCREEN -&gt; "Exit fullscreen";
-     * case NOT_FULLSCREEN -&gt; "Enter fullscreen";
-     * default -&gt; "Fullscreen unavailable";
-     * }));
-     * toggle.bindEnabled(state.map(s -&gt; s == FullscreenState.FULLSCREEN
-     *         || s == FullscreenState.NOT_FULLSCREEN));
-     * toggle.addClickListener(e -&gt; {
-     *     if (state.peek() == FullscreenState.FULLSCREEN) {
-     *         page.exitFullscreen();
-     *     } else {
-     *         page.requestFullscreen();
+     * <p>
+     * <b>Example: react to state changes with a side effect</b>
+     *
+     * <pre>
+     * Page page = UI.getCurrent().getPage();
+     * Signal.effect(this, () -&gt; {
+     *     if (page.fullscreenSignal().get() == FullscreenState.UNSUPPORTED) {
+     *         fullscreenButton.setVisible(false);
      *     }
      * });
      * </pre>
