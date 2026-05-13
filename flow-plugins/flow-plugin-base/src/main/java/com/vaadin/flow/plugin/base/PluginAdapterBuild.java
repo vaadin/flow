@@ -126,4 +126,16 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      *         {output}/classes/META-INF/resources
      */
     File resourcesOutputDirectory();
+
+    /**
+     * Minimum age (in days) a package version must have before npm, pnpm or bun
+     * is allowed to install it. Defaults to {@code 2} days as a mitigation
+     * against malicious packages briefly published to the registry. Set to
+     * {@code 0} to disable.
+     *
+     * @return the minimum allowed age in days
+     */
+    default int minimumPackageAgeDays() {
+        return 2;
+    }
 }
