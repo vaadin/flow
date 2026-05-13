@@ -81,7 +81,7 @@ jobs:
           body-includes: '<!-- tc-formatter -->'
 
       - name: Create or update comment
-        if: steps.find-comment.outputs.comment-id != '' && steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request_target' && steps.formatter.outputs.modified != '0'
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
