@@ -244,6 +244,9 @@ public class ServerConnector {
     }
 
     private void sendMessage(JsonObject message) {
+        registry.getLoadingIndicatorStateHandler().processMessage(
+                message.getString(JsonConstants.RPC_TYPE),
+                message.getString(JsonConstants.RPC_EVENT_TYPE));
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);
         rpcQueue.flush();
