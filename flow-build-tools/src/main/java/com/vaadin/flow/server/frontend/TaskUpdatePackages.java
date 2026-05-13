@@ -157,6 +157,23 @@ public class TaskUpdatePackages extends NodeUpdater {
                     // Already locked with a dependency reference, skip
                     continue;
                 }
+                // By the time the platform overrides are applied here, existing
+                // dependency versions are expected to be up-to-date already.
+                // So if there exists a dependency with a different version in
+                // package.json at this point, we assume it to be an explicit
+                // user opt-out. Skip such dependencies to avoid overriding them
+                // with a different version, both for "dependencies"
+                // and "devDependencies".
+                if (dependencies.has(dependency)
+                        && !dependencies.get(dependency).asString()
+                                .equals(frontendVersion.getFullVersion())) {
+                    continue;
+                }
+                if (devDependencies.has(dependency)
+                        && !devDependencies.get(dependency).asString()
+                                .equals(frontendVersion.getFullVersion())) {
+                    continue;
+                }
                 // Lock with a version number
                 vaadinOverrides.put(dependency,
                         frontendVersion.getFullVersion());
