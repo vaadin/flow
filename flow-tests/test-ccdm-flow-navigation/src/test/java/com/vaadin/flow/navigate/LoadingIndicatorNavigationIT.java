@@ -20,12 +20,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-
-import java.util.function.Supplier;
 
 @NotThreadSafe
 public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
@@ -41,7 +38,8 @@ public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void slowNavigationShowsLoadingThroughout() throws InterruptedException {
+    public void slowNavigationShowsLoadingThroughout()
+            throws InterruptedException {
         expectConnectionState("connected");
 
         testBench().disableWaitForVaadin();
@@ -51,14 +49,16 @@ public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
                 .click();
 
         // Wait for navigation to complete
-        waitForElementWithId(LoadingIndicatorNavigationSlowTargetView.TARGET_LABEL_ID);
+        waitForElementWithId(
+                LoadingIndicatorNavigationSlowTargetView.TARGET_LABEL_ID);
         Thread.sleep(100); // NOSONAR client request processing
 
         // State should be "loading" from the follow-up data loading request
         expectConnectionState("loading");
 
         // Wait for loading to complete
-        waitForElementWithId(LoadingIndicatorNavigationSlowTargetView.DATA_LABEL_ID);
+        waitForElementWithId(
+                LoadingIndicatorNavigationSlowTargetView.DATA_LABEL_ID);
     }
 
     @Test
@@ -70,7 +70,8 @@ public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
                 .click();
 
         // Wait for navigation and data loading follow-up request
-        waitForElementWithId(LoadingIndicatorNavigationFastTargetView.DATA_LABEL_ID);
+        waitForElementWithId(
+                LoadingIndicatorNavigationFastTargetView.DATA_LABEL_ID);
 
         // State should be "connected" after fast navigation
         expectConnectionState("connected");
@@ -81,15 +82,17 @@ public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
      * the JavaScript window.Vaadin.connectionState.state property.
      */
     private void expectConnectionState(String state) {
-        Assert.assertEquals(state, executeScript(
-                        "return window.Vaadin.connectionState.state;"));
+        Assert.assertEquals(state,
+                executeScript("return window.Vaadin.connectionState.state;"));
     }
 
     private void waitForElementWithId(String id) {
         // Wait for navigation to complete
         waitUntil(driver -> {
             Assert.assertNotNull(driver);
-            Object result = ((JavascriptExecutor) driver).executeScript("return document.getElementById(arguments[0]) !== null;", id);
+            Object result = ((JavascriptExecutor) driver).executeScript(
+                    "return document.getElementById(arguments[0]) !== null;",
+                    id);
             return result != null;
         }, 1);
     }

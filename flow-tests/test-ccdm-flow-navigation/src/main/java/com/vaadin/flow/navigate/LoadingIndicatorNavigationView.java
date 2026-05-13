@@ -36,8 +36,8 @@ public class LoadingIndicatorNavigationView extends Div {
         add(sourceLabel);
 
         // Button that does server-side slow work before navigating
-        NativeButton slowNavigateButton = new NativeButton("Navigate to slow view",
-                event -> {
+        NativeButton slowNavigateButton = new NativeButton(
+                "Navigate to slow view", event -> {
                     UI.getCurrent().navigate(
                             LoadingIndicatorNavigationSlowTargetView.class);
                 });
@@ -45,9 +45,9 @@ public class LoadingIndicatorNavigationView extends Div {
         add(slowNavigateButton);
 
         // Fast navigation button (no delay) for baseline testing
-        NativeButton fastNavigateButton = new NativeButton("Navigate to fast view",
-                event -> UI.getCurrent()
-                        .navigate(LoadingIndicatorNavigationFastTargetView.class));
+        NativeButton fastNavigateButton = new NativeButton(
+                "Navigate to fast view", event -> UI.getCurrent().navigate(
+                        LoadingIndicatorNavigationFastTargetView.class));
         fastNavigateButton.setId(FAST_NAVIGATE_BUTTON_ID);
         add(fastNavigateButton);
     }
