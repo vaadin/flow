@@ -21,6 +21,8 @@ import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -131,5 +133,56 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
         }
 
         return defaultMode;
+    }
+
+    /**
+     * Returns a human-readable explanation of why {@link #getMode()} resolved
+     * to its current value. Intended for logging at startup so developers
+     * understand why the frontend development server (hot deploy) was — or was
+     * not — enabled.
+     *
+     * @return a non-null sentence fragment describing the reason for the
+     *         current mode
+     */
+    default String getModeReason() {
+        if (isProductionMode()) {
+            return BundleUtils.isPreCompiledProductionBundle()
+                    ? "production mode is enabled and a pre-compiled production bundle was found"
+                    : "production mode is enabled";
+        }
+
+        boolean hotdeployExplicitlySet = getBooleanProperty(
+                InitParameters.FRONTEND_HOTDEPLOY, true) == getBooleanProperty(
+                        InitParameters.FRONTEND_HOTDEPLOY, false);
+        if (hotdeployExplicitlySet) {
+            boolean hotdeployEnabled = getBooleanProperty(
+                    InitParameters.FRONTEND_HOTDEPLOY, false);
+            if (hotdeployEnabled) {
+                return "the '" + InitParameters.FRONTEND_HOTDEPLOY
+                        + "' configuration parameter is set to true";
+            }
+            // Explicitly set to false, but Tailwind can still force it on.
+            if (FeatureFlags.get(getContext())
+                    .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+                return "the '" + CoreFeatureFlagProvider.TAILWIND_CSS.getId()
+                        + "' feature flag is enabled (forces the frontend development server)";
+            }
+            return "the '" + InitParameters.FRONTEND_HOTDEPLOY
+                    + "' configuration parameter is set to false";
+        }
+
+        // Property unset: AbstractConfiguration defaults to isHillaUsed,
+        // and ApplicationConfiguration forces hotdeploy on for Tailwind.
+        if (FrontendUtils.isHillaUsed(getFrontendFolder())) {
+            return "Hilla views were detected in the frontend folder";
+        }
+        if (FeatureFlags.get(getContext())
+                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+            return "the '" + CoreFeatureFlagProvider.TAILWIND_CSS.getId()
+                    + "' feature flag is enabled (forces the frontend development server)";
+        }
+        return "no Hilla views, Tailwind, or '"
+                + InitParameters.FRONTEND_HOTDEPLOY
+                + "' configuration parameter were detected";
     }
 }

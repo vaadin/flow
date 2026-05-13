@@ -281,6 +281,11 @@ public class DevModeInitializer implements Serializable {
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         Mode mode = config.getMode();
+        if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+            log().info(
+                    "Using the frontend development server (hot deploy) because {}.",
+                    config.getModeReason());
+        }
         boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
                 FrontendUtils
                         .isReactRouterRequired(options.getFrontendDirectory()));
