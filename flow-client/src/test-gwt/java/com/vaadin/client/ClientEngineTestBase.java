@@ -8,6 +8,40 @@ import com.google.gwt.junit.client.GWTTestCase;
  * from being run as a regular JVM unit test.
  */
 public abstract class ClientEngineTestBase extends GWTTestCase {
+    protected static native void createDummyConnectionState()
+    /*-{
+      if (!$wnd.Vaadin) {
+        $wnd.Vaadin = {};
+      }
+      if (!$wnd.Vaadin.connectionState) {
+        $wnd.Vaadin.connectionState = {
+          state: 'connected',
+          requestCount: 0,
+          setState: function(state) {
+            this.state = state;
+          },
+          loadingStarted: function() {
+            this.state = 'loading';
+            this.requestCount++;
+          },
+          loadingFinished: function() {
+            if (this.requestCount == 0) { return; }
+            this.requestCount--;
+            if (this.requestCount == 0) { this.state = 'connected'; }
+          },
+          loadingFailed: function() {
+            if (this.requestCount == 0) { return; }
+            this.requestCount--;
+            if (this.requestCount == 0) { this.state = 'connection-lost'; }
+          }
+        };
+      } else {
+        // reset to initial state
+        $wnd.Vaadin.connectionState.setState('connected');
+        $wnd.Vaadin.connectionState.requestCount = 0;
+      }
+    }-*/;
+
     @Override
     protected void gwtSetUp() throws Exception {
         installPolyfills();
