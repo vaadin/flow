@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
@@ -761,6 +762,50 @@ class TaskRunNpmInstallTest {
 
     private void assumeNPMIsInUse() {
         assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+    }
+
+    @Test
+    void minimumPackageAge_npmDefaults_addsBeforeArgument() {
+        Options npmOptions = new MockOptions(npmFolder);
+        Optional<String> arg = TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(npmOptions);
+        assertTrue(arg.isPresent());
+        assertTrue(arg.get().startsWith("--before="),
+                "npm should use --before, was: " + arg.get());
+    }
+
+    @Test
+    void minimumPackageAge_pnpmDefaults_addsMinimumReleaseAgeArgument() {
+        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true);
+        Optional<String> arg = TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(pnpmOptions);
+        // Default is 2 days = 2880 minutes
+        assertEquals("--minimum-release-age=2880", arg.orElseThrow());
+    }
+
+    @Test
+    void minimumPackageAge_bunDefaults_addsMinimumReleaseAgeInSeconds() {
+        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true);
+        // Default is 2 days = 172800 seconds
+        assertEquals("--minimum-release-age=172800", TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(bunOptions).orElseThrow());
+    }
+
+    @Test
+    void minimumPackageAge_disabledByZero_returnsEmpty() {
+        Options npmOptions = new MockOptions(npmFolder)
+                .withMinimumPackageAgeDays(0);
+        assertFalse(TaskRunNpmInstall.getMinimumPackageAgeArgument(npmOptions)
+                .isPresent());
+    }
+
+    @Test
+    void minimumPackageAge_overrideValue_pnpmReflectsCustomDays() {
+        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true)
+                .withMinimumPackageAgeDays(7);
+        // 7 days = 10080 minutes
+        assertEquals("--minimum-release-age=10080", TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(pnpmOptions).orElseThrow());
     }
 
 }

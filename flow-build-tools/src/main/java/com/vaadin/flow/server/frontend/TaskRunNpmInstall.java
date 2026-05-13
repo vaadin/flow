@@ -24,11 +24,14 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -289,6 +292,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
+        getMinimumPackageAgeArgument(options).ifPresent(npmInstallCommand::add);
+
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
 
@@ -423,6 +428,32 @@ public class TaskRunNpmInstall implements FallibleCommand {
         } else {
             return "npm";
         }
+    }
+
+    /**
+     * Builds the install argument that prevents npm or pnpm from installing
+     * package versions newer than {@link Options#getMinimumPackageAgeDays()}
+     * days. Returns an empty optional when the check is disabled or when the
+     * active tool (bun) does not support it.
+     */
+    static Optional<String> getMinimumPackageAgeArgument(Options options) {
+        int days = options.getMinimumPackageAgeDays();
+        if (days <= 0) {
+            return Optional.empty();
+        }
+        if (options.isEnableBun()) {
+            // bun: --minimum-release-age takes a value in seconds
+            long seconds = (long) days * 24 * 60 * 60;
+            return Optional.of("--minimum-release-age=" + seconds);
+        }
+        if (options.isEnablePnpm()) {
+            // pnpm: --minimum-release-age takes a value in minutes
+            long minutes = (long) days * 24 * 60;
+            return Optional.of("--minimum-release-age=" + minutes);
+        }
+        // npm: --before takes any Date.parse-able string
+        String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();
+        return Optional.of("--before=" + before);
     }
 
     private void consumeProcessOutput(Process process,

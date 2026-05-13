@@ -166,6 +166,13 @@ public class Options implements Serializable {
 
     private boolean commercialBannerEnabled = false;
 
+    /**
+     * Minimum age, in days, that an npm/pnpm package version must have before
+     * it is allowed to be installed. Defaults to 2 days as a mitigation against
+     * malicious packages published to the registry. Set to 0 to disable.
+     */
+    private int minimumPackageAgeDays = 2;
+
     private ApplicationConfiguration applicationConfiguration;
 
     /**
@@ -1093,6 +1100,39 @@ public class Options implements Serializable {
     public Options withCommercialBanner(boolean enableCommercialBanner) {
         this.commercialBannerEnabled = enableCommercialBanner;
         return this;
+    }
+
+    /**
+     * Sets the minimum age (in days) a package version must have before it is
+     * allowed to be installed by npm or pnpm. The intent is to avoid pulling in
+     * brand-new versions that may have been compromised by a supply-chain
+     * attack but not yet detected and removed from the registry.
+     * <p>
+     * For npm this is translated to a {@code --before=<date>} argument; for
+     * pnpm it becomes {@code --minimum-release-age=<minutes>}; for bun it
+     * becomes {@code --minimum-release-age=<seconds>}.
+     *
+     * @param minimumPackageAgeDays
+     *            minimum allowed age in days, or {@code 0} to disable the check
+     * @return this builder
+     */
+    public Options withMinimumPackageAgeDays(int minimumPackageAgeDays) {
+        if (minimumPackageAgeDays < 0) {
+            throw new IllegalArgumentException(
+                    "minimumPackageAgeDays must be >= 0");
+        }
+        this.minimumPackageAgeDays = minimumPackageAgeDays;
+        return this;
+    }
+
+    /**
+     * Gets the minimum age (in days) a package version must have before npm or
+     * pnpm is allowed to install it. {@code 0} means the check is disabled.
+     *
+     * @return the minimum allowed age in days
+     */
+    public int getMinimumPackageAgeDays() {
+        return minimumPackageAgeDays;
     }
 
     /**
