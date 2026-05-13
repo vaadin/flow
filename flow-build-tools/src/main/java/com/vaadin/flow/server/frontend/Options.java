@@ -1109,8 +1109,8 @@ public class Options implements Serializable {
      * attack but not yet detected and removed from the registry.
      * <p>
      * For npm this is translated to a {@code --before=<date>} argument; for
-     * pnpm it becomes {@code --minimum-release-age=<minutes>}; for bun it
-     * becomes {@code --minimum-release-age=<seconds>}.
+     * pnpm it becomes {@code --config.minimum-release-age=<minutes>}; for bun
+     * it becomes {@code --minimum-release-age=<seconds>}.
      *
      * @param minimumPackageAgeDays
      *            minimum allowed age in days, or {@code 0} to disable the check

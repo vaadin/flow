@@ -447,9 +447,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return Optional.of("--minimum-release-age=" + seconds);
         }
         if (options.isEnablePnpm()) {
-            // pnpm: --minimum-release-age takes a value in minutes
+            // pnpm: minimumReleaseAge is a setting (in minutes), so it has
+            // to be passed via the --config.<name> CLI form, not as a
+            // top-level option
             long minutes = (long) days * 24 * 60;
-            return Optional.of("--minimum-release-age=" + minutes);
+            return Optional.of("--config.minimum-release-age=" + minutes);
         }
         // npm: --before takes any Date.parse-able string
         String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();

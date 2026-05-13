@@ -779,8 +779,8 @@ class TaskRunNpmInstallTest {
         Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true);
         Optional<String> arg = TaskRunNpmInstall
                 .getMinimumPackageAgeArgument(pnpmOptions);
-        // Default is 2 days = 2880 minutes
-        assertEquals("--minimum-release-age=2880", arg.orElseThrow());
+        // Default is 2 days = 2880 minutes; pnpm setting form
+        assertEquals("--config.minimum-release-age=2880", arg.orElseThrow());
     }
 
     @Test
@@ -804,7 +804,7 @@ class TaskRunNpmInstallTest {
         Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true)
                 .withMinimumPackageAgeDays(7);
         // 7 days = 10080 minutes
-        assertEquals("--minimum-release-age=10080", TaskRunNpmInstall
+        assertEquals("--config.minimum-release-age=10080", TaskRunNpmInstall
                 .getMinimumPackageAgeArgument(pnpmOptions).orElseThrow());
     }
 
