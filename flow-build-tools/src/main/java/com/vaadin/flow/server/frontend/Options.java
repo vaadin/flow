@@ -167,11 +167,12 @@ public class Options implements Serializable {
     private boolean commercialBannerEnabled = false;
 
     /**
-     * Minimum age, in days, that an npm/pnpm package version must have before
-     * it is allowed to be installed. Defaults to 2 days as a mitigation against
-     * malicious packages published to the registry. Set to 0 to disable.
+     * Minimum age, in days, that an npm/pnpm/bun package version must have
+     * before it is allowed to be installed. Defaults to {@code 0} (disabled);
+     * set to a positive value to enable as a mitigation against malicious
+     * packages published to the registry.
      */
-    private int minimumPackageAgeDays = 2;
+    private int minimumPackageAgeDays = 0;
 
     private ApplicationConfiguration applicationConfiguration;
 

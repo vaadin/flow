@@ -205,11 +205,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     /**
      * Minimum age (in days) a package version must have before npm, pnpm or bun
      * is allowed to install it. Mitigates supply-chain attacks where a
-     * compromised version is briefly available on the registry. Set to
-     * {@code 0} to disable.
+     * compromised version is briefly available on the registry. Defaults to
+     * {@code 0} (disabled); set to a positive value to enable.
      */
     @Parameter(property = "vaadin."
-            + InitParameters.MINIMUM_PACKAGE_AGE_DAYS, defaultValue = "2")
+            + InitParameters.MINIMUM_PACKAGE_AGE_DAYS, defaultValue = "0")
     private int minimumPackageAgeDays;
 
     /**

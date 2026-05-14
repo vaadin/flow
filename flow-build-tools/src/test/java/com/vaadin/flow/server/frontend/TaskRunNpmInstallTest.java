@@ -765,8 +765,25 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumPackageAge_npmDefaults_addsBeforeArgument() {
-        Options npmOptions = new MockOptions(npmFolder);
+    void minimumPackageAge_defaultIsDisabled_returnsEmpty() {
+        // Default is 0 (disabled) — no flag must be added
+        assertFalse(TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(new MockOptions(npmFolder))
+                .isPresent());
+        assertFalse(TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnablePnpm(true))
+                .isPresent());
+        assertFalse(TaskRunNpmInstall
+                .getMinimumPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true))
+                .isPresent());
+    }
+
+    @Test
+    void minimumPackageAge_npm_addsBeforeArgument() {
+        Options npmOptions = new MockOptions(npmFolder)
+                .withMinimumPackageAgeDays(2);
         Optional<String> arg = TaskRunNpmInstall
                 .getMinimumPackageAgeArgument(npmOptions);
         assertTrue(arg.isPresent());
@@ -775,28 +792,22 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumPackageAge_pnpmDefaults_addsMinimumReleaseAgeArgument() {
-        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true);
+    void minimumPackageAge_pnpm_addsMinimumReleaseAgeArgument() {
+        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true)
+                .withMinimumPackageAgeDays(2);
         Optional<String> arg = TaskRunNpmInstall
                 .getMinimumPackageAgeArgument(pnpmOptions);
-        // Default is 2 days = 2880 minutes; pnpm setting form
+        // 2 days = 2880 minutes; pnpm setting form
         assertEquals("--config.minimum-release-age=2880", arg.orElseThrow());
     }
 
     @Test
-    void minimumPackageAge_bunDefaults_addsMinimumReleaseAgeInSeconds() {
-        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true);
-        // Default is 2 days = 172800 seconds
+    void minimumPackageAge_bun_addsMinimumReleaseAgeInSeconds() {
+        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true)
+                .withMinimumPackageAgeDays(2);
+        // 2 days = 172800 seconds
         assertEquals("--minimum-release-age=172800", TaskRunNpmInstall
                 .getMinimumPackageAgeArgument(bunOptions).orElseThrow());
-    }
-
-    @Test
-    void minimumPackageAge_disabledByZero_returnsEmpty() {
-        Options npmOptions = new MockOptions(npmFolder)
-                .withMinimumPackageAgeDays(0);
-        assertFalse(TaskRunNpmInstall.getMinimumPackageAgeArgument(npmOptions)
-                .isPresent());
     }
 
     @Test

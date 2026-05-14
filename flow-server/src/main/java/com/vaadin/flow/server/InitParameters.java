@@ -303,8 +303,8 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration name for the minimum age (in days) a package version must
-     * have before npm, pnpm or bun is allowed to install it. Defaults to 2
-     * days; set to 0 to disable.
+     * have before npm, pnpm or bun is allowed to install it. Defaults to
+     * {@code 0} (disabled); set to a positive value to enable.
      */
     public static final String MINIMUM_PACKAGE_AGE_DAYS = "npm.minimumPackageAgeDays";
 
