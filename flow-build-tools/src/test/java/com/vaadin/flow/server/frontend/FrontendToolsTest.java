@@ -81,7 +81,7 @@ class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
+    private static final String SUPPORTED_PNPM_VERSION = "10.16.0";
 
     private String baseDir;
 
