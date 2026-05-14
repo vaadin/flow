@@ -291,7 +291,7 @@ class NodeResolver implements java.io.Serializable {
                 String normalizedRequested = normalizeVersion(nodeVersion);
 
                 if (normalizedInstalled.equals(normalizedRequested)) {
-                    getLogger().info("Node {} is already installed in {}",
+                    getLogger().debug("Node {} is already installed in {}",
                             nodeVersion, alternativeDir);
                     return createActiveInstallation(nodeExecutable,
                             versionToUse, alternativeDirFile);
