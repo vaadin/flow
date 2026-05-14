@@ -1117,6 +1117,8 @@ public class Options implements Serializable {
      * @param minimumFrontendPackageAgeDays
      *            minimum allowed age in days, or {@code 0} to disable the check
      * @return this builder
+     * @throws IllegalArgumentException
+     *             if {@code minimumFrontendPackageAgeDays} is negative
      */
     public Options withMinimumFrontendPackageAgeDays(
             int minimumFrontendPackageAgeDays) {
