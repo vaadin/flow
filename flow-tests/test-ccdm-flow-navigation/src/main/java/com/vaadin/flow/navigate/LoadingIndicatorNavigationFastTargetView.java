@@ -1,0 +1,57 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.navigate;
+
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+
+@Route(value = "loading-indicator-navigation-fast-target")
+@PageTitle("Loading Indicator Navigation Fast Target")
+public class LoadingIndicatorNavigationFastTargetView extends Div {
+
+    public static final String TARGET_LABEL_ID = "target-label";
+    public static final String DATA_LABEL_ID = "data-label";
+
+    private final NativeLabel dataLabel;
+
+    public LoadingIndicatorNavigationFastTargetView() {
+        final NativeLabel label = new NativeLabel(
+                "Navigation fast target reached");
+        label.setId(TARGET_LABEL_ID);
+        add(label);
+
+        add(" ");
+
+        dataLabel = new NativeLabel("data loaded");
+        label.setId(DATA_LABEL_ID);
+        // Skip adding now - to be added later in the `loadData()` method
+
+        final NativeButton loadData = new NativeButton("Auto-load data");
+        loadData.addClickListener(event -> loadData());
+        add(loadData);
+        add(" ");
+
+        // Simulate a follow-up data request
+        loadData.getElement().callJsFunction("click");
+    }
+
+    public void loadData() {
+        add(dataLabel);
+    }
+}
