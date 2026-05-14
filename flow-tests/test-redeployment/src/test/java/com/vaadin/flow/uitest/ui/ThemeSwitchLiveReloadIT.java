@@ -26,10 +26,9 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
-public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
+public class ThemeSwitchLiveReloadIT extends AbstractReloadIT {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
