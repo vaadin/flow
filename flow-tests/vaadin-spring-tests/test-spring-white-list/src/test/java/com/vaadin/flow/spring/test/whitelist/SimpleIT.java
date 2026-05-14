@@ -19,8 +19,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.textfield.testbench.TextFieldElement;
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -33,11 +33,12 @@ public class SimpleIT extends ChromeBrowserTest {
     @Test
     public void simplePage_withWhiteList_works() {
         TestBenchElement viewElement = $("simple-view").first();
-        ButtonElement button = viewElement.$(ButtonElement.class).id("button");
+        NativeButtonElement button = viewElement.$(NativeButtonElement.class)
+                .id("button");
 
         button.click();
 
-        TextFieldElement log = viewElement.$(TextFieldElement.class).id("log");
+        InputTextElement log = viewElement.$(InputTextElement.class).id("log");
         Assert.assertEquals(SimpleView.CLICKED_MESSAGE, log.getValue());
     }
 
