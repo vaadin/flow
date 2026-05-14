@@ -344,6 +344,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
 
     /**
+     * Minimum age (in days) a package version must have before npm, pnpm or
+     * bun is allowed to install it. Mitigates supply-chain attacks where a
+     * compromised version is briefly available on the registry. Defaults to
+     * {@code 1} day; set to {@code 0} to disable.
+     */
+    public abstract val minimumPackageAgeDays: Property<Int>
+
+    /**
      * Allows building a version of the application with a commercial banner
      * when commercial components are used without a license key.
      */
@@ -644,6 +652,12 @@ public class PluginEffectiveConfiguration(
             project,
             FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
         )
+
+    public val minimumPackageAgeDays: Provider<Int> =
+        project.getStringProperty(
+            "vaadin.${InitParameters.MINIMUM_PACKAGE_AGE_DAYS}"
+        ).map(String::toInt)
+            .orElse(extension.minimumPackageAgeDays.convention(1))
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)

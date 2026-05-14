@@ -336,4 +336,7 @@ internal class GradlePluginAdapter private constructor(
         return config.commercialWithBanner.get()
     }
 
+    override fun minimumPackageAgeDays(): Int =
+        config.minimumPackageAgeDays.get()
+
 }
