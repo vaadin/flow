@@ -344,12 +344,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
 
     /**
-     * Minimum age (in days) a package version must have before npm, pnpm or
-     * bun is allowed to install it. Mitigates supply-chain attacks where a
-     * compromised version is briefly available on the registry. Defaults to
-     * {@code 1} day; set to {@code 0} to disable.
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain
+     * attacks where a compromised version is briefly available on the
+     * registry. Defaults to {@code 0} (disabled); set to a positive value to
+     * enable. Requires pnpm >= 10.16.0 or bun >= 1.3.0 when those tools are
+     * used.
      */
-    public abstract val minimumPackageAgeDays: Property<Int>
+    public abstract val minimumFrontendPackageAgeDays: Property<Int>
 
     /**
      * Allows building a version of the application with a commercial banner
@@ -653,11 +655,11 @@ public class PluginEffectiveConfiguration(
             FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
         )
 
-    public val minimumPackageAgeDays: Provider<Int> =
+    public val minimumFrontendPackageAgeDays: Provider<Int> =
         project.getStringProperty(
-            "vaadin.${InitParameters.MINIMUM_PACKAGE_AGE_DAYS}"
+            "vaadin.${InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}"
         ).map(String::toInt)
-            .orElse(extension.minimumPackageAgeDays.convention(1))
+            .orElse(extension.minimumFrontendPackageAgeDays.convention(0))
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)

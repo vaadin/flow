@@ -167,12 +167,12 @@ public class Options implements Serializable {
     private boolean commercialBannerEnabled = false;
 
     /**
-     * Minimum age, in days, that an npm/pnpm/bun package version must have
-     * before it is allowed to be installed. Defaults to {@code 0} (disabled);
-     * set to a positive value to enable as a mitigation against malicious
-     * packages published to the registry.
+     * Minimum age, in days, that an npm/pnpm/bun frontend package version must
+     * have before it is allowed to be installed. Defaults to {@code 0}
+     * (disabled); set to a positive value to enable as a mitigation against
+     * malicious packages published to the registry.
      */
-    private int minimumPackageAgeDays = 0;
+    private int minimumFrontendPackageAgeDays = 0;
 
     private ApplicationConfiguration applicationConfiguration;
 
@@ -1104,36 +1104,39 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the minimum age (in days) a package version must have before it is
-     * allowed to be installed by npm or pnpm. The intent is to avoid pulling in
-     * brand-new versions that may have been compromised by a supply-chain
-     * attack but not yet detected and removed from the registry.
+     * Sets the minimum age (in days) a frontend package version must have
+     * before it is allowed to be installed by npm, pnpm or bun. The intent is
+     * to avoid pulling in brand-new versions that may have been compromised by
+     * a supply-chain attack but not yet detected and removed from the registry.
      * <p>
      * For npm this is translated to a {@code --before=<date>} argument; for
-     * pnpm it becomes {@code --config.minimum-release-age=<minutes>}; for bun
-     * it becomes {@code --minimum-release-age=<seconds>}.
+     * pnpm it becomes {@code --config.minimum-release-age=<minutes>} (requires
+     * pnpm &ge; 10.16.0); for bun it becomes
+     * {@code --minimum-release-age=<seconds>} (requires bun &ge; 1.3.0).
      *
-     * @param minimumPackageAgeDays
+     * @param minimumFrontendPackageAgeDays
      *            minimum allowed age in days, or {@code 0} to disable the check
      * @return this builder
      */
-    public Options withMinimumPackageAgeDays(int minimumPackageAgeDays) {
-        if (minimumPackageAgeDays < 0) {
+    public Options withMinimumFrontendPackageAgeDays(
+            int minimumFrontendPackageAgeDays) {
+        if (minimumFrontendPackageAgeDays < 0) {
             throw new IllegalArgumentException(
-                    "minimumPackageAgeDays must be >= 0");
+                    "minimumFrontendPackageAgeDays must be >= 0");
         }
-        this.minimumPackageAgeDays = minimumPackageAgeDays;
+        this.minimumFrontendPackageAgeDays = minimumFrontendPackageAgeDays;
         return this;
     }
 
     /**
-     * Gets the minimum age (in days) a package version must have before npm or
-     * pnpm is allowed to install it. {@code 0} means the check is disabled.
+     * Gets the minimum age (in days) a frontend package version must have
+     * before npm, pnpm or bun is allowed to install it. {@code 0} means the
+     * check is disabled.
      *
      * @return the minimum allowed age in days
      */
-    public int getMinimumPackageAgeDays() {
-        return minimumPackageAgeDays;
+    public int getMinimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     /**

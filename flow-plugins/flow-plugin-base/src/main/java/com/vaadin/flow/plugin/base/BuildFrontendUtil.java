@@ -376,7 +376,8 @@ public class BuildFrontendUtil {
                     .withCommercialBanner(adapter.isCommercialBannerEnabled())
                     .withMetaInfResourcesDirectory(
                             adapter.resourcesOutputDirectory())
-                    .withMinimumPackageAgeDays(adapter.minimumPackageAgeDays());
+                    .withMinimumFrontendPackageAgeDays(
+                            adapter.minimumFrontendPackageAgeDays());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -449,7 +450,8 @@ public class BuildFrontendUtil {
                             adapter.isNpmExcludeWebComponents())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
-                    .withMinimumPackageAgeDays(adapter.minimumPackageAgeDays());
+                    .withMinimumFrontendPackageAgeDays(
+                            adapter.minimumFrontendPackageAgeDays());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

@@ -292,7 +292,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        getMinimumPackageAgeArgument(options).ifPresent(npmInstallCommand::add);
+        getMinimumFrontendPackageAgeArgument(options)
+                .ifPresent(npmInstallCommand::add);
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
@@ -431,13 +432,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Builds the install argument that prevents npm or pnpm from installing
-     * package versions newer than {@link Options#getMinimumPackageAgeDays()}
-     * days. Returns an empty optional when the check is disabled or when the
-     * active tool (bun) does not support it.
+     * Builds the install argument that prevents npm, pnpm or bun from
+     * installing frontend package versions newer than
+     * {@link Options#getMinimumFrontendPackageAgeDays()} days. Returns an empty
+     * optional when the check is disabled.
      */
-    static Optional<String> getMinimumPackageAgeArgument(Options options) {
-        int days = options.getMinimumPackageAgeDays();
+    static Optional<String> getMinimumFrontendPackageAgeArgument(
+            Options options) {
+        int days = options.getMinimumFrontendPackageAgeDays();
         if (days <= 0) {
             return Optional.empty();
         }

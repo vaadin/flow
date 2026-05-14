@@ -313,16 +313,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean frontendIgnoreVersionChecks;
 
     /**
-     * Minimum age (in days) a package version must have before npm, pnpm or bun
-     * is allowed to install it. Mitigates supply-chain attacks where a
-     * compromised version is briefly available on the registry. Defaults to
-     * {@code 0} (disabled); set to a positive value to enable.
-     */
-    @Parameter(property = "vaadin."
-            + InitParameters.MINIMUM_PACKAGE_AGE_DAYS, defaultValue = "0")
-    private int minimumPackageAgeDays;
-
-    /**
      * Allows to fine tune frontend resources detection by defining which
      * artifacts should be included or excluded during the class scanning
      * process.
@@ -775,10 +765,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
-    }
-
-    public int minimumPackageAgeDays() {
-        return minimumPackageAgeDays;
     }
 
     @Override

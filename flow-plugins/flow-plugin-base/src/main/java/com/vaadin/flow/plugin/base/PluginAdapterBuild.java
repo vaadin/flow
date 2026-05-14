@@ -128,14 +128,14 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     File resourcesOutputDirectory();
 
     /**
-     * Minimum age (in days) a package version must have before npm, pnpm or bun
-     * is allowed to install it. Defaults to {@code 0} (disabled); set to a
-     * positive value to enable as a mitigation against malicious packages
-     * briefly published to the registry.
+     * Minimum age (in days) a frontend package version must have before npm,
+     * pnpm or bun is allowed to install it. Defaults to {@code 0} (disabled);
+     * set to a positive value to enable as a mitigation against malicious
+     * packages briefly published to the registry.
      *
      * @return the minimum allowed age in days, or {@code 0} when disabled
      */
-    default int minimumPackageAgeDays() {
+    default int minimumFrontendPackageAgeDays() {
         return 0;
     }
 }
