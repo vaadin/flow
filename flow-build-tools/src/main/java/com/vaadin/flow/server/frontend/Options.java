@@ -166,6 +166,14 @@ public class Options implements Serializable {
 
     private boolean commercialBannerEnabled = false;
 
+    /**
+     * Minimum age, in days, that an npm/pnpm/bun frontend package version must
+     * have before it is allowed to be installed. Defaults to {@code 0}
+     * (disabled); set to a positive value to enable as a mitigation against
+     * malicious packages published to the registry.
+     */
+    private int minimumFrontendPackageAgeDays = 0;
+
     private ApplicationConfiguration applicationConfiguration;
 
     /**
@@ -1093,6 +1101,44 @@ public class Options implements Serializable {
     public Options withCommercialBanner(boolean enableCommercialBanner) {
         this.commercialBannerEnabled = enableCommercialBanner;
         return this;
+    }
+
+    /**
+     * Sets the minimum age (in days) a frontend package version must have
+     * before it is allowed to be installed by npm, pnpm or bun. The intent is
+     * to avoid pulling in brand-new versions that may have been compromised by
+     * a supply-chain attack but not yet detected and removed from the registry.
+     * <p>
+     * For npm this is translated to a {@code --before=<date>} argument; for
+     * pnpm it becomes {@code --config.minimum-release-age=<minutes>} (requires
+     * pnpm &ge; 10.16.0); for bun it becomes
+     * {@code --minimum-release-age=<seconds>} (requires bun &ge; 1.3.0).
+     *
+     * @param minimumFrontendPackageAgeDays
+     *            minimum allowed age in days, or {@code 0} to disable the check
+     * @return this builder
+     * @throws IllegalArgumentException
+     *             if {@code minimumFrontendPackageAgeDays} is negative
+     */
+    public Options withMinimumFrontendPackageAgeDays(
+            int minimumFrontendPackageAgeDays) {
+        if (minimumFrontendPackageAgeDays < 0) {
+            throw new IllegalArgumentException(
+                    "minimumFrontendPackageAgeDays must be >= 0");
+        }
+        this.minimumFrontendPackageAgeDays = minimumFrontendPackageAgeDays;
+        return this;
+    }
+
+    /**
+     * Gets the minimum age (in days) a frontend package version must have
+     * before npm, pnpm or bun is allowed to install it. {@code 0} means the
+     * check is disabled.
+     *
+     * @return the minimum allowed age in days
+     */
+    public int getMinimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     /**

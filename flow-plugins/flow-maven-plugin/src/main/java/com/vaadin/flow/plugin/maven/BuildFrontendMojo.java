@@ -145,6 +145,17 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             + "resources/")
     private File resourcesOutputDirectory;
 
+    /**
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
+     * where a compromised version is briefly available on the registry.
+     * Defaults to {@code 0} (disabled); set to a positive value to enable.
+     * Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "0")
+    private int minimumFrontendPackageAgeDays;
+
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
@@ -287,6 +298,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public File resourcesOutputDirectory() {
         return resourcesOutputDirectory;
+    }
+
+    @Override
+    public int minimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     @Override

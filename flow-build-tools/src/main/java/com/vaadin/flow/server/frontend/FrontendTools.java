@@ -118,13 +118,18 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
 
-    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 7;
-    private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
+    // pnpm 10.16.0 is the first version that supports the
+    // minimumReleaseAge setting used to delay installation of newly
+    // published packages as a supply-chain mitigation.
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 10;
+    private static final int SUPPORTED_PNPM_MINOR_VERSION = 16;
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+    // Bun 1.3.0 is the first version that supports --minimum-release-age
+    // for the same supply-chain mitigation.
     private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
-            1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
+            1, 3, 0);
 
     private enum BuildTool {
         NPM("npm", "npm-cli.js"),
