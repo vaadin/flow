@@ -77,7 +77,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
 
     @Override
     public CompletableFuture<GeolocationOutcome> get(
-            @Nullable GeolocationOptions options) {
+            GeolocationOptions options) {
         CompletableFuture<GeolocationOutcome> future = new CompletableFuture<>();
         ui.getElement()
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
@@ -98,8 +98,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
     }
 
     @Override
-    public WatchHandle startWatch(Component owner,
-            @Nullable GeolocationOptions options,
+    public WatchHandle startWatch(Component owner, GeolocationOptions options,
             SerializableConsumer<GeolocationResult> onUpdate) {
         return new BrowserWatchHandle(owner, options, onUpdate);
     }
@@ -154,8 +153,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
         private @Nullable DomListenerRegistration errorListener;
         private boolean active = true;
 
-        BrowserWatchHandle(Component owner,
-                @Nullable GeolocationOptions options,
+        BrowserWatchHandle(Component owner, GeolocationOptions options,
                 SerializableConsumer<GeolocationResult> onUpdate) {
             this.owner = owner;
             Element el = owner.getElement();

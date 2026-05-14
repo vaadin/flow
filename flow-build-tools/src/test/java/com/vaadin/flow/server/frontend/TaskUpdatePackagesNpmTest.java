@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -1587,6 +1588,72 @@ class TaskUpdatePackagesNpmTest {
                             .has("workbox-build"),
                     "workbox-build should be removed from vaadin.overrides");
         }
+    }
+
+    /**
+     * This tests that other systems generate the same hash as we get for a
+     * Windows machine. There was an issue in the jackson indenter that used
+     * different line separators on windows (\r\n) and linux (\n).
+     */
+    @Test
+    void windowsHashedPackageJson_otherSystemsGetSameHash() {
+        var json = """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "type": "module",
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.22",
+                    "@vaadin/react-components": "25.1.2",
+                    "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                    "adaptivecards": "1.2.6",
+                    "brace": "0.11.1",
+                    "date-fns": "4.1.0",
+                    "lit": "3.3.2",
+                    "react": "19.2.4",
+                    "react-dom": "19.2.4",
+                    "react-router": "7.13.1"
+                  },
+                  "devDependencies": {
+                    "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                    "@types/node": "25.5.0",
+                    "@types/react": "19.2.14",
+                    "@types/react-dom": "19.2.3",
+                    "typescript": "5.9.3",
+                    "vite": "7.3.2",
+                    "vite-plugin-checker": "0.12.0"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                        "@vaadin/common-frontend": "0.0.22",
+                        "@vaadin/react-components": "25.1.2",
+                        "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                        "adaptivecards": "1.2.6",
+                        "brace": "0.11.1",
+                        "date-fns": "4.1.0",
+                        "lit": "3.3.2",
+                        "react": "19.2.4",
+                        "react-dom": "19.2.4",
+                        "react-router": "7.13.1"
+                    },
+                    "devDependencies": {
+                        "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                        "@types/node": "25.5.0",
+                        "@types/react": "19.2.14",
+                        "@types/react-dom": "19.2.3",
+                        "typescript": "5.9.3",
+                        "vite": "7.3.2",
+                        "vite-plugin-checker": "0.12.0"
+                    },
+                    "hash": "a4b492aecb32fe13902befbcc4ad0efbe6417273e8ca60346c4839973ae8242c"
+                  }
+                }
+                """;
+
+        var packageJson = JacksonUtils.readTree(json);
+        var hash = TaskUpdatePackages.generatePackageJsonHash(packageJson);
+        Assert.assertEquals(packageJson.get("vaadin").get("hash").asString(),
+                hash);
     }
 
     @Test

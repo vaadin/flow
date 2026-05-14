@@ -19,24 +19,18 @@ import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Port between the {@link Geolocation} facade and whatever delivers actual
- * position data — the browser in production, an in-memory test driver in unit
- * tests.
- * <p>
- * <b>Framework internal.</b> Application code does not implement this interface
- * directly. Replacement clients are installed at facade construction time by
- * registering a {@link GeolocationClientFactory} through Vaadin's
- * {@link com.vaadin.flow.di.Lookup Lookup}; {@link Geolocation} then hands the
- * resulting client every {@link #get}, {@link #startWatch} and
- * {@link #subscribeAvailability} call. When no factory is registered,
- * {@code Geolocation} uses the built-in browser-backed client.
+ * Framework-internal port between the {@link Geolocation} static API and
+ * whatever delivers actual position data — the browser in production, an
+ * in-memory driver in browserless tests. Application code does not interact
+ * with this interface; it is exposed so external test drivers can replace the
+ * production client via
+ * {@link com.vaadin.flow.component.internal.UIInternals#setGeolocationClient(GeolocationClient)}.
  * <p>
  * <b>Threading:</b> all callbacks on this interface (the future returned by
  * {@link #get}, the {@code onUpdate} consumer passed to {@link #startWatch},
@@ -51,11 +45,11 @@ public interface GeolocationClient extends Serializable {
      * has an answer (a position or an error).
      *
      * @param options
-     *            tuning options, or {@code null} for browser defaults
+     *            tuning options, never {@code null}; pass an empty
+     *            {@link GeolocationOptions} to use browser defaults
      * @return a future that completes with the outcome on the UI thread
      */
-    CompletableFuture<GeolocationOutcome> get(
-            @Nullable GeolocationOptions options);
+    CompletableFuture<GeolocationOutcome> get(GeolocationOptions options);
 
     /**
      * Starts a watch session bound to {@code owner}. Position and error pushes
@@ -66,13 +60,13 @@ public interface GeolocationClient extends Serializable {
      *            the component that owns this watch; detaching the component
      *            does not auto-stop the watch — the caller is responsible
      * @param options
-     *            tuning options, or {@code null} for browser defaults
+     *            tuning options, never {@code null}; pass an empty
+     *            {@link GeolocationOptions} to use browser defaults
      * @param onUpdate
      *            consumer invoked on the UI thread for every push
      * @return a handle for stopping the watch
      */
-    WatchHandle startWatch(Component owner,
-            @Nullable GeolocationOptions options,
+    WatchHandle startWatch(Component owner, GeolocationOptions options,
             SerializableConsumer<GeolocationResult> onUpdate);
 
     /**
@@ -96,17 +90,17 @@ public interface GeolocationClient extends Serializable {
     GeolocationAvailability currentAvailability();
 
     /**
-     * Releases any resources held by this client. Called on UI detach.
-     * Idempotent: calling more than once is a no-op. After {@code close()}, the
-     * behavior of {@link #get} and {@link #startWatch} is undefined and the
-     * facade must not call them.
+     * Releases any resources held by this client. Called when one client is
+     * being replaced by another (e.g. when a test driver is installed) and on
+     * UI detach. Idempotent: calling more than once is a no-op. After
+     * {@code close()}, the behavior of {@link #get} and {@link #startWatch} is
+     * undefined and callers must not invoke them.
      */
     void close();
 
     /**
-     * Handle to a watcher watch session. The handle is alive while the
-     * underlying watch is active; calling {@link #stop()} idempotently tears it
-     * down.
+     * Handle to a watch session. The handle is alive while the underlying watch
+     * is active; calling {@link #stop()} idempotently tears it down.
      */
     interface WatchHandle extends Serializable {
         /**

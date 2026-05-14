@@ -7,6 +7,7 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 
 import com.vaadin.client.communication.GwtAtmospherePushConnectionTest;
 import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
+import com.vaadin.client.communication.GwtLoadingIndicatorStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
@@ -52,6 +53,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
+        suite.addTestSuite(GwtLoadingIndicatorStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
         suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
         suite.addTestSuite(GwtClientJsonCodecTest.class);

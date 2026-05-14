@@ -56,7 +56,8 @@ final class DeprecatedPropertyResolver {
             "vaadin.commercialWithBanner", "vaadin.ci.build",
             "vaadin.force.production.build",
             "vaadin.clean.build.frontend.files", "vaadin.path",
-            "vaadin.useLit1", "vaadin.disableOptionalChaining");
+            "vaadin.useLit1", "vaadin.disableOptionalChaining",
+            "vaadin.npm.minimumFrontendPackageAgeDays");
 
     private DeprecatedPropertyResolver() {
     }
