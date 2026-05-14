@@ -206,11 +206,11 @@ public class BuildDevBundleMojo extends AbstractMojo
      * Minimum age (in days) a frontend (npm) package version must have before
      * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
      * where a compromised version is briefly available on the registry.
-     * Defaults to {@code 0} (disabled); set to a positive value to enable.
-     * Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     * Defaults to {@code 1} day; set to {@code 0} to disable. Requires pnpm
+     * &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
      */
     @Parameter(property = "vaadin."
-            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "0")
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "1")
     private int minimumFrontendPackageAgeDays;
 
     /**
