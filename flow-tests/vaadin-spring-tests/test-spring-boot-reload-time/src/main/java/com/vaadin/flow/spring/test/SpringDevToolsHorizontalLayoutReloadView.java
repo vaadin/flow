@@ -17,13 +17,11 @@ package com.vaadin.flow.spring.test;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
 @Route("reload-layout-test")
@@ -38,8 +36,8 @@ public class SpringDevToolsHorizontalLayoutReloadView extends Div {
         NativeButton startTriggerButton = SpringDevToolsReloadUtils
                 .createReloadTriggerButton();
 
-        HorizontalLayout layout = new HorizontalLayout(
-                new Button("Vaadin Button"), new TextField());
+        Div layout = new Div(new NativeButton("Button"), new Input());
+        layout.getStyle().set("display", "flex").set("flex-direction", "row");
         add(startTriggerButton, result);
         add(new Html("<br/>"));
         add(layout);
