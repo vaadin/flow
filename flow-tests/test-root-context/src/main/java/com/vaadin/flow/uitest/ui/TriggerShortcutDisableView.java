@@ -29,13 +29,15 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 /**
  * Wires a {@code ShortcutTrigger(Enter)} on the form to two actions on the
  * submit button:
- * {@link SetEnabledAction#SetEnabledAction(com.vaadin.flow.component.Component, boolean)
- * SetEnabledAction(button, false)} first, then
  * {@link ClickAction#ClickAction(com.vaadin.flow.component.Component)
- * ClickAction(button)}. The submit button's server-side click listener appends
- * to a result label with the button's enabled state observed at the time the
- * listener runs — exercising the "mirror before listener" ordering target of
- * slice 2.
+ * ClickAction(button)} first, then
+ * {@link SetEnabledAction#SetEnabledAction(com.vaadin.flow.component.Component, boolean)
+ * SetEnabledAction(button, false)}. The submit button's server-side click
+ * listener appends to a result label, demonstrating that the click reached the
+ * server. The local disable then closes the latency window before any second
+ * user gesture can re-trigger the submit. Ordering matters: a browser blocks
+ * {@code element.click()} on an already-disabled element, so the click action
+ * must run while the button is still enabled.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerShortcutDisableView", layout = ViewTestLayout.class)
 public class TriggerShortcutDisableView extends AbstractDivView {
@@ -63,7 +65,7 @@ public class TriggerShortcutDisableView extends AbstractDivView {
         form.add(field, submit);
         add(form, result);
 
-        new ShortcutTrigger(form, Key.ENTER).triggers(
-                new SetEnabledAction(submit, false), new ClickAction(submit));
+        new ShortcutTrigger(form, Key.ENTER).triggers(new ClickAction(submit),
+                new SetEnabledAction(submit, false));
     }
 }

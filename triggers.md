@@ -172,22 +172,27 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   local DOM change it invokes `notifyServer()`, which delivers
   `[actionId]` to `dispatchMirror` on the server, which looks up the
   action and calls `applyServerSideEffect()`.
-- **Ordering note**: the mirror notification is queued through Flow's
-  outbound channel infrastructure inside the same synchronous DOM event
-  handler. With the user wiring actions as `(disable, click)` the
-  notification is queued before the click event Flow emits as a result
-  of `target.click()`, so the server processes the mirror first and
-  the user's `ClickListener` observes the post-action enabled state.
-  This is best-effort and depends on user-chosen action order; the
-  stronger guarantee (mirror-before-listener regardless of order)
-  remains deferred.
-- **IT**: `Enter` shortcut on a `Div` form → disable + click on a submit
-  button. Asserts both client-side (`disabled` attribute set) and
-  server-side (`"clicked, enabled=false"` text rendered by the
-  `ClickListener`).
+- **Ordering note**: with `ClickAction` ahead of `SetEnabledAction` in
+  the binding (`(click, disable)`), `target.click()` dispatches the
+  click event while the button is still enabled — Flow's listener
+  queues that event. `SetEnabledAction` then disables the button
+  locally and queues a mirror notification through the return channel.
+  Server processes the click first (the user's `ClickListener` sees
+  `isEnabled() == true`); the mirror runs immediately after,
+  setting server state to disabled. The state-tree change syncs back
+  reaffirming the local disable. The reverse order
+  `(disable, click)` does **not** work: a browser blocks
+  `element.click()` on an already-disabled element, so the click
+  action becomes a no-op. The trigger API does not currently rewrite
+  user-chosen action order.
+- **IT**: `Enter` shortcut on a `Div` form → click + disable on a
+  submit button. Asserts the click reached the server
+  (`"clicked, enabled=true"`) and the button is disabled
+  client-side after the trigger.
 - **Validates**: trigger on one component / action on another;
   end-to-end server mirroring via the return channel; the
-  disable-during-latency-window pattern.
+  disable-during-latency-window pattern (browser blocks a second
+  user click while the round-trip is in flight).
 
 ### Slice 3 — Inline JS escape hatch (DONE)
 

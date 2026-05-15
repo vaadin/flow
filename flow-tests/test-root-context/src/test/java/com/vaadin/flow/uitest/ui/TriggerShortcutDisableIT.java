@@ -26,7 +26,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TriggerShortcutDisableIT extends ChromeBrowserTest {
 
     @Test
-    public void enterShortcutDisablesAndClicksSubmitButton() {
+    public void enterShortcutClicksAndDisablesSubmitButton() {
         open();
 
         WebElement field = findElement(By.id("field"));
@@ -35,18 +35,19 @@ public class TriggerShortcutDisableIT extends ChromeBrowserTest {
         field.click();
         field.sendKeys("hello", Keys.ENTER);
 
-        // Client-side: button is disabled immediately after the shortcut.
-        Assert.assertNotNull("submit button is disabled client-side",
-                submit.getAttribute("disabled"));
-
-        // Server-side: the click listener observed the mirrored enabled
-        // state. The mirror is dispatched in the same outbound message as
-        // the click event, queued before it by the chosen action order, so
-        // the listener sees isEnabled() == false.
+        // The ClickAction fires first while the button is still enabled,
+        // so Flow's server-side ClickListener runs and observes
+        // isEnabled() == true.
         WebElement result = waitUntil(d -> {
             WebElement r = d.findElement(By.id("result"));
-            return "clicked, enabled=false".equals(r.getText()) ? r : null;
+            return "clicked, enabled=true".equals(r.getText()) ? r : null;
         });
-        Assert.assertEquals("clicked, enabled=false", result.getText());
+        Assert.assertEquals("clicked, enabled=true", result.getText());
+
+        // SetEnabledAction then disables the button locally. The browser
+        // would block any subsequent user-initiated click, closing the
+        // latency window in which a second submit could otherwise happen.
+        Assert.assertNotNull("submit button is disabled client-side",
+                submit.getAttribute("disabled"));
     }
 }
