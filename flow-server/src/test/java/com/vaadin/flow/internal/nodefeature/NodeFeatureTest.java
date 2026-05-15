@@ -106,6 +106,9 @@ class NodeFeatureTest {
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
         expectedIds.put(SignalBindingFeature.class,
                 NodeFeatures.SIGNAL_BINDING);
+        expectedIds.put(
+                com.vaadin.flow.component.trigger.internal.TriggerSupport.class,
+                NodeFeatures.TRIGGER_SUPPORT);
 
         return expectedIds;
     }
@@ -149,6 +152,9 @@ class NodeFeatureTest {
 
                 /* Signal binding feature */
                 SignalBindingFeature.class,
+
+                /* Trigger API */
+                com.vaadin.flow.component.trigger.internal.TriggerSupport.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,

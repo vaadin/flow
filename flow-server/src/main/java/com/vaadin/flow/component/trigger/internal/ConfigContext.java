@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -28,7 +29,7 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * For internal use only.
  */
-public interface ConfigContext {
+public interface ConfigContext extends Serializable {
 
     /**
      * Returns a stable id for the given output, registering it with the host's
