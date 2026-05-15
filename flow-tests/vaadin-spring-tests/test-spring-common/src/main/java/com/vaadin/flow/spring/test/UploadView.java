@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -60,6 +61,13 @@ public class UploadView extends Div {
         String uploadUrl = resourceRegistry
                 .getTargetURI(registration.getResource()).toString();
 
+        // The upload posts via fetch(), which does not piggyback Flow's
+        // UIDL sync. Click a hidden button after the response to force a
+        // server roundtrip that pulls down the queued DOM updates.
+        NativeButton sync = new NativeButton("", event -> {
+        });
+        sync.getStyle().set("display", "none");
+
         Input upload = new Input();
         upload.setType("file");
         upload.setId("upl");
@@ -69,9 +77,10 @@ public class UploadView extends Div {
                     if (!file) return;
                     const formData = new FormData();
                     formData.append('file', file);
-                    fetch($0, { method: 'POST', body: formData });
+                    fetch($0, { method: 'POST', body: formData })
+                        .then(() => $1.click());
                 });
-                """, uploadUrl);
-        add(upload);
+                """, uploadUrl, sync.getElement());
+        add(upload, sync);
     }
 }
