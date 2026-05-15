@@ -81,7 +81,7 @@ class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "10.16.0";
+    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
 
     private String baseDir;
 
@@ -687,6 +687,42 @@ class FrontendToolsTest {
                         + "on your system."),
                 "Unexpected exception message content '"
                         + exception.getMessage() + "'");
+    }
+
+    @Test
+    void assertVersionSupportsMinimumPackageReleaseAge_pnpmTooOld_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> FrontendTools
+                        .assertVersionSupportsMinimumPackageReleaseAge("pnpm",
+                                new FrontendVersion(7, 0, 0),
+                                FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE));
+        assertThat(exception.getMessage(), containsString("pnpm"));
+        assertThat(exception.getMessage(), containsString("7.0.0"));
+        assertThat(exception.getMessage(), containsString("10.16.0"));
+    }
+
+    @Test
+    void assertVersionSupportsMinimumPackageReleaseAge_bunTooOld_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> FrontendTools
+                        .assertVersionSupportsMinimumPackageReleaseAge("bun",
+                                new FrontendVersion(1, 0, 6),
+                                FrontendTools.MIN_BUN_VERSION_FOR_RELEASE_AGE));
+        assertThat(exception.getMessage(), containsString("bun"));
+        assertThat(exception.getMessage(), containsString("1.0.6"));
+        assertThat(exception.getMessage(), containsString("1.3.0"));
+    }
+
+    @Test
+    void assertVersionSupportsMinimumPackageReleaseAge_versionNewEnough_doesNotThrow() {
+        FrontendTools.assertVersionSupportsMinimumPackageReleaseAge("pnpm",
+                new FrontendVersion(10, 16, 0),
+                FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE);
+        FrontendTools.assertVersionSupportsMinimumPackageReleaseAge("bun",
+                new FrontendVersion(1, 3, 0),
+                FrontendTools.MIN_BUN_VERSION_FOR_RELEASE_AGE);
     }
 
     @Test

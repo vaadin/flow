@@ -266,6 +266,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } else {
                 npmExecutable = tools.getNpmExecutable();
             }
+            if (options.getMinimumFrontendPackageAgeDays() > 0
+                    && (options.isEnableBun() || options.isEnablePnpm())) {
+                tools.assertSupportsMinimumPackageReleaseAge(npmExecutable,
+                        options.isEnableBun());
+            }
             npmInstallCommand = new ArrayList<>(npmExecutable);
             postinstallCommand = new ArrayList<>(npmExecutable);
             // This only works together with "install"
