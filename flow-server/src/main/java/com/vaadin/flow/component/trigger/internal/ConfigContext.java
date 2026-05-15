@@ -62,4 +62,21 @@ public interface ConfigContext extends Serializable {
     default int referenceElement(Component component) {
         return referenceElement(Objects.requireNonNull(component).getElement());
     }
+
+    /**
+     * The host element this snapshot belongs to. Useful for outputs that
+     * install element-scoped subscriptions (e.g. {@code SignalOutput} via
+     * {@link com.vaadin.flow.dom.ElementEffect#effect}).
+     *
+     * @return the host element
+     */
+    Element getHost();
+
+    /**
+     * Schedules a fresh client snapshot for the host to be emitted on the next
+     * {@code beforeClientResponse} flush. Used by outputs whose value may
+     * change between trigger fires (e.g. a {@code SignalOutput}). Idempotent
+     * within a request.
+     */
+    void scheduleSync();
 }

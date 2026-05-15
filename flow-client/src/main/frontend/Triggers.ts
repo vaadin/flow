@@ -276,6 +276,15 @@ outputFactories.set('flow:js', (config) => {
   };
 });
 
+outputFactories.set('flow:signal-value', (config) => {
+  const value = config.value;
+  return {
+    read() {
+      return value;
+    }
+  };
+});
+
 outputFactories.set('flow:property', (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');

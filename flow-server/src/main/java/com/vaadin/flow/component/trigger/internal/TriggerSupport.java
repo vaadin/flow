@@ -252,11 +252,13 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
         return actionsById.get(id);
     }
 
-    private Element getHost() {
+    @Override
+    public Element getHost() {
         return Element.get(getNode());
     }
 
-    private void scheduleSync() {
+    @Override
+    public void scheduleSync() {
         if (!attachListenerRegistered) {
             attachListenerRegistered = true;
             getHost().addAttachListener(e -> syncToClient());

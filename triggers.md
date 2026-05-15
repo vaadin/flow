@@ -233,7 +233,7 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   mirror notifications (slice 2) and server callbacks (slice 4)
   without protocol changes.
 
-### Slice 5 — `SignalOutput<T>` (planned)
+### Slice 5 — `SignalOutput<T>` (DONE)
 
 - **Output**: `SignalOutput<T>(Signal<T>)` (`flow:signal-value`). Reads
   a server-side `Signal<T>` and exposes its current value to trigger
