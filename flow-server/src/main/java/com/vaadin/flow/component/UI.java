@@ -32,7 +32,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -71,6 +70,7 @@ import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -135,8 +135,6 @@ public class UI extends Component
 
     private final Page page;
 
-    private final Geolocation geolocation;
-
     /*
      * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
      * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
@@ -167,7 +165,6 @@ public class UI extends Component
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
         page = new Page(this);
-        geolocation = new Geolocation(this);
     }
 
     /**
@@ -843,6 +840,37 @@ public class UI extends Component
     }
 
     /**
+     * Gets a read-only signal that holds the current {@link RouterState} of
+     * this UI.
+     * <p>
+     * The signal value is updated whenever a navigation completes, immediately
+     * before {@link AfterNavigationListener}s are notified, so reactive
+     * consumers and listeners observe the same state. Use {@link Signal#get()}
+     * to read reactively (creates a dependency when called inside a
+     * {@link Signal#effect}). Use {@link Signal#peek()} for a non-reactive
+     * snapshot.
+     * <p>
+     * Before the first navigation completes, the value is a {@code
+     * RouterState} with an empty {@link Location}, empty
+     * {@link RouteParameters}, an empty active chain and a {@code null}
+     * navigation target.
+     * <p>
+     * Fine-grained projections can be derived with {@link Signal#map}, for
+     * example:
+     *
+     * <pre>
+     * Signal&lt;Location&gt; locationSignal = ui.routerStateSignal()
+     *         .map(RouterState::location);
+     * </pre>
+     *
+     * @return a read-only signal holding the current router state, never
+     *         {@code null}
+     */
+    public Signal<RouterState> routerStateSignal() {
+        return internals.getRouterStateSignal();
+    }
+
+    /**
      * Sets the locale for this UI.
      * <p>
      * Note that {@link VaadinSession#setLocale(Locale)} will set the locale for
@@ -917,16 +945,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Returns the {@link Geolocation} facade for this UI, used to read the end
-     * user's physical location from the browser.
-     *
-     * @return the Geolocation facade
-     */
-    public Geolocation getGeolocation() {
-        return geolocation;
     }
 
     /**

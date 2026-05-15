@@ -301,4 +301,11 @@ public class InitParameters implements Serializable {
      */
     public static final String BROWSERLESS = "browserless";
 
+    /**
+     * Configuration name for the minimum age (in days) a frontend (npm) package
+     * version must have before npm, pnpm or bun is allowed to install it.
+     * Defaults to {@code 0} (disabled); set to a positive value to enable.
+     */
+    public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";
+
 }

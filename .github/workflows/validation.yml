@@ -132,8 +132,18 @@ jobs:
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -ntp -T 1C $ARGS"
-          set -x -e -o pipefail
-          $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
@@ -158,7 +168,7 @@ jobs:
           node-version: '24.9.0'
       - uses: pnpm/action-setup@v3
         with:
-          version: '8.6.11'
+          version: '11.0.8'
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
@@ -210,13 +220,27 @@ jobs:
             $cmd -T 1C || $cmd
           fi
       - name: Run ITs
+        timeout-minutes: 22
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
-          set -x -e -o pipefail
-          $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-it-tests-${{matrix.current}}.out
+          # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
+          # Spring Boot fork that spring-boot:stop failed to kill) can't pin
+          # the step open by holding the pipe to tee.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
         if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
@@ -231,7 +255,11 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ failure() || success() }}
+    # Use always() so this job runs on cancellation too. With
+    # failure() || success() it would be skipped when any matrix entry
+    # was cancelled, and a skipped required check satisfies branch
+    # protection — letting auto-merge proceed past a cancelled IT.
+    if: ${{ always() }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-24.04
     steps:
@@ -301,6 +329,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -317,10 +346,16 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - name: Checkout base branch for API comparison
+      - name: Resolve merge base with target branch
+        id: merge-base
         run: |
-          echo "Checking out base branch: ${{ env._BASE_REF }}"
-          git clone --depth 1 --branch ${{ env._BASE_REF }} ${{ github.event.repository.clone_url }} ../base-build
+          git fetch --no-tags origin "${_BASE_REF}"
+          MERGE_BASE=$(git merge-base HEAD "origin/${_BASE_REF}")
+          echo "Merge base with ${_BASE_REF}: ${MERGE_BASE}"
+          echo "merge_base_sha=${MERGE_BASE}" >> "$GITHUB_OUTPUT"
+      - name: Create worktree at merge base for API comparison
+        run: |
+          git worktree add --detach ../base-build "${{ steps.merge-base.outputs.merge_base_sha }}"
       - name: Determine base version
         id: base-version
         working-directory: ../base-build
@@ -331,7 +366,7 @@ jobs:
       - name: Build base version locally
         working-directory: ../base-build
         run: |
-          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env._BASE_REF }}"
+          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
           mvn clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
@@ -361,11 +396,11 @@ jobs:
         with:
           name: apidiff-reports
           path: apidiff/
-      - name: Cleanup base build directory
+      - name: Cleanup base build worktree
         if: always()
         run: |
-          echo "Cleaning up base build directory"
-          rm -rf ../base-build
+          echo "Cleaning up base build worktree"
+          git worktree remove --force ../base-build || rm -rf ../base-build
       - name: Report API DIFF to GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

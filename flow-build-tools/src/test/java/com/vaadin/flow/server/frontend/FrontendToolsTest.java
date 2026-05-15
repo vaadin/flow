@@ -81,7 +81,7 @@ class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
+    private static final String SUPPORTED_PNPM_VERSION = "10.16.0";
 
     private String baseDir;
 
@@ -379,8 +379,9 @@ class FrontendToolsTest {
     @Test
     void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
-        // command line should contain --shamefully-hoist=true option
-        assertTrue(executable.contains("--shamefully-hoist=true"));
+        // command line should force hoisted node-linker so transitive
+        // deps are always installed at the project root
+        assertTrue(executable.contains("--config.node-linker=hoisted"));
         assertTrue(executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
 
@@ -629,7 +630,8 @@ class FrontendToolsTest {
             IllegalStateException exception = assertThrows(
                     IllegalStateException.class, () -> tools.getSuitablePnpm());
             assertTrue(exception.getMessage().contains(
-                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 7.0.0"),
+                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
+                            + SUPPORTED_PNPM_VERSION),
                     "Unexpected exception message content '"
                             + exception.getMessage() + "'");
         } finally {

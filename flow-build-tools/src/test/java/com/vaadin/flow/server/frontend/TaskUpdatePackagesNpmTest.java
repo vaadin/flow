@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -1332,8 +1333,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
     }
 
     @Test
@@ -1539,16 +1540,11 @@ class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pnpm.get(OVERRIDES);
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
         assertTrue(overrides.has("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
         // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
+        assertTrue(overrides.get("workbox-build>glob").isString(),
                 "Flattened override should be a string value");
 
         // Verify nested object form does NOT exist
@@ -1569,9 +1565,7 @@ class TaskUpdatePackagesNpmTest {
         // Verify flattened overrides were added
         ObjectNode pkgJson = getOrCreatePackageJson();
         assertTrue(pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES));
-        assertTrue(
-                pkgJson.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+        assertTrue(pkgJson.get(PNPM).get(OVERRIDES).has("workbox-build>glob"),
                 "Flattened override should be present after first run");
 
         // Second run with PWA offline disabled
@@ -1582,10 +1576,6 @@ class TaskUpdatePackagesNpmTest {
         pkgJson = getOrCreatePackageJson();
         if (pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES)) {
             JsonNode overrides = pkgJson.get(PNPM).get(OVERRIDES);
-            assertFalse(overrides.has("workbox-build>serialize-javascript"),
-                    "Flattened workbox-build>serialize-javascript should be removed");
-            assertFalse(overrides.has("workbox-build>@rollup/plugin-terser"),
-                    "Flattened workbox-build>@rollup/plugin-terser should be removed");
             assertFalse(overrides.has("workbox-build>glob"),
                     "Flattened workbox-build>glob should be removed");
         }
@@ -1598,6 +1588,72 @@ class TaskUpdatePackagesNpmTest {
                             .has("workbox-build"),
                     "workbox-build should be removed from vaadin.overrides");
         }
+    }
+
+    /**
+     * This tests that other systems generate the same hash as we get for a
+     * Windows machine. There was an issue in the jackson indenter that used
+     * different line separators on windows (\r\n) and linux (\n).
+     */
+    @Test
+    void windowsHashedPackageJson_otherSystemsGetSameHash() {
+        var json = """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "type": "module",
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.22",
+                    "@vaadin/react-components": "25.1.2",
+                    "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                    "adaptivecards": "1.2.6",
+                    "brace": "0.11.1",
+                    "date-fns": "4.1.0",
+                    "lit": "3.3.2",
+                    "react": "19.2.4",
+                    "react-dom": "19.2.4",
+                    "react-router": "7.13.1"
+                  },
+                  "devDependencies": {
+                    "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                    "@types/node": "25.5.0",
+                    "@types/react": "19.2.14",
+                    "@types/react-dom": "19.2.3",
+                    "typescript": "5.9.3",
+                    "vite": "7.3.2",
+                    "vite-plugin-checker": "0.12.0"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                        "@vaadin/common-frontend": "0.0.22",
+                        "@vaadin/react-components": "25.1.2",
+                        "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                        "adaptivecards": "1.2.6",
+                        "brace": "0.11.1",
+                        "date-fns": "4.1.0",
+                        "lit": "3.3.2",
+                        "react": "19.2.4",
+                        "react-dom": "19.2.4",
+                        "react-router": "7.13.1"
+                    },
+                    "devDependencies": {
+                        "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                        "@types/node": "25.5.0",
+                        "@types/react": "19.2.14",
+                        "@types/react-dom": "19.2.3",
+                        "typescript": "5.9.3",
+                        "vite": "7.3.2",
+                        "vite-plugin-checker": "0.12.0"
+                    },
+                    "hash": "a4b492aecb32fe13902befbcc4ad0efbe6417273e8ca60346c4839973ae8242c"
+                  }
+                }
+                """;
+
+        var packageJson = JacksonUtils.readTree(json);
+        var hash = TaskUpdatePackages.generatePackageJsonHash(packageJson);
+        Assert.assertEquals(packageJson.get("vaadin").get("hash").asString(),
+                hash);
     }
 
     @Test
@@ -1634,7 +1690,7 @@ class TaskUpdatePackagesNpmTest {
         // Add pnpm overrides
         ObjectNode pnpmSection = JacksonUtils.createObjectNode();
         ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
-        pnpmOverrides.put("workbox-build>serialize-javascript", "7.0.4");
+        pnpmOverrides.put("workbox-build>glob", "13.0.5");
         pnpmSection.set(OVERRIDES, pnpmOverrides);
         pkgJson.set(PNPM, pnpmSection);
 
@@ -1680,7 +1736,7 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(pkgJsonWithPwa.get(PNPM).has(OVERRIDES));
         assertTrue(
                 pkgJsonWithPwa.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+                        .has("workbox-build>glob"),
                 "Flattened workbox override should be present");
     }
 
@@ -1717,10 +1773,6 @@ class TaskUpdatePackagesNpmTest {
         JsonNode overrides = pnpm.get(OVERRIDES);
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
         assertTrue(overrides.has("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
@@ -1731,8 +1783,7 @@ class TaskUpdatePackagesNpmTest {
                 "Flattened user-nested>dep should be present");
 
         // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
+        assertTrue(overrides.get("workbox-build>glob").isString(),
                 "Flattened override should be a string value");
 
         // Verify nested object form does NOT exist
@@ -1772,8 +1823,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
 
         // Verify user overrides are converted to npm format
         JsonNode nestedOverride = overrides.get("user-nested");

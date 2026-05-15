@@ -70,7 +70,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.12.1";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.0.4";
+    public static final String DEFAULT_PNPM_VERSION = "11.0.8";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -118,13 +118,18 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
 
-    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 7;
-    private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
+    // pnpm 10.16.0 is the first version that supports the
+    // minimumReleaseAge setting used to delay installation of newly
+    // published packages as a supply-chain mitigation.
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 10;
+    private static final int SUPPORTED_PNPM_MINOR_VERSION = 16;
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+    // Bun 1.3.0 is the first version that supports --minimum-release-age
+    // for the same supply-chain mitigation.
     private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
-            1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
+            1, 3, 0);
 
     private enum BuildTool {
         NPM("npm", "npm-cli.js"),
@@ -364,7 +369,13 @@ public class FrontendTools {
         List<String> pnpmCommand = getSuitablePnpm();
         assert !pnpmCommand.isEmpty();
         pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
+        // Force hoisted (flat npm-style) layout. CLI takes precedence over
+        // .npmrc, so this is unambiguous even if the project lacks the
+        // generated .npmrc. Replaces the previous --shamefully-hoist=true,
+        // which only controls the partial-hoist heuristic on top of the
+        // default isolated layout and did not consistently expose every
+        // transitive at the project root.
+        pnpmCommand.add("--config.node-linker=hoisted");
         return pnpmCommand;
     }
 
@@ -646,11 +657,11 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install latest pnpm version as the minimum node requirement is
-            // now at nodejs 16.14.0
-            // see https://pnpm.io/installation#compatibility
+            // install the pinned pnpm version so behavior stays
+            // deterministic across environments instead of whatever npx
+            // happens to resolve as latest
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm");
+                    "--quiet", "pnpm@" + DEFAULT_PNPM_VERSION);
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
