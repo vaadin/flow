@@ -189,16 +189,25 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   end-to-end server mirroring via the return channel; the
   disable-during-latency-window pattern.
 
-### Slice 3 — Inline JS escape hatch
+### Slice 3 — Inline JS escape hatch (DONE)
 
-- **Triggers**: `JsTrigger` (`flow:js`) — JS expression with a `trigger()`
-  helper to call from the application code.
-- **Actions**:  `JsAction` (`flow:js`) — JS expression with an
-  `output(i)` helper.
-- **Outputs**:  `JsOutput<T>` (`flow:js`) — JS expression returning a
-  value.
-- **IT**: pure-JS trigger → action → output round trip, with no custom
-  server classes.
+- **Triggers**: `JsTrigger` (`flow:js`) — expression evaluated with the
+  host element as {@code this} and {@code trigger} as the fire helper;
+  may return a cleanup function used on uninstall.
+- **Actions**:  `JsAction` (`flow:js`, varargs of `Output<?>`) —
+  expression evaluated with {@code output(i)} resolving to the i-th
+  declared output's current value at fire time. Declared outputs go
+  through the shared `ConfigContext.registerOutput(...)` path so they
+  dedupe with built-in outputs.
+- **Outputs**:  `JsOutput<T>` (`flow:js`, valueType, expression) —
+  expression evaluated at the moment a trigger fires; its return value
+  is the output.
+- **Client wiring**: all three use `new Function(...)` (not `eval`) and
+  swallow compile/runtime exceptions to a `console.debug` so a broken
+  expression doesn't break the rest of the dispatch.
+- **IT**: button click → `JsTrigger` fires → `JsAction` reads
+  `JsOutput`'s value and writes it into a span. Pure JS round trip with
+  no custom Java action class and no custom TS module.
 - **Validates**: that add-on authors can ship a working custom type
   without writing a TS module first.
 

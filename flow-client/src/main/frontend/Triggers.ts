@@ -203,6 +203,28 @@ triggerFactories.set('flow:click', (host, _config, _extras, fire) => {
   };
 });
 
+triggerFactories.set('flow:js', (host, config, _extras, fire) => {
+  const expression = String(config.expression ?? '');
+  let cleanup: unknown;
+  try {
+    const setup = new Function('trigger', expression);
+    cleanup = setup.call(host, fire);
+  } catch (e) {
+    console.debug('flow:js trigger setup threw', e);
+  }
+  return {
+    uninstall() {
+      if (typeof cleanup === 'function') {
+        try {
+          (cleanup as () => void)();
+        } catch (e) {
+          console.debug('flow:js trigger cleanup threw', e);
+        }
+      }
+    }
+  };
+});
+
 triggerFactories.set('flow:shortcut', (host, config, _extras, fire) => {
   const key = String(config.key ?? '');
   const modifierList = Array.isArray(config.modifiers) ? (config.modifiers as unknown[]).map(String) : [];
@@ -233,6 +255,27 @@ triggerFactories.set('flow:shortcut', (host, config, _extras, fire) => {
   };
 });
 
+outputFactories.set('flow:js', (config) => {
+  const expression = String(config.expression ?? '');
+  let read: () => unknown;
+  try {
+    read = new Function(expression) as () => unknown;
+  } catch (e) {
+    console.debug('flow:js output compile threw', e);
+    read = () => undefined;
+  }
+  return {
+    read() {
+      try {
+        return read();
+      } catch (e) {
+        console.debug('flow:js output read threw', e);
+        return undefined;
+      }
+    }
+  };
+});
+
 outputFactories.set('flow:property', (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');
@@ -245,6 +288,33 @@ outputFactories.set('flow:property', (config, extras) => {
         return undefined;
       }
       return (target as unknown as Record<string, unknown>)[property];
+    }
+  };
+});
+
+actionFactories.set('flow:js', (config) => {
+  const expression = String(config.expression ?? '');
+  const outputIds = Array.isArray(config.outputs) ? (config.outputs as unknown[]).map(Number) : [];
+  let fn: (output: (i: number) => unknown) => unknown;
+  try {
+    fn = new Function('output', expression) as typeof fn;
+  } catch (e) {
+    console.debug('flow:js action compile threw', e);
+    fn = () => undefined;
+  }
+  return {
+    run(resolveOutput) {
+      const output = (i: number) => {
+        if (i < 0 || i >= outputIds.length) {
+          return undefined;
+        }
+        return resolveOutput(outputIds[i]);
+      };
+      try {
+        fn(output);
+      } catch (e) {
+        console.debug('flow:js action run threw', e);
+      }
     }
   };
 });
