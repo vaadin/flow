@@ -17,8 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
-import org.jspecify.annotations.NullMarked;
-
 import com.vaadin.flow.component.trigger.AbstractAction;
 import com.vaadin.flow.function.SerializableRunnable;
 
@@ -33,7 +31,6 @@ import com.vaadin.flow.function.SerializableRunnable;
  * <p>
  * For internal use only.
  */
-@NullMarked
 public final class ServerCallbackAction extends AbstractAction {
 
     public static final String TYPE_ID = "flow:server-callback";

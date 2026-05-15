@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -47,7 +46,6 @@ import com.vaadin.flow.internal.nodefeature.ServerSideFeature;
  * <p>
  * For internal use only.
  */
-@NullMarked
 public class TriggerSupport extends ServerSideFeature implements ConfigContext {
 
     private final Map<AbstractTrigger, Integer> triggerIds = new IdentityHashMap<>();

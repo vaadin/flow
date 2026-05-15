@@ -17,8 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
-import org.jspecify.annotations.NullMarked;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.Output;
 import com.vaadin.flow.dom.Element;
@@ -30,7 +28,6 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * For internal use only.
  */
-@NullMarked
 public interface ConfigContext {
 
     /**
