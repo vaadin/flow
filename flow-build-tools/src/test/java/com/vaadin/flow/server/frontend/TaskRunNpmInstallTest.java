@@ -765,17 +765,29 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumFrontendPackageAge_defaultIsDisabled_returnsEmpty() {
-        // Default is 0 (disabled) — no flag must be added
+    void minimumFrontendPackageAge_defaultIsOneDay_addsArgument() {
+        // Default is 1 day → 1440 minutes for pnpm, 86400 seconds for bun,
+        // and a --before=<iso-instant> argument for npm
+        assertTrue(TaskRunNpmInstall
+                .getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder))
+                .orElseThrow().startsWith("--before="));
+        assertEquals("--config.minimum-release-age=1440",
+                TaskRunNpmInstall
+                        .getMinimumFrontendPackageAgeArgument(
+                                new MockOptions(npmFolder).withEnablePnpm(true))
+                        .orElseThrow());
+        assertEquals("--minimum-release-age=86400",
+                TaskRunNpmInstall
+                        .getMinimumFrontendPackageAgeArgument(
+                                new MockOptions(npmFolder).withEnableBun(true))
+                        .orElseThrow());
+    }
+
+    @Test
+    void minimumFrontendPackageAge_zeroDisablesCheck_returnsEmpty() {
         assertFalse(TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder)).isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnablePnpm(true))
-                .isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnableBun(true))
+                new MockOptions(npmFolder).withMinimumFrontendPackageAgeDays(0))
                 .isPresent());
     }
 

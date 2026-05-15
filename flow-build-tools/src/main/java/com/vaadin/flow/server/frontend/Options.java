@@ -168,11 +168,11 @@ public class Options implements Serializable {
 
     /**
      * Minimum age, in days, that an npm/pnpm/bun frontend package version must
-     * have before it is allowed to be installed. Defaults to {@code 0}
-     * (disabled); set to a positive value to enable as a mitigation against
-     * malicious packages published to the registry.
+     * have before it is allowed to be installed. Defaults to {@code 1} day as a
+     * mitigation against malicious packages published to the registry; set to
+     * {@code 0} to disable.
      */
-    private int minimumFrontendPackageAgeDays = 0;
+    private int minimumFrontendPackageAgeDays = 1;
 
     private ApplicationConfiguration applicationConfiguration;
 
