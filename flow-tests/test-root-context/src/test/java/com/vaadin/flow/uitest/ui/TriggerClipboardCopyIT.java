@@ -31,13 +31,12 @@ public class TriggerClipboardCopyIT extends ChromeBrowserTest {
 
         // Stub navigator.clipboard.writeText so the assertion does not
         // depend on the browser granting clipboard permissions.
-        ((JavascriptExecutor) getDriver()).executeScript(
-                "window.__copied = null;"
+        ((JavascriptExecutor) getDriver())
+                .executeScript("window.__copied = null;"
                         + "Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"
                         + "    writeText: t => { window.__copied = t; return Promise.resolve(); }"
-                        + "  }"
-                        + "});");
+                        + "  }" + "});");
 
         WebElement field = findElement(By.id("source"));
         WebElement button = findElement(By.id("copy"));

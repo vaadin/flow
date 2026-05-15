@@ -26,9 +26,9 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
  * Wires a {@link ClickTrigger} on a button to a {@link ClipboardCopyAction}
- * that copies the current value of an {@link Input} to the clipboard. The
- * IT replaces {@code navigator.clipboard.writeText} with a recording shim
- * so the assertion does not depend on browser clipboard permissions.
+ * that copies the current value of an {@link Input} to the clipboard. The IT
+ * replaces {@code navigator.clipboard.writeText} with a recording shim so the
+ * assertion does not depend on browser clipboard permissions.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerClipboardCopyView", layout = ViewTestLayout.class)
 public class TriggerClipboardCopyView extends AbstractDivView {
