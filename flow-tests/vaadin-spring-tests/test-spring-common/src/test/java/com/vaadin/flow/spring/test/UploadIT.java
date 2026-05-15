@@ -19,10 +19,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -37,7 +35,6 @@ public class UploadIT extends AbstractSpringTest {
     private static final String UPLOAD_ID = "upl";
 
     @Test
-    @Ignore
     public void multiFileUpload() throws Exception {
         open();
 
@@ -49,8 +46,7 @@ public class UploadIT extends AbstractSpringTest {
 
         File tempFile = createTempFile("foo");
 
-        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID)
-                .$(TestBenchElement.class).id("fileInput");
+        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID);
         setLocalFileDetector(input);
         input.sendKeys(tempFile.getPath());
 
@@ -66,12 +62,9 @@ public class UploadIT extends AbstractSpringTest {
         waitUntil(driver -> isElementPresent(By.id(UPLOAD_ID))
                 && findElement(By.id(UPLOAD_ID)).isDisplayed());
 
-        List<TestBenchElement> inputs = $(TestBenchElement.class).id(UPLOAD_ID)
-                .$("input").all();
-        Assert.assertFalse(
-                "Upload element is not initialized: it doesn't contain "
-                        + "any child element (so it has no element in the shadow root)",
-                inputs.isEmpty());
+        Assert.assertEquals("Expected the upload element to be an <input>",
+                "input",
+                findElement(By.id(UPLOAD_ID)).getTagName().toLowerCase());
     }
 
     @Override
