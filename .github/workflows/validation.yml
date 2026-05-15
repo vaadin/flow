@@ -168,7 +168,7 @@ jobs:
           node-version: '24.9.0'
       - uses: pnpm/action-setup@v3
         with:
-          version: '8.6.11'
+          version: '11.0.8'
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
