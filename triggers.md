@@ -154,26 +154,40 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 - **Validates**: Per-host snapshot + executeJs wire + idempotent bind +
   user-gesture preservation + cross-element output reference.
 
-### Slice 2 — Disable-on-shortcut
+### Slice 2 — Disable-on-shortcut (DONE)
 
-- **Triggers**: `ShortcutTrigger` (`flow:shortcut`, key+modifiers,
-  scoped to host).
+- **Triggers**: `ShortcutTrigger` (`flow:shortcut`, `Key` + `KeyModifier…`,
+  scoped to host via a capturing `keydown` listener).
 - **Actions**:
   - `ClickAction` (`flow:click`) — `element.click()` on a target.
-  - `SetEnabledAction` (`flow:set-enabled`, boolean) — toggles disabled
-    locally **and** mirrors server-side via `applyServerSideEffect()` so
-    `Component.setEnabled(false)` is visible to user listeners on the
-    same server cycle.
-- **Server-side ordering**: action mirrors run at the start of the same
-  cycle that processes the triggering DOM event, before user-attached
-  `DomEventListener`s. The client carries an annotation alongside the
-  event payload identifying which actions fired locally so the server
-  knows what to mirror.
-- **IT**: shortcut inside form → click on submit + disable button.
-  Asserts both client-side (`disabled` attribute set) and server-side
-  (`button.isEnabled() == false` from a follow-up `ClickListener`).
-- **Validates**: trigger on one component / action on another, server
-  mirror ordering, the disable-during-latency-window pattern.
+  - `SetEnabledAction` (`flow:set-enabled`, boolean) — toggles the
+    `disabled` attribute locally **and** mirrors server-side via
+    `applyServerSideEffect()` calling `Element.setEnabled(boolean)`.
+- **Mirror plumbing**: `TriggerSupport` lazily registers a single
+  `ReturnChannelRegistration` per host (with
+  `DisabledUpdateMode.ALWAYS`); the bind call passes it to the client as
+  the last `executeJs` parameter, where it arrives as a callable
+  function. Each action factory receives a `notifyServer` callback that
+  closes over its own id. When `SetEnabledAction.run()` finishes its
+  local DOM change it invokes `notifyServer()`, which delivers
+  `[actionId]` to `dispatchMirror` on the server, which looks up the
+  action and calls `applyServerSideEffect()`.
+- **Ordering note**: the mirror notification is queued through Flow's
+  outbound channel infrastructure inside the same synchronous DOM event
+  handler. With the user wiring actions as `(disable, click)` the
+  notification is queued before the click event Flow emits as a result
+  of `target.click()`, so the server processes the mirror first and
+  the user's `ClickListener` observes the post-action enabled state.
+  This is best-effort and depends on user-chosen action order; the
+  stronger guarantee (mirror-before-listener regardless of order)
+  remains deferred.
+- **IT**: `Enter` shortcut on a `Div` form → disable + click on a submit
+  button. Asserts both client-side (`disabled` attribute set) and
+  server-side (`"clicked, enabled=false"` text rendered by the
+  `ClickListener`).
+- **Validates**: trigger on one component / action on another;
+  end-to-end server mirroring via the return channel; the
+  disable-during-latency-window pattern.
 
 ### Slice 3 — Inline JS escape hatch
 

@@ -46,7 +46,13 @@ interface ActionInstance {
   run(resolveOutput: OutputResolver): void;
 }
 
-type ActionFactory = (config: Record<string, unknown>, extraElements: HTMLElement[]) => ActionInstance;
+type ServerNotify = (...args: unknown[]) => void;
+
+type ActionFactory = (
+  config: Record<string, unknown>,
+  extraElements: HTMLElement[],
+  notifyServer: ServerNotify
+) => ActionInstance;
 
 interface OutputInstance {
   read(): unknown;
@@ -85,13 +91,16 @@ function resolveExtraElements(maybeRefs: unknown): HTMLElement[] {
   return maybeRefs.filter((e): e is HTMLElement => e instanceof HTMLElement);
 }
 
-function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown): void {
+type MirrorChannel = (...args: unknown[]) => void;
+
+function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown, channel?: MirrorChannel): void {
   if (!(host instanceof HTMLElement)) {
     return;
   }
   disposeInstallation(host);
 
   const extras = resolveExtraElements(extraRefs);
+  const mirror: MirrorChannel = typeof channel === 'function' ? channel : () => undefined;
 
   // Lazily instantiate actions and outputs so a trigger that never fires
   // doesn't pay for its actions.
@@ -113,7 +122,8 @@ function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown): void 
       console.debug(`no client factory registered for action type ${def.type}`);
       return null;
     }
-    const instance = factory(def.config, extras);
+    const notify: ServerNotify = (...args) => mirror(id, ...args);
+    const instance = factory(def.config, extras, notify);
     actionCache.set(id, instance);
     return instance;
   }
@@ -193,6 +203,36 @@ triggerFactories.set('flow:click', (host, _config, _extras, fire) => {
   };
 });
 
+triggerFactories.set('flow:shortcut', (host, config, _extras, fire) => {
+  const key = String(config.key ?? '');
+  const modifierList = Array.isArray(config.modifiers) ? (config.modifiers as unknown[]).map(String) : [];
+  const wantCtrl = modifierList.includes('Control');
+  const wantAlt = modifierList.includes('Alt') || modifierList.includes('AltGraph');
+  const wantShift = modifierList.includes('Shift');
+  const wantMeta = modifierList.includes('Meta');
+  const listener = (e: Event) => {
+    const ke = e as KeyboardEvent;
+    if (ke.key !== key) return;
+    if (ke.ctrlKey !== wantCtrl) return;
+    if (ke.altKey !== wantAlt) return;
+    if (ke.shiftKey !== wantShift) return;
+    if (ke.metaKey !== wantMeta) return;
+    // Don't preventDefault by default — shortcuts in form fields may want
+    // the keystroke to keep flowing. Application code can wrap a JsTrigger
+    // if it needs that behaviour.
+    fire();
+  };
+  // Shortcuts may be defined on a "scope" host that the user does not
+  // expect to focus. Listening on the host with capture so the shortcut
+  // also fires when focus is inside a descendant input.
+  host.addEventListener('keydown', listener, true);
+  return {
+    uninstall() {
+      host.removeEventListener('keydown', listener, true);
+    }
+  };
+});
+
 outputFactories.set('flow:property', (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');
@@ -205,6 +245,40 @@ outputFactories.set('flow:property', (config, extras) => {
         return undefined;
       }
       return (target as unknown as Record<string, unknown>)[property];
+    }
+  };
+});
+
+actionFactories.set('flow:click', (config, extras) => {
+  const elementIndex = Number(config.element ?? 0);
+  return {
+    run() {
+      const target = elementIndex === 0 ? null : extras[elementIndex - 1];
+      if (target && typeof (target as HTMLElement).click === 'function') {
+        (target as HTMLElement).click();
+      }
+    }
+  };
+});
+
+actionFactories.set('flow:set-enabled', (config, extras, notifyServer) => {
+  const elementIndex = Number(config.element ?? 0);
+  const enabled = Boolean(config.enabled);
+  const mirror = Boolean(config.mirror);
+  return {
+    run() {
+      const target = elementIndex === 0 ? null : extras[elementIndex - 1];
+      if (!target) {
+        return;
+      }
+      if (enabled) {
+        target.removeAttribute('disabled');
+      } else {
+        target.setAttribute('disabled', '');
+      }
+      if (mirror) {
+        notifyServer();
+      }
     }
   };
 });

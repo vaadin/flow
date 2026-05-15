@@ -33,9 +33,12 @@ import com.vaadin.flow.component.trigger.AbstractOutput;
 import com.vaadin.flow.component.trigger.AbstractTrigger;
 import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.Output;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.ServerSideFeature;
 
 /**
@@ -71,6 +74,8 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
 
     private boolean attachListenerRegistered = false;
     private boolean syncScheduled = false;
+
+    private transient @Nullable ReturnChannelRegistration mirrorChannel;
 
     /**
      * Creates a TriggerSupport feature for the given state node.
@@ -275,27 +280,54 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
     private void syncToClient() {
         Element host = getHost();
         ObjectNode snapshot = buildSnapshot();
-        Object[] params = new Object[1 + elementParams.size()];
+        ReturnChannelRegistration channel = getMirrorChannel();
+        // Parameter layout: $0 = snapshot, $1..$N = extra elements,
+        // $N+1 = mirror channel function. Pre-computed before assembling
+        // the executeJs expression so the indices line up.
+        int extras = elementParams.size();
+        int channelIndex = 1 + extras;
+        Object[] params = new Object[2 + extras];
         params[0] = snapshot;
-        for (int i = 0; i < elementParams.size(); i++) {
+        for (int i = 0; i < extras; i++) {
             params[i + 1] = elementParams.get(i);
         }
+        params[channelIndex] = channel;
+
         StringBuilder call = new StringBuilder(
                 "if (window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.triggers) {"
                         + " window.Vaadin.Flow.triggers.bind(this, $0");
-        if (!elementParams.isEmpty()) {
-            call.append(", [");
-            for (int i = 0; i < elementParams.size(); i++) {
-                if (i > 0) {
-                    call.append(',');
-                }
-                call.append('$').append(i + 1);
+        call.append(", [");
+        for (int i = 0; i < extras; i++) {
+            if (i > 0) {
+                call.append(',');
             }
-            call.append(']');
+            call.append('$').append(i + 1);
         }
+        call.append("], $").append(channelIndex);
         call.append("); } else { console.debug(")
                 .append("'window.Vaadin.Flow.triggers not loaded'); }");
         host.executeJs(call.toString(), params);
+    }
+
+    private ReturnChannelRegistration getMirrorChannel() {
+        if (mirrorChannel == null) {
+            mirrorChannel = getNode().getFeature(ReturnChannelMap.class)
+                    .registerChannel(this::dispatchMirror)
+                    .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        }
+        return mirrorChannel;
+    }
+
+    private void dispatchMirror(ArrayNode args) {
+        if (args.isEmpty()) {
+            return;
+        }
+        int actionId = args.get(0).asInt();
+        AbstractAction action = actionsById.get(actionId);
+        if (action == null) {
+            return;
+        }
+        action.applyServerSideEffect();
     }
 
     private ObjectNode buildSnapshot() {
@@ -368,5 +400,18 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
      */
     public Element[] elementParamsForTest() {
         return elementParams.toArray(new Element[0]);
+    }
+
+    /**
+     * Invokes the mirror dispatch for the given action id, as if the client had
+     * reported the action as fired. For testing only.
+     *
+     * @param actionId
+     *            the action id
+     */
+    public void dispatchMirrorForTest(int actionId) {
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(actionId);
+        dispatchMirror(args);
     }
 }
