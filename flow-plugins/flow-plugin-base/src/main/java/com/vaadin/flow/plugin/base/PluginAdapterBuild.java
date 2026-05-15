@@ -129,13 +129,13 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
 
     /**
      * Minimum age (in days) a frontend package version must have before npm,
-     * pnpm or bun is allowed to install it. Defaults to {@code 0} (disabled);
-     * set to a positive value to enable as a mitigation against malicious
-     * packages briefly published to the registry.
+     * pnpm or bun is allowed to install it. Defaults to {@code 1} day as a
+     * mitigation against malicious packages briefly published to the registry;
+     * set to {@code 0} to disable.
      *
      * @return the minimum allowed age in days, or {@code 0} when disabled
      */
     default int minimumFrontendPackageAgeDays() {
-        return 0;
+        return 1;
     }
 }
