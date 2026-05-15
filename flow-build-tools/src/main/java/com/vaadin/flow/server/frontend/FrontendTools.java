@@ -530,8 +530,8 @@ public class FrontendTools {
 
     /**
      * Returns whether the given npm command resolves to a version that supports
-     * the {@code --min-release-age} install flag (npm
-     * {@value #MIN_NPM_VERSION_FOR_RELEASE_AGE} or newer). Used by
+     * the {@code --min-release-age} install flag (see
+     * {@link #MIN_NPM_VERSION_FOR_RELEASE_AGE}). Used by
      * {@link Options#withMinimumFrontendPackageAgeDays(int)} to decide between
      * {@code --min-release-age} and the {@code --before=<date>} fallback
      * supported by older npm versions.
