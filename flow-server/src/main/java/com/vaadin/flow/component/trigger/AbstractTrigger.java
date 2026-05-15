@@ -33,8 +33,9 @@ import com.vaadin.flow.internal.JacksonUtils;
  * Subclasses identify themselves with a namespaced type id
  * ({@code "flow:click"}, {@code "myapp:double-tap"}, …) which must match a
  * factory registered against {@code window.Vaadin.Flow.triggers} on the client
- * side. Subclasses override {@link #buildClientConfig()} when they need to ship
- * extra configuration with the trigger.
+ * side. Subclasses override
+ * {@link #buildClientConfig(com.vaadin.flow.component.trigger.internal.ConfigContext)}
+ * when they need to ship extra configuration with the trigger.
  */
 public abstract class AbstractTrigger implements Trigger {
 
