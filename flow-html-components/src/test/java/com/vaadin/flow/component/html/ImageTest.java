@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -60,6 +61,29 @@ public class ImageTest extends ComponentTest {
     }
 
     @Test
+    public void setSrc_downloadHandler_disabledUpdateModeIsAlways() {
+        Element element = Mockito.mock(Element.class);
+        class TestImage extends Image {
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+        // Plain lambda DownloadHandler, not an AbstractDownloadHandler subclass
+        DownloadHandler lambda = event -> {
+        };
+
+        new TestImage().setSrc(lambda);
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        Mockito.verify(element).setAttribute(Mockito.eq("src"),
+                captor.capture());
+        Assert.assertEquals(DisabledUpdateMode.ALWAYS,
+                captor.getValue().getDisabledUpdateMode());
+    }
+
+    @Test
     public void downloadHandler_isSetToInline() {
         Element element = Mockito.mock(Element.class);
         class TestImage extends Image {
@@ -92,8 +116,9 @@ public class ImageTest extends ComponentTest {
                 handlerCaptor.capture());
 
         DownloadHandler handler = handlerCaptor.getValue();
-        Assert.assertTrue("Handler should be InputStreamDownloadHandler",
-                handler instanceof InputStreamDownloadHandler);
+        Assert.assertEquals(
+                "Handler set on the image must allow disabled, so the browser can still load the image when the component is disabled",
+                DisabledUpdateMode.ALWAYS, handler.getDisabledUpdateMode());
 
         // Create mock event and response to capture content type
         VaadinRequest request = Mockito.mock(VaadinRequest.class);

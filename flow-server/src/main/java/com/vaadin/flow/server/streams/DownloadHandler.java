@@ -18,6 +18,7 @@ package com.vaadin.flow.server.streams;
 import java.io.File;
 import java.io.IOException;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -100,6 +101,59 @@ public interface DownloadHandler extends ElementRequestHandler {
                 session, owner);
 
         handleDownloadRequest(downloadEvent);
+    }
+
+    /**
+     * Returns a view of this handler that is served even when the owning
+     * component is disabled.
+     * <p>
+     * By default a {@link DownloadHandler} inherits
+     * {@link DisabledUpdateMode#ONLY_WHEN_ENABLED} from
+     * {@link ElementRequestHandler}, which causes the framework to respond with
+     * HTTP 403 when the owning element is disabled. That is appropriate for
+     * action-style downloads such as a "save file" link on an
+     * {@code com.vaadin.flow.component.html.Anchor}, but not for resources that
+     * the browser fetches passively as part of rendering, such as the
+     * {@code src} of an icon or image inside a disabled container.
+     * <p>
+     * This method returns a wrapper that delegates
+     * {@link #handleDownloadRequest}, {@link #getUrlPostfix()} and
+     * {@link #isAllowInert()} to this handler and overrides
+     * {@link #getDisabledUpdateMode()} to return
+     * {@link DisabledUpdateMode#ALWAYS}. If this handler already reports
+     * {@code ALWAYS}, the same instance is returned.
+     *
+     * @return a {@link DownloadHandler} that is served regardless of the
+     *         owner's enabled state, or {@code this} if the disabled mode is
+     *         already {@link DisabledUpdateMode#ALWAYS}
+     */
+    default DownloadHandler allowDisabled() {
+        if (getDisabledUpdateMode() == DisabledUpdateMode.ALWAYS) {
+            return this;
+        }
+        DownloadHandler delegate = this;
+        return new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event)
+                    throws IOException {
+                delegate.handleDownloadRequest(event);
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return delegate.getUrlPostfix();
+            }
+
+            @Override
+            public boolean isAllowInert() {
+                return delegate.isAllowInert();
+            }
+
+            @Override
+            public DisabledUpdateMode getDisabledUpdateMode() {
+                return DisabledUpdateMode.ALWAYS;
+            }
+        };
     }
 
     /**
