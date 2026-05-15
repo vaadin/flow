@@ -126,6 +126,16 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
             1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
 
+    // pnpm 10.16.0 is the first version that supports the
+    // minimumReleaseAge setting used to delay installation of newly
+    // published packages as a supply-chain mitigation.
+    static final FrontendVersion MIN_PNPM_VERSION_FOR_RELEASE_AGE = new FrontendVersion(
+            10, 16, 0);
+    // Bun 1.3.0 is the first version that supports --minimum-release-age
+    // for the same supply-chain mitigation.
+    static final FrontendVersion MIN_BUN_VERSION_FOR_RELEASE_AGE = new FrontendVersion(
+            1, 3, 0);
+
     private enum BuildTool {
         NPM("npm", "npm-cli.js"),
         NPX("npx", "npx-cli.js"),
@@ -515,6 +525,55 @@ public class FrontendTools {
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("npm", npmVersionCommand);
+    }
+
+    /**
+     * Verifies that the given pnpm or bun command is recent enough to support
+     * the {@code --minimum-release-age} (bun) or {@code minimumReleaseAge}
+     * (pnpm) install flag used by
+     * {@link Options#withMinimumFrontendPackageAgeDays(int)}.
+     * <p>
+     * Throws {@link IllegalStateException} if the installed tool is older than
+     * {@link #MIN_PNPM_VERSION_FOR_RELEASE_AGE} or
+     * {@link #MIN_BUN_VERSION_FOR_RELEASE_AGE}, or if the version cannot be
+     * resolved. The check is not bypassed by
+     * {@link FrontendToolsSettings#isIgnoreVersionChecks()} since passing the
+     * install flag to an unsupported tool would either be ignored silently or
+     * fail the install.
+     *
+     * @param toolCommand
+     *            the pnpm or bun command to invoke for {@code --version}
+     * @param isBun
+     *            {@code true} when {@code toolCommand} refers to bun,
+     *            {@code false} for pnpm
+     */
+    public void assertSupportsMinimumPackageReleaseAge(List<String> toolCommand,
+            boolean isBun) {
+        String toolName = isBun ? "bun" : "pnpm";
+        FrontendVersion required = isBun ? MIN_BUN_VERSION_FOR_RELEASE_AGE
+                : MIN_PNPM_VERSION_FOR_RELEASE_AGE;
+        List<String> versionCmd = new ArrayList<>(toolCommand);
+        versionCmd.add("--version"); // NOSONAR
+        FrontendVersion actual;
+        try {
+            actual = FrontendUtils.getVersion(toolName, versionCmd);
+        } catch (UnknownVersionException e) {
+            throw new IllegalStateException(String.format(
+                    "Could not determine %s version to verify support for the minimum frontend package age check",
+                    toolName), e);
+        }
+        assertVersionSupportsMinimumPackageReleaseAge(toolName, actual,
+                required);
+    }
+
+    static void assertVersionSupportsMinimumPackageReleaseAge(String toolName,
+            FrontendVersion actual, FrontendVersion required) {
+        if (!actual.isEqualOrNewer(required)) {
+            throw new IllegalStateException(String.format(
+                    "The minimum frontend package age check is enabled but the installed %s version %s is too old. Please upgrade %s to %s or newer, or disable the check by setting minimumFrontendPackageAgeDays to 0.",
+                    toolName, actual.getFullVersion(), toolName,
+                    required.getFullVersion()));
+        }
     }
 
     /**

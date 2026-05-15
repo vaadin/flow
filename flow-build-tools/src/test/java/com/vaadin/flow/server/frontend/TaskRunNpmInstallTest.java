@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -755,6 +756,53 @@ class TaskRunNpmInstallTest {
 
     private void assumeNPMIsInUse() {
         assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+    }
+
+    @Test
+    void minimumFrontendPackageAge_defaultIsDisabled_returnsEmpty() {
+        // Default is 0 (disabled) — no flag must be added
+        assertFalse(TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder)).isPresent());
+        assertFalse(TaskRunNpmInstall
+                .getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnablePnpm(true))
+                .isPresent());
+        assertFalse(TaskRunNpmInstall
+                .getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true))
+                .isPresent());
+    }
+
+    @Test
+    void minimumFrontendPackageAge_npm_addsBeforeArgument() {
+        Options npmOptions = new MockOptions(npmFolder)
+                .withMinimumFrontendPackageAgeDays(2);
+        Optional<String> arg = TaskRunNpmInstall
+                .getMinimumFrontendPackageAgeArgument(npmOptions);
+        assertTrue(arg.isPresent());
+        assertTrue(arg.get().startsWith("--before="),
+                "npm should use --before, was: " + arg.get());
+    }
+
+    @Test
+    void minimumFrontendPackageAge_pnpm_addsMinimumReleaseAgeArgument() {
+        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true)
+                .withMinimumFrontendPackageAgeDays(2);
+        Optional<String> arg = TaskRunNpmInstall
+                .getMinimumFrontendPackageAgeArgument(pnpmOptions);
+        // 2 days = 2880 minutes; pnpm setting form
+        assertEquals("--config.minimum-release-age=2880", arg.orElseThrow());
+    }
+
+    @Test
+    void minimumFrontendPackageAge_bun_addsMinimumReleaseAgeInSeconds() {
+        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true)
+                .withMinimumFrontendPackageAgeDays(2);
+        // 2 days = 172800 seconds
+        assertEquals("--minimum-release-age=172800",
+                TaskRunNpmInstall
+                        .getMinimumFrontendPackageAgeArgument(bunOptions)
+                        .orElseThrow());
     }
 
 }
