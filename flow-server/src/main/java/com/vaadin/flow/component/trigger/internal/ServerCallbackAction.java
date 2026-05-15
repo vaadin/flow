@@ -25,9 +25,11 @@ import com.vaadin.flow.function.SerializableRunnable;
  * fires. Used by
  * {@link com.vaadin.flow.component.trigger.Trigger#triggers(SerializableRunnable)}.
  * <p>
- * The corresponding client handler ({@code flow:server-callback}) ships in a
- * later slice; until then, binding this action emits the snapshot entry but no
- * client behaviour is wired up.
+ * On the client, the {@code flow:server-callback} factory's {@code run()}
+ * simply notifies the server via the per-host return channel; the server's
+ * {@code TriggerSupport.dispatchMirror} then invokes
+ * {@link #applyServerSideEffect()} which calls the wrapped runnable on the UI
+ * thread.
  * <p>
  * For internal use only.
  */
@@ -51,5 +53,10 @@ public final class ServerCallbackAction extends AbstractAction {
      */
     public SerializableRunnable getHandler() {
         return handler;
+    }
+
+    @Override
+    public void applyServerSideEffect() {
+        handler.run();
     }
 }

@@ -211,17 +211,63 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 - **Validates**: that add-on authors can ship a working custom type
   without writing a TS module first.
 
-### Slice 4 — Server callback as an action
+### Slice 4 — Server callback as an action (DONE)
 
-- **Action**: wire the existing `ServerCallbackAction` (`flow:server-callback`).
-- **Mechanism**: a single UI-scoped helper carrying a `@ClientCallable`
-  method that takes `(hostNodeId, actionId, [resolvedOutputs])` and
-  dispatches to the registered `Runnable`. One round-trip path,
-  reused for all server-callback bindings in the UI.
-- **IT**: button click → server-side `Runnable` invocation with
-  output values delivered.
+- **Action**: wire the existing `ServerCallbackAction` (`flow:server-callback`)
+  stubbed in slice 1.
+- **Mechanism**: piggybacks on the per-host `ReturnChannelRegistration`
+  already in place from slice 2's mirror plumbing — no new round-trip
+  path, no UI-scoped helper. `ServerCallbackAction.applyServerSideEffect()`
+  invokes the wrapped `SerializableRunnable`; the client factory's
+  `run()` is a one-liner calling `notifyServer()`. The existing
+  `TriggerSupport.dispatchMirror` looks the action up by id and calls
+  `applyServerSideEffect()`.
+- **No outputs to the `Runnable`** in v0. `Trigger.triggers(Runnable)` is
+  no-arg sugar; if a callback needs values, use a `@ClientCallable` on
+  a component directly, build a custom `Action` subclass, or carry the
+  context through server-side state.
+- **IT**: button → `Trigger.triggers(() -> result.setText("server fired"))`
+  → IT asserts the result text updates.
 - **Validates**: the degrade-to-round-trip path; the lambda overload
-  `Trigger.triggers(Runnable)`; output values reaching the server.
+  `Trigger.triggers(Runnable)`; that the per-host channel handles both
+  mirror notifications (slice 2) and server callbacks (slice 4)
+  without protocol changes.
+
+### Slice 5 — `SignalOutput<T>` (planned)
+
+- **Output**: `SignalOutput<T>(Signal<T>)` (`flow:signal-value`). Reads
+  a server-side `Signal<T>` and exposes its current value to trigger
+  actions, snapshot-style.
+- **Mechanism**: at snapshot-build time the server reads
+  `signal.peek()` and ships the value directly inside the output's
+  config (`{"value": <jsonValue>}`). On construction the output
+  subscribes to its `Signal` and on every change schedules the host's
+  next `beforeClientResponse` flush — same path `TriggerSupport`
+  already uses for `.triggers(…)` mutations. The client factory is
+  trivial: `read()` returns the value lifted from `config.value`.
+- **Cleanup**: the signal subscription is anchored on the host's
+  state-node detach hook so it doesn't outlive its UI.
+- **Use cases**: action needs a value from a `ValueSignal`,
+  `ComputedSignal`, or `SharedValueSignal` that isn't naturally
+  represented as a DOM property on any element (session state,
+  derived computations, multi-user collaborative state).
+- **Why a dedicated type instead of "bind signal → property, then
+  `PropertyOutput`"**: ergonomic — saves creating a ghost property
+  whose only purpose is to relay the signal value into a trigger, and
+  makes the dependency explicit at the call site.
+- **Snapshot semantics, not reactive composition.** This slice does
+  not introduce `FormatOutput`, `Output.not`, `ComputedSignal`-of-
+  outputs etc. — those remain in "deferred". `SignalOutput` is a
+  thin reader, not a graph builder.
+- **Tradeoff**: every signal change re-emits the snapshot for the
+  host. Fine for low-frequency UI/session signals; users binding a
+  rapidly-changing signal (mouse position, etc.) should reach for
+  `JsOutput` or a property binding instead.
+- **IT**: button → `ClipboardCopyAction` reading a
+  `SignalOutput<String>(sessionLocaleSignal)`. Mutate the signal,
+  click, assert clipboard receives the new value.
+- **Validates**: signal value flows into snapshot; signal change
+  triggers re-emit; cleanup on detach.
 
 ## Extending the API (apps and add-ons)
 
@@ -240,10 +286,6 @@ author doesn't want a TS file at all.
 
 ## Deferred / explicitly out of scope for v0
 
-- **Signal-backed outputs.** `SignalOutput<T>` is a natural future
-  adapter: subscribe to a server-side `Signal<T>`, push the latest value
-  into the client snapshot via the existing `executeJs` re-emit. Not on
-  the critical path for the four target use cases.
 - **Output composition** (`FormatOutput`, `Output.not`, `ConditionalAction`,
   `Output.combine`, …). Straightforward to add once the core API is
   proven; deliberately omitted from v0 so the public surface stays small.

@@ -319,6 +319,14 @@ actionFactories.set('flow:js', (config) => {
   };
 });
 
+actionFactories.set('flow:server-callback', (_config, _extras, notifyServer) => {
+  return {
+    run() {
+      notifyServer();
+    }
+  };
+});
+
 actionFactories.set('flow:click', (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   return {
