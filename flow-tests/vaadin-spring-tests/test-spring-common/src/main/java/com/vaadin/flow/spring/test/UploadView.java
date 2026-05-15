@@ -70,16 +70,26 @@ public class UploadView extends Div {
         Input upload = new Input();
         upload.setType("file");
         upload.setId("upl");
-        upload.getElement().executeJs("""
-                this.addEventListener('change', () => {
-                    const file = this.files[0];
-                    if (!file) return;
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    fetch($0, { method: 'POST', body: formData })
-                        .then(() => $1.click());
-                });
-                """, uploadUrl, sync.getElement());
+        // Send the file as a raw XHR body with X-Filename rather than as
+        // multipart/form-data, since the test-spring servlet is not
+        // @MultipartConfig-annotated and Vaadin's UploadHandler accepts
+        // both forms (raw body is the default in 25.0+).
+        upload.getElement().executeJs(
+                """
+                        this.addEventListener('change', () => {
+                            const file = this.files[0];
+                            if (!file) return;
+                            fetch($0, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': file.type || 'application/octet-stream',
+                                    'X-Filename': encodeURIComponent(file.name)
+                                },
+                                body: file
+                            }).then(() => $1.click());
+                        });
+                        """,
+                uploadUrl, sync.getElement());
         add(upload, sync);
     }
 }
