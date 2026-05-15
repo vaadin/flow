@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
@@ -41,7 +39,8 @@ public class UploadView extends Div {
             }
             String content;
             try (InputStream stream = event.getInputStream()) {
-                content = IOUtils.toString(stream, StandardCharsets.UTF_8);
+                content = new String(stream.readAllBytes(),
+                        StandardCharsets.UTF_8);
             } catch (IOException e) {
                 content = "exception reading stream";
             }
