@@ -31,6 +31,8 @@ import com.vaadin.flow.server.streams.UploadHandler;
 @Route("multipart-upload")
 public class UploadView extends Div {
 
+    public static final String UPLOAD_ID = "upl";
+
     public UploadView() {
         UploadHandler handler = event -> {
             if (!event.getContentType().startsWith("text")) {
@@ -69,7 +71,7 @@ public class UploadView extends Div {
 
         Input upload = new Input();
         upload.setType("file");
-        upload.setId("upl");
+        upload.setId(UPLOAD_ID);
         // Send the file as a raw XHR body with X-Filename rather than as
         // multipart/form-data, since the test-spring servlet is not
         // @MultipartConfig-annotated and Vaadin's UploadHandler accepts

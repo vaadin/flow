@@ -30,9 +30,9 @@ import org.openqa.selenium.remote.RemoteWebElement;
 
 import com.vaadin.testbench.TestBenchElement;
 
-public class UploadIT extends AbstractSpringTest {
+import static com.vaadin.flow.spring.test.UploadView.UPLOAD_ID;
 
-    private static final String UPLOAD_ID = "upl";
+public class UploadIT extends AbstractSpringTest {
 
     @Test
     public void multiFileUpload() throws Exception {
