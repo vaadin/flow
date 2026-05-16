@@ -23,36 +23,36 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Output backed by an arbitrary JavaScript expression — the escape hatch for
- * cases not covered by a built-in {@link AbstractOutput}.
+ * Argument backed by an arbitrary JavaScript expression — the escape hatch for
+ * cases not covered by a built-in {@link AbstractArgument}.
  * <p>
  * The expression runs at the moment the trigger fires and its return value
- * becomes the output. The expression executes in the global scope; use
+ * becomes the argument. The expression executes in the global scope; use
  * {@code document.querySelector(...)} or other DOM globals to reach elements.
  *
  * <pre>{@code
- * Output<String> hostName = new JsOutput<>(String.class,
+ * Argument<String> hostName = new JsArgument<>(String.class,
  *         "return window.location.hostname;");
  * }</pre>
  *
  * @param <T>
  *            the runtime type of the produced value
  */
-public class JsOutput<T> extends AbstractOutput<T> {
+public class JsArgument<T> extends AbstractArgument<T> {
 
     public static final String TYPE_ID = "flow:js";
 
     private final String expression;
 
     /**
-     * Creates a JS-backed output.
+     * Creates a JS-backed argument.
      *
      * @param valueType
      *            the runtime type, not {@code null}
      * @param expression
      *            the JS source, not {@code null}
      */
-    public JsOutput(Class<T> valueType, String expression) {
+    public JsArgument(Class<T> valueType, String expression) {
         super(TYPE_ID, valueType);
         this.expression = Objects.requireNonNull(expression);
     }

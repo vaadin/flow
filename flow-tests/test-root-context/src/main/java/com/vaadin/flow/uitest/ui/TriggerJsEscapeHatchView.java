@@ -17,16 +17,16 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.component.trigger.JsAction;
-import com.vaadin.flow.component.trigger.JsOutput;
+import com.vaadin.flow.component.trigger.JsArgument;
 import com.vaadin.flow.component.trigger.JsTrigger;
-import com.vaadin.flow.component.trigger.Output;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
  * Validates the JS escape hatch: a {@link JsTrigger} wires a click listener on
- * a button; a {@link JsAction} reads from a {@link JsOutput} and writes the
+ * a button; a {@link JsAction} reads from a {@link JsArgument} and writes the
  * produced value to a {@code <span>}. No custom Java action class and no custom
  * client TS module — purely the {@code flow:js} dispatcher.
  */
@@ -43,12 +43,12 @@ public class TriggerJsEscapeHatchView extends AbstractDivView {
 
         add(button, result);
 
-        Output<String> message = new JsOutput<>(String.class,
+        Argument<String> message = new JsArgument<>(String.class,
                 "return 'js-escape-hatch';");
         new JsTrigger(button,
                 "this.addEventListener('click', () => trigger());")
                 .triggers(new JsAction(
-                        "document.getElementById('result').textContent = output(0);",
+                        "document.getElementById('result').textContent = argument(0);",
                         message));
     }
 }

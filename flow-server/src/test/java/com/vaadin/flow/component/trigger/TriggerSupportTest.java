@@ -26,11 +26,11 @@ import com.vaadin.flow.dom.Element;
 public class TriggerSupportTest {
 
     @Test
-    public void snapshot_includesTriggerActionOutputAndBinding() {
+    public void snapshot_includesTriggerActionArgumentAndBinding() {
         Element button = new Element("button");
         Element field = new Element("input");
 
-        Output<String> value = new PropertyOutput<>(field, "value",
+        Argument<String> value = new PropertyArgument<>(field, "value",
                 String.class);
         ClickTrigger trigger = new ClickTrigger(button);
         trigger.triggers(new ClipboardCopyAction(value));
@@ -46,28 +46,27 @@ public class TriggerSupportTest {
         Assert.assertEquals(ClickTrigger.TYPE_ID,
                 triggerEntry.get("type").asString());
 
-        // Actions pool has one clipboard-copy referencing output id 0
+        // Actions pool has one clipboard-copy referencing argument id 0
         JsonNode actions = snapshot.get("actions");
         Assert.assertEquals(1, actions.size());
         JsonNode actionEntry = actions.get("0");
         Assert.assertNotNull("action 0 in pool", actionEntry);
         Assert.assertEquals(ClipboardCopyAction.TYPE_ID,
                 actionEntry.get("type").asString());
-        Assert.assertEquals(0,
-                actionEntry.get("config").get("textOutput").asInt());
+        Assert.assertEquals(0, actionEntry.get("config").get("text").asInt());
 
-        // Outputs pool has one property output with element index 1 (host
+        // Arguments pool has one property argument with element index 1 (host
         // is index 0, field is the first extra element)
-        JsonNode outputs = snapshot.get("outputs");
-        Assert.assertEquals(1, outputs.size());
-        JsonNode outputEntry = outputs.get("0");
-        Assert.assertNotNull("output 0 in pool", outputEntry);
-        Assert.assertEquals(PropertyOutput.TYPE_ID,
-                outputEntry.get("type").asString());
+        JsonNode arguments = snapshot.get("arguments");
+        Assert.assertEquals(1, arguments.size());
+        JsonNode argumentEntry = arguments.get("0");
+        Assert.assertNotNull("argument 0 in pool", argumentEntry);
+        Assert.assertEquals(PropertyArgument.TYPE_ID,
+                argumentEntry.get("type").asString());
         Assert.assertEquals("value",
-                outputEntry.get("config").get("property").asString());
+                argumentEntry.get("config").get("property").asString());
         Assert.assertEquals(1,
-                outputEntry.get("config").get("element").asInt());
+                argumentEntry.get("config").get("element").asInt());
 
         // Bindings list has one binding from trigger 0 to action 0
         JsonNode bindings = snapshot.get("bindings");
@@ -86,7 +85,7 @@ public class TriggerSupportTest {
         Element button = new Element("button");
         Element field = new Element("input");
         ClipboardCopyAction copy = new ClipboardCopyAction(
-                new PropertyOutput<>(field, "value", String.class));
+                new PropertyArgument<>(field, "value", String.class));
 
         ClickTrigger t1 = new ClickTrigger(button);
         ClickTrigger t2 = new ClickTrigger(button);
@@ -107,7 +106,7 @@ public class TriggerSupportTest {
         Element button = new Element("button");
         Element field = new Element("input");
         ClipboardCopyAction copy = new ClipboardCopyAction(
-                new PropertyOutput<>(field, "value", String.class));
+                new PropertyArgument<>(field, "value", String.class));
         ClickTrigger t1 = new ClickTrigger(button);
         ClickTrigger t2 = new ClickTrigger(button);
         t1.triggers(copy);

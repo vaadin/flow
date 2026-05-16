@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TriggerJsEscapeHatchIT extends ChromeBrowserTest {
 
     @Test
-    public void jsTriggerActionAndOutputWireUpEndToEnd() {
+    public void jsTriggerActionAndArgumentWireUpEndToEnd() {
         open();
 
         WebElement button = findElement(By.id("run"));

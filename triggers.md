@@ -2,21 +2,21 @@
 
 Server-side API for wiring **client-side triggers** (DOM events, shortcuts,
 …) to **client-side actions** (clipboard copy, set property, run JS, …)
-reading values from **outputs** (DOM properties, literals, JS expressions,
+reading values from **arguments** (DOM properties, literals, JS expressions,
 …), without a server round-trip when not needed. The motivating constraint
 is the class of browser APIs that must run inside the user-gesture DOM
 event handler that produced the event — clipboard, fullscreen, file
 download, web share, …
 
 The API is in `com.vaadin.flow.component.trigger` and is designed for
-extension: apps and add-ons add new trigger / action / output types by
+extension: apps and add-ons add new trigger / action / argument types by
 extending the abstract bases and pairing them with a JS handler registered
 on `window.Vaadin.Flow.triggers`.
 
 ## Motivation in a nutshell
 
 The Vaadin 8 trigger API had a clean three-shape model — `Trigger`,
-`Action`, `Output<T>` — that solved this class of problems and the
+`Action`, `Argument<T>` — that solved this class of problems and the
 adjacent class of "disable-on-click for a button triggered by a keyboard
 shortcut" (the `dev.vaadin.com/ticket/8484` case): the click is destined
 for the server, but the visual / state change has to happen *immediately*
@@ -32,8 +32,8 @@ GWT-era `TriggerSupport`-as-connector indirection.
 
 | Question | Decision |
 | --- | --- |
-| How are `Output<T>` values resolved when a trigger fires? | **Snapshot at trigger time.** The dispatcher walks outputs synchronously inside the DOM event handler and passes resolved values to actions. Signals are not in the v0 client runtime; a `SignalOutput<T>` adapter is deferred. |
-| Where do trigger/action/output records live in the state tree? | **Per-host-element.** Each `Element` has a lazy `TriggerSupport` server-side feature holding its own id-keyed pools. Cross-element wiring works by carrying the target element as an `executeJs` parameter; the snapshot references it by index. |
+| How are `Argument<T>` values resolved when a trigger fires? | **Snapshot at trigger time.** The dispatcher walks arguments synchronously inside the DOM event handler and passes resolved values to actions. Signals are not in the v0 client runtime; a `SignalArgument<T>` adapter is deferred. |
+| Where do trigger/action/argument records live in the state tree? | **Per-host-element.** Each `Element` has a lazy `TriggerSupport` server-side feature holding its own id-keyed pools. Cross-element wiring works by carrying the target element as an `executeJs` parameter; the snapshot references it by index. |
 | What use cases must the v0 slices validate end-to-end? | Clipboard copy, disable-on-shortcut, inline JS escape hatch, server-side `Runnable` action. |
 | `Trigger.triggers(SerializableRunnable)` ergonomics? | **Keep the lambda overload** on `Trigger`. Internally it constructs a `ServerCallbackAction(handler)`. |
 | Server-state mirroring of actions? | **Eager.** Actions that have a server-observable effect (e.g. `SetEnabledAction`) override `applyServerSideEffect()`. The mirror runs at the **start** of the same server cycle that processes the trigger event, **before** user-attached DOM event listeners fire — so listener code sees the post-action state and a second click during the latency window is a no-op locally. |
@@ -44,20 +44,20 @@ GWT-era `TriggerSupport`-as-connector indirection.
 ### Server
 
 - Public package: `com.vaadin.flow.component.trigger`.
-  - Interfaces: `Trigger`, `Action`, `Output<T>`.
+  - Interfaces: `Trigger`, `Action`, `Argument<T>`.
   - Abstract bases (extension points): `AbstractTrigger`, `AbstractAction`,
-    `AbstractOutput<T>`. Each carries a **namespaced type id**
+    `AbstractArgument<T>`. Each carries a **namespaced type id**
     (`flow:click`, `vaadin:notification`, `myapp:double-tap`). Subclasses
     override `buildClientConfig(ConfigContext)` to ship JSON config and
     `applyServerSideEffect()` for the server mirror.
 
 - Internal package: `com.vaadin.flow.component.trigger.internal`.
   - `TriggerSupport extends ServerSideFeature`: the per-element store.
-    Holds three id-keyed pools (triggers, actions, outputs) plus a list of
+    Holds three id-keyed pools (triggers, actions, arguments) plus a list of
     bindings `{triggerId, [actionIds…]}`. Implements `ConfigContext` so
-    subclasses can ask it to register outputs / element references by id.
+    subclasses can ask it to register arguments / element references by id.
   - `ConfigContext`: tiny interface passed to `buildClientConfig` —
-    `registerOutput(Output)` and `referenceElement(Element|Component)`.
+    `registerArgument(Argument)` and `referenceElement(Element|Component)`.
   - `ServerCallbackAction`: the sugar target for `Trigger.triggers(Runnable)`.
 
 - Three small framework registrations (same pattern as `SignalBindingFeature`):
@@ -70,7 +70,7 @@ GWT-era `TriggerSupport`-as-connector indirection.
 - `flow-client/src/main/frontend/Triggers.ts` — imported from `Flow.ts`
   so it ships in the boot bundle.
 - Self-registers `window.Vaadin.Flow.triggers` with the public API
-  `registerTrigger / registerAction / registerOutput / bind / unbind`.
+  `registerTrigger / registerAction / registerArgument / bind / unbind`.
 - Built-in factories registered at module load. Add-on `@JsModule`s
   register their own custom types against the same registry.
 - `bind(host, snapshot, extraElements?)` is **idempotent** — tracked per
@@ -87,14 +87,14 @@ A single JSON snapshot per host, sent through `Element.executeJs`:
 ```jsonc
 {
   "triggers": { "0": { "type": "flow:click",          "config": { /* … */ } } },
-  "actions":  { "0": { "type": "flow:clipboard-copy", "config": { "textOutput": 0 } } },
-  "outputs":  { "0": { "type": "flow:property",       "config": { "property": "value", "element": 1 } } },
+  "actions":  { "0": { "type": "flow:clipboard-copy", "config": { "text": 0 } } },
+  "arguments":  { "0": { "type": "flow:property",       "config": { "property": "value", "element": 1 } } },
   "bindings": [ { "trigger": 0, "actions": [0] } ]
 }
 ```
 
 The executeJs call passes the host element as `this` and the snapshot as
-`$0`. Secondary elements referenced by outputs/actions are passed as
+`$0`. Secondary elements referenced by arguments/actions are passed as
 extra positional parameters and appear in the snapshot as parameter
 indices (`element: 1` means the second extra element, `0` means the
 host itself).
@@ -115,7 +115,7 @@ public interface Trigger extends Serializable {
 }
 
 public interface Action extends Serializable {}
-public interface Output<T> extends Serializable {}
+public interface Argument<T> extends Serializable {}
 
 public abstract class AbstractTrigger implements Trigger {
     protected AbstractTrigger(String typeId, Element host);
@@ -131,8 +131,8 @@ public abstract class AbstractAction implements Action {
     public void applyServerSideEffect();
 }
 
-public abstract class AbstractOutput<T> implements Output<T> {
-    protected AbstractOutput(String typeId, Class<T> valueType);
+public abstract class AbstractArgument<T> implements Argument<T> {
+    protected AbstractArgument(String typeId, Class<T> valueType);
     public ObjectNode buildClientConfig(ConfigContext context);
 }
 ```
@@ -144,7 +144,7 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 ### Slice 1 — Clipboard copy (DONE)
 
 - **Triggers**: `ClickTrigger` (`flow:click`).
-- **Outputs**:  `PropertyOutput<T>` (`flow:property`).
+- **Arguments**:  `PropertyArgument<T>` (`flow:property`).
 - **Actions**:  `ClipboardCopyAction` (`flow:clipboard-copy`).
 - **Server stub**: `ServerCallbackAction` (`flow:server-callback`) — class
   in place so `Trigger.triggers(Runnable)` compiles; client handler ships
@@ -152,7 +152,7 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 - **IT**: `TriggerClipboardCopyIT` — button click copies textfield value;
   stubs `navigator.clipboard.writeText` to avoid permission flakiness.
 - **Validates**: Per-host snapshot + executeJs wire + idempotent bind +
-  user-gesture preservation + cross-element output reference.
+  user-gesture preservation + cross-element argument reference.
 
 ### Slice 2 — Disable-on-shortcut (DONE)
 
@@ -199,19 +199,19 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 - **Triggers**: `JsTrigger` (`flow:js`) — expression evaluated with the
   host element as {@code this} and {@code trigger} as the fire helper;
   may return a cleanup function used on uninstall.
-- **Actions**:  `JsAction` (`flow:js`, varargs of `Output<?>`) —
-  expression evaluated with {@code output(i)} resolving to the i-th
-  declared output's current value at fire time. Declared outputs go
-  through the shared `ConfigContext.registerOutput(...)` path so they
-  dedupe with built-in outputs.
-- **Outputs**:  `JsOutput<T>` (`flow:js`, valueType, expression) —
+- **Actions**:  `JsAction` (`flow:js`, varargs of `Argument<?>`) —
+  expression evaluated with {@code argument(i)} resolving to the i-th
+  declared argument's current value at fire time. Declared arguments go
+  through the shared `ConfigContext.registerArgument(...)` path so they
+  dedupe with built-in arguments.
+- **Arguments**:  `JsArgument<T>` (`flow:js`, valueType, expression) —
   expression evaluated at the moment a trigger fires; its return value
-  is the output.
+  is the argument.
 - **Client wiring**: all three use `new Function(...)` (not `eval`) and
   swallow compile/runtime exceptions to a `console.debug` so a broken
   expression doesn't break the rest of the dispatch.
 - **IT**: button click → `JsTrigger` fires → `JsAction` reads
-  `JsOutput`'s value and writes it into a span. Pure JS round trip with
+  `JsArgument`'s value and writes it into a span. Pure JS round trip with
   no custom Java action class and no custom TS module.
 - **Validates**: that add-on authors can ship a working custom type
   without writing a TS module first.
@@ -227,7 +227,7 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   `run()` is a one-liner calling `notifyServer()`. The existing
   `TriggerSupport.dispatchMirror` looks the action up by id and calls
   `applyServerSideEffect()`.
-- **No outputs to the `Runnable`** in v0. `Trigger.triggers(Runnable)` is
+- **No arguments to the `Runnable`** in v0. `Trigger.triggers(Runnable)` is
   no-arg sugar; if a callback needs values, use a `@ClientCallable` on
   a component directly, build a custom `Action` subclass, or carry the
   context through server-side state.
@@ -238,14 +238,14 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   mirror notifications (slice 2) and server callbacks (slice 4)
   without protocol changes.
 
-### Slice 5 — `SignalOutput<T>` (DONE)
+### Slice 5 — `SignalArgument<T>` (DONE)
 
-- **Output**: `SignalOutput<T>(Signal<T>)` (`flow:signal-value`). Reads
+- **Argument**: `SignalArgument<T>(Signal<T>)` (`flow:signal-value`). Reads
   a server-side `Signal<T>` and exposes its current value to trigger
   actions, snapshot-style.
 - **Mechanism**: at snapshot-build time the server reads
-  `signal.peek()` and ships the value directly inside the output's
-  config (`{"value": <jsonValue>}`). On construction the output
+  `signal.peek()` and ships the value directly inside the argument's
+  config (`{"value": <jsonValue>}`). On construction the argument
   subscribes to its `Signal` and on every change schedules the host's
   next `beforeClientResponse` flush — same path `TriggerSupport`
   already uses for `.triggers(…)` mutations. The client factory is
@@ -257,19 +257,19 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
   represented as a DOM property on any element (session state,
   derived computations, multi-user collaborative state).
 - **Why a dedicated type instead of "bind signal → property, then
-  `PropertyOutput`"**: ergonomic — saves creating a ghost property
+  `PropertyArgument`"**: ergonomic — saves creating a ghost property
   whose only purpose is to relay the signal value into a trigger, and
   makes the dependency explicit at the call site.
 - **Snapshot semantics, not reactive composition.** This slice does
-  not introduce `FormatOutput`, `Output.not`, `ComputedSignal`-of-
-  outputs etc. — those remain in "deferred". `SignalOutput` is a
+  not introduce `FormatArgument`, `Argument.not`, `ComputedSignal`-of-
+  arguments etc. — those remain in "deferred". `SignalArgument` is a
   thin reader, not a graph builder.
 - **Tradeoff**: every signal change re-emits the snapshot for the
   host. Fine for low-frequency UI/session signals; users binding a
   rapidly-changing signal (mouse position, etc.) should reach for
-  `JsOutput` or a property binding instead.
+  `JsArgument` or a property binding instead.
 - **IT**: button → `ClipboardCopyAction` reading a
-  `SignalOutput<String>(sessionLocaleSignal)`. Mutate the signal,
+  `SignalArgument<String>(sessionLocaleSignal)`. Mutate the signal,
   click, assert clipboard receives the new value.
 - **Validates**: signal value flows into snapshot; signal change
   triggers re-emit; cleanup on detach.
@@ -277,7 +277,7 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 ## Extending the API (apps and add-ons)
 
 1. Write a server class extending `AbstractTrigger` / `AbstractAction` /
-   `AbstractOutput<T>` with a namespaced type id (`myapp:foo`). Override
+   `AbstractArgument<T>` with a namespaced type id (`myapp:foo`). Override
    `buildClientConfig(ConfigContext)` to ship config. If the action has
    a server-observable effect, override `applyServerSideEffect()`.
 2. Add `@JsModule("./my-trigger.js")` (or annotate `UI`) for a TS/JS
@@ -286,13 +286,13 @@ Each slice is one PR-sized chunk: built-ins + unit tests + one IT.
 3. That's it. The framework's snapshot pipeline and dispatcher pick up
    the new type by id.
 
-A `JsAction` / `JsOutput<T>` (slice 3) covers the case where the add-on
+A `JsAction` / `JsArgument<T>` (slice 3) covers the case where the add-on
 author doesn't want a TS file at all.
 
 ## Deferred / explicitly out of scope for v0
 
-- **Output composition** (`FormatOutput`, `Output.not`, `ConditionalAction`,
-  `Output.combine`, …). Straightforward to add once the core API is
+- **Argument composition** (`FormatArgument`, `Argument.not`, `ConditionalAction`,
+  `Argument.combine`, …). Straightforward to add once the core API is
   proven; deliberately omitted from v0 so the public surface stays small.
 - **Fluent shorthands on built-in components** (`button.triggerByPress(…)`,
   `myButton.createDisableAction()`, `myButton.setShortcutKey(KeyCode.ENTER)`,
@@ -333,24 +333,24 @@ author doesn't want a TS file at all.
 flow-server/src/main/java/com/vaadin/flow/component/trigger/
   Trigger.java                 — interface
   Action.java                  — interface
-  Output.java                  — interface (generic)
+  Argument.java                  — interface (generic)
   AbstractTrigger.java         — base + Element/Component constructors
   AbstractAction.java          — base + applyServerSideEffect hook
-  AbstractOutput.java          — base
+  AbstractArgument.java          — base
   ClickTrigger.java            — flow:click  (slice 1)
-  PropertyOutput.java          — flow:property (slice 1)
+  PropertyArgument.java          — flow:property (slice 1)
   ClipboardCopyAction.java     — flow:clipboard-copy (slice 1)
   ShortcutTrigger.java         — flow:shortcut       (slice 2)
   ClickAction.java             — flow:click          (slice 2)
   SetEnabledAction.java        — flow:set-enabled    (slice 2)
   JsTrigger.java               — flow:js             (slice 3)
   JsAction.java                — flow:js             (slice 3)
-  JsOutput.java                — flow:js             (slice 3)
+  JsArgument.java              — flow:js             (slice 3)
+  SignalArgument.java          — flow:signal-value   (slice 5)
   internal/
     TriggerSupport.java        — per-element ServerSideFeature
     ConfigContext.java         — passed to buildClientConfig
     ServerCallbackAction.java  — flow:server-callback (slice 4)
-    TriggerCallbackHandler.java — UI-scoped @ClientCallable host (slice 4)
 
 flow-client/src/main/frontend/
   Triggers.ts                  — window.Vaadin.Flow.triggers runtime
@@ -360,4 +360,5 @@ flow-tests/test-root-context/src/main/java/com/vaadin/flow/uitest/ui/
   TriggerShortcutDisableView.java     (slice 2)
   TriggerJsEscapeHatchView.java       (slice 3)
   TriggerServerCallbackView.java      (slice 4)
+  TriggerSignalArgumentView.java      (slice 5)
 ```

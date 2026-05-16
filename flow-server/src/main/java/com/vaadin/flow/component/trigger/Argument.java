@@ -21,17 +21,17 @@ import java.io.Serializable;
  * A value produced on the client at the moment a trigger fires, snapshotted and
  * passed into the bound {@link Action actions}.
  * <p>
- * Outputs are resolved synchronously inside the trigger's DOM event handler,
- * never reactively. Use a {@code SignalOutput} if you need a server-side
+ * Arguments are resolved synchronously inside the trigger's DOM event handler,
+ * never reactively. Use a {@code SignalArgument} if you need a server-side
  * {@link com.vaadin.flow.signals.Signal} to feed the value.
  * <p>
- * The same {@code Output} instance may be referenced from multiple actions; its
- * value is computed once per fire and reused.
+ * The same {@code Argument} instance may be referenced from multiple actions;
+ * its value is computed once per fire and reused.
  * <p>
- * Implementations should extend {@link AbstractOutput}.
+ * Implementations should extend {@link AbstractArgument}.
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-public interface Output<T> extends Serializable {
+public interface Argument<T> extends Serializable {
 }

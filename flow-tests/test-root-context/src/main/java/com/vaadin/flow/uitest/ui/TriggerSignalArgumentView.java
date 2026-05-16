@@ -18,20 +18,20 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.ClipboardCopyAction;
-import com.vaadin.flow.component.trigger.SignalOutput;
+import com.vaadin.flow.component.trigger.SignalArgument;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
  * Wires a {@link ClickTrigger} on a button to a {@link ClipboardCopyAction}
- * reading from a {@link SignalOutput} backed by a server-side
+ * reading from a {@link SignalArgument} backed by a server-side
  * {@link ValueSignal}. A second "Update" button mutates the signal so the IT
  * can assert the snapshot re-syncs and the clipboard receives the new value on
  * the next click.
  */
-@Route(value = "com.vaadin.flow.uitest.ui.TriggerSignalOutputView", layout = ViewTestLayout.class)
-public class TriggerSignalOutputView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.TriggerSignalArgumentView", layout = ViewTestLayout.class)
+public class TriggerSignalArgumentView extends AbstractDivView {
 
     @Override
     protected void onShow() {
@@ -47,6 +47,6 @@ public class TriggerSignalOutputView extends AbstractDivView {
         add(copy, update);
 
         new ClickTrigger(copy).triggers(new ClipboardCopyAction(
-                new SignalOutput<>(String.class, message)));
+                new SignalArgument<>(String.class, message)));
     }
 }

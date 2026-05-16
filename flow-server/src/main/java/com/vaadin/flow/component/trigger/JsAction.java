@@ -29,12 +29,12 @@ import com.vaadin.flow.internal.JacksonUtils;
  * cases not covered by a built-in {@link AbstractAction}.
  * <p>
  * The expression runs every time the trigger fires. A single helper is in
- * scope: {@code output(i)} returns the resolved value of the i-th declared
- * output (in the order passed to this constructor).
+ * scope: {@code argument(i)} returns the resolved value of the i-th declared
+ * argument (in the order passed to this constructor).
  *
  * <pre>{@code
- * Output<String> who = new PropertyOutput<>(field, "value", String.class);
- * new JsAction("alert('Hello ' + output(0));", who);
+ * Argument<String> who = new PropertyArgument<>(field, "value", String.class);
+ * new JsAction("alert('Hello ' + argument(0));", who);
  * }</pre>
  */
 public class JsAction extends AbstractAction {
@@ -42,21 +42,21 @@ public class JsAction extends AbstractAction {
     public static final String TYPE_ID = "flow:js";
 
     private final String expression;
-    private final List<Output<?>> outputs;
+    private final List<Argument<?>> arguments;
 
     /**
      * Creates a JS-backed action.
      *
      * @param expression
      *            the JS source, not {@code null}
-     * @param outputs
-     *            outputs available to the expression via {@code output(i)}, in
-     *            the order passed
+     * @param arguments
+     *            arguments available to the expression via {@code argument(i)},
+     *            in the order passed
      */
-    public JsAction(String expression, Output<?>... outputs) {
+    public JsAction(String expression, Argument<?>... arguments) {
         super(TYPE_ID);
         this.expression = Objects.requireNonNull(expression);
-        this.outputs = List.of(outputs);
+        this.arguments = List.of(arguments);
     }
 
     /**
@@ -67,10 +67,10 @@ public class JsAction extends AbstractAction {
     }
 
     /**
-     * @return the declared outputs in order
+     * @return the declared arguments in order
      */
-    public List<Output<?>> getOutputs() {
-        return outputs;
+    public List<Argument<?>> getArguments() {
+        return arguments;
     }
 
     @Override
@@ -78,10 +78,10 @@ public class JsAction extends AbstractAction {
         ObjectNode node = JacksonUtils.createObjectNode();
         node.put("expression", expression);
         ArrayNode ids = JacksonUtils.createArrayNode();
-        for (Output<?> output : outputs) {
-            ids.add(context.registerOutput(output));
+        for (Argument<?> argument : arguments) {
+            ids.add(context.registerArgument(argument));
         }
-        node.set("outputs", ids);
+        node.set("arguments", ids);
         return node;
     }
 }

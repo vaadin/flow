@@ -31,7 +31,7 @@ import com.vaadin.flow.internal.JacksonUtils;
  * fires during such a gesture, e.g. {@link ClickTrigger}.
  *
  * <pre>{@code
- * Output<String> value = new PropertyOutput<>(textField, "value",
+ * Argument<String> value = new PropertyArgument<>(textField, "value",
  *         String.class);
  * new ClickTrigger(button).triggers(new ClipboardCopyAction(value));
  * }</pre>
@@ -40,31 +40,31 @@ public class ClipboardCopyAction extends AbstractAction {
 
     public static final String TYPE_ID = "flow:clipboard-copy";
 
-    private final Output<String> textOutput;
+    private final Argument<String> textArgument;
 
     /**
      * Creates a clipboard-copy action that copies the value produced by the
-     * given output.
+     * given argument.
      *
-     * @param textOutput
-     *            the output supplying the text to copy, not {@code null}
+     * @param textArgument
+     *            the argument supplying the text to copy, not {@code null}
      */
-    public ClipboardCopyAction(Output<String> textOutput) {
+    public ClipboardCopyAction(Argument<String> textArgument) {
         super(TYPE_ID);
-        this.textOutput = Objects.requireNonNull(textOutput);
+        this.textArgument = Objects.requireNonNull(textArgument);
     }
 
     /**
-     * @return the output supplying the text
+     * @return the argument supplying the text
      */
-    public Output<String> getTextOutput() {
-        return textOutput;
+    public Argument<String> getTextArgument() {
+        return textArgument;
     }
 
     @Override
     public ObjectNode buildClientConfig(ConfigContext context) {
         ObjectNode node = JacksonUtils.createObjectNode();
-        node.put("textOutput", context.registerOutput(textOutput));
+        node.put("text", context.registerArgument(textArgument));
         return node;
     }
 }

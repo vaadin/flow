@@ -31,15 +31,15 @@ import com.vaadin.flow.internal.JacksonUtils;
  * Common targets and properties:
  * <ul>
  * <li>{@code TextField.value} →
- * {@code new PropertyOutput<>(textField, "value", String.class)}
+ * {@code new PropertyArgument<>(textField, "value", String.class)}
  * <li>{@code Checkbox.checked} →
- * {@code new PropertyOutput<>(checkbox, "checked", Boolean.class)}
+ * {@code new PropertyArgument<>(checkbox, "checked", Boolean.class)}
  * </ul>
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-public class PropertyOutput<T> extends AbstractOutput<T> {
+public class PropertyArgument<T> extends AbstractArgument<T> {
 
     public static final String TYPE_ID = "flow:property";
 
@@ -47,8 +47,8 @@ public class PropertyOutput<T> extends AbstractOutput<T> {
     private final String propertyName;
 
     /**
-     * Creates a property output that reads the given JS property from the given
-     * target element.
+     * Creates a property argument that reads the given JS property from the
+     * given target element.
      *
      * @param target
      *            the element to read from, not {@code null}
@@ -57,7 +57,7 @@ public class PropertyOutput<T> extends AbstractOutput<T> {
      * @param valueType
      *            runtime type of the produced value, not {@code null}
      */
-    public PropertyOutput(Element target, String propertyName,
+    public PropertyArgument(Element target, String propertyName,
             Class<T> valueType) {
         super(TYPE_ID, valueType);
         this.target = Objects.requireNonNull(target);
@@ -65,8 +65,8 @@ public class PropertyOutput<T> extends AbstractOutput<T> {
     }
 
     /**
-     * Creates a property output that reads the given JS property from the given
-     * target component's root element.
+     * Creates a property argument that reads the given JS property from the
+     * given target component's root element.
      *
      * @param target
      *            the component to read from, not {@code null}
@@ -75,7 +75,7 @@ public class PropertyOutput<T> extends AbstractOutput<T> {
      * @param valueType
      *            runtime type of the produced value, not {@code null}
      */
-    public PropertyOutput(Component target, String propertyName,
+    public PropertyArgument(Component target, String propertyName,
             Class<T> valueType) {
         this(Objects.requireNonNull(target).getElement(), propertyName,
                 valueType);

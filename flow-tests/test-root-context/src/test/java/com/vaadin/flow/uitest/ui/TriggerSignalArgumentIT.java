@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class TriggerSignalOutputIT extends ChromeBrowserTest {
+public class TriggerSignalArgumentIT extends ChromeBrowserTest {
 
     @Test
     public void clickCopiesSignalValue_andReflectsServerSideUpdates() {

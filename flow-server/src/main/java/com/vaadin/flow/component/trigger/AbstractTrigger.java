@@ -103,12 +103,12 @@ public abstract class AbstractTrigger implements Trigger {
      * Produces the JSON configuration this trigger sends to the client. Default
      * is an empty object; override to add type-specific options.
      * <p>
-     * The {@code context} lets subclasses encode element/output references by
+     * The {@code context} lets subclasses encode element/argument references by
      * id when needed. Public so the internal framework can read the config
      * without reflection; subclasses just override.
      *
      * @param context
-     *            the resolver for referenced elements and outputs, not
+     *            the resolver for referenced elements and arguments, not
      *            {@code null}
      * @return a Jackson {@link ObjectNode}, never {@code null}
      */

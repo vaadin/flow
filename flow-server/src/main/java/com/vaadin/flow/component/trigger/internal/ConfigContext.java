@@ -19,12 +19,12 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.Output;
+import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Context passed into {@code buildClientConfig} so trigger/action/output
- * subclasses can reference other outputs and elements by stable id without
+ * Context passed into {@code buildClientConfig} so trigger/action/argument
+ * subclasses can reference other arguments and elements by stable id without
  * needing direct access to the host's {@link TriggerSupport}.
  * <p>
  * For internal use only.
@@ -32,14 +32,14 @@ import com.vaadin.flow.dom.Element;
 public interface ConfigContext extends Serializable {
 
     /**
-     * Returns a stable id for the given output, registering it with the host's
-     * TriggerSupport if it hasn't been registered yet.
+     * Returns a stable id for the given argument, registering it with the
+     * host's TriggerSupport if it hasn't been registered yet.
      *
-     * @param output
-     *            the output to reference, not {@code null}
-     * @return the id of the output in the surrounding snapshot
+     * @param argument
+     *            the argument to reference, not {@code null}
+     * @return the id of the argument in the surrounding snapshot
      */
-    int registerOutput(Output<?> output);
+    int registerArgument(Argument<?> argument);
 
     /**
      * Returns a stable parameter index for the given element. Host element is
@@ -64,8 +64,8 @@ public interface ConfigContext extends Serializable {
     }
 
     /**
-     * The host element this snapshot belongs to. Useful for outputs that
-     * install element-scoped subscriptions (e.g. {@code SignalOutput} via
+     * The host element this snapshot belongs to. Useful for arguments that
+     * install element-scoped subscriptions (e.g. {@code SignalArgument} via
      * {@link com.vaadin.flow.dom.ElementEffect#effect}).
      *
      * @return the host element
@@ -74,8 +74,8 @@ public interface ConfigContext extends Serializable {
 
     /**
      * Schedules a fresh client snapshot for the host to be emitted on the next
-     * {@code beforeClientResponse} flush. Used by outputs whose value may
-     * change between trigger fires (e.g. a {@code SignalOutput}). Idempotent
+     * {@code beforeClientResponse} flush. Used by arguments whose value may
+     * change between trigger fires (e.g. a {@code SignalArgument}). Idempotent
      * within a request.
      */
     void scheduleSync();

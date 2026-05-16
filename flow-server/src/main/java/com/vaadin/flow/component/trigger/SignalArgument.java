@@ -29,18 +29,18 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * Output backed by a server-side {@link Signal}. The signal's current value is
- * snapshotted into the client config at each emit; a host-scoped effect
+ * Argument backed by a server-side {@link Signal}. The signal's current value
+ * is snapshotted into the client config at each emit; a host-scoped effect
  * subscribes to the signal so that every change re-emits the snapshot.
  * <p>
  * Snapshot semantics: actions read the latest value at trigger fire time. This
- * is a value reader, not a graph builder — composing computed outputs remains
+ * is a value reader, not a graph builder — composing computed arguments remains
  * the signal layer's job (use {@link Signal#cached}).
  *
  * <pre>{@code
  * ValueSignal<String> locale = ...;
  * new ClickTrigger(button).triggers(
- *         new ClipboardCopyAction(new SignalOutput<>(String.class, locale)));
+ *         new ClipboardCopyAction(new SignalArgument<>(String.class, locale)));
  * }</pre>
  *
  * The effect that wires the re-emit is created lazily on the first
@@ -50,7 +50,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @param <T>
  *            the runtime type of the produced value
  */
-public class SignalOutput<T> extends AbstractOutput<T> {
+public class SignalArgument<T> extends AbstractArgument<T> {
 
     public static final String TYPE_ID = "flow:signal-value";
 
@@ -60,21 +60,21 @@ public class SignalOutput<T> extends AbstractOutput<T> {
     private transient @Nullable Registration effectRegistration;
 
     /**
-     * Creates a signal-backed output.
+     * Creates a signal-backed argument.
      *
      * @param valueType
      *            runtime type of the produced value, not {@code null}
      * @param signal
      *            the source signal, not {@code null}
      */
-    public SignalOutput(Class<T> valueType, Signal<T> signal) {
+    public SignalArgument(Class<T> valueType, Signal<T> signal) {
         super(TYPE_ID, valueType);
         this.signal = Objects.requireNonNull(signal);
     }
 
     /**
      * Convenience for the common case: pair a {@link ValueSignal} with an
-     * output of the same value type.
+     * argument of the same value type.
      *
      * @param signal
      *            the source signal, not {@code null}
@@ -82,11 +82,11 @@ public class SignalOutput<T> extends AbstractOutput<T> {
      *            runtime type, not {@code null}
      * @param <T>
      *            the value type
-     * @return a new SignalOutput
+     * @return a new SignalArgument
      */
-    public static <T> SignalOutput<T> of(ValueSignal<T> signal,
+    public static <T> SignalArgument<T> of(ValueSignal<T> signal,
             Class<T> valueType) {
-        return new SignalOutput<>(valueType, signal);
+        return new SignalArgument<>(valueType, signal);
     }
 
     /**

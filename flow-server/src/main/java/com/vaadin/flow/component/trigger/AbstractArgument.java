@@ -23,37 +23,37 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Base class for {@link Output} implementations.
+ * Base class for {@link Argument} implementations.
  * <p>
  * Subclasses identify themselves with a namespaced type id
  * ({@code "flow:property"}, {@code "myapp:caret-offset"}, …) which must match a
  * factory registered against {@code window.Vaadin.Flow.triggers} on the client
  * side. Subclasses override {@link #buildClientConfig} when they need to ship
- * configuration with the output.
+ * configuration with the argument.
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-public abstract class AbstractOutput<T> implements Output<T> {
+public abstract class AbstractArgument<T> implements Argument<T> {
 
     private final String typeId;
     private final Class<T> valueType;
 
     /**
-     * Creates a new output.
+     * Creates a new argument.
      *
      * @param typeId
      *            namespaced type id matching a client factory, not {@code null}
      * @param valueType
      *            runtime type of the produced value, not {@code null}
      */
-    protected AbstractOutput(String typeId, Class<T> valueType) {
+    protected AbstractArgument(String typeId, Class<T> valueType) {
         this.typeId = Objects.requireNonNull(typeId);
         this.valueType = Objects.requireNonNull(valueType);
     }
 
     /**
-     * The namespaced type id of this output.
+     * The namespaced type id of this argument.
      *
      * @return the type id, never {@code null}
      */
@@ -62,7 +62,7 @@ public abstract class AbstractOutput<T> implements Output<T> {
     }
 
     /**
-     * The runtime type of the value this output produces.
+     * The runtime type of the value this argument produces.
      *
      * @return the value type, never {@code null}
      */
@@ -71,8 +71,8 @@ public abstract class AbstractOutput<T> implements Output<T> {
     }
 
     /**
-     * Produces the JSON configuration this output sends to the client. Default
-     * is an empty object; override to add type-specific options.
+     * Produces the JSON configuration this argument sends to the client.
+     * Default is an empty object; override to add type-specific options.
      * <p>
      * Subclasses encode element references by calling
      * {@link ConfigContext#referenceElement(com.vaadin.flow.dom.Element)}.

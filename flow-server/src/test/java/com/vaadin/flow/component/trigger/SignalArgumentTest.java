@@ -24,7 +24,7 @@ import com.vaadin.flow.component.trigger.internal.TriggerSupport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-public class SignalOutputTest {
+public class SignalArgumentTest {
 
     @Test
     public void buildClientConfig_shipsCurrentSignalValue() {
@@ -32,14 +32,14 @@ public class SignalOutputTest {
         ValueSignal<String> signal = new ValueSignal<>("alpha");
 
         new ClickTrigger(button).triggers(new ClipboardCopyAction(
-                new SignalOutput<>(String.class, signal)));
+                new SignalArgument<>(String.class, signal)));
 
         ObjectNode snapshot = TriggerSupport.on(button).snapshotForTest();
-        JsonNode output = snapshot.get("outputs").get("0");
-        Assert.assertEquals(SignalOutput.TYPE_ID,
-                output.get("type").asString());
+        JsonNode argument = snapshot.get("arguments").get("0");
+        Assert.assertEquals(SignalArgument.TYPE_ID,
+                argument.get("type").asString());
         Assert.assertEquals("alpha",
-                output.get("config").get("value").asString());
+                argument.get("config").get("value").asString());
     }
 
     @Test
@@ -47,17 +47,17 @@ public class SignalOutputTest {
         Element button = new Element("button");
         ValueSignal<String> signal = new ValueSignal<>("alpha");
         new ClickTrigger(button).triggers(new ClipboardCopyAction(
-                new SignalOutput<>(String.class, signal)));
+                new SignalArgument<>(String.class, signal)));
 
         // First snapshot
         ObjectNode first = TriggerSupport.on(button).snapshotForTest();
-        Assert.assertEquals("alpha", first.get("outputs").get("0").get("config")
-                .get("value").asString());
+        Assert.assertEquals("alpha", first.get("arguments").get("0")
+                .get("config").get("value").asString());
 
         // Mutate the signal, then rebuild
         signal.set("beta");
         ObjectNode second = TriggerSupport.on(button).snapshotForTest();
-        Assert.assertEquals("beta", second.get("outputs").get("0").get("config")
-                .get("value").asString());
+        Assert.assertEquals("beta", second.get("arguments").get("0")
+                .get("config").get("value").asString());
     }
 }

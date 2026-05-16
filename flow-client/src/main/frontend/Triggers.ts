@@ -22,14 +22,14 @@
 interface Snapshot {
   triggers: Record<string, { type: string; config: Record<string, unknown> }>;
   actions: Record<string, { type: string; config: Record<string, unknown> }>;
-  outputs: Record<string, { type: string; config: Record<string, unknown> }>;
+  arguments: Record<string, { type: string; config: Record<string, unknown> }>;
   bindings: Array<{ trigger: number; actions: number[] }>;
 }
 
 /**
- * Resolves an output's current value at the moment a trigger fires.
+ * Resolves an argument's current value at the moment a trigger fires.
  */
-type OutputResolver = (id: number) => unknown;
+type ArgumentResolver = (id: number) => unknown;
 
 interface TriggerInstance {
   uninstall(): void;
@@ -43,7 +43,7 @@ type TriggerFactory = (
 ) => TriggerInstance;
 
 interface ActionInstance {
-  run(resolveOutput: OutputResolver): void;
+  run(resolveArgument: ArgumentResolver): void;
 }
 
 type ServerNotify = (...args: unknown[]) => void;
@@ -54,15 +54,15 @@ type ActionFactory = (
   notifyServer: ServerNotify
 ) => ActionInstance;
 
-interface OutputInstance {
+interface ArgumentInstance {
   read(): unknown;
 }
 
-type OutputFactory = (config: Record<string, unknown>, extraElements: HTMLElement[]) => OutputInstance;
+type ArgumentFactory = (config: Record<string, unknown>, extraElements: HTMLElement[]) => ArgumentInstance;
 
 const triggerFactories = new Map<string, TriggerFactory>();
 const actionFactories = new Map<string, ActionFactory>();
-const outputFactories = new Map<string, OutputFactory>();
+const argumentFactories = new Map<string, ArgumentFactory>();
 
 interface Installation {
   triggers: TriggerInstance[];
@@ -102,10 +102,10 @@ function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown, channe
   const extras = resolveExtraElements(extraRefs);
   const mirror: MirrorChannel = typeof channel === 'function' ? channel : () => undefined;
 
-  // Lazily instantiate actions and outputs so a trigger that never fires
+  // Lazily instantiate actions and arguments so a trigger that never fires
   // doesn't pay for its actions.
   const actionCache = new Map<number, ActionInstance>();
-  const outputCache = new Map<number, OutputInstance>();
+  const argumentCache = new Map<number, ArgumentInstance>();
 
   function getAction(id: number): ActionInstance | null {
     const cached = actionCache.get(id);
@@ -128,27 +128,27 @@ function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown, channe
     return instance;
   }
 
-  function getOutput(id: number): OutputInstance | null {
-    const cached = outputCache.get(id);
+  function getArgument(id: number): ArgumentInstance | null {
+    const cached = argumentCache.get(id);
     if (cached) {
       return cached;
     }
-    const def = snapshot.outputs[String(id)];
+    const def = snapshot.arguments[String(id)];
     if (!def) {
-      console.debug(`trigger output id ${id} not found in snapshot`);
+      console.debug(`trigger argument id ${id} not found in snapshot`);
       return null;
     }
-    const factory = outputFactories.get(def.type);
+    const factory = argumentFactories.get(def.type);
     if (!factory) {
-      console.debug(`no client factory registered for output type ${def.type}`);
+      console.debug(`no client factory registered for argument type ${def.type}`);
       return null;
     }
     const instance = factory(def.config, extras);
-    outputCache.set(id, instance);
+    argumentCache.set(id, instance);
     return instance;
   }
 
-  const resolveOutput: OutputResolver = (id) => getOutput(id)?.read();
+  const resolveArgument: ArgumentResolver = (id) => getArgument(id)?.read();
 
   const installedTriggers: TriggerInstance[] = [];
 
@@ -170,7 +170,7 @@ function bind(host: HTMLElement, snapshot: Snapshot, extraRefs?: unknown, channe
             continue;
           }
           try {
-            action.run(resolveOutput);
+            action.run(resolveArgument);
           } catch (e) {
             console.debug(`trigger action ${actionId} threw`, e);
           }
@@ -255,13 +255,13 @@ triggerFactories.set('flow:shortcut', (host, config, _extras, fire) => {
   };
 });
 
-outputFactories.set('flow:js', (config) => {
+argumentFactories.set('flow:js', (config) => {
   const expression = String(config.expression ?? '');
   let read: () => unknown;
   try {
     read = new Function(expression) as () => unknown;
   } catch (e) {
-    console.debug('flow:js output compile threw', e);
+    console.debug('flow:js argument compile threw', e);
     read = () => undefined;
   }
   return {
@@ -269,14 +269,14 @@ outputFactories.set('flow:js', (config) => {
       try {
         return read();
       } catch (e) {
-        console.debug('flow:js output read threw', e);
+        console.debug('flow:js argument read threw', e);
         return undefined;
       }
     }
   };
 });
 
-outputFactories.set('flow:signal-value', (config) => {
+argumentFactories.set('flow:signal-value', (config) => {
   const value = config.value;
   return {
     read() {
@@ -285,14 +285,14 @@ outputFactories.set('flow:signal-value', (config) => {
   };
 });
 
-outputFactories.set('flow:property', (config, extras) => {
+argumentFactories.set('flow:property', (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');
   return {
     read() {
       const target = elementIndex === 0 ? null : extras[elementIndex - 1];
-      // elementIndex 0 means "host"; not supported for property outputs in
-      // v0 (outputs aren't bound to the host element directly).
+      // elementIndex 0 means "host"; not supported for property arguments in
+      // v0 (arguments aren't bound to the host element directly).
       if (!target) {
         return undefined;
       }
@@ -303,24 +303,24 @@ outputFactories.set('flow:property', (config, extras) => {
 
 actionFactories.set('flow:js', (config) => {
   const expression = String(config.expression ?? '');
-  const outputIds = Array.isArray(config.outputs) ? (config.outputs as unknown[]).map(Number) : [];
-  let fn: (output: (i: number) => unknown) => unknown;
+  const argumentIds = Array.isArray(config.arguments) ? (config.arguments as unknown[]).map(Number) : [];
+  let fn: (argument: (i: number) => unknown) => unknown;
   try {
-    fn = new Function('output', expression) as typeof fn;
+    fn = new Function('argument', expression) as typeof fn;
   } catch (e) {
     console.debug('flow:js action compile threw', e);
     fn = () => undefined;
   }
   return {
-    run(resolveOutput) {
-      const output = (i: number) => {
-        if (i < 0 || i >= outputIds.length) {
+    run(resolveArgument) {
+      const argument = (i: number) => {
+        if (i < 0 || i >= argumentIds.length) {
           return undefined;
         }
-        return resolveOutput(outputIds[i]);
+        return resolveArgument(argumentIds[i]);
       };
       try {
-        fn(output);
+        fn(argument);
       } catch (e) {
         console.debug('flow:js action run threw', e);
       }
@@ -371,10 +371,10 @@ actionFactories.set('flow:set-enabled', (config, extras, notifyServer) => {
 });
 
 actionFactories.set('flow:clipboard-copy', (config) => {
-  const textOutputId = Number(config.textOutput);
+  const textId = Number(config.text);
   return {
-    run(resolveOutput) {
-      const text = resolveOutput(textOutputId);
+    run(resolveArgument) {
+      const text = resolveArgument(textId);
       const clipboard = (navigator as Navigator & { clipboard?: Clipboard }).clipboard;
       if (!clipboard || typeof clipboard.writeText !== 'function') {
         console.debug('navigator.clipboard.writeText unavailable');
@@ -401,8 +401,8 @@ $wnd.Vaadin.Flow.triggers = {
   registerAction(typeId: string, factory: ActionFactory): void {
     actionFactories.set(typeId, factory);
   },
-  registerOutput(typeId: string, factory: OutputFactory): void {
-    outputFactories.set(typeId, factory);
+  registerArgument(typeId: string, factory: ArgumentFactory): void {
+    argumentFactories.set(typeId, factory);
   }
 };
 

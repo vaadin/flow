@@ -30,7 +30,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  * <pre>{@code
  * Trigger click = new ClickTrigger(button);
  * click.triggers(new ClipboardCopyAction(
- *         new PropertyOutput<>(textField, "value", String.class)));
+ *         new PropertyArgument<>(textField, "value", String.class)));
  * }</pre>
  *
  * Calling {@code triggers} more than once is additive — every subsequent call

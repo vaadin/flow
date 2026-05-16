@@ -26,14 +26,14 @@ import com.vaadin.flow.dom.Element;
 public class JsEscapeHatchTest {
 
     @Test
-    public void jsTriggerActionAndOutput_encodeExpressionsAndOutputIds() {
+    public void jsTriggerActionAndArgument_encodeExpressionsAndArgumentIds() {
         Element host = new Element("div");
 
-        JsOutput<String> answer = new JsOutput<>(String.class,
+        JsArgument<String> answer = new JsArgument<>(String.class,
                 "return 'forty-two';");
         new JsTrigger(host, "this.addEventListener('dblclick', trigger);")
                 .triggers(new JsAction(
-                        "this.querySelector('#out').textContent = output(0);",
+                        "this.querySelector('#out').textContent = argument(0);",
                         answer));
 
         ObjectNode snapshot = TriggerSupport.on(host).snapshotForTest();
@@ -46,40 +46,41 @@ public class JsEscapeHatchTest {
         JsonNode action = snapshot.get("actions").get("0");
         Assert.assertEquals(JsAction.TYPE_ID, action.get("type").asString());
         Assert.assertEquals(
-                "this.querySelector('#out').textContent = output(0);",
+                "this.querySelector('#out').textContent = argument(0);",
                 action.get("config").get("expression").asString());
-        JsonNode outputs = action.get("config").get("outputs");
-        Assert.assertEquals(1, outputs.size());
-        Assert.assertEquals(0, outputs.get(0).asInt());
+        JsonNode arguments = action.get("config").get("arguments");
+        Assert.assertEquals(1, arguments.size());
+        Assert.assertEquals(0, arguments.get(0).asInt());
 
-        JsonNode output = snapshot.get("outputs").get("0");
-        Assert.assertEquals(JsOutput.TYPE_ID, output.get("type").asString());
+        JsonNode argument = snapshot.get("arguments").get("0");
+        Assert.assertEquals(JsArgument.TYPE_ID,
+                argument.get("type").asString());
         Assert.assertEquals("return 'forty-two';",
-                output.get("config").get("expression").asString());
+                argument.get("config").get("expression").asString());
     }
 
     @Test
-    public void jsAction_dedupsSharedOutputAcrossMixedTypes() {
+    public void jsAction_dedupsSharedArgumentAcrossMixedTypes() {
         Element host = new Element("div");
         Element field = new Element("input");
 
-        // One output reused across two actions of different types: a built-in
-        // ClipboardCopyAction and a JsAction. The output pool should still
+        // One argument reused across two actions of different types: a built-in
+        // ClipboardCopyAction and a JsAction. The argument pool should still
         // contain exactly one entry, and both actions should reference id 0.
-        Output<String> value = new PropertyOutput<>(field, "value",
+        Argument<String> value = new PropertyArgument<>(field, "value",
                 String.class);
         new JsTrigger(host, "this.addEventListener('input', trigger);")
                 .triggers(new ClipboardCopyAction(value),
-                        new JsAction("alert(output(0));", value));
+                        new JsAction("alert(argument(0));", value));
 
         ObjectNode snapshot = TriggerSupport.on(host).snapshotForTest();
-        Assert.assertEquals(1, snapshot.get("outputs").size());
+        Assert.assertEquals(1, snapshot.get("arguments").size());
 
         JsonNode clipboard = snapshot.get("actions").get("0");
         JsonNode js = snapshot.get("actions").get("1");
+        Assert.assertEquals(0, clipboard.get("config").get("text").asInt());
+        Assert.assertEquals(1, js.get("config").get("arguments").size());
         Assert.assertEquals(0,
-                clipboard.get("config").get("textOutput").asInt());
-        Assert.assertEquals(1, js.get("config").get("outputs").size());
-        Assert.assertEquals(0, js.get("config").get("outputs").get(0).asInt());
+                js.get("config").get("arguments").get(0).asInt());
     }
 }

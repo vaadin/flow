@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.ClipboardCopyAction;
-import com.vaadin.flow.component.trigger.Output;
-import com.vaadin.flow.component.trigger.PropertyOutput;
+import com.vaadin.flow.component.trigger.PropertyArgument;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -42,7 +42,7 @@ public class TriggerClipboardCopyView extends AbstractDivView {
 
         add(field, copyButton);
 
-        Output<String> value = new PropertyOutput<>(field, "value",
+        Argument<String> value = new PropertyArgument<>(field, "value",
                 String.class);
         new ClickTrigger(copyButton).triggers(new ClipboardCopyAction(value));
     }

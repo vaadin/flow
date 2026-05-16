@@ -29,10 +29,10 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.AbstractAction;
-import com.vaadin.flow.component.trigger.AbstractOutput;
+import com.vaadin.flow.component.trigger.AbstractArgument;
 import com.vaadin.flow.component.trigger.AbstractTrigger;
 import com.vaadin.flow.component.trigger.Action;
-import com.vaadin.flow.component.trigger.Output;
+import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -42,10 +42,10 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.ServerSideFeature;
 
 /**
- * Per-element store of triggers, actions, outputs and bindings for the trigger
- * API. Lazily instantiated by {@link #on(Element)}. Emits client snapshots via
- * {@link Element#executeJs(String, Object...)} on every binding change and on
- * each (re-)attach.
+ * Per-element store of triggers, actions, arguments and bindings for the
+ * trigger API. Lazily instantiated by {@link #on(Element)}. Emits client
+ * snapshots via {@link Element#executeJs(String, Object...)} on every binding
+ * change and on each (re-)attach.
  * <p>
  * For internal use only.
  */
@@ -53,11 +53,11 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
 
     private final Map<AbstractTrigger, Integer> triggerIds = new IdentityHashMap<>();
     private final Map<AbstractAction, Integer> actionIds = new IdentityHashMap<>();
-    private final Map<AbstractOutput<?>, Integer> outputIds = new IdentityHashMap<>();
+    private final Map<AbstractArgument<?>, Integer> argumentIds = new IdentityHashMap<>();
 
     private final Map<Integer, AbstractTrigger> triggersById = new LinkedHashMap<>();
     private final Map<Integer, AbstractAction> actionsById = new LinkedHashMap<>();
-    private final Map<Integer, AbstractOutput<?>> outputsById = new LinkedHashMap<>();
+    private final Map<Integer, AbstractArgument<?>> argumentsById = new LinkedHashMap<>();
 
     private record Binding(int triggerId,
             int[] actionIds) implements Serializable {
@@ -70,7 +70,7 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
 
     private int nextTriggerId = 0;
     private int nextActionId = 0;
-    private int nextOutputId = 0;
+    private int nextArgumentId = 0;
 
     private boolean attachListenerRegistered = false;
     private boolean syncScheduled = false;
@@ -146,23 +146,23 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
     }
 
     /**
-     * Registers an output with this support, assigning it an id, deduping by
+     * Registers an argument with this support, assigning it an id, deduping by
      * identity.
      *
-     * @param output
-     *            the output, not {@code null}
+     * @param argument
+     *            the argument, not {@code null}
      * @return the assigned id
      */
     @Override
-    public int registerOutput(Output<?> output) {
-        Objects.requireNonNull(output);
-        if (!(output instanceof AbstractOutput<?> abstractOutput)) {
+    public int registerArgument(Argument<?> argument) {
+        Objects.requireNonNull(argument);
+        if (!(argument instanceof AbstractArgument<?> abstractArgument)) {
             throw new IllegalArgumentException(
-                    "Output must extend AbstractOutput: " + output);
+                    "Argument must extend AbstractArgument: " + argument);
         }
-        return outputIds.computeIfAbsent(abstractOutput, o -> {
-            int id = nextOutputId++;
-            outputsById.put(id, o);
+        return argumentIds.computeIfAbsent(abstractArgument, o -> {
+            int id = nextArgumentId++;
+            argumentsById.put(id, o);
             return id;
         });
     }
@@ -334,11 +334,11 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
 
     private ObjectNode buildSnapshot() {
         ObjectNode root = JacksonUtils.createObjectNode();
-        // Iterate over copies so that builders that register new outputs
-        // (which mutates outputsById) don't disturb the in-progress
+        // Iterate over copies so that builders that register new arguments
+        // (which mutates argumentsById) don't disturb the in-progress
         // iteration. Order matters: triggers and actions may register
-        // outputs, and outputs may reference elements — process triggers
-        // and actions first, then outputs last.
+        // arguments, and arguments may reference elements — process triggers
+        // and actions first, then arguments last.
         ObjectNode triggersNode = JacksonUtils.createObjectNode();
         for (Map.Entry<Integer, AbstractTrigger> e : List
                 .copyOf(triggersById.entrySet())) {
@@ -359,15 +359,15 @@ public class TriggerSupport extends ServerSideFeature implements ConfigContext {
         }
         root.set("actions", actionsNode);
 
-        ObjectNode outputsNode = JacksonUtils.createObjectNode();
-        for (Map.Entry<Integer, AbstractOutput<?>> e : List
-                .copyOf(outputsById.entrySet())) {
+        ObjectNode argumentsNode = JacksonUtils.createObjectNode();
+        for (Map.Entry<Integer, AbstractArgument<?>> e : List
+                .copyOf(argumentsById.entrySet())) {
             ObjectNode entry = JacksonUtils.createObjectNode();
             entry.put("type", e.getValue().getTypeId());
             entry.set("config", e.getValue().buildClientConfig(this));
-            outputsNode.set(e.getKey().toString(), entry);
+            argumentsNode.set(e.getKey().toString(), entry);
         }
-        root.set("outputs", outputsNode);
+        root.set("arguments", argumentsNode);
 
         ArrayNode bindingsNode = JacksonUtils.createArrayNode();
         for (Binding b : bindings) {

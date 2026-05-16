@@ -60,15 +60,15 @@ public abstract class AbstractAction implements Action {
      * Produces the JSON configuration this action sends to the client. Default
      * is an empty object; override to add type-specific options.
      * <p>
-     * Subclasses encode output references by calling
-     * {@link ConfigContext#registerOutput(Output)} and element references by
-     * calling
+     * Subclasses encode argument references by calling
+     * {@link ConfigContext#registerArgument(Argument)} and element references
+     * by calling
      * {@link ConfigContext#referenceElement(com.vaadin.flow.dom.Element)}.
      * Public so the internal framework can read the config without reflection;
      * subclasses just override.
      *
      * @param context
-     *            the resolver for referenced elements and outputs, not
+     *            the resolver for referenced elements and arguments, not
      *            {@code null}
      * @return a Jackson {@link ObjectNode}, never {@code null}
      */
