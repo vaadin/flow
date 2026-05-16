@@ -23,14 +23,13 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.trigger.internal.TriggerSupport;
-import com.vaadin.flow.dom.Element;
 
 public class ShortcutAndMirrorTest {
 
     @Test
     public void shortcutTrigger_encodesKeyAndModifiers() {
-        Element form = new Element("form");
-        Element submit = new Element("button");
+        TagComponent form = new TagComponent("form");
+        TagComponent submit = new TagComponent("button");
 
         new ShortcutTrigger(form, Key.ENTER, KeyModifier.CONTROL,
                 KeyModifier.SHIFT).triggers(new ClickAction(submit));
@@ -50,8 +49,8 @@ public class ShortcutAndMirrorTest {
 
     @Test
     public void setEnabledAction_encodesElementAndMirrorFlag() {
-        Element form = new Element("form");
-        Element submit = new Element("button");
+        TagComponent form = new TagComponent("form");
+        TagComponent submit = new TagComponent("button");
 
         new ShortcutTrigger(form, Key.ENTER)
                 .triggers(new SetEnabledAction(submit, false));
@@ -68,9 +67,10 @@ public class ShortcutAndMirrorTest {
 
     @Test
     public void dispatchMirror_appliesSetEnabledServerSide() {
-        Element form = new Element("form");
-        Element submit = new Element("button");
-        Assert.assertTrue("button starts enabled", submit.isEnabled());
+        TagComponent form = new TagComponent("form");
+        TagComponent submit = new TagComponent("button");
+        Assert.assertTrue("button starts enabled",
+                submit.getElement().isEnabled());
 
         SetEnabledAction disable = new SetEnabledAction(submit, false);
         new ShortcutTrigger(form, Key.ENTER).triggers(disable);
@@ -79,6 +79,6 @@ public class ShortcutAndMirrorTest {
         TriggerSupport.on(form).dispatchMirrorForTest(0);
 
         Assert.assertFalse("server-side button is now disabled",
-                submit.isEnabled());
+                submit.getElement().isEnabled());
     }
 }

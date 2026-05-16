@@ -21,13 +21,12 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.trigger.internal.TriggerSupport;
-import com.vaadin.flow.dom.Element;
 
 public class JsEscapeHatchTest {
 
     @Test
     public void jsTriggerActionAndArgument_encodeExpressionsAndArgumentIds() {
-        Element host = new Element("div");
+        TagComponent host = new TagComponent("div");
 
         JsArgument<String> answer = new JsArgument<>(String.class,
                 "return 'forty-two';");
@@ -61,8 +60,8 @@ public class JsEscapeHatchTest {
 
     @Test
     public void jsAction_dedupsSharedArgumentAcrossMixedTypes() {
-        Element host = new Element("div");
-        Element field = new Element("input");
+        TagComponent host = new TagComponent("div");
+        TagComponent field = new TagComponent("input");
 
         // One argument reused across two actions of different types: a built-in
         // ClipboardCopyAction and a JsAction. The argument pool should still

@@ -37,7 +37,7 @@ GWT-era `TriggerSupport`-as-connector indirection.
 | What use cases must the v0 slices validate end-to-end? | Clipboard copy, disable-on-shortcut, inline JS escape hatch, server-side `Runnable` action. |
 | `Trigger.triggers(SerializableRunnable)` ergonomics? | **Keep the lambda overload** on `Trigger`. Internally it constructs a `ServerCallbackAction(handler)`. |
 | Server-state mirroring of actions? | **Eager.** Actions that have a server-observable effect (e.g. `SetEnabledAction`) override `applyServerSideEffect()`. The mirror runs at the **start** of the same server cycle that processes the trigger event, **before** user-attached DOM event listeners fire — so listener code sees the post-action state and a second click during the latency window is a no-op locally. |
-| Public API host type? | **`Component` and `Element` overloads everywhere.** The Element constructor is canonical; the Component overload delegates via `host.getElement()`. |
+| Public API host type? | **`Component` only on the public surface.** Built-in classes (`ClickTrigger`, `ShortcutTrigger`, `JsTrigger`, `ClickAction`, `SetEnabledAction`, `PropertyArgument`, …) accept a `Component`. Element-level access is internal: `AbstractTrigger`'s protected constructor still takes either, for add-on infrastructure that legitimately works at the DOM level; `TriggerSupport.on(Element)` and `ConfigContext.referenceElement(Element)` live in the `internal` package. |
 
 ## Architecture
 

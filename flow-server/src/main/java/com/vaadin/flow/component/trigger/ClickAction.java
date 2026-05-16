@@ -25,10 +25,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Calls {@code target.click()} on a target element, dispatching a synthetic
- * click event. Typically used to chain a trigger onto another component's click
- * handling — for example, a shortcut that fires the same path as a button
- * press.
+ * Calls {@code target.click()} on a target component, dispatching a synthetic
+ * click event on its root element. Typically used to chain a trigger onto
+ * another component's click handling — for example, a shortcut that fires the
+ * same path as a button press.
  */
 public class ClickAction extends AbstractAction {
 
@@ -37,25 +37,14 @@ public class ClickAction extends AbstractAction {
     private final Element target;
 
     /**
-     * Creates a click action that clicks the given target element.
-     *
-     * @param target
-     *            the element to click, not {@code null}
-     */
-    public ClickAction(Element target) {
-        super(TYPE_ID);
-        this.target = Objects.requireNonNull(target);
-    }
-
-    /**
-     * Creates a click action that clicks the given target component's root
-     * element.
+     * Creates a click action that clicks the given target component.
      *
      * @param target
      *            the component to click, not {@code null}
      */
     public ClickAction(Component target) {
-        this(Objects.requireNonNull(target).getElement());
+        super(TYPE_ID);
+        this.target = Objects.requireNonNull(target).getElement();
     }
 
     /**

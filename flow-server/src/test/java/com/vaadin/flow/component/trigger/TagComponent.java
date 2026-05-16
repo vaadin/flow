@@ -16,25 +16,18 @@
 package com.vaadin.flow.component.trigger;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.dom.Element;
 
 /**
- * Fires when the host component receives a {@code click} DOM event. The bound
- * actions run inside the click handler, preserving the browser's user-gesture
- * context (so downstream actions may invoke APIs gated on a gesture, such as
- * clipboard or fullscreen).
+ * Minimal {@link Component} wrapper around an arbitrary tag, used by the
+ * trigger unit tests in place of dragging flow-html-components into the server
+ * test classpath.
  */
-public class ClickTrigger extends AbstractTrigger {
+@Tag("test-component")
+final class TagComponent extends Component {
 
-    public static final String TYPE_ID = "flow:click";
-
-    /**
-     * Creates a click trigger bound to the given host component's root element.
-     *
-     * @param host
-     *            the component whose click event should fire this trigger, not
-     *            {@code null}
-     */
-    public ClickTrigger(Component host) {
-        super(TYPE_ID, host);
+    TagComponent(String tag) {
+        super(new Element(tag));
     }
 }

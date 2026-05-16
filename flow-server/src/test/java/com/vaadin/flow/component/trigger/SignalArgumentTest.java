@@ -21,14 +21,13 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.trigger.internal.TriggerSupport;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 public class SignalArgumentTest {
 
     @Test
     public void buildClientConfig_shipsCurrentSignalValue() {
-        Element button = new Element("button");
+        TagComponent button = new TagComponent("button");
         ValueSignal<String> signal = new ValueSignal<>("alpha");
 
         new ClickTrigger(button).triggers(new ClipboardCopyAction(
@@ -44,7 +43,7 @@ public class SignalArgumentTest {
 
     @Test
     public void buildClientConfig_reflectsSignalUpdates() {
-        Element button = new Element("button");
+        TagComponent button = new TagComponent("button");
         ValueSignal<String> signal = new ValueSignal<>("alpha");
         new ClickTrigger(button).triggers(new ClipboardCopyAction(
                 new SignalArgument<>(String.class, signal)));

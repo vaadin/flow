@@ -26,15 +26,15 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.trigger.internal.ConfigContext;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Fires when the given key (with optional modifiers) is pressed while the host
- * element is the active scope. The shortcut listens for {@code keydown} events
- * that originate inside the host element, matching {@code event.key} against
- * the configured {@link Key} and {@code event.ctrlKey / altKey / shiftKey /
- * metaKey} against the configured {@link KeyModifier} set.
+ * component is the active scope. The shortcut listens for {@code keydown}
+ * events that originate inside the host's root element, matching
+ * {@code event.key} against the configured {@link Key} and
+ * {@code event.ctrlKey / altKey / shiftKey / metaKey} against the configured
+ * {@link KeyModifier} set.
  * <p>
  * Bound actions run inside the keydown handler, preserving the user-gesture
  * context.
@@ -52,26 +52,7 @@ public class ShortcutTrigger extends AbstractTrigger {
     private final Set<KeyModifier> modifiers;
 
     /**
-     * Creates a shortcut trigger bound to the given host element.
-     *
-     * @param host
-     *            the element acting as the shortcut's scope, not {@code null}
-     * @param key
-     *            the key to listen for, not {@code null}
-     * @param modifiers
-     *            modifier keys that must be held; empty for none
-     */
-    public ShortcutTrigger(Element host, Key key, KeyModifier... modifiers) {
-        super(TYPE_ID, host);
-        this.key = Objects.requireNonNull(key);
-        this.modifiers = modifiers.length == 0
-                ? EnumSet.noneOf(KeyModifier.class)
-                : EnumSet.copyOf(java.util.Arrays.asList(modifiers));
-    }
-
-    /**
-     * Creates a shortcut trigger bound to the given host component's root
-     * element.
+     * Creates a shortcut trigger bound to the given host component.
      *
      * @param host
      *            the component acting as the shortcut's scope, not {@code null}
@@ -81,7 +62,11 @@ public class ShortcutTrigger extends AbstractTrigger {
      *            modifier keys that must be held; empty for none
      */
     public ShortcutTrigger(Component host, Key key, KeyModifier... modifiers) {
-        this(Objects.requireNonNull(host).getElement(), key, modifiers);
+        super(TYPE_ID, host);
+        this.key = Objects.requireNonNull(key);
+        this.modifiers = modifiers.length == 0
+                ? EnumSet.noneOf(KeyModifier.class)
+                : EnumSet.copyOf(java.util.Arrays.asList(modifiers));
     }
 
     /**

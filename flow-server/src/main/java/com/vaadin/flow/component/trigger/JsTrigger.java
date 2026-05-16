@@ -21,18 +21,18 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ConfigContext;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Trigger backed by an arbitrary JavaScript expression — the escape hatch for
  * cases not covered by a built-in {@link AbstractTrigger}.
  * <p>
- * The expression is evaluated once during {@code bind} with the host element as
- * {@code this} and a single named parameter {@code trigger} — a function the
- * expression must call (synchronously, inside a DOM event handler) to fire the
- * trigger. The expression may return a cleanup function; if it does, the
- * cleanup runs when the trigger is removed or when the host is re-bound.
+ * The expression is evaluated once during {@code bind} with the host
+ * component's root element as {@code this} and a single named parameter
+ * {@code trigger} — a function the expression must call (synchronously, inside
+ * a DOM event handler) to fire the trigger. The expression may return a cleanup
+ * function; if it does, the cleanup runs when the trigger is removed or when
+ * the host is re-bound.
  *
  * <pre>{@code
  * new JsTrigger(host, "this.addEventListener('dblclick', trigger);"
@@ -47,20 +47,7 @@ public class JsTrigger extends AbstractTrigger {
     private final String expression;
 
     /**
-     * Creates a JS-backed trigger on the given host element.
-     *
-     * @param host
-     *            the host element, not {@code null}
-     * @param expression
-     *            the JS source, not {@code null}
-     */
-    public JsTrigger(Element host, String expression) {
-        super(TYPE_ID, host);
-        this.expression = Objects.requireNonNull(expression);
-    }
-
-    /**
-     * Creates a JS-backed trigger on the given component's root element.
+     * Creates a JS-backed trigger on the given host component.
      *
      * @param host
      *            the host component, not {@code null}
@@ -68,7 +55,8 @@ public class JsTrigger extends AbstractTrigger {
      *            the JS source, not {@code null}
      */
     public JsTrigger(Component host, String expression) {
-        this(Objects.requireNonNull(host).getElement(), expression);
+        super(TYPE_ID, host);
+        this.expression = Objects.requireNonNull(expression);
     }
 
     /**

@@ -27,8 +27,8 @@ public class TriggerSupportTest {
 
     @Test
     public void snapshot_includesTriggerActionArgumentAndBinding() {
-        Element button = new Element("button");
-        Element field = new Element("input");
+        TagComponent button = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
 
         Argument<String> value = new PropertyArgument<>(field, "value",
                 String.class);
@@ -76,14 +76,14 @@ public class TriggerSupportTest {
         Assert.assertEquals(0, bindings.get(0).get("actions").get(0).asInt());
 
         // The field has been collected as a secondary element parameter
-        Assert.assertArrayEquals(new Element[] { field },
+        Assert.assertArrayEquals(new Element[] { field.getElement() },
                 support.elementParamsForTest());
     }
 
     @Test
     public void sharedAction_dedupedById_acrossMultipleBindings() {
-        Element button = new Element("button");
-        Element field = new Element("input");
+        TagComponent button = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
         ClipboardCopyAction copy = new ClipboardCopyAction(
                 new PropertyArgument<>(field, "value", String.class));
 
@@ -103,8 +103,8 @@ public class TriggerSupportTest {
 
     @Test
     public void remove_dropsTriggerAndBindings() {
-        Element button = new Element("button");
-        Element field = new Element("input");
+        TagComponent button = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
         ClipboardCopyAction copy = new ClipboardCopyAction(
                 new PropertyArgument<>(field, "value", String.class));
         ClickTrigger t1 = new ClickTrigger(button);
@@ -123,7 +123,7 @@ public class TriggerSupportTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void bind_emptyActionsRejected() {
-        Element button = new Element("button");
+        TagComponent button = new TagComponent("button");
         new ClickTrigger(button).triggers(new Action[0]);
     }
 }

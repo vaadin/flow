@@ -25,15 +25,14 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Sets a target element's enabled state. Runs client-side by toggling the
+ * Sets a target component's enabled state. Runs client-side by toggling the
  * {@code disabled} attribute so the change is visible the instant the
  * triggering DOM event handler returns — closing the latency window in which a
- * user could otherwise click the element a second time before the server
+ * user could otherwise click the component a second time before the server
  * acknowledges the first click.
  * <p>
- * The server-side {@code Component.setEnabled(boolean)} (or
- * {@link Element#setEnabled(boolean)}) mirror is applied in the next server
- * cycle so application code observes the same enabled state.
+ * The server-side {@code Component.setEnabled(boolean)} mirror is applied in
+ * the next server cycle so application code observes the same enabled state.
  */
 public class SetEnabledAction extends AbstractAction {
 
@@ -46,26 +45,14 @@ public class SetEnabledAction extends AbstractAction {
      * Creates a set-enabled action.
      *
      * @param target
-     *            the element to enable or disable, not {@code null}
-     * @param enabled
-     *            {@code true} to enable, {@code false} to disable
-     */
-    public SetEnabledAction(Element target, boolean enabled) {
-        super(TYPE_ID);
-        this.target = Objects.requireNonNull(target);
-        this.enabled = enabled;
-    }
-
-    /**
-     * Creates a set-enabled action targeting the component's root element.
-     *
-     * @param target
      *            the component to enable or disable, not {@code null}
      * @param enabled
      *            {@code true} to enable, {@code false} to disable
      */
     public SetEnabledAction(Component target, boolean enabled) {
-        this(Objects.requireNonNull(target).getElement(), enabled);
+        super(TYPE_ID);
+        this.target = Objects.requireNonNull(target).getElement();
+        this.enabled = enabled;
     }
 
     /**

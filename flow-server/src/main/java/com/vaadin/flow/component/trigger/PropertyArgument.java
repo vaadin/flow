@@ -25,8 +25,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Reads a JavaScript property from a target element at the moment a trigger
- * fires.
+ * Reads a JavaScript property from a target component's root element at the
+ * moment a trigger fires.
  * <p>
  * Common targets and properties:
  * <ul>
@@ -48,25 +48,7 @@ public class PropertyArgument<T> extends AbstractArgument<T> {
 
     /**
      * Creates a property argument that reads the given JS property from the
-     * given target element.
-     *
-     * @param target
-     *            the element to read from, not {@code null}
-     * @param propertyName
-     *            the JS property name, not {@code null}
-     * @param valueType
-     *            runtime type of the produced value, not {@code null}
-     */
-    public PropertyArgument(Element target, String propertyName,
-            Class<T> valueType) {
-        super(TYPE_ID, valueType);
-        this.target = Objects.requireNonNull(target);
-        this.propertyName = Objects.requireNonNull(propertyName);
-    }
-
-    /**
-     * Creates a property argument that reads the given JS property from the
-     * given target component's root element.
+     * given target component.
      *
      * @param target
      *            the component to read from, not {@code null}
@@ -77,8 +59,9 @@ public class PropertyArgument<T> extends AbstractArgument<T> {
      */
     public PropertyArgument(Component target, String propertyName,
             Class<T> valueType) {
-        this(Objects.requireNonNull(target).getElement(), propertyName,
-                valueType);
+        super(TYPE_ID, valueType);
+        this.target = Objects.requireNonNull(target).getElement();
+        this.propertyName = Objects.requireNonNull(propertyName);
     }
 
     /**

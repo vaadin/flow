@@ -24,13 +24,12 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.trigger.internal.ServerCallbackAction;
 import com.vaadin.flow.component.trigger.internal.TriggerSupport;
-import com.vaadin.flow.dom.Element;
 
 public class ServerCallbackTest {
 
     @Test
     public void triggers_runnable_addsServerCallbackToSnapshot() {
-        Element button = new Element("button");
+        TagComponent button = new TagComponent("button");
         AtomicInteger calls = new AtomicInteger();
 
         new ClickTrigger(button).triggers(() -> calls.incrementAndGet());
@@ -44,7 +43,7 @@ public class ServerCallbackTest {
 
     @Test
     public void dispatchMirror_runsWrappedRunnable() {
-        Element button = new Element("button");
+        TagComponent button = new TagComponent("button");
         AtomicInteger calls = new AtomicInteger();
 
         new ClickTrigger(button).triggers(() -> calls.incrementAndGet());
