@@ -6,8 +6,8 @@ code in this repository.
 For guidance on **designing a new feature** (API shape, browser-API wrapping,
 signals, lifecycle, nullability, DOM events, bootstrap flow, Javadoc
 expectations), see [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md). This file
-covers the operational side: repo structure, build commands, test workflow,
-coding conventions, and general coding rules that apply to all changes.
+covers the operational side: repo structure, build commands, and test
+workflow.
 
 ## Repository Overview
 
@@ -110,18 +110,6 @@ mvn checkstyle:check
 cd flow-client && npm install && npm run build
 ```
 
-## Coding Conventions
-
-- Use triple quotes (`"""`) for multi-line string blocks in Java text blocks.
-- **When tests fail, code doesn't compile, or similar issues occur: Always
-  analyze why first. Do not start rewriting code.**
-- **When writing code, names and comments should describe how the code works
-  and why, not what has changed from previous versions. Commit messages
-  capture change information, not the code itself.**
-- **Always create proper tests for what should work first. If the tests
-  expose problems in the implementation, fix the implementation after the
-  tests have been created.**
-
 ## Working with Key Components
 
 ### JavaScript Execution and JSON Codec
@@ -134,9 +122,8 @@ JavaScript:
 - Special handling for `Element` instances (sent as DOM references)
 - Support for arbitrary objects via Jackson serialization
 
-When calling `executeJs()`, always pass values as parameters (`$0`, `$1`,
-...) — never concatenate them into the expression string. See
-[DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for the full rules.
+See [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for the rules around
+wrapping browser APIs from the server side.
 
 ### State Management
 
@@ -165,15 +152,8 @@ Components extend `Component` and use:
 - Use TestBench for browser automation
 - Test full client-server interaction
 - Require running application server
-- **When an IT fails: Use Playwright to debug the browser behavior and
-  understand what's actually happening in the UI.**
 
 ## Common Patterns
-
-**Test Improvements**: When improving tests, focus on:
-- Verifying actual behavior rather than just "not null"
-- Testing JSON structure and content for serialization
-- Adding comprehensive edge case coverage
 
 **JavaScript Integration**: When working with `executeJs()`:
 - Remember Element parameters become DOM references or null
@@ -192,13 +172,6 @@ Components extend `Component` and use:
 - Spring Boot 4 integration available
 - Hot reload available in development mode
 - Extensive CI/CD pipeline with multiple test configurations
-- When creating a commit that will resolve an issue in the same repository,
-  add "Fixes #issuenumber" to the commit message
-- When creating a PR, mark it as a draft on GitHub and remind the user
-  about reviewing the code themselves and marking the PR ready
-- Don't add `@since` to javadocs
-- When adding unit tests, add only the essential ones and not more than that
-- Use `test:` instead of `fix:` when fixing only tests
 
 See [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for design-level guidance
 (API shape, signals, sealed types, DOM event naming, browser-wrapping
