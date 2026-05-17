@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.trigger.internal.TriggerSupport;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -90,8 +91,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class,
-            SignalBindingFeature.class };
+            ReturnChannelMap.class, InertData.class, SignalBindingFeature.class,
+            TriggerSupport.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -149,7 +150,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      * non-null.
      *
      * @param node
-     *            the node
+     *             the node
      * @return the data feature
      */
     private static ElementData getDataFeature(StateNode node) {
@@ -161,7 +162,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      * non-null.
      *
      * @param node
-     *            the node
+     *             the node
      * @return the attribute feature
      */
     private static ElementAttributeMap getAttributeFeature(StateNode node) {
@@ -177,7 +178,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      * Gets the property feature for the given node and asserts it is non-null.
      *
      * @param node
-     *            the node
+     *             the node
      * @return the property feature
      */
     private static ElementPropertyMap getPropertyFeature(StateNode node) {

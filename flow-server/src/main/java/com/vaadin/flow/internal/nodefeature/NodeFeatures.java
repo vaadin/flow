@@ -147,6 +147,11 @@ public final class NodeFeatures {
      */
     public static final int SIGNAL_BINDING = 27;
 
+    /**
+     * Id for {@code TriggerSupport}.
+     */
+    public static final int TRIGGER_SUPPORT = 28;
+
     private NodeFeatures() {
         // Only static
     }
