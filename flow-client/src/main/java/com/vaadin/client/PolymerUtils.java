@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
+
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -70,11 +72,13 @@ public final class PolymerUtils {
      *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
      *      docs</a>
      */
-    public static native void setListValueByIndex(Element htmlNode, String path,
-            int listIndex, JsonValue newValue)
-    /*-{
-        htmlNode.set(path + "." + listIndex, newValue);
-    }-*/;
+    public static void setListValueByIndex(Element htmlNode, String path,
+            int listIndex, JsonValue newValue) {
+        if (GWT.isScript()) {
+            NativePolymerUtils.setListValueByIndex(htmlNode, path, listIndex,
+                    newValue);
+        }
+    }
 
     /**
      * Calls Polymer {@code splice} method on specified {@code htmlNode}.
@@ -97,11 +101,13 @@ public final class PolymerUtils {
      *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
      *      docs</a>
      */
-    public static native void splice(Element htmlNode, String path,
-            int startIndex, int deleteCount, JsonArray itemsToAdd)
-    /*-{
-        htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(itemsToAdd));
-    }-*/;
+    public static void splice(Element htmlNode, String path, int startIndex,
+            int deleteCount, JsonArray itemsToAdd) {
+        if (GWT.isScript()) {
+            NativePolymerUtils.splice(htmlNode, path, startIndex, deleteCount,
+                    itemsToAdd);
+        }
+    }
 
     /**
      * Store the StateNode.id into the polymer property under 'nodeId'
@@ -113,16 +119,11 @@ public final class PolymerUtils {
      * @param path
      *            polymer model path to property
      */
-    public static native void storeNodeId(Node domNode, int id, String path)
-    /*-{
-        if (typeof(domNode.get) !== 'undefined') {
-            var polymerProperty = domNode.get(path);
-            if (typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined) {
-                polymerProperty["nodeId"] = id;
-            }
+    public static void storeNodeId(Node domNode, int id, String path) {
+        if (GWT.isScript()) {
+            NativePolymerUtils.storeNodeId(domNode, id, path);
         }
-    }-*/;
+    }
 
     /**
      * Makes an attempt to convert an object into json.
@@ -376,13 +377,9 @@ public final class PolymerUtils {
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} is a polymer element
      */
-    public static native boolean isPolymerElement(Element htmlNode)
-    /*-{
-        var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
-        var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-    
-        return (isP2Element || isP3Element);
-    }-*/;
+    public static boolean isPolymerElement(Element htmlNode) {
+        return GWT.isScript() && NativePolymerUtils.isPolymerElement(htmlNode);
+    }
 
     /**
      * Checks whether the {@code htmlNode} can turn into polymer 2 element
@@ -399,10 +396,10 @@ public final class PolymerUtils {
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
-    public static native boolean mayBePolymerElement(Element htmlNode)
-    /*-{
-        return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
-    }-*/;
+    public static boolean mayBePolymerElement(Element htmlNode) {
+        return GWT.isScript()
+                && NativePolymerUtils.mayBePolymerElement(htmlNode);
+    }
 
     /**
      * Get first element by css query in the shadow root provided.
@@ -419,11 +416,13 @@ public final class PolymerUtils {
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
-    public static native Node searchForElementInShadowRoot(
-            ShadowRoot shadowRoot, String cssQuery)
-    /*-{
-        return shadowRoot.querySelector(cssQuery);
-    }-*/;
+    public static Node searchForElementInShadowRoot(ShadowRoot shadowRoot,
+            String cssQuery) {
+        return GWT.isScript()
+                ? NativePolymerUtils.searchForElementInShadowRoot(shadowRoot,
+                        cssQuery)
+                : null;
+    }
 
     /**
      * Get the element by id from the shadow root provided.
@@ -440,11 +439,12 @@ public final class PolymerUtils {
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
-    public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
-            String id)
-    /*-{
-        return shadowRoot.getElementById(id);
-    }-*/;
+    public static Node getElementInShadowRootById(ShadowRoot shadowRoot,
+            String id) {
+        return GWT.isScript()
+                ? NativePolymerUtils.getElementInShadowRootById(shadowRoot, id)
+                : null;
+    }
 
     /**
      * Find the DOM element inside shadow root of the {@code shadowRootParent}.
@@ -461,11 +461,11 @@ public final class PolymerUtils {
      *             generic version
      */
     @Deprecated
-    public static native Element getDomElementById(Node shadowRootParent,
-            String id)
-    /*-{
-        return shadowRootParent.$[id];
-    }-*/;
+    public static Element getDomElementById(Node shadowRootParent, String id) {
+        return GWT.isScript()
+                ? NativePolymerUtils.getDomElementById(shadowRootParent, id)
+                : null;
+    }
 
     /**
      * Returns {@code true} if the DOM structure of the polymer custom element
@@ -476,10 +476,9 @@ public final class PolymerUtils {
      *            the polymer custom element
      * @return {@code true} if the {@code shadowRootParent} element is ready
      */
-    public static native boolean isReady(Node shadowRootParent)
-    /*-{
-        return typeof(shadowRootParent.$) != "undefined";
-    }-*/;
+    public static boolean isReady(Node shadowRootParent) {
+        return GWT.isScript() && NativePolymerUtils.isReady(shadowRootParent);
+    }
 
     /**
      * Checks whether the {@code node} has required {@code tag}.
@@ -534,10 +533,10 @@ public final class PolymerUtils {
      *            the owner of the shadow root
      * @return the shadow root of the element
      */
-    public static native Element getDomRoot(Node templateElement)
-    /*-{
-        return templateElement.root;
-    }-*/;
+    public static Element getDomRoot(Node templateElement) {
+        return GWT.isScript() ? NativePolymerUtils.getDomRoot(templateElement)
+                : null;
+    }
 
     /**
      * Invokes the {@code runnable} when the custom element with the given
@@ -548,14 +547,11 @@ public final class PolymerUtils {
      * @param runnable
      *            the command to run when the element if initialized
      */
-    public static native void invokeWhenDefined(String tagName,
-            Runnable runnable)
-    /*-{
-        $wnd.customElements.whenDefined(tagName).then(
-            function () {
-                runnable.@java.lang.Runnable::run(*)();
-            });
-    }-*/;
+    public static void invokeWhenDefined(String tagName, Runnable runnable) {
+        if (GWT.isScript()) {
+            NativePolymerUtils.invokeWhenDefined(tagName, runnable::run);
+        }
+    }
 
     /**
      * Gets the tag name of the {@code node}.
@@ -642,11 +638,11 @@ public final class PolymerUtils {
      * @param value
      *            the value
      */
-    public static native void setProperty(Element element, String path,
-            Object value)
-    /*-{
-         element.set(path, value);
-     }-*/;
+    public static void setProperty(Element element, String path, Object value) {
+        if (GWT.isScript()) {
+            NativePolymerUtils.setProperty(element, path, value);
+        }
+    }
 
     /**
      * Returns true if and only if the element has a shadow root ancestor.
@@ -655,13 +651,7 @@ public final class PolymerUtils {
      *            the element to test
      * @return whether the element is in a shadow root
      */
-    public static native boolean isInShadowRoot(Element element)
-    /*-{
-        while (element.parentNode && (element = element.parentNode)) {
-            if (element.toString() === '[object ShadowRoot]') {
-                return true;
-            }
-        }
-        return false;
-     }-*/;
+    public static boolean isInShadowRoot(Element element) {
+        return GWT.isScript() && NativePolymerUtils.isInShadowRoot(element);
+    }
 }

@@ -22,6 +22,7 @@ import { ConnectionIndicator } from './client/ConnectionIndicator';
 import { Console } from './client/Console';
 import { ElementUtil } from './client/ElementUtil';
 import { LitUtils } from './client/LitUtils';
+import { PolymerUtils } from './client/PolymerUtils';
 import { ReactUtils } from './client/ReactUtils';
 import { WidgetUtil } from './client/WidgetUtil';
 import { registerGwtBridge } from './registry';
@@ -39,6 +40,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'Console', Console);
   registerGwtBridge('client', 'ElementUtil', ElementUtil);
   registerGwtBridge('client', 'LitUtils', LitUtils);
+  registerGwtBridge('client', 'PolymerUtils', PolymerUtils);
   registerGwtBridge('client', 'ReactUtils', ReactUtils);
   registerGwtBridge('client', 'WidgetUtil', WidgetUtil);
 }
