@@ -94,6 +94,26 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             loadingFinished: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFinished(); } },
             loadingFailed: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFailed(); } }
         };
+        var bootstrap = client.bootstrap = client.bootstrap || {};
+        bootstrap.Bootstrapper = {
+            getJsoConfiguration: function(appId) {
+                return $wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.getApp ? $wnd.Vaadin.Flow.getApp(appId) : null;
+            },
+            vaadinBootstrapLoaded: function() {
+                return !!($wnd.Vaadin && $wnd.Vaadin.Flow);
+            },
+            deferStartApplication: function(appId, doStart) {
+                $wnd.addEventListener('WebComponentsReady', function() { doStart(appId); });
+            },
+            startApplicationImmediately: function() {
+                return !$wnd.WebComponents || $wnd.WebComponents.ready;
+            },
+            registerCallback: function(name, startApp) {
+                if ($wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.registerWidgetset) {
+                    $wnd.Vaadin.Flow.registerWidgetset(name, startApp);
+                }
+            }
+        };
         var communication = client.communication = client.communication || {};
         communication.MessageHandler = {
             removeStylesheetByIdFromDom: function(id) {

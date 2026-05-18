@@ -194,41 +194,39 @@ public class Bootstrapper implements EntryPoint {
      *            the id of the application to get configuration data for
      * @return a native javascript object containing the configuration data
      */
-    private static native JsoConfiguration getJsoConfiguration(String appId)
-    /*-{
-        return $wnd.Vaadin.Flow.getApp(appId);
-     }-*/;
+    private static JsoConfiguration getJsoConfiguration(String appId) {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeBootstrapper.getJsoConfiguration(appId)
+                : null;
+    }
 
-    private static native boolean vaadinBootstrapLoaded()
-    /*-{
-         return $wnd.Vaadin.Flow != null;
-     }-*/;
+    private static boolean vaadinBootstrapLoaded() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeBootstrapper.vaadinBootstrapLoaded();
+    }
 
-    private static native void deferStartApplication(String applicationId)
-    /*-{
-        var callback = function() {
-            @Bootstrapper::doStartApplication(*)(applicationId);
-        };
-        $wnd.addEventListener('WebComponentsReady', $entry(callback));
-    }-*/;
+    private static void deferStartApplication(String applicationId) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeBootstrapper.deferStartApplication(applicationId,
+                    Bootstrapper::doStartApplication);
+        }
+    }
 
-    private static native boolean startApplicationImmediately()
-    /*-{
-        return !$wnd.WebComponents || $wnd.WebComponents.ready;
-    }-*/;
+    private static boolean startApplicationImmediately() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeBootstrapper.startApplicationImmediately();
+    }
 
     /**
      * Registers the callback that the bootstrap javascript uses to start
      * applications once the widgetset is loaded and all required information is
      * available.
-     *
-     * @param widgetsetName
-     *            the name of this widgetset
      */
-    public static native void registerCallback(String widgetsetName)
-    /*-{
-        var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
-        $wnd.Vaadin.Flow.registerWidgetset(widgetsetName, callbackHandler);
-    }-*/;
+    public static void registerCallback(String widgetsetName) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeBootstrapper.registerCallback(widgetsetName,
+                    Bootstrapper::startApplication);
+        }
+    }
 
 }
