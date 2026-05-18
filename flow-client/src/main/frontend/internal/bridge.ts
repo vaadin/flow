@@ -22,6 +22,7 @@ import { BrowserInfo } from './client/BrowserInfo';
 import { ConnectionIndicator } from './client/ConnectionIndicator';
 import { Console } from './client/Console';
 import { ElementUtil } from './client/ElementUtil';
+import { ExecuteJavaScriptElementUtils } from './client/ExecuteJavaScriptElementUtils';
 import { LitUtils } from './client/LitUtils';
 import { PolymerUtils } from './client/PolymerUtils';
 import { ReactUtils } from './client/ReactUtils';
@@ -32,6 +33,7 @@ import { Bootstrapper } from './client/bootstrap/Bootstrapper';
 import { MessageHandler } from './client/communication/MessageHandler';
 import { MessageSender } from './client/communication/MessageSender';
 import { XhrConnection } from './client/communication/XhrConnection';
+import { ClientJsonCodec } from './client/flow/util/ClientJsonCodec';
 import { registerGwtBridge } from './registry';
 
 /**
@@ -47,6 +49,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'ConnectionIndicator', ConnectionIndicator);
   registerGwtBridge('client', 'Console', Console);
   registerGwtBridge('client', 'ElementUtil', ElementUtil);
+  registerGwtBridge('client', 'ExecuteJavaScriptElementUtils', ExecuteJavaScriptElementUtils);
   registerGwtBridge('client', 'LitUtils', LitUtils);
   registerGwtBridge('client', 'PolymerUtils', PolymerUtils);
   registerGwtBridge('client', 'ReactUtils', ReactUtils);
@@ -57,6 +60,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'MessageHandler', MessageHandler);
   registerGwtBridge('client.communication', 'MessageSender', MessageSender);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
+  registerGwtBridge('client.flow.util', 'ClientJsonCodec', ClientJsonCodec);
 }
 
 installGwtBridge();

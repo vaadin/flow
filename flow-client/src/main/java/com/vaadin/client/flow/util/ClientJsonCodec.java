@@ -158,14 +158,13 @@ public class ClientJsonCodec {
         }
     }
 
-    private static native NativeFunction createReturnChannelCallback(int nodeId,
-            int channelId, ServerConnector serverConnector)
-    /*-{
-        return $entry(function() {
-          var args = Array.prototype.slice.call(arguments);
-          serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
-        });
-    }-*/;
+    private static NativeFunction createReturnChannelCallback(int nodeId,
+            int channelId, ServerConnector serverConnector) {
+        return com.google.gwt.core.client.GWT.isScript() ? NativeClientJsonCodec
+                .createReturnChannelCallback(args -> serverConnector
+                        .sendReturnChannelMessage(nodeId, channelId, args))
+                : null;
+    }
 
     private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,
             String originalJson) {
