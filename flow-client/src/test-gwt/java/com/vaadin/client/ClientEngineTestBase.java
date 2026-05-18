@@ -94,6 +94,21 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             loadingFinished: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFinished(); } },
             loadingFailed: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFailed(); } }
         };
+        client.SystemErrorHandler = {
+            recreateNodes: function(tagName) {
+                var els = document.getElementsByTagName(tagName);
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    if (el.$server) { el.$server.disconnected = function() {}; }
+                    el.parentNode.replaceChild(el.cloneNode(false), el);
+                }
+            },
+            showPopover: function(el) {
+                var fn = el && el.showPopover;
+                if (typeof fn === 'function') { fn.call(el); }
+            },
+            getShadowRootElement: function(host) { return host.shadowRoot; }
+        };
         client.ResourceLoader = {
             supportsHtmlWhenReady: function() {
                 return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
