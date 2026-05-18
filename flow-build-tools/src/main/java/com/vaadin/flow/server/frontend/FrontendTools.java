@@ -68,9 +68,9 @@ public class FrontendTools {
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "11.1.3";
+    public static final String DEFAULT_NPM_VERSION = "11.12.1";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.0.8";
+    public static final String DEFAULT_PNPM_VERSION = "11.1.3";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
