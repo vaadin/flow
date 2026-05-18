@@ -94,6 +94,41 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             loadingFinished: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFinished(); } },
             loadingFailed: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFailed(); } }
         };
+        client.ResourceLoader = {
+            supportsHtmlWhenReady: function() {
+                return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
+            },
+            addHtmlImportsReadyHandler: function(h) { $wnd.HTMLImports.whenReady(function() { h(); }); },
+            addOnloadHandler: function(elem, onLoad, onError) {
+                elem.onload = function() { elem.onload = null; elem.onerror = null; elem.onreadystatechange = null; onLoad(); };
+                elem.onerror = function() { elem.onload = null; elem.onerror = null; elem.onreadystatechange = null; onError(); };
+                elem.onreadystatechange = function() {
+                    if ('loaded' === elem.readyState || 'complete' === elem.readyState) { elem.onload(); }
+                };
+            },
+            getStyleSheetLength: function(url) {
+                for (var i = 0; i < $doc.styleSheets.length; i++) {
+                    if ($doc.styleSheets[i].href === url) {
+                        var sheet = $doc.styleSheets[i];
+                        try {
+                            var rules = sheet.cssRules || sheet.rules;
+                            if (rules == null) { return 1; }
+                            return rules.length;
+                        } catch (e) { return 1; }
+                    }
+                }
+                return -1;
+            },
+            runPromiseExpression: function(expr, supplier, onSuccess, onError) {
+                try {
+                    var p = supplier();
+                    if (!(p instanceof $wnd.Promise)) {
+                        throw new Error('The expression "' + expr + '" result is not a Promise.');
+                    }
+                    p.then(function() { onSuccess(); }, function(e) { console.error(e); onError(); });
+                } catch (e) { console.error(e); onError(); }
+            }
+        };
         client.BrowserInfo = {
             checkForTouchDevice: function() {
                 if (navigator && "maxTouchPoints" in navigator) { return navigator.maxTouchPoints > 0; }
