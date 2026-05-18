@@ -94,6 +94,20 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             loadingFinished: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFinished(); } },
             loadingFailed: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFailed(); } }
         };
+        client.BrowserInfo = {
+            checkForTouchDevice: function() {
+                if (navigator && "maxTouchPoints" in navigator) { return navigator.maxTouchPoints > 0; }
+                if (navigator && "msMaxTouchPoints" in navigator) { return navigator.msMaxTouchPoints > 0; }
+                var mQ = $wnd.matchMedia && matchMedia("(pointer:coarse)");
+                if (mQ && mQ.media === "(pointer:coarse)") { return !!mQ.matches; }
+                try { $doc.createEvent("TouchEvent"); return true; } catch(e) { return false; }
+            },
+            getBrowserString: function() { return $wnd.navigator.userAgent; },
+            isIos: function() {
+                return /iPad|iPhone|iPod/.test(navigator.platform)
+                    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            }
+        };
         client.WidgetUtil = {
             redirect: function(url) {
                 if (url) { $wnd.location.assign(url); } else { $wnd.location.reload(); }
