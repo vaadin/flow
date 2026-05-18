@@ -546,13 +546,11 @@ public class MessageHandler {
         registry.getResourceLoader().clearLoadedResourceById(dependencyId);
     }
 
-    private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
-        // Remove both link and style elements with matching dependency ID
-        var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].remove();
+    private void removeStylesheetByIdFromDom(String dependencyId) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeMessageHandler.removeStylesheetByIdFromDom(dependencyId);
         }
-    }-*/;
+    }
 
     private void processChanges(JsonObject json) {
         StateTree tree = registry.getStateTree();
@@ -580,12 +578,11 @@ public class MessageHandler {
         }
     }
 
-    private native void callAfterServerUpdates(Node node)
-    /*-{
-        if ( node && node.afterServerUpdate ) {
-            node.afterServerUpdate();
+    private void callAfterServerUpdates(Node node) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeMessageHandler.callAfterServerUpdates(node);
         }
-    }-*/;
+    }
 
     private void endRequestIfResponse(ValueMap json) {
         if (isResponse(json)) {
@@ -707,15 +704,11 @@ public class MessageHandler {
         }
     }
 
-    private static final native int calculateBootstrapTime()
-    /*-{
-        if ($wnd.performance && $wnd.performance.timing) {
-            return (new Date).getTime() - $wnd.performance.timing.responseStart;
-        } else {
-            // performance.timing not supported
-            return -1;
-        }
-    }-*/;
+    private static int calculateBootstrapTime() {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeMessageHandler.calculateBootstrapTime()
+                : -1;
+    }
 
     /**
      * Finds the next pending UIDL message and handles it (next pending is
@@ -837,19 +830,17 @@ public class MessageHandler {
         }
     }
 
-    private static native ValueMap parseJSONResponse(String jsonText)
-    /*-{
-       return JSON.parse(jsonText);
-    }-*/;
+    private static ValueMap parseJSONResponse(String jsonText) {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeMessageHandler.parseJSONResponse(jsonText)
+                : null;
+    }
 
-    private static final native double getFetchStartTime()
-    /*-{
-        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing.fetchStart) {
-            return $wnd.performance.timing.fetchStart;
-        } else {
-            return 0;
-        }
-    }-*/;
+    private static double getFetchStartTime() {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeMessageHandler.getFetchStartTime()
+                : 0;
+    }
 
     /**
      * Sets a temporary handler for session expiration. This handler will be
