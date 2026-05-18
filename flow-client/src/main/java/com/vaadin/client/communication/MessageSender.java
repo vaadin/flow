@@ -49,9 +49,11 @@ public class MessageSender {
         sendBeacon(registry.getXhrConnection().getUri(), payload.toJson());
     }
 
-    public static native void sendBeacon(String url, String payload) /*-{
-        $wnd.navigator.sendBeacon(url, payload);
-    }-*/;
+    public static void sendBeacon(String url, String payload) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeMessageSender.sendBeacon(url, payload);
+        }
+    }
 
     public enum ResynchronizationState {
         NOT_ACTIVE, SEND_TO_SERVER, WAITING_FOR_RESPONSE

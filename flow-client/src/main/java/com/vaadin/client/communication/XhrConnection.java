@@ -200,19 +200,9 @@ public class XhrConnection {
                         registry.getApplicationConfiguration().getUIId());
     }
 
-    private static native boolean resendRequest(XMLHttpRequest xhr)
-    /*-{
-        if (xhr.readyState != 1) {
-            // Progressed to some other readyState -> no longer blocked
-            return false;
-        }
-        try {
-            xhr.send();
-            return true;
-        } catch (e) {
-            // send throws exception if it is running for real
-            return false;
-        }
-    }-*/;
+    private static boolean resendRequest(XMLHttpRequest xhr) {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeXhrConnection.resendRequest(xhr);
+    }
 
 }
