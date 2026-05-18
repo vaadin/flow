@@ -94,6 +94,34 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             loadingFinished: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFinished(); } },
             loadingFailed: function() { if ($wnd.Vaadin.connectionState) { $wnd.Vaadin.connectionState.loadingFailed(); } }
         };
+        client.WidgetUtil = {
+            redirect: function(url) {
+                if (url) { $wnd.location.assign(url); } else { $wnd.location.reload(); }
+            },
+            isAbsoluteUrl: function(url) { return /^(?:[a-zA-Z]+:)?\/\//.test(url); },
+            crazyJsCast: function(v) { return v; },
+            crazyJsoCast: function(v) { return v; },
+            toPrettyJsonJsni: function(v) {
+                return $wnd.JSON.stringify(v, function(k, vv) { return k === '$H' ? undefined : vv; }, 4);
+            },
+            setJsProperty: function(o, n, v) { o[n] = v; },
+            getJsProperty: function(o, n) { return o[n]; },
+            hasOwnJsProperty: function(o, n) { return Object.prototype.hasOwnProperty.call(o, n); },
+            hasJsProperty: function(o, n) { return n in o; },
+            isUndefined: function(p) { return p === undefined; },
+            deleteJsProperty: function(o, n) { delete o[n]; },
+            createJsonObjectWithoutPrototype: function() { return $wnd.Object.create(null); },
+            createJsonObject: function() { return {}; },
+            isTrueish: function(v) { return !!v; },
+            getKeys: function(v) { return Object.keys(v); },
+            stringify: function(p) {
+                return JSON.stringify(p, function(k, v) {
+                    if (v instanceof Node) { throw 'Message JsonObject contained a dom node reference'; }
+                    return v;
+                });
+            },
+            equalsInJS: function(a, b) { return a == b; }
+        };
         client.ElementUtil = {
             getElementById: function(context, id) {
                 if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
