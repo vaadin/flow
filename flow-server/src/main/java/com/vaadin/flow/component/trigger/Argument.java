@@ -32,5 +32,6 @@ import java.io.Serializable;
  * @param <T>
  *            the runtime type of the value produced
  */
-public interface Argument<T> extends Serializable {
+public sealed interface Argument<T> extends Serializable
+        permits AbstractArgument {
 }

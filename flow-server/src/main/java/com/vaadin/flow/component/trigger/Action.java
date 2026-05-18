@@ -31,5 +31,5 @@ import java.io.Serializable;
  * <p>
  * Implementations should extend {@link AbstractAction}.
  */
-public interface Action extends Serializable {
+public sealed interface Action extends Serializable permits AbstractAction {
 }

@@ -33,7 +33,7 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
  * the framework deserialises before calling the server-side handler, so the
  * extension author never sees JSON types.
  */
-public abstract class AbstractAction implements Action {
+public abstract non-sealed class AbstractAction implements Action {
 
     private final String typeId;
 
@@ -72,6 +72,5 @@ public abstract class AbstractAction implements Action {
      *            {@code null}
      */
     public void buildClientConfig(ConfigContext context) {
-        // No config by default.
     }
 }

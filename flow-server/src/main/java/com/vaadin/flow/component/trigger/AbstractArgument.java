@@ -31,7 +31,7 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
  * @param <T>
  *            the runtime type of the value produced
  */
-public abstract class AbstractArgument<T> implements Argument<T> {
+public abstract non-sealed class AbstractArgument<T> implements Argument<T> {
 
     private final String typeId;
     private final Class<T> valueType;
@@ -77,6 +77,5 @@ public abstract class AbstractArgument<T> implements Argument<T> {
      *            the resolver for referenced elements, not {@code null}
      */
     public void buildClientConfig(ConfigContext context) {
-        // No config by default.
     }
 }

@@ -22,6 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -61,8 +64,7 @@ public class TriggerSupport extends ServerSideFeature {
     private final Map<Integer, AbstractAction> actionsById = new LinkedHashMap<>();
     private final Map<Integer, AbstractArgument<?>> argumentsById = new LinkedHashMap<>();
 
-    private record Binding(int triggerId,
-            int[] actionIds) implements Serializable {
+    private record Binding(int trigger, int[] actions) implements Serializable {
     }
 
     private final List<Binding> bindings = new ArrayList<>();
@@ -165,13 +167,9 @@ public class TriggerSupport extends ServerSideFeature {
         int triggerId = registerTrigger(trigger);
         int[] actionIdArr = new int[actions.length];
         for (int i = 0; i < actions.length; i++) {
-            Action action = actions[i];
-            Objects.requireNonNull(action, "Action must not be null");
-            if (!(action instanceof AbstractAction abstractAction)) {
-                throw new IllegalArgumentException(
-                        "Action must extend AbstractAction: " + action);
-            }
-            actionIdArr[i] = registerAction(abstractAction);
+            Action action = Objects.requireNonNull(actions[i],
+                    "Action must not be null");
+            actionIdArr[i] = registerAction((AbstractAction) action);
         }
         bindings.add(new Binding(triggerId, actionIdArr));
         scheduleSync();
@@ -190,20 +188,8 @@ public class TriggerSupport extends ServerSideFeature {
             return;
         }
         triggersById.remove(id);
-        bindings.removeIf(b -> b.triggerId() == id);
+        bindings.removeIf(b -> b.trigger() == id);
         scheduleSync();
-    }
-
-    /**
-     * Looks up an action by id. Used when the client posts a server-side
-     * notification back over the per-host return channel.
-     *
-     * @param id
-     *            the action id
-     * @return the action, or {@code null} if unknown
-     */
-    public @Nullable AbstractAction getAction(int id) {
-        return actionsById.get(id);
     }
 
     /**
@@ -240,9 +226,6 @@ public class TriggerSupport extends ServerSideFeature {
         Element host = getHost();
         ObjectNode snapshot = buildSnapshot();
         ReturnChannelRegistration channel = getMirrorChannel();
-        // Parameter layout: $0 = snapshot, $1..$N = extra elements,
-        // $N+1 = mirror channel function. Pre-computed before assembling
-        // the executeJs expression so the indices line up.
         int extras = elementParams.size();
         int channelIndex = 1 + extras;
         Object[] params = new Object[2 + extras];
@@ -252,20 +235,20 @@ public class TriggerSupport extends ServerSideFeature {
         }
         params[channelIndex] = channel;
 
-        StringBuilder call = new StringBuilder(
-                "if (window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.triggers) {"
-                        + " window.Vaadin.Flow.triggers.bind(this, $0");
-        call.append(", [");
+        StringBuilder extrasList = new StringBuilder("[");
         for (int i = 0; i < extras; i++) {
             if (i > 0) {
-                call.append(',');
+                extrasList.append(',');
             }
-            call.append('$').append(i + 1);
+            extrasList.append('$').append(i + 1);
         }
-        call.append("], $").append(channelIndex);
-        call.append("); } else { console.debug(")
-                .append("'window.Vaadin.Flow.triggers not loaded'); }");
-        host.executeJs(call.toString(), params);
+        extrasList.append(']');
+        String call = "if (window.Vaadin && window.Vaadin.Flow"
+                + " && window.Vaadin.Flow.triggers) {"
+                + " window.Vaadin.Flow.triggers.bind(this, $0, " + extrasList
+                + ", $" + channelIndex + "); } else { console.debug("
+                + "'window.Vaadin.Flow.triggers not loaded'); }";
+        host.executeJs(call, params);
     }
 
     private ReturnChannelRegistration getMirrorChannel() {
@@ -307,64 +290,43 @@ public class TriggerSupport extends ServerSideFeature {
 
     private ObjectNode buildSnapshot() {
         ObjectNode root = JacksonUtils.createObjectNode();
-        // Iterate over copies so that builders that register new arguments
-        // (which mutates argumentsById) don't disturb the in-progress
-        // iteration. Order matters: actions may register arguments — process
-        // triggers and actions first, arguments last.
-        ObjectNode triggersNode = JacksonUtils.createObjectNode();
-        for (Map.Entry<Integer, AbstractTrigger> e : List
-                .copyOf(triggersById.entrySet())) {
-            triggersNode.set(e.getKey().toString(),
-                    entryFor(e.getValue().getTypeId(),
-                            cfg -> e.getValue().buildClientConfig(cfg)));
-        }
-        root.set("triggers", triggersNode);
-
-        ObjectNode actionsNode = JacksonUtils.createObjectNode();
-        for (Map.Entry<Integer, AbstractAction> e : List
-                .copyOf(actionsById.entrySet())) {
-            actionsNode.set(e.getKey().toString(),
-                    entryFor(e.getValue().getTypeId(),
-                            cfg -> e.getValue().buildClientConfig(cfg)));
-        }
-        root.set("actions", actionsNode);
-
-        ObjectNode argumentsNode = JacksonUtils.createObjectNode();
-        for (Map.Entry<Integer, AbstractArgument<?>> e : List
-                .copyOf(argumentsById.entrySet())) {
-            argumentsNode.set(e.getKey().toString(),
-                    entryFor(e.getValue().getTypeId(),
-                            cfg -> e.getValue().buildClientConfig(cfg)));
-        }
-        root.set("arguments", argumentsNode);
-
-        ArrayNode bindingsNode = JacksonUtils.createArrayNode();
-        for (Binding b : bindings) {
-            ObjectNode entry = JacksonUtils.createObjectNode();
-            entry.put("trigger", b.triggerId());
-            ArrayNode actionsArr = JacksonUtils.createArrayNode();
-            for (int a : b.actionIds()) {
-                actionsArr.add(a);
-            }
-            entry.set("actions", actionsArr);
-            bindingsNode.add(entry);
-        }
-        root.set("bindings", bindingsNode);
+        // Order matters: triggers and actions may register arguments via
+        // buildClientConfig, so process them before arguments. The arguments
+        // map is snapshotted before iteration so newly-registered arguments
+        // mid-loop don't disturb it.
+        root.set("triggers",
+                writeEntries(triggersById.entrySet(),
+                        AbstractTrigger::getTypeId,
+                        AbstractTrigger::buildClientConfig));
+        root.set("actions", writeEntries(actionsById.entrySet(),
+                AbstractAction::getTypeId, AbstractAction::buildClientConfig));
+        root.set("arguments",
+                writeEntries(List.copyOf(argumentsById.entrySet()),
+                        AbstractArgument::getTypeId,
+                        AbstractArgument::buildClientConfig));
+        root.set("bindings", JacksonUtils.createNode(bindings));
         return root;
     }
 
-    private ObjectNode entryFor(String typeId, BuildConfig builder) {
+    private <T> ObjectNode writeEntries(Iterable<Map.Entry<Integer, T>> entries,
+            Function<T, String> typeId, BiConsumer<T, ConfigContext> cfg) {
+        ObjectNode node = JacksonUtils.createObjectNode();
+        for (Map.Entry<Integer, T> e : entries) {
+            T value = e.getValue();
+            node.set(e.getKey().toString(), entryFor(typeId.apply(value),
+                    ctx -> cfg.accept(value, ctx)));
+        }
+        return node;
+    }
+
+    private ObjectNode entryFor(String typeId,
+            Consumer<ConfigContext> builder) {
         ObjectNode entry = JacksonUtils.createObjectNode();
         entry.put("type", typeId);
         ObjectNode config = JacksonUtils.createObjectNode();
-        builder.build(new EntryContext(config));
+        builder.accept(new EntryContext(config));
         entry.set("config", config);
         return entry;
-    }
-
-    @FunctionalInterface
-    private interface BuildConfig {
-        void build(ConfigContext context);
     }
 
     /**
@@ -382,21 +344,14 @@ public class TriggerSupport extends ServerSideFeature {
         @Override
         public ConfigContext put(String key, @Nullable Object value) {
             Objects.requireNonNull(key);
-            if (value == null) {
-                entry.putNull(key);
-            } else {
-                entry.set(key, JacksonUtils.createNode(value));
-            }
+            entry.set(key, JacksonUtils.createNode(value));
             return this;
         }
 
         @Override
         public int registerArgument(Argument<?> argument) {
             Objects.requireNonNull(argument);
-            if (!(argument instanceof AbstractArgument<?> abstractArgument)) {
-                throw new IllegalArgumentException(
-                        "Argument must extend AbstractArgument: " + argument);
-            }
+            AbstractArgument<?> abstractArgument = (AbstractArgument<?>) argument;
             return argumentIds.computeIfAbsent(abstractArgument, a -> {
                 int id = nextArgumentId++;
                 argumentsById.put(id, a);
@@ -430,15 +385,6 @@ public class TriggerSupport extends ServerSideFeature {
      */
     public ObjectNode snapshotForTest() {
         return buildSnapshot();
-    }
-
-    /**
-     * Parameter array (excluding the host at index 0) for testing.
-     *
-     * @return the secondary elements
-     */
-    public Element[] elementParamsForTest() {
-        return elementParams.toArray(new Element[0]);
     }
 
     /**

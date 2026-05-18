@@ -35,7 +35,6 @@ public abstract class AbstractTrigger implements Trigger {
 
     private final String typeId;
     private final Element host;
-    private final transient TriggerSupport support;
     private final int triggerId;
 
     /**
@@ -50,8 +49,7 @@ public abstract class AbstractTrigger implements Trigger {
     protected AbstractTrigger(String typeId, Component host) {
         this.typeId = Objects.requireNonNull(typeId);
         this.host = Objects.requireNonNull(host).getElement();
-        this.support = TriggerSupport.on(this.host);
-        this.triggerId = support.registerTrigger(this);
+        this.triggerId = TriggerSupport.on(this.host).registerTrigger(this);
     }
 
     /**
@@ -92,18 +90,17 @@ public abstract class AbstractTrigger implements Trigger {
      *            {@code null}
      */
     public void buildClientConfig(ConfigContext context) {
-        // No config by default.
     }
 
     @Override
     public final Trigger triggers(Action... actions) {
         Objects.requireNonNull(actions);
-        support.bind(this, actions);
+        TriggerSupport.on(host).bind(this, actions);
         return this;
     }
 
     @Override
     public final void remove() {
-        support.removeTrigger(this);
+        TriggerSupport.on(host).removeTrigger(this);
     }
 }

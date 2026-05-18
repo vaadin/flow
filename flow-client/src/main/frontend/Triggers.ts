@@ -193,7 +193,13 @@ function unbind(host: HTMLElement): void {
 
 // --- Built-in factories --------------------------------------------------
 
-triggerFactories.set('flow:event', (host, config, _extras, fire) => {
+// Must match TYPE_ID constants in the Java side (DomEventTrigger,
+// PropertyArgument, SetPropertyAction).
+const TYPE_DOM_EVENT = 'flow:event';
+const TYPE_PROPERTY = 'flow:property';
+const TYPE_SET_PROPERTY = 'flow:set-property';
+
+triggerFactories.set(TYPE_DOM_EVENT, (host, config, _extras, fire) => {
   const eventName = String(config.eventName ?? '');
   const listener = () => fire();
   host.addEventListener(eventName, listener);
@@ -204,7 +210,7 @@ triggerFactories.set('flow:event', (host, config, _extras, fire) => {
   };
 });
 
-argumentFactories.set('flow:property', (config, extras) => {
+argumentFactories.set(TYPE_PROPERTY, (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');
   return {
@@ -220,7 +226,7 @@ argumentFactories.set('flow:property', (config, extras) => {
   };
 });
 
-actionFactories.set('flow:set-property', (config, extras) => {
+actionFactories.set(TYPE_SET_PROPERTY, (config, extras) => {
   const elementIndex = Number(config.element ?? 0);
   const property = String(config.property ?? '');
   const value = config.value;
