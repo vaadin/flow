@@ -43,7 +43,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      * (element), {@code $N+1} (initializer id).
      */
     private static final String INIT_WRAPPER_PREFIX = """
-            return (async function() {
+            return (function() {
               const __initId = $%d;
               const __element = $%d;
               const __ctx = this;
@@ -86,7 +86,7 @@ public final class ElementJsInitializerRegistration implements Registration {
                 };
               })();
               const __node = __ctx.getNode(__element);
-              const __cleanup = await (async function() {
+              const __cleanup = (function() {
             """;
 
     private static final String INIT_WRAPPER_SUFFIX = """

@@ -1860,9 +1860,8 @@ public class Element extends Node<Element> {
      * <p>
      * The expression is executed with this element as <code>this</code> and
      * parameters available as <code>$0</code>, <code>$1</code>, ... exactly
-     * like {@link #executeJs(String, Object...)}. Its return value, if a
-     * function (or a promise that resolves to a function), is stored and
-     * invoked when:
+     * like {@link #executeJs(String, Object...)}. If the expression returns a
+     * function, that function is stored and invoked when:
      * <ul>
      * <li>the client-side DOM node for this element is destroyed (real detach
      * where the client discarded its DOM), or</li>
@@ -1874,7 +1873,9 @@ public class Element extends Node<Element> {
      * detach + re-attach inside a single round trip, since the client never
      * discarded its DOM.
      * <p>
-     * Non-function return values are treated as "no cleanup".
+     * The return value is read synchronously. Returning a promise that resolves
+     * to a cleanup function is <strong>not</strong> supported; any non-function
+     * return value (including a promise) is treated as "no cleanup".
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>

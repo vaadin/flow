@@ -2528,6 +2528,88 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void addJsInitializer_attachDetachAttachSameRoundTrip_emitsOnlyOneInit() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+
+        // Detach and re-attach again within the same round trip, before any
+        // flush. Only one init should be queued for the eventual flush.
+        ui.getElement().removeAllChildren();
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Attach + detach + attach in one round trip should emit exactly one init");
+    }
+
+    @Test
+    void addJsInitializer_addedWhileDetached_emitsNothingUntilAttach() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertTrue(
+                ui.getInternals().dumpPendingJavaScriptInvocations().isEmpty(),
+                "No init should be emitted while the element is detached");
+
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Init should be emitted once the element is attached");
+    }
+
+    @Test
+    void addJsInitializer_multipleInitializers_emitDistinctIds() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        element.addJsInitializer("return () => {};");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pending.size());
+        // Initializer id is the last parameter (index 1 here: [element, id]).
+        assertEquals(Integer.valueOf(0),
+                pending.get(0).getInvocation().getParameters().get(1));
+        assertEquals(Integer.valueOf(1),
+                pending.get(1).getInvocation().getParameters().get(1));
+    }
+
+    @Test
+    void addJsInitializer_removeOneOfMultiple_disposesOnlyThatOne() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration first = element.addJsInitializer("return () => {};");
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        first.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertTrue(invocation.getExpression().contains("initializers.dispose"));
+        // Dispose params are [initializerId, element].
+        assertEquals(Integer.valueOf(0), invocation.getParameters().get(0));
+    }
+
+    @Test
     void attachShadowRoot_shadowRootCreatedAndChildrenArePreserved() {
         Element element = ElementFactory.createDiv();
         Element button = ElementFactory.createButton();
