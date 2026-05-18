@@ -20,6 +20,7 @@
 // MIGRATION.md for the full pattern.
 import { Console } from './client/Console';
 import { LitUtils } from './client/LitUtils';
+import { ReactUtils } from './client/ReactUtils';
 import { registerGwtBridge } from './registry';
 
 /**
@@ -33,6 +34,7 @@ import { registerGwtBridge } from './registry';
 export function installGwtBridge(): void {
   registerGwtBridge('client', 'Console', Console);
   registerGwtBridge('client', 'LitUtils', LitUtils);
+  registerGwtBridge('client', 'ReactUtils', ReactUtils);
 }
 
 installGwtBridge();

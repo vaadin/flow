@@ -17,16 +17,26 @@ package com.vaadin.client;
 
 import java.util.function.Supplier;
 
+import com.google.gwt.core.client.GWT;
+
 import elemental.dom.Element;
 
 /**
  * Utils class, intended to ease working with React component related code on
  * the client side.
+ * <p>
+ * The GWT-specific {@link #addReadyCallback} delegates to the TypeScript
+ * implementation at {@code src/main/frontend/internal/client/ReactUtils.ts};
+ * {@link #isInitialized} is a plain null-check kept in Java because it has no
+ * browser API to delegate to.
  *
  * @author Vaadin Ltd
  * @since 24.5.
  */
 public final class ReactUtils {
+
+    private ReactUtils() {
+    }
 
     /**
      * Add a callback to the react component that is called when the component
@@ -39,15 +49,12 @@ public final class ReactUtils {
      * @param runnable
      *            callback function runnable
      */
-    public static native void addReadyCallback(Element element, String name,
-            Runnable runnable)
-    /*-{
-            if(element.addReadyCallback){
-                element.addReadyCallback(name,
-                    $entry(runnable.@java.lang.Runnable::run(*).bind(runnable))
-                );
-            }
-    }-*/;
+    public static void addReadyCallback(Element element, String name,
+            Runnable runnable) {
+        if (GWT.isScript()) {
+            NativeReactUtils.addReadyCallback(element, name, runnable::run);
+        }
+    }
 
     /**
      * Check if the react element is initialized and functional.

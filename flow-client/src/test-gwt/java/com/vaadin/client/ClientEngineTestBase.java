@@ -79,6 +79,13 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 if (e && e.updateComplete) { e.updateComplete.then(function() { runnable(); }); }
             }
         };
+        client.ReactUtils = {
+            addReadyCallback: function(e, name, runnable) {
+                if (e && typeof e.addReadyCallback == "function") {
+                    e.addReadyCallback(name, function() { runnable(); });
+                }
+            }
+        };
     }-*/;
 
     @Override
