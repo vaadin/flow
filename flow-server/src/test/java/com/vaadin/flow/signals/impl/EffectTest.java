@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.signals.impl;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class EffectTest extends SignalTestBase {
 
@@ -983,5 +988,104 @@ class EffectTest extends SignalTestBase {
         assertEquals(5, effectRunCount.get(),
                 "Effect should run exactly once when signal2 changes again");
         assertEquals(List.of("a:1", "b:1", "b:2", "c:2", "c:3"), invocations);
+    }
+
+    @Test
+    void initialRun_concurrentSignalWrite_doesNotDeadlock() throws Exception {
+        // ABBA deadlock regression. Effect.<init> runs revalidate()
+        // (which calls the action that reads signals, acquiring the
+        // SignalTree lock). It shouldn't run inside a synchronized(this) block
+        // because a concurrent
+        // signal write on another thread acquires the SignalTree lock first
+        // and then needs the same Effect monitor (because scheduleInvalidate
+        // dispatches inline when the writer thread has no environment
+        // dispatcher). The opposite acquire orders form a deadlock.
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+
+        CountDownLatch firstReadDone = new CountDownLatch(1);
+        AtomicReference<Throwable> threadBFailure = new AtomicReference<>();
+
+        Thread writer = new Thread(() -> {
+            try {
+                firstReadDone.await();
+                signal.set("update");
+            } catch (Throwable t) {
+                threadBFailure.set(t);
+            }
+        }, "deadlock-test-writer");
+        writer.setDaemon(true);
+
+        AtomicReference<Throwable> threadAFailure = new AtomicReference<>();
+        AtomicBoolean effectCreated = new AtomicBoolean();
+        // Once the deadlock is fixed, the writer's notifyObservers fires
+        // the just-installed observer synchronously and the effect action
+        // re-runs on the writer thread. Guard side effects so re-entry is
+        // safe.
+        AtomicBoolean racePrimed = new AtomicBoolean();
+
+        Thread reader = new Thread(() -> {
+            try {
+                new Effect(() -> {
+                    // First read registers an observer on the signal.
+                    signal.get();
+                    if (racePrimed.compareAndSet(false, true)) {
+                        // Let the writer start its set() call.
+                        firstReadDone.countDown();
+                        writer.start();
+                        // Wait until the writer is BLOCKED entering
+                        // Effect.invalidate (deadlock scenario) or has
+                        // already finished (fixed scenario). Either way
+                        // the next read happens after the writer has had
+                        // a chance to drive its side of the race.
+                        long deadline = System.currentTimeMillis() + 2000;
+                        while (System.currentTimeMillis() < deadline) {
+                            Thread.State state = writer.getState();
+                            if (state == Thread.State.BLOCKED
+                                    || state == Thread.State.TERMINATED) {
+                                break;
+                            }
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException ie) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                        }
+                    }
+                    signal.get();
+                }, Runnable::run);
+                effectCreated.set(true);
+            } catch (Throwable t) {
+                threadAFailure.set(t);
+            }
+        }, "deadlock-test-reader");
+        reader.setDaemon(true);
+
+        reader.start();
+        reader.join(5000);
+        writer.join(1000);
+
+        if (reader.isAlive() || writer.isAlive()) {
+            ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+            long[] deadlocked = tmx.findDeadlockedThreads();
+            fail("Effect creation deadlocked with a concurrent signal write."
+                    + " reader alive=" + reader.isAlive() + ", writer alive="
+                    + writer.isAlive()
+                    + (deadlocked != null
+                            ? ", deadlocked thread IDs="
+                                    + Arrays.toString(deadlocked)
+                            : ""));
+        }
+
+        if (threadAFailure.get() != null) {
+            throw new AssertionError("Reader thread failed",
+                    threadAFailure.get());
+        }
+        if (threadBFailure.get() != null) {
+            throw new AssertionError("Writer thread failed",
+                    threadBFailure.get());
+        }
+        assertTrue(effectCreated.get(),
+                "Effect should have been created without deadlock");
     }
 }

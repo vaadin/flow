@@ -161,33 +161,34 @@ public class Effect implements Serializable {
         assert dispatcher != null;
         this.dispatcher = dispatcher;
 
-        dispatcher.execute(() -> {
-            synchronized (this) {
-                revalidate();
-            }
-        });
+        dispatcher.execute(this::revalidate);
     }
 
     private void revalidate() {
-        assert registrations.isEmpty();
-
-        if (action == null || passivated) {
-            // closed or passivated
-            return;
+        SerializableRunnable currentAction;
+        synchronized (this) {
+            if (action == null || passivated) {
+                // closed or passivated
+                return;
+            }
+            assert registrations.isEmpty();
+            usages.clear();
+            currentAction = action;
         }
 
-        usages.clear();
+        List<UsageTracker.Usage> newUsages = new ArrayList<>();
+        List<Registration> newRegistrations = new ArrayList<>();
+        boolean[] hasSignalUsage = { false };
+        // Ensure effect runs only once per change event, even if the same
+        // signal is read multiple times (each read registers a listener)
+        boolean[] changeHandled = { false };
 
         activeEffects.get().add(this);
         try {
-            boolean[] hasSignalUsage = { false };
-            // Ensure effect runs only once per change event, even if the same
-            // signal is read multiple times (each read registers a listener)
-            boolean[] changeHandled = { false };
-            UsageTracker.track(action, usage -> {
+            UsageTracker.track(currentAction, usage -> {
                 hasSignalUsage[0] = true;
-                usages.add(usage);
-                registrations.add(usage
+                newUsages.add(usage);
+                newRegistrations.add(usage
                         .onNextChange(createChangeListener(changeHandled)));
             });
             if (!hasSignalUsage[0]) {
@@ -197,6 +198,18 @@ public class Effect implements Serializable {
         } finally {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
+        }
+
+        synchronized (this) {
+            if (action == null || passivated) {
+                // dispose or passivate ran concurrently with the action;
+                // remove the observers we just registered so we don't leak
+                // listeners on the signal trees.
+                newRegistrations.forEach(Registration::remove);
+                return;
+            }
+            usages.addAll(newUsages);
+            registrations.addAll(newRegistrations);
         }
     }
 
@@ -252,10 +265,21 @@ public class Effect implements Serializable {
         }
     }
 
-    private synchronized void invalidate() {
+    private void invalidate() {
         invalidateScheduled.set(false);
 
-        clearRegistrations();
+        // Remove registrations outside the synchronized block to avoid ABBA
+        // deadlock.
+        List<Registration> toRemove;
+        synchronized (this) {
+            if (registrations.isEmpty()) {
+                toRemove = List.of();
+            } else {
+                toRemove = new ArrayList<>(registrations);
+                registrations.clear();
+            }
+        }
+        toRemove.forEach(Registration::remove);
 
         revalidate();
     }
