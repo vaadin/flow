@@ -112,8 +112,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 .id(LOGIN_USERNAME_ID);
         TestBenchElement passwordField = context.$("input")
                 .id(LOGIN_PASSWORD_ID);
-        usernameField.sendKeys(username);
-        passwordField.sendKeys(password);
+        usernameField.setProperty("value", username);
+        passwordField.setProperty("value", password);
         context.$("button").id(LOGIN_SUBMIT_ID).click();
     }
 
