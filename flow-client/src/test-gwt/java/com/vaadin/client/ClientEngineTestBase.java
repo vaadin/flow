@@ -122,6 +122,44 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             },
             equalsInJS: function(a, b) { return a == b; }
         };
+        client.PolymerUtils = {
+            setListValueByIndex: function(n, p, i, v) { if (n.set) { n.set(p + '.' + i, v); } },
+            splice: function(n, p, s, d, items) {
+                if (n.splice) { n.splice.apply(n, [p, s, d].concat(items || [])); }
+            },
+            storeNodeId: function(n, id, p) {
+                if (n.get) {
+                    var prop = n.get(p);
+                    if (typeof prop === 'object' && prop && prop.nodeId === undefined) { prop.nodeId = id; }
+                }
+            },
+            isPolymerElement: function(n) {
+                var p = $wnd.Polymer;
+                var isP2 = typeof p === 'function' && p.Element && n instanceof p.Element;
+                var isP3 = n.constructor && n.constructor.polymerElementVersion !== undefined;
+                return isP2 || isP3;
+            },
+            mayBePolymerElement: function(n) {
+                return !!$wnd.customElements && n.localName && n.localName.indexOf('-') > -1;
+            },
+            searchForElementInShadowRoot: function(sr, q) { return sr.querySelector(q); },
+            getElementInShadowRootById: function(sr, id) { return sr.getElementById(id); },
+            getDomElementById: function(sp, id) { return sp.$ ? sp.$[id] : undefined; },
+            isReady: function(sp) { return sp.$ !== undefined; },
+            getDomRoot: function(t) { return t.root || null; },
+            invokeWhenDefined: function(tag, runnable) {
+                $wnd.customElements.whenDefined(tag).then(function() { runnable(); });
+            },
+            setProperty: function(e, p, v) { if (e.set) { e.set(p, v); } },
+            isInShadowRoot: function(e) {
+                var c = e.parentNode;
+                while (c) {
+                    if (Object.prototype.toString.call(c) === '[object ShadowRoot]') { return true; }
+                    c = c.parentNode;
+                }
+                return false;
+            }
+        };
         client.ElementUtil = {
             getElementById: function(context, id) {
                 if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
