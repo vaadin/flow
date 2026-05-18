@@ -285,10 +285,9 @@ public final class ExecuteJavaScriptElementUtils {
         return existingId;
     }
 
-    private static native boolean isPropertyDefined(Node node, String property)
-    /*-{
-        return !!(node["constructor"] && node["constructor"]["properties"] &&
-            node["constructor"]["properties"][property]) &&
-                 (typeof(node["constructor"]["properties"][property]["value"]) != "undefined");
-    }-*/;
+    private static boolean isPropertyDefined(Node node, String property) {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeExecuteJavaScriptElementUtils.isPropertyDefined(node,
+                        property);
+    }
 }

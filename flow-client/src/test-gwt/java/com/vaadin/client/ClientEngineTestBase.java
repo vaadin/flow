@@ -274,6 +274,21 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 return false;
             }
         };
+        client.ExecuteJavaScriptElementUtils = {
+            isPropertyDefined: function(node, property) {
+                var props = node.constructor && node.constructor.properties;
+                return !!(props && props[property]) && typeof props[property].value !== 'undefined';
+            }
+        };
+        var flowUtil = (client.flow = client.flow || {}).util = ((client.flow || {}).util) || {};
+        flowUtil.ClientJsonCodec = {
+            createReturnChannelCallback: function(send) {
+                return function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    send(args);
+                };
+            }
+        };
         client.ElementUtil = {
             getElementById: function(context, id) {
                 if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
