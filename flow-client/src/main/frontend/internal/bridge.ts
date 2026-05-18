@@ -28,6 +28,8 @@ import { ReactUtils } from './client/ReactUtils';
 import { ResourceLoader } from './client/ResourceLoader';
 import { SystemErrorHandler } from './client/SystemErrorHandler';
 import { WidgetUtil } from './client/WidgetUtil';
+import { MessageSender } from './client/communication/MessageSender';
+import { XhrConnection } from './client/communication/XhrConnection';
 import { registerGwtBridge } from './registry';
 
 /**
@@ -49,6 +51,8 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'ResourceLoader', ResourceLoader);
   registerGwtBridge('client', 'SystemErrorHandler', SystemErrorHandler);
   registerGwtBridge('client', 'WidgetUtil', WidgetUtil);
+  registerGwtBridge('client.communication', 'MessageSender', MessageSender);
+  registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
 }
 
 installGwtBridge();
