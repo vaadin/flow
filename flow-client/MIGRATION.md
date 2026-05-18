@@ -63,6 +63,31 @@ public static void debug(Object message) {
 This is the standard shape for a migrated class. The migrated TS module owns
 all interesting behaviour; the Java shim only routes.
 
+## Passing Java callbacks to TS
+
+When a JSNI body invokes a Java method by reference (`runnable.@Runnable::run()()`
+or similar), the migrated TS version receives a plain JS function. The Java
+shim wraps the Java callable into a `@JsFunction` interface declared on the
+sibling `Native<Name>` class. Established shapes:
+
+| Java type            | `@JsFunction` interface                    | First used in          |
+| -------------------- | ------------------------------------------ | ---------------------- |
+| `Runnable`           | `JsRunnable` — `void run()`                | `NativeLitUtils`       |
+| `Supplier<Object>`   | `JsSupplier` — `Object get()`              | `NativeResourceLoader` |
+| `Consumer<String>`   | `JsStringConsumer` — `void accept(String)` | `NativeBootstrapper`   |
+| `Consumer<JsonArray>`| `JsArgsConsumer` — `void accept(JsonArray)`| `NativeClientJsonCodec`|
+
+Reuse the existing interface where possible (`JsRunnable` lives in
+`NativeLitUtils` and is imported by other native classes). Declare new
+shapes alongside the consuming native class.
+
+When the original JSNI passed *two* callbacks via a Java listener interface
+(for example `ResourceLoadListener` with `onLoad` / `onError`), don't ship
+the listener through the bridge. Have the Java shim build two `JsRunnable`
+closures that capture the event; the TS side receives just the two
+`() => void` callbacks. `ResourceLoader.addOnloadHandler` is the worked
+example.
+
 ## GwtTest stub
 
 `Gwt*Test` classes don't go through `Flow.ts`, so the bridge isn't published
@@ -103,12 +128,56 @@ For each Java class being migrated:
 
 ## PR size and order
 
-- Keep each PR under ~500 LOC of TS and ideally one package.
+- Keep each PR under ~500 LOC of TS and ideally one Java class.
 - Migrate from leaves to roots: pure utilities first, then reactive / DOM /
   node features, then state tree, then binding, then registry / application,
   then communication, finally bootstrap. The collection package
   (`flow.collection.*`) is already `@JsType` native and disappears in the
   final tear-down — do **not** start there.
+
+### Status
+
+- **Done** (JSNI moved to TS bridge): `Console`, `LitUtils`, `ReactUtils`,
+  `ConnectionIndicator`, `ElementUtil`, `WidgetUtil`, `PolymerUtils`,
+  `BrowserInfo`, `ResourceLoader`, `SystemErrorHandler`,
+  `ExecuteJavaScriptElementUtils`, `bootstrap.Bootstrapper`,
+  `communication.MessageHandler`, `communication.MessageSender`,
+  `communication.XhrConnection`, `flow.util.ClientJsonCodec`.
+- **Deleted** (no callers): `LocationParser`, `StorageUtil`.
+- **Deferred** — these contain JSNI that doesn't fit the "browser API helper"
+  pattern because the JS body wires up large surfaces of bidirectional Java↔JS
+  callbacks tied to instance state. They want a real Java-to-TS port of the
+  whole class, not just the JSNI bodies:
+  - `ApplicationConnection.publishJavascriptMethods` /
+    `publishDevelopmentModeJavascriptMethods` (builds the
+    `window.Vaadin.Flow.clients[appId]` API object out of ~12 Java callbacks).
+  - `AtmospherePushConnection` (binds Atmosphere.js callbacks to `this`).
+  - `flow.binding.SimpleElementBindingStrategy.{bindPolymerModelProperties,
+    hookUpPolymerElement}` (`this`-bound JSNI that registers JS handlers
+    calling back into instance methods).
+  - `flow.binding.ServerEventObject` (a `JavaScriptObject` subclass — methods
+    *are* on the JS instance, not on a static module).
+  - `flow.ExecuteJavaScriptProcessor.getContextExecutionObject` (instance
+    method that builds the per-execution `this` for user JS).
+  - `Profiler` (17 JSNI bodies entangled with GWT-specific `Duration` and
+    `JavaScriptObject`).
+  - `gwt/elemental/js/util/Xhr` (vendored GWT helper, excluded from spotless).
+- **No JSNI; stays Java for now** (purely pure-Java logic that runs fine on
+  both GWT and JVM): all listener / event types, `StateNode`, `StateTree`,
+  `NodeMap`, `NodeList`, `MapProperty`, `Reactive`, `Computation`,
+  `DependencyLoader`, `Registry`, `DefaultRegistry`,
+  `ApplicationConfiguration`, `UILifecycle`, `ExistingElementMap`,
+  `flow.binding.{Binder, BindingStrategy, TextBindingStrategy,
+  ServerEventHandlerBinder}`, `flow.dom.{DomApi, DomApiImpl, DomElement,
+  DomNode}`, `flow.nodefeature.*` event/listener helpers, `Heartbeat`,
+  `PollConfigurator`, `Poller`, `RequestResponseTracker`,
+  `ReconnectConfiguration`, `DefaultConnectionStateHandler`,
+  `LoadingIndicatorConfigurator`, `LoadingIndicatorStateHandler`,
+  `ServerConnector`, `URIResolver`, `flow.ConstantPool`,
+  `flow.TreeChangeProcessor`, `flow.model.UpdatableModelProperties`,
+  `flow.util.{JsObject, NativeFunction}` (already `@JsType`-native).
+  These migrate in the final tear-down phase, by then their consumers are
+  all in TS so the migration is just `mv Foo.java Foo.ts` plus translation.
 
 ## Style
 
