@@ -15,12 +15,18 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
+
 import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
  * Utils class, intended to ease working with LitElement related code on client
  * side.
+ * <p>
+ * Under GWT the calls are forwarded to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/LitUtils.ts}. The class is GWT-only
+ * — direct JVM usage is not supported.
  *
  * @author Vaadin Ltd
  */
@@ -34,13 +40,12 @@ public final class LitUtils {
      *
      * @param element
      *            the custom element
-     * @return {@code true} if the element is a Lit element, <code>false</code>
+     * @return {@code true} if the element is a Lit element, {@code false}
      *         otherwise
      */
-    public static native boolean isLitElement(Node element)
-    /*-{
-        return typeof element.update == "function" && element.updateComplete instanceof Promise && typeof element.shouldUpdate == "function" && typeof element.firstUpdated == "function";
-    }-*/;
+    public static boolean isLitElement(Node element) {
+        return GWT.isScript() && NativeLitUtils.isLitElement(element);
+    }
 
     /**
      * Invokes the {@code runnable} when the given Lit element has been rendered
@@ -51,14 +56,9 @@ public final class LitUtils {
      * @param runnable
      *            the command to run
      */
-    public static native void whenRendered(Element element, Runnable runnable)
-    /*-{
-        element.updateComplete.then(
-            $entry(
-              function() {
-                runnable.@java.lang.Runnable::run(*)();
-              })
-            );
-    }-*/;
-
+    public static void whenRendered(Element element, Runnable runnable) {
+        if (GWT.isScript()) {
+            NativeLitUtils.whenRendered(element, runnable::run);
+        }
+    }
 }

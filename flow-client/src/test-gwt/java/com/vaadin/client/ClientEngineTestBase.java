@@ -70,6 +70,15 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             error: function(m) { if ($wnd.console) $wnd.console.error(m); },
             reportStacktrace: function(e) { if ($wnd.console) $wnd.console.error(e); }
         };
+        client.LitUtils = {
+            isLitElement: function(e) {
+                return !!e && typeof e.update == "function" && e.updateComplete instanceof Promise
+                    && typeof e.shouldUpdate == "function" && typeof e.firstUpdated == "function";
+            },
+            whenRendered: function(e, runnable) {
+                if (e && e.updateComplete) { e.updateComplete.then(function() { runnable(); }); }
+            }
+        };
     }-*/;
 
     @Override
