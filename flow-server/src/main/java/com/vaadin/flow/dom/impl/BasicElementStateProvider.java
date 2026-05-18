@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
+import com.vaadin.flow.internal.nodefeature.JsInitializerCounter;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
@@ -90,8 +91,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class,
-            SignalBindingFeature.class };
+            ReturnChannelMap.class, InertData.class, SignalBindingFeature.class,
+            JsInitializerCounter.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist

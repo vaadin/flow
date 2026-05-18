@@ -223,6 +223,9 @@ public class ExecuteJavaScriptProcessor {
           object.stopApplication = $entry(function() {
               stopApplication.@java.lang.Runnable::run(*)();
           });
+          object.runOnNodeUnregister = $entry(function(node, callback) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::runOnNodeUnregister(*)(node, callback);
+          });
           return object;
     }-*/;
 }

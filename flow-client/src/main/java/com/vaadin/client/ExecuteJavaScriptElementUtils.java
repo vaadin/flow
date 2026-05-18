@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsFunction;
+
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
@@ -40,6 +42,18 @@ import elemental.dom.Node;
  *
  */
 public final class ExecuteJavaScriptElementUtils {
+
+    /**
+     * Bridge interface for a JS callback with no arguments. Used to convert a
+     * JavaScript function received from the executed expression into a
+     * Java-callable target.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface JsCallback {
+        void invoke();
+    }
 
     private ExecuteJavaScriptElementUtils() {
     }
@@ -177,6 +191,21 @@ public final class ExecuteJavaScriptElementUtils {
                     properties);
             node.setNodeData(data);
         }
+    }
+
+    /**
+     * Adds a one-shot callback that is invoked when the given state node is
+     * unregistered (i.e. when its DOM is destroyed and the node is removed from
+     * the client-side tree).
+     *
+     * @param node
+     *            the state node to observe, not <code>null</code>
+     * @param callback
+     *            the JS function to invoke, not <code>null</code>
+     */
+    public static void runOnNodeUnregister(StateNode node,
+            JsCallback callback) {
+        node.addUnregisterListener(event -> callback.invoke());
     }
 
     private static Integer getExistingIdOrUpdate(StateNode parent,

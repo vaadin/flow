@@ -168,6 +168,8 @@ class ElementTest extends AbstractNodeTest {
         // Returns a future-ish thing with access to the return value
         ignore.add("callJsFunction");
         ignore.add("executeJs");
+        // Returns Registration
+        ignore.add("addJsInitializer");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -2401,6 +2403,128 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.property.other.method()", element);
+    }
+
+    @Test
+    void addJsInitializer_nullExpression_throws() {
+        Element element = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> element.addJsInitializer(null));
+    }
+
+    @Test
+    void addJsInitializer_runsOnAttach_emitsInitInvocation() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};", "foo");
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertTrue(invocation.getExpression().contains("__registry.register"),
+                "Expression should wrap the user code with the registry call");
+        assertTrue(invocation.getExpression().contains("return () => {};"),
+                "Wrapped expression should contain the user code verbatim");
+
+        List<Object> params = invocation.getParameters();
+        assertEquals(3, params.size(),
+                "Expected [userParam, element, initializerId]");
+        assertEquals("foo", params.get(0));
+        assertEquals(element, params.get(1));
+        assertEquals(Integer.valueOf(0), params.get(2));
+    }
+
+    @Test
+    void addJsInitializer_sameRoundTripDetachReattach_doesNotRerun() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        // Drain initial init invocation and advance wasAttached
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Same round trip: remove and add back without collectChanges
+        ui.getElement().removeAllChildren();
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertTrue(pending.isEmpty(),
+                "Init should not be re-emitted when the client kept the DOM");
+    }
+
+    @Test
+    void addJsInitializer_crossRoundTripDetachReattach_rerunsInit() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Detach, flush response (collectChanges sets wasAttached=false)
+        ui.getElement().removeAllChildren();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Re-attach in the next round trip
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Init should be re-emitted when the client discarded the DOM");
+        assertTrue(pending.get(0).getInvocation().getExpression()
+                .contains("__registry.register"));
+    }
+
+    @Test
+    void addJsInitializer_remove_sendsDispose() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        assertTrue(pending.get(0).getInvocation().getExpression()
+                .contains("initializers.dispose"));
+    }
+
+    @Test
+    void addJsInitializer_removeBeforeFlush_doesNotSendAnything() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        // Remove before the init JS has been collected
+        registration.remove();
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertTrue(pending.isEmpty(),
+                "Removed-before-flush registration should not send init nor dispose");
     }
 
     @Test

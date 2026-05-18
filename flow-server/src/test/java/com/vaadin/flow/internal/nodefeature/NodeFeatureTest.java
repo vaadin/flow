@@ -106,6 +106,8 @@ class NodeFeatureTest {
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
         expectedIds.put(SignalBindingFeature.class,
                 NodeFeatures.SIGNAL_BINDING);
+        expectedIds.put(JsInitializerCounter.class,
+                NodeFeatures.JS_INITIALIZER_COUNTER);
 
         return expectedIds;
     }
@@ -169,7 +171,7 @@ class NodeFeatureTest {
                 /* Rarely used element stuff */
                 ElementStylePropertyMap.class, ShadowRootData.class,
                 ShadowRootHost.class, AttachExistingElementFeature.class,
-                InertData.class,
+                InertData.class, JsInitializerCounter.class,
 
                 /* Only used for the root node */
                 PushConfigurationMap.class,
