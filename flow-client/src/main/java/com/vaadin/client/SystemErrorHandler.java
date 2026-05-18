@@ -234,15 +234,11 @@ public class SystemErrorHandler {
         resyncInProgress = false;
     }
 
-    private native void recreateNodes(String elementName)
-    /*-{
-        var elements = document.getElementsByTagName(elementName);
-        for (var i = 0 ; i < elements.length ; ++i) {
-            var elem = elements[i];
-            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
-            elem.parentNode.replaceChild(elem.cloneNode(false), elem);
+    private void recreateNodes(String elementName) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeSystemErrorHandler.recreateNodes(elementName);
         }
-    }-*/;
+    }
 
     /**
      * Shows the given error message if not running in production mode and logs
@@ -318,15 +314,11 @@ public class SystemErrorHandler {
         return systemErrorContainer;
     }
 
-    // @formatter:off
-    private native void showPopover(Element el) 
-    /*-{
-        var fn = el && el.showPopover;
-        if (typeof fn === "function") {
-            fn.call(el);
+    private void showPopover(Element el) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeSystemErrorHandler.showPopover(el);
         }
-    }-*/;
-    // @formatter:on
+    }
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {
@@ -346,9 +338,10 @@ public class SystemErrorHandler {
         return registry.getApplicationConfiguration().isWebComponentMode();
     }
 
-    private native Element getShadowRootElement(Element host)
-    /*-{
-        return host.shadowRoot;
-    }-*/;
+    private Element getShadowRootElement(Element host) {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeSystemErrorHandler.getShadowRootElement(host)
+                : null;
+    }
 
 }
