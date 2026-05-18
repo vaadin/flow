@@ -516,17 +516,16 @@ public class ResourceLoader {
         }
     }
 
-    private static native boolean supportsHtmlWhenReady()
-    /*-{
-        return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
-    }-*/;
+    private static boolean supportsHtmlWhenReady() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeResourceLoader.supportsHtmlWhenReady();
+    }
 
-    private static native void addHtmlImportsReadyHandler(Runnable handler)
-    /*-{
-        $wnd.HTMLImports.whenReady($entry(function() {
-            handler.@Runnable::run()();
-        }));
-    }-*/;
+    private static void addHtmlImportsReadyHandler(Runnable handler) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeResourceLoader.addHtmlImportsReadyHandler(handler::run);
+        }
+    }
 
     /**
      * Adds an onload listener to the given element, which should be a link or a
@@ -540,27 +539,14 @@ public class ResourceLoader {
      * @param event
      *            the event passed to the listener
      */
-    public static native void addOnloadHandler(Element element,
-            ResourceLoadListener listener, ResourceLoadEvent event)
-    /*-{
-        element.onload = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onerror = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onreadystatechange = function() {
-            if ("loaded" === element.readyState || "complete" === element.readyState ) {
-                element.onload(arguments[0]);
-            }
-        };
-    }-*/;
+    public static void addOnloadHandler(Element element,
+            ResourceLoadListener listener, ResourceLoadEvent event) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeResourceLoader.addOnloadHandler(element,
+                    () -> listener.onLoad(event),
+                    () -> listener.onError(event));
+        }
+    }
 
     /**
      * Load a stylesheet and notify a listener when the stylesheet is loaded.
@@ -795,30 +781,11 @@ public class ResourceLoader {
         }
     }
 
-    private static native int getStyleSheetLength(String url)
-    /*-{
-        for(var i = 0; i < $doc.styleSheets.length; i++) {
-            if ($doc.styleSheets[i].href === url) {
-                var sheet = $doc.styleSheets[i];
-                try {
-                    var rules = sheet.cssRules;
-                    if (rules === undefined) {
-                        rules = sheet.rules;
-                    }
-                    if (rules === null) {
-                        // Style sheet loaded, but can't access length because of XSS -> assume there's something there
-                        return 1;
-                    }
-                    // Return length so we can distinguish 0 (probably 404 error) from normal case.
-                    return rules.length;
-                } catch (err) {
-                    return 1;
-                }
-            }
-        }
-        // No matching stylesheet found -> not yet loaded
-        return -1;
-    }-*/;
+    private static int getStyleSheetLength(String url) {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeResourceLoader.getStyleSheetLength(url)
+                : -1;
+    }
 
     private static boolean addListener(String resourceId,
             ResourceLoadListener listener,
@@ -868,22 +835,15 @@ public class ResourceLoader {
         }
     }
 
-    private static native void runPromiseExpression(String expression,
+    private static void runPromiseExpression(String expression,
             Supplier<Object> promiseSupplier, Runnable onSuccess,
-            Runnable onError)
-    /*-{
-          try {
-            var promise = promiseSupplier.@java.util.function.Supplier::get(*)();
-            if ( !(promise instanceof $wnd.Promise )){
-                throw new Error('The expression "'+expression+'" result is not a Promise.');
-            }
-            promise.then( function(result) { onSuccess.@java.lang.Runnable::run(*)(); } ,
-                          function(error) { console.error(error); onError.@java.lang.Runnable::run(*)(); } );
-          }
-          catch(error) {
-               console.error(error);
-               onError.@java.lang.Runnable::run(*)();
-          }
-    }-*/;
+            Runnable onError) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeResourceLoader.runPromiseExpression(expression,
+                    promiseSupplier::get, onSuccess::run, onError::run);
+        } else {
+            onError.run();
+        }
+    }
 
 }
