@@ -16,196 +16,66 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
-import com.google.gwt.core.client.JavaScriptException;
-
-import elemental.client.Browser;
 
 /**
  * Helper class for using window.console. Does not log anything except
  * JavaScript exception traces to console if production mode is enabled.
+ * <p>
+ * Under GWT the calls are forwarded to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/Console.ts}. Direct JVM usage (in
+ * unit tests) falls back to {@code System.out}/{@code System.err}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public final class Console {
-    private static boolean isProductionMode = false;
-
-    @FunctionalInterface
-    // Runnable that can throw
-    private interface DeferWithoutEntryTask {
-        void run() throws Exception;
-    }
 
     private Console() {
     }
 
-    /**
-     * Changes logger behavior, making it skip all browser logging for
-     * production mode.
-     *
-     * @param isProductionMode
-     *            if an application is in the production mode or not
-     */
     public static void setProductionMode(boolean isProductionMode) {
-        Console.isProductionMode = isProductionMode;
+        if (GWT.isScript()) {
+            NativeConsole.setProductionMode(isProductionMode);
+        }
     }
 
-    /**
-     * Checks if logging to browser console should be enabled. Returns true if
-     * either: - Not in production mode, or - The localStorage flag
-     * "vaadin.browserLog" is set to "true"
-     *
-     * @return true if browser console logging should be enabled
-     */
-    private static boolean shouldLogToBrowserConsole() {
-        if (!isProductionMode) {
-            return true;
-        }
-        // Check localStorage for override flag in production mode
-        return GWT.isScript() && isLocalStorageFlagEnabled();
-    }
-
-    /**
-     * Checks if the localStorage flag "vaadin.browserLog" is set to "true".
-     *
-     * @return true if the flag is set to "true", false otherwise
-     */
-    private static native boolean isLocalStorageFlagEnabled()
-    /*-{
-        try {
-            return $wnd.localStorage && $wnd.localStorage.getItem('vaadin.browserLog') === 'true';
-        } catch (e) {
-            // localStorage might not be available or accessible
-            return false;
-        }
-    }-*/;
-
-    /**
-     * If not in production mode, logs the given message to the browser console
-     * using the debug log level.
-     * <p>
-     * If used directly in a JVM, writes the message to standard output
-     * disregarding of the production mode settings.
-     *
-     * @param message
-     *            the message to log
-     */
     public static void debug(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole()) {
-                Browser.getWindow().getConsole().debug(message);
-            }
+            NativeConsole.debug(message);
         } else {
             System.out.println(message);
         }
     }
 
-    /**
-     * If not in production mode, logs the given message to the browser console
-     * using the info log level.
-     * <p>
-     * If used directly in a JVM, writes the message to standard output
-     * disregarding of the production mode settings.
-     *
-     * @param message
-     *            the message to log
-     */
     public static void log(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole()) {
-                Browser.getWindow().getConsole().log(message);
-            }
+            NativeConsole.log(message);
         } else {
             System.out.println(message);
         }
     }
 
-    /**
-     * If not in production mode, logs the given message to the browser console
-     * using the warning log level.
-     * <p>
-     * If used directly in a JVM, writes the message to standard error
-     * disregarding of the production mode settings.
-     *
-     * @param message
-     *            the message to log
-     */
     public static void warn(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole()) {
-                Browser.getWindow().getConsole().warn(message);
-            }
+            NativeConsole.warn(message);
         } else {
             System.err.println(message);
         }
     }
 
-    /**
-     * If not in production mode, logs the given message to the browser console
-     * using the error log level.
-     * <p>
-     * If used directly in a JVM, writes the message to standard error
-     * disregarding of the production mode settings.
-     *
-     * @param message
-     *            the message to log
-     */
     public static void error(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole()) {
-                Browser.getWindow().getConsole().error(message);
-            }
+            NativeConsole.error(message);
         } else {
             System.err.println(message);
         }
     }
 
-    /**
-     * Logs the stacktrace of an exception to the browser console. Logging is
-     * done asynchronously since that approach allows reporting it with highest
-     * possible fidelity.
-     *
-     * @param exception
-     *            the exception for which
-     */
     public static void reportStacktrace(Exception exception) {
         if (GWT.isScript()) {
-            doReportStacktrace(exception);
+            NativeConsole.reportStacktrace(exception);
         } else {
             exception.printStackTrace();
         }
     }
-
-    private static void doReportStacktrace(Exception exception) {
-        // Defer without $entry to bypass some of GWT's exception handling
-        deferWithoutEntry(() -> {
-            // Bypass regular exception reporting
-            UncaughtExceptionHandler originalHandler = GWT
-                    .getUncaughtExceptionHandler();
-            GWT.setUncaughtExceptionHandler(
-                    ignore -> GWT.setUncaughtExceptionHandler(originalHandler));
-
-            // Throw in the appropriate way
-            if (exception instanceof JavaScriptException) {
-                // Throw originally thrown instance through JS
-                jsThrow(((JavaScriptException) exception).getThrown());
-            } else {
-                throw exception;
-            }
-        });
-    }
-
-    private static native void jsThrow(Object exception)
-    /*-{
-      throw exception;
-    }-*/;
-
-    private static native void deferWithoutEntry(DeferWithoutEntryTask task)
-    /*-{
-      $wnd.setTimeout(function() {
-        task.@DeferWithoutEntryTask::run()();
-      }, 0);
-    }-*/;
-
 }
