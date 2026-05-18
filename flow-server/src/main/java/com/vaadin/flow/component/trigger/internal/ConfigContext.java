@@ -21,7 +21,6 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -34,7 +33,7 @@ import com.vaadin.flow.dom.Element;
  * or any Jackson-serialisable POJO); the framework converts them to JSON
  * internally so extension authors never need to touch Jackson types.
  * <p>
- * For internal use only.
+ * For internal use only. May be renamed or removed in a future release.
  */
 public interface ConfigContext extends Serializable {
 

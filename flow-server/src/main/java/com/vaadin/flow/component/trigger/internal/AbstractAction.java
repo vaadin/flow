@@ -13,11 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
-
-import com.vaadin.flow.component.trigger.internal.ConfigContext;
 
 /**
  * Base class for {@link Action} implementations.
@@ -32,6 +30,8 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
  * extend {@link AbstractCallbackAction} instead. It declares a typed payload
  * the framework deserialises before calling the server-side handler, so the
  * extension author never sees JSON types.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public abstract non-sealed class AbstractAction implements Action {
 

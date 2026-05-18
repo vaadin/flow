@@ -14,7 +14,7 @@
  * the License.
  */
 /**
- * Internal wiring for the trigger API. Not part of the public API; classes here
+ * Trigger API and its internal wiring. Not part of the public API; classes here
  * may be renamed or removed in any release.
  */
 @NullMarked

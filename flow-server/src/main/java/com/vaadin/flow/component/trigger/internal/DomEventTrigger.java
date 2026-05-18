@@ -13,12 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ConfigContext;
 
 /**
  * Fires when the host component receives a DOM event with the given name. The
@@ -33,6 +32,9 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
  * new DomEventTrigger(input, "input").triggers(action);
  * new DomEventTrigger(panel, "pointerdown").triggers(action);
  * }</pre>
+ *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class DomEventTrigger extends AbstractTrigger {
 

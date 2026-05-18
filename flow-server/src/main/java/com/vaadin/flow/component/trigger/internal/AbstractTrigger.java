@@ -13,13 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ConfigContext;
-import com.vaadin.flow.component.trigger.internal.TriggerSupport;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -30,6 +28,8 @@ import com.vaadin.flow.dom.Element;
  * factory registered against {@code window.Vaadin.Flow.triggers} on the client
  * side. Subclasses override {@link #buildClientConfig} when they need to ship
  * extra configuration with the trigger.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public abstract class AbstractTrigger implements Trigger {
 

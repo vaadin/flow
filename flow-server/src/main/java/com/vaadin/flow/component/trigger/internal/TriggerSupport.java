@@ -32,12 +32,6 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.AbstractAction;
-import com.vaadin.flow.component.trigger.AbstractArgument;
-import com.vaadin.flow.component.trigger.AbstractCallbackAction;
-import com.vaadin.flow.component.trigger.AbstractTrigger;
-import com.vaadin.flow.component.trigger.Action;
-import com.vaadin.flow.component.trigger.Argument;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -52,7 +46,7 @@ import com.vaadin.flow.internal.nodefeature.ServerSideFeature;
  * snapshots via {@link Element#executeJs(String, Object...)} on every binding
  * change and on each (re-)attach.
  * <p>
- * For internal use only.
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class TriggerSupport extends ServerSideFeature {
 

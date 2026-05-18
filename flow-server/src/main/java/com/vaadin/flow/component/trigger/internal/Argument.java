@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
@@ -28,6 +28,8 @@ import java.io.Serializable;
  * its value is computed once per fire and reused.
  * <p>
  * Implementations should extend {@link AbstractArgument}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced

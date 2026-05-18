@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
@@ -30,6 +30,8 @@ import java.io.Serializable;
  * same host; the client-side handler runs once per binding.
  * <p>
  * Implementations should extend {@link AbstractAction}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public sealed interface Action extends Serializable permits AbstractAction {
 }

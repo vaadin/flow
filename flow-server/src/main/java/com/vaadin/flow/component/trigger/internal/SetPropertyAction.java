@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ConfigContext;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -41,6 +40,8 @@ import com.vaadin.flow.dom.Element;
  *
  * Server-side state is not updated by this action; the change lives in the
  * browser until the next sync from the client (if any).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value to assign

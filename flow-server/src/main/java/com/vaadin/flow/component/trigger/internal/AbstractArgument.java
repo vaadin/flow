@@ -13,11 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
-
-import com.vaadin.flow.component.trigger.internal.ConfigContext;
 
 /**
  * Base class for {@link Argument} implementations.
@@ -27,6 +25,8 @@ import com.vaadin.flow.component.trigger.internal.ConfigContext;
  * factory registered against {@code window.Vaadin.Flow.triggers} on the client
  * side. Subclasses override {@link #buildClientConfig} when they need to ship
  * configuration with the argument.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced

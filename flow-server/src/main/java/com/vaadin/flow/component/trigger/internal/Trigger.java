@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
@@ -44,6 +44,8 @@ import java.io.Serializable;
  * from a user gesture (click, keypress, …) this preserves the gesture context
  * for downstream actions, letting them invoke browser APIs that require it
  * (clipboard, fullscreen, file picker, share, …).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public interface Trigger extends Serializable {
 

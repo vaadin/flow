@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
@@ -48,6 +48,8 @@ import java.util.Objects;
  * Client-side, the matching action factory calls its {@code notifyServer}
  * callback with a single value matching {@code T}'s JSON shape (record → keyed
  * object, list → array, primitive → primitive).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the payload type the client reports back
