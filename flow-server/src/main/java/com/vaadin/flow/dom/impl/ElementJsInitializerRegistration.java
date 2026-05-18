@@ -41,64 +41,69 @@ public final class ElementJsInitializerRegistration implements Registration {
      * Wrapper code. Format args: initializer id index, element index.
      * Parameters at runtime are {@code $0..$N-1} (user params), {@code $N}
      * (element), {@code $N+1} (initializer id).
+     * <p>
+     * The wrapper does not introduce an extra IIFE around its own body; the
+     * code is inlined directly so that {@code this} stays bound to the Flow
+     * executor context (which provides {@code getNode} and
+     * {@code runOnNodeUnregister}). The user expression is wrapped in its own
+     * IIFE so a {@code return} statement yields the cleanup function instead of
+     * returning from the outer Flow-generated function.
      */
     private static final String INIT_WRAPPER_PREFIX = """
-            return (function() {
-              const __initId = $%d;
-              const __element = $%d;
-              const __ctx = this;
-              const __ns = window.Vaadin = window.Vaadin || {};
-              const __flow = __ns.Flow = __ns.Flow || {};
-              const __registry = __flow.initializers = __flow.initializers || (function() {
-                const byNode = new WeakMap();
-                function ensure(node, onFirst) {
-                  let entry = byNode.get(node);
-                  if (!entry) {
-                    entry = new Map();
-                    byNode.set(node, entry);
-                    onFirst(entry);
-                  }
-                  return entry;
+            const __initId = $%d;
+            const __element = $%d;
+            const __ctx = this;
+            const __ns = window.Vaadin = window.Vaadin || {};
+            const __flow = __ns.Flow = __ns.Flow || {};
+            const __registry = __flow.initializers = __flow.initializers || (function() {
+              const byNode = new WeakMap();
+              function ensure(node, onFirst) {
+                let entry = byNode.get(node);
+                if (!entry) {
+                  entry = new Map();
+                  byNode.set(node, entry);
+                  onFirst(entry);
                 }
-                return {
-                  register: function(node, id, cleanup, onFirst) {
-                    const entry = ensure(node, onFirst);
-                    const existing = entry.get(id);
-                    if (existing) { try { existing(); } catch (e) { console.error(e); } }
-                    entry.set(id, cleanup);
-                  },
-                  dispose: function(node, id) {
-                    const entry = byNode.get(node);
-                    if (!entry) return;
-                    const fn = entry.get(id);
-                    entry.delete(id);
-                    if (fn) { try { fn(); } catch (e) { console.error(e); } }
-                  },
-                  drain: function(node) {
-                    const entry = byNode.get(node);
-                    if (!entry) return;
-                    byNode.delete(node);
-                    entry.forEach(function(fn) {
-                      try { fn(); } catch (e) { console.error(e); }
-                    });
-                    entry.clear();
-                  }
-                };
-              })();
-              const __node = __ctx.getNode(__element);
-              const __cleanup = (function() {
+                return entry;
+              }
+              return {
+                register: function(node, id, cleanup, onFirst) {
+                  const entry = ensure(node, onFirst);
+                  const existing = entry.get(id);
+                  if (existing) { try { existing(); } catch (e) { console.error(e); } }
+                  entry.set(id, cleanup);
+                },
+                dispose: function(node, id) {
+                  const entry = byNode.get(node);
+                  if (!entry) return;
+                  const fn = entry.get(id);
+                  entry.delete(id);
+                  if (fn) { try { fn(); } catch (e) { console.error(e); } }
+                },
+                drain: function(node) {
+                  const entry = byNode.get(node);
+                  if (!entry) return;
+                  byNode.delete(node);
+                  entry.forEach(function(fn) {
+                    try { fn(); } catch (e) { console.error(e); }
+                  });
+                  entry.clear();
+                }
+              };
+            })();
+            const __node = __ctx.getNode(__element);
+            const __cleanup = (function() {
             """;
 
     private static final String INIT_WRAPPER_SUFFIX = """
             }).apply(__element);
-              if (typeof __cleanup === 'function') {
-                __registry.register(__node, __initId, __cleanup, function() {
-                  __ctx.runOnNodeUnregister(__node, function() {
-                    __registry.drain(__node);
-                  });
+            if (typeof __cleanup === 'function') {
+              __registry.register(__node, __initId, __cleanup, function() {
+                __ctx.runOnNodeUnregister(__node, function() {
+                  __registry.drain(__node);
                 });
-              }
-            })();
+              });
+            }
             """;
 
     private static final String DISPOSE_EXPRESSION = """

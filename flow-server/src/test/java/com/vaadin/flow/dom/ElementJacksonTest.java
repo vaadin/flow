@@ -166,6 +166,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         // Returns a future-ish thing with access to the return value
         ignore.add("callJsFunction");
         ignore.add("executeJs");
+        // Returns Registration
+        ignore.add("addJsInitializer");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
