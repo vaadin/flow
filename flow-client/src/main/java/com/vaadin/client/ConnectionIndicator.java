@@ -15,17 +15,20 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
+
 /**
- * GWT interface to ConnectionIndicator.ts
+ * GWT interface to the connection indicator globals set up by
+ * {@code @vaadin/common-frontend}. Under GWT, the calls are forwarded to the
+ * TypeScript implementation at
+ * {@code src/main/frontend/internal/client/ConnectionIndicator.ts}; on the JVM
+ * (unit tests) the methods are no-ops and {@link #getState()} returns
+ * {@code null}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class ConnectionIndicator {
-
-    /*
-     * Constants shared with ConnectionState.ts
-     */
 
     /**
      * Application is connected to server: last transaction over the wire (XHR /
@@ -61,87 +64,59 @@ public class ConnectionIndicator {
 
     /**
      * Set the connection state to be displayed by the loading indicator.
-     *
-     * @param state
-     *            the connection state
      */
-    public static native void setState(String state)
-    /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.state = state;
+    public static void setState(String state) {
+        if (GWT.isScript()) {
+            NativeConnectionIndicator.setState(state);
         }
-    }-*/;
+    }
 
     /**
      * Get the connection state.
-     *
-     * @return the connection state
      */
-    public static native String getState()
-    /*-{
-        if ($wnd.Vaadin.connectionState) {
-            return $wnd.Vaadin.connectionState.state;
-        } else {
-            return null;
+    public static String getState() {
+        if (GWT.isScript()) {
+            return NativeConnectionIndicator.getState();
         }
-    }-*/;
+        return null;
+    }
 
     /**
      * Set a property of the connection indicator component.
-     *
-     * @param property
-     *            the property to set
-     * @param value
-     *            the value to set
      */
-    public static native void setProperty(String property, Object value)
-    /*-{
-        if ($wnd.Vaadin.connectionIndicator) {
-            $wnd.Vaadin.connectionIndicator[property] = value;
+    public static void setProperty(String property, Object value) {
+        if (GWT.isScript()) {
+            NativeConnectionIndicator.setProperty(property, value);
         }
-    }-*/;
+    }
 
     /**
      * Notifies the client-side connection state indicator that a loading
      * operation has started.
-     * <p>
-     * This method triggers the {@link ConnectionIndicator#LOADING} state
-     * transition on the client side.
      */
-    public static native void loadingStarted()
-    /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingStarted();
+    public static void loadingStarted() {
+        if (GWT.isScript()) {
+            NativeConnectionIndicator.loadingStarted();
         }
-     }-*/;
+    }
 
     /**
      * Notifies the client-side connection state indicator that a loading
      * operation has completed successfully.
-     * <p>
-     * When all requests finish, this method triggers the
-     * {@link ConnectionIndicator#CONNECTED} state transition on the client
-     * side.
      */
-    public static native void loadingFinished()
-    /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingFinished();
+    public static void loadingFinished() {
+        if (GWT.isScript()) {
+            NativeConnectionIndicator.loadingFinished();
         }
-     }-*/;
+    }
 
     /**
      * Notifies the client-side connection state indicator that a loading
      * operation has encountered an error or failed.
-     * <p>
-     * If no requests are remaining, triggers the
-     * {@link ConnectionIndicator#CONNECTION_LOST} state transition on the
-     * client side.
      */
-    public static native void loadingFailed()
-    /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingFailed();
+    public static void loadingFailed() {
+        if (GWT.isScript()) {
+            NativeConnectionIndicator.loadingFailed();
         }
-     }-*/;
+    }
 }
