@@ -45,8 +45,32 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
     @Override
     protected void gwtSetUp() throws Exception {
         installPolyfills();
+        installMigratedBridgeStubs();
         super.gwtSetUp();
     }
+
+    /**
+     * Publishes pass-through stubs for TS-migrated classes that GWT code now
+     * reaches via {@code @JsType(isNative = true, namespace = "Vaadin.Flow.internal.*")}.
+     * Production code gets these from {@code Flow.ts} importing
+     * {@code internal/bridge.ts}; Gwt tests don't load Flow.ts, so this hook
+     * installs equivalent stubs before each test.
+     */
+    private static native void installMigratedBridgeStubs()
+    /*-{
+        var vaadin = $wnd.Vaadin = $wnd.Vaadin || {};
+        var flow = vaadin.Flow = vaadin.Flow || {};
+        var internal = flow.internal = flow.internal || {};
+        var client = internal.client = internal.client || {};
+        client.Console = {
+            setProductionMode: function() {},
+            debug: function(m) { if ($wnd.console) $wnd.console.debug(m); },
+            log: function(m) { if ($wnd.console) $wnd.console.log(m); },
+            warn: function(m) { if ($wnd.console) $wnd.console.warn(m); },
+            error: function(m) { if ($wnd.console) $wnd.console.error(m); },
+            reportStacktrace: function(e) { if ($wnd.console) $wnd.console.error(e); }
+        };
+    }-*/;
 
     @Override
     public String getModuleName() {
