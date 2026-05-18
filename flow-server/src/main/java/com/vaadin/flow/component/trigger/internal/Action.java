@@ -20,15 +20,6 @@ import java.io.Serializable;
 /**
  * Something that runs on the client when a {@link Trigger} fires.
  * <p>
- * An action may also have a server-side effect that mirrors what just happened
- * in the browser (for example, reporting back whether
- * {@code navigator.clipboard.writeText} resolved or rejected). The mirror runs
- * on the UI thread when the client posts a notification back through the per-
- * host return channel.
- * <p>
- * The same {@code Action} instance may be wired to multiple triggers on the
- * same host; the client-side handler runs once per binding.
- * <p>
  * Implementations should extend {@link AbstractAction}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.

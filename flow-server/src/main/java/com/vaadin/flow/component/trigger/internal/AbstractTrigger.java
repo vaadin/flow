@@ -15,41 +15,39 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
 
 /**
- * Base class for {@link Trigger} implementations.
+ * Base class for {@link Trigger} implementations. Each call to
+ * {@link #triggers(Action...)} produces one {@link Element#addJsInitializer
+ * addJsInitializer} registration on the host element; {@link #remove()} removes
+ * all such registrations.
  * <p>
- * Subclasses identify themselves with a namespaced type id
- * ({@code "flow:event"}, {@code "myapp:double-tap"}, …) which must match a
- * factory registered against {@code window.Vaadin.Flow.triggers} on the client
- * side. Subclasses override {@link #buildClientConfig} when they need to ship
- * extra configuration with the trigger.
+ * Subclasses provide their event-install JS by overriding
+ * {@link #installJs(JsBuilder, String)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public abstract class AbstractTrigger implements Trigger {
 
-    private final String typeId;
     private final Element host;
-    private final int triggerId;
+    private final List<Registration> registrations = new ArrayList<>();
 
     /**
      * Creates a new trigger bound to the given host component's root element.
      *
-     * @param typeId
-     *            namespaced type id matching a client factory, not {@code null}
      * @param host
      *            the component whose root element the trigger fires on, not
      *            {@code null}
      */
-    protected AbstractTrigger(String typeId, Component host) {
-        this.typeId = Objects.requireNonNull(typeId);
+    protected AbstractTrigger(Component host) {
         this.host = Objects.requireNonNull(host).getElement();
-        this.triggerId = TriggerSupport.on(this.host).registerTrigger(this);
     }
 
     /**
@@ -61,46 +59,46 @@ public abstract class AbstractTrigger implements Trigger {
         return host;
     }
 
-    /**
-     * The namespaced type id of this trigger.
-     *
-     * @return the type id, never {@code null}
-     */
-    public final String getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * Internal id for this trigger within its host's {@link TriggerSupport}.
-     *
-     * @return the id
-     */
-    public final int getTriggerId() {
-        return triggerId;
-    }
-
-    /**
-     * Writes the JSON configuration this trigger sends to the client. Default
-     * is a no-op (empty object); override to add type-specific options via
-     * {@link ConfigContext#put(String, Object)} and the element-reference
-     * helpers.
-     *
-     * @param context
-     *            the resolver for referenced elements and arguments, not
-     *            {@code null}
-     */
-    public void buildClientConfig(ConfigContext context) {
-    }
-
     @Override
     public final Trigger triggers(Action... actions) {
         Objects.requireNonNull(actions);
-        TriggerSupport.on(host).bind(this, actions);
+        if (actions.length == 0) {
+            throw new IllegalArgumentException(
+                    "At least one action is required");
+        }
+        JsBuilder builder = new JsBuilder(host);
+        StringBuilder handlerBody = new StringBuilder();
+        for (Action action : actions) {
+            Objects.requireNonNull(action, "Action must not be null");
+            ((AbstractAction) action).appendStatement(builder, handlerBody);
+            handlerBody.append(";");
+        }
+        String js = installJs(builder, handlerBody.toString());
+        registrations.add(host.addJsInitializer(js, builder.params()));
         return this;
     }
 
+    /**
+     * Builds the JS expression that installs this trigger's listener and
+     * returns a cleanup function that removes it. The expression runs with
+     * {@code this} bound to the host element.
+     * <p>
+     * Subclasses must use {@code builder} (via {@link JsBuilder#reference}) to
+     * reference any non-host element rather than embedding element identifiers
+     * in the JS string.
+     *
+     * @param builder
+     *            collects element parameter references, not {@code null}
+     * @param handlerBody
+     *            JS statements (each terminated with a semicolon) that run when
+     *            the trigger fires, not {@code null}
+     * @return the JS install expression, not {@code null}
+     */
+    protected abstract String installJs(JsBuilder builder, String handlerBody);
+
     @Override
     public final void remove() {
-        TriggerSupport.on(host).removeTrigger(this);
+        registrations.forEach(Registration::remove);
+        registrations.clear();
     }
 }

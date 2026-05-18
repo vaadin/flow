@@ -15,62 +15,24 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.Objects;
-
 /**
- * Base class for {@link Action} implementations.
- * <p>
- * Subclasses identify themselves with a namespaced type id
- * ({@code "flow:clipboard-copy"}, {@code "myapp:show-toast"}, …) which must
- * match a factory registered against {@code window.Vaadin.Flow.triggers} on the
- * client side. Subclasses override {@link #buildClientConfig} to ship
- * configuration with the action.
- * <p>
- * For actions whose client-side outcome should be reported back to the server,
- * extend {@link AbstractCallbackAction} instead. It declares a typed payload
- * the framework deserialises before calling the server-side handler, so the
- * extension author never sees JSON types.
+ * Base class for {@link Action} implementations. Subclasses append the JS that
+ * runs when the trigger fires by overriding
+ * {@link #appendStatement(JsBuilder, StringBuilder)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public abstract non-sealed class AbstractAction implements Action {
 
-    private final String typeId;
-
     /**
-     * Creates a new action with the given namespaced type id.
+     * Appends this action's JS statement to {@code out}. Element references
+     * must go through {@link JsBuilder#reference}.
      *
-     * @param typeId
-     *            type id matching a client factory, not {@code null}
+     * @param builder
+     *            collects element parameter references, not {@code null}
+     * @param out
+     *            buffer to append into, not {@code null}
      */
-    protected AbstractAction(String typeId) {
-        this.typeId = Objects.requireNonNull(typeId);
-    }
-
-    /**
-     * The namespaced type id of this action.
-     *
-     * @return the type id, never {@code null}
-     */
-    public final String getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * Writes the JSON configuration this action sends to the client. Default is
-     * a no-op (empty object); override to add type-specific options.
-     * <p>
-     * Subclasses encode argument references by calling
-     * {@link ConfigContext#registerArgument(Argument)} and element references
-     * by calling
-     * {@link ConfigContext#referenceElement(com.vaadin.flow.dom.Element)}, and
-     * scalar/structural values by calling
-     * {@link ConfigContext#put(String, Object)}.
-     *
-     * @param context
-     *            the resolver for referenced elements and arguments, not
-     *            {@code null}
-     */
-    public void buildClientConfig(ConfigContext context) {
-    }
+    protected abstract void appendStatement(JsBuilder builder,
+            StringBuilder out);
 }

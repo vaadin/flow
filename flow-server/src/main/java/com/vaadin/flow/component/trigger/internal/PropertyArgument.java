@@ -40,8 +40,6 @@ import com.vaadin.flow.dom.Element;
  */
 public class PropertyArgument<T> extends AbstractArgument<T> {
 
-    public static final String TYPE_ID = "flow:property";
-
     private final Element target;
     private final String propertyName;
 
@@ -58,28 +56,14 @@ public class PropertyArgument<T> extends AbstractArgument<T> {
      */
     public PropertyArgument(Component target, String propertyName,
             Class<T> valueType) {
-        super(TYPE_ID, valueType);
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
-    }
-
-    /**
-     * @return the target element
-     */
-    public Element getTarget() {
-        return target;
-    }
-
-    /**
-     * @return the property name being read
-     */
-    public String getPropertyName() {
-        return propertyName;
+        Objects.requireNonNull(valueType);
     }
 
     @Override
-    public void buildClientConfig(ConfigContext context) {
-        context.put("property", propertyName);
-        context.put("element", context.referenceElement(target));
+    protected void appendExpression(JsBuilder builder, StringBuilder out) {
+        out.append(builder.reference(target)).append("[")
+                .append(JsBuilder.json(propertyName)).append("]");
     }
 }

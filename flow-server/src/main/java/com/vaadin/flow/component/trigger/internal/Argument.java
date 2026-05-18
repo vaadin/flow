@@ -21,12 +21,6 @@ import java.io.Serializable;
  * A value produced on the client at the moment a trigger fires, snapshotted and
  * passed into the bound {@link Action actions}.
  * <p>
- * Arguments are resolved synchronously when the trigger fires, never
- * reactively.
- * <p>
- * The same {@code Argument} instance may be referenced from multiple actions;
- * its value is computed once per fire and reused.
- * <p>
  * Implementations should extend {@link AbstractArgument}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.

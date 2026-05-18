@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.trigger.internal.TriggerSupport;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -107,7 +106,6 @@ class NodeFeatureTest {
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
         expectedIds.put(SignalBindingFeature.class,
                 NodeFeatures.SIGNAL_BINDING);
-        expectedIds.put(TriggerSupport.class, NodeFeatures.TRIGGER_SUPPORT);
 
         return expectedIds;
     }
@@ -151,9 +149,6 @@ class NodeFeatureTest {
 
                 /* Signal binding feature */
                 SignalBindingFeature.class,
-
-                /* Trigger API */
-                TriggerSupport.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,

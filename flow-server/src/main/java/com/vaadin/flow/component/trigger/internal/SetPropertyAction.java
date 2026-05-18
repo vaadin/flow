@@ -48,8 +48,6 @@ import com.vaadin.flow.dom.Element;
  */
 public class SetPropertyAction<T> extends AbstractAction {
 
-    public static final String TYPE_ID = "flow:set-property";
-
     private final Element target;
     private final String propertyName;
     private final @Nullable T value;
@@ -69,37 +67,15 @@ public class SetPropertyAction<T> extends AbstractAction {
      */
     public SetPropertyAction(Component target, String propertyName,
             @Nullable T value) {
-        super(TYPE_ID);
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
         this.value = value;
     }
 
-    /**
-     * @return the target element
-     */
-    public Element getTarget() {
-        return target;
-    }
-
-    /**
-     * @return the property name being written
-     */
-    public String getPropertyName() {
-        return propertyName;
-    }
-
-    /**
-     * @return the value to assign, may be {@code null}
-     */
-    public @Nullable T getValue() {
-        return value;
-    }
-
     @Override
-    public void buildClientConfig(ConfigContext context) {
-        context.put("element", context.referenceElement(target));
-        context.put("property", propertyName);
-        context.put("value", value);
+    protected void appendStatement(JsBuilder builder, StringBuilder out) {
+        out.append(builder.reference(target)).append("[")
+                .append(JsBuilder.json(propertyName)).append("] = ")
+                .append(JsBuilder.json(value));
     }
 }

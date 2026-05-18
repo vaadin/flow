@@ -15,16 +15,10 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.Objects;
-
 /**
- * Base class for {@link Argument} implementations.
- * <p>
- * Subclasses identify themselves with a namespaced type id
- * ({@code "flow:property"}, {@code "myapp:caret-offset"}, …) which must match a
- * factory registered against {@code window.Vaadin.Flow.triggers} on the client
- * side. Subclasses override {@link #buildClientConfig} when they need to ship
- * configuration with the argument.
+ * Base class for {@link Argument} implementations. Subclasses produce the JS
+ * expression that yields the argument's value when the trigger fires by
+ * overriding {@link #appendExpression(JsBuilder, StringBuilder)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -33,49 +27,15 @@ import java.util.Objects;
  */
 public abstract non-sealed class AbstractArgument<T> implements Argument<T> {
 
-    private final String typeId;
-    private final Class<T> valueType;
-
     /**
-     * Creates a new argument.
+     * Appends this argument's JS expression to {@code out}. Element references
+     * must go through {@link JsBuilder#reference}.
      *
-     * @param typeId
-     *            namespaced type id matching a client factory, not {@code null}
-     * @param valueType
-     *            runtime type of the produced value, not {@code null}
+     * @param builder
+     *            collects element parameter references, not {@code null}
+     * @param out
+     *            buffer to append into, not {@code null}
      */
-    protected AbstractArgument(String typeId, Class<T> valueType) {
-        this.typeId = Objects.requireNonNull(typeId);
-        this.valueType = Objects.requireNonNull(valueType);
-    }
-
-    /**
-     * The namespaced type id of this argument.
-     *
-     * @return the type id, never {@code null}
-     */
-    public final String getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * The runtime type of the value this argument produces.
-     *
-     * @return the value type, never {@code null}
-     */
-    public final Class<T> getValueType() {
-        return valueType;
-    }
-
-    /**
-     * Writes the JSON configuration this argument sends to the client. Default
-     * is a no-op (empty object); override to add type-specific options via
-     * {@link ConfigContext#put(String, Object)} and the element-reference
-     * helpers.
-     *
-     * @param context
-     *            the resolver for referenced elements, not {@code null}
-     */
-    public void buildClientConfig(ConfigContext context) {
-    }
+    protected abstract void appendExpression(JsBuilder builder,
+            StringBuilder out);
 }

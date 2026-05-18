@@ -16,16 +16,15 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Minimal {@link Component} wrapper around an arbitrary tag, used by the
- * trigger unit tests in place of dragging flow-html-components into the server
- * test classpath.
+ * Minimal {@link Component} subclass with an explicit tag, for tests that need
+ * a server-side component but no behaviour. {@code @Tag} can't be set
+ * dynamically, so this class takes the tag as a constructor argument and builds
+ * its root element directly.
  */
-@Tag("test-component")
-final class TagComponent extends Component {
+class TagComponent extends Component {
 
     TagComponent(String tag) {
         super(new Element(tag));

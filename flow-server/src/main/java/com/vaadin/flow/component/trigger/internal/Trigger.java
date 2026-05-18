@@ -29,16 +29,18 @@ import java.io.Serializable;
  *
  * <pre>{@code
  * Trigger click = new DomEventTrigger(button, "click");
- * click.triggers(new ClipboardCopyAction(
- *         new PropertyArgument<>(textField, "value", String.class)));
+ * click.triggers(new SetPropertyAction<>(field, "value", ""));
  * }</pre>
  *
  * Calling {@code triggers} more than once is additive — every subsequent call
- * adds another binding to the same trigger.
+ * adds another wiring to the same trigger.
  * <p>
- * Triggers and actions run client-side without a server round-trip. An action
- * may still cause one if it has a server-observable effect (e.g. reporting back
- * whether a browser API call succeeded).
+ * Triggers and actions run client-side without a server round-trip. Each call
+ * to {@link #triggers} produces one
+ * {@link com.vaadin.flow.dom.Element#addJsInitializer addJsInitializer}
+ * registration on the host, so the listeners are re-installed on every fresh
+ * client-side DOM and removed when the host is discarded or the trigger is
+ * {@linkplain #remove removed}.
  * <p>
  * Actions run synchronously when the trigger fires; for triggers that originate
  * from a user gesture (click, keypress, …) this preserves the gesture context
@@ -54,14 +56,14 @@ public interface Trigger extends Serializable {
      * next time this trigger fires.
      *
      * @param actions
-     *            the actions to run, not {@code null}
+     *            the actions to run, not {@code null} or empty
      * @return this trigger, for chaining
      */
     Trigger triggers(Action... actions);
 
     /**
-     * Removes this trigger and all bindings created from it. The corresponding
-     * client-side handlers are detached as part of the next synchronisation.
+     * Removes this trigger and all wirings created from it. The corresponding
+     * client-side listeners are detached as part of the next synchronisation.
      */
     void remove();
 }

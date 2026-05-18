@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.component.trigger.internal.TriggerSupport;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -75,10 +74,6 @@ public class NodeFeatureRegistry {
         /* Signal binding features */
         registerFeature(SignalBindingFeature.class, SignalBindingFeature::new,
                 NodeFeatures.SIGNAL_BINDING);
-
-        /* Trigger API */
-        registerFeature(TriggerSupport.class, TriggerSupport::new,
-                NodeFeatures.TRIGGER_SUPPORT);
 
         /* Common element features */
         registerFeature(ElementChildrenList.class, ElementChildrenList::new,

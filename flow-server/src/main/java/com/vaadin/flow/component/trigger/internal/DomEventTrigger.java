@@ -38,8 +38,6 @@ import com.vaadin.flow.component.Component;
  */
 public class DomEventTrigger extends AbstractTrigger {
 
-    public static final String TYPE_ID = "flow:event";
-
     private final String eventName;
 
     /**
@@ -54,19 +52,15 @@ public class DomEventTrigger extends AbstractTrigger {
      *            not {@code null}
      */
     public DomEventTrigger(Component host, String eventName) {
-        super(TYPE_ID, host);
+        super(host);
         this.eventName = Objects.requireNonNull(eventName);
     }
 
-    /**
-     * @return the DOM event name this trigger listens for
-     */
-    public String getEventName() {
-        return eventName;
-    }
-
     @Override
-    public void buildClientConfig(ConfigContext context) {
-        context.put("eventName", eventName);
+    protected String installJs(JsBuilder builder, String handlerBody) {
+        String evt = JsBuilder.json(eventName);
+        return "const __h = (event) => { " + handlerBody + " };"
+                + "this.addEventListener(" + evt + ", __h);"
+                + "return () => this.removeEventListener(" + evt + ", __h);";
     }
 }
