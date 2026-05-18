@@ -19,6 +19,7 @@
 // can reach it via `@JsType(isNative = true, namespace = ...)`. See
 // MIGRATION.md for the full pattern.
 import { Console } from './client/Console';
+import { LitUtils } from './client/LitUtils';
 import { registerGwtBridge } from './registry';
 
 /**
@@ -31,6 +32,7 @@ import { registerGwtBridge } from './registry';
  */
 export function installGwtBridge(): void {
   registerGwtBridge('client', 'Console', Console);
+  registerGwtBridge('client', 'LitUtils', LitUtils);
 }
 
 installGwtBridge();
