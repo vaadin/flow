@@ -68,25 +68,10 @@ public class BrowserInfo {
         return instance;
     }
 
-    private native boolean checkForTouchDevice()
-    /*-{
-        if (navigator && "maxTouchPoints" in navigator) {
-            return navigator.maxTouchPoints > 0;
-        } else if (navigator && "msMaxTouchPoints" in navigator) {
-            return navigator.msMaxTouchPoints > 0;
-        } else {
-            var mQ = $wnd.matchMedia && matchMedia("(pointer:coarse)");
-            if (mQ && mQ.media === "(pointer:coarse)") {
-                return !!mQ.matches;
-            }
-        }
-        try {
-            $doc.createEvent("TouchEvent");
-            return true;
-        } catch(e){
-            return false;
-        }
-    }-*/;
+    private boolean checkForTouchDevice() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeBrowserInfo.checkForTouchDevice();
+    }
 
     /**
      * Checks if the browser is IE.
@@ -231,16 +216,16 @@ public class BrowserInfo {
         return browserDetails.isOpera();
     }
 
-    private static native String getBrowserString()
-    /*-{
-        return $wnd.navigator.userAgent;
-    }-*/;
+    private static String getBrowserString() {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeBrowserInfo.getBrowserString()
+                : "";
+    }
 
-    private static native boolean isIos()
-    /*-{
-        return (/iPad|iPhone|iPod/.test(navigator.platform) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-    }-*/;
+    private static boolean isIos() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeBrowserInfo.isIos();
+    }
 
     /**
      * Checks if the browser runs on a touch capable device.
