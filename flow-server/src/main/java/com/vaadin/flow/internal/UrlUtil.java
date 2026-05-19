@@ -250,7 +250,7 @@ public class UrlUtil {
         }
         String s = input.trim();
         if (s.isEmpty()) {
-            return false;
+            return true;
         }
 
         // Reject control chars to avoid obfuscation tricks
