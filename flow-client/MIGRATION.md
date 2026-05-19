@@ -43,89 +43,109 @@ When every class has been migrated:
 
    Callers don't reach this class directly — see the next point.
 
-## Java shim with JVM fallback
+## Recommended pattern: pure `@JsType` native shim
 
-JVM unit tests under `src/test/java/**` exercise Java production code on the
-JVM (not in GWT). Pure `@JsType(isNative=true)` calls throw on the JVM, so the
-public Java class stays in place as a thin shim that picks between the bridge
-(under GWT) and a JVM behaviour (under tests):
+After a migration, the Java public class becomes a *pure* `@JsType(isNative
+= true)` declaration that points at the TS module. No body, no fields, no
+JVM branch:
+
+```java
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client",
+        name = "ExistingElementMap")
+public class ExistingElementMap {
+    public ExistingElementMap();
+    public native Element getElement(int id);
+    public native Integer getId(Element element);
+    public native void remove(int id);
+    public native void add(int id, Element element);
+}
+```
+
+Java callers keep calling `new ExistingElementMap()` and `map.getElement(id)`
+as before; at runtime those resolve to the TS class published at
+`window.Vaadin.Flow.internal.client.ExistingElementMap`. There is no
+`Native<Name>` sibling class — the public Java class *is* the JsType
+binding.
+
+Because the Java class has no JVM-side body, **any JUnit test that
+instantiated it must already be deleted in the same commit as the
+migration**. See [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md): per-tier ports
+of test coverage to mocha happen alongside the class migration.
+
+For static-utility classes (no constructor, no instance state) the same
+shape applies, just with `static native` methods:
+
+```java
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client",
+        name = "Console")
+public final class Console {
+    public static native void debug(Object message);
+    public static native void log(Object message);
+    // ...
+}
+```
+
+## Transitional pattern: `GWT.isScript()` shim with JVM fallback
+
+The 24 in-flight commits on this branch use a slightly different shape:
+the public Java class stays in place as a thin shim that picks between
+the TS bridge under GWT and a JVM behaviour under tests:
 
 ```java
 public static void debug(Object message) {
     if (GWT.isScript()) {
-        NativeConsole.debug(message);
+        NativeConsole.debug(message);  // forwards to TS
     } else {
-        System.out.println(message);
+        System.out.println(message);   // JVM fallback for JUnit
     }
 }
 ```
 
-This is the standard shape for a migrated class. The migrated TS module owns
-all interesting behaviour; the Java shim only routes.
+And for stateful classes, a paired `Native<Name>` JsType class plus a
+public Java facade that keeps a `HashMap`/`ArrayList` JVM-side copy of
+the state.
 
-## Stateful classes (instances, not just static utilities)
+This pattern was used because at the time the migration started the
+project couldn't yet drop JUnit tests one-by-one. **It is now considered
+transitional.** The cost is duplicating the implementation on the JVM
+side; for trivial classes that's a few lines, for richer ones it's
+tedious make-work. Per `MIGRATION_PLAN.md` Tier 7 (and matching tiers
+for the communication / bootstrap classes), these in-flight shims get
+collapsed to the recommended pattern at the same time their JUnit tests
+are dropped.
 
-For Java classes that callers instantiate with `new` and that hold internal
-state, the bridge pattern extends in two ways. Worked examples:
-`ExistingElementMap` and `flow.model.UpdatableModelProperties`.
+**Do not add new migrations using the transitional pattern.** Use the
+pure `@JsType` native form and port any JUnit coverage to mocha in the
+same commit.
 
-1. **TS class with the real state and logic** under
-   `src/main/frontend/internal/client/<pkg>/<Name>.ts`.
-2. **`Native<Name>` JsType class** declares the constructor and instance
-   methods (no static methods), e.g.
+### When the recommended pattern needs a `Native<Name>` sibling
 
-   ```java
-   @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client",
-           name = "ExistingElementMap")
-   final class NativeExistingElementMap {
-       NativeExistingElementMap();
-       native Element getElement(int id);
-       // ...
-   }
-   ```
+The pure form folds the JsType binding into the public Java class. That
+works when every public method maps one-to-one to a TS method. If the
+Java shim has to do something non-trivial *before* dispatching — most
+commonly, bundling Java method references into a callback POJO or
+flattening an overloaded API into the JS-friendly form — keep a
+`Native<Name>` sibling for the native binding and let the public Java
+class hold the small adapter logic. `NativeApplicationConnection`,
+`NativeAtmospherePushConnection`, `NativeExecuteJavaScriptProcessor` and
+`NativeSimpleElementBindingStrategy` are the canonical examples.
 
-3. **Java public class becomes a thin facade** that picks between a
-   GWT-side `Native<Name>` instance and a JVM-side fallback (typically
-   `HashMap`/`ArrayList`/`HashSet`) so existing JUnit tests that
-   `new` the class keep working unchanged:
+## GwtTest stub for stateful classes
 
-   ```java
-   public class ExistingElementMap {
-       private final NativeExistingElementMap delegate;
-       private final Map<Element, Integer> jvmElementToId;
-       // ...
-       public ExistingElementMap() {
-           if (GWT.isScript()) {
-               delegate = new NativeExistingElementMap();
-               jvmElementToId = null;
-               // ...
-           } else {
-               delegate = null;
-               jvmElementToId = new HashMap<>();
-               // ...
-           }
-       }
-       public Element getElement(int id) {
-           if (delegate != null) return delegate.getElement(id);
-           // JVM fallback
-       }
-   }
-   ```
+For stateful classes whose `new` form is exercised by a GwtTest that
+hasn't yet been ported to mocha, the stub in
+`ClientEngineTestBase.installMigratedBridgeStubs()` declares a constructor
+function rather than an object literal:
 
-4. **GwtTest stub** declares a constructor function rather than an object
-   literal so `new client.ExistingElementMap()` works:
+```java
+client.ExistingElementMap = function() {
+    // …per-instance closure state…
+    this.getElement = function(id) { /* ... */ };
+};
+```
 
-   ```java
-   client.ExistingElementMap = function() {
-       // …per-instance closure state…
-       this.getElement = function(id) { /* ... */ };
-   };
-   ```
-
-The cost of this pattern is duplicating the implementation on the JVM side.
-For trivial classes that's a few lines; for richer ones it's tedious but
-mechanical. Once a class is in TS, the JVM fallback can also be removed in
-the tear-down phase together with all the JUnit tests.
+Per the plan, both the GwtTest and the stub disappear once the test
+coverage moves to mocha.
 
 ## Passing Java callbacks to TS
 
@@ -136,14 +156,18 @@ sibling `Native<Name>` class. Established shapes:
 
 | Java type            | `@JsFunction` interface                    | First used in          |
 | -------------------- | ------------------------------------------ | ---------------------- |
-| `Runnable`           | `JsRunnable` — `void run()`                | `NativeLitUtils`       |
+| `Runnable`           | `com.vaadin.client.JsRunnable` — `void run()` | shared (top-level) |
 | `Supplier<Object>`   | `JsSupplier` — `Object get()`              | `NativeResourceLoader` |
 | `Consumer<String>`   | `JsStringConsumer` — `void accept(String)` | `NativeBootstrapper`   |
 | `Consumer<JsonArray>`| `JsArgsConsumer` — `void accept(JsonArray)`| `NativeClientJsonCodec`|
 
-Reuse the existing interface where possible (`JsRunnable` lives in
-`NativeLitUtils` and is imported by other native classes). Declare new
-shapes alongside the consuming native class.
+Plus per-class function shapes for richer signatures (used by
+`NativeApplicationConnection`, `NativeAtmospherePushConnection`,
+`NativeExecuteJavaScriptProcessor`, `NativeSimpleElementBindingStrategy`).
+
+Reuse `JsRunnable` from the top-level `com.vaadin.client` package
+whenever a `() => void` is needed. Declare new shapes alongside the
+consuming native class.
 
 When the original JSNI passed *two* callbacks via a Java listener interface
 (for example `ResourceLoadListener` with `onLoad` / `onError`), don't ship
@@ -157,34 +181,45 @@ example.
 `Gwt*Test` classes don't go through `Flow.ts`, so the bridge isn't published
 when they run. `ClientEngineTestBase.gwtSetUp()` installs pass-through stubs
 of the `Vaadin.Flow.internal.*` namespace via JSNI — see
-`installMigratedBridgeStubs()` in that file. Each new migration adds an entry
-to that stub.
+`installMigratedBridgeStubs()` in that file. Each migration adds an entry
+to that stub *if and only if* a GwtTest that hasn't been ported yet still
+references the migrated class.
+
+Per `MIGRATION_PLAN.md`, the goal is to port the GwtTest to mocha in the
+same commit as the migration, drop the GwtTest, and remove the stub entry
+— so the stub map shrinks over the course of the migration.
 
 ## Per-PR checklist
 
 For each Java class being migrated:
 
-1. **Add the TS module** under `src/main/frontend/internal/<pkg>/<Name>.ts`.
-   Export the implementation; **do not** call `registerGwtBridge` from the
-   module itself — registration lives only in `bridge.ts`.
-2. **Add the entry to `internal/bridge.ts`** (import + one
+1. **Port the relevant test coverage to mocha first.** Identify the
+   methods of any `Gwt<Name>Test` and `<Name>Test.java` that prove
+   behaviour worth preserving (per the `MIGRATION_PLAN.md` P1 inventory).
+   Write equivalent mocha tests under `src/test/frontend/<Name>Tests.ts`.
+   These will run against the new TS module once it exists; keep them
+   ready in this commit but expect them to fail until step 3 lands.
+2. **Add the TS module** under `src/main/frontend/internal/<pkg>/<Name>.ts`.
+   Export the implementation. The mocha tests from step 1 should now pass.
+3. **Replace the Java class body** with a pure `@JsType(isNative = true)`
+   declaration pointing at the TS module — no body, no fields, no JVM
+   branch. (Recommended pattern, above.) When `Native<Name>` adapter
+   classes are needed for callback bundling, see "When the recommended
+   pattern needs a `Native<Name>` sibling" above.
+4. **Add the entry to `internal/bridge.ts`** (import + one
    `registerGwtBridge(...)` line in `installGwtBridge()`).
-3. **Replace the Java class body** with a `GWT.isScript()` shim that calls
-   into a sibling `Native<Name>` JsType class. Keep the JVM fallback so JUnit
-   tests under `src/test/java/**` continue to compile and pass.
-4. **Add the `Native<Name>` class** with
-   `@JsType(isNative = true, namespace = "Vaadin.Flow.internal.<pkg>", name = "<Name>")`
-   and `native` declarations for each method.
-5. **Extend the GwtTest stub** in `ClientEngineTestBase.installMigratedBridgeStubs()`
-   with a pass-through JS object for the new entry.
-6. **Port the Gwt test** (if one exists) to a `*Tests.ts` file under
-   `src/test/frontend/` using `web-test-runner` + mocha + sinon + `@open-wc/testing`.
-   File name must end in `Tests.ts` (matches the runner config glob).
-   Delete the old `Gwt<Name>Test.java` in the same PR.
+5. **Delete `<Name>Test.java`** if one exists — its coverage now lives
+   in mocha.
+6. **Delete `Gwt<Name>Test.java`** if it covered only this class. If it
+   covers multiple classes that haven't migrated yet, leave it in place
+   and add a JSNI pass-through stub for `<Name>` in
+   `ClientEngineTestBase.installMigratedBridgeStubs()` so the GwtTest
+   keeps working until its other targets migrate too.
 7. **Verify the build.** Run, in order:
    - `npx tsc --noEmit && npx eslint src/main/frontend src/test/frontend`
    - `npm test` (all TS tests, in Chromium)
-   - `mvn -pl . test -Dgwt.test.pattern=none` (JVM JUnit only)
+   - `mvn -pl . test -Dgwt.test.pattern=none` (JVM JUnit only — should
+     get smaller as classes migrate)
    - `mvn install` (full build, GWT compile + every test)
    - `mvn spotless:check`
 
@@ -193,11 +228,12 @@ For each Java class being migrated:
 ## PR size and order
 
 - Keep each PR under ~500 LOC of TS and ideally one Java class.
-- Migrate from leaves to roots: pure utilities first, then reactive / DOM /
-  node features, then state tree, then binding, then registry / application,
-  then communication, finally bootstrap. The collection package
-  (`flow.collection.*`) is already `@JsType` native and disappears in the
-  final tear-down — do **not** start there.
+- For the full ordering through to an empty `src/main/java`, see
+  [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md). Short version: leaves to
+  roots — reactive → nodefeature → DOM → state tree → binding →
+  application kernel → communication → bootstrap → tear-down. The
+  `flow.collection.*` package is already `@JsType` native and disappears
+  in tear-down; do **not** start there.
 
 ### Status
 
