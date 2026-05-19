@@ -63,6 +63,70 @@ public static void debug(Object message) {
 This is the standard shape for a migrated class. The migrated TS module owns
 all interesting behaviour; the Java shim only routes.
 
+## Stateful classes (instances, not just static utilities)
+
+For Java classes that callers instantiate with `new` and that hold internal
+state, the bridge pattern extends in two ways. Worked examples:
+`ExistingElementMap` and `flow.model.UpdatableModelProperties`.
+
+1. **TS class with the real state and logic** under
+   `src/main/frontend/internal/client/<pkg>/<Name>.ts`.
+2. **`Native<Name>` JsType class** declares the constructor and instance
+   methods (no static methods), e.g.
+
+   ```java
+   @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client",
+           name = "ExistingElementMap")
+   final class NativeExistingElementMap {
+       NativeExistingElementMap();
+       native Element getElement(int id);
+       // ...
+   }
+   ```
+
+3. **Java public class becomes a thin facade** that picks between a
+   GWT-side `Native<Name>` instance and a JVM-side fallback (typically
+   `HashMap`/`ArrayList`/`HashSet`) so existing JUnit tests that
+   `new` the class keep working unchanged:
+
+   ```java
+   public class ExistingElementMap {
+       private final NativeExistingElementMap delegate;
+       private final Map<Element, Integer> jvmElementToId;
+       // ...
+       public ExistingElementMap() {
+           if (GWT.isScript()) {
+               delegate = new NativeExistingElementMap();
+               jvmElementToId = null;
+               // ...
+           } else {
+               delegate = null;
+               jvmElementToId = new HashMap<>();
+               // ...
+           }
+       }
+       public Element getElement(int id) {
+           if (delegate != null) return delegate.getElement(id);
+           // JVM fallback
+       }
+   }
+   ```
+
+4. **GwtTest stub** declares a constructor function rather than an object
+   literal so `new client.ExistingElementMap()` works:
+
+   ```java
+   client.ExistingElementMap = function() {
+       // …per-instance closure state…
+       this.getElement = function(id) { /* ... */ };
+   };
+   ```
+
+The cost of this pattern is duplicating the implementation on the JVM side.
+For trivial classes that's a few lines; for richer ones it's tedious but
+mechanical. Once a class is in TS, the JVM fallback can also be removed in
+the tear-down phase together with all the JUnit tests.
+
 ## Passing Java callbacks to TS
 
 When a JSNI body invokes a Java method by reference (`runnable.@Runnable::run()()`
@@ -137,8 +201,7 @@ For each Java class being migrated:
 
 ### Status
 
-**Done** — every structurally-migratable JSNI body is now a TS module
-published via the bridge:
+**Done** — every JSNI body, plus two stateful classes:
 
 - `client.{Console, LitUtils, ReactUtils, ConnectionIndicator, ElementUtil,
   WidgetUtil, PolymerUtils, BrowserInfo, ResourceLoader, SystemErrorHandler,
@@ -149,6 +212,8 @@ published via the bridge:
 - `client.flow.ExecuteJavaScriptProcessor`
 - `client.flow.binding.SimpleElementBindingStrategy`
 - `client.flow.util.ClientJsonCodec`
+- `client.ExistingElementMap` (stateful pattern)
+- `client.flow.model.UpdatableModelProperties` (stateful pattern)
 
 **Deleted** — no callers: `LocationParser`, `StorageUtil`.
 
