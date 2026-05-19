@@ -27,17 +27,17 @@ public class JsInitializerIT extends ChromeBrowserTest {
     public void registerRunsOnInitialAttach() {
         open();
         assertCounters(0, 0);
-        clickAndWait("register");
+        click("register");
         assertCounters(1, 0);
     }
 
     @Test
     public void sameRequestReattach_doesNotRerun() {
         open();
-        clickAndWait("register");
+        click("register");
         assertCounters(1, 0);
 
-        clickAndWait("sameRequestReattach");
+        click("sameRequestReattach");
         // The client never discarded its DOM, so neither init nor cleanup
         // fired.
         assertCounters(1, 0);
@@ -46,14 +46,14 @@ public class JsInitializerIT extends ChromeBrowserTest {
     @Test
     public void crossRequestReattach_cleansUpAndRerunsInit() {
         open();
-        clickAndWait("register");
+        click("register");
         assertCounters(1, 0);
 
-        clickAndWait("detach");
+        click("detach");
         // Cleanup fires because the client unregistered the DOM.
         assertCounters(1, 1);
 
-        clickAndWait("reattach");
+        click("reattach");
         // Init runs again on the new client-side DOM.
         assertCounters(2, 1);
     }
@@ -61,19 +61,19 @@ public class JsInitializerIT extends ChromeBrowserTest {
     @Test
     public void removeRegistration_invokesCleanupAndStopsReinstall() {
         open();
-        clickAndWait("register");
+        click("register");
         assertCounters(1, 0);
 
-        clickAndWait("removeRegistration");
+        click("removeRegistration");
         assertCounters(1, 1);
 
         // Detach + reattach must NOT re-install the initializer.
-        clickAndWait("detach");
-        clickAndWait("reattach");
+        click("detach");
+        click("reattach");
         assertCounters(1, 1);
     }
 
-    private void clickAndWait(String id) {
+    private void click(String id) {
         findElement(By.id(id)).click();
     }
 

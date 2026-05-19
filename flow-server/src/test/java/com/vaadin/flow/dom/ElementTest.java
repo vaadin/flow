@@ -2427,19 +2427,20 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(1, pending.size());
 
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(invocation.getExpression().contains("__registry.register"),
-                "Wrapper expression should call the registry");
+        assertTrue(
+                invocation.getExpression().contains("this.registerInitializer"),
+                "Wrapper expression should delegate to registerInitializer");
         assertFalse(invocation.getExpression().contains("return () => {};"),
                 "Wrapper expression must not embed user JavaScript");
 
         List<Object> params = invocation.getParameters();
         assertEquals(3, params.size(),
-                "Expected [userFunction, element, initializerId]");
-        assertInstanceOf(JsFunction.class, params.get(0));
-        JsFunction userFn = (JsFunction) params.get(0);
+                "Expected [element, userFunction, initializerId]");
+        assertEquals(element, params.get(0));
+        assertInstanceOf(JsFunction.class, params.get(1));
+        JsFunction userFn = (JsFunction) params.get(1);
         assertEquals("return () => {};", userFn.getBody());
         assertEquals(List.of("foo"), userFn.getCaptures());
-        assertEquals(element, params.get(1));
         assertEquals(Integer.valueOf(0), params.get(2));
     }
 
@@ -2491,7 +2492,7 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(1, pending.size(),
                 "Init should be re-emitted when the client discarded the DOM");
         assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("__registry.register"));
+                .contains("this.registerInitializer"));
     }
 
     @Test
@@ -2511,7 +2512,27 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
         assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("initializers.dispose"));
+                .contains("this.disposeInitializer"));
+    }
+
+    @Test
+    void addJsInitializer_removeTwice_sendsDisposeOnce() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "remove() called twice should send dispose only once");
     }
 
     @Test
@@ -2608,9 +2629,10 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(invocation.getExpression().contains("initializers.dispose"));
-        // Dispose params are [initializerId, element].
-        assertEquals(Integer.valueOf(0), invocation.getParameters().get(0));
+        assertTrue(
+                invocation.getExpression().contains("this.disposeInitializer"));
+        // Dispose params are [element, initializerId].
+        assertEquals(Integer.valueOf(0), invocation.getParameters().get(1));
     }
 
     @Test

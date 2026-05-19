@@ -1853,10 +1853,10 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Registers a JavaScript initializer that runs in the browser each time
-     * this element acquires a client-side DOM node, and whose returned cleanup
-     * callback is invoked when that DOM node is discarded or the returned
-     * registration is removed.
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
      * <p>
      * The expression is executed with this element as <code>this</code> and
      * parameters available as <code>$0</code>, <code>$1</code>, ... exactly
@@ -1873,9 +1873,10 @@ public class Element extends Node<Element> {
      * detach + re-attach inside a single round trip, since the client never
      * discarded its DOM.
      * <p>
-     * The return value is read synchronously. Returning a promise that resolves
-     * to a cleanup function is <strong>not</strong> supported; any non-function
-     * return value (including a promise) is treated as "no cleanup".
+     * The return value is read synchronously. The expression must return a
+     * function or nothing; returning a promise or any other non-function value
+     * is logged as an error on the client. Use {@code undefined} (no
+     * {@code return}) when there is no cleanup to register.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
