@@ -15,6 +15,10 @@
 > Counts: **176** test methods total (49 test files). After classification:
 > ~**130 PORT**, ~**40 DROP**, ~**6 INTEGRATION**.
 >
+> Progress (as of 2026-05-19): **34 DROP done** (Jre*Test ×4, AssertionTest,
+> CodeTest, DomApiAbstractionUsageTest, plus inventory adjustments), **9
+> PORT done** (ReactiveTest → ReactiveTests.ts).
+>
 > This is a starting classification — reviewers should challenge specific
 > rows before the corresponding migration tier starts. Once a row turns
 > green (mocha equivalent merged or row dropped), it's no longer a
@@ -29,41 +33,41 @@ Legend: ☐ pending · ✅ mocha-ported or dropped
 These exercise the `Jre*` fallback collections that disappear when the
 Java side uses native JS types directly (Tier 12 of the plan).
 
-| File | Tests | Class |
-|---|---:|---|
-| `flow/collection/JreArrayTest` | 14 | DROP — fallback for JsArray |
-| `flow/collection/JreMapTest` | 3 | DROP — fallback for JsMap |
-| `flow/collection/JreSetTest` | 4 | DROP — fallback for JsSet |
-| `flow/collection/JreWeakMapTest` | 2 | DROP — fallback for JsWeakMap |
-| `AssertionTest.testAssertionsAreEnabled` | 1 | DROP — verifies `-ea` JVM flag, irrelevant in TS |
-| `CodeTest.gwtGenerics` | 1 | DROP — verifies GWT compiler quirk |
-| `DomApiAbstractionUsageTest.testDomApiCodeNotUsed` | 1 | DROP — Java-source static analysis; loses meaning when Java is gone |
-| `flow/ClientEngineSizeIT.testClientEngineSize` | 1 | DROP — GWT bundle size budget; bundle goes away |
-| `communication/AbstractConfigurationTest` | 0 | DROP — abstract base, no tests of its own |
+| File | Tests | Class | Status |
+|---|---:|---|---|
+| `flow/collection/JreArrayTest` | 14 | DROP — fallback for JsArray | ✅ deleted |
+| `flow/collection/JreMapTest` | 3 | DROP — fallback for JsMap | ✅ deleted |
+| `flow/collection/JreSetTest` | 4 | DROP — fallback for JsSet | ✅ deleted |
+| `flow/collection/JreWeakMapTest` | 2 | DROP — fallback for JsWeakMap | ✅ deleted |
+| `AssertionTest.testAssertionsAreEnabled` | 1 | DROP — verifies `-ea` JVM flag, irrelevant in TS | ✅ deleted |
+| `CodeTest.gwtGenerics` | 1 | DROP — verifies GWT compiler quirk | ✅ deleted |
+| `DomApiAbstractionUsageTest.testDomApiCodeNotUsed` | 1 | DROP — Java-source static analysis; loses meaning when Java is gone | ✅ deleted |
+| `flow/ClientEngineSizeIT.testClientEngineSize` | 1 | DROP — GWT bundle size budget; bundle goes away in T13 | ☐ defer to T13 |
+| `communication/AbstractConfigurationTest` | 0 | DROP — abstract base, no tests of its own | ☐ goes away with its concrete subclasses |
 
 ### PORT — pure-Java logic that needs a mocha equivalent
 
 Each row gets ported when its target class enters the corresponding tier
 of [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md).
 
-| File | Tier | Tests | Notes |
-|---|---|---:|---|
-| `ExistingElementMapTest` | T7 | 2 | Already migrated; tests still pass against the JVM fallback. Port to mocha + delete in T7. |
-| `RegistryTest` | T8 | 3 | setAndGet, getUndefined, setAndGetCustom |
-| `UILifecycleTest` | T8 | 7 | State machine transitions + listeners |
-| `DependencyLoaderTest` | T8 | 5 | loadStylesheet, loadScript, loadMultiple, eager ordering, inline ordering |
-| `InitialPropertiesHandlerTest` | T8 | 3 | flushPropertyUpdates_* — interaction with state tree, NOT covered by flow-tests at this granularity |
-| `flow/ExecuteJavaScriptProcessorTest` | T4 | 12 | execute_*, isBound_* — node-parameter handling + bound-state walks |
-| `flow/StateNodeTest` | T4 | 4 | testDefaultNoFeatures, testGetListFeature, testGetMapFeature, setNodeData_getNodeData_retrievedInstanceIsTheSame |
-| `flow/StateTreeTest` | T4 | 23 | The state-tree protocol: id mappings, register/unregister, property-sync gating, visibility cascade, prepareForResync. **High-priority port.** |
-| `flow/TreeChangeProcessorTest` | T4 | 14 | put / mapRemove / mapReAdd / splice / detach / parent linkage. **High-priority port.** |
-| `flow/nodefeature/MapPropertyTest` | T2 | 19 | Reactive change listeners, syncToServer gating, alwaysUpdate strategy. **Critical for binding correctness.** |
-| `flow/nodefeature/NodeListTest` | T2 | 5 | initialEmpty, splice, spliceEvents, reactive, forEach |
-| `flow/nodefeature/NodeMapTest` | T2 | 9 | newMapEmpty, propertyCreation, property change listeners (some methods truncated in the inventory, count via `grep -c "@Test"`) |
-| `flow/reactive/ComputationTest` | T1 | 8 | Computation lifecycle, dependencies, recompute |
-| `flow/reactive/ReactiveTest` | T1 | 9 | flush() ordering, addFlushListener, postFlushListener, eventRouter |
-| `communication/PollConfiguratorTest` | T9b | 1 | listensToProperty |
-| `communication/ReconnectConfigurationTest` | T9b | 7 | defaults, setGet*, reactsToChanges, changesReportedInOneBatch |
+| File | Tier | Tests | Status | Notes |
+|---|---|---:|---|---|
+| `ExistingElementMapTest` | T7 | 2 | ☐ | Already migrated; tests still pass against the JVM fallback. Port to mocha + delete in T7. |
+| `RegistryTest` | T8 | 3 | ☐ | setAndGet, getUndefined, setAndGetCustom |
+| `UILifecycleTest` | T8 | 7 | ☐ | State machine transitions + listeners |
+| `DependencyLoaderTest` | T8 | 5 | ☐ | loadStylesheet, loadScript, loadMultiple, eager ordering, inline ordering |
+| `InitialPropertiesHandlerTest` | T8 | 3 | ☐ | flushPropertyUpdates_* — interaction with state tree, NOT covered by flow-tests at this granularity |
+| `flow/ExecuteJavaScriptProcessorTest` | T4 | 12 | ☐ | execute_*, isBound_* — node-parameter handling + bound-state walks |
+| `flow/StateNodeTest` | T4 | 4 | ☐ | testDefaultNoFeatures, testGetListFeature, testGetMapFeature, setNodeData_getNodeData_retrievedInstanceIsTheSame |
+| `flow/StateTreeTest` | T4 | 23 | ☐ | The state-tree protocol: id mappings, register/unregister, property-sync gating, visibility cascade, prepareForResync. **High-priority port.** |
+| `flow/TreeChangeProcessorTest` | T4 | 14 | ☐ | put / mapRemove / mapReAdd / splice / detach / parent linkage. **High-priority port.** |
+| `flow/nodefeature/MapPropertyTest` | T2 | 19 | ☐ | Reactive change listeners, syncToServer gating, alwaysUpdate strategy. **Critical for binding correctness.** |
+| `flow/nodefeature/NodeListTest` | T2 | 5 | ☐ | initialEmpty, splice, spliceEvents, reactive, forEach |
+| `flow/nodefeature/NodeMapTest` | T2 | 9 | ☐ | newMapEmpty, propertyCreation, property change listeners |
+| `flow/reactive/ComputationTest` | T1 | 8 | ☐ | Computation lifecycle, dependencies, recompute |
+| `flow/reactive/ReactiveTest` | T1 | 9 | ✅ ported | → `src/test/frontend/ReactiveTests.ts`. JUnit class deleted. |
+| `communication/PollConfiguratorTest` | T9b | 1 | ☐ | listensToProperty |
+| `communication/ReconnectConfigurationTest` | T9b | 7 | ☐ | defaults, setGet*, reactsToChanges, changesReportedInOneBatch |
 
 ## `src/test-gwt` — GWT browser test suite (~74 methods, 24 files)
 
