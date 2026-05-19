@@ -213,7 +213,7 @@ public class ResourceLoader {
 
     private Registry registry;
 
-    private final boolean supportsHtmlWhenReady = GWT.isClient()
+    private final boolean supportsHtmlWhenReady = GWT.isScript()
             && supportsHtmlWhenReady();
 
     /**
@@ -517,14 +517,11 @@ public class ResourceLoader {
     }
 
     private static boolean supportsHtmlWhenReady() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeResourceLoader.supportsHtmlWhenReady();
+        return NativeResourceLoader.supportsHtmlWhenReady();
     }
 
     private static void addHtmlImportsReadyHandler(Runnable handler) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeResourceLoader.addHtmlImportsReadyHandler(handler::run);
-        }
+        NativeResourceLoader.addHtmlImportsReadyHandler(handler::run);
     }
 
     /**
@@ -541,11 +538,8 @@ public class ResourceLoader {
      */
     public static void addOnloadHandler(Element element,
             ResourceLoadListener listener, ResourceLoadEvent event) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeResourceLoader.addOnloadHandler(element,
-                    () -> listener.onLoad(event),
-                    () -> listener.onError(event));
-        }
+        NativeResourceLoader.addOnloadHandler(element,
+                () -> listener.onLoad(event), () -> listener.onError(event));
     }
 
     /**
@@ -782,9 +776,7 @@ public class ResourceLoader {
     }
 
     private static int getStyleSheetLength(String url) {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeResourceLoader.getStyleSheetLength(url)
-                : -1;
+        return NativeResourceLoader.getStyleSheetLength(url);
     }
 
     private static boolean addListener(String resourceId,
@@ -838,12 +830,8 @@ public class ResourceLoader {
     private static void runPromiseExpression(String expression,
             Supplier<Object> promiseSupplier, Runnable onSuccess,
             Runnable onError) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeResourceLoader.runPromiseExpression(expression,
-                    promiseSupplier::get, onSuccess::run, onError::run);
-        } else {
-            onError.run();
-        }
+        NativeResourceLoader.runPromiseExpression(expression,
+                promiseSupplier::get, onSuccess::run, onError::run);
     }
 
 }
