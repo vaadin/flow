@@ -288,16 +288,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void bindPolymerModelProperties(StateNode node, Element element) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeSimpleElementBindingStrategy.bindPolymerModelProperties(
-                    element, () -> hookUpPolymerElement(node, element));
-        }
+        NativeSimpleElementBindingStrategy.bindPolymerModelProperties(element,
+                () -> hookUpPolymerElement(node, element));
     }
 
     private void hookUpPolymerElement(StateNode node, Element element) {
-        if (!com.google.gwt.core.client.GWT.isScript()) {
-            return;
-        }
         StateTree tree = node.getTree();
         NativeSimpleElementBindingStrategy.hookUpPolymerElement(element,
                 changedProps -> handlePropertiesChanged(
