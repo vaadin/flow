@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.JsInitializerCounter;
 import com.vaadin.flow.shared.Registration;
@@ -30,28 +30,28 @@ import com.vaadin.flow.shared.Registration;
  * Server-side bookkeeping for a JavaScript initializer registered through
  * {@link Element#addJsInitializer(String, Object...)}.
  * <p>
- * Re-emits the init invocation on every fresh client-side DOM and emits a
- * matching dispose invocation when the registration is removed.
+ * The user expression is encoded as a {@link JsFunction} and travels to the
+ * client as a regular parameter, so the wrapper expression is a fixed framework
+ * string with no user JavaScript concatenated into it.
  * <p>
  * For internal use only.
  */
 public final class ElementJsInitializerRegistration implements Registration {
 
     /**
-     * Wrapper code. Format args: initializer id index, element index.
-     * Parameters at runtime are {@code $0..$N-1} (user params), {@code $N}
-     * (element), {@code $N+1} (initializer id).
+     * Wrapper expression. Parameters at runtime are: {@code $0} the user
+     * initializer reified as a function (from a {@link JsFunction} with the
+     * user-supplied parameters as captures); {@code $1} this element;
+     * {@code $2} the initializer id.
      * <p>
-     * The wrapper does not introduce an extra IIFE around its own body; the
-     * code is inlined directly so that {@code this} stays bound to the Flow
-     * executor context (which provides {@code getNode} and
-     * {@code runOnNodeUnregister}). The user expression is wrapped in its own
-     * IIFE so a {@code return} statement yields the cleanup function instead of
-     * returning from the outer Flow-generated function.
+     * The wrapper calls {@code $0} with this element as the receiver, so the
+     * user body sees the element as {@code this} and references its own
+     * parameters as {@code $0}, {@code $1}, &hellip; (the JsFunction's
+     * captures). A {@code return} from the user body yields the cleanup
+     * function. No inner IIFE is needed: the JsFunction itself provides the
+     * function scope.
      */
-    private static final String INIT_WRAPPER_PREFIX = """
-            const __initId = $%d;
-            const __element = $%d;
+    private static final String INIT_WRAPPER = """
             const __ctx = this;
             const __ns = window.Vaadin = window.Vaadin || {};
             const __flow = __ns.Flow = __ns.Flow || {};
@@ -91,14 +91,10 @@ public final class ElementJsInitializerRegistration implements Registration {
                 }
               };
             })();
-            const __node = __ctx.getNode(__element);
-            const __cleanup = (function() {
-            """;
-
-    private static final String INIT_WRAPPER_SUFFIX = """
-            }).apply(__element);
+            const __node = __ctx.getNode($1);
+            const __cleanup = $0.apply($1);
             if (typeof __cleanup === 'function') {
-              __registry.register(__node, __initId, __cleanup, function() {
+              __registry.register(__node, $2, __cleanup, function() {
                 __ctx.runOnNodeUnregister(__node, function() {
                   __registry.drain(__node);
                 });
@@ -115,8 +111,7 @@ public final class ElementJsInitializerRegistration implements Registration {
             """;
 
     private final StateNode node;
-    private final String expression;
-    private final Object[] parameters;
+    private final JsFunction userFunction;
     private final int initializerId;
 
     private boolean sent;
@@ -133,18 +128,16 @@ public final class ElementJsInitializerRegistration implements Registration {
      * @param expression
      *            the user-supplied expression, not {@code null}
      * @param parameters
-     *            the user-supplied parameters
+     *            the user-supplied parameters, captured by the JsFunction
      */
     public ElementJsInitializerRegistration(StateNode node, String expression,
             Object[] parameters) {
         this.node = Objects.requireNonNull(node, "node");
-        this.expression = Objects.requireNonNull(expression, "expression");
-        this.parameters = Arrays.copyOf(parameters, parameters.length);
+        Objects.requireNonNull(expression, "expression");
+        // JsFunction.of validates each capture, so unsupported parameter
+        // types fail fast here rather than at execution time.
+        this.userFunction = JsFunction.of(expression, parameters);
         this.initializerId = node.getFeature(JsInitializerCounter.class).next();
-
-        // Validate parameter types up-front. The wrapper appends element and
-        // initializerId, both of which are always serialisable.
-        new JavaScriptInvocation("", this.parameters);
 
         attachListenerRegistration = node.addAttachListener(this::onAttach);
         if (node.isAttached()) {
@@ -172,19 +165,10 @@ public final class ElementJsInitializerRegistration implements Registration {
     }
 
     private void emitInit(UI ui) {
-        int userParamCount = parameters.length;
-        int elementIndex = userParamCount;
-        int idIndex = userParamCount + 1;
-        String wrapped = String.format(INIT_WRAPPER_PREFIX, idIndex,
-                elementIndex) + expression + INIT_WRAPPER_SUFFIX;
-
-        Object[] wrappedParams = new Object[userParamCount + 2];
-        System.arraycopy(parameters, 0, wrappedParams, 0, userParamCount);
-        wrappedParams[elementIndex] = Element.get(node);
-        wrappedParams[idIndex] = initializerId;
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(wrapped,
-                wrappedParams);
+        Object[] params = new Object[] { userFunction, Element.get(node),
+                initializerId };
+        JavaScriptInvocation invocation = new JavaScriptInvocation(INIT_WRAPPER,
+                params);
         ui.getInternals().addJavaScriptInvocation(
                 new PendingJavaScriptInvocation(node, invocation));
     }

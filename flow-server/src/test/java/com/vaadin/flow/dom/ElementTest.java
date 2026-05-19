@@ -83,6 +83,7 @@ import com.vaadin.tests.util.TestUtil;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -2427,14 +2428,17 @@ class ElementTest extends AbstractNodeTest {
 
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
         assertTrue(invocation.getExpression().contains("__registry.register"),
-                "Expression should wrap the user code with the registry call");
-        assertTrue(invocation.getExpression().contains("return () => {};"),
-                "Wrapped expression should contain the user code verbatim");
+                "Wrapper expression should call the registry");
+        assertFalse(invocation.getExpression().contains("return () => {};"),
+                "Wrapper expression must not embed user JavaScript");
 
         List<Object> params = invocation.getParameters();
         assertEquals(3, params.size(),
-                "Expected [userParam, element, initializerId]");
-        assertEquals("foo", params.get(0));
+                "Expected [userFunction, element, initializerId]");
+        assertInstanceOf(JsFunction.class, params.get(0));
+        JsFunction userFn = (JsFunction) params.get(0);
+        assertEquals("return () => {};", userFn.getBody());
+        assertEquals(List.of("foo"), userFn.getCaptures());
         assertEquals(element, params.get(1));
         assertEquals(Integer.valueOf(0), params.get(2));
     }
@@ -2580,11 +2584,11 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        // Initializer id is the last parameter (index 1 here: [element, id]).
+        // Init params are [userFunction, element, initializerId].
         assertEquals(Integer.valueOf(0),
-                pending.get(0).getInvocation().getParameters().get(1));
+                pending.get(0).getInvocation().getParameters().get(2));
         assertEquals(Integer.valueOf(1),
-                pending.get(1).getInvocation().getParameters().get(1));
+                pending.get(1).getInvocation().getParameters().get(2));
     }
 
     @Test
