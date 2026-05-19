@@ -35,6 +35,9 @@ import java.util.regex.Pattern;
  */
 public class UrlUtil {
 
+    private static final Set<String> ALLOWED_SCHEMES = Set.of(
+            "http", "https", "mailto", "ftp");
+
     private static final Pattern PERCENT_ENCODED = Pattern
             .compile("%([0-9A-Fa-f]{2})");
 
@@ -270,6 +273,6 @@ public class UrlUtil {
         }
 
         scheme = scheme.toLowerCase(Locale.ROOT);
-        return scheme.equals("http") || scheme.equals("https");
+        return ALLOWED_SCHEMES.contains(scheme);
     }
 }
