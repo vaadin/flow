@@ -195,26 +195,20 @@ public class Bootstrapper implements EntryPoint {
      * @return a native javascript object containing the configuration data
      */
     private static JsoConfiguration getJsoConfiguration(String appId) {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeBootstrapper.getJsoConfiguration(appId)
-                : null;
+        return NativeBootstrapper.getJsoConfiguration(appId);
     }
 
     private static boolean vaadinBootstrapLoaded() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeBootstrapper.vaadinBootstrapLoaded();
+        return NativeBootstrapper.vaadinBootstrapLoaded();
     }
 
     private static void deferStartApplication(String applicationId) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeBootstrapper.deferStartApplication(applicationId,
-                    Bootstrapper::doStartApplication);
-        }
+        NativeBootstrapper.deferStartApplication(applicationId,
+                Bootstrapper::doStartApplication);
     }
 
     private static boolean startApplicationImmediately() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeBootstrapper.startApplicationImmediately();
+        return NativeBootstrapper.startApplicationImmediately();
     }
 
     /**
@@ -223,10 +217,8 @@ public class Bootstrapper implements EntryPoint {
      * available.
      */
     public static void registerCallback(String widgetsetName) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeBootstrapper.registerCallback(widgetsetName,
-                    Bootstrapper::startApplication);
-        }
+        NativeBootstrapper.registerCallback(widgetsetName,
+                Bootstrapper::startApplication);
     }
 
 }
