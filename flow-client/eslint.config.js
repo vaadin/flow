@@ -12,7 +12,11 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['src/test/frontend/*']
+          allowDefaultProject: ['src/test/frontend/*'],
+          // Test files aren't covered by tsconfig.json; bump the default
+          // project file cap so growing the test suite doesn't trip the
+          // typescript-eslint guard rail.
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 100
         }
       }
     },
