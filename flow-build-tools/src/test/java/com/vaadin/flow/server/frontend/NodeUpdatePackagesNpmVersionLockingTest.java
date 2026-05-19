@@ -138,6 +138,33 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    void shouldUpdatePlatformOverride_whenDependencyVersionBumped()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+
+        // Simulate existing platform override from a previous Flow version
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        overridesSection.put(TEST_DEPENDENCY, "0.0.1");
+
+        // vaadin.overrides tracks what Flow last wrote
+        ObjectNode vaadinSection = (ObjectNode) packageJson.get(VAADIN_DEP_KEY);
+        vaadinSection.set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
     void shouldUpdatesOverrides_whenNoVaadinOverrides_changingVersion()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater(false,
