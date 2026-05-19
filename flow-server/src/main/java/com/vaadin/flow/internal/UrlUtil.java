@@ -18,8 +18,10 @@ package com.vaadin.flow.internal;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -236,5 +238,38 @@ public class UrlUtil {
             return ".";
         }
         return ret.substring(0, ret.length() - 1);
+    }
+
+    public static boolean isAllowedUrl(String input) {
+        if (input == null) {
+            return false;
+        }
+        String s = input.trim();
+        if (s.isEmpty()) {
+            return false;
+        }
+
+        // Reject control chars to avoid obfuscation tricks
+        for (int i = 0; i < s.length(); i++) {
+            if (Character.isISOControl(s.charAt(i))) {
+                return false;
+            }
+        }
+
+        final URI uri;
+        try {
+            uri = URI.create(s).normalize();
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            // relative URL policy: allow or deny based on your needs
+            return true;
+        }
+
+        scheme = scheme.toLowerCase(Locale.ROOT);
+        return scheme.equals("http") || scheme.equals("https");
     }
 }
