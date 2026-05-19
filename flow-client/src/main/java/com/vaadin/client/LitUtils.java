@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
+import jsinterop.annotations.JsType;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -23,42 +23,25 @@ import elemental.dom.Node;
 /**
  * Utils class, intended to ease working with LitElement related code on client
  * side.
+ *
  * <p>
- * Under GWT the calls are forwarded to the TypeScript implementation at
- * {@code src/main/frontend/internal/client/LitUtils.ts}. The class is GWT-only
- * — direct JVM usage is not supported.
+ * Pure {@code @JsType(isNative = true)} binding to the TypeScript
+ * implementation at {@code src/main/frontend/internal/client/LitUtils.ts}. The
+ * class has no Java body — calling these methods from the JVM throws.
+ * Acceptable here because LitUtils is only consumed by
+ * {@code SimpleElementBindingStrategy}, which has no JUnit test (only a Gwt
+ * test), so no JVM transitively reaches LitUtils.
  *
  * @author Vaadin Ltd
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "LitUtils")
 public final class LitUtils {
 
     private LitUtils() {
     }
 
-    /**
-     * Checks if the given element is a LitElement.
-     *
-     * @param element
-     *            the custom element
-     * @return {@code true} if the element is a Lit element, {@code false}
-     *         otherwise
-     */
-    public static boolean isLitElement(Node element) {
-        return GWT.isScript() && NativeLitUtils.isLitElement(element);
-    }
+    public static native boolean isLitElement(Node element);
 
-    /**
-     * Invokes the {@code runnable} when the given Lit element has been rendered
-     * at least once.
-     *
-     * @param element
-     *            the Lit element
-     * @param runnable
-     *            the command to run
-     */
-    public static void whenRendered(Element element, Runnable runnable) {
-        if (GWT.isScript()) {
-            NativeLitUtils.whenRendered(element, runnable::run);
-        }
-    }
+    public static native void whenRendered(Element element,
+            JsRunnable runnable);
 }
