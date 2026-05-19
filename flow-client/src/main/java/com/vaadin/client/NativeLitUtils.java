@@ -15,7 +15,6 @@
  */
 package com.vaadin.client;
 
-import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 import elemental.dom.Element;
@@ -28,17 +27,6 @@ import elemental.dom.Node;
  */
 @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "LitUtils")
 final class NativeLitUtils {
-
-    /**
-     * Callback shape used to pass Java lambdas into TS bridge methods that
-     * expect a {@code () => void} function.
-     */
-    @FunctionalInterface
-    @JsFunction
-    @SuppressWarnings("unusable-by-js")
-    interface JsRunnable {
-        void run();
-    }
 
     private NativeLitUtils() {
         // Native, not instantiated from Java
