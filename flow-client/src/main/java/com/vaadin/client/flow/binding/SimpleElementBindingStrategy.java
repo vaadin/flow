@@ -287,145 +287,26 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }));
     }
 
-    private native void bindPolymerModelProperties(StateNode node,
-            Element element)
-    /*-{
-      if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-          this.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
-      } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
-          var self = this;
-          try {
-              var whenDefinedPromise = $wnd.customElements.whenDefined(element.localName);
-              var promiseTimeout = new Promise(function(r) { setTimeout(r, 1000); });
-              // if element is not a web component, the promise returned by
-              // whenDefined may never complete, causing memory leaks because of
-              // closures in chained function.
-              // Using `Promise.race` with a secondary promise that resolves after
-              // a defined interval and chaining on this one, will always resolve,
-              // execute the function and allow the garbage collector to free resources
-              Promise.race([whenDefinedPromise, promiseTimeout]).then( function () {
-                  if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-                      self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
-                  }
-              });
-          }
-          catch (e) {
-              // ignore the exception: the element cannot be a custom element
-          }
-      }
-    }-*/;
+    private void bindPolymerModelProperties(StateNode node, Element element) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeSimpleElementBindingStrategy.bindPolymerModelProperties(
+                    element, () -> hookUpPolymerElement(node, element));
+        }
+    }
 
-    private native void hookUpPolymerElement(StateNode node, Element element)
-    /*-{
-        var self = this;
-    
-        var originalPropertiesChanged = element._propertiesChanged;
-    
-        if (originalPropertiesChanged) {
-            element._propertiesChanged = function (currentProps, changedProps, oldProps) {
-                $entry(function () {
-                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-                })();
-                originalPropertiesChanged.apply(this, arguments);
-            };
+    private void hookUpPolymerElement(StateNode node, Element element) {
+        if (!com.google.gwt.core.client.GWT.isScript()) {
+            return;
         }
-    
-    
-        var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
-        var originalReady = element.ready;
-    
-        element.ready = function (){
-            originalReady.apply(this, arguments);
-            @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-    
-            // The  _propertiesChanged method which is replaced above for the element
-            // doesn't do anything for items in dom-repeat.
-            // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
-            // So here the <code>_propertiesChanged</code> method is replaced
-            // for the <code>dom-repeat</code> prototype
-            // which changes this method for any dom-repeat instance.
-            var replaceDomRepeatPropertyChange = function(){
-                var domRepeat = element.root.querySelector('dom-repeat');
-    
-                if ( domRepeat ){
-                 // If the <code>dom-repeat</code> element is in the DOM then
-                 // this method should not be executed anymore. The logic below will replace
-                 // the <code>_propertiesChanged</code> method in its prototype so that our
-                 // method will work for any dom-repeat instance.
-                 element.removeEventListener('dom-change', replaceDomRepeatPropertyChange);
-                }
-                else {
-                    return;
-                }
-                // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
-                if ( !domRepeat.constructor.prototype.$propChangedModified){
-                    domRepeat.constructor.prototype.$propChangedModified = true;
-    
-                    var changed = domRepeat.constructor.prototype._propertiesChanged;
-    
-                    domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
-                        changed.apply(this, arguments);
-    
-                        var props = Object.getOwnPropertyNames(changedProps);
-                        var items = "items.";
-                        var i;
-                        for(i=0; i<props.length; i++){
-                            // There should be a property which starts with "items."
-                            // and the next token is the index of changed item
-                            // the code parses this proeprty
-                            var index = props[i].indexOf(items);
-                            if ( index == 0 ){
-                                var prop = props[i].substr(items.length);
-                                index = prop.indexOf('.');
-                                if ( index >0 ){
-                                    // this is the index of the changed item
-                                    var arrayIndex = prop.substr(0,index);
-                                    // this is the property name of the changed item
-                                    var propertyName = prop.substr(index+1);
-                                    var currentPropsItem = currentProps.items[arrayIndex];
-                                    if( currentPropsItem && currentPropsItem.nodeId ){
-                                        var nodeId = currentPropsItem.nodeId;
-                                        var value = currentPropsItem[propertyName];
-    
-                                        // this is an attempt to find the template element
-                                        // which is not available as a context in the protype method
-                                        var host = this.__dataHost;
-                                        // __dataHost is an element in the local DOM which owns the changed data
-                                        // Such elements form a linked list where the head is the dom-repeat (this)
-                                        //  and the tail is the template which owns the local DOM, so this code
-                                        // goes via this list and search for the tail which is supposed to be a template
-                                        while( !host.localName || host.__dataHost ){
-                                            host = host.__dataHost;
-                                        }
-    
-                                        $entry(function () {
-                                            @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
-                                        })();
-                                    }
-                                }
-                            }
-                        }
-                    };
-                }
-            };
-    
-            // dom-repeat doesn't have to be in DOM even if template has it
-            //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
-            // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
-            if ( element.root && element.root.querySelector('dom-repeat') ){
-                replaceDomRepeatPropertyChange();
-            }
-            else {
-                // if there is no dom-repeat at the moment just add a dom-change
-                // listener which will be notified once local DOM is changed
-                // and the  <code>replaceDomRepeatPropertyChange</code> will get a chance
-                // to execute its logic if there is dom-repeat.
-                element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
-            }
-        }
-    
-    }-*/;
+        StateTree tree = node.getTree();
+        NativeSimpleElementBindingStrategy.hookUpPolymerElement(element,
+                changedProps -> handlePropertiesChanged(
+                        (JavaScriptObject) changedProps, node),
+                () -> com.vaadin.client.PolymerUtils.fireReadyEvent(element),
+                (nodeId, host, propertyName,
+                        value) -> handleListItemPropertyChange(nodeId,
+                                (Element) host, propertyName, value, tree));
+    }
 
     private static void handleListItemPropertyChange(double nodeId,
             Element host, String property, Object value, StateTree tree) {
