@@ -235,9 +235,7 @@ public class SystemErrorHandler {
     }
 
     private void recreateNodes(String elementName) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeSystemErrorHandler.recreateNodes(elementName);
-        }
+        NativeSystemErrorHandler.recreateNodes(elementName);
     }
 
     /**
@@ -315,9 +313,7 @@ public class SystemErrorHandler {
     }
 
     private void showPopover(Element el) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeSystemErrorHandler.showPopover(el);
-        }
+        NativeSystemErrorHandler.showPopover(el);
     }
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
@@ -339,9 +335,7 @@ public class SystemErrorHandler {
     }
 
     private Element getShadowRootElement(Element host) {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeSystemErrorHandler.getShadowRootElement(host)
-                : null;
+        return NativeSystemErrorHandler.getShadowRootElement(host);
     }
 
 }
