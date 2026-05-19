@@ -157,9 +157,6 @@ public class ApplicationConnection {
     private void publishJavascriptMethods(String applicationId,
             boolean productionMode, boolean requestTiming,
             String[] exportedWebComponents) {
-        if (!GWT.isScript()) {
-            return;
-        }
         JsProfilingDataSupplier getProfilingData = requestTiming
                 ? () -> registry.getMessageHandler().getProfilingData()
                 : null;
@@ -259,9 +256,6 @@ public class ApplicationConnection {
      */
     private void publishDevelopmentModeJavascriptMethods(String applicationId,
             String servletVersion) {
-        if (!GWT.isScript()) {
-            return;
-        }
         NativeApplicationConnection.publishDevelopmentModeJavascriptMethods(
                 applicationId, servletVersion, this::isActive,
                 () -> registry.getStateTree().getRootNode().getDebugJson(),

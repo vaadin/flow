@@ -680,16 +680,11 @@ public class AtmospherePushConnection implements PushConnection {
      * @return the Atmosphere configuration object
      */
     protected final AtmosphereConfiguration createConfig() {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeAtmospherePushConnection
-                        .createConfig(PushConstants.MESSAGE_DELIMITER).cast()
-                : null;
+        return NativeAtmospherePushConnection
+                .createConfig(PushConstants.MESSAGE_DELIMITER).cast();
     }
 
     private JavaScriptObject doConnect(String uri, JavaScriptObject config) {
-        if (!com.google.gwt.core.client.GWT.isScript()) {
-            return null;
-        }
         AtmosphereConnectCallbacks callbacks = new AtmosphereConnectCallbacks();
         callbacks.onOpen = response -> onOpen((AtmosphereResponse) response);
         callbacks.onReopen = response -> onReopen(
@@ -709,20 +704,15 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private void doPush(JavaScriptObject socket, String message) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeAtmospherePushConnection.doPush(socket, message);
-        }
+        NativeAtmospherePushConnection.doPush(socket, message);
     }
 
     private static void doDisconnect(String url) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeAtmospherePushConnection.doDisconnect(url);
-        }
+        NativeAtmospherePushConnection.doDisconnect(url);
     }
 
     private static boolean isAtmosphereLoaded() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeAtmospherePushConnection.isAtmosphereLoaded();
+        return NativeAtmospherePushConnection.isAtmosphereLoaded();
     }
 
     private void runWhenAtmosphereLoaded(final Command command) {

@@ -50,9 +50,7 @@ public class MessageSender {
     }
 
     public static void sendBeacon(String url, String payload) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeMessageSender.sendBeacon(url, payload);
-        }
+        NativeMessageSender.sendBeacon(url, payload);
     }
 
     public enum ResynchronizationState {
