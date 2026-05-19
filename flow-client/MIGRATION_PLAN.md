@@ -104,6 +104,27 @@ branch. If they're skipped in CI too, the migration plan needs adjusting
 — probably by porting *all* GwtTests up-front in P1's classification
 work, with no INTEGRATION shortcut.
 
+**Status (2026-05-19): confirmed running in CI.**
+`.github/workflows/validation.yml` defines a `unit-tests` matrix job
+that runs `mvn ... verify` against each module listed by
+`scripts/computeMatrix.js` (where `flow-client` appears with `weight: 8`)
+on `ubuntu-24.04`, which has the X11 libs HtmlUnit needs to start the
+GWT test JVM. `flow-client/pom.xml` binds the `gwt-maven-plugin:test`
+goal to the Maven `test` phase, so `mvn verify` exercises the full
+GwtTest suite. **The local-sandbox `libXtst.so.6` failures are not a CI
+signal**; this branch's GwtTest suite is backed by real CI today.
+
+**Action items for the migration tiers**:
+
+- After every per-tier push, watch the `unit-tests/flow-client` matrix
+  slot in the PR run before merging. Failures there are the canonical
+  regression signal until the GwtTest suite is dropped in T13.
+- The CI also runs the `it-tests` matrix (`flow-tests` integration
+  suite) — that's the deeper safety net but slower. Trust the
+  `unit-tests/flow-client` slot first; only chase `it-tests` failures
+  when they indicate a state-tree / binding bug missed by the
+  `unit-tests` slot.
+
 ## Migration order — leaves up
 
 Each step below is one PR. Skip steps for classes already migrated in
