@@ -210,17 +210,30 @@ public class ClientJsonCodec {
         }
         paramsAndCode[captureCount + argCount] = body;
         NativeFunction fn = new NativeFunction(paramsAndCode);
-        return bindCaptures(fn, captures);
+        return applyCaptures(fn, captures);
     }
 
-    private static native Object bindCaptures(NativeFunction fn,
+    /**
+     * Wraps {@code fn} in a function that prepends {@code captures} to the
+     * runtime arguments before delegating, while leaving {@code this}
+     * controlled by the caller. {@code Function.prototype.bind} would also
+     * pre-bind {@code this} to {@code undefined}, which prevents callers from
+     * setting {@code this} via {@code .call()} or {@code .apply()} on the
+     * resulting function.
+     */
+    private static native Object applyCaptures(NativeFunction fn,
             JsArray<Object> captures)
     /*-{
-        var args = [undefined];
-        for (var i = 0; i < captures.length; i++) {
-            args.push(captures[i]);
-        }
-        return Function.prototype.bind.apply(fn, args);
+        return function() {
+            var args = new Array(captures.length + arguments.length);
+            for (var i = 0; i < captures.length; i++) {
+                args[i] = captures[i];
+            }
+            for (var j = 0; j < arguments.length; j++) {
+                args[captures.length + j] = arguments[j];
+            }
+            return fn.apply(this, args);
+        };
     }-*/;
 
     /**

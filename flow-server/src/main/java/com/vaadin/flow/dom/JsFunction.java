@@ -59,13 +59,11 @@ public final class JsFunction implements Serializable {
     private final List<@Nullable Object> captures;
     private final List<String> argumentNames;
 
-    private JsFunction(String body, @Nullable Object[] captures,
-            String[] argumentNames) {
+    private JsFunction(String body, List<@Nullable Object> captures,
+            List<String> argumentNames) {
         this.body = body;
-        this.captures = Collections
-                .unmodifiableList(Arrays.asList(captures.clone()));
-        this.argumentNames = Collections
-                .unmodifiableList(Arrays.asList(argumentNames.clone()));
+        this.captures = captures;
+        this.argumentNames = argumentNames;
     }
 
     /**
@@ -94,7 +92,9 @@ public final class JsFunction implements Serializable {
         Object capture : copy) {
             JacksonCodec.encodeWithTypeInfo(capture);
         }
-        return new JsFunction(body, copy, new String[0]);
+        return new JsFunction(body,
+                Collections.unmodifiableList(Arrays.asList(copy)),
+                Collections.emptyList());
     }
 
     /**
@@ -116,13 +116,7 @@ public final class JsFunction implements Serializable {
      * @return a new {@code JsFunction} with the given argument names
      */
     public JsFunction withArguments(String... argumentNames) {
-        Objects.requireNonNull(argumentNames, "argumentNames");
-        for (String name : argumentNames) {
-            Objects.requireNonNull(name, "argumentNames must not contain null");
-        }
-        @Nullable
-        Object[] captureArray = captures.toArray();
-        return new JsFunction(body, captureArray, argumentNames);
+        return new JsFunction(body, captures, List.of(argumentNames));
     }
 
     /**

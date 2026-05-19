@@ -1792,6 +1792,8 @@ public class Element extends Node<Element> {
      * invocation is sent to the client, or as <code>null</code> if not
      * attached)
      * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
+     * <li>{@link JsFunction} (manifested as a callable JavaScript function with
+     * its captured parameters pre-bound)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
