@@ -403,6 +403,22 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 return false;
             }
         };
+        client.ExistingElementMap = function() {
+            var idToElement = [];
+            var elementToId = new $wnd.Map();
+            this.getElement = function(id) { return (id < 0 || id >= idToElement.length) ? null : idToElement[id]; };
+            this.getId = function(element) { return elementToId.has(element) ? elementToId.get(element) : null; };
+            this.remove = function(id) {
+                if (id < 0 || id >= idToElement.length) { return; }
+                var el = idToElement[id];
+                if (el != null) { idToElement[id] = null; elementToId['delete'](el); }
+            };
+            this.add = function(id, element) {
+                while (idToElement.length <= id) { idToElement.push(null); }
+                idToElement[id] = element;
+                elementToId.set(element, id);
+            };
+        };
         client.ExecuteJavaScriptElementUtils = {
             isPropertyDefined: function(node, property) {
                 var props = node.constructor && node.constructor.properties;
