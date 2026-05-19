@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
-
 import elemental.dom.Element;
 import elemental.dom.Node;
 
@@ -50,16 +48,13 @@ public class ElementUtil {
      * searches the light DOM if the element has no shadow root.
      */
     public static Element getElementById(Node context, String id) {
-        return GWT.isScript() ? NativeElementUtil.getElementById(context, id)
-                : null;
+        return NativeElementUtil.getElementById(context, id);
     }
 
     /**
      * Searches the element by the given {@code name} attribute.
      */
     public static Element getElementByName(Node context, String name) {
-        return GWT.isScript()
-                ? NativeElementUtil.getElementByName(context, name)
-                : null;
+        return NativeElementUtil.getElementByName(context, name);
     }
 }
