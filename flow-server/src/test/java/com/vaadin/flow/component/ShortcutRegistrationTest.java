@@ -33,6 +33,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
@@ -408,17 +409,19 @@ class ShortcutRegistrationTest {
                         "const delegate=" + fixture.elementLocatorJs + ";"),
                 "element locator string " + fixture.elementLocatorJs
                         + " missing from JS execution string " + expression);
-        assertTrue(expression.contains("event.preventDefault();"),
-                "JS execution string should have event.preventDefault() in it"
-                        + expression);
-        assertTrue(expression.contains("event.stopPropagation();"),
-                "JS execution string should always have event.stopPropagation() in it"
-                        + expression);
-        assertTrue(expression.contains(key.getKeys().get(0)),
-                "JS execution string missing the key" + key);
-        assertFalse(expression.contains("window.Vaadin.Flow.resetFocus()"),
-                "JS execution string should not have blur() and focus() on active element in it"
-                        + expression);
+
+        final String handlerBody = keydownHandlerBody(js);
+        assertTrue(handlerBody.contains("event.preventDefault();"),
+                "JsFunction body should have event.preventDefault() in it "
+                        + handlerBody);
+        assertTrue(handlerBody.contains("event.stopPropagation();"),
+                "JsFunction body should always have event.stopPropagation() in it "
+                        + handlerBody);
+        assertTrue(handlerBody.contains(key.getKeys().get(0)),
+                "JsFunction body missing the key" + key);
+        assertFalse(handlerBody.contains("window.Vaadin.Flow.resetFocus()"),
+                "JsFunction body should not have blur() and focus() on active element in it "
+                        + handlerBody);
 
         fixture.registration.remove();
 
@@ -437,12 +440,11 @@ class ShortcutRegistrationTest {
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
                 .writeResponse();
 
-        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
-                .get(0);
-        final String expression = js.getInvocation().getExpression();
-        assertFalse(expression.contains("event.preventDefault();"),
-                "JS execution string should NOT have event.preventDefault() in it"
-                        + expression);
+        final String handlerBody = keydownHandlerBody(
+                pendingJavaScriptInvocations.get(0));
+        assertFalse(handlerBody.contains("event.preventDefault();"),
+                "JsFunction body should NOT have event.preventDefault() in it "
+                        + handlerBody);
     }
 
     @Test
@@ -454,12 +456,22 @@ class ShortcutRegistrationTest {
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
                 .writeResponse();
 
-        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
-                .get(0);
-        final String expression = js.getInvocation().getExpression();
-        assertTrue(expression.contains("window.Vaadin.Flow.resetFocus()"),
-                "JS execution string should have blur() and focus() on active element in it"
-                        + expression);
+        final String handlerBody = keydownHandlerBody(
+                pendingJavaScriptInvocations.get(0));
+        assertTrue(handlerBody.contains("window.Vaadin.Flow.resetFocus()"),
+                "JsFunction body should have blur() and focus() on active element in it "
+                        + handlerBody);
+    }
+
+    /**
+     * Extracts the keydown handler body from the JsFunction parameter of the
+     * given executeJs invocation.
+     */
+    private static String keydownHandlerBody(PendingJavaScriptInvocation js) {
+        Object first = js.getInvocation().getParameters().get(0);
+        assertTrue(first instanceof JsFunction,
+                "first parameter should be a JsFunction, was " + first);
+        return ((JsFunction) first).getBody();
     }
 
     @Test

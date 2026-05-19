@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
@@ -48,18 +49,26 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
-    static final String ELEMENT_LOCATOR_JS = //@formatter:off
-            "const listenOn=this;" // this is the listenOn component's element
-                    + "const delegate=%1$s;" // the output of the JsLocator
-                    + "if (delegate) {"
-                    + "delegate.addEventListener('keydown', function(event) {"
-                    + "if (%2$s) {" // the filter text to match the key
-                    + "%3$s" // allow reset focus on active element if desired
+    // The keydown handler body. Captures: $0 = listenOn element. Runtime
+    // argument: event. Filter text, focus-reset JS, and preventDefault JS are
+    // inlined per registration since they are derived from server-side
+    // configuration. Slots: 1=filter, 2=focus reset, 3=prevent default.
+    static final String KEYDOWN_HANDLER_BODY = //@formatter:off
+            "if (%1$s) {"
+                    + "%2$s"
                     + "const new_event = new event.constructor(event.type, event);"
-                    + "listenOn.dispatchEvent(new_event);"
-                    + "%4$s" // the new event allows default if desired
-                    + "event.stopPropagation();}" // the new event bubbles if desired
-                    + "});" // end matches filter
+                    + "$0.dispatchEvent(new_event);"
+                    + "%3$s"
+                    + "event.stopPropagation();"
+                    + "}";//@formatter:on
+
+    // The locator wrapper that hands the keydown handler (passed as $0) to the
+    // delegate found via the locator JS expression (%1$s). The locator must be
+    // inlined because it is evaluated in the listenOn element's context.
+    static final String ELEMENT_LOCATOR_JS = //@formatter:off
+            "const delegate=%1$s;"
+                    + "if (delegate) {"
+                    + "delegate.addEventListener('keydown', $0);"
                     + "} else {"
                     + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
                     + "}";//@formatter:on
@@ -889,16 +898,26 @@ public class ShortcutRegistration implements Registration, Serializable {
             // enable default actions if desired
             final String preventDefault = allowDefaultBehavior ? ""
                     : "event.preventDefault();";
-            final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
-                    elementLocatorJs, filterText, focusJs, preventDefault);
+            final String handlerBody = String.format(KEYDOWN_HANDLER_BODY,
+                    filterText, focusJs, preventDefault);
+            final String wrapperExpression = String.format(ELEMENT_LOCATOR_JS,
+                    elementLocatorJs);
 
-            final String expressionHash = StringUtil.getHash(jsExpression);
+            // The expression hash keys on both the wrapper and the body so
+            // that two shortcuts with the same locator but different filters
+            // do not collapse into a single registration.
+            final String expressionHash = StringUtil
+                    .getHash(wrapperExpression + handlerBody);
             final Set<String> expressions = getOrInitListenData(listenOn);
             if (expressions.contains(expressionHash)) {
                 return;
             }
             expressions.add(expressionHash);
-            listenOn.getElement().executeJs(jsExpression);
+
+            JsFunction handler = JsFunction
+                    .of(handlerBody, listenOn.getElement())
+                    .withArguments("event");
+            listenOn.getElement().executeJs(wrapperExpression, handler);
         }
     }
 
