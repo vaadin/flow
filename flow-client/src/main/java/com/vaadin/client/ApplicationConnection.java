@@ -154,68 +154,33 @@ public class ApplicationConnection {
      * @param exportedWebComponents
      *            a list of web component tags exported by this UI
      */
-    private native void publishJavascriptMethods(String applicationId,
+    private void publishJavascriptMethods(String applicationId,
             boolean productionMode, boolean requestTiming,
-            String[] exportedWebComponents)
-    /*-{
-        var ap = this;
-        var client = {};
-        client.isActive = $entry(function() {
-            return ap.@ApplicationConnection::isActive()();
-        });
-        client.getByNodeId = $entry(function(nodeId) {
-            return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
-        });
-        client.getNodeId = $entry(function(element) {
-            return ap.@ApplicationConnection::getNodeId(*)(element);
-        });
-        client.getUIId = $entry(function() {
-            var appConfiguration = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getApplicationConfiguration()();
-            return appConfiguration.@ApplicationConfiguration::getUIId(*)();
-        });
-        client.addDomBindingListener = $entry(function(nodeId, callback) {
-            ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
-        });
-        client.productionMode = productionMode;
-        client.poll = $entry(function() {
-                var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
-                poller.@com.vaadin.client.communication.Poller::poll()();
-        });
-        client.connectWebComponent = $entry(function(eventData) {
-            // Connects the web component described by eventData with the server
-            var registry = ap.@ApplicationConnection::registry;
-            var sc = registry.@com.vaadin.client.Registry::getServerConnector()();
-            var nodeId = registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::id;
-            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId, 'connect-web-component', eventData);
-        });
-        if (requestTiming) {
-           client.getProfilingData = $entry(function() {
-            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
-            var pd = [
-                smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
-                    smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
-                ];
-            if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
-                pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
-            } else {
-                pd = pd.concat(-1, -1);
-            }
-            pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
-            return pd;
-        });
+            String[] exportedWebComponents) {
+        if (!GWT.isScript()) {
+            return;
         }
-        client.resolveUri = $entry(function(uriToResolve) {
-            var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
-            return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
-        });
-        client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
-            var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
-            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
-        });
-        client.initializing = false;
-        client.exportedWebComponents = exportedWebComponents;
-        $wnd.Vaadin.Flow.clients[applicationId] = client;
-    }-*/;
+        JsProfilingDataSupplier getProfilingData = requestTiming
+                ? () -> registry.getMessageHandler().getProfilingData()
+                : null;
+        NativeApplicationConnection.publishJavascriptMethods(applicationId,
+                productionMode, requestTiming, exportedWebComponents,
+                this::isActive, nodeId -> getDomElementByNodeId(nodeId),
+                element -> getNodeId((elemental.dom.Element) element),
+                () -> registry.getApplicationConfiguration().getUIId(),
+                (nodeId, callback) -> addDomSetListener(nodeId,
+                        (com.google.gwt.core.client.JavaScriptObject) callback),
+                () -> registry.getPoller().poll(),
+                eventData -> registry.getServerConnector().sendEventMessage(
+                        registry.getStateTree().getRootNode().getId(),
+                        "connect-web-component",
+                        (elemental.json.JsonObject) eventData),
+                uri -> registry.getURIResolver().resolveVaadinUri(uri),
+                (nodeId, eventType, eventData) -> registry.getServerConnector()
+                        .sendEventMessage(nodeId, eventType,
+                                (elemental.json.JsonObject) eventData),
+                getProfilingData);
+    }
 
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
@@ -292,31 +257,18 @@ public class ApplicationConnection {
      * @param applicationId
      *            the application id provided by the server
      */
-    private native void publishDevelopmentModeJavascriptMethods(
-            String applicationId, String servletVersion)
-    /*-{
-        var ap = this;
-        var client = $wnd.Vaadin.Flow.clients[applicationId];
-        client.isActive = $entry(function() {
-            return ap.@com.vaadin.client.ApplicationConnection::isActive()();
-        });
-        client.getVersionInfo = $entry(function(parameter) {
-            return { "flow": servletVersion};
-        });
-        client.debug = $entry(function() {
-            var registry = ap.@ApplicationConnection::registry;
-            return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
-        });
-        client.getNodeInfo = $entry(function(nodeId) {
-            return {
-                element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
-                javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
-                hiddenByServer: ap.@ApplicationConnection::isHiddenByServer(*)(nodeId),
-                styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
-            };
-        });
-    
-    }-*/;
+    private void publishDevelopmentModeJavascriptMethods(String applicationId,
+            String servletVersion) {
+        if (!GWT.isScript()) {
+            return;
+        }
+        NativeApplicationConnection.publishDevelopmentModeJavascriptMethods(
+                applicationId, servletVersion, this::isActive,
+                () -> registry.getStateTree().getRootNode().getDebugJson(),
+                nodeId -> getDomElementByNodeId(nodeId), this::getJavaClass,
+                this::isHiddenByServer,
+                nodeId -> getElementStyleProperties(nodeId));
+    }
 
     /**
      * Checks if deferred commands are (potentially) still being executed as a

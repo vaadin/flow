@@ -227,6 +227,49 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 } catch (e) { console.error(e); onError(); }
             }
         };
+        client.ApplicationConnection = {
+            publishJavascriptMethods: function(appId, productionMode, requestTiming, exportedWebComponents,
+                    isActive, getByNodeId, getNodeId, getUIId, addDomBindingListener,
+                    poll, connectWebComponent, resolveUri, sendEventMessage, getProfilingData) {
+                $wnd.Vaadin = $wnd.Vaadin || {};
+                $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+                $wnd.Vaadin.Flow.clients = $wnd.Vaadin.Flow.clients || {};
+                var c = {
+                    isActive: function() { return isActive(); },
+                    getByNodeId: function(id) { return getByNodeId(id); },
+                    getNodeId: function(el) { return getNodeId(el); },
+                    getUIId: function() { return getUIId(); },
+                    addDomBindingListener: function(id, cb) { addDomBindingListener(id, cb); },
+                    productionMode: productionMode,
+                    poll: function() { poll(); },
+                    connectWebComponent: function(e) { connectWebComponent(e); },
+                    resolveUri: function(u) { return resolveUri(u); },
+                    sendEventMessage: function(id, t, d) { sendEventMessage(id, t, d); },
+                    initializing: false,
+                    exportedWebComponents: exportedWebComponents
+                };
+                if (requestTiming && getProfilingData) {
+                    c.getProfilingData = function() { return getProfilingData(); };
+                }
+                $wnd.Vaadin.Flow.clients[appId] = c;
+            },
+            publishDevelopmentModeJavascriptMethods: function(appId, servletVersion,
+                    isActive, getDebugJson, getDomElementByNodeId, getJavaClass, isHiddenByServer, getElementStyleProperties) {
+                var c = $wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.clients && $wnd.Vaadin.Flow.clients[appId];
+                if (!c) { return; }
+                c.isActive = function() { return isActive(); };
+                c.getVersionInfo = function() { return { flow: servletVersion }; };
+                c.debug = function() { return getDebugJson(); };
+                c.getNodeInfo = function(id) {
+                    return {
+                        element: getDomElementByNodeId(id),
+                        javaClass: getJavaClass(id),
+                        hiddenByServer: isHiddenByServer(id),
+                        styles: getElementStyleProperties(id)
+                    };
+                };
+            }
+        };
         client.BrowserInfo = {
             checkForTouchDevice: function() {
                 if (navigator && "maxTouchPoints" in navigator) { return navigator.maxTouchPoints > 0; }
