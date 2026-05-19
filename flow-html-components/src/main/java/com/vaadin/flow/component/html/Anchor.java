@@ -274,7 +274,7 @@ public class Anchor extends HtmlContainer
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }
-        if (!UrlTest.isAllowedUrl(sourceURL)) {
+        if (!UrlUtil.isAllowedUrl(sourceURL)) {
             throw new IllegalArgumentException("Source URL is not allowed");
         }
         this.href = href;
