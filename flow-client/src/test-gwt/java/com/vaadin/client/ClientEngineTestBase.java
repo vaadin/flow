@@ -427,6 +427,54 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
         };
         var flowNs = client.flow = client.flow || {};
         var binding = flowNs.binding = flowNs.binding || {};
+        var reactive = flowNs.reactive = flowNs.reactive || {};
+        reactive.Reactive = (function() {
+            var flushListeners = [];
+            var postFlushListeners = [];
+            var eventCollectors = [];
+            var currentComputation = null;
+            var flushing = false;
+            return {
+                addFlushListener: function(l) { flushListeners.push(l); },
+                addPostFlushListener: function(l) { postFlushListeners.push(l); },
+                flush: function() {
+                    if (flushing) { return; }
+                    var i = 0, j = 0;
+                    flushing = true;
+                    try {
+                        while (i < flushListeners.length || j < postFlushListeners.length) {
+                            while (i < flushListeners.length) { flushListeners[i](); i++; }
+                            if (j < postFlushListeners.length) { postFlushListeners[j](); j++; }
+                        }
+                    } finally {
+                        flushing = false;
+                        flushListeners.splice(0, i);
+                        postFlushListeners.splice(0, j);
+                    }
+                },
+                getCurrentComputation: function() { return currentComputation; },
+                runWithComputation: function(c, command) {
+                    var old = currentComputation;
+                    currentComputation = c;
+                    try { command(); } finally { currentComputation = old; }
+                },
+                addEventCollector: function(listener) {
+                    eventCollectors.push(listener);
+                    return function() {
+                        var idx = eventCollectors.indexOf(listener);
+                        if (idx >= 0) { eventCollectors.splice(idx, 1); }
+                    };
+                },
+                notifyEventCollectors: function(event) {
+                    var snapshot = eventCollectors.slice();
+                    for (var k = 0; k < snapshot.length; k++) { snapshot[k](event); }
+                },
+                reset: function() {
+                    flushListeners = []; postFlushListeners = [];
+                    eventCollectors = []; currentComputation = null; flushing = false;
+                }
+            };
+        })();
         var model = flowNs.model = flowNs.model || {};
         model.UpdatableModelProperties = function(properties) {
             var props = new $wnd.Set();

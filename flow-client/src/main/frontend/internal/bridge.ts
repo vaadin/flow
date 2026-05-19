@@ -40,6 +40,7 @@ import { XhrConnection } from './client/communication/XhrConnection';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
 import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElementBindingStrategy';
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
+import { Reactive } from './client/flow/reactive/Reactive';
 import { ClientJsonCodec } from './client/flow/util/ClientJsonCodec';
 import { registerGwtBridge } from './registry';
 
@@ -74,6 +75,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
   registerGwtBridge('client.flow.binding', 'SimpleElementBindingStrategy', SimpleElementBindingStrategy);
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
+  registerGwtBridge('client.flow.reactive', 'Reactive', Reactive);
   registerGwtBridge('client.flow.util', 'ClientJsonCodec', ClientJsonCodec);
 }
 
