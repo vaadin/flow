@@ -15,22 +15,16 @@
  */
 package com.vaadin.client;
 
-import jsinterop.annotations.JsType;
-
-import elemental.dom.Element;
+import jsinterop.annotations.JsFunction;
 
 /**
- * JsInterop binding for the TypeScript {@code ReactUtils} implementation
- * published at {@code window.Vaadin.Flow.internal.client.ReactUtils}. Source
- * lives in {@code src/main/frontend/internal/client/ReactUtils.ts}.
+ * Callback shape used to pass Java {@code Supplier<?>} method references across
+ * the JS-bridge boundary to TS modules that expect a {@code () => unknown}
+ * function. The companion of {@link JsRunnable}.
  */
-@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ReactUtils")
-final class NativeReactUtils {
-
-    private NativeReactUtils() {
-        // Native, not instantiated from Java
-    }
-
-    static native void addReadyCallback(Element element, String name,
-            JsRunnable runnable);
+@FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
+public interface JsObjectSupplier {
+    Object get();
 }

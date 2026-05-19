@@ -70,13 +70,6 @@ interface JsIntSupplier {
 @FunctionalInterface
 @JsFunction
 @SuppressWarnings("unusable-by-js")
-interface JsObjectSupplier {
-    Object get();
-}
-
-@FunctionalInterface
-@JsFunction
-@SuppressWarnings("unusable-by-js")
 interface JsProfilingDataSupplier {
     JsArray<Object> get();
 }
