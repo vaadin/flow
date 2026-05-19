@@ -227,6 +227,59 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 } catch (e) { console.error(e); onError(); }
             }
         };
+        client.Profiler = {
+            logGwtEvent: function(evtGroup, moduleName, name, type, relativeMillis) {
+                if (typeof $wnd.__gwtStatsEvent === 'function') {
+                    $wnd.__gwtStatsEvent({
+                        evtGroup: evtGroup, moduleName: moduleName,
+                        millis: (new Date()).getTime(), sessionId: undefined,
+                        subSystem: name, type: type, relativeMillis: relativeMillis
+                    });
+                }
+            },
+            getPerformanceTiming: function(name) {
+                if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
+                    return $wnd.performance.timing[name];
+                }
+                return 0;
+            },
+            getGwtStatsEvents: function() {
+                return ($wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.gwtStatsEvents) || [];
+            },
+            ensureLogger: function() {
+                if (typeof $wnd.__gwtStatsEvent !== 'function') {
+                    if ($wnd.Vaadin && $wnd.Vaadin.Flow && typeof $wnd.Vaadin.Flow.gwtStatsEvents !== 'object') {
+                        $wnd.Vaadin.Flow.gwtStatsEvents = [];
+                    }
+                    $wnd.__gwtStatsEvent = function(event) {
+                        if ($wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.gwtStatsEvents) {
+                            $wnd.Vaadin.Flow.gwtStatsEvents.push(event);
+                        }
+                        return true;
+                    };
+                }
+            },
+            ensureNoLogger: function() {
+                if ($wnd.Vaadin && $wnd.Vaadin.Flow && typeof $wnd.Vaadin.Flow.gwtStatsEvents === 'object') {
+                    delete $wnd.Vaadin.Flow.gwtStatsEvents;
+                    if (typeof $wnd.__gwtStatsEvent === 'function') {
+                        $wnd.__gwtStatsEvent = function() { return true; };
+                    }
+                }
+            },
+            clearEventsList: function() {
+                if ($wnd.Vaadin && $wnd.Vaadin.Flow) { $wnd.Vaadin.Flow.gwtStatsEvents = []; }
+                return [];
+            },
+            hasHighPrecisionTime: function() {
+                return $wnd.performance && typeof $wnd.performance.now === 'function';
+            },
+            defaultRelativeTime: function() { return (new Date()).getTime(); },
+            highResolutionRelativeTime: function() { return $wnd.performance.now(); },
+            round: function(num, exp) {
+                return +(Math.round(num + 'e+' + exp) + 'e-' + exp);
+            }
+        };
         client.ApplicationConnection = {
             publishJavascriptMethods: function(appId, productionMode, requestTiming, exportedWebComponents,
                     isActive, getByNodeId, getNodeId, getUIId, addDomBindingListener,

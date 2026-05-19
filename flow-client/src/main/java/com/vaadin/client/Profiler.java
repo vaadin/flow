@@ -386,18 +386,12 @@ public class Profiler {
         return relativeTimeSupplier.getRelativeTime();
     }
 
-    private static final native void logGwtEvent(String name, String type)
-    /*-{
-        $wnd.__gwtStatsEvent({
-            evtGroup: @com.vaadin.client.Profiler::EVT_GROUP,
-            moduleName: @com.google.gwt.core.client.GWT::getModuleName()(),
-            millis: (new Date).getTime(),
-            sessionId: undefined,
-            subSystem: name,
-            type: type,
-            relativeMillis: @com.vaadin.client.Profiler::getRelativeTimeMillis()()
-        });
-    }-*/;
+    private static void logGwtEvent(String name, String type) {
+        if (GWT.isScript()) {
+            NativeProfiler.logGwtEvent(EVT_GROUP, GWT.getModuleName(), name,
+                    type, getRelativeTimeMillis());
+        }
+    }
 
     /**
      * Resets the collected profiler data. Calls to this method will be removed
@@ -600,55 +594,43 @@ public class Profiler {
         }
     }
 
-    private static final native double getPerformanceTiming(String name)
-    /*-{
-        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
-            return $wnd.performance.timing[name];
-        } else {
-            return 0;
-        }
-    }-*/;
+    private static double getPerformanceTiming(String name) {
+        return GWT.isScript() ? NativeProfiler.getPerformanceTiming(name) : 0;
+    }
 
-    private static native JsArray<GwtStatsEvent> getGwtStatsEvents()
-    /*-{
-        return $wnd.Vaadin.Flow.gwtStatsEvents || [];
-    }-*/;
+    @SuppressWarnings("unchecked")
+    private static JsArray<GwtStatsEvent> getGwtStatsEvents() {
+        return GWT.isScript()
+                ? (JsArray<GwtStatsEvent>) NativeProfiler.getGwtStatsEvents()
+                : null;
+    }
 
     /**
      * Add logger if it's not already there, also initializing the event array
      * if needed.
      */
-    private static native void ensureLogger()
-    /*-{
-        if (typeof $wnd.__gwtStatsEvent != 'function') {
-            if (typeof $wnd.Vaadin.Flow.gwtStatsEvents != 'object') {
-                $wnd.Vaadin.Flow.gwtStatsEvents = [];
-            }
-            $wnd.__gwtStatsEvent = function(event) {
-                $wnd.Vaadin.Flow.gwtStatsEvents.push(event);
-                return true;
-            }
+    private static void ensureLogger() {
+        if (GWT.isScript()) {
+            NativeProfiler.ensureLogger();
         }
-    }-*/;
+    }
 
     /**
      * Remove logger function and event array if it seems like the function has
      * been added by us.
      */
-    private static native void ensureNoLogger()
-    /*-{
-        if (typeof $wnd.Vaadin.Flow.gwtStatsEvents == 'object') {
-            delete $wnd.Vaadin.Flow.gwtStatsEvents;
-            if (typeof $wnd.__gwtStatsEvent == 'function') {
-                $wnd.__gwtStatsEvent = function() { return true; };
-            }
+    private static void ensureNoLogger() {
+        if (GWT.isScript()) {
+            NativeProfiler.ensureNoLogger();
         }
-    }-*/;
+    }
 
-    private static native JsArray<GwtStatsEvent> clearEventsList()
-    /*-{
-        $wnd.Vaadin.Flow.gwtStatsEvents = [];
-    }-*/;
+    @SuppressWarnings("unchecked")
+    private static JsArray<GwtStatsEvent> clearEventsList() {
+        return GWT.isScript()
+                ? (JsArray<GwtStatsEvent>) NativeProfiler.clearEventsList()
+                : null;
+    }
 
     /**
      * Sets the profiler result consumer that is used to output the profiler
@@ -673,10 +655,9 @@ public class Profiler {
         return consumer;
     }
 
-    private static native boolean hasHighPrecisionTime()
-    /*-{
-       return $wnd.performance && (typeof $wnd.performance.now == 'function');
-    }-*/;
+    private static boolean hasHighPrecisionTime() {
+        return GWT.isScript() && NativeProfiler.hasHighPrecisionTime();
+    }
 
     private interface RelativeTimeSupplier {
         double getRelativeTime();
@@ -686,20 +667,20 @@ public class Profiler {
             implements RelativeTimeSupplier {
 
         @Override
-        public native double getRelativeTime()
-        /*-{
-            return (new Date).getTime();
-        }-*/;
+        public double getRelativeTime() {
+            return GWT.isScript() ? NativeProfiler.defaultRelativeTime()
+                    : System.currentTimeMillis();
+        }
     }
 
     private static class HighResolutionTimeSupplier
             implements RelativeTimeSupplier {
 
         @Override
-        public native double getRelativeTime()
-        /*-{
-             return $wnd.performance.now();
-        }-*/;
+        public double getRelativeTime() {
+            return GWT.isScript() ? NativeProfiler.highResolutionRelativeTime()
+                    : System.currentTimeMillis();
+        }
     }
 
     /**
@@ -719,9 +700,9 @@ public class Profiler {
     /**
      * Round {@code num} up to {@code exp} decimal positions.
      */
-    private static native double round(double num, int exp)
-    /*-{
-        return +(Math.round(num + "e+" + exp)  + "e-" + exp);
-    }-*/;
+    private static double round(double num, int exp) {
+        return GWT.isScript() ? NativeProfiler.round(num, exp)
+                : Math.round(num * Math.pow(10, exp)) / Math.pow(10, exp);
+    }
 
 }
