@@ -15,78 +15,105 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gwt.core.client.GWT;
 
 import elemental.dom.Element;
 
 /**
- * Mapping between a server side node identifier which has been requested to
- * attach existing client side element.
+ * Mapping between a server-side node identifier which has been requested to
+ * attach an existing client-side element.
+ *
+ * <p>
+ * Under GWT this is a thin facade over the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/ExistingElementMap.ts}, reached
+ * through {@link NativeExistingElementMap}. The JVM path keeps a parallel
+ * {@link HashMap}-backed implementation so {@code ExistingElementMapTest} (and
+ * any other JUnit code instantiating this class) keeps working.
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public class ExistingElementMap {
 
-    private final JsMap<Element, Integer> elementToId = JsCollections.map();
-    // JsArray is used as a Map<Integer,Element> here. So this is a map between
-    // an id and an Element.
-    private final JsArray<Element> idToElement = JsCollections.array();
+    private final NativeExistingElementMap delegate;
+    private final Map<Element, Integer> jvmElementToId;
+    private final List<Element> jvmIdToElement;
 
     /**
-     * Gets the element stored via the {@link #add(int, Element)} method by the
-     * given {@code id}.
-     *
-     * @param id
-     *            identifier associated with an element
-     * @return the element associated with the {@code id} or null if it doesn't
-     *         exist
+     * Creates a new empty map.
+     */
+    public ExistingElementMap() {
+        if (GWT.isScript()) {
+            delegate = new NativeExistingElementMap();
+            jvmElementToId = null;
+            jvmIdToElement = null;
+        } else {
+            delegate = null;
+            jvmElementToId = new HashMap<>();
+            jvmIdToElement = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets the element stored via {@link #add(int, Element)} for the given
+     * {@code id}.
      */
     public Element getElement(int id) {
-        return idToElement.get(id);
+        if (delegate != null) {
+            return delegate.getElement(id);
+        }
+        if (id < 0 || id >= jvmIdToElement.size()) {
+            return null;
+        }
+        return jvmIdToElement.get(id);
     }
 
     /**
-     * Gets the id stored via the {@link #add(int, Element)} method by the given
+     * Gets the id stored via {@link #add(int, Element)} for the given
      * {@code element}.
-     *
-     * @param element
-     *            element associated with an identifier
-     * @return the identifier associated with the {@code element} or null if it
-     *         doesn't exist
      */
     public Integer getId(Element element) {
-        return elementToId.get(element);
+        if (delegate != null) {
+            return delegate.getId(element);
+        }
+        return jvmElementToId.get(element);
     }
 
     /**
-     * Remove the identifier and the associated element from the mapping.
-     *
-     * @param id
-     *            identifier to remove
+     * Removes the identifier and the associated element from the mapping.
      */
     public void remove(int id) {
-        Element element = idToElement.get(id);
+        if (delegate != null) {
+            delegate.remove(id);
+            return;
+        }
+        if (id < 0 || id >= jvmIdToElement.size()) {
+            return;
+        }
+        Element element = jvmIdToElement.get(id);
         if (element != null) {
-            idToElement.set(id, null);
-            elementToId.delete(element);
+            jvmIdToElement.set(id, null);
+            jvmElementToId.remove(element);
         }
     }
 
     /**
      * Adds the {@code id} and the {@code element} to the mapping.
-     *
-     * @param id
-     *            identifier of the server side node
-     * @param element
-     *            element associated with the identifier
      */
     public void add(int id, Element element) {
-        idToElement.set(id, element);
-        elementToId.set(element, id);
+        if (delegate != null) {
+            delegate.add(id, element);
+            return;
+        }
+        while (jvmIdToElement.size() <= id) {
+            jvmIdToElement.add(null);
+        }
+        jvmIdToElement.set(id, element);
+        jvmElementToId.put(element, id);
     }
-
 }
