@@ -15,8 +15,10 @@
 > Counts: **176** test methods total (49 test files). After classification:
 > ~**130 PORT**, ~**40 DROP**, ~**6 INTEGRATION**.
 >
-> Progress (as of 2026-05-19): **34 DROP done** (Jre*Test ×4, AssertionTest,
-> CodeTest, DomApiAbstractionUsageTest, plus inventory adjustments), **9
+> Progress (as of 2026-05-19): **~65 test methods retired** (JVM: 4
+> Jre*Test classes, AssertionTest, CodeTest, DomApiAbstractionUsageTest;
+> GwtTest: GwtJsArrayTest, GwtJsMapTest, GwtJsSetTest, GwtJsWeakMapTest,
+> GwtNativeFunctionTest, GwtDomApiTest, GwtPolymerApiImplTest). **9
 > PORT done** (ReactiveTest → ReactiveTests.ts).
 >
 > This is a starting classification — reviewers should challenge specific
@@ -77,18 +79,15 @@ GWT-side counterparts of the Jre tests. They test that `JsArray` /
 `JsMap` / `JsSet` / `JsWeakMap` work as @JsType bindings to the JS
 globals. The JS engine itself guarantees the underlying behaviour.
 
-| File | Tests | Class |
-|---|---:|---|
-| `flow/collection/GwtJsArrayTest` | 14 | DROP — language primitive |
-| `flow/collection/GwtJsMapTest` | 4 | DROP — language primitive |
-| `flow/collection/GwtJsSetTest` | 5 | DROP — language primitive |
-| `flow/collection/GwtJsWeakMapTest` | 3 | DROP — language primitive |
-| `flow/util/GwtNativeFunctionTest` | 3 | DROP — tests the `new Function(...)` helper which becomes a TS-side detail |
-| `flow/dom/GwtDomApiTest.testPolymerMicroDependencyLoaded` | 1 | DROP — tests dependency-loading scaffolding gone after migration |
-| `flow/dom/GwtDomApiTest.testPolymerFullDependencyLoaded` | 1 | DROP — same |
-| `flow/dom/GwtDomApiTest.scheduleDeferred` | 1 | DROP — helper, not a test |
-| `flow/dom/GwtPolymerApiImplTest.testPolymerMicroLoaded` | 1 | DROP — Polymer-availability check |
-| `flow/dom/GwtPolymerApiImplTest.testPolymer2` | 1 | DROP — Polymer-availability check |
+| File | Tests | Class | Status |
+|---|---:|---|---|
+| `flow/collection/GwtJsArrayTest` | 14 | DROP — language primitive | ✅ deleted |
+| `flow/collection/GwtJsMapTest` | 4 | DROP — language primitive | ✅ deleted |
+| `flow/collection/GwtJsSetTest` | 5 | DROP — language primitive | ✅ deleted |
+| `flow/collection/GwtJsWeakMapTest` | 3 | DROP — language primitive | ✅ deleted |
+| `flow/util/GwtNativeFunctionTest` | 3 | DROP — tests the `new Function(...)` helper which becomes a TS-side detail | ✅ deleted |
+| `flow/dom/GwtDomApiTest` (3 tests) | 3 | DROP — Polymer dependency-loading scaffolding | ✅ deleted |
+| `flow/dom/GwtPolymerApiImplTest` (2 tests) | 2 | DROP — Polymer-availability check | ✅ deleted |
 
 ### INTEGRATION — covered well enough by `flow-tests`
 
