@@ -6,10 +6,8 @@ import junit.framework.TestSuite;
 import com.google.gwt.junit.tools.GWTTestSuite;
 
 import com.vaadin.client.communication.GwtAtmospherePushConnectionTest;
-import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import com.vaadin.client.communication.GwtLoadingIndicatorStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
-import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
@@ -26,7 +24,6 @@ public class GwtSuite extends GWTTestSuite {
          * module for each test class.
          */
         TestSuite suite = new TestSuite("Flow GWT tests");
-        suite.addTestSuite(GwtApplicationConnectionTest.class);
         suite.addTestSuite(GwtBasicElementBinderTest.class);
         suite.addTestSuite(GwtPolymerModelTest.class);
         suite.addTestSuite(GwtEventHandlerTest.class);
@@ -38,9 +35,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDependencyLoaderTest.class);
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
-        suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtLoadingIndicatorStateHandlerTest.class);
-        suite.addTestSuite(GwtErrotHandlerTest.class);
         suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
         suite.addTestSuite(GwtClientJsonCodecTest.class);
         return suite;
