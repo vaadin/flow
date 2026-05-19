@@ -160,10 +160,9 @@ public class ClientJsonCodec {
 
     private static NativeFunction createReturnChannelCallback(int nodeId,
             int channelId, ServerConnector serverConnector) {
-        return com.google.gwt.core.client.GWT.isScript() ? NativeClientJsonCodec
+        return NativeClientJsonCodec
                 .createReturnChannelCallback(args -> serverConnector
-                        .sendReturnChannelMessage(nodeId, channelId, args))
-                : null;
+                        .sendReturnChannelMessage(nodeId, channelId, args));
     }
 
     private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,
