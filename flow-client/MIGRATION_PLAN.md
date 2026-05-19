@@ -63,6 +63,33 @@ When every package has been through this, one **tear-down commit** drops
 the GWT plugin, the JsType shims, the bridge namespace, and the test
 infrastructure that no longer has anything to test.
 
+### Exception: leaf classes keep a JVM fallback for now
+
+Step 3 above ("no JVM fallback body") works cleanly for classes whose
+JUnit coverage can be deleted in the same commit. For classes at the
+**bottom** of the Java dependency graph (e.g. `Reactive`,
+`Computation`, the `flow.collection.*` family) almost every other
+JUnit test reaches them transitively — `MapPropertyTest`,
+`NodeListTest`, `StateNodeTest`, `StateTreeTest`,
+`ExecuteJavaScriptProcessorTest`, etc. all break with
+`UnsatisfiedLinkError` the moment a leaf class becomes pure
+`@JsType(isNative = true)`.
+
+Strict step 3 would force deleting *all* of those JUnit suites in one
+commit, which violates the small-PR constraint and erases coverage
+before the higher-tier classes migrate.
+
+**Pragmatic deviation**: for leaf classes used transitively by many
+JUnit tests, keep the JVM-fallback form (the "transitional pattern"
+documented in `MIGRATION.md`) during the migration. The fallback is
+deleted in T7 alongside the JUnit tests of all classes that depend on
+it. The first commit using this exception was T1.1 (Reactive); see its
+commit message for the rationale.
+
+This is a deliberate trade-off: the leaf class temporarily has a
+duplicate Java implementation, but every commit stays small and JUnit
+coverage shrinks at a steady rate rather than dropping off a cliff.
+
 ## Pre-work
 
 Three commits, no functional change to flow-client output:
