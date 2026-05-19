@@ -69,8 +69,7 @@ public class BrowserInfo {
     }
 
     private boolean checkForTouchDevice() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeBrowserInfo.checkForTouchDevice();
+        return NativeBrowserInfo.checkForTouchDevice();
     }
 
     /**
@@ -217,14 +216,11 @@ public class BrowserInfo {
     }
 
     private static String getBrowserString() {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeBrowserInfo.getBrowserString()
-                : "";
+        return NativeBrowserInfo.getBrowserString();
     }
 
     private static boolean isIos() {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeBrowserInfo.isIos();
+        return NativeBrowserInfo.isIos();
     }
 
     /**
