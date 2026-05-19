@@ -114,8 +114,14 @@ public final class JsFunction implements Serializable {
      *            the names of runtime arguments, in positional order; each must
      *            be a valid JavaScript identifier
      * @return a new {@code JsFunction} with the given argument names
+     * @throws IllegalStateException
+     *             if argument names have already been set on this instance
      */
     public JsFunction withArguments(String... argumentNames) {
+        if (!this.argumentNames.isEmpty()) {
+            throw new IllegalStateException(
+                    "withArguments has already been called on this JsFunction");
+        }
         return new JsFunction(body, captures, List.of(argumentNames));
     }
 
