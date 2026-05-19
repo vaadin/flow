@@ -281,6 +281,38 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             }
         };
         var flowNs = client.flow = client.flow || {};
+        var binding = flowNs.binding = flowNs.binding || {};
+        var polymer = client.PolymerUtils;
+        binding.SimpleElementBindingStrategy = {
+            bindPolymerModelProperties: function(element, onHookUp) {
+                if (polymer && polymer.isPolymerElement(element)) {
+                    onHookUp();
+                } else if (polymer && polymer.mayBePolymerElement(element)) {
+                    try {
+                        var p = $wnd.customElements.whenDefined(element.localName);
+                        var t = new Promise(function(r) { setTimeout(r, 1000); });
+                        Promise.race([p, t]).then(function() {
+                            if (polymer.isPolymerElement(element)) { onHookUp(); }
+                        });
+                    } catch (e) {}
+                }
+            },
+            hookUpPolymerElement: function(element, handlePropertiesChanged, fireReadyEvent, handleListItemPropertyChange) {
+                var orig = element._propertiesChanged;
+                if (orig) {
+                    element._propertiesChanged = function(curr, changed, old) {
+                        handlePropertiesChanged(changed);
+                        orig.apply(this, arguments);
+                    };
+                }
+                var origReady = element.ready;
+                element.ready = function() {
+                    if (origReady) { origReady.apply(this, arguments); }
+                    fireReadyEvent();
+                    // dom-repeat replacement omitted in the stub — not exercised by current Gwt tests.
+                };
+            }
+        };
         flowNs.ExecuteJavaScriptProcessor = {
             getContextExecutionObject: function(nodeParameters, appId, registry, attachExisting, populateModel, registerUpdatable, stopApp) {
                 var getNode = function(element) {
