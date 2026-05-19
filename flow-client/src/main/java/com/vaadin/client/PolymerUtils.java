@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
-
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -74,10 +72,8 @@ public final class PolymerUtils {
      */
     public static void setListValueByIndex(Element htmlNode, String path,
             int listIndex, JsonValue newValue) {
-        if (GWT.isScript()) {
-            NativePolymerUtils.setListValueByIndex(htmlNode, path, listIndex,
-                    newValue);
-        }
+        NativePolymerUtils.setListValueByIndex(htmlNode, path, listIndex,
+                newValue);
     }
 
     /**
@@ -103,10 +99,8 @@ public final class PolymerUtils {
      */
     public static void splice(Element htmlNode, String path, int startIndex,
             int deleteCount, JsonArray itemsToAdd) {
-        if (GWT.isScript()) {
-            NativePolymerUtils.splice(htmlNode, path, startIndex, deleteCount,
-                    itemsToAdd);
-        }
+        NativePolymerUtils.splice(htmlNode, path, startIndex, deleteCount,
+                itemsToAdd);
     }
 
     /**
@@ -120,9 +114,7 @@ public final class PolymerUtils {
      *            polymer model path to property
      */
     public static void storeNodeId(Node domNode, int id, String path) {
-        if (GWT.isScript()) {
-            NativePolymerUtils.storeNodeId(domNode, id, path);
-        }
+        NativePolymerUtils.storeNodeId(domNode, id, path);
     }
 
     /**
@@ -378,7 +370,7 @@ public final class PolymerUtils {
      * @return {@code true} if the {@code htmlNode} is a polymer element
      */
     public static boolean isPolymerElement(Element htmlNode) {
-        return GWT.isScript() && NativePolymerUtils.isPolymerElement(htmlNode);
+        return NativePolymerUtils.isPolymerElement(htmlNode);
     }
 
     /**
@@ -397,8 +389,7 @@ public final class PolymerUtils {
      */
     @Deprecated
     public static boolean mayBePolymerElement(Element htmlNode) {
-        return GWT.isScript()
-                && NativePolymerUtils.mayBePolymerElement(htmlNode);
+        return NativePolymerUtils.mayBePolymerElement(htmlNode);
     }
 
     /**
@@ -418,10 +409,8 @@ public final class PolymerUtils {
     @Deprecated
     public static Node searchForElementInShadowRoot(ShadowRoot shadowRoot,
             String cssQuery) {
-        return GWT.isScript()
-                ? NativePolymerUtils.searchForElementInShadowRoot(shadowRoot,
-                        cssQuery)
-                : null;
+        return NativePolymerUtils.searchForElementInShadowRoot(shadowRoot,
+                cssQuery);
     }
 
     /**
@@ -441,9 +430,7 @@ public final class PolymerUtils {
     @Deprecated
     public static Node getElementInShadowRootById(ShadowRoot shadowRoot,
             String id) {
-        return GWT.isScript()
-                ? NativePolymerUtils.getElementInShadowRootById(shadowRoot, id)
-                : null;
+        return NativePolymerUtils.getElementInShadowRootById(shadowRoot, id);
     }
 
     /**
@@ -462,9 +449,7 @@ public final class PolymerUtils {
      */
     @Deprecated
     public static Element getDomElementById(Node shadowRootParent, String id) {
-        return GWT.isScript()
-                ? NativePolymerUtils.getDomElementById(shadowRootParent, id)
-                : null;
+        return NativePolymerUtils.getDomElementById(shadowRootParent, id);
     }
 
     /**
@@ -477,7 +462,7 @@ public final class PolymerUtils {
      * @return {@code true} if the {@code shadowRootParent} element is ready
      */
     public static boolean isReady(Node shadowRootParent) {
-        return GWT.isScript() && NativePolymerUtils.isReady(shadowRootParent);
+        return NativePolymerUtils.isReady(shadowRootParent);
     }
 
     /**
@@ -534,8 +519,7 @@ public final class PolymerUtils {
      * @return the shadow root of the element
      */
     public static Element getDomRoot(Node templateElement) {
-        return GWT.isScript() ? NativePolymerUtils.getDomRoot(templateElement)
-                : null;
+        return NativePolymerUtils.getDomRoot(templateElement);
     }
 
     /**
@@ -548,9 +532,7 @@ public final class PolymerUtils {
      *            the command to run when the element if initialized
      */
     public static void invokeWhenDefined(String tagName, Runnable runnable) {
-        if (GWT.isScript()) {
-            NativePolymerUtils.invokeWhenDefined(tagName, runnable::run);
-        }
+        NativePolymerUtils.invokeWhenDefined(tagName, runnable::run);
     }
 
     /**
@@ -639,9 +621,7 @@ public final class PolymerUtils {
      *            the value
      */
     public static void setProperty(Element element, String path, Object value) {
-        if (GWT.isScript()) {
-            NativePolymerUtils.setProperty(element, path, value);
-        }
+        NativePolymerUtils.setProperty(element, path, value);
     }
 
     /**
@@ -652,6 +632,6 @@ public final class PolymerUtils {
      * @return whether the element is in a shadow root
      */
     public static boolean isInShadowRoot(Element element) {
-        return GWT.isScript() && NativePolymerUtils.isInShadowRoot(element);
+        return NativePolymerUtils.isInShadowRoot(element);
     }
 }
