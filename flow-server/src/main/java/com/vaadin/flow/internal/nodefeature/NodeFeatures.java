@@ -147,11 +147,6 @@ public final class NodeFeatures {
      */
     public static final int SIGNAL_BINDING = 27;
 
-    /**
-     * Id for {@link JsInitializerCounter}.
-     */
-    public static final int JS_INITIALIZER_COUNTER = 28;
-
     private NodeFeatures() {
         // Only static
     }

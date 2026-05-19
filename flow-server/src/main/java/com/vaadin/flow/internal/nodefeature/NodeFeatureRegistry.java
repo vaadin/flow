@@ -123,8 +123,6 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
         registerFeature(InertData.class, InertData::new,
                 NodeFeatures.INERT_DATA);
-        registerFeature(JsInitializerCounter.class, JsInitializerCounter::new,
-                NodeFeatures.JS_INITIALIZER_COUNTER);
 
         /* Only used for the root node */
         registerFeature(PushConfigurationMap.class, PushConfigurationMap::new,
