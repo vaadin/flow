@@ -15,49 +15,56 @@
  */
 package com.vaadin.client.flow.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import com.google.gwt.core.client.GWT;
+
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsSet;
 
 /**
- * The storage class for set of updatable model properties.
+ * Storage class for the set of updatable model properties on a
+ * {@link StateNode}, consulted by {@link SimpleElementBindingStrategy} when
+ * deciding whether to push a polymer property update to the server.
+ *
  * <p>
- * This class is stored inside a {@link StateNode} via
- * {@link StateNode#setNodeData(Object)} if there is any data to store at all.
- * Once it's stored in the {@link StateNode} the code which sends updates to the
- * server side when a polymer property is updated uses this data to detect
- * whether server expects the update to be sent(see
- * {@link SimpleElementBindingStrategy}).
+ * Under GWT this is a thin facade over the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/model/UpdatableModelProperties.ts}.
+ * The JVM path keeps a {@link HashSet}-backed copy so JUnit code that
+ * instantiates this class keeps working.
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public class UpdatableModelProperties {
 
-    private final JsSet<String> properties = JsCollections.set();
+    private final NativeUpdatableModelProperties delegate;
+    private final Set<String> jvmProperties;
 
     /**
-     * Creates a new instance of storage class based on given
-     * {@code properties}.
+     * Creates a new instance.
      *
      * @param properties
-     *            updatable properties array
+     *            updatable property names
      */
     public UpdatableModelProperties(JsArray<String> properties) {
-        properties.forEach(this.properties::add);
+        if (GWT.isScript()) {
+            delegate = new NativeUpdatableModelProperties(properties);
+            jvmProperties = null;
+        } else {
+            delegate = null;
+            jvmProperties = new HashSet<>();
+            properties.forEach(jvmProperties::add);
+        }
     }
 
     /**
      * Tests whether the {@code property} is updatable.
-     *
-     * @param property
-     *            the property to test
-     * @return {@code true} if property is updatable
      */
     public boolean isUpdatableProperty(String property) {
-        return properties.has(property);
+        return delegate != null ? delegate.isUpdatableProperty(property)
+                : jvmProperties.contains(property);
     }
 }

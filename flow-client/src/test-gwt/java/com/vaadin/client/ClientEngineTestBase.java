@@ -427,6 +427,12 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
         };
         var flowNs = client.flow = client.flow || {};
         var binding = flowNs.binding = flowNs.binding || {};
+        var model = flowNs.model = flowNs.model || {};
+        model.UpdatableModelProperties = function(properties) {
+            var props = new $wnd.Set();
+            if (properties && properties.forEach) { properties.forEach(function(p) { props.add(p); }); }
+            this.isUpdatableProperty = function(p) { return props.has(p); };
+        };
         var polymer = client.PolymerUtils;
         binding.SimpleElementBindingStrategy = {
             bindPolymerModelProperties: function(element, onHookUp) {
