@@ -777,6 +777,28 @@ public class MessageHandler {
     }
 
     /**
+     * Returns the profiling data array exposed on the client as
+     * {@code client.getProfilingData()}: {@code [lastProcessingTime,
+     * totalProcessingTime, serverTimingInfo OR -1, -1, bootstrapTime]}.
+     *
+     * @return the profiling values as a JS array, never {@code null}
+     */
+    public com.vaadin.client.flow.collection.JsArray<Object> getProfilingData() {
+        com.vaadin.client.flow.collection.JsArray<Object> data = com.vaadin.client.flow.collection.JsCollections
+                .array();
+        data.push(Integer.valueOf(lastProcessingTime));
+        data.push(Integer.valueOf(totalProcessingTime));
+        if (serverTimingInfo != null) {
+            data.push(serverTimingInfo);
+        } else {
+            data.push(Integer.valueOf(-1));
+            data.push(Integer.valueOf(-1));
+        }
+        data.push(Integer.valueOf(bootstrapTime));
+        return data;
+    }
+
+    /**
      * Gets the token (synchronizer token pattern) that the server uses to
      * protect against CSRF (Cross Site Request Forgery) attacks.
      *

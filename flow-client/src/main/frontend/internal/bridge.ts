@@ -18,6 +18,7 @@
 // gets published under `window.Vaadin.Flow.internal.<pkg>.<name>` so GWT code
 // can reach it via `@JsType(isNative = true, namespace = ...)`. See
 // MIGRATION.md for the full pattern.
+import { ApplicationConnection } from './client/ApplicationConnection';
 import { BrowserInfo } from './client/BrowserInfo';
 import { ConnectionIndicator } from './client/ConnectionIndicator';
 import { Console } from './client/Console';
@@ -48,6 +49,7 @@ import { registerGwtBridge } from './registry';
  * tests that wipe `window.Vaadin` between runs still see the bridge.
  */
 export function installGwtBridge(): void {
+  registerGwtBridge('client', 'ApplicationConnection', ApplicationConnection);
   registerGwtBridge('client', 'BrowserInfo', BrowserInfo);
   registerGwtBridge('client', 'ConnectionIndicator', ConnectionIndicator);
   registerGwtBridge('client', 'Console', Console);
