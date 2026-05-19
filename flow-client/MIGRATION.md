@@ -137,47 +137,63 @@ For each Java class being migrated:
 
 ### Status
 
-- **Done** (JSNI moved to TS bridge): `Console`, `LitUtils`, `ReactUtils`,
-  `ConnectionIndicator`, `ElementUtil`, `WidgetUtil`, `PolymerUtils`,
-  `BrowserInfo`, `ResourceLoader`, `SystemErrorHandler`,
-  `ExecuteJavaScriptElementUtils`, `bootstrap.Bootstrapper`,
-  `communication.MessageHandler`, `communication.MessageSender`,
-  `communication.XhrConnection`, `flow.util.ClientJsonCodec`.
-- **Deleted** (no callers): `LocationParser`, `StorageUtil`.
-- **Deferred** — these contain JSNI that doesn't fit the "browser API helper"
-  pattern because the JS body wires up large surfaces of bidirectional Java↔JS
-  callbacks tied to instance state. They want a real Java-to-TS port of the
-  whole class, not just the JSNI bodies:
-  - `ApplicationConnection.publishJavascriptMethods` /
-    `publishDevelopmentModeJavascriptMethods` (builds the
-    `window.Vaadin.Flow.clients[appId]` API object out of ~12 Java callbacks).
-  - `AtmospherePushConnection` (binds Atmosphere.js callbacks to `this`).
-  - `flow.binding.SimpleElementBindingStrategy.{bindPolymerModelProperties,
-    hookUpPolymerElement}` (`this`-bound JSNI that registers JS handlers
-    calling back into instance methods).
-  - `flow.binding.ServerEventObject` (a `JavaScriptObject` subclass — methods
-    *are* on the JS instance, not on a static module).
-  - `flow.ExecuteJavaScriptProcessor.getContextExecutionObject` (instance
-    method that builds the per-execution `this` for user JS).
-  - `Profiler` (17 JSNI bodies entangled with GWT-specific `Duration` and
-    `JavaScriptObject`).
-  - `gwt/elemental/js/util/Xhr` (vendored GWT helper, excluded from spotless).
-- **No JSNI; stays Java for now** (purely pure-Java logic that runs fine on
-  both GWT and JVM): all listener / event types, `StateNode`, `StateTree`,
-  `NodeMap`, `NodeList`, `MapProperty`, `Reactive`, `Computation`,
-  `DependencyLoader`, `Registry`, `DefaultRegistry`,
-  `ApplicationConfiguration`, `UILifecycle`, `ExistingElementMap`,
-  `flow.binding.{Binder, BindingStrategy, TextBindingStrategy,
-  ServerEventHandlerBinder}`, `flow.dom.{DomApi, DomApiImpl, DomElement,
-  DomNode}`, `flow.nodefeature.*` event/listener helpers, `Heartbeat`,
-  `PollConfigurator`, `Poller`, `RequestResponseTracker`,
-  `ReconnectConfiguration`, `DefaultConnectionStateHandler`,
-  `LoadingIndicatorConfigurator`, `LoadingIndicatorStateHandler`,
-  `ServerConnector`, `URIResolver`, `flow.ConstantPool`,
-  `flow.TreeChangeProcessor`, `flow.model.UpdatableModelProperties`,
-  `flow.util.{JsObject, NativeFunction}` (already `@JsType`-native).
-  These migrate in the final tear-down phase, by then their consumers are
-  all in TS so the migration is just `mv Foo.java Foo.ts` plus translation.
+**Done** — every structurally-migratable JSNI body is now a TS module
+published via the bridge:
+
+- `client.{Console, LitUtils, ReactUtils, ConnectionIndicator, ElementUtil,
+  WidgetUtil, PolymerUtils, BrowserInfo, ResourceLoader, SystemErrorHandler,
+  ExecuteJavaScriptElementUtils, ApplicationConnection, Profiler}`
+- `client.bootstrap.Bootstrapper`
+- `client.communication.{AtmospherePushConnection, MessageHandler,
+  MessageSender, XhrConnection}`
+- `client.flow.ExecuteJavaScriptProcessor`
+- `client.flow.binding.SimpleElementBindingStrategy`
+- `client.flow.util.ClientJsonCodec`
+
+**Deleted** — no callers: `LocationParser`, `StorageUtil`.
+
+**Remaining JSNI in `src/main/java`** — these are *not* migrable to a
+separate TS module; they go away in the tear-down phase when their consumers
+are translated to TS and the GWT compiler is dropped.
+
+| Class | Why it stays |
+|---|---|
+| `ValueMap`, `bootstrap.ErrorMessage`, `bootstrap.JsoConfiguration` | `JavaScriptObject` subclass — methods *are* property accessors on a JS instance (`return this[key]`); there is no static "module" to publish |
+| `Profiler.GwtStatsEvent` (inner JSO) | Same — JSO accessors on a JS instance |
+| `AtmospherePushConnection.AtmosphereConfiguration` / `AtmosphereResponse` (inner JSOs) | Same |
+| `ApplicationConnection.Styles` (inner JSO) | Same |
+| `flow.binding.ServerEventObject` | JSO subclass whose methods sit on the JS instance |
+| `flow.collection.{JsArray, JsMap, JsSet, JsWeakMap, JsCollections}` | Already `@JsType(isNative=true)` aliases of global `Array`/`Map`/`Set`/`WeakMap` plus `@JsOverlay` GWT conveniences that disappear when consumers use native JS types directly |
+| `gwt/elemental/js/util/Xhr` | Vendored GWT helper (`com.vaadin.client.gwt.**`, excluded from spotless) |
+
+**No JSNI; stays Java for now** — purely pure-Java logic that runs fine on
+both GWT and JVM: all listener / event types, `StateNode`, `StateTree`,
+`NodeMap`, `NodeList`, `MapProperty`, `Reactive`, `Computation`,
+`DependencyLoader`, `Registry`, `DefaultRegistry`,
+`ApplicationConfiguration`, `UILifecycle`, `ExistingElementMap`,
+`flow.binding.{Binder, BindingStrategy, TextBindingStrategy,
+ServerEventHandlerBinder}`, `flow.dom.{DomApi, DomApiImpl, DomElement,
+DomNode}`, `flow.nodefeature.*` event/listener helpers, `Heartbeat`,
+`PollConfigurator`, `Poller`, `RequestResponseTracker`,
+`ReconnectConfiguration`, `DefaultConnectionStateHandler`,
+`LoadingIndicatorConfigurator`, `LoadingIndicatorStateHandler`,
+`ServerConnector`, `URIResolver`, `flow.ConstantPool`,
+`flow.TreeChangeProcessor`, `flow.model.UpdatableModelProperties`,
+`flow.util.{JsObject, NativeFunction}` (already `@JsType`-native).
+These migrate in the final tear-down phase, by then their consumers are all
+in TS so the migration is just `mv Foo.java Foo.ts` plus translation.
+
+### Tear-down phase
+
+Once the Java logic has been ported to TS (so nothing instantiates the JSO
+subclasses, calls `JsArray.length()`, or extends `JavaScriptObject` anymore):
+
+1. Drop `src/main/java`, `src/test`, `src/test-gwt`, the GWT plugin in
+   `pom.xml`, `ClientEngineLinker`, `scripts/client.js`, the
+   `installMigratedBridgeStubs` hook, and the `internal/bridge.ts` registry.
+2. `Flow.ts` imports each migrated module directly instead of through
+   `window.Vaadin.Flow.internal.*`.
+3. Module becomes pure TS.
 
 ## Style
 
