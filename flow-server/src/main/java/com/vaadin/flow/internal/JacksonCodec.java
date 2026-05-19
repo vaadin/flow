@@ -113,6 +113,11 @@ public class JacksonCodec {
             captures.add(encodeWithTypeInfo(capture));
         }
         payload.set("captures", captures);
+        ArrayNode args = mapper.createArrayNode();
+        for (String name : value.getArgumentNames()) {
+            args.add(name);
+        }
+        payload.set("args", args);
         obj.set("@v-fn", payload);
         return obj;
     }

@@ -187,11 +187,28 @@ public class ClientJsonCodec {
         for (int i = 0; i < captureCount; i++) {
             captures.push(decodeWithTypeInfo(tree, capturesJson.get(i)));
         }
-        String[] paramsAndCode = new String[captureCount + 1];
+        // Optional 'args' field: names of runtime parameters the manifested
+        // function should accept at call time, after the bound captures.
+        JsonArray argsJson;
+        JsonValue argsValue = fnObject.get("args");
+        if (argsValue == null) {
+            argsJson = null;
+        } else {
+            if (argsValue.getType() != JsonType.ARRAY) {
+                throw new IllegalArgumentException(
+                        "@v-fn 'args' must be an array in " + originalJson);
+            }
+            argsJson = (JsonArray) argsValue;
+        }
+        int argCount = argsJson == null ? 0 : argsJson.length();
+        String[] paramsAndCode = new String[captureCount + argCount + 1];
         for (int i = 0; i < captureCount; i++) {
             paramsAndCode[i] = "$" + i;
         }
-        paramsAndCode[captureCount] = body;
+        for (int i = 0; i < argCount; i++) {
+            paramsAndCode[captureCount + i] = argsJson.getString(i);
+        }
+        paramsAndCode[captureCount + argCount] = body;
         NativeFunction fn = new NativeFunction(paramsAndCode);
         return bindCaptures(fn, captures);
     }

@@ -159,6 +159,7 @@ class JacksonCodecTest {
         payload.put("body", "return $0 + $1;");
         payload.set("captures",
                 objectMapper.createArrayNode().add("hello").add(42));
+        payload.set("args", objectMapper.createArrayNode());
         ObjectNode expected = objectMapper.createObjectNode();
         expected.set("@v-fn", payload);
 
@@ -183,6 +184,24 @@ class JacksonCodecTest {
         payload.put("body", "$0.focus();");
         payload.set("captures",
                 objectMapper.createArrayNode().add(expectedCapture));
+        payload.set("args", objectMapper.createArrayNode());
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.set("@v-fn", payload);
+
+        assertJsonEquals(expected, json);
+    }
+
+    @Test
+    void encodeWithTypeInfo_jsFunction_withArguments() {
+        JsFunction alerter = JsFunction.of("alert(message);")
+                .withArguments("message");
+
+        JsonNode json = JacksonCodec.encodeWithTypeInfo(alerter);
+
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("body", "alert(message);");
+        payload.set("captures", objectMapper.createArrayNode());
+        payload.set("args", objectMapper.createArrayNode().add("message"));
         ObjectNode expected = objectMapper.createObjectNode();
         expected.set("@v-fn", payload);
 

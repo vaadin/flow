@@ -32,10 +32,13 @@ import com.vaadin.flow.internal.JacksonCodec;
  * <p>
  * The {@link #getBody() body} is a JavaScript function body. Captures are
  * referenced positionally as {@code $0}, {@code $1}, &hellip; (the same naming
- * convention as {@code executeJs} parameters). On the client the value
- * materialises as a function with the captures pre-bound, so the parent
- * {@code executeJs} can invoke it as {@code $N(...)} without ever concatenating
- * user-supplied JavaScript with framework boilerplate.
+ * convention as {@code executeJs} parameters). Additional named runtime
+ * arguments can be declared with {@link #withArguments(String...)}: the
+ * materialised function then accepts them positionally and the body references
+ * them by name. On the client the value materialises as a function with the
+ * captures pre-bound, so the parent {@code executeJs} can invoke it as
+ * {@code $N(arg1, arg2, ...)} without ever concatenating user-supplied
+ * JavaScript with framework boilerplate.
  * <p>
  * Captures may be any value accepted as a parameter to
  * {@link Element#executeJs(String, Object...) executeJs}, including
@@ -54,11 +57,15 @@ public final class JsFunction implements Serializable {
 
     private final String body;
     private final List<@Nullable Object> captures;
+    private final List<String> argumentNames;
 
-    private JsFunction(String body, @Nullable Object[] captures) {
+    private JsFunction(String body, @Nullable Object[] captures,
+            String[] argumentNames) {
         this.body = body;
         this.captures = Collections
                 .unmodifiableList(Arrays.asList(captures.clone()));
+        this.argumentNames = Collections
+                .unmodifiableList(Arrays.asList(argumentNames.clone()));
     }
 
     /**
@@ -87,7 +94,35 @@ public final class JsFunction implements Serializable {
         Object capture : copy) {
             JacksonCodec.encodeWithTypeInfo(capture);
         }
-        return new JsFunction(body, copy);
+        return new JsFunction(body, copy, new String[0]);
+    }
+
+    /**
+     * Returns a copy of this function that declares the given names as
+     * positional runtime arguments. The materialised function accepts these
+     * arguments at call time, and the body references them by name.
+     * <p>
+     * Example:
+     *
+     * <pre>
+     * JsFunction alerter = JsFunction.of("alert(message);")
+     *         .withArguments("message");
+     * element.executeJs("$0('Hello')", alerter);
+     * </pre>
+     *
+     * @param argumentNames
+     *            the names of runtime arguments, in positional order; each must
+     *            be a valid JavaScript identifier
+     * @return a new {@code JsFunction} with the given argument names
+     */
+    public JsFunction withArguments(String... argumentNames) {
+        Objects.requireNonNull(argumentNames, "argumentNames");
+        for (String name : argumentNames) {
+            Objects.requireNonNull(name, "argumentNames must not contain null");
+        }
+        @Nullable
+        Object[] captureArray = captures.toArray();
+        return new JsFunction(body, captureArray, argumentNames);
     }
 
     /**
@@ -106,5 +141,16 @@ public final class JsFunction implements Serializable {
      */
     public List<@Nullable Object> getCaptures() {
         return captures;
+    }
+
+    /**
+     * The names of the runtime arguments declared via
+     * {@link #withArguments(String...)}, in positional order.
+     *
+     * @return an unmodifiable list of argument names; empty if none were
+     *         declared
+     */
+    public List<String> getArgumentNames() {
+        return argumentNames;
     }
 }
