@@ -2,7 +2,7 @@ import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { fileURLToPath } from 'url';
 
 export default {
-  files: ['src/test/frontend/*.ts'],
+  files: ['src/test/frontend/*Tests.ts'],
   plugins: [
     esbuildPlugin({
       ts: true,
