@@ -387,10 +387,8 @@ public class Profiler {
     }
 
     private static void logGwtEvent(String name, String type) {
-        if (GWT.isScript()) {
-            NativeProfiler.logGwtEvent(EVT_GROUP, GWT.getModuleName(), name,
-                    type, getRelativeTimeMillis());
-        }
+        NativeProfiler.logGwtEvent(EVT_GROUP, GWT.getModuleName(), name, type,
+                getRelativeTimeMillis());
     }
 
     /**
@@ -595,14 +593,12 @@ public class Profiler {
     }
 
     private static double getPerformanceTiming(String name) {
-        return GWT.isScript() ? NativeProfiler.getPerformanceTiming(name) : 0;
+        return NativeProfiler.getPerformanceTiming(name);
     }
 
     @SuppressWarnings("unchecked")
     private static JsArray<GwtStatsEvent> getGwtStatsEvents() {
-        return GWT.isScript()
-                ? (JsArray<GwtStatsEvent>) NativeProfiler.getGwtStatsEvents()
-                : null;
+        return (JsArray<GwtStatsEvent>) NativeProfiler.getGwtStatsEvents();
     }
 
     /**
@@ -610,9 +606,7 @@ public class Profiler {
      * if needed.
      */
     private static void ensureLogger() {
-        if (GWT.isScript()) {
-            NativeProfiler.ensureLogger();
-        }
+        NativeProfiler.ensureLogger();
     }
 
     /**
@@ -620,16 +614,12 @@ public class Profiler {
      * been added by us.
      */
     private static void ensureNoLogger() {
-        if (GWT.isScript()) {
-            NativeProfiler.ensureNoLogger();
-        }
+        NativeProfiler.ensureNoLogger();
     }
 
     @SuppressWarnings("unchecked")
     private static JsArray<GwtStatsEvent> clearEventsList() {
-        return GWT.isScript()
-                ? (JsArray<GwtStatsEvent>) NativeProfiler.clearEventsList()
-                : null;
+        return (JsArray<GwtStatsEvent>) NativeProfiler.clearEventsList();
     }
 
     /**
@@ -656,7 +646,7 @@ public class Profiler {
     }
 
     private static boolean hasHighPrecisionTime() {
-        return GWT.isScript() && NativeProfiler.hasHighPrecisionTime();
+        return NativeProfiler.hasHighPrecisionTime();
     }
 
     private interface RelativeTimeSupplier {
@@ -668,8 +658,7 @@ public class Profiler {
 
         @Override
         public double getRelativeTime() {
-            return GWT.isScript() ? NativeProfiler.defaultRelativeTime()
-                    : System.currentTimeMillis();
+            return NativeProfiler.defaultRelativeTime();
         }
     }
 
@@ -678,8 +667,7 @@ public class Profiler {
 
         @Override
         public double getRelativeTime() {
-            return GWT.isScript() ? NativeProfiler.highResolutionRelativeTime()
-                    : System.currentTimeMillis();
+            return NativeProfiler.highResolutionRelativeTime();
         }
     }
 
@@ -701,8 +689,7 @@ public class Profiler {
      * Round {@code num} up to {@code exp} decimal positions.
      */
     private static double round(double num, int exp) {
-        return GWT.isScript() ? NativeProfiler.round(num, exp)
-                : Math.round(num * Math.pow(10, exp)) / Math.pow(10, exp);
+        return NativeProfiler.round(num, exp);
     }
 
 }
