@@ -286,8 +286,7 @@ public final class ExecuteJavaScriptElementUtils {
     }
 
     private static boolean isPropertyDefined(Node node, String property) {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeExecuteJavaScriptElementUtils.isPropertyDefined(node,
-                        property);
+        return NativeExecuteJavaScriptElementUtils.isPropertyDefined(node,
+                property);
     }
 }
