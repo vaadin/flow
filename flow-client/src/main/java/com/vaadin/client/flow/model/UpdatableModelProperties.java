@@ -15,10 +15,7 @@
  */
 package com.vaadin.client.flow.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.google.gwt.core.client.GWT;
+import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
@@ -30,41 +27,20 @@ import com.vaadin.client.flow.collection.JsArray;
  * deciding whether to push a polymer property update to the server.
  *
  * <p>
- * Under GWT this is a thin facade over the TypeScript implementation at
+ * Pure {@code @JsType(isNative = true)} binding to the TypeScript
+ * implementation at
  * {@code src/main/frontend/internal/client/flow/model/UpdatableModelProperties.ts}.
- * The JVM path keeps a {@link HashSet}-backed copy so JUnit code that
- * instantiates this class keeps working.
+ * Acceptable here because the class is only consumed at runtime from
+ * {@code ExecuteJavaScriptElementUtils}; no JUnit test instantiates it.
  *
  * @author Vaadin Ltd
- * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.model", name = "UpdatableModelProperties")
 public class UpdatableModelProperties {
 
-    private final NativeUpdatableModelProperties delegate;
-    private final Set<String> jvmProperties;
-
-    /**
-     * Creates a new instance.
-     *
-     * @param properties
-     *            updatable property names
-     */
     public UpdatableModelProperties(JsArray<String> properties) {
-        if (GWT.isScript()) {
-            delegate = new NativeUpdatableModelProperties(properties);
-            jvmProperties = null;
-        } else {
-            delegate = null;
-            jvmProperties = new HashSet<>();
-            properties.forEach(jvmProperties::add);
-        }
+        // Constructor defined by the TS class.
     }
 
-    /**
-     * Tests whether the {@code property} is updatable.
-     */
-    public boolean isUpdatableProperty(String property) {
-        return delegate != null ? delegate.isUpdatableProperty(property)
-                : jvmProperties.contains(property);
-    }
+    public native boolean isUpdatableProperty(String property);
 }
