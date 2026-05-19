@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -1087,5 +1088,137 @@ class EffectTest extends SignalTestBase {
         }
         assertTrue(effectCreated.get(),
                 "Effect should have been created without deadlock");
+    }
+
+    @Test
+    void dispose_concurrentSignalWrite_doesNotDeadlock() throws Exception {
+        // ABBA deadlock probe for dispose(). dispose() is synchronized
+        // on the Effect monitor and calls clearRegistrations(), whose
+        // Registration::remove acquires the SignalTree lock. Concurrently,
+        // a signal write holds the SignalTree lock while notifyObservers
+        // invokes the listener that schedules invalidate(), which now
+        // takes the Effect monitor briefly. Opposite acquire orders form
+        // a deadlock.
+        runEffectVsSignalWriteDeadlockProbe("dispose", false, Effect::dispose);
+    }
+
+    @Test
+    void passivate_concurrentSignalWrite_doesNotDeadlock() throws Exception {
+        // Same ABBA shape as dispose(): passivate() is synchronized and
+        // calls clearRegistrations() (Registration::remove acquires the
+        // SignalTree lock) while a concurrent signal writer holds the
+        // SignalTree lock and reaches Effect.invalidate, which needs the
+        // Effect monitor.
+        runEffectVsSignalWriteDeadlockProbe("passivate", false,
+                Effect::passivate);
+    }
+
+    @Test
+    void activate_concurrentSignalWrite_doesNotDeadlock() throws Exception {
+        // activate()'s fast-path re-registers observers via
+        // usage.onNextChange() under the Effect monitor. onNextChange
+        // acquires the SignalTree lock, while a concurrent writer holding
+        // that lock invokes the just-registered observer, drives
+        // scheduleInvalidate, and Effect.invalidate then needs the Effect
+        // monitor. Opposite acquire orders form a deadlock.
+        runEffectVsSignalWriteDeadlockProbe("activate", true, effect -> {
+            effect.passivate();
+            effect.activate();
+        });
+    }
+
+    private static void runEffectVsSignalWriteDeadlockProbe(String name,
+            boolean delayWriter, Consumer<Effect> lifecycleAction)
+            throws Exception {
+        // The race is timing-sensitive, so try many iterations. The first
+        // deadlock trips the ThreadMXBean check and fails the test.
+        int iterations = 200;
+        long perIterationTimeoutMs = 2000;
+
+        for (int i = 0; i < iterations; i++) {
+            SharedValueSignal<String> signal = new SharedValueSignal<>("v" + i);
+
+            // Read the signal multiple times so the action registers
+            // multiple usages on the same signal. That widens the window
+            // for the lifecycle action's per-registration lock acquisitions
+            // to race the writer.
+            Effect effect = new Effect(() -> {
+                for (int k = 0; k < 8; k++) {
+                    signal.get();
+                }
+            }, Runnable::run);
+
+            CountDownLatch ready = new CountDownLatch(1);
+            AtomicReference<Throwable> writerFailure = new AtomicReference<>();
+            AtomicReference<Throwable> callerFailure = new AtomicReference<>();
+
+            Thread writer = new Thread(() -> {
+                try {
+                    ready.await();
+                    signal.set("update-" + System.nanoTime());
+                } catch (Throwable t) {
+                    writerFailure.set(t);
+                }
+            }, name + "-writer-" + i);
+            writer.setDaemon(true);
+
+            Thread caller = new Thread(() -> {
+                try {
+                    ready.await();
+                    lifecycleAction.accept(effect);
+                } catch (Throwable t) {
+                    callerFailure.set(t);
+                }
+            }, name + "-caller-" + i);
+            caller.setDaemon(true);
+
+            writer.start();
+            caller.start();
+            // For lifecycle actions that need to be entered before the
+            // writer drives notifyObservers (activate's fast-path needs
+            // the observers to be installed mid-loop), nudge the caller
+            // ahead with a small head start.
+            if (delayWriter) {
+                Thread.yield();
+            }
+            ready.countDown();
+
+            writer.join(perIterationTimeoutMs);
+            caller.join(perIterationTimeoutMs);
+
+            if (writer.isAlive() || caller.isAlive()) {
+                ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+                long[] deadlocked = tmx.findDeadlockedThreads();
+                StringBuilder sb = new StringBuilder(name)
+                        .append(" deadlocked on iteration ").append(i)
+                        .append(". writer alive=").append(writer.isAlive())
+                        .append(", caller alive=").append(caller.isAlive());
+                if (deadlocked != null) {
+                    sb.append(", deadlocked thread IDs=")
+                            .append(Arrays.toString(deadlocked));
+                    for (var info : tmx.getThreadInfo(deadlocked, true, true)) {
+                        sb.append("\n  ").append(info.getThreadName())
+                                .append(" waiting on ")
+                                .append(info.getLockName()).append(" owned by ")
+                                .append(info.getLockOwnerName());
+                        for (var frame : info.getStackTrace()) {
+                            sb.append("\n    at ").append(frame);
+                        }
+                    }
+                }
+                fail(sb.toString());
+            }
+
+            if (writerFailure.get() != null) {
+                throw new AssertionError(
+                        name + " writer failed on iteration " + i,
+                        writerFailure.get());
+            }
+            if (callerFailure.get() != null) {
+                throw new AssertionError(
+                        name + " caller failed on iteration " + i,
+                        callerFailure.get());
+            }
+        }
     }
 }
