@@ -679,79 +679,51 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @return the Atmosphere configuration object
      */
-    protected final native AtmosphereConfiguration createConfig()
-    /*-{
-        return {
-            transport: 'websocket',
-            maxStreamingLength: 1000000,
-            fallbackTransport: 'long-polling',
-            contentType: 'application/json; charset=UTF-8',
-            reconnectInterval: 5000,
-            withCredentials: true,
-            maxWebsocketErrorRetries: 12,
-            timeout: -1,
-            maxReconnectOnClose: 10000000,
-            trackMessageLength: true,
-            enableProtocol: true,
-            handleOnlineOffline: false,
-            executeCallbackBeforeReconnect: true,
-            messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
-        };
-    }-*/;
+    protected final AtmosphereConfiguration createConfig() {
+        return com.google.gwt.core.client.GWT.isScript()
+                ? NativeAtmospherePushConnection
+                        .createConfig(PushConstants.MESSAGE_DELIMITER).cast()
+                : null;
+    }
 
-    private final native JavaScriptObject doConnect(String uri,
-            JavaScriptObject config)
-    /*-{
-        var self = this;
-    
-        config.url = uri;
-        config.onOpen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
-        });
-        config.onReopen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
-        });
-        config.onMessage = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
-        });
-        config.onError = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
-        });
-        config.onTransportFailure = $entry(function(reason,request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
-        });
-        config.onClose = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
-        });
-        config.onReconnect = $entry(function(request, response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
-        });
-        config.onClientTimeout = $entry(function(request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
-        });
-        config.headers = {
-            'X-Vaadin-LastSeenServerSyncId': function() {
-                return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
-            }
-        };
-    
-        return $wnd.vaadinPush.atmosphere.subscribe(config);
-    }-*/;
+    private JavaScriptObject doConnect(String uri, JavaScriptObject config) {
+        if (!com.google.gwt.core.client.GWT.isScript()) {
+            return null;
+        }
+        AtmosphereConnectCallbacks callbacks = new AtmosphereConnectCallbacks();
+        callbacks.onOpen = response -> onOpen((AtmosphereResponse) response);
+        callbacks.onReopen = response -> onReopen(
+                (AtmosphereResponse) response);
+        callbacks.onMessage = response -> onMessage(
+                (AtmosphereResponse) response);
+        callbacks.onError = response -> onError((AtmosphereResponse) response);
+        callbacks.onTransportFailure = reason -> onTransportFailure();
+        callbacks.onClose = response -> onClose((AtmosphereResponse) response);
+        callbacks.onReconnect = (request, response) -> onReconnect(
+                (JavaScriptObject) request, (AtmosphereResponse) response);
+        callbacks.onClientTimeout = response -> onClientTimeout(
+                (AtmosphereResponse) response);
+        callbacks.getLastSeenServerSyncId = () -> Integer
+                .valueOf(getLastSeenServerSyncId());
+        return NativeAtmospherePushConnection.doConnect(uri, config, callbacks);
+    }
 
-    private native void doPush(JavaScriptObject socket, String message)
-    /*-{
-       socket.push(message);
-    }-*/;
+    private void doPush(JavaScriptObject socket, String message) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeAtmospherePushConnection.doPush(socket, message);
+        }
+    }
 
-    private static native void doDisconnect(String url)
-    /*-{
-       $wnd.vaadinPush.atmosphere.unsubscribeUrl(url);
-    }-*/;
+    private static void doDisconnect(String url) {
+        if (com.google.gwt.core.client.GWT.isScript()) {
+            NativeAtmospherePushConnection.doDisconnect(url);
+        }
+    }
 
-    private static native boolean isAtmosphereLoaded()
-    /*-{
-        return $wnd.vaadinPush && $wnd.vaadinPush.atmosphere;
-    }-*/;
+    private static boolean isAtmosphereLoaded() {
+        return com.google.gwt.core.client.GWT.isScript()
+                && NativeAtmospherePushConnection.isAtmosphereLoaded();
+    }
 
     private void runWhenAtmosphereLoaded(final Command command) {
         if (isAtmosphereLoaded()) {

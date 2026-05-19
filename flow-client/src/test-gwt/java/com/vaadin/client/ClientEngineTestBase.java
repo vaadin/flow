@@ -115,6 +115,39 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             }
         };
         var communication = client.communication = client.communication || {};
+        communication.AtmospherePushConnection = {
+            createConfig: function(messageDelimiter) {
+                return {
+                    transport: 'websocket', maxStreamingLength: 1000000,
+                    fallbackTransport: 'long-polling',
+                    contentType: 'application/json; charset=UTF-8',
+                    reconnectInterval: 5000, withCredentials: true,
+                    maxWebsocketErrorRetries: 12, timeout: -1,
+                    maxReconnectOnClose: 10000000, trackMessageLength: true,
+                    enableProtocol: true, handleOnlineOffline: false,
+                    executeCallbackBeforeReconnect: true,
+                    messageDelimiter: String.fromCharCode(messageDelimiter)
+                };
+            },
+            doConnect: function(uri, config, callbacks) {
+                config.url = uri;
+                config.onOpen = function(r) { callbacks.onOpen(r); };
+                config.onReopen = function(r) { callbacks.onReopen(r); };
+                config.onMessage = function(r) { callbacks.onMessage(r); };
+                config.onError = function(r) { callbacks.onError(r); };
+                config.onTransportFailure = function(reason, req) { callbacks.onTransportFailure(reason); };
+                config.onClose = function(r) { callbacks.onClose(r); };
+                config.onReconnect = function(req, resp) { callbacks.onReconnect(req, resp); };
+                config.onClientTimeout = function(req) { callbacks.onClientTimeout(req); };
+                config.headers = { 'X-Vaadin-LastSeenServerSyncId': function() { return callbacks.getLastSeenServerSyncId(); } };
+                return $wnd.vaadinPush && $wnd.vaadinPush.atmosphere ? $wnd.vaadinPush.atmosphere.subscribe(config) : null;
+            },
+            doPush: function(socket, message) { socket.push(message); },
+            doDisconnect: function(url) {
+                if ($wnd.vaadinPush && $wnd.vaadinPush.atmosphere) { $wnd.vaadinPush.atmosphere.unsubscribeUrl(url); }
+            },
+            isAtmosphereLoaded: function() { return !!($wnd.vaadinPush && $wnd.vaadinPush.atmosphere); }
+        };
         communication.MessageHandler = {
             removeStylesheetByIdFromDom: function(id) {
                 var sel = 'link[data-id="' + id + '"], style[data-id="' + id + '"]';
