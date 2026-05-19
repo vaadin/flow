@@ -156,6 +156,12 @@ public class Image extends HtmlContainer
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      *
+     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
+     * that the image is still served when the component, or one of its
+     * ancestors, is disabled. The browser fetches the image as part of
+     * rendering rather than as a user action, so blocking the request on the
+     * disabled state would leave the icon broken.
+     *
      * @param downloadHandler
      *            the download handler resource, not null
      */
@@ -165,7 +171,7 @@ public class Image extends HtmlContainer
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler);
+        getElement().setAttribute("src", downloadHandler.allowDisabled());
     }
 
     /**

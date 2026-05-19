@@ -190,6 +190,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      *
+     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
+     * that the iframe content is still served when the component, or one of its
+     * ancestors, is disabled. The browser fetches the content as part of
+     * rendering rather than as a user action, so blocking the request on the
+     * disabled state would leave the iframe empty.
+     *
      * @see #setSrc(String)
      *
      * @param downloadHandler
@@ -201,7 +207,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler);
+        getElement().setAttribute("src", downloadHandler.allowDisabled());
     }
 
     /**
