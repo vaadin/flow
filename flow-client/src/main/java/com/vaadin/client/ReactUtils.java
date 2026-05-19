@@ -15,55 +15,31 @@
  */
 package com.vaadin.client;
 
-import java.util.function.Supplier;
-
-import com.google.gwt.core.client.GWT;
+import jsinterop.annotations.JsType;
 
 import elemental.dom.Element;
 
 /**
  * Utils class, intended to ease working with React component related code on
  * the client side.
+ *
  * <p>
- * The GWT-specific {@link #addReadyCallback} delegates to the TypeScript
- * implementation at {@code src/main/frontend/internal/client/ReactUtils.ts};
- * {@link #isInitialized} is a plain null-check kept in Java because it has no
- * browser API to delegate to.
+ * Pure {@code @JsType(isNative = true)} binding to the TypeScript
+ * implementation at {@code src/main/frontend/internal/client/ReactUtils.ts}.
+ * The class has no Java body. Acceptable here because ReactUtils is only
+ * consumed by {@code SimpleElementBindingStrategy} (no JUnit test).
  *
  * @author Vaadin Ltd
  * @since 24.5.
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ReactUtils")
 public final class ReactUtils {
 
     private ReactUtils() {
     }
 
-    /**
-     * Add a callback to the react component that is called when the component
-     * initialization is ready for binding flow.
-     *
-     * @param element
-     *            react component element
-     * @param name
-     *            name of container to bind to
-     * @param runnable
-     *            callback function runnable
-     */
-    public static void addReadyCallback(Element element, String name,
-            Runnable runnable) {
-        if (GWT.isScript()) {
-            NativeReactUtils.addReadyCallback(element, name, runnable::run);
-        }
-    }
+    public static native void addReadyCallback(Element element, String name,
+            JsRunnable runnable);
 
-    /**
-     * Check if the react element is initialized and functional.
-     *
-     * @param elementLookup
-     *            react element lookup supplier
-     * @return {@code true} if Flow binding can already be done
-     */
-    public static boolean isInitialized(Supplier<Element> elementLookup) {
-        return elementLookup.get() != null;
-    }
+    public static native boolean isInitialized(JsObjectSupplier elementLookup);
 }

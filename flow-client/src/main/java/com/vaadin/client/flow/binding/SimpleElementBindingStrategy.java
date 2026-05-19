@@ -814,7 +814,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Supplier<Element> elementLookup = () -> ElementUtil
                     .getElementByName(context.htmlNode, name);
 
-            if (!ReactUtils.isInitialized(elementLookup)) {
+            if (!ReactUtils.isInitialized(elementLookup::get)) {
                 ReactUtils.addReadyCallback((Element) context.htmlNode, name,
                         () -> {
                             doAppendVirtualChild(context, node, false,

@@ -31,5 +31,9 @@ export const ReactUtils = {
     if (typeof candidate.addReadyCallback === 'function') {
       candidate.addReadyCallback(name, () => runnable());
     }
+  },
+
+  isInitialized(elementLookup: () => unknown): boolean {
+    return elementLookup() != null;
   }
 };
