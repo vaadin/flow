@@ -201,8 +201,7 @@ public class XhrConnection {
     }
 
     private static boolean resendRequest(XMLHttpRequest xhr) {
-        return com.google.gwt.core.client.GWT.isScript()
-                && NativeXhrConnection.resendRequest(xhr);
+        return NativeXhrConnection.resendRequest(xhr);
     }
 
 }

@@ -547,9 +547,7 @@ public class MessageHandler {
     }
 
     private void removeStylesheetByIdFromDom(String dependencyId) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeMessageHandler.removeStylesheetByIdFromDom(dependencyId);
-        }
+        NativeMessageHandler.removeStylesheetByIdFromDom(dependencyId);
     }
 
     private void processChanges(JsonObject json) {
@@ -579,9 +577,7 @@ public class MessageHandler {
     }
 
     private void callAfterServerUpdates(Node node) {
-        if (com.google.gwt.core.client.GWT.isScript()) {
-            NativeMessageHandler.callAfterServerUpdates(node);
-        }
+        NativeMessageHandler.callAfterServerUpdates(node);
     }
 
     private void endRequestIfResponse(ValueMap json) {
@@ -705,9 +701,7 @@ public class MessageHandler {
     }
 
     private static int calculateBootstrapTime() {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeMessageHandler.calculateBootstrapTime()
-                : -1;
+        return NativeMessageHandler.calculateBootstrapTime();
     }
 
     /**
@@ -853,15 +847,11 @@ public class MessageHandler {
     }
 
     private static ValueMap parseJSONResponse(String jsonText) {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeMessageHandler.parseJSONResponse(jsonText)
-                : null;
+        return NativeMessageHandler.parseJSONResponse(jsonText);
     }
 
     private static double getFetchStartTime() {
-        return com.google.gwt.core.client.GWT.isScript()
-                ? NativeMessageHandler.getFetchStartTime()
-                : 0;
+        return NativeMessageHandler.getFetchStartTime();
     }
 
     /**
