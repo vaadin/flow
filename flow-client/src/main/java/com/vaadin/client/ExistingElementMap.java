@@ -15,12 +15,7 @@
  */
 package com.vaadin.client;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.gwt.core.client.GWT;
+import jsinterop.annotations.JsType;
 
 import elemental.dom.Element;
 
@@ -29,91 +24,28 @@ import elemental.dom.Element;
  * attach an existing client-side element.
  *
  * <p>
- * Under GWT this is a thin facade over the TypeScript implementation at
- * {@code src/main/frontend/internal/client/ExistingElementMap.ts}, reached
- * through {@link NativeExistingElementMap}. The JVM path keeps a parallel
- * {@link HashMap}-backed implementation so {@code ExistingElementMapTest} (and
- * any other JUnit code instantiating this class) keeps working.
+ * Pure {@code @JsType(isNative = true)} binding to the TypeScript
+ * implementation at
+ * {@code src/main/frontend/internal/client/ExistingElementMap.ts}. Stateful:
+ * each {@code new ExistingElementMap()} yields its own JS-side instance.
+ * Acceptable here because the class is only consumed at runtime from
+ * {@code ExecuteJavaScriptElementUtils} and {@code ApplicationConnection}; the
+ * JUnit coverage moved to {@code src/test/frontend/ExistingElementMapTests.ts}.
  *
  * @author Vaadin Ltd
- * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ExistingElementMap")
 public class ExistingElementMap {
 
-    private final NativeExistingElementMap delegate;
-    private final Map<Element, Integer> jvmElementToId;
-    private final List<Element> jvmIdToElement;
-
-    /**
-     * Creates a new empty map.
-     */
     public ExistingElementMap() {
-        if (GWT.isScript()) {
-            delegate = new NativeExistingElementMap();
-            jvmElementToId = null;
-            jvmIdToElement = null;
-        } else {
-            delegate = null;
-            jvmElementToId = new HashMap<>();
-            jvmIdToElement = new ArrayList<>();
-        }
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Gets the element stored via {@link #add(int, Element)} for the given
-     * {@code id}.
-     */
-    public Element getElement(int id) {
-        if (delegate != null) {
-            return delegate.getElement(id);
-        }
-        if (id < 0 || id >= jvmIdToElement.size()) {
-            return null;
-        }
-        return jvmIdToElement.get(id);
-    }
+    public native Element getElement(int id);
 
-    /**
-     * Gets the id stored via {@link #add(int, Element)} for the given
-     * {@code element}.
-     */
-    public Integer getId(Element element) {
-        if (delegate != null) {
-            return delegate.getId(element);
-        }
-        return jvmElementToId.get(element);
-    }
+    public native Integer getId(Element element);
 
-    /**
-     * Removes the identifier and the associated element from the mapping.
-     */
-    public void remove(int id) {
-        if (delegate != null) {
-            delegate.remove(id);
-            return;
-        }
-        if (id < 0 || id >= jvmIdToElement.size()) {
-            return;
-        }
-        Element element = jvmIdToElement.get(id);
-        if (element != null) {
-            jvmIdToElement.set(id, null);
-            jvmElementToId.remove(element);
-        }
-    }
+    public native void remove(int id);
 
-    /**
-     * Adds the {@code id} and the {@code element} to the mapping.
-     */
-    public void add(int id, Element element) {
-        if (delegate != null) {
-            delegate.add(id, element);
-            return;
-        }
-        while (jvmIdToElement.size() <= id) {
-            jvmIdToElement.add(null);
-        }
-        jvmIdToElement.set(id, element);
-        jvmElementToId.put(element, id);
-    }
+    public native void add(int id, Element element);
 }
