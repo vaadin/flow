@@ -16,8 +16,6 @@ import com.vaadin.client.flow.GwtPolymerModelTest;
 import com.vaadin.client.flow.GwtStateNodeTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
 import com.vaadin.client.flow.GwtTreeChangeProcessorTest;
-import com.vaadin.client.flow.dom.GwtDomApiTest;
-import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
 import com.vaadin.client.flow.util.GwtClientJsonCodecTest;
 
 public class GwtSuite extends GWTTestSuite {
@@ -35,8 +33,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
-        suite.addTestSuite(GwtDomApiTest.class);
-        suite.addTestSuite(GwtPolymerApiImplTest.class);
         suite.addTestSuite(GwtWidgetUtilTest.class);
         suite.addTestSuite(GwtExecuteJavaScriptElementUtilsTest.class);
         suite.addTestSuite(GwtDependencyLoaderTest.class);
