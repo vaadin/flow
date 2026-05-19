@@ -280,7 +280,26 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
                 return !!(props && props[property]) && typeof props[property].value !== 'undefined';
             }
         };
-        var flowUtil = (client.flow = client.flow || {}).util = ((client.flow || {}).util) || {};
+        var flowNs = client.flow = client.flow || {};
+        flowNs.ExecuteJavaScriptProcessor = {
+            getContextExecutionObject: function(nodeParameters, appId, registry, attachExisting, populateModel, registerUpdatable, stopApp) {
+                var getNode = function(element) {
+                    var node = nodeParameters.get(element);
+                    if (node == null) { throw new ReferenceError("There is no a StateNode for the given argument."); }
+                    return node;
+                };
+                return {
+                    getNode: getNode,
+                    $appId: appId,
+                    registry: registry,
+                    attachExistingElement: function(parent, prev, tag, id) { attachExisting(getNode(parent), prev, tag, id); },
+                    populateModelProperties: function(elem, props) { populateModel(getNode(elem), props); },
+                    registerUpdatableModelProperties: function(elem, props) { registerUpdatable(getNode(elem), props); },
+                    stopApplication: function() { stopApp(); }
+                };
+            }
+        };
+        var flowUtil = flowNs.util = flowNs.util || {};
         flowUtil.ClientJsonCodec = {
             createReturnChannelCallback: function(send) {
                 return function() {

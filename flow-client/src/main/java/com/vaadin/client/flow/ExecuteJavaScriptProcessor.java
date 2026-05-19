@@ -16,6 +16,7 @@
 package com.vaadin.client.flow;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.ExecuteJavaScriptElementUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
@@ -198,37 +199,32 @@ public class ExecuteJavaScriptProcessor {
         return registry.getApplicationConfiguration().getApplicationId();
     }
 
-    private native JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
-    /*-{
-          var object = {};
-          object.getNode = $entry(function (element) {
-              var node = nodeParameters.get(element);
-              if (node == null) {
-                  throw new ReferenceError("There is no a StateNode for the given argument.");
-              }
-              return node;
-          });
-          object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
-          object.registry = this.@ExecuteJavaScriptProcessor::registry;
-          object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
-          });
-          object.populateModelProperties = $entry(function(element, properties) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
-          });
-          object.registerUpdatableModelProperties = $entry(function(element, properties) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
-          });
-          object.stopApplication = $entry(function() {
-              stopApplication.@java.lang.Runnable::run(*)();
-          });
-          object.registerInitializer = $entry(function(node, id, cleanup) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerInitializer(*)(node, id, cleanup);
-          });
-          object.disposeInitializer = $entry(function(node, id) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::disposeInitializer(*)(node, id);
-          });
-          return object;
-    }-*/;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private JsonObject getContextExecutionObject(
+            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication) {
+        if (!com.google.gwt.core.client.GWT.isScript()) {
+            return null;
+        }
+        String cleanedAppId = getAppId().replaceAll("-\\d+$", "");
+        JsMap<Object, Object> params = (JsMap) nodeParameters;
+        return NativeExecuteJavaScriptProcessor.getContextExecutionObject(
+                params, cleanedAppId, registry,
+                (parent, previousSibling, tagName,
+                        id) -> ExecuteJavaScriptElementUtils
+                                .attachExistingElement((StateNode) parent,
+                                        (elemental.dom.Element) previousSibling,
+                                        tagName, id),
+                (node, properties) -> ExecuteJavaScriptElementUtils
+                        .populateModelProperties((StateNode) node,
+                                (com.vaadin.client.flow.collection.JsArray<String>) properties),
+                (node, properties) -> ExecuteJavaScriptElementUtils
+                        .registerUpdatableModelProperties((StateNode) node,
+                                (com.vaadin.client.flow.collection.JsArray<String>) properties),
+                stopApplication::run,
+                (node, id, cleanup) -> ExecuteJavaScriptElementUtils
+                        .registerInitializer((StateNode) node, id,
+                                (ExecuteJavaScriptElementUtils.JsCallback) cleanup),
+                (node, id) -> ExecuteJavaScriptElementUtils
+                        .disposeInitializer((StateNode) node, id));
+    }
 }

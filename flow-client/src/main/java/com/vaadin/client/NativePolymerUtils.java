@@ -17,8 +17,6 @@ package com.vaadin.client;
 
 import jsinterop.annotations.JsType;
 
-import com.vaadin.client.NativeLitUtils.JsRunnable;
-
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.ShadowRoot;
