@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
@@ -138,7 +137,6 @@ public class ExecuteJavaScriptProcessorTest {
             {
                 StateTree tree = new StateTree(this);
                 set(StateTree.class, tree);
-                set(ExistingElementMap.class, new ExistingElementMap());
             }
 
         };
