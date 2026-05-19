@@ -15,15 +15,13 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
-
 /**
- * GWT interface to the connection indicator globals set up by
- * {@code @vaadin/common-frontend}. Under GWT, the calls are forwarded to the
- * TypeScript implementation at
- * {@code src/main/frontend/internal/client/ConnectionIndicator.ts}; on the JVM
- * (unit tests) the methods are no-ops and {@link #getState()} returns
- * {@code null}.
+ * GWT-side facade for the connection indicator globals set up by
+ * {@code @vaadin/common-frontend}. Always delegates to the TypeScript
+ * implementation at
+ * {@code src/main/frontend/internal/client/ConnectionIndicator.ts} via
+ * {@link NativeConnectionIndicator}. JVM-side use throws — no JUnit test
+ * reaches this class transitively.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -43,51 +41,37 @@ public class ConnectionIndicator {
     public static final String LOADING = "loading";
 
     /**
-     * Application has been temporarily disconnected from the server because the
-     * last transaction over the wire (XHR / heartbeat / endpoint call) resulted
-     * in a network error, or the browser has received the 'online' event and
-     * needs to verify reconnection with the server. Flow is attempting to
-     * reconnect a configurable number of times before giving up.
+     * Application has been temporarily disconnected from the server.
      */
     public static final String RECONNECTING = "reconnecting";
 
     /**
-     * Application has been permanently disconnected due to browser receiving
-     * the 'offline' event, or the server not being reached after a number of
-     * reconnect attempts.
+     * Application has been permanently disconnected.
      */
     public static final String CONNECTION_LOST = "connection-lost";
 
     private ConnectionIndicator() {
-        // No instance should ever be created
     }
 
     /**
      * Set the connection state to be displayed by the loading indicator.
      */
     public static void setState(String state) {
-        if (GWT.isScript()) {
-            NativeConnectionIndicator.setState(state);
-        }
+        NativeConnectionIndicator.setState(state);
     }
 
     /**
      * Get the connection state.
      */
     public static String getState() {
-        if (GWT.isScript()) {
-            return NativeConnectionIndicator.getState();
-        }
-        return null;
+        return NativeConnectionIndicator.getState();
     }
 
     /**
      * Set a property of the connection indicator component.
      */
     public static void setProperty(String property, Object value) {
-        if (GWT.isScript()) {
-            NativeConnectionIndicator.setProperty(property, value);
-        }
+        NativeConnectionIndicator.setProperty(property, value);
     }
 
     /**
@@ -95,9 +79,7 @@ public class ConnectionIndicator {
      * operation has started.
      */
     public static void loadingStarted() {
-        if (GWT.isScript()) {
-            NativeConnectionIndicator.loadingStarted();
-        }
+        NativeConnectionIndicator.loadingStarted();
     }
 
     /**
@@ -105,9 +87,7 @@ public class ConnectionIndicator {
      * operation has completed successfully.
      */
     public static void loadingFinished() {
-        if (GWT.isScript()) {
-            NativeConnectionIndicator.loadingFinished();
-        }
+        NativeConnectionIndicator.loadingFinished();
     }
 
     /**
@@ -115,8 +95,6 @@ public class ConnectionIndicator {
      * operation has encountered an error or failed.
      */
     public static void loadingFailed() {
-        if (GWT.isScript()) {
-            NativeConnectionIndicator.loadingFailed();
-        }
+        NativeConnectionIndicator.loadingFailed();
     }
 }
