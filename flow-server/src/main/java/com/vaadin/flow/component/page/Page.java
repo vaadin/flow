@@ -598,7 +598,7 @@ public class Page implements Serializable {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
-        if (!UrlUtil.isAllowedUrl(sourceURL)) {
+        if (!UrlUtil.isAllowedUrl(url)) {
             throw new IllegalArgumentException("Source URL is not allowed");
         }
         executeJs(
