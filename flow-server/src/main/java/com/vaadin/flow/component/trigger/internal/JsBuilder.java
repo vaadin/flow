@@ -40,12 +40,21 @@ import com.vaadin.flow.internal.JacksonUtils;
  */
 final class JsBuilder implements Serializable {
 
-    private final Element host;
+    private final AbstractTrigger trigger;
     private final List<Object> params = new ArrayList<>();
     private final Map<Element, String> paramByElement = new IdentityHashMap<>();
 
-    JsBuilder(Element host) {
-        this.host = host;
+    JsBuilder(AbstractTrigger trigger) {
+        this.trigger = trigger;
+    }
+
+    /**
+     * The trigger this builder is collecting JS for. Used by handler-scoped
+     * arguments ({@link HandlerExprArg}) to refuse being rendered into a
+     * different trigger's handler.
+     */
+    AbstractTrigger trigger() {
+        return trigger;
     }
 
     /**
@@ -54,7 +63,7 @@ final class JsBuilder implements Serializable {
      * placeholder.
      */
     String reference(Element element) {
-        if (element == host) {
+        if (element == trigger.getHost()) {
             return "this";
         }
         String ref = paramByElement.get(element);

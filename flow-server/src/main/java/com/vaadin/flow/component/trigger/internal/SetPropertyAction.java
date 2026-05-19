@@ -30,12 +30,17 @@ import com.vaadin.flow.dom.Element;
  * (DOM/custom-element properties such as {@code value}, {@code checked},
  * {@code disabled}).
  * <p>
+ * The value to assign can be either a literal (constant, serialised at build
+ * time) or an {@link Argument} that produces the value on the client when the
+ * trigger fires — for example, {@link ClickTrigger#screenX() click.screenX()}
+ * feeds the click's screen coordinate.
+ * <p>
  * Common idioms:
  * <ul>
  * <li>Disable a button: {@code new SetPropertyAction(button, "disabled", true)}
  * <li>Clear an input: {@code new SetPropertyAction(input, "value", "")}
- * <li>Toggle a custom property:
- * {@code new SetPropertyAction(panel, "expanded", false)}
+ * <li>Mirror a click coordinate:
+ * {@code new SetPropertyAction(field, "value", click.screenX())}
  * </ul>
  *
  * Server-side state is not updated by this action; the change lives in the
@@ -50,11 +55,11 @@ public class SetPropertyAction<T> extends AbstractAction {
 
     private final Element target;
     private final String propertyName;
-    private final @Nullable T value;
+    private final AbstractArgument<? extends T> source;
 
     /**
-     * Creates an action that assigns {@code value} to the given JS property on
-     * {@code target} when the trigger fires.
+     * Creates an action that assigns the given literal value to the given JS
+     * property on {@code target} when the trigger fires.
      *
      * @param target
      *            the component whose root element to modify, not {@code null}
@@ -67,15 +72,32 @@ public class SetPropertyAction<T> extends AbstractAction {
      */
     public SetPropertyAction(Component target, String propertyName,
             @Nullable T value) {
+        this(target, propertyName, new LiteralArg<>(value));
+    }
+
+    /**
+     * Creates an action that assigns the value produced by {@code source} to
+     * the given JS property on {@code target} when the trigger fires.
+     *
+     * @param target
+     *            the component whose root element to modify, not {@code null}
+     * @param propertyName
+     *            the JS property name, not {@code null}
+     * @param source
+     *            argument that produces the value to assign, not {@code null}
+     */
+    public SetPropertyAction(Component target, String propertyName,
+            Argument<? extends T> source) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
-        this.value = value;
+        Objects.requireNonNull(source);
+        this.source = (AbstractArgument<? extends T>) source;
     }
 
     @Override
     protected void appendStatement(JsBuilder builder, StringBuilder out) {
         out.append(builder.reference(target)).append("[")
-                .append(JsBuilder.json(propertyName)).append("] = ")
-                .append(JsBuilder.json(value));
+                .append(JsBuilder.json(propertyName)).append("] = ");
+        source.appendExpression(builder, out);
     }
 }

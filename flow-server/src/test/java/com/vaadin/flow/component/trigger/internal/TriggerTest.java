@@ -173,6 +173,66 @@ class TriggerTest {
                 () -> trigger.triggers(new Action[0]));
     }
 
+    @Test
+    void clickTrigger_screenCoordinates_renderEventProperties() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent xField = new TagComponent("input");
+        TagComponent yField = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement(), xField.getElement(),
+                yField.getElement());
+
+        ClickTrigger click = new ClickTrigger(button);
+        click.triggers(
+                new SetPropertyAction<>(xField, "value", click.screenX()),
+                new SetPropertyAction<>(yField, "value", click.screenY()));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        String expr = singleInvocation(ui).getExpression();
+        assertTrue(expr.contains("$0[\"value\"] = event[\"screenX\"]"), expr);
+        assertTrue(expr.contains("$1[\"value\"] = event[\"screenY\"]"), expr);
+        assertTrue(expr.contains("this.addEventListener(\"click\", __h)"),
+                expr);
+    }
+
+    @Test
+    void argumentFromOtherTrigger_isRejectedAtBuildTime() {
+        TagComponent button1 = new TagComponent("button");
+        TagComponent button2 = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
+
+        ClickTrigger click1 = new ClickTrigger(button1);
+        ClickTrigger click2 = new ClickTrigger(button2);
+
+        // Argument made by click1 cannot be used in click2's handler.
+        assertThrows(IllegalArgumentException.class, () -> click2.triggers(
+                new SetPropertyAction<>(field, "value", click1.screenX())));
+    }
+
+    @Test
+    void argumentUsedInOwningTrigger_acceptedAcrossMultipleTriggersCalls() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent xField = new TagComponent("input");
+        TagComponent yField = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement(), xField.getElement(),
+                yField.getElement());
+
+        ClickTrigger click = new ClickTrigger(button);
+        // Same Argument instance used across two separate triggers() calls on
+        // its owning trigger.
+        Argument<Integer> x = click.screenX();
+        click.triggers(new SetPropertyAction<>(xField, "value", x));
+        click.triggers(new SetPropertyAction<>(yField, "value", x));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pending.size());
+    }
+
     private static JavaScriptInvocation singleInvocation(UI ui) {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();

@@ -56,6 +56,27 @@ public class DomEventTrigger extends AbstractTrigger {
         this.eventName = Objects.requireNonNull(eventName);
     }
 
+    /**
+     * Returns an {@link Argument} that yields {@code event[name]} at fire time
+     * — the value of a property on the DOM event object.
+     * <p>
+     * The returned argument is only valid in actions wired to this trigger;
+     * using it elsewhere throws {@link IllegalArgumentException} at the
+     * {@link #triggers(Action...)} call site.
+     *
+     * @param name
+     *            the event property name (e.g. {@code "screenX"},
+     *            {@code "key"}), not {@code null}
+     * @return an argument that resolves to {@code event[name]} on fire
+     * @param <T>
+     *            the runtime type of the value produced
+     */
+    public <T> Argument<T> property(String name) {
+        Objects.requireNonNull(name);
+        return new HandlerExprArg<>("event[" + JsBuilder.json(name) + "]",
+                this);
+    }
+
     @Override
     protected String installJs(JsBuilder builder, String handlerBody) {
         String evt = JsBuilder.json(eventName);

@@ -66,7 +66,7 @@ public abstract class AbstractTrigger implements Trigger {
             throw new IllegalArgumentException(
                     "At least one action is required");
         }
-        JsBuilder builder = new JsBuilder(host);
+        JsBuilder builder = new JsBuilder(this);
         StringBuilder handlerBody = new StringBuilder();
         for (Action action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
