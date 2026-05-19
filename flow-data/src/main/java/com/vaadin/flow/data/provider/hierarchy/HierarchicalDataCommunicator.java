@@ -644,6 +644,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var previousViewportRange = viewportRange;
         viewportRange = computeViewportRange(start, length);
 
+        requestFlush();
+
         var partition = viewportRange.partitionWith(previousViewportRange);
         if (!partition[0].isEmpty()) {
             requestFlush().invalidateRange(partition[0]);

@@ -200,6 +200,25 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void setViewportRange_sameRange_commitCalled(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+        int firstUpdateId = lastUpdateId;
+        assertTrue(firstUpdateId >= 0, "Expected commit on initial flush.");
+
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+
+        assertTrue(lastUpdateId > firstUpdateId,
+                "Expected commit even when no data was sent.");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void reattach_different_roundtrip_refresh_all(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;

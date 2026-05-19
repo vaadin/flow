@@ -1403,10 +1403,10 @@ public class DataCommunicator<T> implements Serializable {
          * before our message about removal arrives at the client and is
          * applied.
          */
-        if (updated) {
-            int updateId = nextUpdateId++;
-            update.commit(updateId);
+        int updateId = nextUpdateId++;
+        update.commit(updateId);
 
+        if (updated) {
             // Finally clear any passivated items that have now been confirmed
             Set<String> passivatedKeys = getPassivatedKeys(oldActive);
             if (!passivatedKeys.isEmpty()) {

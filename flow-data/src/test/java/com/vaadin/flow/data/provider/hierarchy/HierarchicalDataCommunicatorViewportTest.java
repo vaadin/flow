@@ -116,7 +116,13 @@ class HierarchicalDataCommunicatorViewportTest
         dataCommunicator.setViewportRange(3, 5);
         fakeClientCommunication();
 
-        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(3, 5);
+        Mockito.verify(arrayUpdate, Mockito.never()).set(Mockito.anyInt(),
+                Mockito.anyList());
+        Mockito.verify(arrayUpdate).commit(Mockito.anyInt());
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
