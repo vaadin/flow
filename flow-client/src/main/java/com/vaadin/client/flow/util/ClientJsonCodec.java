@@ -129,6 +129,19 @@ public class ClientJsonCodec {
                         tree.getRegistry().getServerConnector());
             }
 
+            // Check for @v-fn format
+            JsonValue fnValue = jsonObject.get("@v-fn");
+            if (fnValue != null) {
+                if (fnValue.getType() != JsonType.OBJECT) {
+                    throw new IllegalArgumentException(
+                            "@v-fn value must be an object, got "
+                                    + fnValue.getType() + " in "
+                                    + json.toJson());
+                }
+                return decodeJsFunction(tree, (JsonObject) fnValue,
+                        json.toJson());
+            }
+
             // Check for unknown @v- types
             for (String key : jsonObject.keys()) {
                 if (key.startsWith("@v-")) {
@@ -152,6 +165,45 @@ public class ClientJsonCodec {
           var args = Array.prototype.slice.call(arguments);
           serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
         });
+    }-*/;
+
+    private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,
+            String originalJson) {
+        JsonValue bodyValue = fnObject.get("body");
+        if (bodyValue == null || bodyValue.getType() != JsonType.STRING) {
+            throw new IllegalArgumentException(
+                    "@v-fn 'body' must be a string in " + originalJson);
+        }
+        JsonValue capturesValue = fnObject.get("captures");
+        if (capturesValue == null
+                || capturesValue.getType() != JsonType.ARRAY) {
+            throw new IllegalArgumentException(
+                    "@v-fn 'captures' must be an array in " + originalJson);
+        }
+        String body = bodyValue.asString();
+        JsonArray capturesJson = (JsonArray) capturesValue;
+        int captureCount = capturesJson.length();
+        JsArray<Object> captures = JsCollections.array();
+        for (int i = 0; i < captureCount; i++) {
+            captures.push(decodeWithTypeInfo(tree, capturesJson.get(i)));
+        }
+        String[] paramsAndCode = new String[captureCount + 1];
+        for (int i = 0; i < captureCount; i++) {
+            paramsAndCode[i] = "$" + i;
+        }
+        paramsAndCode[captureCount] = body;
+        NativeFunction fn = new NativeFunction(paramsAndCode);
+        return bindCaptures(fn, captures);
+    }
+
+    private static native Object bindCaptures(NativeFunction fn,
+            JsArray<Object> captures)
+    /*-{
+        var args = [undefined];
+        for (var i = 0; i < captures.length; i++) {
+            args.push(captures[i]);
+        }
+        return Function.prototype.bind.apply(fn, args);
     }-*/;
 
     /**

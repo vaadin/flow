@@ -35,6 +35,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -146,6 +147,46 @@ class JacksonCodecTest {
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
 
         assertJsonEquals(objectMapper.nullNode(), json);
+    }
+
+    @Test
+    void encodeWithTypeInfo_jsFunction_primitiveCaptures() {
+        JsFunction fn = JsFunction.of("return $0 + $1;", "hello", 42);
+
+        JsonNode json = JacksonCodec.encodeWithTypeInfo(fn);
+
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("body", "return $0 + $1;");
+        payload.set("captures",
+                objectMapper.createArrayNode().add("hello").add(42));
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.set("@v-fn", payload);
+
+        assertJsonEquals(expected, json);
+    }
+
+    @Test
+    void encodeWithTypeInfo_jsFunction_elementCaptureBecomesVNode() {
+        Element element = ElementFactory.createDiv();
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                element.getNode());
+
+        JsFunction fn = JsFunction.of("$0.focus();", element);
+
+        JsonNode json = JacksonCodec.encodeWithTypeInfo(fn);
+
+        ObjectNode expectedCapture = objectMapper.createObjectNode();
+        expectedCapture.put("@v-node", element.getNode().getId());
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("body", "$0.focus();");
+        payload.set("captures",
+                objectMapper.createArrayNode().add(expectedCapture));
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.set("@v-fn", payload);
+
+        assertJsonEquals(expected, json);
     }
 
     private static void assertJsonEquals(JsonNode expected, JsonNode actual) {
