@@ -202,9 +202,6 @@ public class ExecuteJavaScriptProcessor {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private JsonObject getContextExecutionObject(
             JsMap<Object, StateNode> nodeParameters, Runnable stopApplication) {
-        if (!com.google.gwt.core.client.GWT.isScript()) {
-            return null;
-        }
         String cleanedAppId = getAppId().replaceAll("-\\d+$", "");
         JsMap<Object, Object> params = (JsMap) nodeParameters;
         return NativeExecuteJavaScriptProcessor.getContextExecutionObject(
