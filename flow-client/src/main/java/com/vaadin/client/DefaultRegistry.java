@@ -74,8 +74,8 @@ public class DefaultRegistry extends Registry {
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
-        set(ConstantPool.class, (Supplier<ConstantPool>) ConstantPool::new);
-        set(ExistingElementMap.class,
+        set("ConstantPool", (Supplier<ConstantPool>) ConstantPool::new);
+        set("ExistingElementMap",
                 (Supplier<ExistingElementMap>) ExistingElementMap::new);
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
