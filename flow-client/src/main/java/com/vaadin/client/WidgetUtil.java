@@ -78,12 +78,11 @@ public class WidgetUtil {
 
     /**
      * Anything in, anything out. It's JavaScript after all. This method just
-     * makes the Java compiler accept the fact.
+     * makes the Java compiler accept the fact. The unbounded type parameter
+     * erases to {@code Object} at compile time, so the same unchecked cast
+     * works in both compiled JavaScript and pure JVM runs.
      */
     public static <T> T crazyJsCast(Object value) {
-        if (GWT.isScript()) {
-            return NativeWidgetUtil.crazyJsCast(value);
-        }
         @SuppressWarnings("unchecked")
         T cast = (T) value;
         return cast;
