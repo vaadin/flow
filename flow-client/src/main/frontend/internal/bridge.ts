@@ -44,6 +44,12 @@ import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElemen
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
 import { ConstantPool } from './client/flow/ConstantPool';
 import { NodeUnregisterEvent } from './client/flow/NodeUnregisterEvent';
+import { StateNode } from './client/flow/StateNode';
+import { StateTree } from './client/flow/StateTree';
+import { NodeFeature } from './client/flow/nodefeature/NodeFeature';
+import { NodeList } from './client/flow/nodefeature/NodeList';
+import { NodeMap } from './client/flow/nodefeature/NodeMap';
+import { MapProperty } from './client/flow/nodefeature/MapProperty';
 import { Computation } from './client/flow/reactive/Computation';
 import { InvalidateEvent } from './client/flow/reactive/InvalidateEvent';
 import { ListSpliceEvent } from './client/flow/nodefeature/ListSpliceEvent';
@@ -90,6 +96,12 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
   registerGwtBridge('client.flow', 'ConstantPool', ConstantPool);
   registerGwtBridge('client.flow', 'NodeUnregisterEvent', NodeUnregisterEvent);
+  registerGwtBridge('client.flow', 'StateNode', StateNode);
+  registerGwtBridge('client.flow', 'StateTree', StateTree);
+  registerGwtBridge('client.flow.nodefeature', 'NodeFeature', NodeFeature);
+  registerGwtBridge('client.flow.nodefeature', 'NodeList', NodeList);
+  registerGwtBridge('client.flow.nodefeature', 'NodeMap', NodeMap);
+  registerGwtBridge('client.flow.nodefeature', 'MapProperty', MapProperty);
   registerGwtBridge('client.flow.reactive', 'Computation', Computation);
   registerGwtBridge('client.flow.reactive', 'InvalidateEvent', InvalidateEvent);
   registerGwtBridge('client.flow.reactive', 'ReactiveValueChangeEvent', ReactiveValueChangeEvent);

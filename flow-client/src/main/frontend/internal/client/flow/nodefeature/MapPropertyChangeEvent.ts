@@ -19,7 +19,7 @@ import { ReactiveValueChangeEvent } from '../reactive/ReactiveValueChangeEvent';
 export class MapPropertyChangeEvent extends ReactiveValueChangeEvent {
   readonly oldValue: unknown;
   readonly newValue: unknown;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(property: any, oldValue: unknown, newValue: unknown) {
     super(property);
     this.oldValue = oldValue;
