@@ -25,6 +25,7 @@ import com.vaadin.client.flow.dom.DomApi;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.html.AnchorElement;
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -188,7 +189,7 @@ public class WidgetUtil {
      * Creates a new {@link JsonObject} with the JavaScript prototype.
      */
     public static JsonObject createJsonObject() {
-        return GWT.isScript() ? NativeWidgetUtil.createJsonObject() : null;
+        return Json.createObject();
     }
 
     /**
