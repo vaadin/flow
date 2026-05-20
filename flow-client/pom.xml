@@ -280,42 +280,9 @@
             </goals>
             <phase>compile</phase>
           </execution>
-          <execution>
-            <id>gwt-test</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>test</phase>
-          </execution>
         </executions>
       </plugin>
 
-      <!-- Include separate source dir for GWT tests -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <dependencies>
-          <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench-core</artifactId>
-            <version>${testbench.version}</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>add-gwt-test-sources-as-test-sources</id>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <phase>generate-test-sources</phase>
-            <configuration>
-              <sources>
-                <source>src/test-gwt/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
