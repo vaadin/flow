@@ -186,7 +186,7 @@ public class Registry {
      * @return the {@link ServerRpcQueue} singleton
      */
     public ServerRpcQueue getServerRpcQueue() {
-        return get(ServerRpcQueue.class);
+        return get("ServerRpcQueue");
     }
 
     /**
