@@ -15,86 +15,79 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
+
 /**
- * GWT-side facade for the connection indicator globals set up by
- * {@code @vaadin/common-frontend}. Always delegates to the TypeScript
- * implementation at
- * {@code src/main/frontend/internal/client/ConnectionIndicator.ts} via
- * {@link NativeConnectionIndicator}. JVM-side use throws — no JUnit test
- * reaches this class transitively.
+ * GWT-side binding for the connection indicator globals set up by
+ * {@code @vaadin/common-frontend}. Pure {@code @JsType(isNative=true)} binding
+ * to {@code src/main/frontend/internal/client/ConnectionIndicator.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ConnectionIndicator {
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ConnectionIndicator")
+public final class ConnectionIndicator {
 
     /**
      * Application is connected to server: last transaction over the wire (XHR /
      * heartbeat / endpoint call) was successful.
      */
+    @JsOverlay
     public static final String CONNECTED = "connected";
 
     /**
      * Application is connected and Flow is loading application state from the
      * server, or Fusion is waiting for an endpoint call to return.
      */
+    @JsOverlay
     public static final String LOADING = "loading";
 
     /**
      * Application has been temporarily disconnected from the server.
      */
+    @JsOverlay
     public static final String RECONNECTING = "reconnecting";
 
     /**
      * Application has been permanently disconnected.
      */
+    @JsOverlay
     public static final String CONNECTION_LOST = "connection-lost";
 
     private ConnectionIndicator() {
     }
 
     /**
-     * Set the connection state to be displayed by the loading indicator.
+     * Sets the connection state.
      */
-    public static void setState(String state) {
-        NativeConnectionIndicator.setState(state);
-    }
+    public static native void setState(String state);
 
     /**
-     * Get the connection state.
+     * Gets the connection state.
      */
-    public static String getState() {
-        return NativeConnectionIndicator.getState();
-    }
+    public static native String getState();
 
     /**
-     * Set a property of the connection indicator component.
+     * Sets a property of the connection indicator component.
      */
-    public static void setProperty(String property, Object value) {
-        NativeConnectionIndicator.setProperty(property, value);
-    }
+    public static native void setProperty(String property, Object value);
 
     /**
-     * Notifies the client-side connection state indicator that a loading
-     * operation has started.
+     * Notifies the connection state indicator that a loading operation has
+     * started.
      */
-    public static void loadingStarted() {
-        NativeConnectionIndicator.loadingStarted();
-    }
+    public static native void loadingStarted();
 
     /**
-     * Notifies the client-side connection state indicator that a loading
-     * operation has completed successfully.
+     * Notifies the connection state indicator that a loading operation has
+     * completed successfully.
      */
-    public static void loadingFinished() {
-        NativeConnectionIndicator.loadingFinished();
-    }
+    public static native void loadingFinished();
 
     /**
-     * Notifies the client-side connection state indicator that a loading
-     * operation has encountered an error or failed.
+     * Notifies the connection state indicator that a loading operation has
+     * encountered an error or failed.
      */
-    public static void loadingFailed() {
-        NativeConnectionIndicator.loadingFailed();
-    }
+    public static native void loadingFailed();
 }
