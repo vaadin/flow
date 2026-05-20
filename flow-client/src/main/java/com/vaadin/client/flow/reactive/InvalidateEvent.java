@@ -15,32 +15,22 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsType;
+
 /**
- * Event fired when a computation is invalidated.
+ * Event fired when a computation is invalidated. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/reactive/InvalidateEvent.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.reactive", name = "InvalidateEvent")
 public class InvalidateEvent {
-    private Computation source;
 
-    /**
-     * Creates a new event for computation.
-     *
-     * @param source
-     *            the invalidated computation
-     */
     public InvalidateEvent(Computation source) {
-        this.source = source;
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Gets the invalidated computation.
-     *
-     * @return the invalidated computation
-     */
-    public Computation getSource() {
-        return source;
-    }
-
+    public native Computation getSource();
 }
