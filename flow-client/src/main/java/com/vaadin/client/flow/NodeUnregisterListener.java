@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * A listener that will be notified when a state node is unregistered.
  *
@@ -22,6 +24,8 @@ package com.vaadin.client.flow;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface NodeUnregisterListener {
     /**
      * Invoked when a state node is unregistered.

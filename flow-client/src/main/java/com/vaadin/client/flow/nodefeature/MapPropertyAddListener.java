@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Listener notified when a property is added to a {@link NodeMap}.
  *
@@ -22,6 +24,8 @@ package com.vaadin.client.flow.nodefeature;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface MapPropertyAddListener {
     /**
      * Invoked when a property is added.

@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Listens to changes to a reactive value.
  *
@@ -24,6 +26,8 @@ package com.vaadin.client.flow.reactive;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface ReactiveValueChangeListener {
     /**
      * Invoked when a reactive value has changed.

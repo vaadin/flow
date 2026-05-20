@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Listener notified when the structure of a node list changes.
  *
@@ -22,6 +24,8 @@ package com.vaadin.client.flow.nodefeature;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface ListSpliceListener {
     /**
      * Invoked when the structure of a node list changes.
