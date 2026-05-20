@@ -44,9 +44,9 @@ import com.vaadin.client.flow.collection.JsMap;
  */
 public class Registry {
 
-    private JsMap<Class<?>, Object> lookupTable = JsCollections.map();
+    private JsMap<String, Object> lookupTable = JsCollections.map();
 
-    private JsMap<Class<?>, Supplier<?>> resettable = JsCollections.map();
+    private JsMap<String, Supplier<?>> resettable = JsCollections.map();
 
     /**
      * Creates a new empty registry.
@@ -72,9 +72,10 @@ public class Registry {
      *            the type
      */
     protected final <T> void set(Class<T> type, T instance) {
-        assert !lookupTable.has(type) : "Registry already has a class of type "
-                + type.getName() + " registered";
-        lookupTable.set(type, instance);
+        String key = type.getName();
+        assert !lookupTable.has(key)
+                : "Registry already has a class of type " + key + " registered";
+        lookupTable.set(key, instance);
     }
 
     /**
@@ -93,7 +94,7 @@ public class Registry {
      */
     protected final <T> void set(Class<T> type, Supplier<T> instanceSupplier) {
         set(type, instanceSupplier.get());
-        resettable.set(type, instanceSupplier);
+        resettable.set(type.getName(), instanceSupplier);
     }
 
     /**
@@ -107,9 +108,10 @@ public class Registry {
      */
     @SuppressWarnings("unchecked")
     protected final <T> T get(Class<T> type) {
-        assert lookupTable.has(type) : "Tried to lookup type " + type.getName()
+        String key = type.getName();
+        assert lookupTable.has(key) : "Tried to lookup type " + key
                 + " but no instance has been registered";
-        return (T) lookupTable.get(type);
+        return (T) lookupTable.get(key);
     }
 
     /**
