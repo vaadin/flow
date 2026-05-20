@@ -15,43 +15,26 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.flow.reactive.ReactiveValueChangeEvent;
 
 /**
- * Event fired when a property is added to a {@link NodeMap}.
+ * Event fired when a property is added to a {@link NodeMap}. Pure
+ * {@code @JsType(isNative=true)} binding.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.nodefeature", name = "MapPropertyAddEvent")
 public class MapPropertyAddEvent extends ReactiveValueChangeEvent {
 
-    private MapProperty property;
-
-    /**
-     * Creates a new property add event.
-     *
-     * @param source
-     *            the changed map
-     * @param property
-     *            the newly added property
-     */
     public MapPropertyAddEvent(NodeMap source, MapProperty property) {
         super(source);
-        this.property = property;
     }
+
+    public native MapProperty getProperty();
 
     @Override
-    public NodeMap getSource() {
-        return (NodeMap) super.getSource();
-    }
-
-    /**
-     * Gets the added property.
-     *
-     * @return the added property
-     */
-    public MapProperty getProperty() {
-        return property;
-    }
-
+    public native NodeMap getSource();
 }
