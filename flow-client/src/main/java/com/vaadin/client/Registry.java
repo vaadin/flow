@@ -231,7 +231,7 @@ public class Registry {
      * @return the {@link URIResolver} singleton
      */
     public URIResolver getURIResolver() {
-        return get(URIResolver.class);
+        return get("URIResolver");
     }
 
     /**

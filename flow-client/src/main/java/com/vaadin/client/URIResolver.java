@@ -15,56 +15,38 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.VaadinUriResolver;
-
-import elemental.client.Browser;
+import jsinterop.annotations.JsType;
 
 /**
- * Client side URL resolver for vaadin protocols.
+ * Client side URL resolver for Vaadin protocols. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/URIResolver.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class URIResolver extends VaadinUriResolver {
-    private transient Registry registry;
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "URIResolver")
+public class URIResolver {
 
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
     public URIResolver(Registry registry) {
-        this.registry = registry;
+        // Defined by the TS class constructor.
     }
 
     /**
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
      * following URI schemes are supported:
      * <ul>
-     * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
-     * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
-     * resolves to the base URI of the page</li>
+     * <li>{@code context://} - resolves to the application context root</li>
+     * <li>{@code base://} - resolves to the base URI of the page</li>
      * </ul>
-     * Any other URI protocols, such as <code>http://</code> or
-     * <code>https://</code> are passed through this method unmodified.
+     * Any other URI protocols, such as {@code http://} or {@code https://}, are
+     * passed through this method unmodified.
      *
      * @param uri
      *            the URI to resolve
      * @return the resolved URI
      */
-    public String resolveVaadinUri(String uri) {
-        return super.resolveVaadinUri(uri, getContextRootUrl());
-    }
-
-    protected String getContextRootUrl() {
-        String root = registry.getApplicationConfiguration()
-                .getContextRootUrl();
-        assert root.endsWith("/");
-        return root;
-    }
+    public native String resolveVaadinUri(String uri);
 
     /**
      * Returns the current document location as relative to the base uri of the
@@ -73,10 +55,7 @@ public class URIResolver extends VaadinUriResolver {
      * @return the document current location as relative to the document base
      *         uri
      */
-    public static String getCurrentLocationRelativeToBaseUri() {
-        return getBaseRelativeUri(Browser.getDocument().getBaseURI(),
-                Browser.getDocument().getLocation().getHref());
-    }
+    public static native String getCurrentLocationRelativeToBaseUri();
 
     /**
      * Returns the given uri as relative to the given base uri.
@@ -88,10 +67,5 @@ public class URIResolver extends VaadinUriResolver {
      * @return the uri as relative to the document base uri, or the given uri
      *         unmodified if it is for different context.
      */
-    public static String getBaseRelativeUri(String baseURI, String uri) {
-        if (uri.startsWith(baseURI)) {
-            return uri.substring(baseURI.length());
-        }
-        return uri;
-    }
+    public static native String getBaseRelativeUri(String baseURI, String uri);
 }

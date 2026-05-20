@@ -33,6 +33,7 @@ import { ReactUtils } from './client/ReactUtils';
 import { ResourceLoader } from './client/ResourceLoader';
 import { SystemErrorHandler } from './client/SystemErrorHandler';
 import { UILifecycle } from './client/UILifecycle';
+import { URIResolver } from './client/URIResolver';
 import { WidgetUtil } from './client/WidgetUtil';
 import { Bootstrapper } from './client/bootstrap/Bootstrapper';
 import { AtmospherePushConnection } from './client/communication/AtmospherePushConnection';
@@ -85,6 +86,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'ResourceLoader', ResourceLoader);
   registerGwtBridge('client', 'SystemErrorHandler', SystemErrorHandler);
   registerGwtBridge('client', 'UILifecycle', UILifecycle);
+  registerGwtBridge('client', 'URIResolver', URIResolver);
   registerGwtBridge('client', 'WidgetUtil', WidgetUtil);
   registerGwtBridge('client.bootstrap', 'Bootstrapper', Bootstrapper);
   registerGwtBridge('client.communication', 'AtmospherePushConnection', AtmospherePushConnection);
