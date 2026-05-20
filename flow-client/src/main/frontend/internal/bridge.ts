@@ -41,6 +41,7 @@ import { AtmospherePushConnection } from './client/communication/AtmospherePushC
 import { LoadingIndicatorConfigurator } from './client/communication/LoadingIndicatorConfigurator';
 import { MessageHandler } from './client/communication/MessageHandler';
 import { MessageSender } from './client/communication/MessageSender';
+import { PollConfigurator } from './client/communication/PollConfigurator';
 import { Poller } from './client/communication/Poller';
 import { XhrConnection } from './client/communication/XhrConnection';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
@@ -97,6 +98,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'LoadingIndicatorConfigurator', LoadingIndicatorConfigurator);
   registerGwtBridge('client.communication', 'MessageHandler', MessageHandler);
   registerGwtBridge('client.communication', 'MessageSender', MessageSender);
+  registerGwtBridge('client.communication', 'PollConfigurator', PollConfigurator);
   registerGwtBridge('client.communication', 'Poller', Poller);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
