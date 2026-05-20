@@ -48,6 +48,7 @@ import { PushConfiguration } from './client/communication/PushConfiguration';
 import { ReconnectConfiguration } from './client/communication/ReconnectConfiguration';
 import { ServerRpcQueue } from './client/communication/ServerRpcQueue';
 import { XhrConnection } from './client/communication/XhrConnection';
+import { XhrConnectionError } from './client/communication/XhrConnectionError';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
 import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElementBindingStrategy';
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
@@ -109,6 +110,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'ReconnectConfiguration', ReconnectConfiguration);
   registerGwtBridge('client.communication', 'ServerRpcQueue', ServerRpcQueue);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
+  registerGwtBridge('client.communication', 'XhrConnectionError', XhrConnectionError);
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
   registerGwtBridge('client.flow.binding', 'SimpleElementBindingStrategy', SimpleElementBindingStrategy);
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
