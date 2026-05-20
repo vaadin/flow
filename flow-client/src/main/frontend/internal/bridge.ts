@@ -43,6 +43,7 @@ import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProce
 import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElementBindingStrategy';
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
 import { ConstantPool } from './client/flow/ConstantPool';
+import { NodeUnregisterEvent } from './client/flow/NodeUnregisterEvent';
 import { Computation } from './client/flow/reactive/Computation';
 import { Reactive } from './client/flow/reactive/Reactive';
 import { ReactiveEventRouter } from './client/flow/reactive/ReactiveEventRouter';
@@ -83,6 +84,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow.binding', 'SimpleElementBindingStrategy', SimpleElementBindingStrategy);
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
   registerGwtBridge('client.flow', 'ConstantPool', ConstantPool);
+  registerGwtBridge('client.flow', 'NodeUnregisterEvent', NodeUnregisterEvent);
   registerGwtBridge('client.flow.reactive', 'Computation', Computation);
   registerGwtBridge('client.flow.reactive', 'Reactive', Reactive);
   registerGwtBridge('client.flow.reactive', 'ReactiveEventRouter', ReactiveEventRouter);
