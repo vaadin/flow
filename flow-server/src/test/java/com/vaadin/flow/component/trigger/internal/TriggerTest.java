@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,20 +44,16 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JavaScriptInvocation invocation = singleInvocation(ui);
-        String expr = invocation.getExpression();
-        assertTrue(expr.contains("this.addEventListener(\"click\", __h)"),
-                expr);
-        assertTrue(expr.contains("$0[\"value\"] = \"\""), expr);
-        assertTrue(expr.contains("return () => this.removeEventListener"),
-                expr);
+        JsFunction fn = singleInitializerFn(ui);
+        String body = fn.getBody();
+        assertTrue(body.contains("this.addEventListener(\"click\", __h)"),
+                body);
+        assertTrue(body.contains("$0[\"value\"] = \"\""), body);
+        assertTrue(body.contains("return () => this.removeEventListener"),
+                body);
 
-        // Wrapper appends [host element, initializerId] after user params; the
-        // single non-host element ($0) is the field.
-        List<Object> params = invocation.getParameters();
-        assertEquals(3, params.size(), "Expected [field, host, initId]");
-        assertEquals(field.getElement(), params.get(0));
-        assertEquals(button.getElement(), params.get(1));
+        // The non-host element ($0) is the field.
+        assertEquals(List.of(field.getElement()), fn.getCaptures());
     }
 
     @Test
@@ -72,11 +69,11 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String expr = singleInvocation(ui).getExpression();
-        int disabledIdx = expr.indexOf("[\"disabled\"]");
-        int valueIdx = expr.indexOf("[\"value\"]");
+        String body = singleInitializerFn(ui).getBody();
+        int disabledIdx = body.indexOf("[\"disabled\"]");
+        int valueIdx = body.indexOf("[\"value\"]");
         assertTrue(disabledIdx >= 0 && valueIdx > disabledIdx,
-                "Both assignments should appear in order: " + expr);
+                "Both assignments should appear in order: " + body);
     }
 
     @Test
@@ -92,11 +89,11 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JavaScriptInvocation invocation = singleInvocation(ui);
-        String expr = invocation.getExpression();
-        assertTrue(expr.contains("$0[\"disabled\"]"), expr);
-        assertTrue(expr.contains("$0[\"value\"]"), expr);
-        assertEquals(target.getElement(), invocation.getParameters().get(0));
+        JsFunction fn = singleInitializerFn(ui);
+        String body = fn.getBody();
+        assertTrue(body.contains("$0[\"disabled\"]"), body);
+        assertTrue(body.contains("$0[\"value\"]"), body);
+        assertEquals(List.of(target.getElement()), fn.getCaptures());
     }
 
     @Test
@@ -110,11 +107,11 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JavaScriptInvocation invocation = singleInvocation(ui);
-        String expr = invocation.getExpression();
-        assertTrue(expr.contains("this[\"disabled\"] = true"), expr);
-        // Only host + initId — no extra element parameters.
-        assertEquals(2, invocation.getParameters().size(), expr);
+        JsFunction fn = singleInitializerFn(ui);
+        assertTrue(fn.getBody().contains("this[\"disabled\"] = true"),
+                fn.getBody());
+        // No captures — the host is `this`.
+        assertEquals(List.of(), fn.getCaptures());
     }
 
     @Test
@@ -133,9 +130,10 @@ class TriggerTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        assertNotEquals(pending.get(0).getInvocation().getExpression(),
-                pending.get(1).getInvocation().getExpression(),
-                "Each registration should produce a distinct init expression");
+        JsFunction fn0 = userFn(pending.get(0).getInvocation());
+        JsFunction fn1 = userFn(pending.get(1).getInvocation());
+        assertNotEquals(fn0.getBody(), fn1.getBody(),
+                "Each registration should produce a distinct initializer body");
     }
 
     @Test
@@ -161,7 +159,7 @@ class TriggerTest {
         assertEquals(1, pending.size());
         assertTrue(
                 pending.get(0).getInvocation().getExpression()
-                        .contains("initializers.dispose"),
+                        .contains("disposeInitializer"),
                 "Removal should emit the dispose invocation");
     }
 
@@ -170,7 +168,7 @@ class TriggerTest {
         TagComponent button = new TagComponent("button");
         DomEventTrigger trigger = new DomEventTrigger(button, "click");
         assertThrows(IllegalArgumentException.class,
-                () -> trigger.triggers(new Action[0]));
+                () -> trigger.triggers(new AbstractAction[0]));
     }
 
     @Test
@@ -189,11 +187,11 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String expr = singleInvocation(ui).getExpression();
-        assertTrue(expr.contains("$0[\"value\"] = event[\"screenX\"]"), expr);
-        assertTrue(expr.contains("$1[\"value\"] = event[\"screenY\"]"), expr);
-        assertTrue(expr.contains("this.addEventListener(\"click\", __h)"),
-                expr);
+        String body = singleInitializerFn(ui).getBody();
+        assertTrue(body.contains("$0[\"value\"] = event[\"screenX\"]"), body);
+        assertTrue(body.contains("$1[\"value\"] = event[\"screenY\"]"), body);
+        assertTrue(body.contains("this.addEventListener(\"click\", __h)"),
+                body);
     }
 
     @Test
@@ -222,7 +220,7 @@ class TriggerTest {
         ClickTrigger click = new ClickTrigger(button);
         // Same Argument instance used across two separate triggers() calls on
         // its owning trigger.
-        Argument<Integer> x = click.screenX();
+        AbstractArgument<Integer> x = click.screenX();
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 
@@ -233,10 +231,19 @@ class TriggerTest {
         assertEquals(2, pending.size());
     }
 
-    private static JavaScriptInvocation singleInvocation(UI ui) {
+    private static JsFunction singleInitializerFn(UI ui) {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return pending.get(0).getInvocation();
+        return userFn(pending.get(0).getInvocation());
+    }
+
+    private static JsFunction userFn(JavaScriptInvocation invocation) {
+        // addJsInitializer wrapper parameters: [element, userFunction,
+        // initializerId]
+        Object userFn = invocation.getParameters().get(1);
+        assertTrue(userFn instanceof JsFunction,
+                "Expected $1 to be a JsFunction, got " + userFn);
+        return (JsFunction) userFn;
     }
 }

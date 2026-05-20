@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,17 +25,20 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Base class for {@link Trigger} implementations. Each call to
- * {@link #triggers(Action...)} produces one {@link Element#addJsInitializer
- * addJsInitializer} registration on the host element; {@link #remove()} removes
- * all such registrations.
+ * Something that fires on the client when some condition is met — a DOM event,
+ * a signal change, an observer firing, a timer elapsing, an idle timeout, a
+ * {@code BroadcastChannel} message, a media-query match, … — and, when it does,
+ * runs one or more {@link AbstractAction actions}.
  * <p>
- * Subclasses provide their event-install JS by overriding
+ * Each call to {@link #triggers(AbstractAction...)} produces one
+ * {@link Element#addJsInitializer addJsInitializer} registration on the host
+ * element; {@link #remove()} removes all such registrations. Subclasses provide
+ * the JS that installs and tears down the listener by overriding
  * {@link #installJs(JsBuilder, String)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public abstract class AbstractTrigger implements Trigger {
+public abstract class AbstractTrigger implements Serializable {
 
     private final Element host;
     private final List<Registration> registrations = new ArrayList<>();
@@ -59,8 +63,16 @@ public abstract class AbstractTrigger implements Trigger {
         return host;
     }
 
-    @Override
-    public final Trigger triggers(Action... actions) {
+    /**
+     * Wires the given actions to this trigger. They run in the order given the
+     * next time this trigger fires. Each call adds another wiring; the existing
+     * ones are kept.
+     *
+     * @param actions
+     *            the actions to run, not {@code null} or empty
+     * @return this trigger, for chaining
+     */
+    public final AbstractTrigger triggers(AbstractAction... actions) {
         Objects.requireNonNull(actions);
         if (actions.length == 0) {
             throw new IllegalArgumentException(
@@ -68,9 +80,9 @@ public abstract class AbstractTrigger implements Trigger {
         }
         JsBuilder builder = new JsBuilder(this);
         StringBuilder handlerBody = new StringBuilder();
-        for (Action action : actions) {
+        for (AbstractAction action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
-            ((AbstractAction) action).appendStatement(builder, handlerBody);
+            action.appendStatement(builder, handlerBody);
             handlerBody.append(";");
         }
         String js = installJs(builder, handlerBody.toString());
@@ -96,7 +108,10 @@ public abstract class AbstractTrigger implements Trigger {
      */
     protected abstract String installJs(JsBuilder builder, String handlerBody);
 
-    @Override
+    /**
+     * Removes this trigger and all wirings created from it. The corresponding
+     * client-side listeners are detached as part of the next synchronisation.
+     */
     public final void remove() {
         registrations.forEach(Registration::remove);
         registrations.clear();

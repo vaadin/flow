@@ -15,17 +15,20 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 /**
- * Base class for {@link Argument} implementations. Subclasses produce the JS
- * expression that yields the argument's value when the trigger fires by
- * overriding {@link #appendExpression(JsBuilder, StringBuilder)}.
+ * A value produced on the client at the moment a trigger fires, snapshotted and
+ * passed into the bound {@link AbstractAction actions}. Subclasses produce the
+ * JS expression that yields the argument's value by overriding
+ * {@link #appendExpression(JsBuilder, StringBuilder)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-public abstract non-sealed class AbstractArgument<T> implements Argument<T> {
+public abstract class AbstractArgument<T> implements Serializable {
 
     /**
      * Appends this argument's JS expression to {@code out}. Element references

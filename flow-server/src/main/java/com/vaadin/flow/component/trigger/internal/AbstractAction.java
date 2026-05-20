@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 /**
- * Base class for {@link Action} implementations. Subclasses append the JS that
- * runs when the trigger fires by overriding
+ * Something that runs on the client when an {@link AbstractTrigger} fires.
+ * Subclasses append the JS that runs when the trigger fires by overriding
  * {@link #appendStatement(JsBuilder, StringBuilder)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public abstract non-sealed class AbstractAction implements Action {
+public abstract class AbstractAction implements Serializable {
 
     /**
      * Appends this action's JS statement to {@code out}. Element references
