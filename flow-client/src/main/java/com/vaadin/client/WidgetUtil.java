@@ -73,7 +73,7 @@ public class WidgetUtil {
      * Detects if an URL is absolute.
      */
     public static boolean isAbsoluteUrl(String url) {
-        return GWT.isScript() && NativeWidgetUtil.isAbsoluteUrl(url);
+        return url.matches("^(?:[a-zA-Z]+:)?//.*");
     }
 
     /**
