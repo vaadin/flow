@@ -201,7 +201,7 @@ public class Registry {
      * @return the {@link StateTree} singleton
      */
     public StateTree getStateTree() {
-        return get(StateTree.class);
+        return get("StateTree");
     }
 
     /**

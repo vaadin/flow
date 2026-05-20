@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsType;
+
 import elemental.events.EventRemover;
 
 /**
@@ -29,6 +31,7 @@ import elemental.events.EventRemover;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true)
 public interface ReactiveValue {
     /**
      * Adds a listener that has a dependency to this value, and should be

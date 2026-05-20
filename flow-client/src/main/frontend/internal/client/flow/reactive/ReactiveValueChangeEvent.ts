@@ -16,13 +16,12 @@
 
 /** Abstract base for reactive-value change events. */
 export class ReactiveValueChangeEvent {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly source: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(source: any) {
     this.source = source;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   getSource(): any {
     return this.source;
   }

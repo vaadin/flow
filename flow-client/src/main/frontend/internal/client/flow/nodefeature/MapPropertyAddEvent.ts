@@ -17,14 +17,13 @@ import { ReactiveValueChangeEvent } from '../reactive/ReactiveValueChangeEvent';
 
 /** Event fired when a property is added to a {@code NodeMap}. */
 export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly property: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(map: any, property: any) {
     super(map);
     this.property = property;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   getProperty(): any {
     return this.property;
   }

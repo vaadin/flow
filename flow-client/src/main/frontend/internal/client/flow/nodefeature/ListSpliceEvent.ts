@@ -18,15 +18,15 @@ import { ReactiveValueChangeEvent } from '../reactive/ReactiveValueChangeEvent';
 /** Event fired when the structure of a {@code NodeList} changes. */
 export class ListSpliceEvent extends ReactiveValueChangeEvent {
   readonly index: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   readonly remove: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   readonly add: any;
   readonly clear: boolean;
 
-  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/max-params */
+  /* eslint-disable @typescript-eslint/max-params */
   constructor(source: any, index: number, remove: any, add: any, clear: boolean) {
-    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/max-params */
+    /* eslint-enable @typescript-eslint/max-params */
     super(source);
     this.index = index;
     this.remove = remove;
@@ -38,12 +38,10 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
     return this.index;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRemove(): any {
     return this.remove;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAdd(): any {
     return this.add;
   }
