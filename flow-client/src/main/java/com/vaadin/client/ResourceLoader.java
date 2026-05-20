@@ -18,7 +18,6 @@ package com.vaadin.client;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Timer;
@@ -213,8 +212,7 @@ public class ResourceLoader {
 
     private Registry registry;
 
-    private final boolean supportsHtmlWhenReady = GWT.isScript()
-            && supportsHtmlWhenReady();
+    private final boolean supportsHtmlWhenReady = supportsHtmlWhenReady();
 
     /**
      * Creates a new resource loader. You should not create you own resource
