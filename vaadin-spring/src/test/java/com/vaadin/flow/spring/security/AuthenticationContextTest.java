@@ -50,7 +50,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
@@ -472,7 +472,7 @@ class AuthenticationContextTest {
         Page page = Mockito.mock(Page.class);
         Mockito.when(ui.getPage()).thenReturn(page);
         Mockito.when(page.executeJs(Mockito.anyString()))
-                .thenReturn(new PendingJavaScriptResult() {
+                .thenReturn(new PendingJavaScriptExecution() {
                     @Override
                     public boolean cancelExecution() {
                         return false;
@@ -488,6 +488,12 @@ class AuthenticationContextTest {
                             SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         resultHandler.accept(null);
+                    }
+
+                    @Override
+                    public PendingJavaScriptExecution withParameter(String name,
+                            Object value) {
+                        return this;
                     }
                 });
         try {
