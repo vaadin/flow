@@ -15,9 +15,7 @@
  */
 import { Reactive } from './Reactive';
 
-interface InvalidateListener {
-  onInvalidate(event: { getSource(): Computation }): void;
-}
+type InvalidateListener = (event: { getSource(): Computation }) => void;
 
 /**
  * Automatically reruns the constructor-supplied `recompute` callback whenever
@@ -76,7 +74,7 @@ export class Computation {
       const oldListeners = this.invalidateListeners;
       this.invalidateListeners = new Set();
       const event = { getSource: (): Computation => this };
-      oldListeners.forEach((listener) => listener.onInvalidate(event));
+      oldListeners.forEach((listener) => listener(event));
     }
   }
 

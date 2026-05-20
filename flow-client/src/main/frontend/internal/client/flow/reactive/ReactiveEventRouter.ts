@@ -26,7 +26,7 @@ interface ReactiveValueChangeListenerLike {
 interface ComputationLike {
   onValueChange(event: unknown): void;
   addDependencyRemover(remover: () => void): void;
-  onNextInvalidate(listener: { onInvalidate(event: { getSource(): unknown }): void }): void;
+  onNextInvalidate(listener: (event: { getSource(): unknown }) => void): void;
 }
 
 /**
@@ -65,9 +65,7 @@ export class ReactiveEventRouter {
 
     const computation = Reactive.getCurrentComputation() as ComputationLike | null;
     if (computation) {
-      computation.onNextInvalidate({
-        onInvalidate: () => remover.remove()
-      });
+      computation.onNextInvalidate(() => remover.remove());
     }
 
     return remover;

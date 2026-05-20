@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Listens to invalidate events fired by a computation.
  *
@@ -22,6 +24,8 @@ package com.vaadin.client.flow.reactive;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface InvalidateListener {
     /**
      * Invoked when an invalidate event is fired.
