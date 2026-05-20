@@ -17,7 +17,6 @@ package com.vaadin.client;
 
 import java.util.Objects;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import com.vaadin.client.flow.dom.DomApi;
@@ -30,13 +29,10 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Utility methods which are related to client side code only.
- * <p>
- * Under GWT the JSNI helpers delegate to the TypeScript implementation at
+ * Utility methods which are related to client side code only. The JSNI helpers
+ * delegate to the TypeScript implementation at
  * {@code src/main/frontend/internal/client/WidgetUtil.ts} via
- * {@link NativeWidgetUtil}. Non-JSNI helpers ({@link #refresh},
- * {@link #updateAttribute}, {@link #toPrettyJson}, {@link #equals}) and the JVM
- * fallbacks stay in this class.
+ * {@link NativeWidgetUtil}.
  *
  * @since 1.0
  */
@@ -54,9 +50,7 @@ public class WidgetUtil {
      * null.
      */
     public static void redirect(String url) {
-        if (GWT.isScript()) {
-            NativeWidgetUtil.redirect(url);
-        }
+        NativeWidgetUtil.redirect(url);
     }
 
     /**
@@ -94,23 +88,14 @@ public class WidgetUtil {
      * the generics still makes the compiler insert a JSO check.
      */
     public static <T extends JavaScriptObject> T crazyJsoCast(Object value) {
-        if (GWT.isScript()) {
-            return NativeWidgetUtil.crazyJsoCast(value);
-        }
-        @SuppressWarnings("unchecked")
-        T cast = (T) value;
-        return cast;
+        return NativeWidgetUtil.crazyJsoCast(value);
     }
 
     /**
      * Converts a JSON value to a formatted string.
      */
     public static String toPrettyJson(JsonValue json) {
-        if (GWT.isScript()) {
-            return NativeWidgetUtil.toPrettyJsonJsni(json);
-        }
-        // Don't use JsonUtil.stringify here or SDM will break
-        return json.toJson();
+        return NativeWidgetUtil.toPrettyJsonJsni(json);
     }
 
     /**
@@ -130,17 +115,14 @@ public class WidgetUtil {
      * Assigns a value as JavaScript property of an object.
      */
     public static void setJsProperty(Object object, String name, Object value) {
-        if (GWT.isScript()) {
-            NativeWidgetUtil.setJsProperty(object, name, value);
-        }
+        NativeWidgetUtil.setJsProperty(object, name, value);
     }
 
     /**
      * Retrieves the value of a JavaScript property.
      */
     public static Object getJsProperty(Object object, String name) {
-        return GWT.isScript() ? NativeWidgetUtil.getJsProperty(object, name)
-                : null;
+        return NativeWidgetUtil.getJsProperty(object, name);
     }
 
     /**
@@ -148,8 +130,7 @@ public class WidgetUtil {
      * the given name. Inherited properties are not taken into account.
      */
     public static boolean hasOwnJsProperty(Object object, String name) {
-        return GWT.isScript()
-                && NativeWidgetUtil.hasOwnJsProperty(object, name);
+        return NativeWidgetUtil.hasOwnJsProperty(object, name);
     }
 
     /**
@@ -157,32 +138,28 @@ public class WidgetUtil {
      * with the given name.
      */
     public static boolean hasJsProperty(Object object, String name) {
-        return GWT.isScript() && NativeWidgetUtil.hasJsProperty(object, name);
+        return NativeWidgetUtil.hasJsProperty(object, name);
     }
 
     /**
      * Checks if the given value is explicitly undefined.
      */
     public static boolean isUndefined(Object property) {
-        return GWT.isScript() && NativeWidgetUtil.isUndefined(property);
+        return NativeWidgetUtil.isUndefined(property);
     }
 
     /**
      * Removes a JavaScript property from an object.
      */
     public static void deleteJsProperty(Object object, String name) {
-        if (GWT.isScript()) {
-            NativeWidgetUtil.deleteJsProperty(object, name);
-        }
+        NativeWidgetUtil.deleteJsProperty(object, name);
     }
 
     /**
      * Creates a new {@link JsonObject} without any JavaScript prototype at all.
      */
     public static JsonObject createJsonObjectWithoutPrototype() {
-        return GWT.isScript()
-                ? NativeWidgetUtil.createJsonObjectWithoutPrototype()
-                : null;
+        return NativeWidgetUtil.createJsonObjectWithoutPrototype();
     }
 
     /**
@@ -197,15 +174,14 @@ public class WidgetUtil {
      * semantics.
      */
     public static boolean isTrueish(Object value) {
-        return GWT.isScript() ? NativeWidgetUtil.isTrueish(value)
-                : value != null;
+        return NativeWidgetUtil.isTrueish(value);
     }
 
     /**
      * Gets all JavaScript property names of the given object.
      */
     public static String[] getKeys(Object value) {
-        return GWT.isScript() ? NativeWidgetUtil.getKeys(value) : new String[0];
+        return NativeWidgetUtil.getKeys(value);
     }
 
     /**
@@ -213,10 +189,7 @@ public class WidgetUtil {
      * cause cyclic dependencies if sent to the server).
      */
     public static String stringify(JsonObject payload) {
-        if (GWT.isScript()) {
-            return NativeWidgetUtil.stringify(payload);
-        }
-        return payload.toJson();
+        return NativeWidgetUtil.stringify(payload);
     }
 
     /**
@@ -231,6 +204,6 @@ public class WidgetUtil {
      * Checks whether the objects are equal as JS values.
      */
     public static boolean equalsInJS(Object obj1, Object obj2) {
-        return GWT.isScript() && NativeWidgetUtil.equalsInJS(obj1, obj2);
+        return NativeWidgetUtil.equalsInJS(obj1, obj2);
     }
 }

@@ -15,15 +15,12 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
-
 /**
  * Helper class for using window.console. Does not log anything except
  * JavaScript exception traces to console if production mode is enabled.
  * <p>
- * Under GWT the calls are forwarded to the TypeScript implementation at
- * {@code src/main/frontend/internal/client/Console.ts}. Direct JVM usage (in
- * unit tests) falls back to {@code System.out}/{@code System.err}.
+ * The TypeScript implementation lives at
+ * {@code src/main/frontend/internal/client/Console.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,48 +31,26 @@ public final class Console {
     }
 
     public static void setProductionMode(boolean isProductionMode) {
-        if (GWT.isScript()) {
-            NativeConsole.setProductionMode(isProductionMode);
-        }
+        NativeConsole.setProductionMode(isProductionMode);
     }
 
     public static void debug(Object message) {
-        if (GWT.isScript()) {
-            NativeConsole.debug(message);
-        } else {
-            System.out.println(message);
-        }
+        NativeConsole.debug(message);
     }
 
     public static void log(Object message) {
-        if (GWT.isScript()) {
-            NativeConsole.log(message);
-        } else {
-            System.out.println(message);
-        }
+        NativeConsole.log(message);
     }
 
     public static void warn(Object message) {
-        if (GWT.isScript()) {
-            NativeConsole.warn(message);
-        } else {
-            System.err.println(message);
-        }
+        NativeConsole.warn(message);
     }
 
     public static void error(Object message) {
-        if (GWT.isScript()) {
-            NativeConsole.error(message);
-        } else {
-            System.err.println(message);
-        }
+        NativeConsole.error(message);
     }
 
     public static void reportStacktrace(Exception exception) {
-        if (GWT.isScript()) {
-            NativeConsole.reportStacktrace(exception);
-        } else {
-            exception.printStackTrace();
-        }
+        NativeConsole.reportStacktrace(exception);
     }
 }
