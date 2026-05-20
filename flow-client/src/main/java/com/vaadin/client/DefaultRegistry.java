@@ -62,7 +62,7 @@ public class DefaultRegistry extends Registry {
 
         // Classes with no constructor dependencies
         set(ResourceLoader.class, new ResourceLoader(this, true));
-        set(URIResolver.class, new URIResolver(this));
+        set("URIResolver", new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
