@@ -66,6 +66,7 @@ public class DefaultRegistry extends Registry {
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
+        UILifecycle uiLifecycle = get("UILifecycle");
         StateTree stateTree = new StateTree(this);
         set("StateTree", stateTree);
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
@@ -89,7 +90,7 @@ public class DefaultRegistry extends Registry {
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
-        set(Poller.class, new Poller(this));
+        set("Poller", new Poller(stateTree, uiLifecycle));
         set(LoadingIndicatorStateHandler.class,
                 new LoadingIndicatorStateHandler(this));
     }

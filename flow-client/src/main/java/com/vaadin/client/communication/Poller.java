@@ -15,79 +15,44 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.user.client.Timer;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.flow.component.PollEvent;
 
 /**
- * Handles polling the server with a given interval.
+ * Polls the server with a given interval. Pure {@code @JsType(isNative=true)}
+ * binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/Poller.ts}.
+ *
+ * <p>
+ * Construction takes the {@link StateTree} and {@link UILifecycle} directly
+ * rather than the {@code Registry} so the TS class only depends on already
+ * TS-migrated surfaces.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "Poller")
 public class Poller {
 
-    private Timer pollTimer = null;
-
-    private final Registry registry;
-
-    /**
-     * Creates a new instance using the given registry.
-     *
-     * @param registry
-     *            the registry
-     */
-    public Poller(Registry registry) {
-        this.registry = registry;
-        registry.getUILifecycle().addHandler(e -> {
-            if (e.getUiLifecycle().isTerminated()) {
-                stop();
-            }
-        });
+    public Poller(StateTree tree, UILifecycle uiLifecycle) {
+        // Defined by the TS class constructor.
     }
 
     /**
-     * Stops any ongoing polling.
-     */
-    private void stop() {
-        if (pollTimer != null) {
-            pollTimer.cancel();
-            pollTimer = null;
-        }
-    }
-
-    /**
-     * Sets the polling interval.
-     * <p>
-     * Changing the polling interval will stop any current polling and schedule
-     * a new poll to happen after the given interval.
+     * Sets the polling interval, in milliseconds. Changing the interval stops
+     * any in-progress polling and schedules a fresh repeat timer with the new
+     * interval. A negative value disables polling.
      *
      * @param interval
-     *            The interval to use
+     *            polling interval in milliseconds, or a negative value to
+     *            disable polling
      */
-    public void setInterval(int interval) {
-        stop();
-        if (interval >= 0) {
-            pollTimer = new Timer() {
-                @Override
-                public void run() {
-                    poll();
-                }
-
-            };
-            pollTimer.scheduleRepeating(interval);
-        }
-    }
+    public native void setInterval(int interval);
 
     /**
      * Polls the server for changes.
      */
-    public void poll() {
-        StateTree stateTree = registry.getStateTree();
-        stateTree.sendEventToServer(stateTree.getRootNode(),
-                PollEvent.DOM_EVENT_NAME, null);
-    }
-
+    public native void poll();
 }

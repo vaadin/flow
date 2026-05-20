@@ -40,6 +40,7 @@ import { Bootstrapper } from './client/bootstrap/Bootstrapper';
 import { AtmospherePushConnection } from './client/communication/AtmospherePushConnection';
 import { MessageHandler } from './client/communication/MessageHandler';
 import { MessageSender } from './client/communication/MessageSender';
+import { Poller } from './client/communication/Poller';
 import { XhrConnection } from './client/communication/XhrConnection';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
 import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElementBindingStrategy';
@@ -94,6 +95,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'AtmospherePushConnection', AtmospherePushConnection);
   registerGwtBridge('client.communication', 'MessageHandler', MessageHandler);
   registerGwtBridge('client.communication', 'MessageSender', MessageSender);
+  registerGwtBridge('client.communication', 'Poller', Poller);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
   registerGwtBridge('client.flow.binding', 'SimpleElementBindingStrategy', SimpleElementBindingStrategy);
