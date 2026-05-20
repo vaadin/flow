@@ -172,8 +172,6 @@ public final class JsFunction implements Serializable {
             throw new IllegalArgumentException(
                     "Parameter '" + name + "' has already been added");
         }
-        // Dry-run encode so unsupported types fail fast.
-        JacksonCodec.encodeWithTypeInfo(value);
 
         int captureIndex = captures.size();
         List<@Nullable Object> newCaptures = new ArrayList<>(captures);

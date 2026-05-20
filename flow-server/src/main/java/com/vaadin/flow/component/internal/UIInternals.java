@@ -177,8 +177,6 @@ public class UIInternals implements Serializable {
          *            {@link JacksonCodec#encodeWithTypeInfo(Object)}
          */
         public void addNamedParameter(String name, Object value) {
-            // Throws IAE for unsupported types
-            JacksonCodec.encodeWithTypeInfo(value);
             int index = parameters.size();
             parameters.add(value);
             expression = "let " + name + "=$" + index + ";" + expression;
