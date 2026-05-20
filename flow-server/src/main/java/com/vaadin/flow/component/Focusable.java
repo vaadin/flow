@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -136,31 +137,29 @@ public interface Focusable<T extends Component>
         Element element = getElement();
         ObjectNode json = FocusOption.buildOptions(options);
 
+        JsFunction focus;
         if (json == null) {
             // No options, call focus() without arguments
-            element.executeJs("""
-                    setTimeout(function(){
-                        try {
-                           $0._nextFocusIsFromClient = false;
-                           $0.focus();
-                        } finally {
-                           $0._nextFocusIsFromClient = true;
-                        }
-                    },0)
+            focus = JsFunction.of("""
+                    try {
+                        $0._nextFocusIsFromClient = false;
+                        $0.focus();
+                    } finally {
+                        $0._nextFocusIsFromClient = true;
+                    }
                     """, element);
         } else {
-            // Call focus with options object passed as parameter
-            element.executeJs("""
-                    setTimeout(function(){
-                        try {
-                           $0._nextFocusIsFromClient = false;
-                           $0.focus($1);
-                        } finally {
-                           $0._nextFocusIsFromClient = true;
-                        }
-                    },0)
+            // Call focus with options object passed as a capture
+            focus = JsFunction.of("""
+                    try {
+                        $0._nextFocusIsFromClient = false;
+                        $0.focus($1);
+                    } finally {
+                        $0._nextFocusIsFromClient = true;
+                    }
                     """, element, json);
         }
+        element.executeJs("setTimeout($0, 0)", focus);
     }
 
     // for binary compatibility with the previous Vaadin versions
@@ -189,16 +188,16 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().executeJs("""
-                setTimeout(function(){
-                    try {
-                        $0._nextBlurIsFromClient = false;
-                        $0.blur();
-                    } finally {
-                       $0._nextBlurIsFromClient = true;
-                    }
-                },0)
-                """, getElement());
+        Element element = getElement();
+        JsFunction blur = JsFunction.of("""
+                try {
+                    $0._nextBlurIsFromClient = false;
+                    $0.blur();
+                } finally {
+                    $0._nextBlurIsFromClient = true;
+                }
+                """, element);
+        element.executeJs("setTimeout($0, 0)", blur);
     }
 
     /**
