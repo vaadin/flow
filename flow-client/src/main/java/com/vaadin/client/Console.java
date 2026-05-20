@@ -15,42 +15,32 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsType;
+
 /**
- * Helper class for using window.console. Does not log anything except
- * JavaScript exception traces to console if production mode is enabled.
- * <p>
- * The TypeScript implementation lives at
+ * Helper class for using window.console. Pure {@code @JsType(isNative=true)}
+ * binding to the TypeScript implementation at
  * {@code src/main/frontend/internal/client/Console.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "Console")
 public final class Console {
 
     private Console() {
+        // Native, not instantiated from Java
     }
 
-    public static void setProductionMode(boolean isProductionMode) {
-        NativeConsole.setProductionMode(isProductionMode);
-    }
+    public static native void setProductionMode(boolean isProductionMode);
 
-    public static void debug(Object message) {
-        NativeConsole.debug(message);
-    }
+    public static native void debug(Object message);
 
-    public static void log(Object message) {
-        NativeConsole.log(message);
-    }
+    public static native void log(Object message);
 
-    public static void warn(Object message) {
-        NativeConsole.warn(message);
-    }
+    public static native void warn(Object message);
 
-    public static void error(Object message) {
-        NativeConsole.error(message);
-    }
+    public static native void error(Object message);
 
-    public static void reportStacktrace(Exception exception) {
-        NativeConsole.reportStacktrace(exception);
-    }
+    public static native void reportStacktrace(Object exception);
 }
