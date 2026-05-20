@@ -276,7 +276,7 @@ public class Registry {
      * @return the {@link ReconnectConfiguration} singleton
      */
     public ReconnectConfiguration getReconnectConfiguration() {
-        return get(ReconnectConfiguration.class);
+        return get("ReconnectConfiguration");
     }
 
     /**

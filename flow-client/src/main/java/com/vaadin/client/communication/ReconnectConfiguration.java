@@ -15,35 +15,32 @@
  */
 package com.vaadin.client.communication;
 
-import com.vaadin.client.Registry;
-import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeMap;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
+
+import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 
 /**
  * Tracks the reconnect configuration stored in the root node and provides it
- * with an easier to use API.
+ * with an easier to use API. Pure {@code @JsType(isNative=true)} binding to the
+ * TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/ReconnectConfiguration.ts}.
+ *
  * <p>
- * Also triggers {@link ConnectionStateHandler#configurationUpdated()} whenever
- * part of the configuration changes.
+ * The {@link #bind(ConnectionStateHandler)} static helper stays on the Java
+ * side as an {@code @JsOverlay} because it wires
+ * {@link Reactive#runWhenDependenciesChange(com.vaadin.client.Command)}, which
+ * builds a Java {@code Computation} subclass not expressible from TS.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "ReconnectConfiguration")
 public class ReconnectConfiguration {
 
-    private final Registry registry;
-
-    /**
-     * Creates a new instance using the given registry.
-     *
-     * @param registry
-     *            the registry
-     */
-    public ReconnectConfiguration(Registry registry) {
-        this.registry = registry;
+    public ReconnectConfiguration(StateTree tree) {
+        // Defined by the TS class constructor.
     }
 
     /**
@@ -55,68 +52,37 @@ public class ReconnectConfiguration {
      * @param connectionStateHandler
      *            the connection state handler to bind to
      */
+    @JsOverlay
     public static void bind(ConnectionStateHandler connectionStateHandler) {
         Reactive.runWhenDependenciesChange(
                 () -> connectionStateHandler.configurationUpdated());
     }
 
-    private MapProperty getProperty(String key) {
-        NodeMap configurationMap = registry.getStateTree().getRootNode()
-                .getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
-        return configurationMap.getProperty(key);
-    }
-
     /**
      * Gets the text to show in the reconnect dialog.
-     *
-     * @return the text to show in the reconnect dialog.
      *
      * @deprecated The API for configuring the connection indicator has changed.
      */
     @Deprecated
-    public String getDialogText() {
-        return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY)
-                .getValueOrDefault(null);
-    }
+    public native String getDialogText();
 
     /**
      * Gets the text to show in the reconnect dialog when no longer trying to
      * reconnect.
      *
-     * @return the text to show in the reconnect dialog when no longer trying to
-     *         reconnect
-     *
      * @deprecated The API for configuring the connection indicator has changed.
      */
     @Deprecated
-    public String getDialogTextGaveUp() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                .getValueOrDefault(null);
-    }
+    public native String getDialogTextGaveUp();
 
     /**
      * Gets the number of reconnect attempts that should be performed before
      * giving up.
-     *
-     * @return the number of reconnect attempts to perform
      */
-    public int getReconnectAttempts() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
-    }
+    public native int getReconnectAttempts();
 
     /**
      * Gets the interval in milliseconds to wait between reconnect attempts.
-     *
-     * @return the interval in milliseconds to wait between reconnect attempts
      */
-    public int getReconnectInterval() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
-    }
+    public native int getReconnectInterval();
 }
