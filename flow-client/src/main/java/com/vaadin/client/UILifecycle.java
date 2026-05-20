@@ -15,169 +15,75 @@
  */
 package com.vaadin.client;
 
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.HandlerRegistration;
-
-import com.google.gwt.event.shared.EventHandler;
-
-import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
 
 /**
- * Manages the lifecycle of a UI.
+ * Manages the lifecycle of a UI. Pure {@code @JsType(isNative=true)} binding to
+ * the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/UILifecycle.ts}. The Java
+ * {@link UIState} enum is retained for type-safe consumer code; the JS side
+ * stores the matching string and {@link #getState()} / {@link #setState} adapt
+ * between the two on each call.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "UILifecycle")
 public class UILifecycle {
 
-    /**
-     * Describes the state of a UI.
-     *
-     */
+    /** State of the UI. */
     public enum UIState {
-        // Do not change the order of the enums as it is used to determine what
-        // transitions are allowed.
         INITIALIZING, RUNNING, TERMINATED;
     }
 
-    private UIState state = UIState.INITIALIZING;
-    private EventBus eventBus = new SimpleEventBus();
-
-    /**
-     * Gets the state of the UI.
-     *
-     * @return the current state of the UI
-     */
-    public UIState getState() {
-        return state;
+    /** JS handler-registration shape returned by {@link #addHandler}. */
+    @JsType(isNative = true)
+    public interface HandlerRegistration {
+        void removeHandler();
     }
 
-    /**
-     * Sets the state of the UI to the given value.
-     * <p>
-     * Only allows state changes in one direction: {@link UIState#INITIALIZING}
-     * -&gt; {@link UIState#RUNNING} -&gt; {@link UIState#TERMINATED}.
-     * <p>
-     * Changing the state fires a {@link StateChangeEvent}.
-     *
-     * @param state
-     *            the new UI state
-     */
-    public void setState(UIState state) {
-        if (state.ordinal() != this.state.ordinal() + 1) {
-            throw new IllegalArgumentException(
-                    "Tried to move from state " + this.state.name() + " to "
-                            + state.name() + " which is not allowed");
-        }
-
-        this.state = state;
-        eventBus.fireEvent(new StateChangeEvent(this));
+    /** Native event shape passed to {@link StateChangeHandler}. */
+    @JsType(isNative = true)
+    public interface StateChangeEvent {
+        UILifecycle getUiLifecycle();
     }
 
-    /**
-     * Check if the state is {@link UIState#RUNNING}.
-     *
-     * @return {@code true} if the status is {@link UIState#RUNNING},
-     *         {@code false} otherwise
-     */
-    public boolean isRunning() {
-        return getState() == UIState.RUNNING;
-    }
-
-    /**
-     * Check if the state is {@link UIState#TERMINATED}.
-     *
-     * @return {@code true} if the status is {@link UIState#TERMINATED},
-     *         {@code false} otherwise
-     */
-    public boolean isTerminated() {
-        return getState() == UIState.TERMINATED;
-    }
-
-    /**
-     * Adds a state change event handler.
-     *
-     * @param handler
-     *            the handler to add
-     * @param <H>
-     *            the handler type
-     * @return a handler registration object which can be used to remove the
-     *         handler
-     */
-    public <H extends StateChangeHandler> HandlerRegistration addHandler(
-            H handler) {
-        return eventBus.addHandler(StateChangeEvent.getType(), handler);
-    }
-
-    /**
-     * Event triggered when the lifecycle state of a UI is changed.
-     * <p>
-     * To listen for the event add a {@link StateChangeHandler} using
-     * {@link UILifecycle#addHandler(StateChangeHandler)}.
-     */
-    public static class StateChangeEvent extends Event<StateChangeHandler> {
-
-        private static Type<StateChangeHandler> type = null;
-
-        private UILifecycle uiLifecycle;
-
-        /**
-         * Creates a new event connected to the given lifecycle instance.
-         *
-         * @param uiLifecycle
-         *            the lifecycle instance
-         */
-        public StateChangeEvent(UILifecycle uiLifecycle) {
-            this.uiLifecycle = uiLifecycle;
-        }
-
-        /**
-         * Gets the type of the event after ensuring the type has been created.
-         *
-         * @return the type for the event
-         */
-        public static Type<StateChangeHandler> getType() {
-            if (type == null) {
-                type = new Type<>();
-            }
-            return type;
-        }
-
-        @Override
-        public Type<StateChangeHandler> getAssociatedType() {
-            return type;
-        }
-
-        /**
-         * Gets the {@link UILifecycle} instance which triggered this event.
-         *
-         * @return the {@link UILifecycle} which triggered the event
-         */
-        public UILifecycle getUiLifecycle() {
-            return uiLifecycle;
-        }
-
-        @Override
-        protected void dispatch(StateChangeHandler listener) {
-            listener.onUIStateChanged(this);
-        }
-    }
-
-    /**
-     * A listener for listening to UI lifecycle events.
-     */
+    /** Listener for UI state changes. */
     @FunctionalInterface
-    public interface StateChangeHandler extends EventHandler {
-
-        /**
-         * Triggered when state of a UI if changed. To get the current state,
-         * call {@link UILifecycle#getState()}.
-         *
-         * @param event
-         *            the event object
-         */
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface StateChangeHandler {
         void onUIStateChanged(StateChangeEvent event);
     }
 
+    public UILifecycle() {
+        // Defined by the TS class constructor.
+    }
+
+    @JsMethod(name = "getStateName")
+    native String getStateNameImpl();
+
+    @JsMethod(name = "setStateName")
+    native void setStateNameImpl(String state);
+
+    public native boolean isRunning();
+
+    public native boolean isTerminated();
+
+    public native HandlerRegistration addHandler(StateChangeHandler handler);
+
+    /** Gets the current UI state. */
+    @JsOverlay
+    public final UIState getState() {
+        return UIState.valueOf(getStateNameImpl());
+    }
+
+    /** Sets the UI state. Only forward transitions are allowed. */
+    @JsOverlay
+    public final void setState(UIState state) {
+        setStateNameImpl(state.name());
+    }
 }

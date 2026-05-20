@@ -65,7 +65,7 @@ public class DefaultRegistry extends Registry {
         set(URIResolver.class, new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
-        set(UILifecycle.class, (Supplier<UILifecycle>) UILifecycle::new);
+        set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
         set(StateTree.class, new StateTree(this));
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));

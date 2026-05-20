@@ -255,7 +255,7 @@ public class Registry {
      * @return the {@link UILifecycle} singleton
      */
     public UILifecycle getUILifecycle() {
-        return get(UILifecycle.class);
+        return get("UILifecycle");
     }
 
     /**
