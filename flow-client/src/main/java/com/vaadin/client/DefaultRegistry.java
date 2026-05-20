@@ -71,8 +71,10 @@ public class DefaultRegistry extends Registry {
         set("StateTree", stateTree);
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));
-        set(MessageSender.class, new MessageSender(this));
-        set(ServerRpcQueue.class, new ServerRpcQueue(this));
+        MessageSender messageSender = new MessageSender(this);
+        set(MessageSender.class, messageSender);
+        set("ServerRpcQueue", new ServerRpcQueue(uiLifecycle,
+                () -> messageSender.sendInvocationsToServer()));
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));

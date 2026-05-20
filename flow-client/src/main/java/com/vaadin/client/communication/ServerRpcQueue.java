@@ -15,143 +15,75 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.Scheduler;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.Console;
-import com.vaadin.client.Registry;
+import com.vaadin.client.JsRunnable;
+import com.vaadin.client.UILifecycle;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 /**
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
- * the server.
+ * the server. Pure {@code @JsType(isNative=true)} binding to the TypeScript
+ * implementation at
+ * {@code src/main/frontend/internal/client/communication/ServerRpcQueue.ts}.
+ *
+ * <p>
+ * Construction takes a {@link UILifecycle} (only used for an
+ * {@code isRunning()} guard on {@link #add(JsonValue)}) and a deferred-flush
+ * callback that dispatches into
+ * {@link MessageSender#sendInvocationsToServer()}, so the TS class does not
+ * depend on the Java {@code Registry}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "ServerRpcQueue")
 public class ServerRpcQueue {
 
-    private static final Runnable NO_OP = () -> {
-        // NOOP
-    };
-
-    private JsonArray pendingInvocations = Json.createArray();
-
-    private boolean flushPending = false;
-
-    private final Registry registry;
-
-    private Runnable doFlushStrategy = NO_OP;
-
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
-    public ServerRpcQueue(Registry registry) {
-        this.registry = registry;
+    public ServerRpcQueue(UILifecycle uiLifecycle, JsRunnable send) {
+        // Defined by the TS class constructor.
     }
 
     /**
      * Adds an explicit RPC method invocation to the send queue.
-     *
-     * @param invocation
-     *            RPC method invocation
      */
-    public void add(JsonValue invocation) {
-        if (!registry.getUILifecycle().isRunning()) {
-            Console.warn(
-                    "Trying to invoke method on not yet started or stopped application");
-            return;
-        }
-        pendingInvocations.set(pendingInvocations.length(), invocation);
-    }
+    public native void add(JsonValue invocation);
 
     /**
-     * Clears the queue.
+     * Clears the queue and any pending flush.
      */
-    public void clear() {
-        pendingInvocations = Json.createArray();
-        flushPending = false;
-        doFlushStrategy = NO_OP;
-    }
+    public native void clear();
 
     /**
      * Returns the current size of the queue.
-     *
-     * @return the number of invocations in the queue
      */
-    public int size() {
-        return pendingInvocations.length();
-    }
+    public native int size();
 
     /**
-     * Checks if the queue is empty.
-     *
-     * @return true if the queue is empty, false otherwise
+     * Returns {@code true} when the queue has no pending invocations.
      */
-    public boolean isEmpty() {
-        return size() == 0;
-    }
+    public native boolean isEmpty();
 
     /**
-     * Triggers a send of server RPC and legacy variable changes to the server.
+     * Triggers a deferred flush of the queued invocations.
      */
-    public void flush() {
-        if (isFlushScheduled() || isEmpty()) {
-            return;
-        }
-        flushPending = true;
-
-        doFlushStrategy = this::doFlush;
-        // Deferred so we can be sure that all event handlers have been invoked
-        // before flushing the queue
-        Scheduler.get().scheduleDeferred(() -> doFlushStrategy.run());
-    }
+    public native void flush();
 
     /**
-     * Checks if a flush operation is pending.
-     *
-     * @return true if a flush is pending, false otherwise
+     * Returns {@code true} when a flush is currently pending.
      */
-    public boolean isFlushPending() {
-        return flushPending;
-    }
+    public native boolean isFlushPending();
 
     /**
-     * Checks if a loading indicator should be shown when the RPCs have been
-     * sent to the server and we are waiting for a response.
-     *
-     * @return true if a loading indicator should be shown, false otherwise
+     * Returns whether the loading indicator should be shown while the
+     * dispatched invocations are awaiting a server response.
      */
-    public boolean showLoadingIndicator() {
-        return true;
-    }
+    public native boolean showLoadingIndicator();
 
     /**
-     * Returns the current invocations as JSON.
-     *
-     * @return the current invocations in a JSON format ready to be sent to the
-     *         server
+     * Returns the queued invocations as the JSON-array payload to send.
      */
-    public JsonArray toJson() {
-        return pendingInvocations;
-    }
-
-    private boolean isFlushScheduled() {
-        return NO_OP != doFlushStrategy;
-    }
-
-    private void doFlush() {
-        doFlushStrategy = NO_OP;
-        if (!isFlushPending()) {
-            // Somebody else cleared the queue before we had the chance
-            return;
-        }
-        registry.getMessageSender().sendInvocationsToServer();
-    }
-
+    public native JsonArray toJson();
 }
