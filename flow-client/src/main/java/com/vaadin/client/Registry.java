@@ -331,7 +331,7 @@ public class Registry {
      * @return the {@link InitialPropertiesHandler} singleton
      */
     public InitialPropertiesHandler getInitialPropertiesHandler() {
-        return get(InitialPropertiesHandler.class);
+        return get("InitialPropertiesHandler");
     }
 
     /**
