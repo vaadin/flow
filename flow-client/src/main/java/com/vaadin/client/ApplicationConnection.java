@@ -202,29 +202,18 @@ public class ApplicationConnection {
         return !visible;
     }
 
-    public static final class Styles extends JavaScriptObject {
-        protected Styles() {
-
-        }
-
-        public final native void set(String key, Object value)/*-{
-            this[key] = value;
-        }-*/;
-    }
-
-    private JavaScriptObject getElementStyleProperties(int id) {
+    private Object getElementStyleProperties(int id) {
         StateNode node = registry.getStateTree().getNode(id);
-        Styles styles = JavaScriptObject.createObject().cast();
+        elemental.json.JsonObject styles = elemental.json.Json.createObject();
         if (node != null) {
             JsArray<String> names = node
                     .getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
                     .getPropertyNames();
             for (int i = 0; i < names.length(); i++) {
                 String name = names.get(i);
-                styles.set(name,
+                WidgetUtil.setJsProperty(styles, name,
                         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
                                 .getProperty(name).getValue());
-
             }
         }
         return styles;
