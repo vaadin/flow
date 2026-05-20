@@ -39,6 +39,7 @@ import { WidgetUtil } from './client/WidgetUtil';
 import { Bootstrapper } from './client/bootstrap/Bootstrapper';
 import { AtmospherePushConnection } from './client/communication/AtmospherePushConnection';
 import { LoadingIndicatorConfigurator } from './client/communication/LoadingIndicatorConfigurator';
+import { LoadingIndicatorStateHandler } from './client/communication/LoadingIndicatorStateHandler';
 import { MessageHandler } from './client/communication/MessageHandler';
 import { MessageSender } from './client/communication/MessageSender';
 import { PollConfigurator } from './client/communication/PollConfigurator';
@@ -97,6 +98,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.bootstrap', 'Bootstrapper', Bootstrapper);
   registerGwtBridge('client.communication', 'AtmospherePushConnection', AtmospherePushConnection);
   registerGwtBridge('client.communication', 'LoadingIndicatorConfigurator', LoadingIndicatorConfigurator);
+  registerGwtBridge('client.communication', 'LoadingIndicatorStateHandler', LoadingIndicatorStateHandler);
   registerGwtBridge('client.communication', 'MessageHandler', MessageHandler);
   registerGwtBridge('client.communication', 'MessageSender', MessageSender);
   registerGwtBridge('client.communication', 'PollConfigurator', PollConfigurator);

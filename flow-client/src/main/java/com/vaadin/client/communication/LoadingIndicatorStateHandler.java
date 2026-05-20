@@ -15,81 +15,37 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.Scheduler;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.ConnectionIndicator;
-import com.vaadin.client.Registry;
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsSet;
-import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.client.JsBooleanSupplier;
 
 /**
  * Manages the state of loading indicator based on active RPC requests, event
- * types, and lifecycle events.
+ * types, and lifecycle events. Pure {@code @JsType(isNative=true)} binding to
+ * the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/LoadingIndicatorStateHandler.ts}.
+ *
  * <p>
- * This class ensures appropriate visual feedback (e.g., loading bar) is shown
- * or hidden according to the current network conditions and request status. It
- * is responsible for muting the loading indication when RPC requests are
- * triggered by high-frequency UI events (mousemove and such) to avoid excessive
- * visual noise in these cases.
+ * Construction takes a boolean supplier that returns
+ * {@link RequestResponseTracker#hasActiveRequest()}, rather than the full
+ * {@code Registry}, so the TS class does not depend on the Java facade.
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "LoadingIndicatorStateHandler")
 public class LoadingIndicatorStateHandler {
-    private final Registry registry;
 
-    private boolean loading = false;
-
-    private boolean showLoading = false;
-
-    // High-frequency events, whose related RPC requests are not expected
-    // to trigger loading indication.
-    private static final JsSet<String> SILENT_EVENT_TYPES = JsCollections.set();
-    {
-        JsCollections.array("keydown", "keypress", "keyup", "mousemove",
-                "pointermove", "pointerrawupdate", "touchmove", "beforeinput",
-                "input", "scroll", "wheel", "drag", "dragover")
-                .forEach(SILENT_EVENT_TYPES::add);
+    public LoadingIndicatorStateHandler(JsBooleanSupplier hasActiveRequest) {
+        // Defined by the TS class constructor.
     }
 
     /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
+     * Updates the connection state to loading when a non-silent request starts.
      */
-    public LoadingIndicatorStateHandler(Registry registry) {
-        this.registry = registry;
-    }
+    public native void startLoading();
 
     /**
-     * Updates the connection state to {@link ConnectionIndicator#LOADING} when
-     * a non-silent request starts.
+     * Updates the connection state to connected when active requests finish.
      */
-    public void startLoading() {
-        if (!showLoading) {
-            // The next request is muted, do not show loading.
-            return;
-        }
-
-        update();
-    }
-
-    /**
-     * Updates the connection state to {@link ConnectionIndicator#CONNECTED}
-     * when active requests finish.
-     */
-    public void stopLoading() {
-        if (registry.getRequestResponseTracker().hasActiveRequest()) {
-            // Some request is in progress, skip the current stop.
-            return;
-        }
-
-        // Reset the loading state
-        showLoading = false;
-
-        // Debounce the update to avoid hiding loading when a follow-up
-        // request is started or scheduled right away.
-        Scheduler.get().scheduleDeferred(this::update);
-    }
+    public native void stopLoading();
 
     /**
      * Processes an RPC message to determine if a loading indicator should be
@@ -101,34 +57,5 @@ public class LoadingIndicatorStateHandler {
      *            for event RPC requests, the name of the event, otherwise
      *            {@code null}
      */
-    public void processMessage(String rpcType, String eventType) {
-        // Require at least one non-silent message to indicate loading for
-        // the next request.
-        boolean silent = JsonConstants.RPC_TYPE_EVENT.equals(rpcType)
-                && eventType != null && SILENT_EVENT_TYPES.has(eventType);
-        if (!silent) {
-            showLoading = true;
-        }
-    }
-
-    /**
-     * Applies the loading state change after a dirty check.
-     */
-    private void update() {
-        if (showLoading == loading) {
-            return;
-        }
-
-        loading = showLoading;
-        // Setting the loading state directly using
-        // `ConnectionIndicator.setState()` interferes with other loading
-        // parties
-        // (Flow router, Hilla requests), therefore `.loadingStarted()` /
-        // `.loadingFinished()` are preferred.
-        if (loading) {
-            ConnectionIndicator.loadingStarted();
-        } else {
-            ConnectionIndicator.loadingFinished();
-        }
-    }
+    public native void processMessage(String rpcType, String eventType);
 }
