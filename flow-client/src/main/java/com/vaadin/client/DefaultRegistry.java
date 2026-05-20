@@ -92,7 +92,10 @@ public class DefaultRegistry extends Registry {
         set(ConnectionStateHandler.class,
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
-        set(PushConfiguration.class, new PushConfiguration(this));
+        set("PushConfiguration",
+                new PushConfiguration(stateTree,
+                        () -> messageSender.setPushEnabled(true),
+                        () -> messageSender.setPushEnabled(false)));
         set("ReconnectConfiguration", new ReconnectConfiguration(stateTree));
         set("Poller", new Poller(stateTree, uiLifecycle));
         set("LoadingIndicatorStateHandler", new LoadingIndicatorStateHandler(

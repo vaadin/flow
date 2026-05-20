@@ -213,7 +213,7 @@ public class Registry {
      * @return the {@link PushConfiguration} singleton
      */
     public PushConfiguration getPushConfiguration() {
-        return get(PushConfiguration.class);
+        return get("PushConfiguration");
     }
 
     /**
