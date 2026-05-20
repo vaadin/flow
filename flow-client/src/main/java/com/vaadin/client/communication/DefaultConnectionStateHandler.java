@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -524,8 +523,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void pushError(PushConnection pushConnection,
-            JavaScriptObject response) {
+    public void pushError(PushConnection pushConnection, Object response) {
         debug("pushError()");
         handleCommunicationError("Push connection using "
                 + ((AtmosphereResponse) response).getTransport() + " failed!",
@@ -534,7 +532,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void pushClientTimeout(PushConnection pushConnection,
-            JavaScriptObject response) {
+            Object response) {
         debug("pushClientTimeout()");
         // TODO Reconnect, allowing client timeout to be set
         // https://dev.vaadin.com/ticket/18429
@@ -544,8 +542,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void pushClosed(PushConnection pushConnection,
-            JavaScriptObject response) {
+    public void pushClosed(PushConnection pushConnection, Object response) {
         debug("pushClosed()");
         Console.debug("Push connection closed");
     }

@@ -20,6 +20,8 @@ import jsinterop.annotations.JsType;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereConfiguration;
+
 /**
  * JsInterop binding for the TypeScript {@code AtmospherePushConnection} module
  * published at
@@ -34,10 +36,11 @@ final class NativeAtmospherePushConnection {
         // Native, not instantiated from Java
     }
 
-    static native JavaScriptObject createConfig(int messageDelimiter);
+    static native AtmosphereConfiguration createConfig(int messageDelimiter);
 
     static native JavaScriptObject doConnect(String uri,
-            JavaScriptObject config, AtmosphereConnectCallbacks callbacks);
+            AtmosphereConfiguration config,
+            AtmosphereConnectCallbacks callbacks);
 
     static native void doPush(JavaScriptObject socket, String message);
 
