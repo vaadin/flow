@@ -19,8 +19,7 @@ import com.vaadin.flow.component.Component;
 
 /**
  * Fires on the host component's {@code click} DOM event and exposes the click
- * coordinates and modifier-key state as {@link Argument}s for downstream
- * actions.
+ * coordinates and modifier-key state as {@link Input}s for downstream actions.
  * <p>
  * Example:
  *
@@ -46,42 +45,42 @@ public class ClickTrigger extends DomEventTrigger {
     }
 
     /** {@code event.screenX} — X coordinate relative to the screen. */
-    public Argument<Integer> screenX() {
+    public Input<Integer> screenX() {
         return property("screenX");
     }
 
     /** {@code event.screenY} — Y coordinate relative to the screen. */
-    public Argument<Integer> screenY() {
+    public Input<Integer> screenY() {
         return property("screenY");
     }
 
     /** {@code event.clientX} — X coordinate relative to the viewport. */
-    public Argument<Integer> clientX() {
+    public Input<Integer> clientX() {
         return property("clientX");
     }
 
     /** {@code event.clientY} — Y coordinate relative to the viewport. */
-    public Argument<Integer> clientY() {
+    public Input<Integer> clientY() {
         return property("clientY");
     }
 
     /** {@code event.shiftKey} — whether shift was held during the click. */
-    public Argument<Boolean> shiftKey() {
+    public Input<Boolean> shiftKey() {
         return property("shiftKey");
     }
 
     /** {@code event.ctrlKey} — whether ctrl was held during the click. */
-    public Argument<Boolean> ctrlKey() {
+    public Input<Boolean> ctrlKey() {
         return property("ctrlKey");
     }
 
     /** {@code event.altKey} — whether alt was held during the click. */
-    public Argument<Boolean> altKey() {
+    public Input<Boolean> altKey() {
         return property("altKey");
     }
 
     /** {@code event.metaKey} — whether meta was held during the click. */
-    public Argument<Boolean> metaKey() {
+    public Input<Boolean> metaKey() {
         return property("metaKey");
     }
 }

@@ -27,9 +27,9 @@ import com.vaadin.flow.dom.Element;
  * Common targets and properties:
  * <ul>
  * <li>{@code TextField.value} →
- * {@code new PropertyArgument<>(textField, "value", String.class)}
+ * {@code new PropertyInput<>(textField, "value", String.class)}
  * <li>{@code Checkbox.checked} →
- * {@code new PropertyArgument<>(checkbox, "checked", Boolean.class)}
+ * {@code new PropertyInput<>(checkbox, "checked", Boolean.class)}
  * </ul>
  *
  * <p>
@@ -38,14 +38,14 @@ import com.vaadin.flow.dom.Element;
  * @param <T>
  *            the runtime type of the value produced
  */
-public class PropertyArgument<T> extends Argument<T> {
+public class PropertyInput<T> extends Input<T> {
 
     private final Element target;
     private final String propertyName;
 
     /**
-     * Creates a property argument that reads the given JS property from the
-     * given target component.
+     * Creates a property input that reads the given JS property from the given
+     * target component.
      *
      * @param target
      *            the component to read from, not {@code null}
@@ -54,7 +54,7 @@ public class PropertyArgument<T> extends Argument<T> {
      * @param valueType
      *            runtime type of the produced value, not {@code null}
      */
-    public PropertyArgument(Component target, String propertyName,
+    public PropertyInput(Component target, String propertyName,
             Class<T> valueType) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);

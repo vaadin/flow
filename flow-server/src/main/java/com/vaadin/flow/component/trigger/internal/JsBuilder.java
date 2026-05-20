@@ -50,7 +50,7 @@ final class JsBuilder implements Serializable {
 
     /**
      * The trigger this builder is collecting JS for. Used by handler-scoped
-     * arguments ({@link HandlerExprArg}) to refuse being rendered into a
+     * arguments ({@link HandlerInput}) to refuse being rendered into a
      * different trigger's handler.
      */
     Trigger trigger() {

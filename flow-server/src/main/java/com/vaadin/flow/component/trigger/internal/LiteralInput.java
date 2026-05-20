@@ -18,8 +18,8 @@ package com.vaadin.flow.component.trigger.internal;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Argument backed by a server-side literal that is JSON-encoded into the JS at
- * build time. Lets actions take {@code Argument<? extends T>} uniformly while
+ * Input backed by a server-side literal that is JSON-encoded into the JS at
+ * build time. Lets actions take {@code Input<? extends T>} uniformly while
  * still accepting plain constants from callers.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -27,11 +27,11 @@ import org.jspecify.annotations.Nullable;
  * @param <T>
  *            the runtime type of the value
  */
-final class LiteralArg<T> extends Argument<T> {
+final class LiteralInput<T> extends Input<T> {
 
     private final @Nullable T value;
 
-    LiteralArg(@Nullable T value) {
+    LiteralInput(@Nullable T value) {
         this.value = value;
     }
 

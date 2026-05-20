@@ -31,6 +31,16 @@ import com.vaadin.flow.shared.Registration;
  * {@code BroadcastChannel} message, a media-query match, … — and, when it does,
  * runs one or more {@link Action actions}.
  * <p>
+ * Actions run synchronously inside the browser's handler when the trigger
+ * fires; for triggers that originate from a user gesture (click, keypress, …)
+ * this preserves the gesture context for downstream actions, letting them
+ * invoke browser APIs that require it (clipboard, fullscreen, file picker,
+ * share, …). Note that most such APIs are themselves asynchronous: the action
+ * is dispatched synchronously, but any server-observable effect — for example,
+ * a callback reporting whether {@code navigator.clipboard.writeText} resolved —
+ * may reach the server arbitrarily later than the gesture itself, after one or
+ * more event-loop turns.
+ * <p>
  * Each call to {@link #triggers(Action...)} produces one
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
  * element; {@link #remove()} removes all such registrations. Subclasses provide

@@ -206,7 +206,7 @@ class TriggerTest {
         ClickTrigger click1 = new ClickTrigger(button1);
         ClickTrigger click2 = new ClickTrigger(button2);
 
-        // Argument made by click1 cannot be used in click2's handler.
+        // Input made by click1 cannot be used in click2's handler.
         assertThrows(IllegalArgumentException.class, () -> click2.triggers(
                 new SetPropertyAction<>(field, "value", click1.screenX())));
     }
@@ -221,9 +221,9 @@ class TriggerTest {
                 yField.getElement());
 
         ClickTrigger click = new ClickTrigger(button);
-        // Same Argument instance used across two separate triggers() calls on
+        // Same Input instance used across two separate triggers() calls on
         // its owning trigger.
-        Argument<Integer> x = click.screenX();
+        Input<Integer> x = click.screenX();
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 

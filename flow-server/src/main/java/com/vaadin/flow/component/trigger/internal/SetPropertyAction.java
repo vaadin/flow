@@ -26,12 +26,12 @@ import com.vaadin.flow.dom.Element;
  * Assigns a value to a JavaScript property on a target element when the bound
  * trigger fires. Pure client-side — no server round-trip.
  * <p>
- * Symmetric with {@link PropertyArgument}: the same property name space
+ * Symmetric with {@link PropertyInput}: the same property name space
  * (DOM/custom-element properties such as {@code value}, {@code checked},
  * {@code disabled}).
  * <p>
  * The value to assign can be either a literal (constant, serialised at build
- * time) or an {@link Argument} that produces the value on the client when the
+ * time) or an {@link Input} that produces the value on the client when the
  * trigger fires — for example, {@link ClickTrigger#screenX() click.screenX()}
  * feeds the click's screen coordinate.
  * <p>
@@ -55,7 +55,7 @@ public class SetPropertyAction<T> extends Action {
 
     private final Element target;
     private final String propertyName;
-    private final Argument<? extends T> source;
+    private final Input<? extends T> source;
 
     /**
      * Creates an action that assigns the given literal value to the given JS
@@ -72,7 +72,7 @@ public class SetPropertyAction<T> extends Action {
      */
     public SetPropertyAction(Component target, String propertyName,
             @Nullable T value) {
-        this(target, propertyName, new LiteralArg<>(value));
+        this(target, propertyName, new LiteralInput<>(value));
     }
 
     /**
@@ -84,10 +84,10 @@ public class SetPropertyAction<T> extends Action {
      * @param propertyName
      *            the JS property name, not {@code null}
      * @param source
-     *            argument that produces the value to assign, not {@code null}
+     *            input that produces the value to assign, not {@code null}
      */
     public SetPropertyAction(Component target, String propertyName,
-            Argument<? extends T> source) {
+            Input<? extends T> source) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
         this.source = Objects.requireNonNull(source);
