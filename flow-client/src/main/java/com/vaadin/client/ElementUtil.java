@@ -15,46 +15,41 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
+
 import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
  * Utils class, intended to ease working with DOM elements on client side.
- * <p>
- * {@link #getElementById(Node, String)} and
- * {@link #getElementByName(Node, String)} delegate to the TypeScript
- * implementation at {@code src/main/frontend/internal/client/ElementUtil.ts}.
- * {@link #hasTag} is a pure-Java {@code instanceof} check with no browser API
- * to delegate to.
  *
  * @author Vaadin Ltd
  */
-public class ElementUtil {
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ElementUtil")
+public final class ElementUtil {
 
     private ElementUtil() {
-        // Only static helpers
-    }
-
-    /**
-     * Checks whether the {@code node} has required {@code tag}.
-     */
-    public static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
+        // Native, not instantiated from Java
     }
 
     /**
      * Searches the shadow root of the given context element for the given id or
      * searches the light DOM if the element has no shadow root.
      */
-    public static Element getElementById(Node context, String id) {
-        return NativeElementUtil.getElementById(context, id);
-    }
+    public static native Element getElementById(Node context, String id);
 
     /**
      * Searches the element by the given {@code name} attribute.
      */
-    public static Element getElementByName(Node context, String name) {
-        return NativeElementUtil.getElementByName(context, name);
+    public static native Element getElementByName(Node context, String name);
+
+    /**
+     * Checks whether the {@code node} has required {@code tag}.
+     */
+    @JsOverlay
+    public static boolean hasTag(Node node, String tag) {
+        return node instanceof Element
+                && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 }
