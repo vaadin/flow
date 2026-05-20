@@ -134,11 +134,6 @@ public final class Reactive {
      */
     @JsOverlay
     public static Computation runWhenDependenciesChange(Command command) {
-        return new Computation() {
-            @Override
-            protected void doRecompute() {
-                command.execute();
-            }
-        };
+        return new Computation(command::execute);
     }
 }
