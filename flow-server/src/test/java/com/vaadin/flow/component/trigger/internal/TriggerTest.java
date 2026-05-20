@@ -242,12 +242,12 @@ class TriggerTest {
     }
 
     /**
-     * addJsInitializer wrapper parameters: [element, installFn, initializerId].
+     * addJsInitializer wrapper parameters: [element, initializerId, installFn].
      * The installFn is the trigger's install JsFunction.
      */
     private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(1);
-        assertTrue(o instanceof JsFunction, "Expected $1 to be a JsFunction");
+        Object o = invocation.getParameters().get(2);
+        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
         return (JsFunction) o;
     }
 
