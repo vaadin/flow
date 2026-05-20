@@ -49,7 +49,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
@@ -413,7 +413,7 @@ class NavigationStateRendererTest {
         MockUI ui = new MockUI(session) {
             final Page page = new Page(this) {
                 @Override
-                public PendingJavaScriptResult executeJs(String expression,
+                public PendingJavaScriptExecution executeJs(String expression,
                         Object... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);

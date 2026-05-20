@@ -35,7 +35,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateParserFactory;
 import com.vaadin.flow.component.template.Id;
@@ -476,7 +476,7 @@ class PolymerTemplateTest extends HasCurrentService {
             private Page page = new Page(this) {
 
                 @Override
-                public PendingJavaScriptResult executeJs(String expression,
+                public PendingJavaScriptExecution executeJs(String expression,
                         Object... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);

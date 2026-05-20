@@ -66,7 +66,7 @@ class PageTest {
         }
 
         @Override
-        public PendingJavaScriptResult executeJs(String expression,
+        public PendingJavaScriptExecution executeJs(String expression,
                 Object... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
@@ -96,11 +96,17 @@ class PageTest {
         final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... params) {
                 super.executeJs(expression, params);
 
-                return new PendingJavaScriptResult() {
+                return new PendingJavaScriptExecution() {
+
+                    @Override
+                    public PendingJavaScriptExecution withParameter(String name,
+                            Object value) {
+                        return this;
+                    }
 
                     @Override
                     public boolean cancelExecution() {
@@ -156,13 +162,19 @@ class PageTest {
         final UI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... params) {
                 super.executeJs(expression, params);
                 assertEquals("return window.location.href", expression,
                         "Expected javascript for fetching location is wrong.");
 
-                return new PendingJavaScriptResult() {
+                return new PendingJavaScriptExecution() {
+
+                    @Override
+                    public PendingJavaScriptExecution withParameter(String name,
+                            Object value) {
+                        return this;
+                    }
 
                     @Override
                     public boolean cancelExecution() {
@@ -256,7 +268,7 @@ class PageTest {
 
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 assertNull(oldExpression, "There should be no old expression");
@@ -284,11 +296,11 @@ class PageTest {
         List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -307,11 +319,11 @@ class PageTest {
         List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -331,10 +343,10 @@ class PageTest {
         AtomicReference<String> capture = new AtomicReference<>();
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capture.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -357,11 +369,11 @@ class PageTest {
         MockUI mockUI = new MockUI();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capturedExpression.set(expression);
                 capturedParams.set(parameters);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -385,11 +397,11 @@ class PageTest {
         MockUI mockUI = new MockUI();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capturedExpression.set(expression);
                 capturedParams.set(parameters);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -414,10 +426,10 @@ class PageTest {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capturedExpression.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -438,10 +450,10 @@ class PageTest {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 capturedExpression.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 
@@ -482,9 +494,9 @@ class PageTest {
 
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return Mockito.mock(PendingJavaScriptExecution.class);
             }
         };
 

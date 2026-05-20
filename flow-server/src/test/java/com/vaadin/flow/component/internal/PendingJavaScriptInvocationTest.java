@@ -233,6 +233,63 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
+    void withParameter_appendsValueAndPrependsLetDeclaration() {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                new Element("dummy").getNode(),
+                new JavaScriptInvocation("doSomething(foo)"));
+
+        pending.withParameter("foo", "Some value");
+
+        JavaScriptInvocation js = pending.getInvocation();
+        assertEquals(List.of("Some value"), js.getParameters());
+        assertEquals("let foo=$0;doSomething(foo)", js.getExpression());
+    }
+
+    @Test
+    void withParameter_combinesWithPositionalAndChains() {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                new Element("dummy").getNode(),
+                new JavaScriptInvocation("doSomething($0, foo, bar)", 42));
+
+        PendingJavaScriptInvocation chained = pending
+                .withParameter("foo", "first").withParameter("bar", 7);
+
+        assertSame(pending, chained);
+        JavaScriptInvocation js = pending.getInvocation();
+        assertEquals(List.of(42, "first", 7), js.getParameters());
+        assertEquals("let bar=$2;let foo=$1;doSomething($0, foo, bar)",
+                js.getExpression());
+    }
+
+    @Test
+    void withParameter_afterSend_throws() {
+        invocation.setSentToBrowser();
+
+        assertThrows(IllegalStateException.class,
+                () -> invocation.withParameter("foo", "x"));
+    }
+
+    @Test
+    void withParameter_duplicateName_throws() {
+        invocation.withParameter("foo", "x");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> invocation.withParameter("foo", "y"));
+    }
+
+    @Test
+    void withParameter_invalidName_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> invocation.withParameter("$0", "x"));
+        assertThrows(IllegalArgumentException.class,
+                () -> invocation.withParameter("1foo", "x"));
+        assertThrows(IllegalArgumentException.class,
+                () -> invocation.withParameter("", "x"));
+        assertThrows(IllegalArgumentException.class,
+                () -> invocation.withParameter(null, "x"));
+    }
+
+    @Test
     void subscribeAfterCancel_callFailHandler() {
         invocation.cancelExecution();
 

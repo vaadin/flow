@@ -58,6 +58,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -2911,7 +2912,7 @@ class ElementTest extends AbstractNodeTest {
 
         Element element = new Element("div") {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 assertNull(oldExpression, "There should be no old expression");
@@ -2934,7 +2935,7 @@ class ElementTest extends AbstractNodeTest {
     void givenTypeDefinedArray_ArrayStoreExceptionNotThrown() {
         Element element = new Element("div") {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
+            public PendingJavaScriptExecution executeJs(String expression,
                     Object... parameters) {
                 Serializable[] wrappedParameters;
                 if (parameters.length == 0) {

@@ -352,10 +352,11 @@ public class Page implements Serializable {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
-     * @return a pending result that can be used to get a value returned from
-     *         the expression
+     * @return a pending execution that can be used to get a value returned from
+     *         the expression and to add named parameters via
+     *         {@link PendingJavaScriptExecution#withParameter(String, Object)}
      */
-    public PendingJavaScriptResult executeJs(String expression,
+    public PendingJavaScriptExecution executeJs(String expression,
             Object... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
