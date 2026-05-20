@@ -15,36 +15,28 @@
  */
 package com.vaadin.client.bootstrap;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
 /**
- * Wraps a native javascript object containing fields for an error message
+ * Typed view over the bootstrap configuration's error-message object. Backed
+ * directly by the underlying JS instance — getters compile to property reads.
  *
  * @since 1.0
  */
-public final class ErrorMessage extends JavaScriptObject {
+@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+public final class ErrorMessage {
 
-    protected ErrorMessage() {
-        // JSO constructor
-    }
+    @JsProperty(name = "caption")
+    public native String getCaption();
 
-    public native String getCaption()
-    /*-{
-        return this.caption;
-    }-*/;
+    @JsProperty(name = "message")
+    public native String getMessage();
 
-    public native String getMessage()
-    /*-{
-        return this.message;
-    }-*/;
+    @JsProperty(name = "url")
+    public native String getUrl();
 
-    public native String getUrl()
-    /*-{
-        return this.url;
-    }-*/;
-
-    public native String getQuerySelector()
-    /*-{
-        return this.querySelector;
-    }-*/;
+    @JsProperty(name = "querySelector")
+    public native String getQuerySelector();
 }
