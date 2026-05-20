@@ -28,8 +28,8 @@ import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
+
+import com.vaadin.client.flow.collection.JsArray;
 
 /**
  * Lightweight profiling tool that can be used to collect profiling data with
@@ -284,53 +284,40 @@ public class Profiler {
         }
     }
 
-    private static final class GwtStatsEvent extends JavaScriptObject {
-        protected GwtStatsEvent() {
-            // JSO constructor
-        }
+    @jsinterop.annotations.JsType(isNative = true, namespace = jsinterop.annotations.JsPackage.GLOBAL, name = "Object")
+    private static final class GwtStatsEvent {
 
-        private native String getEvtGroup()
-        /*-{
-            return this.evtGroup;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "evtGroup")
+        native String getEvtGroup();
 
-        private native double getMillis()
-        /*-{
-            return this.millis;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "millis")
+        native double getMillis();
 
-        private native String getSubSystem()
-        /*-{
-            return this.subSystem;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "subSystem")
+        native String getSubSystem();
 
-        private native String getType()
-        /*-{
-            return this.type;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "type")
+        native String getType();
 
-        private native String getModuleName()
-        /*-{
-            return this.moduleName;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "moduleName")
+        native String getModuleName();
 
-        private native double getRelativeMillis()
-        /*-{
-            return this.relativeMillis;
-        }-*/;
+        @jsinterop.annotations.JsProperty(name = "relativeMillis")
+        native double getRelativeMillis();
 
-        private native boolean isExtendedEvent()
-        /*-{
-            return 'relativeMillis' in this;
-        }-*/;
-
-        public String getEventName() {
+        @jsinterop.annotations.JsOverlay
+        public final String getEventName() {
             String group = getEvtGroup();
             if (EVT_GROUP.equals(group)) {
                 return getSubSystem();
             } else {
                 return group + "." + getSubSystem();
             }
+        }
+
+        @jsinterop.annotations.JsOverlay
+        public final boolean isExtendedEvent() {
+            return WidgetUtil.hasJsProperty(this, "relativeMillis");
         }
     }
 
