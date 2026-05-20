@@ -82,9 +82,8 @@ public abstract class Trigger implements Serializable {
      *
      * @param actions
      *            the actions to run, not {@code null} or empty
-     * @return this trigger, for chaining
      */
-    public final Trigger triggers(Action... actions) {
+    public final void triggers(Action... actions) {
         Objects.requireNonNull(actions);
         if (actions.length == 0) {
             throw new IllegalArgumentException(
@@ -101,7 +100,6 @@ public abstract class Trigger implements Serializable {
                 .of(handlerBody.toString(), builder.captures())
                 .withArguments("event");
         registrations.add(host.addJsInitializer(installJs(), handler));
-        return this;
     }
 
     /**
