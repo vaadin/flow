@@ -1874,9 +1874,9 @@ public class Element extends Node<Element> {
      * discarded its DOM.
      * <p>
      * The return value is read synchronously. The expression must return a
-     * function or nothing; returning a promise or any other non-function value
-     * is logged as an error on the client. Use {@code undefined} (no
-     * {@code return}) when there is no cleanup to register.
+     * function, {@code null}, or {@code undefined} (the latter being the
+     * implicit value when there is no {@code return}). Returning any other
+     * value, including a promise, is logged as an error on the client.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>

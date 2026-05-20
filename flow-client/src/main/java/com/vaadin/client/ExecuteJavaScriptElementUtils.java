@@ -222,10 +222,13 @@ public final class ExecuteJavaScriptElementUtils {
             node.addUnregisterListener(event -> drainInitializers(node));
         }
         JsCallback existing = entry.get(id);
+        // Install the new cleanup before invoking the previous one so a
+        // re-entrant register/dispose call from inside the existing callback
+        // sees the new state, not the stale entry.
+        entry.set(id, cleanup);
         if (existing != null) {
             invokeSafely(existing);
         }
-        entry.set(id, cleanup);
     }
 
     /**

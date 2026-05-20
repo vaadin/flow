@@ -646,6 +646,7 @@ public class UIInternals implements Serializable {
      * @return the next initializer id
      */
     public int nextJsInitializerId() {
+        session.checkHasLock();
         return nextJsInitializerId++;
     }
 

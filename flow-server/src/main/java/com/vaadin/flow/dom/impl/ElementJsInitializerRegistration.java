@@ -44,14 +44,14 @@ public final class ElementJsInitializerRegistration implements Registration {
 
     private static final String INIT_EXPRESSION = """
             const element = $0;
-            const initializer = $1;
-            const initializerId = $2;
+            const initializerId = $1;
+            const initializer = $2;
             const node = this.getNode(element);
             const cleanup = initializer.apply(element);
             if (typeof cleanup === 'function') {
               this.registerInitializer(node, initializerId, cleanup);
-            } else if (typeof cleanup !== 'undefined') {
-              console.error('addJsInitializer expression must return a function or nothing; got ' + (typeof cleanup));
+            } else if (cleanup !== undefined && cleanup !== null) {
+              console.error('addJsInitializer expression must return a function, null or undefined; got ' + (typeof cleanup));
             }
             """;
 
@@ -123,8 +123,8 @@ public final class ElementJsInitializerRegistration implements Registration {
         if (initializerId == -1) {
             initializerId = ui.getInternals().nextJsInitializerId();
         }
-        Object[] params = new Object[] { Element.get(node), userFunction,
-                initializerId };
+        Object[] params = new Object[] { Element.get(node), initializerId,
+                userFunction };
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 INIT_EXPRESSION, params);
         ui.getInternals().addJavaScriptInvocation(

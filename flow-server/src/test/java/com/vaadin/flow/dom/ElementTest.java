@@ -2467,13 +2467,13 @@ class ElementTest extends AbstractNodeTest {
 
         List<Object> params = invocation.getParameters();
         assertEquals(3, params.size(),
-                "Expected [element, userFunction, initializerId]");
+                "Expected [element, initializerId, userFunction]");
         assertEquals(element, params.get(0));
-        assertInstanceOf(JsFunction.class, params.get(1));
-        JsFunction userFn = (JsFunction) params.get(1);
+        assertEquals(Integer.valueOf(0), params.get(1));
+        assertInstanceOf(JsFunction.class, params.get(2));
+        JsFunction userFn = (JsFunction) params.get(2);
         assertEquals("return () => {};", userFn.getBody());
         assertEquals(List.of("foo"), userFn.getCaptures());
-        assertEquals(Integer.valueOf(0), params.get(2));
     }
 
     @Test
@@ -2637,11 +2637,11 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        // Init params are [userFunction, element, initializerId].
+        // Init params are [element, initializerId, userFunction].
         assertEquals(Integer.valueOf(0),
-                pending.get(0).getInvocation().getParameters().get(2));
+                pending.get(0).getInvocation().getParameters().get(1));
         assertEquals(Integer.valueOf(1),
-                pending.get(1).getInvocation().getParameters().get(2));
+                pending.get(1).getInvocation().getParameters().get(1));
     }
 
     @Test
