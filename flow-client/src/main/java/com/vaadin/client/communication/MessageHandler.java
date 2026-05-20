@@ -36,7 +36,6 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
-import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -385,8 +384,6 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
-        DependencyLoader.runWhenEagerDependenciesLoaded(
-                DomApi::updateApiImplementation);
         DependencyLoader.runWhenEagerDependenciesLoaded(
                 () -> processMessage(valueMap, lock, start));
     }
