@@ -31,9 +31,9 @@ import com.vaadin.flow.dom.Element;
  * {@code disabled}).
  * <p>
  * The value to assign can be either a literal (constant, serialised at build
- * time) or an {@link AbstractArgument} that produces the value on the client
- * when the trigger fires — for example, {@link ClickTrigger#screenX()
- * click.screenX()} feeds the click's screen coordinate.
+ * time) or an {@link Argument} that produces the value on the client when the
+ * trigger fires — for example, {@link ClickTrigger#screenX() click.screenX()}
+ * feeds the click's screen coordinate.
  * <p>
  * Common idioms:
  * <ul>
@@ -51,11 +51,11 @@ import com.vaadin.flow.dom.Element;
  * @param <T>
  *            the runtime type of the value to assign
  */
-public class SetPropertyAction<T> extends AbstractAction {
+public class SetPropertyAction<T> extends Action {
 
     private final Element target;
     private final String propertyName;
-    private final AbstractArgument<? extends T> source;
+    private final Argument<? extends T> source;
 
     /**
      * Creates an action that assigns the given literal value to the given JS
@@ -87,7 +87,7 @@ public class SetPropertyAction<T> extends AbstractAction {
      *            argument that produces the value to assign, not {@code null}
      */
     public SetPropertyAction(Component target, String propertyName,
-            AbstractArgument<? extends T> source) {
+            Argument<? extends T> source) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
         this.source = Objects.requireNonNull(source);

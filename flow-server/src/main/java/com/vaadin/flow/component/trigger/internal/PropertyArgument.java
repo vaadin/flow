@@ -38,7 +38,7 @@ import com.vaadin.flow.dom.Element;
  * @param <T>
  *            the runtime type of the value produced
  */
-public class PropertyArgument<T> extends AbstractArgument<T> {
+public class PropertyArgument<T> extends Argument<T> {
 
     private final Element target;
     private final String propertyName;

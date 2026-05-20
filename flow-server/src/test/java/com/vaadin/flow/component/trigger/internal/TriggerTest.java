@@ -170,7 +170,7 @@ class TriggerTest {
         TagComponent button = new TagComponent("button");
         DomEventTrigger trigger = new DomEventTrigger(button, "click");
         assertThrows(IllegalArgumentException.class,
-                () -> trigger.triggers(new AbstractAction[0]));
+                () -> trigger.triggers(new Action[0]));
     }
 
     @Test
@@ -223,7 +223,7 @@ class TriggerTest {
         ClickTrigger click = new ClickTrigger(button);
         // Same Argument instance used across two separate triggers() calls on
         // its owning trigger.
-        AbstractArgument<Integer> x = click.screenX();
+        Argument<Integer> x = click.screenX();
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 

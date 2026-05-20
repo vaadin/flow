@@ -22,22 +22,21 @@ import java.util.Objects;
  * trigger's handler — typically {@code event[...]} for a
  * {@link DomEventTrigger}.
  * <p>
- * Carries the owning trigger so that
- * {@link AbstractTrigger#triggers(Action...)} refuses to render an argument
- * created by trigger A into the handler of trigger B (where the referenced
- * variable would not be in scope).
+ * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
+ * refuses to render an argument created by trigger A into the handler of
+ * trigger B (where the referenced variable would not be in scope).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-final class HandlerExprArg<T> extends AbstractArgument<T> {
+final class HandlerExprArg<T> extends Argument<T> {
 
     private final String jsExpression;
-    private final AbstractTrigger owner;
+    private final Trigger owner;
 
-    HandlerExprArg(String jsExpression, AbstractTrigger owner) {
+    HandlerExprArg(String jsExpression, Trigger owner) {
         this.jsExpression = Objects.requireNonNull(jsExpression);
         this.owner = Objects.requireNonNull(owner);
     }

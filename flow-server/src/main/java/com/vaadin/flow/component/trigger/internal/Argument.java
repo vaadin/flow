@@ -19,8 +19,8 @@ import java.io.Serializable;
 
 /**
  * A value produced on the client at the moment a trigger fires, snapshotted and
- * passed into the bound {@link AbstractAction actions}. Subclasses produce the
- * JS expression that yields the argument's value by overriding
+ * passed into the bound {@link Action actions}. Subclasses produce the JS
+ * expression that yields the argument's value by overriding
  * {@link #appendExpression(JsBuilder, StringBuilder)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @param <T>
  *            the runtime type of the value produced
  */
-public abstract class AbstractArgument<T> implements Serializable {
+public abstract class Argument<T> implements Serializable {
 
     /**
      * Appends this argument's JS expression to {@code out}. Element references

@@ -29,9 +29,9 @@ import com.vaadin.flow.shared.Registration;
  * Something that fires on the client when some condition is met — a DOM event,
  * a signal change, an observer firing, a timer elapsing, an idle timeout, a
  * {@code BroadcastChannel} message, a media-query match, … — and, when it does,
- * runs one or more {@link AbstractAction actions}.
+ * runs one or more {@link Action actions}.
  * <p>
- * Each call to {@link #triggers(AbstractAction...)} produces one
+ * Each call to {@link #triggers(Action...)} produces one
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
  * element; {@link #remove()} removes all such registrations. Subclasses provide
  * the JS that installs and tears down the listener by overriding
@@ -40,7 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public abstract class AbstractTrigger implements Serializable {
+public abstract class Trigger implements Serializable {
 
     private final Element host;
     private final List<Registration> registrations = new ArrayList<>();
@@ -52,7 +52,7 @@ public abstract class AbstractTrigger implements Serializable {
      *            the component whose root element the trigger fires on, not
      *            {@code null}
      */
-    protected AbstractTrigger(Component host) {
+    protected Trigger(Component host) {
         this.host = Objects.requireNonNull(host).getElement();
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractTrigger implements Serializable {
      *            the actions to run, not {@code null} or empty
      * @return this trigger, for chaining
      */
-    public final AbstractTrigger triggers(AbstractAction... actions) {
+    public final Trigger triggers(Action... actions) {
         Objects.requireNonNull(actions);
         if (actions.length == 0) {
             throw new IllegalArgumentException(
@@ -82,7 +82,7 @@ public abstract class AbstractTrigger implements Serializable {
         }
         JsBuilder builder = new JsBuilder(this);
         StringBuilder handlerBody = new StringBuilder();
-        for (AbstractAction action : actions) {
+        for (Action action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
             action.appendStatement(builder, handlerBody);
             handlerBody.append(";");

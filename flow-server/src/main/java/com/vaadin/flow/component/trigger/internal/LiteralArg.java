@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T>
  *            the runtime type of the value
  */
-final class LiteralArg<T> extends AbstractArgument<T> {
+final class LiteralArg<T> extends Argument<T> {
 
     private final @Nullable T value;
 

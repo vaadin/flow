@@ -19,8 +19,8 @@ import com.vaadin.flow.component.Component;
 
 /**
  * Fires on the host component's {@code click} DOM event and exposes the click
- * coordinates and modifier-key state as {@link AbstractArgument}s for
- * downstream actions.
+ * coordinates and modifier-key state as {@link Argument}s for downstream
+ * actions.
  * <p>
  * Example:
  *
@@ -46,42 +46,42 @@ public class ClickTrigger extends DomEventTrigger {
     }
 
     /** {@code event.screenX} — X coordinate relative to the screen. */
-    public AbstractArgument<Integer> screenX() {
+    public Argument<Integer> screenX() {
         return property("screenX");
     }
 
     /** {@code event.screenY} — Y coordinate relative to the screen. */
-    public AbstractArgument<Integer> screenY() {
+    public Argument<Integer> screenY() {
         return property("screenY");
     }
 
     /** {@code event.clientX} — X coordinate relative to the viewport. */
-    public AbstractArgument<Integer> clientX() {
+    public Argument<Integer> clientX() {
         return property("clientX");
     }
 
     /** {@code event.clientY} — Y coordinate relative to the viewport. */
-    public AbstractArgument<Integer> clientY() {
+    public Argument<Integer> clientY() {
         return property("clientY");
     }
 
     /** {@code event.shiftKey} — whether shift was held during the click. */
-    public AbstractArgument<Boolean> shiftKey() {
+    public Argument<Boolean> shiftKey() {
         return property("shiftKey");
     }
 
     /** {@code event.ctrlKey} — whether ctrl was held during the click. */
-    public AbstractArgument<Boolean> ctrlKey() {
+    public Argument<Boolean> ctrlKey() {
         return property("ctrlKey");
     }
 
     /** {@code event.altKey} — whether alt was held during the click. */
-    public AbstractArgument<Boolean> altKey() {
+    public Argument<Boolean> altKey() {
         return property("altKey");
     }
 
     /** {@code event.metaKey} — whether meta was held during the click. */
-    public AbstractArgument<Boolean> metaKey() {
+    public Argument<Boolean> metaKey() {
         return property("metaKey");
     }
 }

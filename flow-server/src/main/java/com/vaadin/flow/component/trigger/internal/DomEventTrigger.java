@@ -36,7 +36,7 @@ import com.vaadin.flow.component.Component;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class DomEventTrigger extends AbstractTrigger {
+public class DomEventTrigger extends Trigger {
 
     private final String eventName;
 
@@ -57,12 +57,12 @@ public class DomEventTrigger extends AbstractTrigger {
     }
 
     /**
-     * Returns an {@link AbstractArgument} that yields {@code event[name]} at
-     * fire time — the value of a property on the DOM event object.
+     * Returns an {@link Argument} that yields {@code event[name]} at fire time
+     * — the value of a property on the DOM event object.
      * <p>
      * The returned argument is only valid in actions wired to this trigger;
      * using it elsewhere throws {@link IllegalArgumentException} at the
-     * {@link #triggers(AbstractAction...)} call site.
+     * {@link #triggers(Action...)} call site.
      *
      * @param name
      *            the event property name (e.g. {@code "screenX"},
@@ -71,7 +71,7 @@ public class DomEventTrigger extends AbstractTrigger {
      * @param <T>
      *            the runtime type of the value produced
      */
-    public <T> AbstractArgument<T> property(String name) {
+    public <T> Argument<T> property(String name) {
         Objects.requireNonNull(name);
         return new HandlerExprArg<>("event[" + JsBuilder.json(name) + "]",
                 this);
