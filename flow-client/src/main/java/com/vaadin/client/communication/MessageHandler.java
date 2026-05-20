@@ -220,7 +220,7 @@ public class MessageHandler {
         if (!hasResynchronize && registry.getMessageSender()
                 .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
 
-            JsonObject json = valueMap.cast();
+            JsonObject json = WidgetUtil.crazyJsCast(valueMap);
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 JsonArray commands = json
                         .getArray(JsonConstants.UIDL_KEY_EXECUTE);
@@ -363,7 +363,7 @@ public class MessageHandler {
             pushId = valueMap.getString(ApplicationConstants.UIDL_PUSH_ID);
         }
 
-        handleDependencies(valueMap.cast());
+        handleDependencies(WidgetUtil.crazyJsCast(valueMap));
 
         if (!initialMessageHandled) {
             /*
@@ -420,7 +420,7 @@ public class MessageHandler {
         try {
             double processUidlStart = Duration.currentTimeMillis();
 
-            JsonObject json = valueMap.cast();
+            JsonObject json = WidgetUtil.crazyJsCast(valueMap);
 
             if (json.hasKey("constants")) {
                 ConstantPool constantPool = registry.getConstantPool();

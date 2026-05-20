@@ -15,22 +15,22 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.collection.JsArray;
 
 /**
- * Old abstraction for a UIDL JSON message.
+ * Old abstraction for a UIDL JSON message. Backed directly by the underlying JS
+ * instance — keyed reads compile to property reads via
+ * {@link WidgetUtil#getJsProperty(Object, String)}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public final class ValueMap extends JavaScriptObject {
-    /**
-     * JSO constructor.
-     */
-    protected ValueMap() {
-    }
+@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+public final class ValueMap {
 
     /**
      * Gets the value with the given key as an integer.
@@ -39,10 +39,10 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return the value as an integer
      */
-    public native int getInt(final String name)
-    /*-{
-        return this[name];
-    }-*/;
+    @JsOverlay
+    public final int getInt(String name) {
+        return ((Number) WidgetUtil.getJsProperty(this, name)).intValue();
+    }
 
     /**
      * Gets the value with the given key as a string.
@@ -51,10 +51,10 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return the value as a string
      */
-    public native String getString(String name)
-    /*-{
-        return this[name];
-    }-*/;
+    @JsOverlay
+    public final String getString(String name) {
+        return (String) WidgetUtil.getJsProperty(this, name);
+    }
 
     /**
      * Gets the value with the given key as an string array.
@@ -63,10 +63,11 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return the value as a string array
      */
-    public native JsArray<String> getJSStringArray(String name)
-    /*-{
-        return this[name];
-    }-*/;
+    @SuppressWarnings("unchecked")
+    @JsOverlay
+    public final JsArray<String> getJSStringArray(String name) {
+        return (JsArray<String>) WidgetUtil.getJsProperty(this, name);
+    }
 
     /**
      * Checks if the map contains the given key.
@@ -75,10 +76,10 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return true if the map contains the key, false otherwise
      */
-    public native boolean containsKey(final String name)
-    /*-{
-         return name in this;
-    }-*/;
+    @JsOverlay
+    public final boolean containsKey(String name) {
+        return WidgetUtil.hasJsProperty(this, name);
+    }
 
     /**
      * Gets the value with the given key as a map.
@@ -87,9 +88,8 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return the value as a map
      */
-    public native ValueMap getValueMap(String name)
-    /*-{
-        return this[name];
-    }-*/;
-
+    @JsOverlay
+    public final ValueMap getValueMap(String name) {
+        return (ValueMap) WidgetUtil.getJsProperty(this, name);
+    }
 }
