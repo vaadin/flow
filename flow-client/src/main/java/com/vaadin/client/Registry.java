@@ -349,7 +349,7 @@ public class Registry {
      * @return the {@link LoadingIndicatorStateHandler} singleton instance
      */
     public LoadingIndicatorStateHandler getLoadingIndicatorStateHandler() {
-        return get(LoadingIndicatorStateHandler.class);
+        return get("LoadingIndicatorStateHandler");
     }
 
     /**

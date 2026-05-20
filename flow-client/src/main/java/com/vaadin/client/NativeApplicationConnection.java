@@ -56,13 +56,6 @@ final class NativeApplicationConnection {
 @FunctionalInterface
 @JsFunction
 @SuppressWarnings("unusable-by-js")
-interface JsBooleanSupplier {
-    boolean get();
-}
-
-@FunctionalInterface
-@JsFunction
-@SuppressWarnings("unusable-by-js")
 interface JsIntSupplier {
     int get();
 }
