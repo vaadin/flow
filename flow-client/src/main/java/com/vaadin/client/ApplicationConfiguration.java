@@ -15,404 +15,133 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
- * Application configuration data.
- * <p>
- * This class is effectively immutable although setters exist to assign the
- * values during construction.
+ * Application configuration data. Pure {@code @JsType(isNative=true)} binding
+ * to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/ApplicationConfiguration.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ApplicationConfiguration")
 public class ApplicationConfiguration {
-    private String applicationId;
-    private String contextRootUrl;
-    private String serviceUrl;
-    private int uiId;
-    private ErrorMessage sessionExpiredError;
-    private int heartbeatInterval;
-    private int maxMessageSuspendTimeout;
 
-    private boolean productionMode;
-    private boolean requestTiming;
-    private boolean webComponentMode;
-
-    private String servletVersion;
-    private String atmosphereVersion;
-    private String atmosphereJSVersion;
-    private String[] exportedWebComponents;
-
-    private boolean devToolsEnabled;
-    private String liveReloadUrl;
-    private String liveReloadBackend;
-    private String springBootLiveReloadPort;
-
-    /**
-     * Gets the id generated for the application.
-     *
-     * @return the id for the application
-     */
-    public String getApplicationId() {
-        return applicationId;
+    public ApplicationConfiguration() {
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Sets the id generated for the application.
-     *
-     * @param applicationId
-     *            the id for the application
-     */
-    public void setApplicationId(String applicationId) {
-        this.applicationId = applicationId;
-    }
+    @JsProperty(name = "applicationId")
+    public native String getApplicationId();
 
-    /**
-     * Gets the URL to the server-side VaadinService.
-     *
-     * @return the URL to the server-side service as a string
-     */
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
+    @JsProperty(name = "applicationId")
+    public native void setApplicationId(String applicationId);
 
-    /**
-     * Sets the URL to the server-side VaadinService.
-     *
-     * @param serviceUrl
-     *            the URL to the server-side service as a string
-     */
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
-    }
+    @JsProperty(name = "serviceUrl")
+    public native String getServiceUrl();
 
-    /**
-     * Gets the URL of the context root on the server.
-     *
-     * @return the URL of the context root, ending with a "/"
-     */
-    public String getContextRootUrl() {
-        return contextRootUrl;
-    }
+    @JsProperty(name = "serviceUrl")
+    public native void setServiceUrl(String serviceUrl);
 
-    /**
-     * Sets the URL of the context root on the server.
-     *
-     * @param contextRootUrl
-     *            the URL of the context root, ending with a "/"
-     */
-    public void setContextRootUrl(String contextRootUrl) {
-        assert contextRootUrl.endsWith("/");
-        this.contextRootUrl = contextRootUrl;
-    }
+    @JsProperty(name = "contextRootUrl")
+    public native String getContextRootUrl();
 
-    /**
-     * Checks whether the application is running as a web-component in the page.
-     *
-     * @return true in case the app is a WC
-     */
-    public boolean isWebComponentMode() {
-        return webComponentMode;
-    }
+    @JsProperty(name = "contextRootUrl")
+    public native void setContextRootUrl(String contextRootUrl);
 
-    /**
-     * Sets whether the application is running as a web-component in the page.
-     *
-     * @param mode
-     *            set to true if it's a WC
-     */
-    public void setWebComponentMode(boolean mode) {
-        this.webComponentMode = mode;
-    }
+    @JsProperty(name = "webComponentMode")
+    public native boolean isWebComponentMode();
 
-    /**
-     * Gets the UI id of the server-side UI associated with this client-side
-     * instance. The UI id should be included in every request originating from
-     * this instance in order to associate the request with the right UI
-     * instance on the server.
-     *
-     * @return the UI id
-     */
-    public int getUIId() {
-        return uiId;
-    }
+    @JsProperty(name = "webComponentMode")
+    public native void setWebComponentMode(boolean mode);
 
-    /**
-     * Sets the UI id of the server-side UI associated with this client-side
-     * instance.
-     *
-     * @param uiId
-     *            the UI id
-     */
-    public void setUIId(int uiId) {
-        this.uiId = uiId;
-    }
+    @JsProperty(name = "uiId")
+    public native int getUIId();
 
-    /**
-     * Gets the interval for heartbeat requests.
-     *
-     * @return The interval in seconds between heartbeat requests, or -1 if
-     *         heartbeat is disabled.
-     */
-    public int getHeartbeatInterval() {
-        return heartbeatInterval;
-    }
+    @JsProperty(name = "uiId")
+    public native void setUIId(int uiId);
 
-    /**
-     * Sets the interval for heartbeat requests.
-     *
-     * @param heartbeatInterval
-     *            The interval in seconds between heartbeat requests, or -1 if
-     *            heartbeat is disabled.
-     */
-    public void setHeartbeatInterval(int heartbeatInterval) {
-        this.heartbeatInterval = heartbeatInterval;
-    }
+    @JsProperty(name = "sessionExpiredError")
+    public native ErrorMessage getSessionExpiredError();
 
-    /**
-     * Gets the maximum message suspension delay.
-     *
-     * @return The maximum time, in milliseconds, to suspend out-of-order
-     *         messages waiting for their predecessor before resynchronizing.
-     */
-    public int getMaxMessageSuspendTimeout() {
-        return maxMessageSuspendTimeout;
-    }
+    @JsProperty(name = "sessionExpiredError")
+    public native void setSessionExpiredError(ErrorMessage sessionExpiredError);
 
-    /**
-     * Sets the maximum message suspension delay.
-     *
-     * @param maxMessageSuspendTimeout
-     *            The maximum time, in milliseconds, to suspend out-of-order
-     *            messages waiting for their predecessor before resynchronizing.
-     */
-    public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
-        this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
-    }
+    @JsProperty(name = "heartbeatInterval")
+    public native int getHeartbeatInterval();
 
-    /**
-     * Gets the message used when a session expiration error occurs.
-     *
-     * @return the session expiration error message
-     */
-    public ErrorMessage getSessionExpiredError() {
-        return sessionExpiredError;
-    }
+    @JsProperty(name = "heartbeatInterval")
+    public native void setHeartbeatInterval(int heartbeatInterval);
 
-    /**
-     * Sets the message used when a session expiration error occurs.
-     *
-     * @param sessionExpiredError
-     *            the session expiration error message
-     */
-    public void setSessionExpiredError(ErrorMessage sessionExpiredError) {
-        this.sessionExpiredError = sessionExpiredError;
-    }
+    @JsProperty(name = "maxMessageSuspendTimeout")
+    public native int getMaxMessageSuspendTimeout();
 
-    /**
-     * Gets the Vaadin servlet version in use.
-     *
-     * @return the Vaadin servlet version in use
-     */
-    public String getServletVersion() {
-        return servletVersion;
-    }
+    @JsProperty(name = "maxMessageSuspendTimeout")
+    public native void setMaxMessageSuspendTimeout(
+            int maxMessageSuspendTimeout);
 
-    /**
-     * Sets the Vaadin servlet version in use.
-     *
-     * @param servletVersion
-     *            the Vaadin servlet version in use
-     */
-    public void setServletVersion(String servletVersion) {
-        this.servletVersion = servletVersion;
-    }
+    @JsProperty(name = "productionMode")
+    public native boolean isProductionMode();
 
-    /**
-     * Gets the Atmosphere runtime version in use.
-     *
-     * @return the Atmosphere runtime version in use
-     */
-    public String getAtmosphereVersion() {
-        return atmosphereVersion;
-    }
+    @JsProperty(name = "productionMode")
+    public native void setProductionMode(boolean productionMode);
 
-    /**
-     * Sets the Atmosphere runtime version in use.
-     *
-     * @param atmosphereVersion
-     *            the Atmosphere runtime version in use
-     */
-    public void setAtmosphereVersion(String atmosphereVersion) {
-        this.atmosphereVersion = atmosphereVersion;
-    }
+    @JsProperty(name = "requestTiming")
+    public native boolean isRequestTiming();
 
-    /**
-     * Gets the Atmosphere JavaScript version in use.
-     *
-     * @return the Atmosphere JavaScript version in use
-     */
-    public String getAtmosphereJSVersion() {
-        return atmosphereJSVersion;
-    }
+    @JsProperty(name = "requestTiming")
+    public native void setRequestTiming(boolean requestTiming);
 
-    /**
-     * Sets the Atmosphere JavaScript version in use.
-     *
-     * @param atmosphereJSVersion
-     *            the Atmosphere JavaScript version in use
-     */
-    public void setAtmosphereJSVersion(String atmosphereJSVersion) {
-        this.atmosphereJSVersion = atmosphereJSVersion;
-    }
+    @JsProperty(name = "servletVersion")
+    public native String getServletVersion();
 
-    /**
-     * Checks if we are running in production mode.
-     * <p>
-     * With production mode disabled, a lot more information is logged to the
-     * browser console. In production you should always enable production mode,
-     * because logging and other debug features can have a significant
-     * performance impact.
-     *
-     * @return {@code true} if production mode is enabled, {@code false}
-     *         otherwise
-     */
-    public boolean isProductionMode() {
-        return productionMode;
-    }
+    @JsProperty(name = "servletVersion")
+    public native void setServletVersion(String servletVersion);
 
-    /**
-     * Checks if request timing info should be made available.
-     *
-     * @return {@code true} if request timing info should be made availble,
-     *         {@code false} otherwise
-     */
-    public boolean isRequestTiming() {
-        return requestTiming;
-    }
+    @JsProperty(name = "atmosphereVersion")
+    public native String getAtmosphereVersion();
 
-    /**
-     * Sets whether we are running in production mode.
-     * <p>
-     * With production mode disabled, a lot more information is logged to the
-     * browser console. In production you should always enable production mode,
-     * because logging and other debug features can have a significant
-     * performance impact.
-     *
-     * @param productionMode
-     *            {@code true} if production mode is enabled, {@code false}
-     *            otherwise
-     */
-    public void setProductionMode(boolean productionMode) {
-        this.productionMode = productionMode;
-        Console.setProductionMode(productionMode);
-    }
+    @JsProperty(name = "atmosphereVersion")
+    public native void setAtmosphereVersion(String atmosphereVersion);
 
-    /**
-     * Sets whether request timing info should be made available.
-     *
-     * @param requestTiming
-     *            {@code true} if request timing info should be made available,
-     *            {@code false} otherwise
-     */
-    public void setRequestTiming(boolean requestTiming) {
-        this.requestTiming = requestTiming;
-    }
+    @JsProperty(name = "atmosphereJSVersion")
+    public native String getAtmosphereJSVersion();
 
-    /**
-     * Sets the exported web components.
-     *
-     * @param exportedWebComponents
-     *            the exported web components
-     */
-    public void setExportedWebComponents(String[] exportedWebComponents) {
-        this.exportedWebComponents = exportedWebComponents;
-    }
+    @JsProperty(name = "atmosphereJSVersion")
+    public native void setAtmosphereJSVersion(String atmosphereJSVersion);
 
-    /**
-     * Gets the exported web components.
-     *
-     * @return the exported web components
-     */
-    public String[] getExportedWebComponents() {
-        return exportedWebComponents;
-    }
+    @JsProperty(name = "exportedWebComponents")
+    public native String[] getExportedWebComponents();
 
-    /**
-     * Gets if development tools should be added to the page.
-     *
-     * @return whether development tools should be added
-     */
-    public boolean isDevToolsEnabled() {
-        return devToolsEnabled;
-    }
+    @JsProperty(name = "exportedWebComponents")
+    public native void setExportedWebComponents(String[] exportedWebComponents);
 
-    /**
-     *
-     * Sets if development tools should be added to the page.
-     *
-     * @param devToolsEnabled
-     *            whether development tools should be added
-     */
-    public void setDevToolsEnabled(boolean devToolsEnabled) {
-        this.devToolsEnabled = devToolsEnabled;
-    }
+    @JsProperty(name = "devToolsEnabled")
+    public native boolean isDevToolsEnabled();
 
-    /**
-     * Gets the URL for the live reload websocket connection.
-     *
-     * @return URL for the live reload websocket connection
-     */
-    public String getLiveReloadUrl() {
-        return liveReloadUrl;
-    }
+    @JsProperty(name = "devToolsEnabled")
+    public native void setDevToolsEnabled(boolean devToolsEnabled);
 
-    /**
-     * Sets the URL for the live reload websocket connection.
-     *
-     * @param liveReloadUrl
-     *            URL for the live reload websocket connection
-     */
-    public void setLiveReloadUrl(String liveReloadUrl) {
-        this.liveReloadUrl = liveReloadUrl;
-    }
+    @JsProperty(name = "liveReloadUrl")
+    public native String getLiveReloadUrl();
 
-    /**
-     * Gets the the live reload backend technology identifier.
-     *
-     * @return the live reload backend technology identifier
-     */
-    public String getLiveReloadBackend() {
-        return liveReloadBackend;
-    }
+    @JsProperty(name = "liveReloadUrl")
+    public native void setLiveReloadUrl(String liveReloadUrl);
 
-    /**
-     * Sets the live reload backend technology identifier.
-     *
-     * @param liveReloadBackend
-     *            the live reload backend technology identifier
-     */
-    public void setLiveReloadBackend(String liveReloadBackend) {
-        this.liveReloadBackend = liveReloadBackend;
-    }
+    @JsProperty(name = "liveReloadBackend")
+    public native String getLiveReloadBackend();
 
-    /**
-     * Gets the Spring boot live reload port.
-     *
-     * @return the Spring boot live reload port
-     */
-    public String getSpringBootLiveReloadPort() {
-        return springBootLiveReloadPort;
-    }
+    @JsProperty(name = "liveReloadBackend")
+    public native void setLiveReloadBackend(String liveReloadBackend);
 
-    /**
-     * Sets the Spring boot live reload port.
-     *
-     * @param springBootLiveReloadPort
-     *            the Spring boot live reload port
-     */
-    public void setSpringBootLiveReloadPort(String springBootLiveReloadPort) {
-        this.springBootLiveReloadPort = springBootLiveReloadPort;
-    }
+    @JsProperty(name = "springBootLiveReloadPort")
+    public native String getSpringBootLiveReloadPort();
+
+    @JsProperty(name = "springBootLiveReloadPort")
+    public native void setSpringBootLiveReloadPort(
+            String springBootLiveReloadPort);
 }

@@ -58,7 +58,7 @@ public class DefaultRegistry extends Registry {
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
-        set(ApplicationConfiguration.class, applicationConfiguration);
+        set("ApplicationConfiguration", applicationConfiguration);
 
         // Classes with no constructor dependencies
         set(ResourceLoader.class, new ResourceLoader(this, true));
