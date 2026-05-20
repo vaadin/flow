@@ -51,35 +51,39 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
     // The keydown handler body. Bound to the listenOn element via .bind(this)
     // at registration time, so {@code this} inside the body is the listenOn
-    // element. Runtime argument: event. Captures:
-    // $0 = allowed key strings (matched against event.code/event.key)
-    // $1 = modifier keys that must be pressed
-    // $2 = modifier keys that must NOT be pressed
-    // $3 = whether to reset focus on the active element
-    // $4 = whether to prevent the browser's default action
+    // element. Runtime argument: event. Captures are aliased at the top of
+    // the body for readability; once #24385 lands they can be passed by name
+    // directly via JsFunction.withParameter(...).
     static final String KEYDOWN_HANDLER_BODY = """
-            if (($0.indexOf(event.code) !== -1 || $0.indexOf(event.key) !== -1)
-                    && $1.every(m => event.getModifierState(m))
-                    && $2.every(m => !event.getModifierState(m))) {
-                if ($3) window.Vaadin.Flow.resetFocus();
+            const allowedKeys = $0;
+            const requiredModifiers = $1;
+            const forbiddenModifiers = $2;
+            const resetFocus = $3;
+            const preventDefault = $4;
+            if ((allowedKeys.indexOf(event.code) !== -1 || allowedKeys.indexOf(event.key) !== -1)
+                    && requiredModifiers.every(m => event.getModifierState(m))
+                    && forbiddenModifiers.every(m => !event.getModifierState(m))) {
+                if (resetFocus) window.Vaadin.Flow.resetFocus();
                 const new_event = new event.constructor(event.type, event);
                 this.dispatchEvent(new_event);
-                if ($4) event.preventDefault();
+                if (preventDefault) event.preventDefault();
                 event.stopPropagation();
             }""";
 
     // Registers the keydown handler on the delegate element resolved by the
-    // locator function. Captures: $0 = locator function (returns the delegate
-    // when called with {@code this} = listenOn element); $1 = keydown handler
-    // function; $2 = locator source string (used only for the error message).
-    // The handler is bound to the listenOn element so the body can dispatch
-    // to it via {@code this} without an extra capture.
+    // locator function. The handler is bound to the listenOn element so the
+    // body can dispatch to it via {@code this} without an extra capture.
+    // Captures are aliased at the top of the body for readability; once
+    // #24385 lands they can be passed by name directly via withParameter().
     static final String LISTEN_ON_DELEGATE_REGISTRATION_JS = """
-            const delegate = $0.call(this);
+            const locator = $0;
+            const handler = $1;
+            const locatorSource = $2;
+            const delegate = locator.call(this);
             if (delegate) {
-                delegate.addEventListener('keydown', $1.bind(this));
+                delegate.addEventListener('keydown', handler.bind(this));
             } else {
-                throw "Shortcut listenOn element not found with JS locator string '" + $2 + "'";
+                throw "Shortcut listenOn element not found with JS locator string '" + locatorSource + "'";
             }""";
 
     private boolean allowDefaultBehavior = false;
