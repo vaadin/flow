@@ -76,10 +76,11 @@ final class JsBuilder implements Serializable {
     }
 
     /**
-     * Returns the parameter array to pass to
-     * {@link com.vaadin.flow.dom.Element#addJsInitializer addJsInitializer}.
+     * Returns the element captures collected by this builder, in the order they
+     * were first referenced — these become the captures of the handler
+     * {@link com.vaadin.flow.dom.JsFunction}.
      */
-    Object[] params() {
+    Object[] captures() {
         return params.toArray();
     }
 

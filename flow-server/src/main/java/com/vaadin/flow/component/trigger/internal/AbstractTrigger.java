@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -34,7 +35,8 @@ import com.vaadin.flow.shared.Registration;
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
  * element; {@link #remove()} removes all such registrations. Subclasses provide
  * the JS that installs and tears down the listener by overriding
- * {@link #installJs(JsBuilder, String)}.
+ * {@link #installJs()}; the action handler is exposed to that JS as a
+ * {@link JsFunction} captured at {@code $0}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -85,28 +87,26 @@ public abstract class AbstractTrigger implements Serializable {
             action.appendStatement(builder, handlerBody);
             handlerBody.append(";");
         }
-        String js = installJs(builder, handlerBody.toString());
-        registrations.add(host.addJsInitializer(js, builder.params()));
+        JsFunction handler = JsFunction
+                .of(handlerBody.toString(), builder.captures())
+                .withArguments("event");
+        registrations.add(host.addJsInitializer(installJs(), handler));
         return this;
     }
 
     /**
      * Builds the JS expression that installs this trigger's listener and
-     * returns a cleanup function that removes it. The expression runs with
-     * {@code this} bound to the host element.
+     * returns a cleanup function that removes it.
      * <p>
-     * Subclasses must use {@code builder} (via {@link JsBuilder#reference}) to
-     * reference any non-host element rather than embedding element identifiers
-     * in the JS string.
+     * The expression runs with {@code this} bound to the host element. The
+     * handler {@link JsFunction} is available as {@code $0}; subclasses pass it
+     * to whatever client API the trigger wraps (e.g.
+     * {@code this.addEventListener(name, $0)}) and reference the same
+     * {@code $0} in the cleanup callback to detach it.
      *
-     * @param builder
-     *            collects element parameter references, not {@code null}
-     * @param handlerBody
-     *            JS statements (each terminated with a semicolon) that run when
-     *            the trigger fires, not {@code null}
      * @return the JS install expression, not {@code null}
      */
-    protected abstract String installJs(JsBuilder builder, String handlerBody);
+    protected abstract String installJs();
 
     /**
      * Removes this trigger and all wirings created from it. The corresponding

@@ -44,16 +44,17 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction fn = singleInitializerFn(ui);
-        String body = fn.getBody();
-        assertTrue(body.contains("this.addEventListener(\"click\", __h)"),
-                body);
-        assertTrue(body.contains("$0[\"value\"] = \"\""), body);
-        assertTrue(body.contains("return () => this.removeEventListener"),
-                body);
+        JsFunction install = singleInstallFn(ui);
+        // Install JS references the handler at $0 — no user content leaks
+        // into the install string.
+        assertEquals("this.addEventListener(\"click\", $0);"
+                + "return () => this.removeEventListener(\"click\", $0);",
+                install.getBody());
 
-        // The non-host element ($0) is the field.
-        assertEquals(List.of(field.getElement()), fn.getCaptures());
+        JsFunction handler = handlerOf(install);
+        assertEquals(List.of("event"), handler.getArgumentNames());
+        assertEquals("$0[\"value\"] = \"\";", handler.getBody());
+        assertEquals(List.of(field.getElement()), handler.getCaptures());
     }
 
     @Test
@@ -69,7 +70,7 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String body = singleInitializerFn(ui).getBody();
+        String body = handlerOf(singleInstallFn(ui)).getBody();
         int disabledIdx = body.indexOf("[\"disabled\"]");
         int valueIdx = body.indexOf("[\"value\"]");
         assertTrue(disabledIdx >= 0 && valueIdx > disabledIdx,
@@ -89,11 +90,11 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction fn = singleInitializerFn(ui);
-        String body = fn.getBody();
+        JsFunction handler = handlerOf(singleInstallFn(ui));
+        String body = handler.getBody();
         assertTrue(body.contains("$0[\"disabled\"]"), body);
         assertTrue(body.contains("$0[\"value\"]"), body);
-        assertEquals(List.of(target.getElement()), fn.getCaptures());
+        assertEquals(List.of(target.getElement()), handler.getCaptures());
     }
 
     @Test
@@ -107,11 +108,10 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction fn = singleInitializerFn(ui);
-        assertTrue(fn.getBody().contains("this[\"disabled\"] = true"),
-                fn.getBody());
-        // No captures — the host is `this`.
-        assertEquals(List.of(), fn.getCaptures());
+        JsFunction handler = handlerOf(singleInstallFn(ui));
+        assertEquals("this[\"disabled\"] = true;", handler.getBody());
+        // No element captures — the host is `this`.
+        assertEquals(List.of(), handler.getCaptures());
     }
 
     @Test
@@ -130,10 +130,12 @@ class TriggerTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        JsFunction fn0 = userFn(pending.get(0).getInvocation());
-        JsFunction fn1 = userFn(pending.get(1).getInvocation());
-        assertNotEquals(fn0.getBody(), fn1.getBody(),
-                "Each registration should produce a distinct initializer body");
+        String h0 = handlerOf(installFn(pending.get(0).getInvocation()))
+                .getBody();
+        String h1 = handlerOf(installFn(pending.get(1).getInvocation()))
+                .getBody();
+        assertNotEquals(h0, h1,
+                "Each registration should produce a distinct handler body");
     }
 
     @Test
@@ -187,11 +189,12 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String body = singleInitializerFn(ui).getBody();
+        JsFunction handler = handlerOf(singleInstallFn(ui));
+        String body = handler.getBody();
         assertTrue(body.contains("$0[\"value\"] = event[\"screenX\"]"), body);
         assertTrue(body.contains("$1[\"value\"] = event[\"screenY\"]"), body);
-        assertTrue(body.contains("this.addEventListener(\"click\", __h)"),
-                body);
+        assertEquals(List.of(xField.getElement(), yField.getElement()),
+                handler.getCaptures());
     }
 
     @Test
@@ -231,19 +234,30 @@ class TriggerTest {
         assertEquals(2, pending.size());
     }
 
-    private static JsFunction singleInitializerFn(UI ui) {
+    private static JsFunction singleInstallFn(UI ui) {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return userFn(pending.get(0).getInvocation());
+        return installFn(pending.get(0).getInvocation());
     }
 
-    private static JsFunction userFn(JavaScriptInvocation invocation) {
-        // addJsInitializer wrapper parameters: [element, userFunction,
-        // initializerId]
-        Object userFn = invocation.getParameters().get(1);
-        assertTrue(userFn instanceof JsFunction,
-                "Expected $1 to be a JsFunction, got " + userFn);
-        return (JsFunction) userFn;
+    /**
+     * addJsInitializer wrapper parameters: [element, installFn, initializerId].
+     * The installFn is the trigger's install JsFunction.
+     */
+    private static JsFunction installFn(JavaScriptInvocation invocation) {
+        Object o = invocation.getParameters().get(1);
+        assertTrue(o instanceof JsFunction, "Expected $1 to be a JsFunction");
+        return (JsFunction) o;
+    }
+
+    /**
+     * Inside the install JsFunction, the handler is captured at $0.
+     */
+    private static JsFunction handlerOf(JsFunction installFn) {
+        Object o = installFn.getCaptures().get(0);
+        assertTrue(o instanceof JsFunction,
+                "Expected install $0 to be the handler JsFunction");
+        return (JsFunction) o;
     }
 }

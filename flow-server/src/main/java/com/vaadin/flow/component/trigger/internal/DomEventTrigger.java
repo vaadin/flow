@@ -78,10 +78,9 @@ public class DomEventTrigger extends AbstractTrigger {
     }
 
     @Override
-    protected String installJs(JsBuilder builder, String handlerBody) {
+    protected String installJs() {
         String evt = JsBuilder.json(eventName);
-        return "const __h = (event) => { " + handlerBody + " };"
-                + "this.addEventListener(" + evt + ", __h);"
-                + "return () => this.removeEventListener(" + evt + ", __h);";
+        return "this.addEventListener(" + evt + ", $0);"
+                + "return () => this.removeEventListener(" + evt + ", $0);";
     }
 }
