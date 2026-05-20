@@ -38,7 +38,7 @@ import com.vaadin.flow.dom.Element;
  * @param <T>
  *            the runtime type of the value produced
  */
-public class PropertyInput<T> extends Input<T> {
+public class PropertyInput<T> extends Action.Input<T> {
 
     private final Element target;
     private final String propertyName;

@@ -19,7 +19,8 @@ import com.vaadin.flow.component.Component;
 
 /**
  * Fires on the host component's {@code click} DOM event and exposes the click
- * coordinates and modifier-key state as {@link Input}s for downstream actions.
+ * coordinates and modifier-key state as {@link Action.Input}s for downstream
+ * actions.
  * <p>
  * Example:
  *
@@ -45,42 +46,42 @@ public class ClickTrigger extends DomEventTrigger {
     }
 
     /** {@code event.screenX} — X coordinate relative to the screen. */
-    public Input<Integer> screenX() {
+    public Action.Input<Integer> screenX() {
         return property("screenX");
     }
 
     /** {@code event.screenY} — Y coordinate relative to the screen. */
-    public Input<Integer> screenY() {
+    public Action.Input<Integer> screenY() {
         return property("screenY");
     }
 
     /** {@code event.clientX} — X coordinate relative to the viewport. */
-    public Input<Integer> clientX() {
+    public Action.Input<Integer> clientX() {
         return property("clientX");
     }
 
     /** {@code event.clientY} — Y coordinate relative to the viewport. */
-    public Input<Integer> clientY() {
+    public Action.Input<Integer> clientY() {
         return property("clientY");
     }
 
     /** {@code event.shiftKey} — whether shift was held during the click. */
-    public Input<Boolean> shiftKey() {
+    public Action.Input<Boolean> shiftKey() {
         return property("shiftKey");
     }
 
     /** {@code event.ctrlKey} — whether ctrl was held during the click. */
-    public Input<Boolean> ctrlKey() {
+    public Action.Input<Boolean> ctrlKey() {
         return property("ctrlKey");
     }
 
     /** {@code event.altKey} — whether alt was held during the click. */
-    public Input<Boolean> altKey() {
+    public Action.Input<Boolean> altKey() {
         return property("altKey");
     }
 
     /** {@code event.metaKey} — whether meta was held during the click. */
-    public Input<Boolean> metaKey() {
+    public Action.Input<Boolean> metaKey() {
         return property("metaKey");
     }
 }

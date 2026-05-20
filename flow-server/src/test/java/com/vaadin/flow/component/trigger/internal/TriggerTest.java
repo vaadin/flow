@@ -223,7 +223,7 @@ class TriggerTest {
         ClickTrigger click = new ClickTrigger(button);
         // Same Input instance used across two separate triggers() calls on
         // its owning trigger.
-        Input<Integer> x = click.screenX();
+        Action.Input<Integer> x = click.screenX();
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 

@@ -31,7 +31,7 @@ import java.util.Objects;
  * @param <T>
  *            the runtime type of the value produced
  */
-final class HandlerInput<T> extends Input<T> {
+final class HandlerInput<T> extends Action.Input<T> {
 
     private final String jsExpression;
     private final Trigger owner;

@@ -18,9 +18,16 @@ package com.vaadin.flow.component.trigger.internal;
 import java.io.Serializable;
 
 /**
- * Something that runs on the client when an {@link Trigger} fires. Subclasses
+ * Something that runs on the client when a {@link Trigger} fires. Subclasses
  * append the JS that runs when the trigger fires by overriding
  * {@link #appendStatement(JsBuilder, StringBuilder)}.
+ * <p>
+ * Actions can take their value either from server-side literals or from an
+ * {@link Input} — a deferred value expression evaluated in the trigger's
+ * handler scope at fire time. A Trigger may expose its own state as one or more
+ * {@code Input}s (for example {@link ClickTrigger#screenX()}); other subclasses
+ * of {@code Input} read state independent of any trigger (for example
+ * {@link PropertyInput}).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -37,4 +44,35 @@ public abstract class Action implements Serializable {
      */
     protected abstract void appendStatement(JsBuilder builder,
             StringBuilder out);
+
+    /**
+     * A value an {@link Action} consumes at fire time — a deferred JS
+     * expression that yields a value when the surrounding trigger fires.
+     * Subclasses produce the JS expression by overriding
+     * {@link #appendExpression(JsBuilder, StringBuilder)}.
+     * <p>
+     * Some inputs are bound to a specific trigger's handler scope (see
+     * {@link HandlerInput}) and may only be used in actions wired to that
+     * trigger; others are independent of any trigger (see
+     * {@link PropertyInput}, {@link LiteralInput}) and may be used freely.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param <T>
+     *            the runtime type of the value produced
+     */
+    public abstract static class Input<T> implements Serializable {
+
+        /**
+         * Appends this input's JS expression to {@code out}. Element references
+         * must go through {@link JsBuilder#reference}.
+         *
+         * @param builder
+         *            collects element parameter references, not {@code null}
+         * @param out
+         *            buffer to append into, not {@code null}
+         */
+        protected abstract void appendExpression(JsBuilder builder,
+                StringBuilder out);
+    }
 }

@@ -57,8 +57,8 @@ public class DomEventTrigger extends Trigger {
     }
 
     /**
-     * Returns an {@link Input} that yields {@code event[name]} at fire time —
-     * the value of a property on the DOM event object.
+     * Returns an {@link Action.Input} that yields {@code event[name]} at fire
+     * time — the value of a property on the DOM event object.
      * <p>
      * The returned input is only valid in actions wired to this trigger; using
      * it elsewhere throws {@link IllegalArgumentException} at the
@@ -71,7 +71,7 @@ public class DomEventTrigger extends Trigger {
      * @param <T>
      *            the runtime type of the value produced
      */
-    public <T> Input<T> property(String name) {
+    public <T> Action.Input<T> property(String name) {
         Objects.requireNonNull(name);
         return new HandlerInput<>("event[" + JsBuilder.json(name) + "]", this);
     }

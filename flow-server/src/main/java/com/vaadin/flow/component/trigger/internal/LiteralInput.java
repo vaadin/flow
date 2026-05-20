@@ -19,15 +19,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Input backed by a server-side literal that is JSON-encoded into the JS at
- * build time. Lets actions take {@code Input<? extends T>} uniformly while
- * still accepting plain constants from callers.
+ * build time. Lets actions take {@code Action.Input<? extends T>} uniformly
+ * while still accepting plain constants from callers.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value
  */
-final class LiteralInput<T> extends Input<T> {
+final class LiteralInput<T> extends Action.Input<T> {
 
     private final @Nullable T value;
 
