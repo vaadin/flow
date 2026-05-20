@@ -15,91 +15,124 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.Command;
+import com.vaadin.client.JsRunnable;
 
 import elemental.events.EventRemover;
 
 /**
- * Handles global features related to reactivity, such as keeping track of the
- * current {@link Computation}, providing a lazy flush cycle and registering
- * reactive event collectors. The state-management surface lives in the
- * TypeScript module at
- * {@code src/main/frontend/internal/client/flow/reactive/Reactive.ts}, reached
- * through {@link NativeReactive}.
+ * Reactive state-management binding. Pure {@code @JsType(isNative=true)} link
+ * to {@code src/main/frontend/internal/client/flow/reactive/Reactive.ts}, with
+ * 
+ * @JsOverlay helpers for the Java-side adapter shapes (FlushListener,
+ *            ReactiveValueChangeListener, Computation subclass construction).
  *
  * @see Computation
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class Reactive {
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.reactive", name = "Reactive")
+public final class Reactive {
+
+    /** Native event-collector consumer shape. */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    interface JsEventConsumer {
+        void accept(Object event);
+    }
+
+    /** Native unregister handle. */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    interface JsRemover {
+        void remove();
+    }
 
     private Reactive() {
-        // Only static stuff in this class
+        // Native, not instantiated from Java
     }
 
-    /**
-     * Adds a listener that will be invoked the next time {@link #flush()} is
-     * invoked.
-     */
+    @JsMethod(name = "addFlushListener")
+    static native void addFlushListenerImpl(JsRunnable listener);
+
+    @JsMethod(name = "addPostFlushListener")
+    static native void addPostFlushListenerImpl(JsRunnable listener);
+
+    /** Flushes all flush listeners and post flush listeners. */
+    public static native void flush();
+
+    @JsMethod(name = "getCurrentComputation")
+    static native Object getCurrentComputationImpl();
+
+    @JsMethod(name = "runWithComputation")
+    static native void runWithComputationImpl(Object computation,
+            JsRunnable command);
+
+    @JsMethod(name = "addEventCollector")
+    static native JsRemover addEventCollectorImpl(JsEventConsumer listener);
+
+    @JsMethod(name = "notifyEventCollectors")
+    static native void notifyEventCollectorsImpl(Object event);
+
+    /** Resets Reactive to the initial state. */
+    public static native void reset();
+
+    /** Adds a listener invoked on the next flush. */
+    @JsOverlay
     public static void addFlushListener(FlushListener flushListener) {
-        NativeReactive.addFlushListener(flushListener::flush);
+        addFlushListenerImpl(flushListener::flush);
     }
 
-    /**
-     * Adds a listener that will be invoked during the next {@link #flush()},
-     * after all regular flush listeners have been invoked.
-     */
+    /** Adds a listener invoked after the next flush. */
+    @JsOverlay
     public static void addPostFlushListener(FlushListener postFlushListener) {
-        NativeReactive.addPostFlushListener(postFlushListener::flush);
+        addPostFlushListenerImpl(postFlushListener::flush);
     }
 
-    /**
-     * Flushes all flush listeners and post flush listeners.
-     */
-    public static void flush() {
-        NativeReactive.flush();
-    }
-
-    /**
-     * Gets the currently active computation.
-     */
+    /** Gets the currently active computation. */
+    @JsOverlay
     public static Computation getCurrentComputation() {
-        return (Computation) NativeReactive.getCurrentComputation();
+        return (Computation) getCurrentComputationImpl();
     }
 
     /**
      * Runs a task with the given computation set as
      * {@link #getCurrentComputation()}.
      */
+    @JsOverlay
     public static void runWithComputation(Computation computation,
             Command command) {
-        NativeReactive.runWithComputation(computation, command::execute);
+        runWithComputationImpl(computation, command::execute);
     }
 
-    /**
-     * Adds a reactive change listener that will be invoked whenever a reactive
-     * change event is fired from any reactive event router.
-     */
+    /** Registers a global event-change collector. */
+    @JsOverlay
     public static EventRemover addEventCollector(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
-        NativeReactive.JsRemover remover = NativeReactive
-                .addEventCollector(event -> reactiveValueChangeListener
-                        .onValueChange((ReactiveValueChangeEvent) event));
+            ReactiveValueChangeListener listener) {
+        JsRemover remover = addEventCollectorImpl(event -> listener
+                .onValueChange((ReactiveValueChangeEvent) event));
         return remover::remove;
     }
 
-    /**
-     * Fires a reactive change event to all registered event collectors.
-     */
+    /** Fires a reactive change event to all registered event collectors. */
+    @JsOverlay
     public static void notifyEventCollectors(ReactiveValueChangeEvent event) {
-        NativeReactive.notifyEventCollectors(event);
+        notifyEventCollectorsImpl(event);
     }
 
     /**
      * Evaluates the given command whenever there is a change in any
      * {@link ReactiveValue} used in the command.
      */
+    @JsOverlay
     public static Computation runWhenDependenciesChange(Command command) {
         return new Computation() {
             @Override
@@ -107,12 +140,5 @@ public class Reactive {
                 command.execute();
             }
         };
-    }
-
-    /**
-     * Resets Reactive to the initial state.
-     */
-    public static void reset() {
-        NativeReactive.reset();
     }
 }
