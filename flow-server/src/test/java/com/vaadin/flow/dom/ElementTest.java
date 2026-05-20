@@ -1066,11 +1066,14 @@ class ElementTest extends AbstractNodeTest {
         });
     }
 
-    public void setStyle() {
+    @Test
+    void setStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         assertEquals("bar", s.get("foo"));
+        s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
+        assertEquals("hsl(12, 12%, 12%)", s.get("--lumo-primary-text-color"));
     }
 
     @Test
@@ -1169,7 +1172,7 @@ class ElementTest extends AbstractNodeTest {
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
         assertEquals(style, e.getAttribute("style"));
-
+        assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1181,14 +1184,31 @@ class ElementTest extends AbstractNodeTest {
         testStyleAttribute("width:calc(100% - 80px)");
         testStyleAttribute("width:var(--widthB)");
         testStyleAttribute("color:var(--mainColor)");
-        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
-        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
+        testStyleAttribute(
+                "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
+        var style = testStyleAttribute(
+                "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
+        testStyleAttribute(
+                "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
+        style = testStyleAttribute(
+                "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        assertEquals("var(--widthB)", style.get("width"));
+        assertEquals("var(--mainColor)", style.get("color"));
+        assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
     }
 
-    private void testStyleAttribute(String style) {
+    private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
         assertEquals(style, e.getAttribute("style"));
+        return e.getStyle();
     }
 
     @Test
@@ -2382,6 +2402,18 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.method($1,$2)", element, "foo", 123);
+    }
+
+    @Test
+    void callFunctionWithBean() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        SimpleBean bean = new SimpleBean();
+        element.callJsFunction("method", bean);
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "return $0.method($1)", element, bean);
     }
 
     @Test
