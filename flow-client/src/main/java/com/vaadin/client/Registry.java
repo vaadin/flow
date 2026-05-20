@@ -72,7 +72,16 @@ public class Registry {
      *            the type
      */
     protected final <T> void set(Class<T> type, T instance) {
-        String key = type.getName();
+        set(type.getName(), instance);
+    }
+
+    /**
+     * Stores an instance under an explicit string key. Use this for
+     * {@code @JsType(isNative=true)} classes whose Java
+     * {@code .class.getName()} all collapse to the same
+     * {@code JavaScriptObject$} string in compiled JS.
+     */
+    protected final <T> void set(String key, T instance) {
         assert !lookupTable.has(key)
                 : "Registry already has a class of type " + key + " registered";
         lookupTable.set(key, instance);
@@ -93,8 +102,13 @@ public class Registry {
      *            the type
      */
     protected final <T> void set(Class<T> type, Supplier<T> instanceSupplier) {
-        set(type, instanceSupplier.get());
-        resettable.set(type.getName(), instanceSupplier);
+        set(type.getName(), instanceSupplier);
+    }
+
+    /** Variant of {@link #set(Class, Supplier)} keyed by an explicit string. */
+    protected final <T> void set(String key, Supplier<T> instanceSupplier) {
+        set(key, instanceSupplier.get());
+        resettable.set(key, instanceSupplier);
     }
 
     /**
@@ -106,9 +120,13 @@ public class Registry {
      *            the class type
      * @return the stored instance or null if no instance has been stored
      */
-    @SuppressWarnings("unchecked")
     protected final <T> T get(Class<T> type) {
-        String key = type.getName();
+        return get(type.getName());
+    }
+
+    /** Variant of {@link #get(Class)} keyed by an explicit string. */
+    @SuppressWarnings("unchecked")
+    protected final <T> T get(String key) {
         assert lookupTable.has(key) : "Tried to lookup type " + key
                 + " but no instance has been registered";
         return (T) lookupTable.get(key);
@@ -292,7 +310,7 @@ public class Registry {
      * @return the {@link ConstantPool} singleton
      */
     public ConstantPool getConstantPool() {
-        return get(ConstantPool.class);
+        return get("ConstantPool");
     }
 
     /**
@@ -301,7 +319,7 @@ public class Registry {
      * @return the {@link ExistingElementMap} singleton
      */
     public ExistingElementMap getExistingElementMap() {
-        return get(ExistingElementMap.class);
+        return get("ExistingElementMap");
     }
 
     /**
