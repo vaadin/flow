@@ -15,23 +15,24 @@
  */
 package com.vaadin.client.communication;
 
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 
 /**
  * Observes the poll configuration stored in the given node and configures
- * polling accordingly.
+ * polling accordingly. Pure {@code @JsType(isNative=true)} binding to the
+ * TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/PollConfigurator.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "PollConfigurator")
 public class PollConfigurator {
 
     private PollConfigurator() {
-        // No instance should ever be created
+        // No instance should ever be created.
     }
 
     /**
@@ -43,14 +44,5 @@ public class PollConfigurator {
      * @param poller
      *            the poller to configure
      */
-    public static void observe(StateNode node, Poller poller) {
-        NodeMap configurationMap = node.getMap(NodeFeatures.POLL_CONFIGURATION);
-        MapProperty pollIntervalProperty = configurationMap
-                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
-        pollIntervalProperty.addChangeListener(e -> {
-            int interval = (int) (double) e.getNewValue();
-            poller.setInterval(interval);
-        });
-    }
-
+    public static native void observe(StateNode node, Poller poller);
 }
