@@ -568,8 +568,19 @@ public class AtmospherePushConnection implements PushConnection {
         NativeAtmospherePushConnection.doDisconnect(url);
     }
 
-    private static boolean isAtmosphereLoaded() {
+    /**
+     * Checks whether the Atmosphere push JS library is loaded.
+     */
+    public static boolean isAtmosphereLoaded() {
         return NativeAtmospherePushConnection.isAtmosphereLoaded();
+    }
+
+    /**
+     * Gets the Atmosphere push JS library version. Returns {@code null} if the
+     * library has not been loaded.
+     */
+    public static String getAtmosphereJSVersion() {
+        return NativeAtmospherePushConnection.getAtmosphereJSVersion();
     }
 
     private void runWhenAtmosphereLoaded(final Command command) {

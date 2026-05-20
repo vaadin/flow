@@ -119,5 +119,9 @@ export const AtmospherePushConnection = {
 
   isAtmosphereLoaded(): boolean {
     return atmosphere() != null;
+  },
+
+  getAtmosphereJSVersion(): string | null {
+    return (atmosphere() as { version?: string } | null)?.version ?? null;
   }
 };

@@ -15,169 +15,131 @@
  */
 package com.vaadin.client.bootstrap;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.AtmospherePushConnection;
 
 /**
  * Helper class for reading configuration options from the bootstrap javascript.
  *
  * @since 1.0
  */
-public final class JsoConfiguration extends JavaScriptObject {
-    protected JsoConfiguration() {
-        // JSO Constructor
+@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+public final class JsoConfiguration {
+
+    /**
+     * Calls the {@code getConfig(name)} method that the bootstrap JavaScript
+     * defines on the configuration object.
+     */
+    native Object getConfig(String name);
+
+    /**
+     * Reads a configuration parameter as a string. Returns {@code null} if the
+     * parameter is undefined.
+     */
+    @JsOverlay
+    public final String getConfigString(String name) {
+        Object value = getConfig(name);
+        if (value == null) {
+            return null;
+        }
+        return value + "";
     }
 
     /**
-     * Reads a configuration parameter as a string. Please note that the
-     * javascript value of the parameter should also be a string, or else an
-     * undefined exception may be thrown.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code> if not
-     *         defined
+     * Reads a configuration parameter as a {@link ValueMap}.
      */
-    public native String getConfigString(String name)
-    /*-{
-        var value = this.getConfig(name);
-        if (value === null || value === undefined) {
-            return null;
-        } else {
-            return value +"";
-        }
-    }-*/;
-
-    /**
-     * Reads a configuration parameter as a {@link ValueMap}. Please note that
-     * the javascript value of the parameter should also be a javascript object,
-     * or else an undefined exception may be thrown.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code>if not
-     *         defined
-     */
-    public native ValueMap getConfigValueMap(String name)
-    /*-{
-        return this.getConfig(name);
-    }-*/;
+    @JsOverlay
+    public final ValueMap getConfigValueMap(String name) {
+        return (ValueMap) getConfig(name);
+    }
 
     /**
      * Reads a configuration parameter as a String array.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code>if not
-     *         defined
      */
-    public native String[] getConfigStringArray(String name)
-    /*-{
-        return this.getConfig(name);
-    }-*/;
+    @JsOverlay
+    public final String[] getConfigStringArray(String name) {
+        return WidgetUtil.crazyJsCast(getConfig(name));
+    }
 
     /**
-     * Reads a configuration parameter as a boolean.
-     * <p>
-     * Please note that the javascript value of the parameter should also be a
-     * boolean, or else an undefined exception may be thrown.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return the boolean value of the configuration parameter, or
-     *         <code>false</code> if no value is defined
+     * Reads a configuration parameter as a boolean. Returns {@code false} when
+     * the parameter is undefined.
      */
-    public native boolean getConfigBoolean(String name)
-    /*-{
-        var value = this.getConfig(name);
-        if (value === null || value === undefined) {
+    @JsOverlay
+    public final boolean getConfigBoolean(String name) {
+        Object value = getConfig(name);
+        if (value == null) {
             return false;
-        } else {
-             // $entry not needed as function is not exported
-            return @java.lang.Boolean::valueOf(Z)(value);
         }
-    }-*/;
+        return ((Boolean) value).booleanValue();
+    }
 
     /**
-     * Reads a configuration parameter as an integer object. Please note that
-     * the javascript value of the parameter should also be an integer, or else
-     * an undefined exception may be thrown.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return integer value of the configuration parameter, or
-     *         <code>null</code> if no value is defined
+     * Reads a configuration parameter as an integer object. Returns
+     * {@code null} when the parameter is undefined.
      */
-    public native Integer getConfigInteger(String name)
-    /*-{
-        var value = this.getConfig(name);
-        if (value === null || value === undefined) {
+    @JsOverlay
+    public final Integer getConfigInteger(String name) {
+        Object value = getConfig(name);
+        if (value == null) {
             return null;
-        } else {
-             // $entry not needed as function is not exported
-            return @java.lang.Integer::valueOf(I)(value);
         }
-    }-*/;
+        return Integer.valueOf(((Number) value).intValue());
+    }
 
     /**
-     * Reads a configuration parameter as an {@link ErrorMessage} object. Please
-     * note that the javascript value of the parameter should also be an object
-     * with appropriate fields, or else an undefined exception may be thrown
-     * when calling this method or when calling methods on the returned object.
-     *
-     * @param name
-     *            name of the configuration parameter
-     * @return error message with the given name, or <code>null</code> if no
-     *         value is defined
+     * Reads a configuration parameter as an {@link ErrorMessage}.
      */
-    public native ErrorMessage getConfigError(String name)
-    /*-{
-        return this.getConfig(name);
-    }-*/;
+    @JsOverlay
+    public final ErrorMessage getConfigError(String name) {
+        return (ErrorMessage) getConfig(name);
+    }
 
     /**
      * Gets the version of the Vaadin framework used on the server.
-     *
-     * @return a string with the version
      */
-    public native String getVaadinVersion()
-    /*-{
-        var info = this.getConfig("versionInfo");
-        return info ? info.vaadinVersion : null;
-    }-*/;
+    @JsOverlay
+    public final String getVaadinVersion() {
+        Object info = getConfig("versionInfo");
+        if (info == null) {
+            return null;
+        }
+        return (String) WidgetUtil.getJsProperty(info, "vaadinVersion");
+    }
 
     /**
      * Gets the version of the Atmosphere framework.
-     *
-     * @return a string with the version
      */
-    public native String getAtmosphereVersion()
-    /*-{
-        var info = this.getConfig("versionInfo");
-        return info ? info.atmosphereVersion : null;
-    }-*/;
+    @JsOverlay
+    public final String getAtmosphereVersion() {
+        Object info = getConfig("versionInfo");
+        if (info == null) {
+            return null;
+        }
+        return (String) WidgetUtil.getJsProperty(info, "atmosphereVersion");
+    }
 
     /**
      * Gets the JS version used in the Atmosphere framework.
-     *
-     * @return a string with the version
      */
-    public native String getAtmosphereJSVersion()
-    /*-{
-        if (@com.vaadin.client.communication.AtmospherePushConnection::isAtmosphereLoaded()()) {
-            return $wnd.vaadinPush.atmosphere.version;
-        } else {
-            return null;
+    @JsOverlay
+    public final String getAtmosphereJSVersion() {
+        if (AtmospherePushConnection.isAtmosphereLoaded()) {
+            return AtmospherePushConnection.getAtmosphereJSVersion();
         }
-    }-*/;
+        return null;
+    }
 
     /**
      * Gets the initial UIDL from the bootstrap page.
-     *
-     * @return the initial UIDL
      */
-    public ValueMap getUIDL() {
+    @JsOverlay
+    public final ValueMap getUIDL() {
         return getConfigValueMap("uidl");
     }
 }
