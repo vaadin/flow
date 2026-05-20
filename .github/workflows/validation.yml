@@ -270,6 +270,7 @@ jobs:
         with:
           name: tests-output
           pattern: tests-output-*
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
         with:
           name: tests-output
