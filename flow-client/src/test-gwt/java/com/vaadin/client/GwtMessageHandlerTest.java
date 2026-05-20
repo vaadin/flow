@@ -221,7 +221,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         array.set(0, dep);
 
         obj.put(LoadMode.EAGER.toString(), array);
-        handler.handleJSON(object.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(object));
 
         doAssert(() -> {
             assertTrue(getResourceLoader().scriptUrls.contains("foo"));
@@ -259,7 +259,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         obj.put(LoadMode.LAZY.toString(), array);
 
-        handler.handleJSON(object.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(object));
 
         doAssert(() -> {
             assertEquals("test-dependency", getInternalEvent(0));
@@ -278,12 +278,12 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         JavaScriptObject object1 = JavaScriptObject.createObject();
         JsonObject obj1 = object1.cast();
         obj1.put("syncId", 1);
-        handler.handleJSON(object1.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(object1));
 
         JavaScriptObject object2 = JavaScriptObject.createObject();
         JsonObject obj2 = object2.cast();
         obj2.put("syncId", 3);
-        handler.handleJSON(object2.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(object2));
 
         // then a re-sync message is sent within 300 ms
         doAssert(() -> assertTrue(getResyncState()), 300);
@@ -306,7 +306,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         getUILifecycle().setState(UILifecycle.UIState.TERMINATED);
 
         // when: payload message is handled by message handler on client side
-        handler.handleJSON(messagePayloadJS.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(messagePayloadJS));
 
         doAssert(() -> {
             // then: no session expire and unrecoverable error handling expected
@@ -340,7 +340,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         getUILifecycle().setState(UILifecycle.UIState.TERMINATED);
 
         // when: payload message is handled by message handler on client side
-        handler.handleJSON(messagePayloadJS.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(messagePayloadJS));
 
         doAssert(() -> {
             // then: no session expire and unrecoverable error handling expected
@@ -372,7 +372,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         messagePayload.put("meta", meta);
 
         // when: payload message is handled by message handler on client side
-        handler.handleJSON(messagePayloadJS.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(messagePayloadJS));
 
         doAssert(() -> {
             // then: session expire handling expected
@@ -400,7 +400,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         messagePayload.put("meta", meta);
 
         // when: payload message is handled by message handler on client side
-        handler.handleJSON(messagePayloadJS.cast());
+        handler.handleJSON(com.vaadin.client.WidgetUtil.crazyJsCast(messagePayloadJS));
 
         doAssert(() -> {
             // then: unrecoverable error handling expected

@@ -77,8 +77,8 @@ public class GwtAtmospherePushConnectionTest extends ClientEngineTestBase {
                 registry);
         String pushUri = getPushUri();
 
-        AtmosphereResponse response = (AtmosphereResponse) JavaScriptObject
-                .createObject();
+        AtmosphereResponse response = com.vaadin.client.WidgetUtil
+                .crazyJsCast(JavaScriptObject.createObject());
         connection.onConnect(response);
         connection.disconnect(() -> {
         });

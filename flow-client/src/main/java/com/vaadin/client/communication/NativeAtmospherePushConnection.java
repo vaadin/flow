@@ -47,6 +47,8 @@ final class NativeAtmospherePushConnection {
     static native void doDisconnect(String url);
 
     static native boolean isAtmosphereLoaded();
+
+    static native String getAtmosphereJSVersion();
 }
 
 /** Callback for Atmosphere events that deliver a single response object. */

@@ -146,7 +146,8 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
             doDisconnect: function(url) {
                 if ($wnd.vaadinPush && $wnd.vaadinPush.atmosphere) { $wnd.vaadinPush.atmosphere.unsubscribeUrl(url); }
             },
-            isAtmosphereLoaded: function() { return !!($wnd.vaadinPush && $wnd.vaadinPush.atmosphere); }
+            isAtmosphereLoaded: function() { return !!($wnd.vaadinPush && $wnd.vaadinPush.atmosphere); },
+            getAtmosphereJSVersion: function() { return ($wnd.vaadinPush && $wnd.vaadinPush.atmosphere && $wnd.vaadinPush.atmosphere.version) || null; }
         };
         communication.MessageHandler = {
             removeStylesheetByIdFromDom: function(id) {
