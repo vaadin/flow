@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.flow;
 
-import jsinterop.annotations.JsType;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type StateNodeLike = any;
 
 /**
- * Event fired when a state node is unregistered. Pure
- * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
- * {@code src/main/frontend/internal/client/flow/NodeUnregisterEvent.ts}.
- *
- * @author Vaadin Ltd
- * @since 1.0
+ * Event fired when a state node is unregistered. Migrated from
+ * `com.vaadin.client.flow.NodeUnregisterEvent`.
  */
-@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow", name = "NodeUnregisterEvent")
-public class NodeUnregisterEvent {
+export class NodeUnregisterEvent {
+  readonly node: StateNodeLike;
 
-    public NodeUnregisterEvent(StateNode node) {
-        // Defined by the TS class constructor.
-    }
+  constructor(node: StateNodeLike) {
+    this.node = node;
+  }
 
-    public native StateNode getNode();
+  getNode(): StateNodeLike {
+    return this.node;
+  }
 }
