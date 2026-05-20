@@ -53,20 +53,9 @@ public class NodeList extends NodeFeature implements ReactiveValue {
 
     private boolean hasBeenCleared;
 
-    private final ReactiveEventRouter<ListSpliceListener, ListSpliceEvent> eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
-            this) {
-        @Override
-        protected ListSpliceListener wrap(
-                ReactiveValueChangeListener reactiveValueChangeListener) {
-            return reactiveValueChangeListener::onValueChange;
-        }
-
-        @Override
-        protected void dispatchEvent(ListSpliceListener listener,
-                ListSpliceEvent event) {
-            listener.onSplice(event);
-        }
-    };
+    private final ReactiveEventRouter<ListSpliceListener, ListSpliceEvent> eventRouter = new ReactiveEventRouter<>(
+            this, listener -> listener::onValueChange,
+            (listener, event) -> listener.onSplice(event));
 
     /**
      * Creates a new list.

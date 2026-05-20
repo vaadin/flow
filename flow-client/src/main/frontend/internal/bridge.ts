@@ -42,6 +42,7 @@ import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElemen
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
 import { Computation } from './client/flow/reactive/Computation';
 import { Reactive } from './client/flow/reactive/Reactive';
+import { ReactiveEventRouter } from './client/flow/reactive/ReactiveEventRouter';
 import { ClientJsonCodec } from './client/flow/util/ClientJsonCodec';
 import { registerGwtBridge } from './registry';
 
@@ -78,6 +79,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
   registerGwtBridge('client.flow.reactive', 'Computation', Computation);
   registerGwtBridge('client.flow.reactive', 'Reactive', Reactive);
+  registerGwtBridge('client.flow.reactive', 'ReactiveEventRouter', ReactiveEventRouter);
   registerGwtBridge('client.flow.util', 'ClientJsonCodec', ClientJsonCodec);
 }
 

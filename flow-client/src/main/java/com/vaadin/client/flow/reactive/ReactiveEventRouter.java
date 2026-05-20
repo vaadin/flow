@@ -15,17 +15,20 @@
  */
 package com.vaadin.client.flow.reactive;
 
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsSet;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsType;
 
 import elemental.events.EventRemover;
 
 /**
  * Event router providing integration with reactive features in {@link Reactive}
- * and {@link Computation}. Listeners can be added both for a specific event
- * type and for the generic value change. All events are fired to both types of
- * listeners, as well as to event collectors registered using
- * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
+ * and {@link Computation}. Pure {@code @JsType(isNative=true)} binding to the
+ * TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/reactive/ReactiveEventRouter.ts}.
+ *
+ * <p>
+ * The Java abstract-class shape (override {@code wrap} / {@code dispatchEvent})
+ * is replaced by passing two callbacks to the constructor.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,118 +37,43 @@ import elemental.events.EventRemover;
  * @param <E>
  *            the reactive event type of this router
  */
-public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
-    private final JsSet<L> listeners = JsCollections.set();
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.reactive", name = "ReactiveEventRouter")
+public class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
 
-    private final ReactiveValue reactiveValue;
+    /** Wraps a generic change listener into the router's listener type. */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface WrapFn<L> {
+        L wrap(ReactiveValueChangeListener listener);
+    }
 
-    /**
-     * Creates a new event router for a reactive value.
-     *
-     * @param reactiveValue
-     *            the reactive value, not <code>null</code>
-     */
-    public ReactiveEventRouter(ReactiveValue reactiveValue) {
-        assert reactiveValue != null;
-
-        this.reactiveValue = reactiveValue;
+    /** Dispatches an event to a listener of the router's listener type. */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface DispatchFn<L, E> {
+        void dispatch(L listener, E event);
     }
 
     /**
-     * Adds a listener to this event router.
-     *
-     * @param listener
-     *            the listener to add, not <code>null</code>
-     * @return an event remover that can be used for removing the added listener
+     * Creates a new event router. Takes the reactive value the router fires
+     * events for and two callbacks that supply what were previously the
+     * abstract methods {@code wrap} and {@code dispatchEvent}.
      */
-    public EventRemover addListener(L listener) {
-        assert listener != null;
-
-        listeners.add(listener);
-        EventRemover remover = () -> listeners.delete(listener);
-
-        Computation computation = Reactive.getCurrentComputation();
-        if (computation != null) {
-            computation.onNextInvalidate(e -> remover.remove());
-        }
-
-        return remover;
+    public ReactiveEventRouter(ReactiveValue reactiveValue, WrapFn<L> wrap,
+            DispatchFn<L, E> dispatch) {
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Adds a generic reactive change listener to this router.
-     *
-     * @param reactiveValueChangeListener
-     *            the change listener to add, not <code>null</code>
-     * @return an event remover that can be used for removing the added listener
-     */
-    public EventRemover addReactiveListener(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
-        assert reactiveValueChangeListener != null;
-        return addListener(wrap(reactiveValueChangeListener));
-    }
+    public native EventRemover addListener(L listener);
 
-    /**
-     * Fires an event to all listeners added to this router using
-     * {@link #addListener(Object)} or
-     * {@link #addReactiveListener(ReactiveValueChangeListener)} as well as all
-     * global event collectors added using
-     * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
-     *
-     * @param event
-     *            the event to fire
-     */
-    public void fireEvent(E event) {
-        assert event.getSource() == reactiveValue;
+    public native EventRemover addReactiveListener(
+            ReactiveValueChangeListener listener);
 
-        JsSet<L> copy = JsCollections.set(listeners);
+    public native void fireEvent(E event);
 
-        copy.forEach(listener -> dispatchEvent(listener, event));
+    public native void registerRead();
 
-        Reactive.notifyEventCollectors(event);
-    }
-
-    /**
-     * Registers access to the data for which this event router fires event.
-     * This registers the event source of this event router to be set as a
-     * dependency of the current computation if there is one.
-     */
-    public void registerRead() {
-        Computation computation = Reactive.getCurrentComputation();
-        if (computation != null) {
-            EventRemover remover = addReactiveListener(
-                    computation::onValueChange);
-            computation.addDependencyRemover(remover::remove);
-        }
-    }
-
-    /**
-     * Gets the reactive value for which this router fires event.
-     *
-     * @return the reactive value
-     */
-    public ReactiveValue getReactiveValue() {
-        return reactiveValue;
-    }
-
-    /**
-     * Callback for wrapping a generic reactive change listener to an instance
-     * of the listener type natively supported by this event router.
-     *
-     * @param reactiveValueChangeListener
-     *            the reactive change listener
-     * @return an event listener wrapping the provided listener
-     */
-    protected abstract L wrap(
-            ReactiveValueChangeListener reactiveValueChangeListener);
-
-    /**
-     * Callback for dispatching an event to a listener.
-     *
-     * @param listener
-     *            the listener that should receive the event
-     * @param event
-     *            the event to dispatch
-     */
-    protected abstract void dispatchEvent(L listener, E event);
+    public native ReactiveValue getReactiveValue();
 }

@@ -49,20 +49,9 @@ import elemental.json.JsonValue;
 public class NodeMap extends NodeFeature implements ReactiveValue {
     private final JsMap<String, MapProperty> properties = JsCollections.map();
 
-    private final ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent> eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
-            this) {
-        @Override
-        protected MapPropertyAddListener wrap(
-                ReactiveValueChangeListener reactiveValueChangeListener) {
-            return reactiveValueChangeListener::onValueChange;
-        }
-
-        @Override
-        protected void dispatchEvent(MapPropertyAddListener listener,
-                MapPropertyAddEvent event) {
-            listener.onPropertyAdd(event);
-        }
-    };
+    private final ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent> eventRouter = new ReactiveEventRouter<>(
+            this, listener -> listener::onValueChange,
+            (listener, event) -> listener.onPropertyAdd(event));
 
     /**
      * Creates a new map feature.
