@@ -49,29 +49,38 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
-    // The keydown handler body. Captures: $0 = listenOn element. Runtime
-    // argument: event. Filter text, focus-reset JS, and preventDefault JS are
-    // inlined per registration since they are derived from server-side
-    // configuration. Slots: 1=filter, 2=focus reset, 3=prevent default.
-    static final String KEYDOWN_HANDLER_BODY = //@formatter:off
-            "if (%1$s) {"
-                    + "%2$s"
-                    + "const new_event = new event.constructor(event.type, event);"
-                    + "$0.dispatchEvent(new_event);"
-                    + "%3$s"
-                    + "event.stopPropagation();"
-                    + "}";//@formatter:on
+    // The keydown handler body. Bound to the listenOn element via .bind(this)
+    // at registration time, so {@code this} inside the body is the listenOn
+    // element. Runtime argument: event. Captures:
+    // $0 = allowed key strings (matched against event.code/event.key)
+    // $1 = modifier keys that must be pressed
+    // $2 = modifier keys that must NOT be pressed
+    // $3 = whether to reset focus on the active element
+    // $4 = whether to prevent the browser's default action
+    static final String KEYDOWN_HANDLER_BODY = """
+            if (($0.indexOf(event.code) !== -1 || $0.indexOf(event.key) !== -1)
+                    && $1.every(m => event.getModifierState(m))
+                    && $2.every(m => !event.getModifierState(m))) {
+                if ($3) window.Vaadin.Flow.resetFocus();
+                const new_event = new event.constructor(event.type, event);
+                this.dispatchEvent(new_event);
+                if ($4) event.preventDefault();
+                event.stopPropagation();
+            }""";
 
-    // The locator wrapper that hands the keydown handler (passed as $0) to the
-    // delegate found via the locator JS expression (%1$s). The locator must be
-    // inlined because it is evaluated in the listenOn element's context.
-    static final String ELEMENT_LOCATOR_JS = //@formatter:off
-            "const delegate=%1$s;"
-                    + "if (delegate) {"
-                    + "delegate.addEventListener('keydown', $0);"
-                    + "} else {"
-                    + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
-                    + "}";//@formatter:on
+    // Registers the keydown handler on the delegate element resolved by the
+    // locator function. Captures: $0 = locator function (returns the delegate
+    // when called with {@code this} = listenOn element); $1 = keydown handler
+    // function; $2 = locator source string (used only for the error message).
+    // The handler is bound to the listenOn element so the body can dispatch
+    // to it via {@code this} without an extra capture.
+    static final String LISTEN_ON_DELEGATE_REGISTRATION_JS = """
+            const delegate = $0.call(this);
+            if (delegate) {
+                delegate.addEventListener('keydown', $1.bind(this));
+            } else {
+                throw "Shortcut listenOn element not found with JS locator string '" + $2 + "'";
+            }""";
 
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
@@ -891,34 +900,60 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (elementLocatorJs != null) {
             // #10362 only prevent default when key filter matches to not block
             // typing or existing shortcuts
-            final String filterText = filterText();
-            final String focusJs = resetFocusOnActiveElement
-                    ? "window.Vaadin.Flow.resetFocus();"
-                    : "";
-            // enable default actions if desired
-            final String preventDefault = allowDefaultBehavior ? ""
-                    : "event.preventDefault();";
-            final String handlerBody = String.format(KEYDOWN_HANDLER_BODY,
-                    filterText, focusJs, preventDefault);
-            final String wrapperExpression = String.format(ELEMENT_LOCATOR_JS,
-                    elementLocatorJs);
+            final List<String> allowedKeys = primaryKey.getKeys();
+            final List<String> requiredModifiers = requiredModifierKeys();
+            final List<String> forbiddenModifiers = forbiddenModifierKeys();
 
-            // The expression hash keys on both the wrapper and the body so
-            // that two shortcuts with the same locator but different filters
-            // do not collapse into a single registration.
-            final String expressionHash = StringUtil
-                    .getHash(wrapperExpression + handlerBody);
+            // Two shortcuts on the same listenOn with identical
+            // locator+key+modifiers+flags should register only one handler.
+            final String dedupKey = elementLocatorJs + "|" + allowedKeys + "|"
+                    + requiredModifiers + "|" + forbiddenModifiers + "|"
+                    + resetFocusOnActiveElement + "|" + allowDefaultBehavior;
+            final String expressionHash = StringUtil.getHash(dedupKey);
             final Set<String> expressions = getOrInitListenData(listenOn);
             if (expressions.contains(expressionHash)) {
                 return;
             }
             expressions.add(expressionHash);
 
-            JsFunction handler = JsFunction
-                    .of(handlerBody, listenOn.getElement())
+            JsFunction handler = JsFunction.of(KEYDOWN_HANDLER_BODY,
+                    allowedKeys, requiredModifiers, forbiddenModifiers,
+                    resetFocusOnActiveElement, !allowDefaultBehavior)
                     .withArguments("event");
-            listenOn.getElement().executeJs(wrapperExpression, handler);
+            // Wrap the user-supplied locator expression as a function body.
+            // The wrap is the minimum adapter from JS expression to JS body.
+            JsFunction locator = JsFunction
+                    .of("return " + elementLocatorJs + ";");
+            listenOn.getElement().executeJs(LISTEN_ON_DELEGATE_REGISTRATION_JS,
+                    locator, handler, elementLocatorJs);
         }
+    }
+
+    private List<String> requiredModifierKeys() {
+        final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
+                .collect(Collectors.toList());
+        return Arrays.stream(KeyModifier.values())
+                .map(km -> km.getKeys().get(0))
+                .filter(modKey -> realMods.stream()
+                        .anyMatch(m -> m.matches(modKey)))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> forbiddenModifierKeys() {
+        final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
+                .collect(Collectors.toList());
+        // See generateEventModifierFilter for the ALT_GRAPH special case:
+        // browsers disagree on whether Option/AltGraph reports ALT_GRAPH
+        // alongside ALT, so when ALT is required ALT_GRAPH cannot be forbidden.
+        final boolean altRequired = modifiers.stream()
+                .anyMatch(key -> key.matches(Key.ALT.getKeys().get(0)));
+        final String altGraphKey = KeyModifier.ALT_GRAPH.getKeys().get(0);
+        return Arrays.stream(KeyModifier.values())
+                .map(km -> km.getKeys().get(0))
+                .filter(modKey -> realMods.stream()
+                        .noneMatch(m -> m.matches(modKey)))
+                .filter(modKey -> !(altRequired && modKey.equals(altGraphKey)))
+                .collect(Collectors.toList());
     }
 
     /**

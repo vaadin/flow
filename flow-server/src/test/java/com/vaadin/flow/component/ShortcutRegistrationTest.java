@@ -392,6 +392,14 @@ class ShortcutRegistrationTest {
         assertTrue(registration.isShortcutActive());
     }
 
+    // Capture positions in the keydown handler JsFunction. Mirrors
+    // ShortcutRegistration.KEYDOWN_HANDLER_BODY.
+    private static final int CAPTURE_ALLOWED_KEYS = 0;
+    private static final int CAPTURE_REQUIRED_MODIFIERS = 1;
+    private static final int CAPTURE_FORBIDDEN_MODIFIERS = 2;
+    private static final int CAPTURE_RESET_FOCUS = 3;
+    private static final int CAPTURE_PREVENT_DEFAULT = 4;
+
     @Test
     void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
@@ -403,25 +411,30 @@ class ShortcutRegistrationTest {
 
         final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
                 .get(0);
-        final String expression = js.getInvocation().getExpression();
+        // The locator is sent as a JsFunction (captured at index 0 of the
+        // executeJs invocation) and again as a source string (index 2) for
+        // the not-found error message.
+        final List<Object> invocationParams = js.getInvocation()
+                .getParameters();
+        Object locatorParam = invocationParams.get(0);
+        assertTrue(locatorParam instanceof JsFunction,
+                "locator parameter should be a JsFunction, was "
+                        + locatorParam);
         assertTrue(
-                expression.contains(
-                        "const delegate=" + fixture.elementLocatorJs + ";"),
-                "element locator string " + fixture.elementLocatorJs
-                        + " missing from JS execution string " + expression);
+                ((JsFunction) locatorParam).getBody()
+                        .contains(fixture.elementLocatorJs),
+                "locator JsFunction body should contain the element locator JS, was "
+                        + ((JsFunction) locatorParam).getBody());
+        assertEquals(fixture.elementLocatorJs, invocationParams.get(2),
+                "third executeJs parameter should be the locator source string");
 
-        final String handlerBody = keydownHandlerBody(js);
-        assertTrue(handlerBody.contains("event.preventDefault();"),
-                "JsFunction body should have event.preventDefault() in it "
-                        + handlerBody);
-        assertTrue(handlerBody.contains("event.stopPropagation();"),
-                "JsFunction body should always have event.stopPropagation() in it "
-                        + handlerBody);
-        assertTrue(handlerBody.contains(key.getKeys().get(0)),
-                "JsFunction body missing the key" + key);
-        assertFalse(handlerBody.contains("window.Vaadin.Flow.resetFocus()"),
-                "JsFunction body should not have blur() and focus() on active element in it "
-                        + handlerBody);
+        final List<Object> captures = keydownHandler(js).getCaptures();
+        assertEquals(key.getKeys(), captures.get(CAPTURE_ALLOWED_KEYS),
+                "allowed keys capture should be the shortcut key's key list");
+        assertEquals(Boolean.TRUE, captures.get(CAPTURE_PREVENT_DEFAULT),
+                "preventDefault capture should be true by default");
+        assertEquals(Boolean.FALSE, captures.get(CAPTURE_RESET_FOCUS),
+                "resetFocus capture should be false by default");
 
         fixture.registration.remove();
 
@@ -440,11 +453,10 @@ class ShortcutRegistrationTest {
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
                 .writeResponse();
 
-        final String handlerBody = keydownHandlerBody(
-                pendingJavaScriptInvocations.get(0));
-        assertFalse(handlerBody.contains("event.preventDefault();"),
-                "JsFunction body should NOT have event.preventDefault() in it "
-                        + handlerBody);
+        final List<Object> captures = keydownHandler(
+                pendingJavaScriptInvocations.get(0)).getCaptures();
+        assertEquals(Boolean.FALSE, captures.get(CAPTURE_PREVENT_DEFAULT),
+                "preventDefault capture should be false when browser default is allowed");
     }
 
     @Test
@@ -456,22 +468,29 @@ class ShortcutRegistrationTest {
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
                 .writeResponse();
 
-        final String handlerBody = keydownHandlerBody(
-                pendingJavaScriptInvocations.get(0));
-        assertTrue(handlerBody.contains("window.Vaadin.Flow.resetFocus()"),
-                "JsFunction body should have blur() and focus() on active element in it "
-                        + handlerBody);
+        final List<Object> captures = keydownHandler(
+                pendingJavaScriptInvocations.get(0)).getCaptures();
+        assertEquals(Boolean.TRUE, captures.get(CAPTURE_RESET_FOCUS),
+                "resetFocus capture should be true when resetFocusOnActiveElement is set");
     }
 
     /**
-     * Extracts the keydown handler body from the JsFunction parameter of the
-     * given executeJs invocation.
+     * Extracts the keydown handler JsFunction from the given executeJs
+     * invocation. Expected user-provided parameters: $0 = locator JsFunction,
+     * $1 = keydown handler JsFunction, $2 = locator source string. Element
+     * .executeJs appends the host element as an implicit trailing 'this'
+     * parameter, so the raw parameter list has four entries.
      */
-    private static String keydownHandlerBody(PendingJavaScriptInvocation js) {
-        Object first = js.getInvocation().getParameters().get(0);
-        assertTrue(first instanceof JsFunction,
-                "first parameter should be a JsFunction, was " + first);
-        return ((JsFunction) first).getBody();
+    private static JsFunction keydownHandler(PendingJavaScriptInvocation js) {
+        List<Object> parameters = js.getInvocation().getParameters();
+        assertEquals(4, parameters.size(),
+                "executeJs invocation should have three user parameters (locator function, keydown handler, locator source) plus the implicit 'this' element, was "
+                        + parameters);
+        Object handlerParam = parameters.get(1);
+        assertTrue(handlerParam instanceof JsFunction,
+                "second parameter should be the keydown handler JsFunction, was "
+                        + handlerParam);
+        return (JsFunction) handlerParam;
     }
 
     @Test
