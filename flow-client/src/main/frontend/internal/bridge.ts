@@ -26,6 +26,7 @@ import { Console } from './client/Console';
 import { ElementUtil } from './client/ElementUtil';
 import { ExistingElementMap } from './client/ExistingElementMap';
 import { ExecuteJavaScriptElementUtils } from './client/ExecuteJavaScriptElementUtils';
+import { InitialPropertiesHandler } from './client/InitialPropertiesHandler';
 import { LitUtils } from './client/LitUtils';
 import { PolymerUtils } from './client/PolymerUtils';
 import { Profiler } from './client/Profiler';
@@ -79,6 +80,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'ElementUtil', ElementUtil);
   registerGwtBridge('client', 'ExecuteJavaScriptElementUtils', ExecuteJavaScriptElementUtils);
   registerGwtBridge('client', 'ExistingElementMap', ExistingElementMap);
+  registerGwtBridge('client', 'InitialPropertiesHandler', InitialPropertiesHandler);
   registerGwtBridge('client', 'LitUtils', LitUtils);
   registerGwtBridge('client', 'PolymerUtils', PolymerUtils);
   registerGwtBridge('client', 'Profiler', Profiler);

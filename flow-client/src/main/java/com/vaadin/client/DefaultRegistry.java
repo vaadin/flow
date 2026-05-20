@@ -66,7 +66,8 @@ public class DefaultRegistry extends Registry {
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
-        set("StateTree", new StateTree(this));
+        StateTree stateTree = new StateTree(this);
+        set("StateTree", stateTree);
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));
@@ -77,7 +78,8 @@ public class DefaultRegistry extends Registry {
         set("ConstantPool", (Supplier<ConstantPool>) ConstantPool::new);
         set("ExistingElementMap",
                 (Supplier<ExistingElementMap>) ExistingElementMap::new);
-        set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
+        set("InitialPropertiesHandler",
+                new InitialPropertiesHandler(stateTree));
 
         // Classes with dependencies, in correct order
         Supplier<Heartbeat> heartbeatSupplier = () -> new Heartbeat(this);
