@@ -93,7 +93,7 @@ public class DefaultRegistry extends Registry {
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
-        set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
+        set("ReconnectConfiguration", new ReconnectConfiguration(stateTree));
         set("Poller", new Poller(stateTree, uiLifecycle));
         set("LoadingIndicatorStateHandler", new LoadingIndicatorStateHandler(
                 requestResponseTracker::hasActiveRequest));

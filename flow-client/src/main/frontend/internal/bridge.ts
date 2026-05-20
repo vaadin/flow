@@ -44,6 +44,7 @@ import { MessageHandler } from './client/communication/MessageHandler';
 import { MessageSender } from './client/communication/MessageSender';
 import { PollConfigurator } from './client/communication/PollConfigurator';
 import { Poller } from './client/communication/Poller';
+import { ReconnectConfiguration } from './client/communication/ReconnectConfiguration';
 import { ServerRpcQueue } from './client/communication/ServerRpcQueue';
 import { XhrConnection } from './client/communication/XhrConnection';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
@@ -103,6 +104,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'MessageSender', MessageSender);
   registerGwtBridge('client.communication', 'PollConfigurator', PollConfigurator);
   registerGwtBridge('client.communication', 'Poller', Poller);
+  registerGwtBridge('client.communication', 'ReconnectConfiguration', ReconnectConfiguration);
   registerGwtBridge('client.communication', 'ServerRpcQueue', ServerRpcQueue);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
