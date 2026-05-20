@@ -340,7 +340,7 @@ public class Registry {
      * @return the {@link Poller} singleton
      */
     public Poller getPoller() {
-        return get(Poller.class);
+        return get("Poller");
     }
 
     /**
