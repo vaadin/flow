@@ -15,153 +15,69 @@
  */
 package com.vaadin.client.flow.reactive;
 
-import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsSet;
+import jsinterop.annotations.JsType;
 
-import elemental.events.EventRemover;
+import com.vaadin.client.JsRunnable;
 
 /**
- * Automatically reruns {@link #doRecompute()} whenever any reactive value used
- * by it changes. The recompute method is invoked by the next invocation of
- * {@link Reactive#flush()}, unless it has been invoked manually before the
- * global flush. A computation is also scheduled to for an initial
- * "recomputation" when it is created.
+ * Automatically reruns the constructor-supplied recompute callback whenever any
+ * reactive value used by it changes. The recompute method is invoked by the
+ * next invocation of {@link Reactive#flush()}, unless it has been invoked
+ * manually before the global flush. A computation is also scheduled for an
+ * initial "recomputation" when it is created.
+ *
+ * <p>
+ * Pure {@code @JsType(isNative=true)} binding to the TypeScript implementation
+ * at {@code src/main/frontend/internal/client/flow/reactive/Computation.ts}.
+ * The Java subclass pattern (override {@code doRecompute()}) is replaced by
+ * passing a {@link JsRunnable} to the constructor. Dependency registration is
+ * orchestrated from the Java side: {@link ReactiveEventRouter#registerRead()}
+ * calls {@code addReactiveListener(...)} on the router itself and then passes
+ * the resulting remover to {@link #addDependencyRemover(JsRunnable)}, so this
+ * binding never has to dispatch back into Java method names by string.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class Computation implements ReactiveValueChangeListener {
-
-    private boolean invalidated = false;
-
-    private boolean stopped = false;
-
-    private final JsArray<EventRemover> dependencies = JsCollections.array();
-
-    private JsSet<InvalidateListener> invalidateListeners = JsCollections.set();
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.reactive", name = "Computation")
+public class Computation {
 
     /**
-     * Creates a new computation.
+     * Creates a new computation that runs the given callback when any of its
+     * registered reactive-value dependencies fire a change event.
      */
-    public Computation() {
-        // Make sure a recompute is scheduled
-        invalidate();
+    public Computation(JsRunnable recompute) {
+        // Defined by the TS class constructor.
     }
 
     /**
-     * Adds a dependency to a reactive value. This computation is scheduled for
-     * recomputation when any dependency fires a change event. All previous
-     * dependencies are cleared before recomputing.
-     * <p>
-     * This method is automatically called when a reactive value is used for
-     * recomputing this computation. The developer is not expected to call this
-     * method himself.
-     *
-     * @param dependency
-     *            the reactive value to depend on
+     * Records a dependency-removal callback returned by Java when this
+     * computation was registered as a listener on a reactive value.
      */
-    public void addDependency(ReactiveValue dependency) {
-        if (!stopped) {
-            EventRemover remover = dependency
-                    .addReactiveValueChangeListener(this);
-            dependencies.push(remover);
-        }
-    }
-
-    @Override
-    public void onValueChange(ReactiveValueChangeEvent changeEvent) {
-        if (invalidated || stopped) {
-            return;
-        }
-
-        invalidate();
-    }
-
-    private void invalidate() {
-        invalidated = true;
-
-        clearDependencies();
-
-        if (!stopped) {
-            Reactive.addFlushListener(this::recompute);
-        }
-
-        // Fire invalidate events
-        if (invalidateListeners.size() != 0) {
-            JsSet<InvalidateListener> oldListeners = invalidateListeners;
-            invalidateListeners = JsCollections.set();
-
-            InvalidateEvent invalidateEvent = new InvalidateEvent(this);
-
-            oldListeners.forEach(
-                    listener -> listener.onInvalidate(invalidateEvent));
-        }
-    }
-
-    private void clearDependencies() {
-        while (!dependencies.isEmpty()) {
-            dependencies.remove(0).remove();
-        }
-    }
+    public native void addDependencyRemover(JsRunnable removeListener);
 
     /**
-     * Stops this computation, so that it will no longer be recomputed.
+     * Receives reactive change events from any registered dependency.
+     * Implements {@link ReactiveValueChangeListener#onValueChange} by-name.
      */
-    public void stop() {
-        stopped = true;
+    public native void onValueChange(ReactiveValueChangeEvent event);
 
-        invalidate();
-
-        // Prevent firing more events
-        invalidateListeners.clear();
-
-        // Release memory
-        clearDependencies();
-    }
+    /** Stops this computation, so that it will no longer be recomputed. */
+    public native void stop();
 
     /**
      * Checks whether this computation is invalidated. An invalidated
      * computation will eventually be recomputed (unless it has also been
-     * stopped). Recomputation will happen the next time {@link #recompute()} or
-     * {@link Reactive#flush()} is invoked.
-     *
-     * @return <code>true</code> if this computation is invalidated; otherwise
-     *         <code>false</code>
+     * stopped).
      */
-    public boolean isInvalidated() {
-        return invalidated;
-    }
+    public native boolean isInvalidated();
 
-    /**
-     * Recomputes this computation.
-     */
-    public void recompute() {
-        if (invalidated && !stopped) {
-            try {
-                Reactive.runWithComputation(this, this::doRecompute);
-            } finally {
-                invalidated = false;
-            }
-        }
-    }
-
-    /**
-     * Does the actual recomputation. This method is run in a way that
-     * automatically registers dependencies to any reactive value accessed.
-     */
-    protected abstract void doRecompute();
+    /** Recomputes this computation. */
+    public native void recompute();
 
     /**
      * Adds an invalidate listener that will be invoked the next time this
      * computation is invalidated.
-     *
-     * @param listener
-     *            the listener to run on the next invalidation
      */
-    public void onNextInvalidate(InvalidateListener listener) {
-        if (!stopped) {
-            invalidateListeners.add(listener);
-        }
-    }
+    public native void onNextInvalidate(InvalidateListener listener);
 }

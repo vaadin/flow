@@ -113,7 +113,9 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
     public void registerRead() {
         Computation computation = Reactive.getCurrentComputation();
         if (computation != null) {
-            computation.addDependency(reactiveValue);
+            EventRemover remover = addReactiveListener(
+                    computation::onValueChange);
+            computation.addDependencyRemover(remover::remove);
         }
     }
 
