@@ -15,155 +15,53 @@
  */
 package com.vaadin.client.communication;
 
-import com.vaadin.client.Registry;
-import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.collection.JsCollections;
+import jsinterop.annotations.JsType;
+
+import com.vaadin.client.JsRunnable;
+import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.MapPropertyChangeEvent;
-import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
- * API.
+ * API. Pure {@code @JsType(isNative=true)} binding to the TypeScript
+ * implementation at
+ * {@code src/main/frontend/internal/client/communication/PushConfiguration.ts}.
  *
- * Additionally tracks when push is enabled/disabled and informs
- * {@link MessageSender}.
+ * <p>
+ * Construction takes the {@link StateTree} and a pair of enable-push /
+ * disable-push callbacks (each dispatches into
+ * {@link MessageSender#setPushEnabled(boolean)}) so the TS class does not have
+ * to dispatch back through the Java {@code Registry} facade.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "PushConfiguration")
 public class PushConfiguration {
 
-    private final Registry registry;
-
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
-    public PushConfiguration(Registry registry) {
-        this.registry = registry;
-        setupListener();
-    }
-
-    private void setupListener() {
-        getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY)
-                .addChangeListener(this::onPushModeChange);
-    }
-
-    /**
-     * Called whenever the push mode is changed.
-     *
-     * @param event
-     *            the value change event for push mode
-     */
-    private void onPushModeChange(MapPropertyChangeEvent event) {
-        boolean oldModeEnabled = isPushEnabled(event.getOldValue());
-        boolean newModeEnabled = isPushEnabled(event.getNewValue());
-
-        if (!oldModeEnabled && newModeEnabled) {
-            // Switch push on
-
-            // We must wait until all parts of push configuration has been
-            // updated
-            Reactive.addFlushListener(
-                    () -> registry.getMessageSender().setPushEnabled(true));
-        } else if (oldModeEnabled && !newModeEnabled) {
-            // Switch push off
-            // We must wait until all parts of push configuration has been
-            // updated
-            Reactive.addFlushListener(
-                    () -> registry.getMessageSender().setPushEnabled(false));
-        }
-    }
-
-    private NodeMap getConfigurationMap() {
-        return registry.getStateTree().getRootNode()
-                .getMap(NodeFeatures.UI_PUSHCONFIGURATION);
+    public PushConfiguration(StateTree tree, JsRunnable enablePush,
+            JsRunnable disablePush) {
+        // Defined by the TS class constructor.
     }
 
     /**
      * Gets the push servlet mapping configured or determined on the server.
-     *
-     * @return the push servlet mapping configured or determined on the server
-     *         or null if none has been configured
      */
-    public String getPushServletMapping() {
-        if (getConfigurationMap().hasPropertyValue(
-                PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)) {
-            return (String) getConfigurationMap()
-                    .getProperty(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)
-                    .getValue();
-        }
-
-        return null;
-    }
+    public native String getPushServletMapping();
 
     /**
-     * Checks if XHR should be used for client -&gt; server messages even though
-     * we are using a bidirectional push transport such as websockets.
-     *
-     * @return true if XHR should always be used, false otherwise
+     * Checks if XHR should be used for client-&gt;server messages even when we
+     * are using a bidirectional push transport such as websockets.
      */
-    public boolean isAlwaysXhrToServer() {
-        // The only possible value is "true"
-        return (getConfigurationMap().hasPropertyValue(
-                PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-    }
+    public native boolean isAlwaysXhrToServer();
 
     /**
-     * Gets all configured push parameters.
-     *
-     * The parameters configured on the server, including transports.
-     *
-     * @return a map of all parameters configured on the server
+     * Gets all configured push parameters as a map.
      */
-    public JsMap<String, String> getParameters() {
-        MapProperty p = getConfigurationMap()
-                .getProperty(PushConfigurationMap.PARAMETERS_KEY);
-        StateNode parametersNode = (StateNode) p.getValue();
-        NodeMap parametersMap = parametersNode
-                .getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
-
-        JsMap<String, String> parameters = JsCollections.map();
-        parametersMap.forEachProperty((property, key) -> {
-            parameters.set(key, (String) property.getValue());
-        });
-
-        return parameters;
-    }
+    public native JsMap<String, String> getParameters();
 
     /**
      * Checks if push is enabled.
-     *
-     * @return true if push is enabled, false otherwise
      */
-    public boolean isPushEnabled() {
-        return isPushEnabled(getConfigurationMap()
-                .getProperty(PushConfigurationMap.PUSHMODE_KEY).getValue());
-    }
-
-    /**
-     * Checks the given propertyValue from the PUSHMODE key to determine if push
-     * is enabled or not.
-     *
-     * @param propertyValue
-     *            the PushMode value
-     * @return true if push is enabled, false otherwise
-     */
-    private static boolean isPushEnabled(Object propertyValue) {
-        if (propertyValue == null) {
-            return false;
-        }
-
-        String pushMode = (String) propertyValue;
-        // Intentionally avoiding bringing the enum to client side
-        return !"DISABLED".equals(pushMode);
-    }
-
+    public native boolean isPushEnabled();
 }
