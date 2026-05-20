@@ -15,32 +15,22 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsType;
+
 /**
- * Event fired when a reactive value has changed.
+ * Event fired when a reactive value has changed. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/reactive/ReactiveValueChangeEvent.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class ReactiveValueChangeEvent {
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.reactive", name = "ReactiveValueChangeEvent")
+public class ReactiveValueChangeEvent {
 
-    private ReactiveValue source;
-
-    /**
-     * Creates a new event fired from a source.
-     *
-     * @param source
-     *            the reactive value that will fire the event
-     */
     public ReactiveValueChangeEvent(ReactiveValue source) {
-        this.source = source;
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Gets the reactive value from which this event originates.
-     *
-     * @return the event source
-     */
-    public ReactiveValue getSource() {
-        return source;
-    }
+    public native ReactiveValue getSource();
 }
