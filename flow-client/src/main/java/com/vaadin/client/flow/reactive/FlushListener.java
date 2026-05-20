@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Listener that is invoked by {@link Reactive#flush()}.
  *
@@ -24,6 +26,8 @@ package com.vaadin.client.flow.reactive;
  * @since 1.0
  */
 @FunctionalInterface
+@JsFunction
+@SuppressWarnings("unusable-by-js")
 public interface FlushListener {
     /**
      * Invoked on {@link Reactive#flush()}.
