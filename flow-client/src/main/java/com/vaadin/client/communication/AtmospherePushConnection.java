@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.communication;
 
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
@@ -41,8 +45,6 @@ import elemental.json.JsonObject;
  * @since 1.0
  */
 public class AtmospherePushConnection implements PushConnection {
-
-    public static final String TRANSPORT_KEY = "transport";
 
     /**
      * Represents the connection state of a push connection.
@@ -179,14 +181,15 @@ public class AtmospherePushConnection implements PushConnection {
         });
         config = createConfig();
         // Always debug for now
-        config.setStringValue("logLevel", "debug");
+        WidgetUtil.setJsProperty(config, "logLevel", "debug");
 
         getPushConfiguration().getParameters().forEach((value, key) -> {
             if (value.equalsIgnoreCase("true")
                     || value.equalsIgnoreCase("false")) {
-                config.setBooleanValue(key, value.equalsIgnoreCase("true"));
+                WidgetUtil.setJsProperty(config, key,
+                        value.equalsIgnoreCase("true"));
             } else {
-                config.setStringValue(key, value);
+                WidgetUtil.setJsProperty(config, key, value);
             }
         });
 
@@ -479,174 +482,35 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * JavaScriptObject class with some helper methods to set and get primitive
-     * values.
-     */
-    public abstract static class AbstractJSO extends JavaScriptObject {
-        /**
-         * JavaScriptObject constructor.
-         */
-        protected AbstractJSO() {
-
-        }
-
-        /**
-         * Gets the given property value as a String.
-         *
-         * @param key
-         *            the key of the property
-         * @return the property value
-         */
-        protected final native String getStringValue(String key)
-        /*-{
-           return this[key];
-         }-*/;
-
-        /**
-         * Sets the given property value as a String.
-         *
-         * @param key
-         *            the key of the property
-         * @param value
-         *            the property value
-         */
-        protected final native void setStringValue(String key, String value)
-        /*-{
-            this[key] = value;
-        }-*/;
-
-        /**
-         * Gets the given property value as an int.
-         *
-         * @param key
-         *            the key of the property
-         * @return the property value
-         */
-        protected final native int getIntValue(String key)
-        /*-{
-           return this[key];
-         }-*/;
-
-        /**
-         * Sets the given property value as an int.
-         *
-         * @param key
-         *            the key of the property
-         * @param value
-         *            the property value
-         */
-        protected final native void setIntValue(String key, int value)
-        /*-{
-            this[key] = value;
-        }-*/;
-
-        /**
-         * Gets the given property value as a boolean.
-         *
-         * @param key
-         *            the key of the property
-         * @return the property value
-         */
-        protected final native boolean getBooleanValue(String key)
-        /*-{
-           return this[key];
-         }-*/;
-
-        /**
-         * Sets the given property value as a boolean.
-         *
-         * @param key
-         *            the key of the property
-         * @param value
-         *            the property value
-         */
-        protected final native void setBooleanValue(String key, boolean value)
-        /*-{
-            this[key] = value;
-        }-*/;
-
-    }
-
-    /**
      * Provides information from the Atmosphere configuration object.
      */
-    public static class AtmosphereConfiguration extends AbstractJSO {
+    @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+    public static class AtmosphereConfiguration {
 
-        /**
-         * JavaScriptObject constructor.
-         */
-        protected AtmosphereConfiguration() {
-            super();
-        }
+        @JsProperty(name = "transport")
+        public final native String getTransport();
 
-        /**
-         * Gets the transport mechanism.
-         *
-         * @return the transport mechanism
-         */
-        public final String getTransport() {
-            return getStringValue(TRANSPORT_KEY);
-        }
+        @JsProperty(name = "fallbackTransport")
+        public final native String getFallbackTransport();
 
-        /**
-         * Gets the fallback transport mechanism.
-         *
-         * @return the fallback transport mechanism
-         */
-        public final String getFallbackTransport() {
-            return getStringValue("fallbackTransport");
-        }
+        @JsProperty(name = "transport")
+        public final native void setTransport(String transport);
 
-        /**
-         * Sets the transport mechanism to use.
-         *
-         * @param transport
-         *            the transport mechanism
-         */
-        public final void setTransport(String transport) {
-            setStringValue(TRANSPORT_KEY, transport);
-        }
-
-        /**
-         * Sets the fallback transport mechanism to use.
-         *
-         * @param fallbackTransport
-         *            the fallback transport mechanism
-         */
-        public final void setFallbackTransport(String fallbackTransport) {
-            setStringValue("fallbackTransport", fallbackTransport);
-        }
+        @JsProperty(name = "fallbackTransport")
+        public final native void setFallbackTransport(String fallbackTransport);
     }
 
     /**
      * Provides data from an Atmosphere response JavaScript object.
      */
-    public static class AtmosphereResponse extends AbstractJSO {
+    @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+    public static class AtmosphereResponse {
 
-        /**
-         * JavaScriptObject constructor.
-         */
-        protected AtmosphereResponse() {
+        @JsProperty(name = "status")
+        public final native int getStatusCode();
 
-        }
-
-        /**
-         * Gets the response status code.
-         *
-         * @return the response status code.
-         */
-        public final int getStatusCode() {
-            return getIntValue("status");
-        }
-
-        /**
-         * Gets the response text.
-         *
-         * @return the response body.
-         */
-        public final String getResponseBody() {
-            return getStringValue("responseBody");
-        }
+        @JsProperty(name = "responseBody")
+        public final native String getResponseBody();
 
         /**
          * Gets the Atmosphere reported state.
@@ -659,19 +523,11 @@ public class AtmospherePushConnection implements PushConnection {
          *
          * @return the state reported by Atmosphere
          */
-        public final String getState() {
-            return getStringValue("state");
-        }
+        @JsProperty(name = "state")
+        public final native String getState();
 
-        /**
-         * Gets the transport reported by Atmosphere.
-         *
-         * @return the transport
-         */
-        public final String getTransport() {
-            return getStringValue(TRANSPORT_KEY);
-        }
-
+        @JsProperty(name = "transport")
+        public final native String getTransport();
     }
 
     /**
@@ -681,10 +537,11 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected final AtmosphereConfiguration createConfig() {
         return NativeAtmospherePushConnection
-                .createConfig(PushConstants.MESSAGE_DELIMITER).cast();
+                .createConfig(PushConstants.MESSAGE_DELIMITER);
     }
 
-    private JavaScriptObject doConnect(String uri, JavaScriptObject config) {
+    private JavaScriptObject doConnect(String uri,
+            AtmosphereConfiguration config) {
         AtmosphereConnectCallbacks callbacks = new AtmosphereConnectCallbacks();
         callbacks.onOpen = response -> onOpen((AtmosphereResponse) response);
         callbacks.onReopen = response -> onReopen(
