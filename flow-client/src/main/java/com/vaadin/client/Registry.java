@@ -17,6 +17,8 @@ package com.vaadin.client;
 
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.LoadingIndicatorStateHandler;
@@ -42,6 +44,7 @@ import com.vaadin.client.flow.collection.JsMap;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType
 public class Registry {
 
     private JsMap<String, Object> lookupTable = JsCollections.map();
