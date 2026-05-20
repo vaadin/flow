@@ -17,7 +17,7 @@ package com.vaadin.client;
 
 import jsinterop.annotations.JsType;
 
-import com.google.gwt.core.client.JsArray;
+import com.vaadin.client.flow.collection.JsArray;
 
 /**
  * JsInterop binding for the TypeScript {@code Profiler} implementation
