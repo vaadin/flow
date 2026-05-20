@@ -16,6 +16,8 @@
 package com.vaadin.client;
 
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
@@ -40,8 +42,8 @@ import elemental.dom.Node;
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "ExecuteJavaScriptElementUtils")
 public final class ExecuteJavaScriptElementUtils {
 
     /**
@@ -56,6 +58,7 @@ public final class ExecuteJavaScriptElementUtils {
         void invoke();
     }
 
+    @JsOverlay
     private static final JsMap<StateNode, JsMap<Double, JsCallback>> initializerCleanups = JsCollections
             .map();
 
@@ -63,19 +66,16 @@ public final class ExecuteJavaScriptElementUtils {
     }
 
     /**
+     * Checks whether the given property is declared on the custom element's
+     * constructor.properties bag.
+     */
+    public static native boolean isPropertyDefined(Node node, String property);
+
+    /**
      * Calculate the data required for server side callback to attach existing
      * element and send it to the server.
-     *
-     * @param parent
-     *            the parent node whose child is requested to attach
-     * @param previousSibling
-     *            previous sibling element
-     * @param tagName
-     *            the tag name of the element requested to attach
-     * @param id
-     *            the identifier of the server side node which is requested to
-     *            be a counterpart of the client side element
      */
+    @JsOverlay
     public static void attachExistingElement(StateNode parent,
             Element previousSibling, String tagName, int id) {
         Element existingElement = null;
@@ -127,6 +127,7 @@ public final class ExecuteJavaScriptElementUtils {
         }
     }
 
+    @JsOverlay
     private static boolean hasTag(Node node, String tag) {
         return node instanceof Element
                 && tag.equalsIgnoreCase(((Element) node).getTagName());
@@ -137,12 +138,8 @@ public final class ExecuteJavaScriptElementUtils {
      * {@literal NodeFeatures.ELEMENT_PROPERTIES} {@link NodeMap} if they are
      * not defined by the client-side element or send their client-side value to
      * the server otherwise.
-     *
-     * @param node
-     *            the node whose properties should be populated
-     * @param properties
-     *            array of property names to populate
      */
+    @JsOverlay
     public static void populateModelProperties(StateNode node,
             JsArray<String> properties) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
@@ -157,6 +154,7 @@ public final class ExecuteJavaScriptElementUtils {
         }
     }
 
+    @JsOverlay
     private static void populateModelProperty(StateNode node, NodeMap map,
             String property) {
         if (!isPropertyDefined(node.getDomNode(), property)) {
@@ -177,17 +175,8 @@ public final class ExecuteJavaScriptElementUtils {
 
     /**
      * Register the updatable model properties of the {@code node}.
-     * <p>
-     * Only updates for the properties from the {@code properties} array will be
-     * sent to the server without explicit synchronization. The
-     * {@code properties} array includes all properties that are allowed to be
-     * updated (including sub properties).
-     *
-     * @param node
-     *            the node whose updatable properties should be registered
-     * @param properties
-     *            all updatable model properties
      */
+    @JsOverlay
     public static void registerUpdatableModelProperties(StateNode node,
             JsArray<String> properties) {
         if (!properties.isEmpty()) {
@@ -213,6 +202,7 @@ public final class ExecuteJavaScriptElementUtils {
      *            the JS cleanup function to invoke when disposing, not
      *            {@code null}
      */
+    @JsOverlay
     public static void registerInitializer(StateNode node, double id,
             JsCallback cleanup) {
         JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
@@ -240,6 +230,7 @@ public final class ExecuteJavaScriptElementUtils {
      * @param id
      *            the UI-wide initializer id
      */
+    @JsOverlay
     public static void disposeInitializer(StateNode node, double id) {
         JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
         if (entry == null) {
@@ -253,6 +244,7 @@ public final class ExecuteJavaScriptElementUtils {
         invokeSafely(fn);
     }
 
+    @JsOverlay
     private static void drainInitializers(StateNode node) {
         JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
         if (entry == null) {
@@ -262,6 +254,7 @@ public final class ExecuteJavaScriptElementUtils {
         entry.forEach((fn, id) -> invokeSafely(fn));
     }
 
+    @JsOverlay
     private static void invokeSafely(JsCallback fn) {
         try {
             fn.invoke();
@@ -270,6 +263,7 @@ public final class ExecuteJavaScriptElementUtils {
         }
     }
 
+    @JsOverlay
     private static Integer getExistingIdOrUpdate(StateNode parent,
             int serverSideId, Element existingElement, Integer existingId) {
         if (existingId == null) {
@@ -283,10 +277,5 @@ public final class ExecuteJavaScriptElementUtils {
             return fromMap;
         }
         return existingId;
-    }
-
-    private static boolean isPropertyDefined(Node node, String property) {
-        return NativeExecuteJavaScriptElementUtils.isPropertyDefined(node,
-                property);
     }
 }
