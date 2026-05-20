@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.flow.util;
 
-import com.google.gwt.core.client.GWT;
-
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.StateNode;
@@ -236,9 +234,11 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JacksonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
-     * compiled JavaScript since the JSON representation can be used as-is, but
-     * some special handling is needed for tests running in the JVM.
+     * {@link JacksonCodec#encodeWithoutTypeInfo(Object)}. Returns the
+     * underlying primitive (String / Boolean / Number / null) for both compiled
+     * JavaScript and JVM runs; in JS the {@code asXxx()} accessors collapse to
+     * the same JS primitive that {@code json} already is, so the unified path
+     * is equivalent to the historical no-op-in-GWT shortcut.
      *
      * @param json
      *            the JSON value to convert
@@ -246,23 +246,21 @@ public class ClientJsonCodec {
      */
     @SuppressWarnings("boxing")
     public static Object decodeWithoutTypeInfo(JsonValue json) {
-        if (GWT.isScript()) {
+        switch (json.getType()) {
+        case BOOLEAN:
+            return json.asBoolean();
+        case STRING:
+            return json.asString();
+        case NUMBER:
+            return json.asNumber();
+        case NULL:
+            return null;
+        case OBJECT:
+        case ARRAY:
             return json;
-        } else {
-            // JRE implementation for cases that have so far been needed
-            switch (json.getType()) {
-            case BOOLEAN:
-                return json.asBoolean();
-            case STRING:
-                return json.asString();
-            case NUMBER:
-                return json.asNumber();
-            case NULL:
-                return null;
-            default:
-                throw new IllegalArgumentException(
-                        "Can't (yet) convert " + json.getType());
-            }
+        default:
+            throw new IllegalArgumentException(
+                    "Can't (yet) convert " + json.getType());
         }
     }
 
@@ -279,21 +277,18 @@ public class ClientJsonCodec {
         if (value == null) {
             // undefined shouln't go as undefined, it should be encoded as null
             return Json.createNull();
-        } else if (GWT.isScript()) {
-            return WidgetUtil.crazyJsoCast(value);
-        } else {
-            if (value instanceof String) {
-                return Json.create((String) value);
-            } else if (value instanceof Number) {
-                return Json.create(((Number) value).doubleValue());
-            } else if (value instanceof Boolean) {
-                return Json.create(((Boolean) value).booleanValue());
-            } else if (value instanceof JsonValue) {
-                return (JsonValue) value;
-            }
-            throw new IllegalArgumentException(
-                    "Can't encode" + value.getClass() + " to json");
         }
+        if (value instanceof String) {
+            return Json.create((String) value);
+        } else if (value instanceof Number) {
+            return Json.create(((Number) value).doubleValue());
+        } else if (value instanceof Boolean) {
+            return Json.create(((Boolean) value).booleanValue());
+        } else if (value instanceof JsonValue) {
+            return (JsonValue) value;
+        }
+        throw new IllegalArgumentException(
+                "Can't encode" + value.getClass() + " to json");
     }
 
     /**

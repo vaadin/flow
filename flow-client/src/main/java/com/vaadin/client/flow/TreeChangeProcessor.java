@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.flow;
 
-import com.google.gwt.core.client.GWT;
-
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -252,25 +250,23 @@ public class TreeChangeProcessor {
     }
 
     /**
-     * Converts a JSON array to a JS array. This is a no-op in compiled
-     * JavaScript, but needs special handling for tests running in the JVM.
+     * Converts a JSON array to a JS array, decoding each element to its
+     * underlying primitive via {@link ClientJsonCodec#decodeWithoutTypeInfo}.
+     * In compiled JavaScript the JsonValue accessors are no-ops over JS
+     * primitives, so the unified loop matches what the historical
+     * {@code crazyJsCast} shortcut produced.
      *
      * @param jsonArray
      *            the JSON array to convert
      * @return the converted JS array
      */
     private static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
-        JsArray<Object> jsArray;
-        if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
-            jsArray = JsCollections.array();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                // Decode the value to unwrap JsonString to primitive string
-                Object decoded = ClientJsonCodec
-                        .decodeWithoutTypeInfo(jsonArray.get(i));
-                jsArray.push(decoded);
-            }
+        JsArray<Object> jsArray = JsCollections.array();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            // Decode the value to unwrap JsonString to primitive string
+            Object decoded = ClientJsonCodec
+                    .decodeWithoutTypeInfo(jsonArray.get(i));
+            jsArray.push(decoded);
         }
         return jsArray;
     }
