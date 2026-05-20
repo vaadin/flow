@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+import { InvalidateEvent } from './InvalidateEvent';
 import { Reactive } from './Reactive';
 
-type InvalidateListener = (event: { getSource(): Computation }) => void;
+type InvalidateListener = (event: InvalidateEvent) => void;
 
 /**
  * Automatically reruns the constructor-supplied `recompute` callback whenever
@@ -73,7 +74,7 @@ export class Computation {
     if (this.invalidateListeners.size !== 0) {
       const oldListeners = this.invalidateListeners;
       this.invalidateListeners = new Set();
-      const event = { getSource: (): Computation => this };
+      const event = new InvalidateEvent(this);
       oldListeners.forEach((listener) => listener(event));
     }
   }

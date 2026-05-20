@@ -45,6 +45,7 @@ import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProp
 import { ConstantPool } from './client/flow/ConstantPool';
 import { NodeUnregisterEvent } from './client/flow/NodeUnregisterEvent';
 import { Computation } from './client/flow/reactive/Computation';
+import { InvalidateEvent } from './client/flow/reactive/InvalidateEvent';
 import { Reactive } from './client/flow/reactive/Reactive';
 import { ReactiveEventRouter } from './client/flow/reactive/ReactiveEventRouter';
 import { ClientJsonCodec } from './client/flow/util/ClientJsonCodec';
@@ -86,6 +87,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow', 'ConstantPool', ConstantPool);
   registerGwtBridge('client.flow', 'NodeUnregisterEvent', NodeUnregisterEvent);
   registerGwtBridge('client.flow.reactive', 'Computation', Computation);
+  registerGwtBridge('client.flow.reactive', 'InvalidateEvent', InvalidateEvent);
   registerGwtBridge('client.flow.reactive', 'Reactive', Reactive);
   registerGwtBridge('client.flow.reactive', 'ReactiveEventRouter', ReactiveEventRouter);
   registerGwtBridge('client.flow.util', 'ClientJsonCodec', ClientJsonCodec);
