@@ -2337,6 +2337,9 @@ public abstract class VaadinService implements Serializable {
                 if (!pendingAccess.isCancelled()) {
                     CurrentInstance.clearAll();
                     CurrentInstance.setCurrent(session);
+                    // Clear session-scoped transaction so each task gets a
+                    // fresh repeatable read transaction with up-to-date values
+                    session.clearSessionScopedTransaction();
                     pendingAccess.run();
 
                     try {
