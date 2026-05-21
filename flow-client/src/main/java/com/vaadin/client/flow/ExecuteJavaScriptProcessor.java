@@ -15,213 +15,41 @@
  */
 package com.vaadin.client.flow;
 
-import com.vaadin.client.Console;
-import com.vaadin.client.ExecuteJavaScriptElementUtils;
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.Registry;
-import com.vaadin.client.UILifecycle.UIState;
-import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
-import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.client.flow.util.ClientJsonCodec;
-import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Processes the result of
- * {@link Page#executeJs(String, java.io.Serializable...)} on the client.
+ * {@link Page#executeJs(String, java.io.Serializable...)} on the client. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/ExecuteJavaScriptProcessor.ts}.
+ *
+ * <p>
+ * Construction takes a {@link ExecuteJavaScriptCallbacks} adapter that
+ * dispatches into the still-Java {@code ExecuteJavaScriptElementUtils} helpers,
+ * so the TS class does not need to reach back through static-Java code.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow", name = "ExecuteJavaScriptProcessor")
 public class ExecuteJavaScriptProcessor {
 
-    private final Registry registry;
-
-    /**
-     * Creates a new processor with the given registry.
-     *
-     * @param registry
-     *            the registry to use
-     */
-    public ExecuteJavaScriptProcessor(Registry registry) {
-        this.registry = registry;
+    public ExecuteJavaScriptProcessor(Registry registry,
+            ExecuteJavaScriptCallbacks callbacks) {
+        // Defined by the TS class constructor.
     }
 
     /**
      * Executes invocations received from the server.
      *
      * @param invocations
-     *            a JSON containing invocation data
+     *            a JSON array of invocation arrays; each inner array is
+     *            {@code [param0, param1, ..., scriptBody]}
      */
-    public void execute(JsonArray invocations) {
-        for (int i = 0; i < invocations.length(); i++) {
-            JsonArray invocation = invocations.getArray(i);
-            handleInvocation(invocation);
-        }
-    }
-
-    private void handleInvocation(JsonArray invocation) {
-        StateTree tree = registry.getStateTree();
-
-        // Last item is the script, the rest is parameters
-        int parameterCount = invocation.length() - 1;
-
-        String[] parameterNamesAndCode = new String[parameterCount + 1];
-        JsArray<Object> parameters = JsCollections.array();
-
-        JsMap<Object, StateNode> map = JsCollections.map();
-        for (int i = 0; i < parameterCount; i++) {
-            JsonValue parameterJson = invocation.get(i);
-            Object parameter = ClientJsonCodec.decodeWithTypeInfo(tree,
-                    parameterJson);
-            parameters.push(parameter);
-            parameterNamesAndCode[i] = "$" + i;
-            StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
-                    parameterJson);
-            if (stateNode != null) {
-                if (isVirtualChildAwaitingInitialization(stateNode)
-                        || !isBound(stateNode)) {
-                    stateNode.addDomNodeSetListener(node -> {
-                        Reactive.addPostFlushListener(
-                                () -> handleInvocation(invocation));
-                        return true;
-                    });
-                    return;
-                }
-                map.set(parameter, stateNode);
-            }
-        }
-
-        // Set the script source as the last parameter
-        String expression = invocation.getString(invocation.length() - 1);
-        parameterNamesAndCode[parameterNamesAndCode.length - 1] = expression;
-
-        invoke(parameterNamesAndCode, parameters, map);
-    }
-
-    private boolean isVirtualChildAwaitingInitialization(StateNode node) {
-        if (node.getDomNode() != null
-                || node.getTree().getNode(node.getId()) == null) {
-            return false;
-        }
-        if (node.getMap(NodeFeatures.ELEMENT_DATA)
-                .hasPropertyValue(NodeProperties.PAYLOAD)) {
-            Object value = node.getMap(NodeFeatures.ELEMENT_DATA)
-                    .getProperty(NodeProperties.PAYLOAD).getValue();
-            if (value instanceof JsonObject) {
-                JsonObject object = (JsonObject) value;
-                String type = object.getString(NodeProperties.TYPE);
-                return NodeProperties.INJECT_BY_ID.equals(type)
-                        || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type);
-            }
-        }
-        return false;
-    }
-
-    protected boolean isBound(StateNode node) {
-        boolean isNodeBound = node.getDomNode() != null
-                && !SimpleElementBindingStrategy.needsRebind(node);
-        if (!isNodeBound || node.getParent() == null) {
-            return isNodeBound;
-        }
-        return isBound(node.getParent());
-    }
-
-    /**
-     * Executes the actual invocation. This method is protected instead of
-     * private for testing purposes.
-     *
-     * @param parameterNamesAndCode
-     *            an array consisting of parameter names followed by the
-     *            JavaScript expression to execute
-     * @param parameters
-     *            an array of parameter values
-     * @param nodeParameters
-     *            the node parameters
-     */
-    protected void invoke(String[] parameterNamesAndCode,
-            JsArray<Object> parameters,
-            JsMap<Object, StateNode> nodeParameters) {
-        assert parameterNamesAndCode.length == parameters.length() + 1;
-
-        try {
-            NativeFunction function = new NativeFunction(parameterNamesAndCode);
-
-            function.apply(getContextExecutionObject(nodeParameters, () -> {
-                if (!registry.getUILifecycle().isTerminated()) {
-                    registry.getUILifecycle().setState(UIState.TERMINATED);
-                }
-            }), parameters);
-        } catch (Exception exception) {
-            Console.reportStacktrace(exception);
-            Console.error(
-                    "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
-            if (!registry.getApplicationConfiguration().isProductionMode()) {
-                StringBuilder codeBuilder = new StringBuilder("[");
-                String delimiter = "";
-                for (String snippet : parameterNamesAndCode) {
-                    codeBuilder.append(delimiter).append(snippet);
-                    delimiter = ", ";
-                }
-                codeBuilder.append("]");
-                String code = codeBuilder.toString();
-
-                if (code.charAt(0) == '[') {
-                    code = code.substring(1);
-                }
-                if (code.charAt(code.length() - 1) == ']') {
-                    code = code.substring(0, code.length() - 1);
-                }
-                Console.error("The error has occurred in the JS code: '" + code
-                        + "'");
-            }
-        }
-    }
-
-    private boolean handleRemoveExistingNode(Integer removedId, int nodeId,
-            JsonArray invocation) {
-        if (removedId.intValue() == nodeId) {
-            Reactive.addPostFlushListener(() -> handleInvocation(invocation));
-            return true;
-        }
-        return false;
-    }
-
-    private String getAppId() {
-        return registry.getApplicationConfiguration().getApplicationId();
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication) {
-        String cleanedAppId = getAppId().replaceAll("-\\d+$", "");
-        JsMap<Object, Object> params = (JsMap) nodeParameters;
-        return NativeExecuteJavaScriptProcessor.getContextExecutionObject(
-                params, cleanedAppId, registry,
-                (parent, previousSibling, tagName,
-                        id) -> ExecuteJavaScriptElementUtils
-                                .attachExistingElement((StateNode) parent,
-                                        (elemental.dom.Element) previousSibling,
-                                        tagName, id),
-                (node, properties) -> ExecuteJavaScriptElementUtils
-                        .populateModelProperties((StateNode) node,
-                                (com.vaadin.client.flow.collection.JsArray<String>) properties),
-                (node, properties) -> ExecuteJavaScriptElementUtils
-                        .registerUpdatableModelProperties((StateNode) node,
-                                (com.vaadin.client.flow.collection.JsArray<String>) properties),
-                stopApplication::run,
-                (node, id, cleanup) -> ExecuteJavaScriptElementUtils
-                        .registerInitializer((StateNode) node, id,
-                                (ExecuteJavaScriptElementUtils.JsCallback) cleanup),
-                (node, id) -> ExecuteJavaScriptElementUtils
-                        .disposeInitializer((StateNode) node, id));
-    }
+    public native void execute(JsonArray invocations);
 }
