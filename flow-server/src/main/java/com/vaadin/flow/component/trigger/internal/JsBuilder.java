@@ -22,9 +22,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
  * Collects element references and produces JS placeholders for them while a
@@ -94,6 +99,66 @@ final class JsBuilder implements Serializable {
         String ref = "$" + params.size();
         params.add(value);
         return ref;
+    }
+
+    /**
+     * Allocates a {@code $N} placeholder for a server-side callback function: a
+     * JS function {@code (payload) => …} that, when called from client JS,
+     * deserialises its first argument to {@code T} via Jackson and invokes
+     * {@code handler} on the UI thread.
+     * <p>
+     * Use this from {@link Action#appendStatement} when an action needs to ship
+     * a typed payload back from the browser — async API outcomes, extracted
+     * event data, anything Jackson can deserialise.
+     * <p>
+     * Each call registers a fresh {@link ReturnChannelRegistration} on the
+     * trigger's host node; channels are not deduplicated across calls.
+     *
+     * @param payloadType
+     *            type to deserialise the first JS argument into; never
+     *            {@code null}
+     * @param handler
+     *            invoked on the UI thread with the deserialised payload, or
+     *            {@code null} if the JS argument is {@code null}/missing; never
+     *            {@code null}
+     * @return the JS placeholder ({@code "$N"}) referencing the callback
+     * @param <T>
+     *            payload type
+     */
+    <T> String callback(Class<T> payloadType,
+            SerializableConsumer<@Nullable T> handler) {
+        return capture(registerChannel(arg -> handler.accept(arg == null ? null
+                : JacksonUtils.readValue(arg, payloadType))));
+    }
+
+    /**
+     * Like {@link #callback(Class, SerializableConsumer)} but accepts a
+     * {@link TypeReference} so the payload type can be a parameterised type
+     * (e.g. {@code new TypeReference<List<Foo>>(){}}).
+     *
+     * @param payloadType
+     *            type reference to deserialise the first JS argument into;
+     *            never {@code null}
+     * @param handler
+     *            invoked on the UI thread with the deserialised payload, or
+     *            {@code null} if the JS argument is {@code null}/missing; never
+     *            {@code null}
+     * @return the JS placeholder ({@code "$N"}) referencing the callback
+     * @param <T>
+     *            payload type
+     */
+    <T> String callback(TypeReference<T> payloadType,
+            SerializableConsumer<@Nullable T> handler) {
+        return capture(registerChannel(arg -> handler.accept(arg == null ? null
+                : JacksonUtils.readValue(arg, payloadType))));
+    }
+
+    private ReturnChannelRegistration registerChannel(
+            SerializableConsumer<@Nullable JsonNode> dispatcher) {
+        return trigger.getHost().getNode().getFeature(ReturnChannelMap.class)
+                .registerChannel(args -> dispatcher
+                        .accept(args.isEmpty() || args.get(0).isNull() ? null
+                                : args.get(0)));
     }
 
     /**
