@@ -30,6 +30,7 @@ import com.vaadin.client.Console;
 import com.vaadin.client.ElementUtil;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.JsRunnable;
 import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.ReactUtils;
@@ -1247,7 +1248,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             mapProperty.setPreviousDomValue(domValue);
         });
 
-        JsMap<String, Runnable> commands = JsCollections.map();
+        JsMap<String, JsRunnable> commands = JsCollections.map();
         synchronizeProperties.forEach(name -> commands.set(name,
                 getSyncPropertyCommand(name, context)));
 
@@ -1272,13 +1273,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             if (!commandAlreadyExecuted) {
-                commands.mapValues().forEach(Runnable::run);
+                commands.mapValues().forEach(JsRunnable::run);
                 sendCommand.accept(null);
             }
         }
     }
 
-    private Runnable getSyncPropertyCommand(String propertyName,
+    private JsRunnable getSyncPropertyCommand(String propertyName,
             BindingContext context) {
         return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
@@ -1303,7 +1304,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static boolean resolveFilters(Node element, String eventType,
             JsonObject expressionSettings, JsonObject eventData,
-            Consumer<String> sendCommand, JsMap<String, Runnable> commands) {
+            Consumer<String> sendCommand, JsMap<String, JsRunnable> commands) {
 
         boolean noFilters = true;
         boolean atLeastOneFilterMatched = false;
@@ -1336,7 +1337,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static boolean resolveDebounces(Node element, String debouncerId,
             JsonArray debounceList, Consumer<String> sendCommand,
-            JsMap<String, Runnable> commands) {
+            JsMap<String, JsRunnable> commands) {
         boolean atLeastOneEager = false;
 
         for (int i = 0; i < debounceList.length(); i++) {
