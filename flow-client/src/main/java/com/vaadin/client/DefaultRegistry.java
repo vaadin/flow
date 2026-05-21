@@ -90,49 +90,7 @@ public class DefaultRegistry extends Registry {
                 loadingIndicatorStateHandler, serverRpcQueue);
         set("ServerConnector", serverConnector);
         stateTree.setServerConnector(serverConnector);
-        set("ExecuteJavaScriptProcessor", new ExecuteJavaScriptProcessor(this,
-                new com.vaadin.client.flow.ExecuteJavaScriptCallbacks() {
-                    @Override
-                    public void attachExistingElement(
-                            com.vaadin.client.flow.StateNode parent,
-                            elemental.dom.Element previousSibling,
-                            String tagName, int id) {
-                        ExecuteJavaScriptElementUtils.attachExistingElement(
-                                parent, previousSibling, tagName, id);
-                    }
-
-                    @Override
-                    public void populateModelProperties(
-                            com.vaadin.client.flow.StateNode node,
-                            com.vaadin.client.flow.collection.JsArray<String> properties) {
-                        ExecuteJavaScriptElementUtils
-                                .populateModelProperties(node, properties);
-                    }
-
-                    @Override
-                    public void registerUpdatableModelProperties(
-                            com.vaadin.client.flow.StateNode node,
-                            com.vaadin.client.flow.collection.JsArray<String> properties) {
-                        ExecuteJavaScriptElementUtils
-                                .registerUpdatableModelProperties(node,
-                                        properties);
-                    }
-
-                    @Override
-                    public void registerInitializer(
-                            com.vaadin.client.flow.StateNode node, double id,
-                            ExecuteJavaScriptElementUtils.JsCallback cleanup) {
-                        ExecuteJavaScriptElementUtils.registerInitializer(node,
-                                id, cleanup);
-                    }
-
-                    @Override
-                    public void disposeInitializer(
-                            com.vaadin.client.flow.StateNode node, double id) {
-                        ExecuteJavaScriptElementUtils.disposeInitializer(node,
-                                id);
-                    }
-                }));
+        set("ExecuteJavaScriptProcessor", new ExecuteJavaScriptProcessor(this));
         set("ConstantPool", (Supplier<ConstantPool>) ConstantPool::new);
         set("ExistingElementMap",
                 (Supplier<ExistingElementMap>) ExistingElementMap::new);

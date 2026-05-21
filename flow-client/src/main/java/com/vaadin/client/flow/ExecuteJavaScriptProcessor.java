@@ -39,8 +39,7 @@ import elemental.json.JsonArray;
 @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow", name = "ExecuteJavaScriptProcessor")
 public class ExecuteJavaScriptProcessor {
 
-    public ExecuteJavaScriptProcessor(Registry registry,
-            ExecuteJavaScriptCallbacks callbacks) {
+    public ExecuteJavaScriptProcessor(Registry registry) {
         // Defined by the TS class constructor.
     }
 
