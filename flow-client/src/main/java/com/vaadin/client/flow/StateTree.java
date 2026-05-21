@@ -21,17 +21,14 @@ import jsinterop.annotations.JsType;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.dom.Node;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -191,52 +188,21 @@ public class StateTree {
         return isValid;
     }
 
-    @JsOverlay
-    public final void sendEventToServer(StateNode node, String eventType,
-            JsonObject eventData) {
-        if (isValidNode(node)) {
-            getRegistry().getServerConnector().sendEventMessage(node, eventType,
-                    eventData);
-        }
-    }
+    /** Wires the server connector for the send*ToServer dispatchers. */
+    public native void setServerConnector(
+            com.vaadin.client.communication.ServerConnector connector);
 
-    @JsOverlay
-    public final void sendNodePropertySyncToServer(MapProperty property) {
-        assert property != null;
-        NodeMap nodeMap = property.getMap();
-        StateNode node = nodeMap.getNode();
-        if (getRegistry().getInitialPropertiesHandler()
-                .handlePropertyUpdate(property) || !isValidNode(node)) {
-            return;
-        }
-        getRegistry().getServerConnector().sendNodeSyncMessage(node,
-                nodeMap.getId(), property.getName(), property.getValue());
-    }
+    public native void sendEventToServer(StateNode node, String eventType,
+            JsonObject eventData);
 
-    @JsOverlay
-    public final void sendTemplateEventToServer(StateNode node,
-            String methodName, JsArray<?> argsArray, int promiseId) {
-        if (isValidNode(node)) {
-            JsonArray array = WidgetUtil.crazyJsCast(argsArray);
-            getRegistry().getServerConnector().sendTemplateEventMessage(node,
-                    methodName, array, promiseId);
-        }
-    }
+    public native void sendNodePropertySyncToServer(MapProperty property);
 
-    @JsOverlay
-    public final void sendExistingElementAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String tagName, int index) {
-        assert assertValidNode(parent);
-        getRegistry().getServerConnector().sendExistingElementAttachToServer(
-                parent, requestedId, assignedId, tagName, index);
-    }
+    public native void sendTemplateEventToServer(StateNode node,
+            String methodName, JsArray<?> argsArray, int promiseId);
 
-    @JsOverlay
-    public final void sendExistingElementWithIdAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String id) {
-        assert assertValidNode(parent);
-        getRegistry().getServerConnector()
-                .sendExistingElementWithIdAttachToServer(parent, requestedId,
-                        assignedId, id);
-    }
+    public native void sendExistingElementAttachToServer(StateNode parent,
+            int requestedId, int assignedId, String tagName, int index);
+
+    public native void sendExistingElementWithIdAttachToServer(StateNode parent,
+            int requestedId, int assignedId, String id);
 }

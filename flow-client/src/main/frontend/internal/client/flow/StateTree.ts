@@ -89,7 +89,23 @@ export class StateTree {
   // Wired up by DefaultRegistry after both objects exist. `setUpdateInProgress`
   // pokes the handler when an update finishes so it can drain queued initial
   // property syncs.
-  private initialPropertiesHandler: { flushPropertyUpdates(): void } | null = null;
+  private initialPropertiesHandler: { flushPropertyUpdates(): void; handlePropertyUpdate(p: unknown): boolean } | null =
+    null;
+  // Wired up by DefaultRegistry after both objects exist. Used by the
+  // send*ToServer dispatch methods to forward RPC messages.
+  private serverConnector: {
+    sendEventMessage(node: unknown, eventType: string, eventData: unknown): void;
+    sendNodeSyncMessage(node: unknown, feature: number, key: string, value: unknown): void;
+    sendTemplateEventMessage(node: unknown, methodName: string, argsArray: unknown[], promiseId: number): void;
+    sendExistingElementAttachToServer(
+      parent: unknown,
+      requestedId: number,
+      assignedId: number,
+      tagName: string,
+      index: number
+    ): void;
+    sendExistingElementWithIdAttachToServer(parent: unknown, requestedId: number, assignedId: number, id: string): void;
+  } | null = null;
 
   constructor(registry: RegistryLike) {
     this.registry = registry;
@@ -105,7 +121,10 @@ export class StateTree {
     this.updateInProgressFlag = updateInProgress;
   }
 
-  setInitialPropertiesHandler(handler: { flushPropertyUpdates(): void }): void {
+  setInitialPropertiesHandler(handler: {
+    flushPropertyUpdates(): void;
+    handlePropertyUpdate(p: unknown): boolean;
+  }): void {
     this.initialPropertiesHandler = handler;
   }
 
@@ -195,5 +214,79 @@ export class StateTree {
 
   getRegistry(): RegistryLike {
     return this.registry;
+  }
+
+  setServerConnector(connector: {
+    sendEventMessage(node: unknown, eventType: string, eventData: unknown): void;
+    sendNodeSyncMessage(node: unknown, feature: number, key: string, value: unknown): void;
+    sendTemplateEventMessage(node: unknown, methodName: string, argsArray: unknown[], promiseId: number): void;
+    sendExistingElementAttachToServer(
+      parent: unknown,
+      requestedId: number,
+      assignedId: number,
+      tagName: string,
+      index: number
+    ): void;
+    sendExistingElementWithIdAttachToServer(parent: unknown, requestedId: number, assignedId: number, id: string): void;
+  }): void {
+    this.serverConnector = connector;
+  }
+
+  sendEventToServer(node: StateNode, eventType: string, eventData: unknown): void {
+    if (this.isValidNode(node)) {
+      this.serverConnector?.sendEventMessage(node, eventType, eventData);
+    }
+  }
+
+  sendNodePropertySyncToServer(property: {
+    getMap(): { getNode(): StateNode; getId(): number };
+    getName(): string;
+    getValue(): unknown;
+  }): void {
+    const nodeMap = property.getMap();
+    const node = nodeMap.getNode();
+    if (this.initialPropertiesHandler?.handlePropertyUpdate(property) === true) {
+      return;
+    }
+    if (!this.isValidNode(node)) {
+      return;
+    }
+    this.serverConnector?.sendNodeSyncMessage(node, nodeMap.getId(), property.getName(), property.getValue());
+  }
+
+  sendTemplateEventToServer(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
+    if (this.isValidNode(node)) {
+      // WidgetUtil.crazyJsCast is a no-op in JS; the JsArray is already a JS
+      // array, so it can be forwarded as-is.
+      this.serverConnector?.sendTemplateEventMessage(node, methodName, argsArray, promiseId);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/max-params
+  sendExistingElementAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    tagName: string,
+    index: number
+  ): void {
+    this.assertValidNode(parent);
+    this.serverConnector?.sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName, index);
+  }
+
+  sendExistingElementWithIdAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    id: string
+  ): void {
+    this.assertValidNode(parent);
+    this.serverConnector?.sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
+  }
+
+  private assertValidNode(node: StateNode): void {
+    if (!this.isValidNode(node)) {
+      throw new Error('invalid state node');
+    }
   }
 }

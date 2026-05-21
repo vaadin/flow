@@ -86,8 +86,10 @@ public class DefaultRegistry extends Registry {
         LoadingIndicatorStateHandler loadingIndicatorStateHandler = new LoadingIndicatorStateHandler(
                 requestResponseTracker::hasActiveRequest);
         set("LoadingIndicatorStateHandler", loadingIndicatorStateHandler);
-        set("ServerConnector", new ServerConnector(loadingIndicatorStateHandler,
-                serverRpcQueue));
+        ServerConnector serverConnector = new ServerConnector(
+                loadingIndicatorStateHandler, serverRpcQueue);
+        set("ServerConnector", serverConnector);
+        stateTree.setServerConnector(serverConnector);
         set("ExecuteJavaScriptProcessor", new ExecuteJavaScriptProcessor(this,
                 new com.vaadin.client.flow.ExecuteJavaScriptCallbacks() {
                     @Override
