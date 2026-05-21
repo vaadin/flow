@@ -444,34 +444,37 @@ class TransactionTest extends SignalTestBase {
     }
 
     @Test
-    void clearingFallback_allowsFreshReads() {
+    void isolatedTransaction_seesFreshValuesNotFallbackCache() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
         useTransactionFallback(() -> fallbackTx);
 
-        // Prime the repeatable read cache by reading
+        // Prime the fallback transaction cache by reading
         JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
 
         // External write bypassing the transaction
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("external"));
 
-        // Verify repeatable read still returns cached value
+        // Verify fallback still returns cached value
         JsonNode cachedRead = TestUtil.readTransactionRootValue(tree);
         assertSame(firstRead, cachedRead,
-                "Repeatable read should return cached value");
+                "Fallback transaction should return cached value");
 
-        // Clear the fallback by providing null (simulates what
-        // VaadinSession.unlock() does before running access tasks)
-        useTransactionFallback(() -> null);
-        assertFalse(Transaction.inTransaction(),
-                "No transaction should be active after clearing fallback");
+        // Run in isolated transaction (bypasses fallback, uses ROOT as outer)
+        Transaction.runWithoutTransaction(() -> {
+            Transaction.runInTransaction(() -> {
+                JsonNode freshRead = TestUtil.readTransactionRootValue(tree);
+                assertNotNull(freshRead);
+                assertEquals("external", freshRead.textValue(),
+                        "Isolated transaction should see fresh values");
+            }, Transaction.Type.WRITE_THROUGH);
+        });
 
-        // Now reads should see the fresh value
-        JsonNode freshRead = TestUtil.readTransactionRootValue(tree);
-        assertNotNull(freshRead);
-        assertEquals("external", freshRead.textValue(),
-                "After clearing fallback, reads should see fresh values");
+        // Original fallback should still have its cached value
+        JsonNode stillCached = TestUtil.readTransactionRootValue(tree);
+        assertSame(firstRead, stillCached,
+                "Fallback transaction should still have cached value");
     }
 
     private static TransactionTask dummyTask() {
