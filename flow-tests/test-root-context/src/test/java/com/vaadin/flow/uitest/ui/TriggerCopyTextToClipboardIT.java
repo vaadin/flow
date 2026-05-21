@@ -48,6 +48,26 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void clickCopiesStaticString_andTheLiteralRoundTripsVerbatim() {
+        open();
+        installResolvingClipboardShim();
+
+        WebElement button = findElement(By.id("copy-static"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        // The Java-side literal (`hello "world"\n`) is JSON-encoded into the
+        // emitted JS at build time, so the value the browser receives back
+        // through the writeText shim is exactly the original String — quotes
+        // and newline intact.
+        Object copied = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__copied;"));
+        Assert.assertEquals(TriggerCopyTextToClipboardView.STATIC_TEXT, copied);
+        waitUntil(d -> "ok".equals(status.getText()));
+    }
+
+    @Test
     public void writeTextRejection_propagatesAsFailureToTheServer() {
         open();
         installRejectingClipboardShim();

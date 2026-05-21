@@ -21,31 +21,42 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.CopyTextToClipboardAction;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * Wires a {@link ClickTrigger} on a button to a
- * {@link CopyTextToClipboardAction} that copies the current value of an
- * {@link Input} to the clipboard. The action's success/error consumers write
- * the outcome into a status {@link Div} so the IT can assert both paths. The IT
- * replaces {@code navigator.clipboard.writeText} with a recording shim so the
- * assertions don't depend on browser clipboard permissions.
+ * Two buttons exercising {@link CopyTextToClipboardAction}: one copies the
+ * current value of an {@link Input} (via {@link PropertyInput}), the other
+ * copies a fixed string (via {@link LiteralInput}) that includes a quote and a
+ * newline to verify the JSON escaping round-trips through the browser. Each
+ * action's success/error consumers write the outcome into the status
+ * {@link Div}. The IT replaces {@code navigator.clipboard.writeText} with a
+ * recording shim so the assertions don't depend on browser clipboard
+ * permissions.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerCopyTextToClipboardView", layout = ViewTestLayout.class)
 public class TriggerCopyTextToClipboardView extends AbstractDivView {
+
+    /**
+     * Literal copied by the {@code #copy-static} button — see the IT for the
+     * matching expected value.
+     */
+    static final String STATIC_TEXT = "hello \"world\"\n";
 
     @Override
     protected void onShow() {
         Input field = new Input();
         field.setId("source");
-        NativeButton copyButton = new NativeButton("Copy");
+        NativeButton copyButton = new NativeButton("Copy input value");
         copyButton.setId("copy");
+        NativeButton copyStaticButton = new NativeButton("Copy static text");
+        copyStaticButton.setId("copy-static");
         Div status = new Div();
         status.setId("status");
 
-        add(field, copyButton, status);
+        add(field, copyButton, copyStaticButton, status);
 
         Action.Input<String> value = new PropertyInput<>(field, "value",
                 String.class);
@@ -53,5 +64,10 @@ public class TriggerCopyTextToClipboardView extends AbstractDivView {
                 () -> status.setText("ok"),
                 err -> status.setText("err:" + err));
         new ClickTrigger(copyButton).triggers(copy);
+
+        CopyTextToClipboardAction copyStatic = new CopyTextToClipboardAction(
+                new LiteralInput<>(STATIC_TEXT), () -> status.setText("ok"),
+                err -> status.setText("err:" + err));
+        new ClickTrigger(copyStaticButton).triggers(copyStatic);
     }
 }
