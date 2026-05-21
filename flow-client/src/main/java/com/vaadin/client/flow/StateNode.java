@@ -18,7 +18,6 @@ package com.vaadin.client.flow;
 import java.util.function.Function;
 
 import jsinterop.annotations.JsFunction;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
@@ -94,31 +93,36 @@ public class StateNode {
 
     public native void setParent(StateNode parent);
 
-    @JsMethod(name = "setNodeData")
-    native void setNodeDataImpl(String key, Object object);
+    /** Stores an object under the given string key. */
+    public native void setNodeData(String key, Object object);
 
-    @JsMethod(name = "getNodeData")
-    native Object getNodeDataImpl(String key);
+    /** Looks up a stored object by its string key. */
+    public native <T> T getNodeData(String key);
 
-    @JsMethod(name = "clearNodeData")
-    native void clearNodeDataImpl(String key);
+    /** Removes the stored object under the given string key. */
+    public native void clearNodeData(String key);
 
-    /** Stores the given object under its class name as key. */
+    /**
+     * Stores an object under its Java class name. Java-only overload kept for
+     * call sites that originally used {@code object.getClass().getName()} as
+     * the implicit key; cross-language sites should use an explicit string key
+     * constant.
+     */
     @JsOverlay
     public final <T> void setNodeData(T object) {
-        setNodeDataImpl(object.getClass().getName(), object);
+        setNodeData(object.getClass().getName(), object);
     }
 
-    /** Looks up a stored object by its class. */
+    /** Looks up a stored object by its class. Java-only overload. */
     @SuppressWarnings("unchecked")
     @JsOverlay
     public final <T> T getNodeData(Class<T> clazz) {
-        return (T) getNodeDataImpl(clazz.getName());
+        return (T) getNodeData(clazz.getName());
     }
 
     /** Removes the stored object that matches the given object's class. */
     @JsOverlay
     public final <T> void clearNodeData(T object) {
-        clearNodeDataImpl(object.getClass().getName());
+        clearNodeData(object.getClass().getName());
     }
 }

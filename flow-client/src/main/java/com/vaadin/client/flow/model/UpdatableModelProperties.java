@@ -38,6 +38,15 @@ import com.vaadin.client.flow.collection.JsArray;
 @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.model", name = "UpdatableModelProperties")
 public class UpdatableModelProperties {
 
+    /**
+     * Explicit node-data key used to store an {@code UpdatableModelProperties}
+     * instance via {@link StateNode#setNodeData(String, Object)}.
+     * Cross-language callers (Java + TS) must use this exact string so they
+     * reach the same slot.
+     */
+    @jsinterop.annotations.JsOverlay
+    public static final String NODE_DATA_KEY = "UpdatableModelProperties";
+
     public UpdatableModelProperties(JsArray<String> properties) {
         // Constructor defined by the TS class.
     }

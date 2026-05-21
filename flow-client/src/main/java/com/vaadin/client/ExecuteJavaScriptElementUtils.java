@@ -163,7 +163,7 @@ public final class ExecuteJavaScriptElementUtils {
             }
         } else {
             UpdatableModelProperties updatableProperties = node
-                    .getNodeData(UpdatableModelProperties.class);
+                    .getNodeData(UpdatableModelProperties.NODE_DATA_KEY);
             if (updatableProperties == null
                     || !updatableProperties.isUpdatableProperty(property)) {
                 return;
@@ -182,7 +182,7 @@ public final class ExecuteJavaScriptElementUtils {
         if (!properties.isEmpty()) {
             UpdatableModelProperties data = new UpdatableModelProperties(
                     properties);
-            node.setNodeData(data);
+            node.setNodeData(UpdatableModelProperties.NODE_DATA_KEY, data);
         }
     }
 
