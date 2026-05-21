@@ -15,20 +15,13 @@
  */
 package com.vaadin.client.flow;
 
-import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
-import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
-import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
-import elemental.dom.Node;
 import elemental.json.JsonObject;
 
 /**
@@ -88,79 +81,11 @@ public class StateTree {
 
     public native Registry getRegistry();
 
-    @JsMethod(name = "forEachNode")
-    native void forEachNodeImpl(JsForEachNodeCallback callback);
-
-    @jsinterop.annotations.JsFunction
-    @FunctionalInterface
-    @SuppressWarnings("unusable-by-js")
-    interface JsForEachNodeCallback {
-        void accept(StateNode node);
-    }
-
     /**
      * Unregisters all nodes except root from this tree, and clears the root's
      * features.
      */
-    @JsOverlay
-    public final void prepareForResync() {
-        getRootNode().getList(NodeFeatures.VIRTUAL_CHILDREN)
-                .forEach(sn -> clearLists((StateNode) sn));
-        clearLists(getRootNode());
-
-        StateNode root = getRootNode();
-        forEachNodeImpl(node -> {
-            if (node != root) {
-                final Node dom = node.getDomNode();
-                if (dom != null
-                        && ServerEventObject.getIfPresent(dom) != null) {
-                    ServerEventObject.getIfPresent(dom).rejectPromises();
-                }
-                unregisterNode(node);
-                node.setParent(null);
-            }
-        });
-        setResync(true);
-    }
-
-    @JsOverlay
-    private void clearLists(StateNode stateNode) {
-        stateNode.forEachFeature((feature, featureId) -> {
-            if (feature instanceof NodeList) {
-                final NodeList nodeList = (NodeList) feature;
-                if (featureId.intValue() == NodeFeatures.ELEMENT_CHILDREN) {
-                    nodeList.splice(0, nodeList.length());
-                } else {
-                    nodeList.clear();
-                }
-            }
-        });
-    }
-
-    @JsOverlay
-    private boolean assertValidNode(StateNode node) {
-        assert node != null : "Node is null";
-        assert node.getTree() == this : "Node is not created for this tree";
-        assert node == getNode(node.getId())
-                : "Node id is not registered with this tree";
-        return true;
-    }
-
-    @JsOverlay
-    private boolean isValidNode(StateNode node) {
-        boolean isValid = true;
-        if (node == null) {
-            Console.warn("Node is null");
-            isValid = false;
-        } else if (!node.getTree().equals(this)) {
-            Console.warn("Node is not created for this tree");
-            isValid = false;
-        } else if (!node.equals(getNode(node.getId()))) {
-            Console.warn("Node id is not registered with this tree");
-            isValid = false;
-        }
-        return isValid;
-    }
+    public native void prepareForResync();
 
     /** Wires the server connector for the send*ToServer dispatchers. */
     public native void setServerConnector(

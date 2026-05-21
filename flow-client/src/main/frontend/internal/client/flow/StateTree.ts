@@ -47,6 +47,8 @@ const NF = {
   BASIC_TYPE_VALUE: 22
 };
 const VISIBLE_PROP = 'visible';
+// Mirrors com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME.
+const PROMISE_CALLBACK_NAME = '}p';
 
 const FEATURE_DEBUG_NAMES: Record<number, string> = {
   [NF.ELEMENT_DATA]: 'elementData',
@@ -177,6 +179,51 @@ export class StateTree {
     }
     this.unregisterNodeStateOnly(node);
     node.unregister();
+  }
+
+  prepareForResync(): void {
+    const virtualChildren = this.getRootNode().getList(NF.VIRTUAL_CHILDREN);
+    virtualChildren.forEach((sn) => this.clearLists(sn as StateNode));
+    this.clearLists(this.getRootNode());
+
+    const root = this.getRootNode();
+    this.forEachNode((node) => {
+      if (node !== root) {
+        const dom = node.getDomNode() as {
+          $server?: Record<string, { promises?: Array<[unknown, (e: Error) => void]> }>;
+        } | null;
+        if (dom != null && dom.$server != null) {
+          // Reject any pending @ClientCallable promises on the disconnected
+          // node so consumers don't hang waiting for the server to deliver
+          // results that are now never coming.
+          const promiseCallback = dom.$server[PROMISE_CALLBACK_NAME];
+          const promises = promiseCallback?.promises;
+          if (promises != null) {
+            promises.forEach((item) => item[1](new Error('Client is resynchronizing')));
+          }
+        }
+        this.unregisterNode(node);
+        node.setParent(null);
+      }
+    });
+    this.setResync(true);
+  }
+
+  private clearLists(stateNode: StateNode): void {
+    stateNode.forEachFeature((feature: unknown, featureId: number) => {
+      const maybeList = feature as {
+        spliceRemove?: (i: number, n: number) => void;
+        length?: () => number;
+        clear?: () => void;
+      };
+      if (typeof maybeList.spliceRemove === 'function' && typeof maybeList.length === 'function') {
+        if (featureId === NF.ELEMENT_CHILDREN) {
+          maybeList.spliceRemove(0, maybeList.length());
+        } else if (typeof maybeList.clear === 'function') {
+          maybeList.clear();
+        }
+      }
+    });
   }
 
   isResync(): boolean {
