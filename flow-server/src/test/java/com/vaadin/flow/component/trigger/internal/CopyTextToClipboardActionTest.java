@@ -48,6 +48,26 @@ class CopyTextToClipboardActionTest {
     }
 
     @Test
+    void fireAndForget_literalInput_encodesValueAsJsonLiteral() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new CopyTextToClipboardAction(
+                        new LiteralInput<>("hello \"world\"\n")));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // The literal is JSON-encoded, so the quotes and newline inside are
+        // escaped — proves callers can't accidentally break out of the
+        // string by passing values that contain quotes or newlines.
+        assertEquals(
+                "navigator.clipboard.writeText(\"hello \\\"world\\\"\\n\");",
+                handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
     void withCallbacks_handlerCallsObserverWithWriteTextPromise() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
