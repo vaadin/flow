@@ -14,6 +14,7 @@
  * the License.
  */
 import { Console } from '../Console';
+import { ExecuteJavaScriptElementUtils } from '../ExecuteJavaScriptElementUtils';
 import { ClientJsonCodec } from './util/ClientJsonCodec';
 import { Reactive } from './reactive/Reactive';
 
@@ -50,30 +51,19 @@ type RegistryLike = {
   getApplicationConfiguration(): { isProductionMode(): boolean; getApplicationId(): string };
 };
 
-type Callbacks = {
-  attachExistingElement(parent: unknown, previousSibling: unknown, tagName: string, id: number): void;
-  populateModelProperties(node: unknown, properties: unknown): void;
-  registerUpdatableModelProperties(node: unknown, properties: unknown): void;
-  registerInitializer(node: unknown, id: number, cleanup: () => void): void;
-  disposeInitializer(node: unknown, id: number): void;
-};
-
 /**
  * Processes the result of `Page.executeJs(...)` payloads received from the
  * server. Migrated from `com.vaadin.client.flow.ExecuteJavaScriptProcessor`.
  *
- * The element-utility callbacks (`attachExistingElement`,
- * `populateModelProperties`, `registerUpdatableModelProperties`) stay on the
- * Java side as `@JsOverlay` helpers and are delivered via the
- * `ExecuteJavaScriptCallbacks` `@JsType` adapter installed at construction.
+ * Element-utility calls (`attachExistingElement`, `populateModelProperties`,
+ * `registerUpdatableModelProperties`) dispatch directly into the migrated
+ * `ExecuteJavaScriptElementUtils` TS module.
  */
 export class ExecuteJavaScriptProcessor {
   private readonly registry: RegistryLike;
-  private readonly callbacks: Callbacks;
 
-  constructor(registry: RegistryLike, callbacks: Callbacks) {
+  constructor(registry: RegistryLike) {
     this.registry = registry;
-    this.callbacks = callbacks;
   }
 
   execute(invocations: unknown[][]): void {
@@ -183,12 +173,19 @@ export class ExecuteJavaScriptProcessor {
       cleanedAppId,
       this.registry,
       (parent, previousSibling, tagName, id) =>
-        this.callbacks.attachExistingElement(parent, previousSibling, tagName, id),
-      (node, properties) => this.callbacks.populateModelProperties(node, properties),
-      (node, properties) => this.callbacks.registerUpdatableModelProperties(node, properties),
+        ExecuteJavaScriptElementUtils.attachExistingElement(
+          parent as never,
+          previousSibling as Element | null,
+          tagName,
+          id
+        ),
+      (node, properties) =>
+        ExecuteJavaScriptElementUtils.populateModelProperties(node as never, properties as string[]),
+      (node, properties) =>
+        ExecuteJavaScriptElementUtils.registerUpdatableModelProperties(node as never, properties as string[]),
       stopApplication,
-      (node, id, cleanup) => this.callbacks.registerInitializer(node, id, cleanup),
-      (node, id) => this.callbacks.disposeInitializer(node, id)
+      (node, id, cleanup) => ExecuteJavaScriptElementUtils.registerInitializer(node as never, id, cleanup),
+      (node, id) => ExecuteJavaScriptElementUtils.disposeInitializer(node as never, id)
     );
   }
 
