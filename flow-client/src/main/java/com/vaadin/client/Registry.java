@@ -295,7 +295,7 @@ public class Registry {
      *
      */
     public ServerConnector getServerConnector() {
-        return get(ServerConnector.class);
+        return get("ServerConnector");
     }
 
     /**

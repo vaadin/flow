@@ -168,13 +168,14 @@ public class ApplicationConnection {
                 (nodeId, callback) -> addDomSetListener(nodeId,
                         (com.google.gwt.core.client.JavaScriptObject) callback),
                 () -> registry.getPoller().poll(),
-                eventData -> registry.getServerConnector().sendEventMessage(
-                        registry.getStateTree().getRootNode().getId(),
-                        "connect-web-component",
-                        (elemental.json.JsonObject) eventData),
+                eventData -> registry.getServerConnector()
+                        .sendEventMessageByNodeId(
+                                registry.getStateTree().getRootNode().getId(),
+                                "connect-web-component",
+                                (elemental.json.JsonObject) eventData),
                 uri -> registry.getURIResolver().resolveVaadinUri(uri),
                 (nodeId, eventType, eventData) -> registry.getServerConnector()
-                        .sendEventMessage(nodeId, eventType,
+                        .sendEventMessageByNodeId(nodeId, eventType,
                                 (elemental.json.JsonObject) eventData),
                 getProfilingData);
     }
