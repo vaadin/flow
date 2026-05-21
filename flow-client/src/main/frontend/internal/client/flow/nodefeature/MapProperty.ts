@@ -190,6 +190,44 @@ export class MapProperty {
     return this.eventRouter;
   }
 
+  // Java's Objects.equals: null-safe equals. For non-null GWT/JS objects this
+  // collapses to reference equality, which === also gives us.
+  private static objectsEquals(a: unknown, b: unknown): boolean {
+    if (a === b) {
+      return true;
+    }
+    return a == null ? b == null : false;
+  }
+
+  /** Sets the value and synchronizes it to the server. */
+  syncToServer(newValue: unknown): void {
+    this.getSyncToServerCommand(newValue)();
+  }
+
+  /** Returns the deferred send command for syncing the new value. */
+  getSyncToServerCommand(newValue: unknown): () => void {
+    const currentValue = this.hasValue() ? this.getValue() : null;
+    if (MapProperty.objectsEquals(newValue, currentValue)) {
+      this.markServerUpdate(false);
+    }
+    if (!(MapProperty.objectsEquals(newValue, currentValue) && this.hasValue()) && !this.isServerUpdate()) {
+      const node = (this.map as { getNode(): unknown }).getNode() as {
+        getTree(): { isActive(node: unknown): boolean; sendNodePropertySyncToServer(p: MapProperty): void };
+      };
+      const tree = node.getTree();
+      if (tree.isActive(node)) {
+        this.doSetValue(newValue);
+        return () => tree.sendNodePropertySyncToServer(this);
+      } else {
+        // Fire a fake event so any DOM listeners reset the property value;
+        // flush since we're out of the normal lifecycle.
+        this.doSetValue(currentValue);
+        (Reactive as { flush(): void }).flush();
+      }
+    }
+    return NO_OP;
+  }
+
   /** Static no-op constant exposed for Debouncer.runCommands(). */
   static readonly NO_OP = NO_OP;
 }
