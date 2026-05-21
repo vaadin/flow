@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.vaadin.client.JsRunnable;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
@@ -49,10 +50,10 @@ public class Debouncer {
     private Timer intermediateTimer;
 
     private Consumer<String> bufferedSendCommand;
-    private JsMap<String, Runnable> bufferedCommands;
-    private JsMap<String, Runnable> previousBufferedNonExecutedCommands;
+    private JsMap<String, JsRunnable> bufferedCommands;
+    private JsMap<String, JsRunnable> previousBufferedNonExecutedCommands;
     private Consumer<String> potentialTrailingWithBothTrailingAndIntermediate;
-    private JsMap<String, Runnable> potentialTrailingWithBothTrailingAndIntermediateBufferedCommands;
+    private JsMap<String, JsRunnable> potentialTrailingWithBothTrailingAndIntermediateBufferedCommands;
 
     private Debouncer(Node element, String identifier, double timeout) {
         this.element = element;
@@ -77,7 +78,7 @@ public class Debouncer {
      *         delaying
      */
     public boolean trigger(JsSet<String> phases, Consumer<String> command,
-            JsMap<String, Runnable> commands) {
+            JsMap<String, JsRunnable> commands) {
         // If "leading" events are requested and no timers created yet,
         // this is considered the leading event that is triggered immediately
         // and there is no need to save it
@@ -162,8 +163,8 @@ public class Debouncer {
     }
 
     private static void runCommands(String phase, Consumer<String> sendCommand,
-            JsMap<String, Runnable> commands,
-            JsMap<String, Runnable> previousCommands) {
+            JsMap<String, JsRunnable> commands,
+            JsMap<String, JsRunnable> previousCommands) {
         if (JsonConstants.EVENT_PHASE_TRAILING.equals(phase)) {
             commands.forEach((command, property) -> {
                 if (command == MapProperty.NO_OP
@@ -174,13 +175,13 @@ public class Debouncer {
                 }
             });
         } else {
-            commands.mapValues().forEach(Runnable::run);
+            commands.mapValues().forEach(JsRunnable::run);
         }
         sendCommand.accept(phase);
     }
 
     private static boolean hasPreviousCommand(
-            JsMap<String, Runnable> previousCommands, String property) {
+            JsMap<String, JsRunnable> previousCommands, String property) {
         return previousCommands != null && property != null
                 && previousCommands.has(property);
     }

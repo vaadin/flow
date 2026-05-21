@@ -22,6 +22,7 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
+import com.vaadin.client.JsRunnable;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -49,7 +50,7 @@ import elemental.events.EventRemover;
 public class MapProperty implements ReactiveValue {
 
     @JsOverlay
-    public static final Runnable NO_OP = () -> {
+    public static final JsRunnable NO_OP = () -> {
     };
 
     public MapProperty(String name, NodeMap map) {
@@ -127,7 +128,7 @@ public class MapProperty implements ReactiveValue {
      * Sets the value of this property and returns a sync-to-server command.
      */
     @JsOverlay
-    public final Runnable getSyncToServerCommand(Object newValue) {
+    public final JsRunnable getSyncToServerCommand(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
         if (Objects.equals(newValue, currentValue)) {
