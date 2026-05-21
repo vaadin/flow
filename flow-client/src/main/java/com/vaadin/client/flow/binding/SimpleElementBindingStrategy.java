@@ -149,6 +149,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static class InitialPropertyUpdate {
+        private static final String NODE_DATA_KEY = "InitialPropertyUpdate";
+
         private Runnable command;
         private final StateNode node;
 
@@ -164,7 +166,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (command != null) {
                 command.run();
             }
-            node.clearNodeData(this);
+            node.clearNodeData(NODE_DATA_KEY);
         }
     }
 
@@ -271,7 +273,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void scheduleInitialExecution(StateNode stateNode) {
         InitialPropertyUpdate update = new InitialPropertyUpdate(stateNode);
-        stateNode.setNodeData(update);
+        stateNode.setNodeData(InitialPropertyUpdate.NODE_DATA_KEY, update);
         /*
          * Update command will be executed after all initial Reactive stuff.
          * E.g. initial JS (if any) will be executed BEFORE initial update
@@ -280,7 +282,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Reactive.addPostFlushListener(
                 () -> Scheduler.get().scheduleDeferred(() -> {
                     InitialPropertyUpdate propertyUpdate = stateNode
-                            .getNodeData(InitialPropertyUpdate.class);
+                            .getNodeData(InitialPropertyUpdate.NODE_DATA_KEY);
                     // cleared if handlePropertiesChanged has already happened
                     if (propertyUpdate != null) {
                         propertyUpdate.execute();
@@ -376,7 +378,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         };
 
         InitialPropertyUpdate initialUpdate = node
-                .getNodeData(InitialPropertyUpdate.class);
+                .getNodeData(InitialPropertyUpdate.NODE_DATA_KEY);
         if (initialUpdate == null) {
             runnable.run();
         } else {
@@ -387,7 +389,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
         UpdatableModelProperties updatableProperties = node
-                .getNodeData(UpdatableModelProperties.class);
+                .getNodeData(UpdatableModelProperties.NODE_DATA_KEY);
         if (updatableProperties == null
                 || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
             // don't do anything if the property/sub-property is not in the

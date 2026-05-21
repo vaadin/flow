@@ -18,7 +18,6 @@ package com.vaadin.client.flow;
 import java.util.function.Function;
 
 import jsinterop.annotations.JsFunction;
-import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
@@ -101,28 +100,4 @@ public class StateNode {
 
     /** Removes the stored object under the given string key. */
     public native void clearNodeData(String key);
-
-    /**
-     * Stores an object under its Java class name. Java-only overload kept for
-     * call sites that originally used {@code object.getClass().getName()} as
-     * the implicit key; cross-language sites should use an explicit string key
-     * constant.
-     */
-    @JsOverlay
-    public final <T> void setNodeData(T object) {
-        setNodeData(object.getClass().getName(), object);
-    }
-
-    /** Looks up a stored object by its class. Java-only overload. */
-    @SuppressWarnings("unchecked")
-    @JsOverlay
-    public final <T> T getNodeData(Class<T> clazz) {
-        return (T) getNodeData(clazz.getName());
-    }
-
-    /** Removes the stored object that matches the given object's class. */
-    @JsOverlay
-    public final <T> void clearNodeData(T object) {
-        clearNodeData(object.getClass().getName());
-    }
 }
