@@ -443,6 +443,37 @@ class TransactionTest extends SignalTestBase {
         assertTrue(Transaction.inTransaction());
     }
 
+    @Test
+    void clearingFallback_allowsFreshReads() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        useTransactionFallback(() -> fallbackTx);
+
+        // Prime the repeatable read cache by reading
+        JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
+
+        // External write bypassing the transaction
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("external"));
+
+        // Verify repeatable read still returns cached value
+        JsonNode cachedRead = TestUtil.readTransactionRootValue(tree);
+        assertSame(firstRead, cachedRead,
+                "Repeatable read should return cached value");
+
+        // Clear the fallback by providing null (simulates what
+        // VaadinSession.unlock() does before running access tasks)
+        useTransactionFallback(() -> null);
+        assertFalse(Transaction.inTransaction(),
+                "No transaction should be active after clearing fallback");
+
+        // Now reads should see the fresh value
+        JsonNode freshRead = TestUtil.readTransactionRootValue(tree);
+        assertNotNull(freshRead);
+        assertEquals("external", freshRead.get("text").textValue(),
+                "After clearing fallback, reads should see fresh values");
+    }
+
     private static TransactionTask dummyTask() {
         return () -> {
         };

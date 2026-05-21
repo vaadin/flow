@@ -787,6 +787,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
              */
             if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
                 ultimateRelease = true;
+                // Clear repeatable read transaction before running pending
+                // access tasks so they see fresh signal values instead of
+                // cached values from the request handling phase
+                sessionScopedTransaction = null;
                 getService().runPendingAccessTasks(this);
 
                 for (UI ui : getUIs()) {
@@ -801,7 +805,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
-                sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
