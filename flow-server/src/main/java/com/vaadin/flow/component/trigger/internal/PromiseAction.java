@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -22,8 +23,10 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
@@ -52,15 +55,26 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * run on the UI thread after the client reports the outcome of the
  * promise.</li>
  * </ul>
- * Under the hood, the with-outcome mode lazily registers one
- * {@link ReturnChannelRegistration} per trigger host node and appends
- * {@code .then(()=>$N(true,null)).catch(e=>$N(false, msg))} to the promise
- * expression, so the client invokes the channel after the promise resolves or
- * rejects.
+ * Under the hood, the with-outcome mode renders one call to a shared
+ * {@link JsFunction} that subscribes to the promise and pushes an
+ * {@link Outcome} record through a lazily-registered
+ * {@link ReturnChannelRegistration} on the trigger host node.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public abstract class PromiseAction extends Action {
+
+    /**
+     * Wrapper JS: subscribes to {@code promise} and forwards the resolved value
+     * or rejection reason to {@code channel} as an {@link Outcome}-shaped
+     * object. Shared across all subclasses with callbacks — the only per-call
+     * inputs are the promise expression and the return channel.
+     */
+    private static final JsFunction OBSERVE_PROMISE = JsFunction.of("""
+            promise.then(() => channel({ok: true}))\
+            .catch(e => channel({ok: false, \
+            error: e && e.message ? e.message : String(e)}));""")
+            .withArguments("promise", "channel");
 
     private final @Nullable SerializableRunnable onSuccess;
     private final @Nullable SerializableConsumer<String> onError;
@@ -102,8 +116,8 @@ public abstract class PromiseAction extends Action {
      * Subclasses append a JS expression that evaluates to a {@code Promise}
      * when the trigger fires. The result of that promise is what
      * {@code onSuccess}/{@code onError} observe; the resolved value itself is
-     * not delivered to the server (only the success/failure flag and the
-     * rejection message).
+     * not delivered to the server (only success vs. failure and the rejection
+     * message).
      *
      * @param builder
      *            collects element parameter references, not {@code null}
@@ -115,18 +129,22 @@ public abstract class PromiseAction extends Action {
 
     @Override
     protected final void appendStatement(JsBuilder builder, StringBuilder out) {
-        appendPromiseExpression(builder, out);
         if (onSuccess == null) {
+            appendPromiseExpression(builder, out);
             return;
         }
-        StateNode hostNode = builder.trigger().getHost().getNode();
-        ReturnChannelRegistration channel = channelByNode.computeIfAbsent(
-                hostNode, node -> node.getFeature(ReturnChannelMap.class)
+        String observe = builder.capture(OBSERVE_PROMISE);
+        String channel = builder
+                .capture(channelFor(builder.trigger().getHost().getNode()));
+        out.append(observe).append('(');
+        appendPromiseExpression(builder, out);
+        out.append(", ").append(channel).append(')');
+    }
+
+    private ReturnChannelRegistration channelFor(StateNode hostNode) {
+        return channelByNode.computeIfAbsent(hostNode,
+                node -> node.getFeature(ReturnChannelMap.class)
                         .registerChannel(this::dispatch));
-        String channelRef = builder.capture(channel);
-        out.append(".then(()=>").append(channelRef).append("(true,null))")
-                .append(".catch(e=>").append(channelRef)
-                .append("(false, e && e.message ? e.message : String(e)))");
     }
 
     private void dispatch(ArrayNode args) {
@@ -134,14 +152,20 @@ public abstract class PromiseAction extends Action {
         // are non-null at the point of dispatch.
         SerializableRunnable success = Objects.requireNonNull(onSuccess);
         SerializableConsumer<String> error = Objects.requireNonNull(onError);
-        boolean succeeded = !args.isEmpty() && args.get(0).asBoolean(false);
-        if (succeeded) {
+        Outcome outcome = JacksonUtils.readValue(args.get(0), Outcome.class);
+        if (outcome.ok()) {
             success.run();
         } else {
-            String message = (args.size() > 1 && !args.get(1).isNull())
-                    ? args.get(1).asString()
-                    : "";
-            error.accept(message);
+            error.accept(outcome.error() == null ? "" : outcome.error());
         }
+    }
+
+    /**
+     * Wire shape exchanged between {@link #OBSERVE_PROMISE} and
+     * {@link #dispatch}. {@code error} is only meaningful when
+     * {@code ok == false}.
+     */
+    private record Outcome(boolean ok,
+            @Nullable String error) implements Serializable {
     }
 }

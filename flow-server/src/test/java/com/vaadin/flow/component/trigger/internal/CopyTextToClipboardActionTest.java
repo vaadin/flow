@@ -48,7 +48,7 @@ class CopyTextToClipboardActionTest {
     }
 
     @Test
-    void withCallbacks_handlerJsWrapsWriteTextWithThenCatch() {
+    void withCallbacks_handlerCallsObserverWithWriteTextPromise() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
@@ -63,12 +63,10 @@ class CopyTextToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String body = handlerOf(singleInstallFn(ui)).getBody();
-        assertTrue(
-                body.startsWith("navigator.clipboard.writeText($0[\"value\"])"),
-                body);
-        assertTrue(body.contains(".then("), body);
-        assertTrue(body.contains(".catch("), body);
+        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = field;
+        // the .then/.catch glue lives inside $0, not in the handler body.
+        assertEquals("$0(navigator.clipboard.writeText($2[\"value\"]), $1);",
+                handlerOf(singleInstallFn(ui)).getBody());
     }
 
     private static JsFunction singleInstallFn(UI ui) {

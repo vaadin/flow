@@ -18,8 +18,10 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -57,7 +59,7 @@ class PromiseActionTest {
     }
 
     @Test
-    void withCallbacks_handlerJsAppendsThenCatch_andCapturesReturnChannel() {
+    void withCallbacks_handlerJsCallsObserverWithPromiseAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -70,16 +72,21 @@ class PromiseActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction handler = handlerOf(singleInstallFn(ui));
-        String body = handler.getBody();
-        assertTrue(body.startsWith(PROMISE_EXPR), body);
-        assertTrue(body.contains(".then(()=>$0(true,null))"), body);
-        assertTrue(body.contains(".catch(e=>$0(false, "), body);
-        assertTrue(captureContainsReturnChannel(handler),
-                "with callbacks a return channel is captured");
+        // Single function call: observer($promiseExpr, $channel).
+        // $0 = the static OBSERVE_PROMISE JsFunction, $1 = the return channel.
+        assertEquals("$0(" + PROMISE_EXPR + ", $1);", handler.getBody());
+
+        List<@Nullable Object> captures = handler.getCaptures();
+        assertEquals(2, captures.size(),
+                "expected observer + channel captures");
+        assertTrue(captures.get(0) instanceof JsFunction,
+                "first capture should be the observer JsFunction");
+        assertTrue(captures.get(1) instanceof ReturnChannelRegistration,
+                "second capture should be the return channel");
     }
 
     @Test
-    void returnChannelInvocation_withSuccess_runsOnSuccess() {
+    void returnChannelInvocation_withOkOutcome_runsOnSuccess() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -91,18 +98,18 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        ReturnChannelRegistration channel = singleReturnChannel(ui);
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
         ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(true);
-        args.add(JacksonUtils.nullNode());
-        channel.invoke(args);
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
 
         assertEquals(List.of("ok"), succeeded);
         assertEquals(List.of(), failed);
     }
 
     @Test
-    void returnChannelInvocation_withFailure_runsOnErrorWithMessage() {
+    void returnChannelInvocation_withFailureOutcome_runsOnErrorWithMessage() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -114,11 +121,12 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        ReturnChannelRegistration channel = singleReturnChannel(ui);
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", false);
+        outcome.put("error", "NotAllowedError: blocked by permission policy");
         ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(false);
-        args.add("NotAllowedError: blocked by permission policy");
-        channel.invoke(args);
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
 
         assertEquals(List.of(), succeeded);
         assertEquals(List.of("NotAllowedError: blocked by permission policy"),

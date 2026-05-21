@@ -62,7 +62,7 @@ class RequestFullscreenActionTest {
     }
 
     @Test
-    void withCallbacks_handlerJsWrapsRequestFullscreenWithThenCatch() {
+    void withCallbacks_handlerCallsObserverWithRequestFullscreenPromise() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
@@ -75,10 +75,10 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String body = handlerOf(singleInstallFn(ui)).getBody();
-        assertTrue(body.startsWith("$0.requestFullscreen()"), body);
-        assertTrue(body.contains(".then("), body);
-        assertTrue(body.contains(".catch("), body);
+        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = panel;
+        // the .then/.catch glue lives inside $0, not in the handler body.
+        assertEquals("$0($2.requestFullscreen(), $1);",
+                handlerOf(singleInstallFn(ui)).getBody());
     }
 
     private static JsFunction singleInstallFn(UI ui) {
