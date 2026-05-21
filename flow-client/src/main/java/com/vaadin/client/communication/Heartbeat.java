@@ -15,140 +15,46 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.xhr.client.XMLHttpRequest;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.Console;
-import com.vaadin.client.Registry;
-import com.vaadin.client.gwt.elemental.js.util.Xhr;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.util.SharedUtil;
+import com.vaadin.client.UILifecycle;
 
 /**
- * Handles sending of heartbeats to the server and reacting to the response
+ * Handles sending of heartbeats to the server and reacting to the response.
+ * Pure {@code @JsType(isNative=true)} binding to the TypeScript implementation
+ * at {@code src/main/frontend/internal/client/communication/Heartbeat.ts}.
+ *
+ * <p>
+ * Construction takes the resolved heartbeat URI and a
+ * {@link HeartbeatCallbacks} adapter that dispatches into
+ * {@link ConnectionStateHandler}, so the TS class does not need to reach back
+ * through the Java Registry facade.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "Heartbeat")
 public class Heartbeat {
 
-    private Timer timer = new Timer() {
-        @Override
-        public void run() {
-            send();
-        }
-    };
-
-    private String uri;
-    private int interval = -1;
-
-    private final Registry registry;
-
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
-    public Heartbeat(Registry registry) {
-        this.registry = registry;
-        setInterval(
-                registry.getApplicationConfiguration().getHeartbeatInterval());
-
-        uri = registry.getApplicationConfiguration().getServiceUrl();
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.UI_ID_PARAMETER,
-                registry.getApplicationConfiguration().getUIId());
-
-        registry.getUILifecycle().addHandler(e -> {
-            if (e.getUiLifecycle().isTerminated()) {
-                setInterval(-1);
-            }
-        });
+    public Heartbeat(String uri, int heartbeatInterval, UILifecycle uiLifecycle,
+            HeartbeatCallbacks callbacks) {
+        // Defined by the TS class constructor.
     }
 
-    /**
-     * Sends a heartbeat to the server.
-     */
-    public void send() {
-        timer.cancel();
-        if (interval < 0) {
-            Console.debug("Heartbeat terminated, skipping request");
-            return;
-        }
+    /** Sends a heartbeat to the server. */
+    public native void send();
 
-        Console.debug("Sending heartbeat request...");
+    /** Gets the heartbeat interval, in seconds. */
+    public native int getInterval();
 
-        Xhr.post(uri, null, null, new Xhr.Callback() {
-
-            @Override
-            public void onSuccess(XMLHttpRequest xhr) {
-                registry.getConnectionStateHandler().heartbeatOk();
-                schedule();
-            }
-
-            @Override
-            public void onFail(XMLHttpRequest xhr, Exception e) {
-                // Handler should stop the application if heartbeat should no
-                // longer be sent
-                if (e == null) {
-                    // Heartbeat has been terminated before response processing.
-                    // Most likely a session expiration happened, and it has
-                    // already been handled by another component.
-                    if (interval < 0) {
-                        Console.debug(
-                                "Heartbeat terminated, ignoring failure.");
-                    } else {
-                        registry.getConnectionStateHandler()
-                                .heartbeatInvalidStatusCode(xhr);
-                    }
-                } else {
-                    registry.getConnectionStateHandler().heartbeatException(xhr,
-                            e);
-                }
-                schedule();
-
-            }
-        });
-
-    }
+    /** Updates the schedule to match the set interval. */
+    public native void schedule();
 
     /**
-     * Gets the heartbeat interval.
-     *
-     * @return the interval at which heartbeat requests are sent.
-     */
-    public int getInterval() {
-        return interval;
-    }
-
-    /**
-     * Updates the schedule of the heartbeat to match the set interval. A
-     * negative interval disables the heartbeat.
-     */
-    public void schedule() {
-        if (interval > 0) {
-            Console.debug("Scheduling heartbeat in " + interval + " seconds");
-            timer.schedule(interval * 1000);
-        } else {
-            Console.debug("Disabling heartbeat");
-            timer.cancel();
-        }
-    }
-
-    /**
-     * Changes the heartbeatInterval in runtime and applies it.
+     * Changes the heartbeat interval at runtime and applies it.
      *
      * @param heartbeatInterval
-     *            new interval in seconds.
+     *            new interval in seconds
      */
-    public final void setInterval(int heartbeatInterval) {
-        Console.debug(
-                "Setting heartbeat interval to " + heartbeatInterval + "sec.");
-        interval = heartbeatInterval;
-        schedule();
-    }
+    public native void setInterval(int heartbeatInterval);
 }
