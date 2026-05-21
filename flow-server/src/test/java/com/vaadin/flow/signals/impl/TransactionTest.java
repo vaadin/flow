@@ -470,7 +470,7 @@ class TransactionTest extends SignalTestBase {
         // Now reads should see the fresh value
         JsonNode freshRead = TestUtil.readTransactionRootValue(tree);
         assertNotNull(freshRead);
-        assertEquals("external", freshRead.get("text").textValue(),
+        assertEquals("external", freshRead.textValue(),
                 "After clearing fallback, reads should see fresh values");
     }
 
