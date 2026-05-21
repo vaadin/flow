@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.ErrorHandler;
@@ -224,8 +225,9 @@ class GeolocationTest {
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.watch")));
+        assertTrue(invocations.stream().anyMatch(this::isWatchInit),
+                "Starting a watch must queue an init invocation that runs "
+                        + "geolocation.watch");
     }
 
     @Test
@@ -303,8 +305,9 @@ class GeolocationTest {
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.clearWatch")));
+        assertTrue(invocations.stream().anyMatch(this::isInitializerDispose),
+                "Detach should queue an initializer dispose, which the client "
+                        + "runs as geolocation.clearWatch");
     }
 
     @Test
@@ -327,8 +330,9 @@ class GeolocationTest {
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.clearWatch")));
+        assertTrue(invocations.stream().anyMatch(this::isInitializerDispose),
+                "Explicit stop() while attached must queue an initializer "
+                        + "dispose, which the client runs as geolocation.clearWatch");
     }
 
     @Test
@@ -345,8 +349,8 @@ class GeolocationTest {
         assertDoesNotThrow(watcher::stop);
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().noneMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.clearWatch")));
+        assertTrue(invocations.stream().noneMatch(this::isInitializerDispose),
+                "Second stop() must not queue another dispose invocation");
     }
 
     @Test
@@ -368,8 +372,8 @@ class GeolocationTest {
                 watcher.positionSignal().peek());
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        assertTrue(invocations.stream().anyMatch(inv -> inv.getInvocation()
-                .getExpression().contains("geolocation.watch")));
+        assertTrue(invocations.stream().anyMatch(this::isWatchInit),
+                "resume() must queue a new watch init invocation");
     }
 
     @Test
@@ -635,6 +639,34 @@ class GeolocationTest {
     }
 
     // --- Helpers ---
+
+    /**
+     * The watch is registered through {@link Element#addJsInitializer}, so the
+     * user JavaScript lives in a {@link JsFunction} capture rather than in the
+     * invocation expression. Matches an init invocation whose user body calls
+     * {@code geolocation.watch}.
+     */
+    private boolean isWatchInit(PendingJavaScriptInvocation invocation) {
+        if (!invocation.getInvocation().getExpression()
+                .contains("registerInitializer")) {
+            return false;
+        }
+        return invocation.getInvocation().getParameters().stream()
+                .filter(JsFunction.class::isInstance)
+                .map(JsFunction.class::cast)
+                .anyMatch(fn -> fn.getBody().contains("geolocation.watch"));
+    }
+
+    /**
+     * Matches the dispose invocation emitted by
+     * {@link Element#addJsInitializer}'s {@code Registration#remove()}, which
+     * is what triggers {@code geolocation.clearWatch} client-side.
+     */
+    private boolean isInitializerDispose(
+            PendingJavaScriptInvocation invocation) {
+        return invocation.getInvocation().getExpression()
+                .contains("disposeInitializer");
+    }
 
     private static void fireEvent(Element element, String eventType,
             ObjectNode eventData) {

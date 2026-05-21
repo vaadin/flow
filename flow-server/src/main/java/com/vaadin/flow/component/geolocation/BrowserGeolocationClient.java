@@ -23,8 +23,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -45,9 +43,6 @@ import com.vaadin.flow.shared.Registration;
  */
 @NullMarked
 final class BrowserGeolocationClient implements GeolocationClient {
-
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(BrowserGeolocationClient.class);
 
     private record GetResult(@Nullable GeolocationPosition position,
             @Nullable GeolocationError error,
@@ -147,15 +142,13 @@ final class BrowserGeolocationClient implements GeolocationClient {
 
     private final class BrowserWatchHandle implements WatchHandle {
 
-        private final String watchKey = UUID.randomUUID().toString();
-        private final Component owner;
         private @Nullable DomListenerRegistration positionListener;
         private @Nullable DomListenerRegistration errorListener;
+        private @Nullable Registration watchRegistration;
         private boolean active = true;
 
         BrowserWatchHandle(Component owner, GeolocationOptions options,
                 SerializableConsumer<GeolocationResult> onUpdate) {
-            this.owner = owner;
             Element el = owner.getElement();
             positionListener = el
                     .addEventListener("vaadin-geolocation-position",
@@ -167,15 +160,27 @@ final class BrowserGeolocationClient implements GeolocationClient {
                             e -> onUpdate.accept(
                                     e.getEventDetail(GeolocationError.class)))
                     .addEventDetail().allowInert();
-            el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
-                    options, watchKey).then(ignored -> {
-                    }, err -> {
-                        LOGGER.debug("Client-side geolocation.watch failed: {}",
-                                err);
-                        onUpdate.accept(new GeolocationError(
-                                GeolocationErrorCode.UNKNOWN.code(),
-                                "Client-side geolocation bridge failure"));
-                    });
+            // The watch is driven by addJsInitializer: it starts on every
+            // fresh client-side DOM and the returned cleanup function tears
+            // the watch down when the DOM is discarded or stop() removes the
+            // registration. A bridge-load failure is surfaced by dispatching
+            // the same error event the position listener already observes.
+            String watchKey = UUID.randomUUID().toString();
+            int unknownErrorCode = GeolocationErrorCode.UNKNOWN.code();
+            watchRegistration = el.addJsInitializer(
+                    """
+                            try {
+                              window.Vaadin.Flow.geolocation.watch(this, $0, $1);
+                            } catch (err) {
+                              this.dispatchEvent(new CustomEvent('vaadin-geolocation-error', {
+                                detail: { code: $2, message: 'Client-side geolocation bridge failure' }
+                              }));
+                              return;
+                            }
+                            const __wk = $1;
+                            return () => window.Vaadin.Flow.geolocation.clearWatch(__wk);
+                            """,
+                    options, watchKey, unknownErrorCode);
         }
 
         @Override
@@ -192,13 +197,10 @@ final class BrowserGeolocationClient implements GeolocationClient {
                 errorListener.remove();
                 errorListener = null;
             }
-            ui.getPage()
-                    .executeJs("window.Vaadin.Flow.geolocation.clearWatch($0)",
-                            watchKey)
-                    .then(ignored -> {
-                    }, err -> LOGGER.debug(
-                            "Client-side geolocation.clearWatch failed: {}",
-                            err));
+            if (watchRegistration != null) {
+                watchRegistration.remove();
+                watchRegistration = null;
+            }
         }
 
         @Override
