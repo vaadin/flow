@@ -83,8 +83,10 @@ public class DefaultRegistry extends Registry {
         set("ConstantPool", (Supplier<ConstantPool>) ConstantPool::new);
         set("ExistingElementMap",
                 (Supplier<ExistingElementMap>) ExistingElementMap::new);
-        set("InitialPropertiesHandler",
-                new InitialPropertiesHandler(stateTree));
+        InitialPropertiesHandler initialPropertiesHandler = new InitialPropertiesHandler(
+                stateTree);
+        set("InitialPropertiesHandler", initialPropertiesHandler);
+        stateTree.setInitialPropertiesHandler(initialPropertiesHandler);
 
         // Classes with dependencies, in correct order
         Supplier<Heartbeat> heartbeatSupplier = () -> new Heartbeat(this);

@@ -86,6 +86,10 @@ export class StateTree {
   readonly registry: RegistryLike;
   private updateInProgressFlag = false;
   private resyncFlag = false;
+  // Wired up by DefaultRegistry after both objects exist. `setUpdateInProgress`
+  // pokes the handler when an update finishes so it can drain queued initial
+  // property syncs.
+  private initialPropertiesHandler: { flushPropertyUpdates(): void } | null = null;
 
   constructor(registry: RegistryLike) {
     this.registry = registry;
@@ -99,6 +103,20 @@ export class StateTree {
 
   setUpdateInProgressStateOnly(updateInProgress: boolean): void {
     this.updateInProgressFlag = updateInProgress;
+  }
+
+  setInitialPropertiesHandler(handler: { flushPropertyUpdates(): void }): void {
+    this.initialPropertiesHandler = handler;
+  }
+
+  setUpdateInProgress(updateInProgress: boolean): void {
+    if (this.updateInProgressFlag === updateInProgress) {
+      throw new Error(
+        `Inconsistent state tree updating status, expected ${updateInProgress ? 'no ' : ''} updates in progress.`
+      );
+    }
+    this.updateInProgressFlag = updateInProgress;
+    this.initialPropertiesHandler?.flushPropertyUpdates();
   }
 
   registerNodeStateOnly(node: StateNode): void {
