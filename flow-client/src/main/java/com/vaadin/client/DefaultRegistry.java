@@ -17,9 +17,12 @@ package com.vaadin.client;
 
 import java.util.function.Supplier;
 
+import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
+import com.vaadin.client.communication.HeartbeatCallbacks;
 import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
@@ -33,6 +36,8 @@ import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * A registry implementation used by {@link ApplicationConnection}.
@@ -89,7 +94,35 @@ public class DefaultRegistry extends Registry {
         stateTree.setInitialPropertiesHandler(initialPropertiesHandler);
 
         // Classes with dependencies, in correct order
-        Supplier<Heartbeat> heartbeatSupplier = () -> new Heartbeat(this);
+        Supplier<Heartbeat> heartbeatSupplier = () -> {
+            String uri = SharedUtil.addGetParameter(
+                    applicationConfiguration.getServiceUrl(),
+                    ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                    ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
+            uri = SharedUtil.addGetParameter(uri,
+                    ApplicationConstants.UI_ID_PARAMETER,
+                    applicationConfiguration.getUIId());
+            HeartbeatCallbacks callbacks = new HeartbeatCallbacks() {
+                @Override
+                public void onOk() {
+                    getConnectionStateHandler().heartbeatOk();
+                }
+
+                @Override
+                public void onInvalidStatusCode(XMLHttpRequest xhr) {
+                    getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
+                }
+
+                @Override
+                public void onException(XMLHttpRequest xhr, String message) {
+                    getConnectionStateHandler().heartbeatException(xhr,
+                            new RuntimeException(message));
+                }
+            };
+            return new Heartbeat(uri,
+                    applicationConfiguration.getHeartbeatInterval(),
+                    uiLifecycle, callbacks);
+        };
         set(Heartbeat.class, heartbeatSupplier);
         set(ConnectionStateHandler.class,
                 new DefaultConnectionStateHandler(this));
