@@ -79,6 +79,13 @@ public abstract class Trigger implements Serializable {
      * Wires the given actions to this trigger. They run in the order given the
      * next time this trigger fires. Each call adds another wiring; the existing
      * ones are kept.
+     * <p>
+     * Each call installs one new browser-side listener that runs the supplied
+     * actions in sequence. Calling {@code triggers(a, b)} once and calling
+     * {@code triggers(a)} then {@code triggers(b)} produce the same observable
+     * behaviour, but the first installs one listener while the second installs
+     * two. Prefer one call with multiple actions when the actions naturally
+     * belong together.
      *
      * @param actions
      *            the actions to run, not {@code null} or empty
