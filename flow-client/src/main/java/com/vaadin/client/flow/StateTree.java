@@ -53,8 +53,19 @@ public class StateTree {
 
     public native boolean isUpdateInProgress();
 
-    @JsMethod(name = "setUpdateInProgressStateOnly")
-    native void setUpdateInProgressImpl(boolean updateInProgress);
+    /**
+     * Mark this tree as being updated, and flush any queued initial-property
+     * syncs once the update completes. Implementation lives in the TS class.
+     */
+    public native void setUpdateInProgress(boolean updateInProgress);
+
+    /**
+     * Wires the InitialPropertiesHandler into this tree so
+     * {@link #setUpdateInProgress(boolean)} can flush queued property syncs.
+     * Called once at registry construction.
+     */
+    public native void setInitialPropertiesHandler(
+            com.vaadin.client.InitialPropertiesHandler handler);
 
     @JsMethod(name = "registerNodeStateOnly")
     native void registerNodeImpl(StateNode node);
@@ -88,19 +99,6 @@ public class StateTree {
     @SuppressWarnings("unusable-by-js")
     interface JsForEachNodeCallback {
         void accept(StateNode node);
-    }
-
-    /**
-     * Mark this tree as being updated.
-     */
-    @JsOverlay
-    public final void setUpdateInProgress(boolean updateInProgress) {
-        assert isUpdateInProgress() != updateInProgress
-                : "Inconsistent state tree updating status, expected "
-                        + (updateInProgress ? "no " : "")
-                        + " updates in progress.";
-        setUpdateInProgressImpl(updateInProgress);
-        getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
     }
 
     /** Registers a node with this tree. */

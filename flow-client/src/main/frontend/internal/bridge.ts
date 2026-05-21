@@ -57,6 +57,7 @@ import { ConstantPool } from './client/flow/ConstantPool';
 import { NodeUnregisterEvent } from './client/flow/NodeUnregisterEvent';
 import { StateNode } from './client/flow/StateNode';
 import { StateTree } from './client/flow/StateTree';
+import { TreeChangeProcessor } from './client/flow/TreeChangeProcessor';
 import { NodeFeature } from './client/flow/nodefeature/NodeFeature';
 import { NodeList } from './client/flow/nodefeature/NodeList';
 import { NodeMap } from './client/flow/nodefeature/NodeMap';
@@ -120,6 +121,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.flow', 'NodeUnregisterEvent', NodeUnregisterEvent);
   registerGwtBridge('client.flow', 'StateNode', StateNode);
   registerGwtBridge('client.flow', 'StateTree', StateTree);
+  registerGwtBridge('client.flow', 'TreeChangeProcessor', TreeChangeProcessor);
   registerGwtBridge('client.flow.nodefeature', 'NodeFeature', NodeFeature);
   registerGwtBridge('client.flow.nodefeature', 'NodeList', NodeList);
   registerGwtBridge('client.flow.nodefeature', 'NodeMap', NodeMap);
