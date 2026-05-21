@@ -22,7 +22,6 @@ import java.util.Optional;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -235,10 +234,9 @@ public class History implements Serializable {
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
                     state, pathWithQueryParameters, callback);
         } else {
-            JsFunction pushAndNotify = JsFunction.of(
-                    "window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated'));",
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
-            ui.getPage().executeJs("setTimeout($0)", pushAndNotify);
         }
     }
 
@@ -324,10 +322,9 @@ public class History implements Serializable {
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
                     state, pathWithQueryParameters, callback);
         } else {
-            JsFunction replaceAndNotify = JsFunction.of(
-                    "window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated'));",
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
-            ui.getPage().executeJs("setTimeout($0)", replaceAndNotify);
         }
     }
 

@@ -40,7 +40,6 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -70,10 +69,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaScriptBootstrapUITest {
 
-    // Non-react pushState defers via a JsFunction; the body is captured here
-    // for assertions about its captures.
-    private static final String CLIENT_PUSHSTATE_TO = "setTimeout($0)";
-    private static final String CLIENT_PUSHSTATE_BODY = "window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated'));";
+    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
     private static final String REACT_PUSHSTATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
 
     private MockServletServiceSessionSetup mocks;
@@ -501,12 +497,9 @@ class JavaScriptBootstrapUITest {
                 assertEquals("clean/1", execValues[0]);
             } else {
                 assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-                assertEquals(1, execValues.length);
-                JsFunction fn = (JsFunction) execValues[0];
-                assertEquals(CLIENT_PUSHSTATE_BODY, fn.getBody());
-                assertEquals(2, fn.getCaptures().size());
-                assertNull(fn.getCaptures().get(0));
-                assertEquals("clean/1", fn.getCaptures().get(1));
+                assertEquals(2, execValues.length);
+                assertNull(execValues[0]);
+                assertEquals("clean/1", execValues[1]);
             }
         }
     }
