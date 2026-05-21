@@ -83,6 +83,7 @@ import com.vaadin.tests.util.TestUtil;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -168,6 +169,8 @@ class ElementTest extends AbstractNodeTest {
         // Returns a future-ish thing with access to the return value
         ignore.add("callJsFunction");
         ignore.add("executeJs");
+        // Returns Registration
+        ignore.add("addJsInitializer");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -1063,11 +1066,14 @@ class ElementTest extends AbstractNodeTest {
         });
     }
 
-    public void setStyle() {
+    @Test
+    void setStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         assertEquals("bar", s.get("foo"));
+        s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
+        assertEquals("hsl(12, 12%, 12%)", s.get("--lumo-primary-text-color"));
     }
 
     @Test
@@ -1166,7 +1172,7 @@ class ElementTest extends AbstractNodeTest {
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
         assertEquals(style, e.getAttribute("style"));
-
+        assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1178,14 +1184,31 @@ class ElementTest extends AbstractNodeTest {
         testStyleAttribute("width:calc(100% - 80px)");
         testStyleAttribute("width:var(--widthB)");
         testStyleAttribute("color:var(--mainColor)");
-        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
-        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
+        testStyleAttribute(
+                "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
+        var style = testStyleAttribute(
+                "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
+        testStyleAttribute(
+                "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
+        style = testStyleAttribute(
+                "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        assertEquals("var(--widthB)", style.get("width"));
+        assertEquals("var(--mainColor)", style.get("color"));
+        assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
     }
 
-    private void testStyleAttribute(String style) {
+    private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
         assertEquals(style, e.getAttribute("style"));
+        return e.getStyle();
     }
 
     @Test
@@ -2382,6 +2405,18 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void callFunctionWithBean() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        SimpleBean bean = new SimpleBean();
+        element.callJsFunction("method", bean);
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "return $0.method($1)", element, bean);
+    }
+
+    @Test
     void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
@@ -2401,6 +2436,235 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.property.other.method()", element);
+    }
+
+    @Test
+    void addJsInitializer_nullExpression_throws() {
+        Element element = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> element.addJsInitializer(null));
+    }
+
+    @Test
+    void addJsInitializer_runsOnAttach_emitsInitInvocation() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};", "foo");
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertTrue(
+                invocation.getExpression().contains("this.registerInitializer"),
+                "Wrapper expression should delegate to registerInitializer");
+        assertFalse(invocation.getExpression().contains("return () => {};"),
+                "Wrapper expression must not embed user JavaScript");
+
+        List<Object> params = invocation.getParameters();
+        assertEquals(3, params.size(),
+                "Expected [element, initializerId, userFunction]");
+        assertEquals(element, params.get(0));
+        assertEquals(Integer.valueOf(0), params.get(1));
+        assertInstanceOf(JsFunction.class, params.get(2));
+        JsFunction userFn = (JsFunction) params.get(2);
+        assertEquals("return () => {};", userFn.getBody());
+        assertEquals(List.of("foo"), userFn.getCaptures());
+    }
+
+    @Test
+    void addJsInitializer_sameRoundTripDetachReattach_doesNotRerun() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        // Drain initial init invocation and advance wasAttached
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Same round trip: remove and add back without collectChanges
+        ui.getElement().removeAllChildren();
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertTrue(pending.isEmpty(),
+                "Init should not be re-emitted when the client kept the DOM");
+    }
+
+    @Test
+    void addJsInitializer_crossRoundTripDetachReattach_rerunsInit() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Detach, flush response (collectChanges sets wasAttached=false)
+        ui.getElement().removeAllChildren();
+        ui.getInternals().getStateTree().collectChanges(c -> {
+        });
+
+        // Re-attach in the next round trip
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Init should be re-emitted when the client discarded the DOM");
+        assertTrue(pending.get(0).getInvocation().getExpression()
+                .contains("this.registerInitializer"));
+    }
+
+    @Test
+    void addJsInitializer_remove_sendsDispose() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        assertTrue(pending.get(0).getInvocation().getExpression()
+                .contains("this.disposeInitializer"));
+    }
+
+    @Test
+    void addJsInitializer_removeTwice_sendsDisposeOnce() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "remove() called twice should send dispose only once");
+    }
+
+    @Test
+    void addJsInitializer_removeBeforeFlush_doesNotSendAnything() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element
+                .addJsInitializer("return () => {};");
+        // Remove before the init JS has been collected
+        registration.remove();
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertTrue(pending.isEmpty(),
+                "Removed-before-flush registration should not send init nor dispose");
+    }
+
+    @Test
+    void addJsInitializer_attachDetachAttachSameRoundTrip_emitsOnlyOneInit() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+
+        // Detach and re-attach again within the same round trip, before any
+        // flush. Only one init should be queued for the eventual flush.
+        ui.getElement().removeAllChildren();
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Attach + detach + attach in one round trip should emit exactly one init");
+    }
+
+    @Test
+    void addJsInitializer_addedWhileDetached_emitsNothingUntilAttach() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertTrue(
+                ui.getInternals().dumpPendingJavaScriptInvocations().isEmpty(),
+                "No init should be emitted while the element is detached");
+
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Init should be emitted once the element is attached");
+    }
+
+    @Test
+    void addJsInitializer_multipleInitializers_emitDistinctIds() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.addJsInitializer("return () => {};");
+        element.addJsInitializer("return () => {};");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pending.size());
+        // Init params are [element, initializerId, userFunction].
+        assertEquals(Integer.valueOf(0),
+                pending.get(0).getInvocation().getParameters().get(1));
+        assertEquals(Integer.valueOf(1),
+                pending.get(1).getInvocation().getParameters().get(1));
+    }
+
+    @Test
+    void addJsInitializer_removeOneOfMultiple_disposesOnlyThatOne() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration first = element.addJsInitializer("return () => {};");
+        element.addJsInitializer("return () => {};");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        first.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertTrue(
+                invocation.getExpression().contains("this.disposeInitializer"));
+        // Dispose params are [element, initializerId].
+        assertEquals(Integer.valueOf(0), invocation.getParameters().get(1));
     }
 
     @Test

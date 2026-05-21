@@ -15,9 +15,12 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsFunction;
+
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
+import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
@@ -40,6 +43,21 @@ import elemental.dom.Node;
  *
  */
 public final class ExecuteJavaScriptElementUtils {
+
+    /**
+     * Bridge interface for a JS callback with no arguments. Used to convert a
+     * JavaScript function received from the executed expression into a
+     * Java-callable target.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface JsCallback {
+        void invoke();
+    }
+
+    private static final JsMap<StateNode, JsMap<Double, JsCallback>> initializerCleanups = JsCollections
+            .map();
 
     private ExecuteJavaScriptElementUtils() {
     }
@@ -176,6 +194,79 @@ public final class ExecuteJavaScriptElementUtils {
             UpdatableModelProperties data = new UpdatableModelProperties(
                     properties);
             node.setNodeData(data);
+        }
+    }
+
+    /**
+     * Stores a cleanup callback for a JS initializer registered through
+     * {@link com.vaadin.flow.dom.Element#addJsInitializer}. If a callback was
+     * previously stored for the same id, it is invoked before being replaced
+     * (defensive against stale state from a discarded DOM). On the first
+     * registration for a node, an unregister listener is attached so that all
+     * remaining cleanups are drained when the node leaves the tree.
+     *
+     * @param node
+     *            the state node owning the initializer, not {@code null}
+     * @param id
+     *            the UI-wide initializer id
+     * @param cleanup
+     *            the JS cleanup function to invoke when disposing, not
+     *            {@code null}
+     */
+    public static void registerInitializer(StateNode node, double id,
+            JsCallback cleanup) {
+        JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
+        if (entry == null) {
+            entry = JsCollections.map();
+            initializerCleanups.set(node, entry);
+            node.addUnregisterListener(event -> drainInitializers(node));
+        }
+        JsCallback existing = entry.get(id);
+        // Install the new cleanup before invoking the previous one so a
+        // re-entrant register/dispose call from inside the existing callback
+        // sees the new state, not the stale entry.
+        entry.set(id, cleanup);
+        if (existing != null) {
+            invokeSafely(existing);
+        }
+    }
+
+    /**
+     * Disposes a previously registered JS initializer cleanup. No-op if the id
+     * is unknown (e.g. the node has already been unregistered).
+     *
+     * @param node
+     *            the state node owning the initializer, not {@code null}
+     * @param id
+     *            the UI-wide initializer id
+     */
+    public static void disposeInitializer(StateNode node, double id) {
+        JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
+        if (entry == null) {
+            return;
+        }
+        JsCallback fn = entry.get(id);
+        if (fn == null) {
+            return;
+        }
+        entry.delete(id);
+        invokeSafely(fn);
+    }
+
+    private static void drainInitializers(StateNode node) {
+        JsMap<Double, JsCallback> entry = initializerCleanups.get(node);
+        if (entry == null) {
+            return;
+        }
+        initializerCleanups.delete(node);
+        entry.forEach((fn, id) -> invokeSafely(fn));
+    }
+
+    private static void invokeSafely(JsCallback fn) {
+        try {
+            fn.invoke();
+        } catch (RuntimeException e) {
+            Console.error(e.getMessage());
         }
     }
 

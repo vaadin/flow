@@ -49,6 +49,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -1792,6 +1793,8 @@ public class Element extends Node<Element> {
      * invocation is sent to the client, or as <code>null</code> if not
      * attached)
      * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
+     * <li>{@link JsFunction} (manifested as a callable JavaScript function with
+     * its captured parameters pre-bound)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1847,6 +1850,46 @@ public class Element extends Node<Element> {
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * The expression is executed with this element as <code>this</code> and
+     * parameters available as <code>$0</code>, <code>$1</code>, ... exactly
+     * like {@link #executeJs(String, Object...)}. If the expression returns a
+     * function, that function is stored and invoked when:
+     * <ul>
+     * <li>the client-side DOM node for this element is destroyed (real detach
+     * where the client discarded its DOM), or</li>
+     * <li>the returned {@link Registration} is removed on the server.</li>
+     * </ul>
+     * <p>
+     * The initializer is re-run after any real re-attach (the browser receives
+     * a fresh DOM node). It is <strong>not</strong> re-run for a server-side
+     * detach + re-attach inside a single round trip, since the client never
+     * discarded its DOM.
+     * <p>
+     * The return value is read synchronously. The expression must return a
+     * function, {@code null}, or {@code undefined} (the latter being the
+     * implicit value when there is no {@code return}). Returning any other
+     * value, including a promise, is logged as an error on the client.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke, not <code>null</code>
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     */
+    public Registration addJsInitializer(String expression,
+            Object... parameters) {
+        Objects.requireNonNull(expression, "Expression cannot be null");
+        return new ElementJsInitializerRegistration(getNode(), expression,
+                parameters == null ? new Object[0] : parameters);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
@@ -2104,12 +2147,13 @@ public class Element extends Node<Element> {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
 
         // Use setTimeout to work on newly created elements
+        JsFunction scroll;
         if (json == null) {
-            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+            scroll = JsFunction.of("$0.scrollIntoView();", this);
         } else {
-            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
-                    json);
+            scroll = JsFunction.of("$0.scrollIntoView($1);", this, json);
         }
+        executeJs("setTimeout($0, 0)", scroll);
 
         return getSelf();
     }
@@ -2131,8 +2175,9 @@ public class Element extends Node<Element> {
         // created element
         String options = scrollOptions == null ? "" : scrollOptions.toJson();
 
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+        JsFunction scroll = JsFunction.of("$0.scrollIntoView(" + options + ");",
+                this);
+        executeJs("setTimeout($0, 0)", scroll);
         return getSelf();
     }
 }
