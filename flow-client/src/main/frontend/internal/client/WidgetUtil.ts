@@ -17,18 +17,29 @@
 const ABSOLUTE_URL_RE = /^(?:[a-zA-Z]+:)?\/\//;
 
 /**
- * Browser-touching helpers from `com.vaadin.client.WidgetUtil`. Reached from
- * GWT code via the `NativeWidgetUtil` JsType shim. Pure-Java helpers
- * (`refresh`, `getAbsoluteUrl`, `updateAttribute`, the `toPrettyJson` wrapper,
- * and Java-aware `equals`) stay in `WidgetUtil.java`.
+ * Browser-touching helpers from `com.vaadin.client.WidgetUtil`. The Java
+ * class is a pure `@JsType(isNative=true)` facade onto this module.
  */
 export const WidgetUtil = {
+  refresh(): void {
+    WidgetUtil.redirect(null);
+  },
+
   redirect(url: string | null): void {
     if (url) {
       globalThis.location.assign(url);
     } else {
       globalThis.location.reload();
     }
+  },
+
+  getAbsoluteUrl(url: string): string {
+    // Same trick the JVM-side helper used: an anchor's href getter returns
+    // the URL resolved against the current document base, even if the
+    // original input was relative.
+    const a = document.createElement('a');
+    a.href = url;
+    return a.href;
   },
 
   isAbsoluteUrl(url: string): boolean {
@@ -43,8 +54,29 @@ export const WidgetUtil = {
     return value as T;
   },
 
+  toPrettyJson(value: unknown): string {
+    return WidgetUtil.toPrettyJsonJsni(value);
+  },
+
   toPrettyJsonJsni(value: unknown): string {
     return JSON.stringify(value, (key, v) => (key === '$H' ? undefined : v), 4);
+  },
+
+  updateAttribute(element: Element, attribute: string, value: string | null): void {
+    if (value === null) {
+      element.removeAttribute(attribute);
+    } else {
+      element.setAttribute(attribute, value);
+    }
+  },
+
+  equals(a: unknown, b: unknown): boolean {
+    // Mirrors Objects.equals + a JS-loose fallback for the rare case the
+    // Java caller compares JSO references whose `equals` is identity-only.
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    // eslint-disable-next-line eqeqeq
+    return a == b;
   },
 
   setJsProperty(object: Record<string, unknown>, name: string, value: unknown): void {
