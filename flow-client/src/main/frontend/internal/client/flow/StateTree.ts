@@ -89,8 +89,11 @@ export class StateTree {
   // Wired up by DefaultRegistry after both objects exist. `setUpdateInProgress`
   // pokes the handler when an update finishes so it can drain queued initial
   // property syncs.
-  private initialPropertiesHandler: { flushPropertyUpdates(): void; handlePropertyUpdate(p: unknown): boolean } | null =
-    null;
+  private initialPropertiesHandler: {
+    flushPropertyUpdates(): void;
+    handlePropertyUpdate(p: unknown): boolean;
+    nodeRegistered(node: StateNode): void;
+  } | null = null;
   // Wired up by DefaultRegistry after both objects exist. Used by the
   // send*ToServer dispatch methods to forward RPC messages.
   private serverConnector: {
@@ -124,6 +127,7 @@ export class StateTree {
   setInitialPropertiesHandler(handler: {
     flushPropertyUpdates(): void;
     handlePropertyUpdate(p: unknown): boolean;
+    nodeRegistered(node: StateNode): void;
   }): void {
     this.initialPropertiesHandler = handler;
   }
@@ -143,8 +147,36 @@ export class StateTree {
     this.idToNode.set(key, node);
   }
 
+  registerNode(node: StateNode): void {
+    if (node == null) {
+      throw new Error('Node is null');
+    }
+    if (node.getTree() !== this) {
+      throw new Error('Node is not created for this tree');
+    }
+    if (node.isUnregistered()) {
+      throw new Error("Can't re-register a node");
+    }
+    if (this.getNode(node.getId()) !== null) {
+      throw new Error(`Node ${node.getId()} is already registered`);
+    }
+    this.registerNodeStateOnly(node);
+    if (this.isUpdateInProgress()) {
+      this.initialPropertiesHandler?.nodeRegistered(node);
+    }
+  }
+
   unregisterNodeStateOnly(node: StateNode): void {
     this.idToNode.delete(node.getId());
+  }
+
+  unregisterNode(node: StateNode): void {
+    this.assertValidNode(node);
+    if (node === this.getRootNode()) {
+      throw new Error("Root node can't be unregistered");
+    }
+    this.unregisterNodeStateOnly(node);
+    node.unregister();
   }
 
   isResync(): boolean {

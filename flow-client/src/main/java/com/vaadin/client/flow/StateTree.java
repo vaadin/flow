@@ -64,11 +64,11 @@ public class StateTree {
     public native void setInitialPropertiesHandler(
             com.vaadin.client.InitialPropertiesHandler handler);
 
-    @JsMethod(name = "registerNodeStateOnly")
-    native void registerNodeImpl(StateNode node);
+    /** Registers a node with this tree. */
+    public native void registerNode(StateNode node);
 
-    @JsMethod(name = "unregisterNodeStateOnly")
-    native void unregisterNodeImpl(StateNode node);
+    /** Unregisters a node from this tree. */
+    public native void unregisterNode(StateNode node);
 
     public native boolean isResync();
 
@@ -96,32 +96,6 @@ public class StateTree {
     @SuppressWarnings("unusable-by-js")
     interface JsForEachNodeCallback {
         void accept(StateNode node);
-    }
-
-    /** Registers a node with this tree. */
-    @JsOverlay
-    public final void registerNode(StateNode node) {
-        assert node != null;
-        assert node.getTree() == this;
-        assert !node.isUnregistered() : "Can't re-register a node";
-        assert getNode(node.getId()) == null
-                : "Node " + node.getId() + " is already registered";
-
-        registerNodeImpl(node);
-
-        if (isUpdateInProgress()) {
-            getRegistry().getInitialPropertiesHandler().nodeRegistered(node);
-        }
-    }
-
-    /** Unregisters a node from this tree. */
-    @JsOverlay
-    public final void unregisterNode(StateNode node) {
-        assert assertValidNode(node);
-        assert node != getRootNode() : "Root node can't be unregistered";
-
-        unregisterNodeImpl(node);
-        node.unregister();
     }
 
     /**
