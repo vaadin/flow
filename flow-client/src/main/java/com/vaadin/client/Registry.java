@@ -285,7 +285,7 @@ public class Registry {
      * @return the {@link ExecuteJavaScriptProcessor} singleton
      */
     public ExecuteJavaScriptProcessor getExecuteJavaScriptProcessor() {
-        return get(ExecuteJavaScriptProcessor.class);
+        return get("ExecuteJavaScriptProcessor");
     }
 
     /**
