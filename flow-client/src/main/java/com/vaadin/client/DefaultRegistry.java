@@ -80,9 +80,14 @@ public class DefaultRegistry extends Registry {
         set(MessageHandler.class, new MessageHandler(this));
         MessageSender messageSender = new MessageSender(this);
         set(MessageSender.class, messageSender);
-        set("ServerRpcQueue", new ServerRpcQueue(uiLifecycle,
-                () -> messageSender.sendInvocationsToServer()));
-        set(ServerConnector.class, new ServerConnector(this));
+        ServerRpcQueue serverRpcQueue = new ServerRpcQueue(uiLifecycle,
+                () -> messageSender.sendInvocationsToServer());
+        set("ServerRpcQueue", serverRpcQueue);
+        LoadingIndicatorStateHandler loadingIndicatorStateHandler = new LoadingIndicatorStateHandler(
+                requestResponseTracker::hasActiveRequest);
+        set("LoadingIndicatorStateHandler", loadingIndicatorStateHandler);
+        set("ServerConnector", new ServerConnector(loadingIndicatorStateHandler,
+                serverRpcQueue));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
         set("ConstantPool", (Supplier<ConstantPool>) ConstantPool::new);
@@ -133,8 +138,6 @@ public class DefaultRegistry extends Registry {
                         () -> messageSender.setPushEnabled(false)));
         set("ReconnectConfiguration", new ReconnectConfiguration(stateTree));
         set("Poller", new Poller(stateTree, uiLifecycle));
-        set("LoadingIndicatorStateHandler", new LoadingIndicatorStateHandler(
-                requestResponseTracker::hasActiveRequest));
     }
 
 }
