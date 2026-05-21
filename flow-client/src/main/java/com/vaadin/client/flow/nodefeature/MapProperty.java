@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import jsinterop.annotations.JsMethod;
@@ -23,9 +22,6 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 import com.vaadin.client.JsRunnable;
-import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.StateTree;
-import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.reactive.ReactiveValue;
 import com.vaadin.client.flow.reactive.ReactiveValueChangeListener;
 
@@ -100,14 +96,11 @@ public class MapProperty implements ReactiveValue {
 
     public native void clearPreviousDomValue();
 
-    @JsMethod(name = "isServerUpdate")
-    native boolean isServerUpdateImpl();
+    public native boolean isServerUpdate();
 
-    @JsMethod(name = "markServerUpdate")
-    native void markServerUpdateImpl(boolean value);
+    public native void markServerUpdate(boolean value);
 
-    @JsMethod(name = "doSetValue")
-    native void doSetValueImpl(Object value);
+    public native void doSetValue(Object value);
 
     @JsOverlay
     public final Optional<Object> getPreviousDomValue() {
@@ -117,38 +110,9 @@ public class MapProperty implements ReactiveValue {
         return Optional.ofNullable(getPreviousDomValueRaw());
     }
 
-    /**
-     * Sets the value of this property and synchronizes the value to the server.
-     */
-    @JsOverlay
-    public final void syncToServer(Object newValue) {
-        getSyncToServerCommand(newValue).run();
-    }
+    /** Sets the value and synchronizes it to the server. */
+    public native void syncToServer(Object newValue);
 
-    /**
-     * Sets the value of this property and returns a sync-to-server command.
-     */
-    @JsOverlay
-    public final JsRunnable getSyncToServerCommand(Object newValue) {
-        Object currentValue = hasValue() ? getValue() : null;
-
-        if (Objects.equals(newValue, currentValue)) {
-            markServerUpdateImpl(false);
-        }
-        if (!(Objects.equals(newValue, currentValue) && hasValue())
-                && !isServerUpdateImpl()) {
-            StateNode node = getMap().getNode();
-            StateTree tree = node.getTree();
-            if (tree.isActive(node)) {
-                doSetValueImpl(newValue);
-                return () -> tree.sendNodePropertySyncToServer(this);
-            } else {
-                // Fire a fake event so any DOM listeners reset the property
-                // value, then flush since we're out of the normal lifecycle.
-                doSetValueImpl(currentValue);
-                Reactive.flush();
-            }
-        }
-        return NO_OP;
-    }
+    /** Returns the deferred send command for syncing the new value. */
+    public native JsRunnable getSyncToServerCommand(Object newValue);
 }
