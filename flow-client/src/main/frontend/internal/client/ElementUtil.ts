@@ -21,11 +21,15 @@ interface DocumentRegistrationRoot {
 }
 
 /**
- * DOM lookup helpers migrated from `com.vaadin.client.ElementUtil`. Reached
- * from GWT code via the `NativeElementUtil` JsType shim. The pure-Java
- * `hasTag` helper stays in Java.
+ * DOM lookup helpers migrated from `com.vaadin.client.ElementUtil`. The Java
+ * class is a pure `@JsType(isNative=true)` facade onto this module.
  */
 export const ElementUtil = {
+  hasTag(node: Node | null, tag: string): boolean {
+    const tagged = node as unknown as { tagName?: string } | null;
+    return tagged !== null && typeof tagged.tagName === 'string' && tagged.tagName.toLowerCase() === tag.toLowerCase();
+  },
+
   getElementById(context: Node, id: string): Element | undefined {
     const exported = (document.body as unknown as DocumentRegistrationRoot).$;
     if (exported && Object.prototype.hasOwnProperty.call(exported, id)) {

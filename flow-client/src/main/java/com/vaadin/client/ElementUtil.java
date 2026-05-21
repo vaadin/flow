@@ -15,14 +15,15 @@
  */
 package com.vaadin.client;
 
-import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
- * Utils class, intended to ease working with DOM elements on client side.
+ * Utils class, intended to ease working with DOM elements on client side. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/ElementUtil.ts}.
  *
  * @author Vaadin Ltd
  */
@@ -44,12 +45,6 @@ public final class ElementUtil {
      */
     public static native Element getElementByName(Node context, String name);
 
-    /**
-     * Checks whether the {@code node} has required {@code tag}.
-     */
-    @JsOverlay
-    public static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
-    }
+    /** Checks whether the {@code node} has the required {@code tag}. */
+    public static native boolean hasTag(Node node, String tag);
 }
