@@ -1268,8 +1268,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (flushPendingChanges) {
                 // Flush all debounced events so that they don't happen
                 // in wrong order in the server-side
-                commandAlreadyExecuted = Debouncer.flushAll()
-                        .contains(sendCommand);
+                JsArray<Consumer<String>> executed = Debouncer.flushAll();
+                for (int i = 0; i < executed.length(); i++) {
+                    if (executed.get(i) == sendCommand) {
+                        commandAlreadyExecuted = true;
+                        break;
+                    }
+                }
             }
 
             if (!commandAlreadyExecuted) {

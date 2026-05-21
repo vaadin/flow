@@ -49,9 +49,10 @@ import elemental.events.EventRemover;
 @JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.nodefeature", name = "MapProperty")
 public class MapProperty implements ReactiveValue {
 
-    @JsOverlay
-    public static final JsRunnable NO_OP = () -> {
-    };
+    // Bound to the `MapProperty.NO_OP` static declared in MapProperty.ts so
+    // Java and TS callers share the same JS function reference. Debouncer's
+    // runCommands relies on reference equality to detect a no-op sync.
+    public static JsRunnable NO_OP;
 
     public MapProperty(String name, NodeMap map) {
         // Constructor delegates to TS class with forceValueUpdate=false.
