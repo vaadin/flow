@@ -15,195 +15,106 @@
  */
 package com.vaadin.client;
 
-import java.util.Objects;
+import jsinterop.annotations.JsType;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import com.vaadin.client.flow.dom.DomApi;
-
-import elemental.client.Browser;
 import elemental.dom.Element;
-import elemental.html.AnchorElement;
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Utility methods which are related to client side code only. The JSNI helpers
- * delegate to the TypeScript implementation at
- * {@code src/main/frontend/internal/client/WidgetUtil.ts} via
- * {@link NativeWidgetUtil}.
+ * Utility methods which are related to client side code only. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/WidgetUtil.ts}.
  *
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "WidgetUtil")
 public class WidgetUtil {
 
-    /**
-     * Refreshes the browser.
-     */
-    public static void refresh() {
-        redirect(null);
-    }
+    /** Refreshes the browser. */
+    public static native void refresh();
 
     /**
      * Redirects the browser to the given url or refreshes the page if url is
      * null.
      */
-    public static void redirect(String url) {
-        NativeWidgetUtil.redirect(url);
-    }
+    public static native void redirect(String url);
 
     /**
      * Resolve a relative URL to an absolute URL based on the current document's
      * location.
      */
-    public static String getAbsoluteUrl(String url) {
-        AnchorElement a = (AnchorElement) Browser.getDocument()
-                .createElement("a");
-        a.setHref(url);
-        return a.getHref();
-    }
+    public static native String getAbsoluteUrl(String url);
 
-    /**
-     * Detects if an URL is absolute.
-     */
-    public static boolean isAbsoluteUrl(String url) {
-        return url.matches("^(?:[a-zA-Z]+:)?//.*");
-    }
+    /** Detects if a URL is absolute. */
+    public static native boolean isAbsoluteUrl(String url);
 
-    /**
-     * Anything in, anything out. It's JavaScript after all. This method just
-     * makes the Java compiler accept the fact. The unbounded type parameter
-     * erases to {@code Object} at compile time, so the same unchecked cast
-     * works in both compiled JavaScript and pure JVM runs.
-     */
-    public static <T> T crazyJsCast(Object value) {
-        @SuppressWarnings("unchecked")
-        T cast = (T) value;
-        return cast;
-    }
+    /** Identity cast — JavaScript is dynamically typed. */
+    public static native <T> T crazyJsCast(Object value);
 
-    /**
-     * Anything in, JSO out. The regular crazy cast doesn't work for JSOs since
-     * the generics still makes the compiler insert a JSO check.
-     */
-    public static <T extends JavaScriptObject> T crazyJsoCast(Object value) {
-        return NativeWidgetUtil.crazyJsoCast(value);
-    }
+    /** Identity cast targeting a {@link JavaScriptObject} subtype. */
+    public static native <T extends JavaScriptObject> T crazyJsoCast(
+            Object value);
 
-    /**
-     * Converts a JSON value to a formatted string.
-     */
-    public static String toPrettyJson(JsonValue json) {
-        return NativeWidgetUtil.toPrettyJsonJsni(json);
-    }
+    /** Converts a JSON value to a formatted string. */
+    public static native String toPrettyJson(JsonValue json);
 
     /**
      * Updates the {@code attribute} value for the {@code element} to the given
      * {@code value}. If {@code value} is {@code null} the attribute is removed.
      */
-    public static void updateAttribute(Element element, String attribute,
-            String value) {
-        if (value == null) {
-            DomApi.wrap(element).removeAttribute(attribute);
-        } else {
-            DomApi.wrap(element).setAttribute(attribute, value);
-        }
-    }
+    public static native void updateAttribute(Element element, String attribute,
+            String value);
+
+    /** Assigns a value as JavaScript property of an object. */
+    public static native void setJsProperty(Object object, String name,
+            Object value);
+
+    /** Retrieves the value of a JavaScript property. */
+    public static native Object getJsProperty(Object object, String name);
 
     /**
-     * Assigns a value as JavaScript property of an object.
+     * Checks whether the object itself has a JS property with the given name.
      */
-    public static void setJsProperty(Object object, String name, Object value) {
-        NativeWidgetUtil.setJsProperty(object, name, value);
-    }
+    public static native boolean hasOwnJsProperty(Object object, String name);
 
     /**
-     * Retrieves the value of a JavaScript property.
+     * Checks whether the object has or inherits a JS property with the name.
      */
-    public static Object getJsProperty(Object object, String name) {
-        return NativeWidgetUtil.getJsProperty(object, name);
-    }
+    public static native boolean hasJsProperty(Object object, String name);
 
-    /**
-     * Checks whether the provided object itself has a JavaScript property with
-     * the given name. Inherited properties are not taken into account.
-     */
-    public static boolean hasOwnJsProperty(Object object, String name) {
-        return NativeWidgetUtil.hasOwnJsProperty(object, name);
-    }
+    /** Checks if the value is explicitly undefined. */
+    public static native boolean isUndefined(Object property);
 
-    /**
-     * Checks whether the provided object has or inherits a JavaScript property
-     * with the given name.
-     */
-    public static boolean hasJsProperty(Object object, String name) {
-        return NativeWidgetUtil.hasJsProperty(object, name);
-    }
+    /** Removes a JavaScript property from an object. */
+    public static native void deleteJsProperty(Object object, String name);
 
-    /**
-     * Checks if the given value is explicitly undefined.
-     */
-    public static boolean isUndefined(Object property) {
-        return NativeWidgetUtil.isUndefined(property);
-    }
+    /** Creates a new {@link JsonObject} without any JS prototype at all. */
+    public static native JsonObject createJsonObjectWithoutPrototype();
 
-    /**
-     * Removes a JavaScript property from an object.
-     */
-    public static void deleteJsProperty(Object object, String name) {
-        NativeWidgetUtil.deleteJsProperty(object, name);
-    }
+    /** Creates a new {@link JsonObject} with the JS prototype. */
+    public static native JsonObject createJsonObject();
 
-    /**
-     * Creates a new {@link JsonObject} without any JavaScript prototype at all.
-     */
-    public static JsonObject createJsonObjectWithoutPrototype() {
-        return NativeWidgetUtil.createJsonObjectWithoutPrototype();
-    }
+    /** Truthiness check using JavaScript semantics. */
+    public static native boolean isTrueish(Object value);
 
-    /**
-     * Creates a new {@link JsonObject} with the JavaScript prototype.
-     */
-    public static JsonObject createJsonObject() {
-        return Json.createObject();
-    }
-
-    /**
-     * Gets the boolean value of the provided value based on JavaScript
-     * semantics.
-     */
-    public static boolean isTrueish(Object value) {
-        return NativeWidgetUtil.isTrueish(value);
-    }
-
-    /**
-     * Gets all JavaScript property names of the given object.
-     */
-    public static String[] getKeys(Object value) {
-        return NativeWidgetUtil.getKeys(value);
-    }
+    /** Returns all JavaScript property names of the given object. */
+    public static native String[] getKeys(Object value);
 
     /**
      * Serializes a JsonObject, refusing to include any DOM nodes (which would
      * cause cyclic dependencies if sent to the server).
      */
-    public static String stringify(JsonObject payload) {
-        return NativeWidgetUtil.stringify(payload);
-    }
+    public static native String stringify(JsonObject payload);
 
     /**
      * Checks whether the objects are equal either as Java objects or as JS
      * values.
      */
-    public static boolean equals(Object obj1, Object obj2) {
-        return Objects.equals(obj1, obj2) || equalsInJS(obj1, obj2);
-    }
+    public static native boolean equals(Object obj1, Object obj2);
 
-    /**
-     * Checks whether the objects are equal as JS values.
-     */
-    public static boolean equalsInJS(Object obj1, Object obj2) {
-        return NativeWidgetUtil.equalsInJS(obj1, obj2);
-    }
+    /** Checks whether the objects are equal as JS values. */
+    public static native boolean equalsInJS(Object obj1, Object obj2);
 }
