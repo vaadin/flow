@@ -50,6 +50,7 @@ import { ServerRpcQueue } from './client/communication/ServerRpcQueue';
 import { XhrConnection } from './client/communication/XhrConnection';
 import { XhrConnectionError } from './client/communication/XhrConnectionError';
 import { ExecuteJavaScriptProcessor } from './client/flow/ExecuteJavaScriptProcessor';
+import { Debouncer } from './client/flow/binding/Debouncer';
 import { SimpleElementBindingStrategy } from './client/flow/binding/SimpleElementBindingStrategy';
 import { UpdatableModelProperties } from './client/flow/model/UpdatableModelProperties';
 import { ConstantPool } from './client/flow/ConstantPool';
@@ -112,6 +113,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);
   registerGwtBridge('client.communication', 'XhrConnectionError', XhrConnectionError);
   registerGwtBridge('client.flow', 'ExecuteJavaScriptProcessor', ExecuteJavaScriptProcessor);
+  registerGwtBridge('client.flow.binding', 'Debouncer', Debouncer);
   registerGwtBridge('client.flow.binding', 'SimpleElementBindingStrategy', SimpleElementBindingStrategy);
   registerGwtBridge('client.flow.model', 'UpdatableModelProperties', UpdatableModelProperties);
   registerGwtBridge('client.flow', 'ConstantPool', ConstantPool);
