@@ -158,6 +158,20 @@ class ComponentUtilTest {
     }
 
     @Test
+    void getAllChildren_doesNotFailOnTextNodeChild() {
+        // parent
+        // └── (plain element, no component)
+        // └── text node (no VirtualChildrenList feature)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        Element wrapper = ElementFactory.createDiv();
+        wrapper.appendChild(Element.createText("hello"));
+        parent.getElement().appendChild(wrapper);
+
+        assertTrue(ComponentUtil.getAllChildren(parent).toList().isEmpty(),
+                "Walking past a text node must not throw");
+    }
+
+    @Test
     void getAllChildren_skipsNonComponentWrapperElement() {
         // parent
         // └── (plain element, no component)

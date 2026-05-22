@@ -862,12 +862,17 @@ public class ComponentUtil {
     private static void forEachChildElement(Element parent,
             Consumer<Element> action) {
         parent.getChildren().forEach(action);
-        parent.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
-                .ifPresent(list -> list.forEachChild(node -> {
-                    if (!ShadowRoot.isShadowRoot(node)) {
-                        action.accept(Element.get(node));
-                    }
-                }));
+        // VirtualChildrenList is not configured on every node type
+        // (text nodes don't have it), so guard with hasFeature first —
+        // getFeatureIfInitialized throws if the feature isn't configured.
+        if (parent.getNode().hasFeature(VirtualChildrenList.class)) {
+            parent.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> list.forEachChild(node -> {
+                        if (!ShadowRoot.isShadowRoot(node)) {
+                            action.accept(Element.get(node));
+                        }
+                    }));
+        }
     }
 
 }
