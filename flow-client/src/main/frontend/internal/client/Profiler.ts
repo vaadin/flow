@@ -14,97 +14,84 @@
  * the License.
  */
 
-interface GwtStatsContainer {
-  Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } };
-  __gwtStatsEvent?: (event: unknown) => boolean;
-  performance?: Performance & { timing?: Record<string, number> };
-}
-
-function gwtStats(): GwtStatsContainer {
-  return globalThis as unknown as GwtStatsContainer;
-}
-
-function flowNamespace(): { gwtStatsEvents?: unknown[] } | undefined {
-  return gwtStats().Vaadin?.Flow;
-}
+import { Console } from './Console';
 
 /**
- * Browser-touching helpers from `com.vaadin.client.Profiler`. Reached from
- * GWT code via the `NativeProfiler` JsType shim. The pure-Java aggregation
- * (`Block`, `Node`, `enter`/`leave`, the {@code logTimings} pretty-printer,
- * etc.) stays in `Profiler.java`. The inner {@code GwtStatsEvent} JSO and
- * the two `RelativeTimeSupplier` implementations also stay Java because
- * their methods sit on JS instances.
+ * Lightweight profiler. Migrated from `com.vaadin.client.Profiler`.
+ *
+ * The original Java implementation collected timings via the GWT
+ * `__gwtStatsEvent` hook only when the `vaadin.profiler` GWT compile flag was
+ * set; production builds always used the disabled no-op subclass. The
+ * `__gwtStatsEvent` stream is GWT-specific and disappears with the GWT
+ * runtime, so the aggregation, pretty-printing, and result-consumer plumbing
+ * become unreachable after migration. The time helpers remain useful (they
+ * power XHR/UI timing logs) and are kept as thin wrappers over
+ * `performance.now()`.
+ *
+ * Java callers reach this module via `Vaadin.Flow.internal.client.Profiler`.
  */
 export const Profiler = {
-  // eslint-disable-next-line @typescript-eslint/max-params
-  logGwtEvent(evtGroup: string, moduleName: string, name: string, type: string, relativeMillis: number): void {
-    if (typeof gwtStats().__gwtStatsEvent === 'function') {
-      gwtStats().__gwtStatsEvent!({
-        evtGroup,
-        moduleName,
-        millis: Date.now(),
-        sessionId: undefined,
-        subSystem: name,
-        type,
-        relativeMillis
-      });
-    }
+  /** Profiling collection is always disabled post-GWT. */
+  isEnabled(): boolean {
+    return false;
   },
 
-  getPerformanceTiming(name: string): number {
-    return gwtStats().performance?.timing?.[name] ?? 0;
+  /** Marks entry into a named block; no-op since collection is disabled. */
+  enter(_name: string): void {
+    // Compile-time stripped in original Java; runtime no-op here.
   },
 
-  getGwtStatsEvents(): unknown[] {
-    return flowNamespace()?.gwtStatsEvents ?? [];
+  /** Marks exit from a named block; no-op since collection is disabled. */
+  leave(_name: string): void {
+    // Compile-time stripped in original Java; runtime no-op here.
   },
 
-  ensureLogger(): void {
-    const win = gwtStats();
-    const flow = flowNamespace();
-    if (typeof win.__gwtStatsEvent !== 'function') {
-      if (flow && typeof flow.gwtStatsEvents !== 'object') {
-        flow.gwtStatsEvents = [];
-      }
-      win.__gwtStatsEvent = (event: unknown) => {
-        flowNamespace()?.gwtStatsEvents?.push(event);
-        return true;
-      };
-    }
+  /**
+   * Returns a high-resolution timestamp suitable for `getRelativeTimeString`
+   * deltas. The result is only meaningful relative to another value from this
+   * function (it does not represent wall-clock time).
+   */
+  getRelativeTimeMillis(): number {
+    return performance.now();
   },
 
-  ensureNoLogger(): void {
-    const flow = flowNamespace();
-    if (flow && typeof flow.gwtStatsEvents === 'object') {
-      delete flow.gwtStatsEvents;
-      if (typeof gwtStats().__gwtStatsEvent === 'function') {
-        gwtStats().__gwtStatsEvent = () => true;
-      }
-    }
+  /**
+   * Formats milliseconds elapsed since {@code reference} (a value returned by
+   * {@link Profiler.getRelativeTimeMillis}), rounded to 3 decimals.
+   */
+  getRelativeTimeString(reference: number): string {
+    return String(round(performance.now() - reference, 3));
   },
 
-  clearEventsList(): unknown[] {
-    const flow = flowNamespace();
-    if (flow) {
-      flow.gwtStatsEvents = [];
-    }
-    return [];
+  /**
+   * Resets collection state. With aggregation removed there is nothing to
+   * clear, but the entry point is kept so existing Java guards
+   * (`if (Profiler.isEnabled()) Profiler.reset()`) keep linking.
+   */
+  reset(): void {
+    // No-op
   },
 
-  hasHighPrecisionTime(): boolean {
-    return typeof gwtStats().performance?.now === 'function';
+  /**
+   * Sets up the profiler. Previously chose between high-resolution and
+   * default time suppliers; `performance.now()` is universally available so
+   * no setup is needed.
+   */
+  initialize(): void {
+    // No-op
   },
 
-  defaultRelativeTime(): number {
-    return Date.now();
+  /** Would dump aggregated timings to the console. */
+  logTimings(): void {
+    Console.warn('Profiler is not enabled, no data has been collected.');
   },
 
-  highResolutionRelativeTime(): number {
-    return gwtStats().performance!.now();
-  },
-
-  round(num: number, exp: number): number {
-    return +`${Math.round(+`${num}e+${exp}`)}e-${exp}`;
+  /** Would dump browser bootstrap timings to the console. */
+  logBootstrapTimings(): void {
+    // No-op: bootstrap timing collection required the GWT runtime hook.
   }
 };
+
+function round(num: number, exp: number): number {
+  return +`${Math.round(+`${num}e+${exp}`)}e-${exp}`;
+}
