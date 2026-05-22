@@ -49,7 +49,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -3013,10 +3012,8 @@ public class RouterTest extends RoutingTestBase {
 
         long historyInvocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations().stream()
-                .filter(js -> js.getInvocation().getParameters().stream()
-                        .anyMatch(p -> p instanceof JsFunction
-                                && ((JsFunction) p).getBody()
-                                        .contains("history.pushState")))
+                .filter(js -> js.getInvocation().getExpression()
+                        .contains("history.pushState"))
                 .count();
         assertEquals(1, historyInvocations);
 

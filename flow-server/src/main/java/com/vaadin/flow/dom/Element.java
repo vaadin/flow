@@ -2147,13 +2147,12 @@ public class Element extends Node<Element> {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
 
         // Use setTimeout to work on newly created elements
-        JsFunction scroll;
         if (json == null) {
-            scroll = JsFunction.of("$0.scrollIntoView();", this);
+            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
         } else {
-            scroll = JsFunction.of("$0.scrollIntoView($1);", this, json);
+            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
+                    json);
         }
-        executeJs("setTimeout($0, 0)", scroll);
 
         return getSelf();
     }
@@ -2175,9 +2174,8 @@ public class Element extends Node<Element> {
         // created element
         String options = scrollOptions == null ? "" : scrollOptions.toJson();
 
-        JsFunction scroll = JsFunction.of("$0.scrollIntoView(" + options + ");",
-                this);
-        executeJs("setTimeout($0, 0)", scroll);
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
+                + options + ");}, 0);");
         return getSelf();
     }
 }
