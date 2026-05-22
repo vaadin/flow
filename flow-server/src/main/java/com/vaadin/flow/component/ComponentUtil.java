@@ -810,7 +810,7 @@ public class ComponentUtil {
         }
         if (!parent.getElement().getComponent().isPresent()) {
             throw new IllegalStateException(
-                    "You cannot use getAllChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
+                    "You cannot use getAllChildren() on a wrapped component. Use Component.from(Element, Class) to include the component in the hierarchy");
         }
 
         Builder<Component> childComponents = Stream.builder();

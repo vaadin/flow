@@ -1030,6 +1030,18 @@ public class ComponentTest {
     }
 
     @Test
+    public void wrappedComponentGetAllChildren() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        button.as(TestButton.class);
+        TestDiv wrappedDiv = div.as(TestDiv.class);
+        assertThrows(IllegalStateException.class,
+                () -> ComponentUtil.getAllChildren(wrappedDiv));
+    }
+
+    @Test
     public void componentFromHierarchy() {
         Element div = new Element("div");
         Element button = new Element("button");

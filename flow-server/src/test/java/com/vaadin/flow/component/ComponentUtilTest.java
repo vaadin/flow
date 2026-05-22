@@ -213,4 +213,39 @@ class ComponentUtilTest {
                 "streamDescendants must walk pre-order and include virtual children");
     }
 
+    @Test
+    void getAllChildren_compositeReturnsContent() {
+        TestComponent content = new TestComponent(ElementFactory.createDiv());
+        Composite<TestComponent> composite = new Composite<TestComponent>() {
+            @Override
+            protected TestComponent initContent() {
+                return content;
+            }
+        };
+
+        assertEquals(List.of(content),
+                ComponentUtil.getAllChildren(composite).toList(),
+                "getAllChildren on a Composite must return its content");
+    }
+
+    @Test
+    void streamDescendants_recursesIntoCompositeContent() {
+        TestComponent grandchild = new TestComponent(
+                ElementFactory.createSpan());
+        TestComponent contentWithChild = new TestComponent(
+                ElementFactory.createDiv());
+        contentWithChild.getElement().appendChild(grandchild.getElement());
+
+        Composite<TestComponent> composite = new Composite<TestComponent>() {
+            @Override
+            protected TestComponent initContent() {
+                return contentWithChild;
+            }
+        };
+
+        assertEquals(List.of(contentWithChild, grandchild),
+                ComponentUtil.streamDescendants(composite).toList(),
+                "streamDescendants must recurse through Composite content");
+    }
+
 }
