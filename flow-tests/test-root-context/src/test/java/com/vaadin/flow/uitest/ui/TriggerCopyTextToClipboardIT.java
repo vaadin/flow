@@ -55,7 +55,6 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
         installResolvingClipboardShim();
 
         WebElement button = findElement(By.id("copy-static"));
-        WebElement status = findElement(By.id("status"));
 
         button.click();
 
@@ -66,8 +65,11 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
         Object copied = waitUntil(d -> ((JavascriptExecutor) d)
                 .executeScript("return window.__copied;"));
         Assert.assertEquals(TriggerCopyTextToClipboardView.STATIC_TEXT, copied);
+        // `STATIC_TEXT` ends with `\n`; read raw textContent (Selenium's
+        // getText() collapses/trims whitespace and would drop it).
         waitUntil(d -> ("ok:" + TriggerCopyTextToClipboardView.STATIC_TEXT)
-                .equals(status.getText()));
+                .equals(((JavascriptExecutor) d).executeScript(
+                        "return document.getElementById('status').textContent;")));
     }
 
     @Test
