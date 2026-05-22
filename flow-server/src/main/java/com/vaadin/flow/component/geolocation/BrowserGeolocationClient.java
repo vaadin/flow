@@ -162,9 +162,14 @@ final class BrowserGeolocationClient implements GeolocationClient {
                     .addEventDetail().allowInert();
             // The watch is driven by addJsInitializer: it starts on every
             // fresh client-side DOM and the returned cleanup function tears
-            // the watch down when the DOM is discarded or stop() removes the
-            // registration. A bridge-load failure is surfaced by dispatching
-            // the same error event the position listener already observes.
+            // the watch down when the DOM is discarded or stop() removes
+            // the registration. A bridge-load failure is surfaced two ways:
+            // we dispatch the same error event the position listener already
+            // observes (so onUpdate sees a GeolocationError), and we
+            // re-throw the original error so the framework's executeJs
+            // logging records the underlying cause. A clearWatch failure is
+            // captured by the framework's cleanup-callback error logging
+            // (ExecuteJavaScriptElementUtils.invokeSafely).
             String watchKey = UUID.randomUUID().toString();
             int unknownErrorCode = GeolocationErrorCode.UNKNOWN.code();
             watchRegistration = el.addJsInitializer(
@@ -175,7 +180,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
                               this.dispatchEvent(new CustomEvent('vaadin-geolocation-error', {
                                 detail: { code: $2, message: 'Client-side geolocation bridge failure' }
                               }));
-                              return;
+                              throw err;
                             }
                             const __wk = $1;
                             return () => window.Vaadin.Flow.geolocation.clearWatch(__wk);
