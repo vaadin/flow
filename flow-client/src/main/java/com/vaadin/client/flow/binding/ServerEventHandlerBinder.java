@@ -15,92 +15,55 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.function.Supplier;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.events.EventRemover;
 
 /**
- * Binds and updates server object able to send notifications to the server.
+ * Binds and updates server-event handler names. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/flow/binding/ServerEventHandlerBinder.ts}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ServerEventHandlerBinder {
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.flow.binding", name = "ServerEventHandlerBinder")
+public final class ServerEventHandlerBinder {
+
+    /** Supplier shape used by {@link #bindServerEventHandlerNames}. */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    public interface ServerEventObjectProvider {
+        ServerEventObject get();
+    }
 
     private ServerEventHandlerBinder() {
-        // Only static methods
     }
 
     /**
-     * Registers all the server event handler names found in the
-     * {@link NodeFeatures#CLIENT_DELEGATE_HANDLERS} feature in the state node
-     * as <code>serverObject.&lt;methodName&gt;</code>. Additionally listens to
-     * changes in the feature and updates <code>$server</code> accordingly.
-     *
-     * @param element
-     *            the element to update
-     * @param node
-     *            the state node containing the feature
-     * @return a handle which can be used to remove the listener for the feature
+     * Registers all the server event handler names found in the given feature
+     * on the {@link ServerEventObject} produced by {@code objectProvider},
+     * keeping the registration in sync with subsequent splice updates.
      */
+    public static native EventRemover bindServerEventHandlerNames(
+            ServerEventObjectProvider objectProvider, StateNode node,
+            int featureId, boolean returnValue);
+
+    /**
+     * Convenience wrapper that targets the {@code element.$server} object and
+     * the {@code CLIENT_DELEGATE_HANDLERS} feature with promise return values.
+     */
+    @JsOverlay
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
                 node, NodeFeatures.CLIENT_DELEGATE_HANDLERS, true);
-    }
-
-    /**
-     * Registers all the server event handler names found in the feature with
-     * the {@code featureId} in the {@link ServerEventObject} {@code object}.
-     * Additionally listens to changes in the feature and updates server event
-     * object accordingly.
-     *
-     * @param objectProvider
-     *            the provider of the event object to update
-     * @param node
-     *            the state node containing the feature
-     * @param featureId
-     *            the feature id which contains event handler methods
-     * @param returnValue
-     *            <code>true</code> if the handler should return a promise that
-     *            will reflect the server-side result; <code>false</code> to not
-     *            return any value
-     * @return a handle which can be used to remove the listener for the feature
-     */
-    public static EventRemover bindServerEventHandlerNames(
-            Supplier<ServerEventObject> objectProvider, StateNode node,
-            int featureId, boolean returnValue) {
-        NodeList serverEventHandlerNamesList = node.getList(featureId);
-
-        if (serverEventHandlerNamesList.length() > 0) {
-            ServerEventObject object = objectProvider.get();
-
-            for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
-                String serverEventHandlerName = (String) serverEventHandlerNamesList
-                        .get(i);
-                object.defineMethod(serverEventHandlerName, node, returnValue);
-            }
-        }
-
-        return serverEventHandlerNamesList.addSpliceListener(e -> {
-            ServerEventObject serverObject = objectProvider.get();
-
-            JsArray<?> remove = e.getRemove();
-            for (int i = 0; i < remove.length(); i++) {
-                serverObject.removeMethod((String) remove.get(i));
-            }
-
-            JsArray<?> add = e.getAdd();
-            for (int i = 0; i < add.length(); i++) {
-                serverObject.defineMethod((String) add.get(i), node,
-                        returnValue);
-            }
-        });
     }
 }
