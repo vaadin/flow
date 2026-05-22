@@ -42,7 +42,7 @@ public class TriggerClipboardReadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void clipboardReadRejection_propagatesAsNullPayload() {
+    public void clipboardReadRejection_propagatesAsError() {
         open();
         installRejectingClipboardShim();
 
@@ -51,7 +51,7 @@ public class TriggerClipboardReadIT extends ChromeBrowserTest {
 
         button.click();
 
-        waitUntil(d -> "null".equals(status.getText()));
+        waitUntil(d -> "error=Error".equals(status.getText()));
     }
 
     // Replace navigator.clipboard.read with a Promise that resolves to a

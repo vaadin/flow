@@ -47,6 +47,6 @@ public class TriggerClipboardReadView extends AbstractDivView {
             } else {
                 status.setText("text=" + p.text() + ";html=" + p.html());
             }
-        }));
+        }, err -> status.setText("error=" + err.name())));
     }
 }
