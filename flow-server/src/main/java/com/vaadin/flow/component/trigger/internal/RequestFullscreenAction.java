@@ -46,8 +46,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * {@code onSuccess}/{@code onError} consumers. The promise resolves with
  * {@code undefined} so {@code onSuccess} carries no value, but {@code onError}
  * receives a {@link PromiseAction.Error} record with the browser's error name
- * and message — useful for distinguishing e.g. {@code NotAllowedError} (no
- * gesture / permissions policy) from {@code AbortError}.
+ * and message — the spec-documented rejection is {@code NotAllowedError} (no
+ * gesture / permissions policy).
  *
  * <pre>{@code
  * RequestFullscreenAction goFs = new RequestFullscreenAction(panel,

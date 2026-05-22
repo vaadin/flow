@@ -200,10 +200,9 @@ public abstract class PromiseAction extends Action {
     /**
      * Information delivered to the {@code onError} consumer after the promise
      * rejects. {@link #name()} carries the rejection's class name — typically a
-     * {@code DOMException} like {@code "NotAllowedError"},
-     * {@code "AbortError"}, … — which is what callers usually switch on.
-     * {@link #message()} carries the free-form description and is best used for
-     * logging or display.
+     * {@code DOMException} like {@code "NotAllowedError"} — which is what
+     * callers usually switch on. {@link #message()} carries the free-form
+     * description and is best used for logging or display.
      *
      * @param name
      *            the rejection's {@code name} property, or the empty string if
