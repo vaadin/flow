@@ -3,7 +3,7 @@ on:
   push:
     branches: ['25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
   workflow_dispatch:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
   merge_group:
@@ -23,7 +23,6 @@ env:
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
 jobs:
   build:
-    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     outputs:
@@ -32,6 +31,7 @@ jobs:
     steps:
       - run: echo "Concurrency Group = ${_HEAD_REF:-$_REF_NAME}"
       - name: Check secrets
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           [ -z "${{secrets.TB_LICENSE}}" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
@@ -78,6 +78,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -154,6 +155,7 @@ jobs:
           path: tests-report-*.tgz
   it-tests:
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -259,7 +261,7 @@ jobs:
     # failure() || success() it would be skipped when any matrix entry
     # was cancelled, and a skipped required check satisfies branch
     # protection — letting auto-merge proceed past a cancelled IT.
-    if: ${{ always() }}
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-24.04
     steps:
@@ -269,8 +271,6 @@ jobs:
           name: tests-output
           pattern: tests-output-*
       - uses: actions/checkout@v5
-        with:
-          ref: ${{env._HEAD_SHA}}
       - uses: actions/download-artifact@v5
         with:
           name: tests-output
@@ -317,8 +317,7 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: node scripts/autoMerge.js
   api-diff-labeling:
-    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
     timeout-minutes: 15
     runs-on: ubuntu-24.04
     permissions:

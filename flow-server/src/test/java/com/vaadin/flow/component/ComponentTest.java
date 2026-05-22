@@ -54,7 +54,6 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -1983,9 +1982,6 @@ public class ComponentTest {
         assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
         MatcherAssert.assertThat(inv.getExpression(),
-                CoreMatchers.containsString("setTimeout($0, 0)"));
-        JsFunction fn = (JsFunction) inv.getParameters().get(0);
-        MatcherAssert.assertThat(fn.getBody(),
                 CoreMatchers.containsString(expectedJs));
     }
 
@@ -2056,17 +2052,15 @@ public class ComponentTest {
         assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
 
-        // The outer expression defers to a JsFunction
-        MatcherAssert.assertThat(inv.getExpression(),
-                CoreMatchers.containsString("setTimeout($0, 0)"));
-        JsFunction fn = (JsFunction) inv.getParameters().get(0);
-
-        // The JsFunction body uses parameter passing for the options
-        MatcherAssert.assertThat(fn.getBody(),
+        // Verify it uses parameter passing
+        String expression = inv.getExpression();
+        MatcherAssert.assertThat(expression,
                 CoreMatchers.containsString("$0.scrollIntoView($1)"));
 
-        // The options object is captured at index 1
-        String paramJson = fn.getCaptures().get(1).toString();
+        // Verify parameters contain expected JSON parts
+        List<Object> params = inv.getParameters();
+        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
+        String paramJson = params.get(1).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
                     CoreMatchers.containsString(expectedPart));
