@@ -26,7 +26,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
 
     @Test
-    public void clickCopiesValue_andServerReceivesSuccess() {
+    public void clickCopiesValue_andServerReceivesCopiedTextOnSuccess() {
         open();
         installResolvingClipboardShim();
 
@@ -43,8 +43,10 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
                 .executeScript("return window.__copied;"));
         Assert.assertEquals("hello clipboard", copied);
 
-        // Server-side completion listener writes the outcome into #status.
-        waitUntil(d -> "ok".equals(status.getText()));
+        // onSuccess receives the copied string back from the resolved
+        // promise — the server learns what actually reached the clipboard
+        // even though the value came from a client-side PropertyInput.
+        waitUntil(d -> "ok:hello clipboard".equals(status.getText()));
     }
 
     @Test
@@ -64,11 +66,12 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
         Object copied = waitUntil(d -> ((JavascriptExecutor) d)
                 .executeScript("return window.__copied;"));
         Assert.assertEquals(TriggerCopyTextToClipboardView.STATIC_TEXT, copied);
-        waitUntil(d -> "ok".equals(status.getText()));
+        waitUntil(d -> ("ok:" + TriggerCopyTextToClipboardView.STATIC_TEXT)
+                .equals(status.getText()));
     }
 
     @Test
-    public void writeTextRejection_propagatesAsFailureToTheServer() {
+    public void writeTextRejection_propagatesAsFailureWithNameAndMessage() {
         open();
         installRejectingClipboardShim();
 
@@ -77,10 +80,12 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
 
         button.click();
 
-        // Server-side completion listener reports the failure.
+        // The shim throws a DOMException with name "NotAllowedError" so the
+        // server-side onError consumer sees both fields populated.
         waitUntil(d -> status.getText() != null
                 && status.getText().startsWith("err:"));
-        Assert.assertTrue(status.getText().contains("DeniedByTest"));
+        Assert.assertEquals("err:NotAllowedError:DeniedByTest",
+                status.getText());
     }
 
     private void installResolvingClipboardShim() {
@@ -96,7 +101,8 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
         ((JavascriptExecutor) getDriver())
                 .executeScript("Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"
-                        + "    writeText: t => Promise.reject(new Error('DeniedByTest'))"
+                        + "    writeText: t => Promise.reject("
+                        + "      new DOMException('DeniedByTest', 'NotAllowedError'))"
                         + "  }" + "});");
     }
 }

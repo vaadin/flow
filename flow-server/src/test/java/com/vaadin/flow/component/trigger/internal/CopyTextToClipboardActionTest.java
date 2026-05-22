@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,7 +48,10 @@ class CopyTextToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("navigator.clipboard.writeText($0[\"value\"]);",
+        // Fire-and-forget uses the simple writeText call — no IIFE wrap
+        // because the resolved value isn't needed.
+        assertEquals(
+                "((v) => navigator.clipboard.writeText(v).then(() => v))($0[\"value\"]);",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
@@ -63,7 +71,7 @@ class CopyTextToClipboardActionTest {
         // escaped — proves callers can't accidentally break out of the
         // string by passing values that contain quotes or newlines.
         assertEquals(
-                "navigator.clipboard.writeText(\"hello \\\"world\\\"\\n\");",
+                "((v) => navigator.clipboard.writeText(v).then(() => v))(\"hello \\\"world\\\"\\n\");",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
@@ -77,16 +85,80 @@ class CopyTextToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new CopyTextToClipboardAction(
                         new PropertyInput<>(field, "value", String.class),
-                        () -> {
+                        copied -> {
                         }, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = field;
-        // the .then/.catch glue lives inside $0, not in the handler body.
-        assertEquals("$0(navigator.clipboard.writeText($2[\"value\"]), $1);",
+        // the IIFE binds the text to v so the promise resolves with the
+        // copied value.
+        assertEquals(
+                "$0(((v) => navigator.clipboard.writeText(v).then(() => v))($2[\"value\"]), $1);",
                 handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
+    void onCopied_receivesTheStringFromTheResolvedPromise() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement(), field.getElement());
+
+        List<String> copied = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new CopyTextToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class),
+                        copied::add, err -> {
+                        }));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        outcome.put("value", "hello clipboard");
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
+
+        assertEquals(List.of("hello clipboard"), copied);
+    }
+
+    @Test
+    void onCopied_receivesEmptyStringWhenJsResolvedWithoutValue() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent field = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement(), field.getElement());
+
+        List<String> copied = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new CopyTextToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class),
+                        copied::add, err -> {
+                        }));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        // No "value" field — defensive: don't blow up, treat as empty.
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
+
+        assertEquals(List.of(""), copied);
+    }
+
+    private static ReturnChannelRegistration singleReturnChannel(UI ui) {
+        List<ReturnChannelRegistration> channels = handlerOf(
+                singleInstallFn(ui)).getCaptures().stream()
+                .filter(o -> o instanceof ReturnChannelRegistration)
+                .map(o -> (ReturnChannelRegistration) o).toList();
+        assertEquals(1, channels.size(),
+                "Expected exactly one captured return channel");
+        return channels.get(0);
     }
 
     private static JsFunction singleInstallFn(UI ui) {

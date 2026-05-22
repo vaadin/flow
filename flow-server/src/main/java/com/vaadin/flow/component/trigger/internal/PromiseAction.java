@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
@@ -43,22 +43,22 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * JS expression by overriding
  * {@link #appendPromiseExpression(JsBuilder, StringBuilder)}.
  * <p>
- * Two construction modes, mirroring the
- * {@link com.vaadin.flow.component.geolocation.Geolocation Geolocation} API:
+ * Two construction modes:
  * <ul>
  * <li>Fire-and-forget — {@link #PromiseAction()} — the rendered JS is just the
  * promise expression; the server never sees the outcome.</li>
  * <li>With outcome handling —
- * {@link #PromiseAction(SerializableRunnable, SerializableConsumer)} — supply
- * an {@code onSuccess} runnable and an {@code onError} consumer (both required;
- * pass {@code () -> {}} or {@code err -> {}} to opt out of one). The handlers
+ * {@link #PromiseAction(SerializableConsumer, SerializableConsumer)} — supply
+ * an {@code onSuccess} consumer receiving a {@link Success} record and an
+ * {@code onError} consumer receiving an {@link Error} record (both required;
+ * pass {@code s -> {}} or {@code err -> {}} to opt out of one). The handlers
  * run on the UI thread after the client reports the outcome of the
  * promise.</li>
  * </ul>
  * Under the hood, the with-outcome mode renders one call to a shared
  * {@link JsFunction} that subscribes to the promise and pushes an
- * {@link Outcome} record through a lazily-registered
- * {@link ReturnChannelRegistration} on the trigger host node.
+ * {@link Outcome} through a lazily-registered {@link ReturnChannelRegistration}
+ * on the trigger host node.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -67,17 +67,22 @@ public abstract class PromiseAction extends Action {
     /**
      * Wrapper JS: subscribes to {@code promise} and forwards the resolved value
      * or rejection reason to {@code channel} as an {@link Outcome}-shaped
-     * object. Shared across all subclasses with callbacks — the only per-call
-     * inputs are the promise expression and the return channel.
+     * object. Resolved values are forwarded verbatim — subclasses whose promise
+     * resolves to a meaningful value (e.g. the text that was just copied)
+     * surface it through {@link Success#value()}. Errors are split into
+     * {@code name} (typically the {@code DOMException} class such as
+     * {@code "NotAllowedError"} — useful for switching) and a free-form
+     * {@code message}.
      */
     private static final JsFunction OBSERVE_PROMISE = JsFunction.of("""
-            promise.then(() => channel({ok: true}))\
-            .catch(e => channel({ok: false, \
-            error: e && e.message ? e.message : String(e)}));""")
+            promise.then(value => channel({ok: true, value: value}))\
+            .catch(e => channel({ok: false, error: {\
+            name: (e && e.name) ? e.name : '',\
+            message: (e && e.message) ? e.message : String(e)}}));""")
             .withArguments("promise", "channel");
 
-    private final @Nullable SerializableRunnable onSuccess;
-    private final @Nullable SerializableConsumer<String> onError;
+    private final @Nullable SerializableConsumer<Success> onSuccess;
+    private final @Nullable SerializableConsumer<Error> onError;
     private final Map<StateNode, ReturnChannelRegistration> channelByNode = new IdentityHashMap<>();
 
     /**
@@ -91,21 +96,21 @@ public abstract class PromiseAction extends Action {
 
     /**
      * Creates an action whose promise outcome is reported back to the server.
-     * {@code onSuccess} runs after the promise resolves; {@code onError}
-     * receives the browser's error message after the promise rejects. Both run
-     * on the UI thread. Both consumers are required and must be non-null — pass
-     * {@code () -> {}} or {@code err -> {}} to opt out of one.
+     * {@code onSuccess} runs after the promise resolves and receives a
+     * {@link Success} record carrying the resolved value (if the subclass'
+     * promise produced one); {@code onError} runs after the promise rejects and
+     * receives an {@link Error} record with the browser's error name and
+     * message. Both run on the UI thread.
      *
      * @param onSuccess
      *            invoked on the UI thread after the client reports the promise
      *            resolved, not {@code null}
      * @param onError
-     *            invoked on the UI thread with the browser's error message
-     *            after the client reports the promise rejected, not
-     *            {@code null}
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports the promise rejected, not {@code null}
      */
-    protected PromiseAction(SerializableRunnable onSuccess,
-            SerializableConsumer<String> onError) {
+    protected PromiseAction(SerializableConsumer<Success> onSuccess,
+            SerializableConsumer<Error> onError) {
         this.onSuccess = Objects.requireNonNull(onSuccess,
                 "onSuccess must not be null");
         this.onError = Objects.requireNonNull(onError,
@@ -114,10 +119,15 @@ public abstract class PromiseAction extends Action {
 
     /**
      * Subclasses append a JS expression that evaluates to a {@code Promise}
-     * when the trigger fires. The result of that promise is what
-     * {@code onSuccess}/{@code onError} observe; the resolved value itself is
-     * not delivered to the server (only success vs. failure and the rejection
-     * message).
+     * when the trigger fires. The value the promise resolves with is what
+     * {@link Success#value()} receives on the server (a Jackson
+     * {@link JsonNode}). To deliver a typed value, subclasses can wrap their
+     * API call in an IIFE — for example, copying a string and resolving with
+     * it:
+     *
+     * <pre>{@code
+     * ((v) => navigator.clipboard.writeText(v).then(() => v))(<textExpr>)
+     * }</pre>
      *
      * @param builder
      *            collects element parameter references, not {@code null}
@@ -127,9 +137,20 @@ public abstract class PromiseAction extends Action {
     protected abstract void appendPromiseExpression(JsBuilder builder,
             StringBuilder out);
 
+    /**
+     * Final by design — subclasses customise the rendered JS through
+     * {@link #appendPromiseExpression}, never by overriding the wiring that
+     * subscribes to the promise. Keeping the {@code .then}/{@code .catch} glue
+     * identical across subclasses is what makes the {@link Outcome} wire
+     * contract stable.
+     */
     @Override
     protected final void appendStatement(JsBuilder builder, StringBuilder out) {
-        if (onSuccess == null) {
+        // The constructors enforce that onSuccess and onError are either
+        // both null (fire-and-forget) or both non-null (with-outcome) — so
+        // checking one already determines the mode. Asserting on both keeps
+        // the invariant defensive against constructor changes.
+        if (onSuccess == null && onError == null) {
             appendPromiseExpression(builder, out);
             return;
         }
@@ -150,22 +171,56 @@ public abstract class PromiseAction extends Action {
     private void dispatch(ArrayNode args) {
         // Channel is only registered when callbacks were supplied, so these
         // are non-null at the point of dispatch.
-        SerializableRunnable success = Objects.requireNonNull(onSuccess);
-        SerializableConsumer<String> error = Objects.requireNonNull(onError);
+        SerializableConsumer<Success> success = Objects
+                .requireNonNull(onSuccess);
+        SerializableConsumer<Error> error = Objects.requireNonNull(onError);
         Outcome outcome = JacksonUtils.readValue(args.get(0), Outcome.class);
         if (outcome.ok()) {
-            success.run();
+            success.accept(new Success(outcome.value()));
         } else {
-            error.accept(outcome.error() == null ? "" : outcome.error());
+            Error err = outcome.error();
+            error.accept(err == null ? new Error("", "") : err);
         }
     }
 
     /**
-     * Wire shape exchanged between {@link #OBSERVE_PROMISE} and
-     * {@link #dispatch}. {@code error} is only meaningful when
-     * {@code ok == false}.
+     * Information delivered to the {@code onSuccess} consumer after the promise
+     * resolves. {@link #value()} is whatever JS value the promise produced (or
+     * {@code null} if it was {@code undefined}); subclasses that have nothing
+     * meaningful to deliver resolve with {@code undefined} and leave this
+     * {@code null}.
+     *
+     * @param value
+     *            the resolved value as a Jackson {@link JsonNode}, or
+     *            {@code null} if the promise resolved with {@code undefined}
      */
-    private record Outcome(boolean ok,
-            @Nullable String error) implements Serializable {
+    public record Success(@Nullable JsonNode value) implements Serializable {
+    }
+
+    /**
+     * Information delivered to the {@code onError} consumer after the promise
+     * rejects. {@link #name()} carries the rejection's class name — typically a
+     * {@code DOMException} like {@code "NotAllowedError"},
+     * {@code "AbortError"}, … — which is what callers usually switch on.
+     * {@link #message()} carries the free-form description and is best used for
+     * logging or display.
+     *
+     * @param name
+     *            the rejection's {@code name} property, or the empty string if
+     *            the rejection had none
+     * @param message
+     *            the rejection's {@code message} property, or {@code String(e)}
+     *            if there was no {@code message}
+     */
+    public record Error(String name, String message) implements Serializable {
+    }
+
+    /**
+     * Wire shape exchanged between {@link #OBSERVE_PROMISE} and
+     * {@link #dispatch}. {@code value} is meaningful when {@code ok == true};
+     * {@code error} is meaningful when {@code ok == false}.
+     */
+    private record Outcome(boolean ok, @Nullable JsonNode value,
+            @Nullable Error error) implements Serializable {
     }
 }

@@ -32,21 +32,27 @@ import com.vaadin.flow.function.SerializableRunnable;
  * during such a gesture, typically a {@link ClickTrigger}, so the call happens
  * synchronously inside the handler and inherits the gesture.
  * <p>
- * Note that fullscreening an arbitrary component element does not interact well
- * with Vaadin theming or overlay components — those expect the fullscreen
- * element to be {@code document.documentElement}. This action is intentionally
- * low-level; the higher-level {@code Component.requestFullscreen()} facade
- * handles the wrapping needed for full Vaadin compatibility.
+ * This action is intentionally low-level: it calls {@code requestFullscreen}
+ * directly on the target's root element. That doesn't interact well with Vaadin
+ * theming or overlay components, which expect the fullscreen element to be
+ * {@code document.documentElement}. A higher-level
+ * {@code Component.requestFullscreen()} facade — see PR vaadin/flow#24326 —
+ * handles the wrapping needed for full Vaadin compatibility; this action is the
+ * trigger-framework primitive it builds on (or a direct option when the Vaadin
+ * wrapping isn't needed).
  * <p>
- * Outcome handling is inherited from {@link PromiseAction}: use the target-only
+ * Outcome handling extends {@link PromiseAction}: use the target-only
  * constructor for fire-and-forget, or the overload taking
- * {@code onSuccess}/{@code onError} consumers to react to the
- * {@code requestFullscreen} promise on the UI thread.
+ * {@code onSuccess}/{@code onError} consumers. The promise resolves with
+ * {@code undefined} so {@code onSuccess} carries no value, but {@code onError}
+ * receives a {@link PromiseAction.Error} record with the browser's error name
+ * and message — useful for distinguishing e.g. {@code NotAllowedError} (no
+ * gesture / permissions policy) from {@code AbortError}.
  *
  * <pre>{@code
  * RequestFullscreenAction goFs = new RequestFullscreenAction(panel,
  *         () -> notification.show("Fullscreen entered"),
- *         err -> notification.show("Fullscreen denied: " + err));
+ *         err -> notification.show("Fullscreen denied: " + err.message()));
  * new ClickTrigger(button).triggers(goFs);
  * }</pre>
  *
@@ -71,9 +77,7 @@ public class RequestFullscreenAction extends PromiseAction {
     }
 
     /**
-     * Creates a fullscreen action whose outcome is reported back to the server
-     * via {@code onSuccess}/{@code onError}. See {@link PromiseAction} for the
-     * contract on both consumers.
+     * Creates a fullscreen action whose outcome is reported back to the server.
      *
      * @param target
      *            the component whose root element to fullscreen, not
@@ -82,14 +86,14 @@ public class RequestFullscreenAction extends PromiseAction {
      *            invoked on the UI thread after the client reports
      *            {@code requestFullscreen} resolved, not {@code null}
      * @param onError
-     *            invoked on the UI thread with the browser's error message
-     *            after the client reports {@code requestFullscreen} rejected,
-     *            not {@code null}
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports {@code requestFullscreen} rejected, not
+     *            {@code null}
      */
     public RequestFullscreenAction(Component target,
             SerializableRunnable onSuccess,
-            SerializableConsumer<String> onError) {
-        super(onSuccess, onError);
+            SerializableConsumer<Error> onError) {
+        super(adaptOnSuccess(onSuccess), onError);
         this.target = Objects.requireNonNull(target, "target must not be null")
                 .getElement();
     }
@@ -98,5 +102,11 @@ public class RequestFullscreenAction extends PromiseAction {
     protected void appendPromiseExpression(JsBuilder builder,
             StringBuilder out) {
         out.append(builder.reference(target)).append(".requestFullscreen()");
+    }
+
+    private static SerializableConsumer<Success> adaptOnSuccess(
+            SerializableRunnable onSuccess) {
+        Objects.requireNonNull(onSuccess, "onSuccess must not be null");
+        return success -> onSuccess.run();
     }
 }

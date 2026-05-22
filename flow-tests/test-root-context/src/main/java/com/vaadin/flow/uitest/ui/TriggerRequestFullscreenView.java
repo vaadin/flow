@@ -46,8 +46,8 @@ public class TriggerRequestFullscreenView extends AbstractDivView {
         add(panel, goButton, status);
 
         RequestFullscreenAction goFs = new RequestFullscreenAction(panel,
-                () -> status.setText("ok"),
-                err -> status.setText("err:" + err));
+                () -> status.setText("ok"), err -> status
+                        .setText("err:" + err.name() + ":" + err.message()));
         new ClickTrigger(goButton).triggers(goFs);
     }
 }

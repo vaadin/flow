@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -28,13 +29,14 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PromiseActionTest {
@@ -65,7 +67,7 @@ class PromiseActionTest {
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new StubPromiseAction(() -> {
+                .triggers(new StubPromiseAction(s -> {
                 }, err -> {
                 }));
 
@@ -86,51 +88,85 @@ class PromiseActionTest {
     }
 
     @Test
-    void returnChannelInvocation_withOkOutcome_runsOnSuccess() {
+    void okChannelInvocation_withValue_runsOnSuccessWithJsonNode() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<String> succeeded = new ArrayList<>();
-        List<String> failed = new ArrayList<>();
-        new DomEventTrigger(button, "click").triggers(
-                new StubPromiseAction(() -> succeeded.add("ok"), failed::add));
+        List<PromiseAction.Success> received = new ArrayList<>();
+        List<PromiseAction.Error> failed = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new StubPromiseAction(received::add, failed::add));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         ObjectNode outcome = JacksonUtils.createObjectNode();
         outcome.put("ok", true);
+        outcome.put("value", "hello");
         ArrayNode args = JacksonUtils.createArrayNode();
         args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
-        assertEquals(List.of("ok"), succeeded);
+        assertEquals(1, received.size());
+        JsonNode value = received.get(0).value();
+        assertNotNull(value,
+                "value should not be null when JS resolved with one");
+        assertEquals("hello", value.asString());
         assertEquals(List.of(), failed);
     }
 
     @Test
-    void returnChannelInvocation_withFailureOutcome_runsOnErrorWithMessage() {
+    void okChannelInvocation_withNoValue_runsOnSuccessWithNullValue() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<String> succeeded = new ArrayList<>();
-        List<String> failed = new ArrayList<>();
-        new DomEventTrigger(button, "click").triggers(
-                new StubPromiseAction(() -> succeeded.add("ok"), failed::add));
+        List<PromiseAction.Success> received = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new StubPromiseAction(received::add, err -> {
+                }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        // No "value" field — JS resolved with undefined.
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
+
+        assertEquals(1, received.size());
+        assertNull(received.get(0).value(),
+                "missing JS 'value' should surface as null on the server");
+    }
+
+    @Test
+    void errChannelInvocation_runsOnErrorWithNameAndMessage() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        List<PromiseAction.Success> succeeded = new ArrayList<>();
+        List<PromiseAction.Error> failed = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new StubPromiseAction(succeeded::add, failed::add));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ObjectNode error = JacksonUtils.createObjectNode();
+        error.put("name", "NotAllowedError");
+        error.put("message", "blocked by permission policy");
+        ObjectNode outcome = JacksonUtils.createObjectNode();
         outcome.put("ok", false);
-        outcome.put("error", "NotAllowedError: blocked by permission policy");
+        outcome.set("error", error);
         ArrayNode args = JacksonUtils.createArrayNode();
         args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
         assertEquals(List.of(), succeeded);
-        assertEquals(List.of("NotAllowedError: blocked by permission policy"),
-                failed);
+        assertEquals(1, failed.size());
+        assertEquals("NotAllowedError", failed.get(0).name());
+        assertEquals("blocked by permission policy", failed.get(0).message());
     }
 
     private static boolean captureContainsReturnChannel(JsFunction handler) {
@@ -174,8 +210,8 @@ class PromiseActionTest {
             super();
         }
 
-        StubPromiseAction(SerializableRunnable onSuccess,
-                SerializableConsumer<String> onError) {
+        StubPromiseAction(SerializableConsumer<Success> onSuccess,
+                SerializableConsumer<Error> onError) {
             super(onSuccess, onError);
         }
 

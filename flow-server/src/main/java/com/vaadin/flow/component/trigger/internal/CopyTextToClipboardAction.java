@@ -17,8 +17,10 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 
 /**
  * Copies a value to the user's clipboard via
@@ -28,17 +30,20 @@ import com.vaadin.flow.function.SerializableRunnable;
  * gesture (click, key press, …). Bind this action to a {@link Trigger} that
  * fires during such a gesture, typically a {@link ClickTrigger}.
  * <p>
- * Outcome handling is inherited from {@link PromiseAction}: use the no-arg
- * outcome constructor for fire-and-forget, or the overload taking
- * {@code onSuccess}/{@code onError} consumers to react to the {@code writeText}
- * promise on the UI thread.
+ * Outcome handling extends {@link PromiseAction}: use the no-arg outcome
+ * constructor for fire-and-forget, or the overload taking
+ * {@code onCopied}/{@code onError} consumers. {@code onCopied} receives the
+ * exact string that was copied — useful when the input was a
+ * {@link PropertyInput} whose value is only known on the client (e.g. the
+ * current contents of an input field). {@code onError} receives a
+ * {@link PromiseAction.Error} record with the browser's error name and message.
  *
  * <pre>{@code
  * Action.Input<String> value = new PropertyInput<>(textField, "value",
  *         String.class);
  * CopyTextToClipboardAction copy = new CopyTextToClipboardAction(value,
- *         () -> notification.show("Copied"),
- *         err -> notification.show("Copy failed: " + err));
+ *         copied -> notification.show("Copied: " + copied),
+ *         err -> notification.show("Copy failed: " + err.message()));
  * new ClickTrigger(button).triggers(copy);
  * }</pre>
  *
@@ -63,23 +68,22 @@ public class CopyTextToClipboardAction extends PromiseAction {
 
     /**
      * Creates a clipboard-copy action whose outcome is reported back to the
-     * server via {@code onSuccess}/{@code onError}. See {@link PromiseAction}
-     * for the contract on both consumers.
+     * server.
      *
      * @param textInput
      *            input supplying the text to copy, not {@code null}
-     * @param onSuccess
-     *            invoked on the UI thread after the client reports
-     *            {@code writeText} resolved, not {@code null}
-     * @param onError
-     *            invoked on the UI thread with the browser's error message
-     *            after the client reports {@code writeText} rejected, not
+     * @param onCopied
+     *            invoked on the UI thread with the string that was copied after
+     *            the client reports {@code writeText} resolved, not
      *            {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports {@code writeText} rejected, not {@code null}
      */
     public CopyTextToClipboardAction(Action.Input<String> textInput,
-            SerializableRunnable onSuccess,
-            SerializableConsumer<String> onError) {
-        super(onSuccess, onError);
+            SerializableConsumer<String> onCopied,
+            SerializableConsumer<Error> onError) {
+        super(adaptOnCopied(onCopied), onError);
         this.textInput = Objects.requireNonNull(textInput,
                 "textInput must not be null");
     }
@@ -87,8 +91,21 @@ public class CopyTextToClipboardAction extends PromiseAction {
     @Override
     protected void appendPromiseExpression(JsBuilder builder,
             StringBuilder out) {
-        out.append("navigator.clipboard.writeText(");
+        // Bind the text expression once on the client, write it, then
+        // resolve the promise with the same value so onCopied sees the
+        // exact string that reached the clipboard.
+        out.append("((v) => navigator.clipboard.writeText(v).then(() => v))(");
         textInput.appendExpression(builder, out);
         out.append(")");
+    }
+
+    private static SerializableConsumer<Success> adaptOnCopied(
+            SerializableConsumer<String> onCopied) {
+        Objects.requireNonNull(onCopied, "onCopied must not be null");
+        return success -> onCopied.accept(asString(success.value()));
+    }
+
+    private static String asString(@Nullable JsonNode value) {
+        return value == null || value.isNull() ? "" : value.asString();
     }
 }

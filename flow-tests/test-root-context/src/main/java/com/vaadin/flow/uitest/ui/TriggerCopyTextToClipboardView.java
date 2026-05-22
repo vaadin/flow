@@ -61,13 +61,14 @@ public class TriggerCopyTextToClipboardView extends AbstractDivView {
         Action.Input<String> value = new PropertyInput<>(field, "value",
                 String.class);
         CopyTextToClipboardAction copy = new CopyTextToClipboardAction(value,
-                () -> status.setText("ok"),
-                err -> status.setText("err:" + err));
+                copied -> status.setText("ok:" + copied), err -> status
+                        .setText("err:" + err.name() + ":" + err.message()));
         new ClickTrigger(copyButton).triggers(copy);
 
         CopyTextToClipboardAction copyStatic = new CopyTextToClipboardAction(
-                new LiteralInput<>(STATIC_TEXT), () -> status.setText("ok"),
-                err -> status.setText("err:" + err));
+                new LiteralInput<>(STATIC_TEXT),
+                copied -> status.setText("ok:" + copied), err -> status
+                        .setText("err:" + err.name() + ":" + err.message()));
         new ClickTrigger(copyStaticButton).triggers(copyStatic);
     }
 }
