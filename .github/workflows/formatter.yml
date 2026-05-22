@@ -5,7 +5,6 @@ on:
     types: [opened, synchronize, reopened]
     # spotless available in 25.x
     branches: [25.1]
-  merge_group:
 
 # Cancel previous runs if a new one is triggered
 concurrency:
