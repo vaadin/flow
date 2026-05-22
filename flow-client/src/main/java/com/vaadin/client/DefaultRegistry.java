@@ -75,8 +75,16 @@ public class DefaultRegistry extends Registry {
         StateTree stateTree = new StateTree(this);
         set("StateTree", stateTree);
         RequestResponseTracker requestResponseTracker = new RequestResponseTracker(
-                this);
-        set(RequestResponseTracker.class, requestResponseTracker);
+                () -> {
+                    com.vaadin.client.communication.MessageSender ms = getMessageSender();
+                    if ((getUILifecycle().isRunning()
+                            && getServerRpcQueue().isFlushPending())
+                            || ms.getResynchronizationState() == com.vaadin.client.communication.MessageSender.ResynchronizationState.SEND_TO_SERVER
+                            || ms.hasQueuedMessages()) {
+                        ms.sendInvocationsToServer();
+                    }
+                });
+        set("RequestResponseTracker", requestResponseTracker);
         set(MessageHandler.class, new MessageHandler(this));
         MessageSender messageSender = new MessageSender(this);
         set(MessageSender.class, messageSender);

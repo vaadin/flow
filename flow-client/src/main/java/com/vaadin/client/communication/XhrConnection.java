@@ -63,10 +63,8 @@ public class XhrConnection {
         Browser.getWindow().addEventListener("beforeunload",
                 event -> webkitMaybeIgnoringRequests = true, false);
 
-        registry.getRequestResponseTracker()
-                .addResponseHandlingEndedHandler(event -> {
-                    webkitMaybeIgnoringRequests = false;
-                });
+        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
+                () -> webkitMaybeIgnoringRequests = false);
     }
 
     protected XhrResponseHandler createResponseHandler() {

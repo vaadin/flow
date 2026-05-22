@@ -15,161 +15,75 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.Registry;
-import com.vaadin.client.communication.MessageSender.ResynchronizationState;
-import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
+import com.vaadin.client.JsIntConsumer;
+import com.vaadin.client.JsRunnable;
 
 /**
- * Tracks active server UIDL requests.
+ * Tracks active server UIDL requests. Pure {@code @JsType(isNative=true)}
+ * binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/RequestResponseTracker.ts}.
+ *
  * <p>
- * Ensures that there is only one outgoing server request active at a given
- * time.
+ * The TS implementation replaces the GWT EventBus with simple per-event
+ * callback queues; the four event types (RequestStarting/ResponseHandling
+ * Started/Ended/ReconnectionAttempt) are gone, replaced by direct
+ * {@code JsRunnable} and {@code JsIntConsumer} callbacks.
+ *
  * <p>
- * Fires events when a requests starts, response handling starts and when
- * response handling ends.
+ * Construction takes a {@link JsRunnable} that wraps the original endRequest
+ * "should we flush queued invocations now?" decision; the TS class doesn't need
+ * to dispatch back through the still-Java MessageSender / ServerRpcQueue
+ * facades to make that call.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "RequestResponseTracker")
 public class RequestResponseTracker {
 
-    private boolean hasActiveRequest = false;
-    private final Registry registry;
-    private EventBus eventBus = new SimpleEventBus();
-
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
-    public RequestResponseTracker(Registry registry) {
-        this.registry = registry;
+    public RequestResponseTracker(JsRunnable maybeFlushInvocations) {
+        // Defined by the TS class constructor.
     }
 
     /**
-     * Marks that a new request has started.
-     * <p>
-     * Should not be called when a request is in progress, i.e.
-     * {@link #startRequest()} has been called but not {@link #endRequest()}.
-     * <p>
-     * Fires a {@link RequestStartingEvent}.
+     * Marks that a new request has started. Fires the request-starting event.
      */
-    public void startRequest() {
-        if (hasActiveRequest) {
-            throw new IllegalStateException(
-                    "Trying to start a new request while another is active");
-        }
-        hasActiveRequest = true;
-        fireEvent(new RequestStartingEvent());
-    }
+    public native void startRequest();
+
+    /** @return whether there is an active UIDL request. */
+    public native boolean hasActiveRequest();
 
     /**
-     * Fires the given event using the event bus for this class.
-     *
-     * @param event
-     *            the event to fire
+     * Marks the current request as ended. Fires the response-handling-ended
+     * event.
      */
-    void fireEvent(Event<?> event) {
-        eventBus.fireEvent(event);
-    }
+    public native void endRequest();
+
+    /** Fires a response-handling-started event. */
+    public native void fireResponseHandlingStarted();
+
+    /** Fires a reconnection-attempt event with the given attempt number. */
+    public native void fireReconnectionAttempt(int attempt);
+
+    /** Adds a handler for request-starting events. */
+    public native HandlerRegistration addRequestStartingHandler(
+            JsRunnable handler);
+
+    /** Adds a handler for response-handling-started events. */
+    public native HandlerRegistration addResponseHandlingStartedHandler(
+            JsRunnable handler);
+
+    /** Adds a handler for response-handling-ended events. */
+    public native HandlerRegistration addResponseHandlingEndedHandler(
+            JsRunnable handler);
 
     /**
-     * Checks is there is an active UIDL request.
-     *
-     * @return true if there is an active request, false otherwise
+     * Adds a handler for reconnection-attempt events; handler receives the
+     * attempt number.
      */
-    public boolean hasActiveRequest() {
-        return hasActiveRequest;
-    }
-
-    /**
-     * Marks that the current request has ended.
-     * <p>
-     * Should not be called unless a request is in progress, i.e.
-     * {@link #startRequest()} has been called but not {@link #endRequest()}.
-     * <p>
-     * Will trigger sending of any pending invocations to the server.
-     * <p>
-     * Fires a {@link ResponseHandlingEndedEvent}.
-     */
-    public void endRequest() {
-        if (!hasActiveRequest) {
-            throw new IllegalStateException(
-                    "endRequest called when no request is active");
-        }
-        // After sendInvocationsToServer() there may be a new active
-        // request, so we must set hasActiveRequest to false before, not after,
-        // the call.
-        hasActiveRequest = false;
-
-        if ((registry.getUILifecycle().isRunning()
-                && registry.getServerRpcQueue().isFlushPending())
-                || registry.getMessageSender()
-                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER
-                || registry.getMessageSender().hasQueuedMessages()) {
-            // Send the pending RPCs immediately.
-            // This might be an unnecessary optimization as ServerRpcQueue has a
-            // finally scheduled command which trigger the send if we do not do
-            // it here
-            registry.getMessageSender().sendInvocationsToServer();
-        }
-
-        fireEvent(new ResponseHandlingEndedEvent());
-    }
-
-    /**
-     * Adds a handler for {@link RequestStartingEvent}s.
-     *
-     * @param handler
-     *            the handler to add
-     * @return a registration object which can be used to remove the handler
-     */
-    public HandlerRegistration addRequestStartingHandler(
-            RequestStartingEvent.Handler handler) {
-        return eventBus.addHandler(RequestStartingEvent.getType(), handler);
-    }
-
-    /**
-     * Adds a handler for {@link ResponseHandlingStartedEvent}s.
-     *
-     * @param handler
-     *            the handler to add
-     * @return a registration object which can be used to remove the handler
-     */
-    public HandlerRegistration addResponseHandlingStartedHandler(
-            ResponseHandlingStartedEvent.Handler handler) {
-        return eventBus.addHandler(ResponseHandlingStartedEvent.getType(),
-                handler);
-    }
-
-    /**
-     * Adds a handler for {@link ResponseHandlingEndedEvent}s.
-     *
-     * @param handler
-     *            the handler to add
-     * @return a registration object which can be used to remove the handler
-     */
-    public HandlerRegistration addResponseHandlingEndedHandler(
-            ResponseHandlingEndedEvent.Handler handler) {
-        return eventBus.addHandler(ResponseHandlingEndedEvent.getType(),
-                handler);
-    }
-
-    /**
-     * Adds a handler for {@link ReconnectionAttemptEvent}s.
-     *
-     * @param handler
-     *            the handler to add
-     * @return a registration object which can be used to remove the handler
-     */
-    public HandlerRegistration addReconnectionAttemptHandler(
-            ReconnectionAttemptEvent.Handler handler) {
-        return eventBus.addHandler(ReconnectionAttemptEvent.getType(), handler);
-    }
-
+    public native HandlerRegistration addReconnectionAttemptHandler(
+            JsIntConsumer handler);
 }

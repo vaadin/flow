@@ -267,7 +267,7 @@ public class Registry {
      * @return the {@link RequestResponseTracker} singleton
      */
     public RequestResponseTracker getRequestResponseTracker() {
-        return get(RequestResponseTracker.class);
+        return get("RequestResponseTracker");
     }
 
     /**
