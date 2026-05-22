@@ -41,7 +41,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 final class JsBuilder implements Serializable {
 
     private final Trigger trigger;
-    private final List<Object> params = new ArrayList<>();
+    private final List<@Nullable Object> params = new ArrayList<>();
     private final Map<Element, String> paramByElement = new IdentityHashMap<>();
 
     JsBuilder(Trigger trigger) {
@@ -76,8 +76,29 @@ final class JsBuilder implements Serializable {
     }
 
     /**
-     * Returns the element captures collected by this builder, in the order they
-     * were first referenced — these become the captures of the handler
+     * Allocates a fresh {@code $N} placeholder for an arbitrary capture value
+     * and returns the reference. Use this for non-{@link Element} values such
+     * as {@link com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration}
+     * — which materialises on the client as a function that calls the
+     * server-side handler — so an action can splice the resulting JS function
+     * into its expression. Each call allocates a new placeholder; values are
+     * not de-duplicated.
+     *
+     * @param value
+     *            the value to capture; must be a type supported as a parameter
+     *            to {@link com.vaadin.flow.dom.Element#executeJs}, may be
+     *            {@code null}
+     * @return the JS placeholder ({@code "$N"}) referencing the captured value
+     */
+    String capture(@Nullable Object value) {
+        String ref = "$" + params.size();
+        params.add(value);
+        return ref;
+    }
+
+    /**
+     * Returns the captures collected by this builder, in the order they were
+     * first referenced — these become the captures of the handler
      * {@link com.vaadin.flow.dom.JsFunction}.
      */
     Object[] captures() {
