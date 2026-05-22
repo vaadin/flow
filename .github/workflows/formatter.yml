@@ -1,7 +1,7 @@
 name: Formatter
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
     # spotless available in 25.x
     branches: [25.1]
@@ -71,6 +71,7 @@ jobs:
           retention-days: 30
 
       - name: Find existing comment
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
@@ -79,7 +80,7 @@ jobs:
           body-includes: '<!-- tc-formatter -->'
 
       - name: Create or update comment
-        if: steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.formatter.outputs.modified != '0'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
