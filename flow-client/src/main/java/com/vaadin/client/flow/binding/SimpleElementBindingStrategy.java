@@ -1397,8 +1397,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.htmlNode), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, false);
+                () -> WidgetUtil
+                        .<ServerEventObject> crazyJsCast(context.htmlNode),
+                context.node, NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                false);
     }
 
     private EventRemover bindClientCallableMethods(BindingContext context) {
