@@ -37,15 +37,6 @@
 		<when-type-is class="com.vaadin.client.communication.PushConnectionFactory" />
 	</replace-with>
 
-	<!-- Set vaadin.profiler to true to include profiling support in the module -->
-	<define-property name="vaadin.profiler" values="true,false" />
-	<set-property name="vaadin.profiler" value="false" />
-
-	<replace-with class="com.vaadin.client.Profiler.EnabledProfiler">
-		<when-type-is class="com.vaadin.client.Profiler" />
-		<when-property-is name="vaadin.profiler" value="true" />
-	</replace-with>
-
 	<!-- Use the cross site linker to get a nocache.js without document.write -->
 	<!-- Needed for SDM and GWT unit tests -->
 	<add-linker name="xsiframe" />
