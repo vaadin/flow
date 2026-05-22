@@ -47,6 +47,7 @@ import { PollConfigurator } from './client/communication/PollConfigurator';
 import { Poller } from './client/communication/Poller';
 import { PushConfiguration } from './client/communication/PushConfiguration';
 import { ReconnectConfiguration } from './client/communication/ReconnectConfiguration';
+import { RequestResponseTracker } from './client/communication/RequestResponseTracker';
 import { ServerConnector } from './client/communication/ServerConnector';
 import { ServerRpcQueue } from './client/communication/ServerRpcQueue';
 import { XhrConnection } from './client/communication/XhrConnection';
@@ -113,6 +114,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client.communication', 'Poller', Poller);
   registerGwtBridge('client.communication', 'PushConfiguration', PushConfiguration);
   registerGwtBridge('client.communication', 'ReconnectConfiguration', ReconnectConfiguration);
+  registerGwtBridge('client.communication', 'RequestResponseTracker', RequestResponseTracker);
   registerGwtBridge('client.communication', 'ServerConnector', ServerConnector);
   registerGwtBridge('client.communication', 'ServerRpcQueue', ServerRpcQueue);
   registerGwtBridge('client.communication', 'XhrConnection', XhrConnection);

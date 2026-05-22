@@ -325,8 +325,7 @@ public class MessageHandler {
         suspendReponseHandling(lock);
 
         Console.debug("Handling message from server");
-        registry.getRequestResponseTracker()
-                .fireEvent(new ResponseHandlingStartedEvent());
+        registry.getRequestResponseTracker().fireResponseHandlingStarted();
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
         if (valueMap.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {

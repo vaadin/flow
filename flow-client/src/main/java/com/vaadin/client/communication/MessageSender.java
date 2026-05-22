@@ -84,10 +84,10 @@ public class MessageSender {
         this.registry = registry;
         this.pushConnectionFactory = GWT.create(PushConnectionFactory.class);
         this.registry.getRequestResponseTracker()
-                .addReconnectionAttemptHandler(ev -> {
+                .addReconnectionAttemptHandler(attempt -> {
                     Console.debug(
                             "Re-sending queued messages to the server (attempt "
-                                    + ev.getAttempt() + ") ...");
+                                    + attempt + ") ...");
                     // Try to reconnect by sending queued messages.
                     // Stops the resend timer, since it will anyway not make any
                     // request during reconnection process.
@@ -476,7 +476,7 @@ public class MessageSender {
         resynchronizationState = ResynchronizationState.NOT_ACTIVE;
     }
 
-    ResynchronizationState getResynchronizationState() {
+    public ResynchronizationState getResynchronizationState() {
         return resynchronizationState;
     }
 

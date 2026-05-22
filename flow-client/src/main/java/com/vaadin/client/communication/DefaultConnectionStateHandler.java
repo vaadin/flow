@@ -266,7 +266,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         if (payload != null) {
             Console.debug("Trying to re-establish server connection (UIDL)...");
             registry.getRequestResponseTracker()
-                    .fireEvent(new ReconnectionAttemptEvent(reconnectAttempt));
+                    .fireReconnectionAttempt(reconnectAttempt);
         } else {
             // Use heartbeat
             Console.debug(
