@@ -28,6 +28,8 @@ import com.vaadin.flow.component.EventData;
  * @see DragSource#addDragEndListener(com.vaadin.flow.component.ComponentEventListener)
  * @author Vaadin Ltd
  * @since 2.0
+ *
+ * Test external contribution
  */
 @DomEvent("dragend")
 public class DragEndEvent<T extends Component> extends AbstractDnDEvent<T> {
