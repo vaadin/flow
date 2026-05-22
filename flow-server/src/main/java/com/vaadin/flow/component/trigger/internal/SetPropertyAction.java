@@ -53,13 +53,31 @@ import com.vaadin.flow.dom.Element;
  */
 public class SetPropertyAction<T> extends Action {
 
+    /**
+     * Singleton input emitting the JS literal {@code null}. Used by the
+     * {@link #SetPropertyAction(Component, String, Object) null-accepting
+     * convenience constructor} so {@link LiteralInput} can stay non-null.
+     */
+    private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
+        @Override
+        protected void appendExpression(JsBuilder builder, StringBuilder out) {
+            out.append("null");
+        }
+    };
+
+    @SuppressWarnings("unchecked")
+    private static <T> Action.Input<T> nullLiteral() {
+        return (Action.Input<T>) NULL_LITERAL;
+    }
+
     private final Element target;
     private final String propertyName;
     private final Action.Input<? extends T> source;
 
     /**
      * Creates an action that assigns the given literal value to the given JS
-     * property on {@code target} when the trigger fires.
+     * property on {@code target} when the trigger fires. Passing {@code null}
+     * clears the property (renders {@code target[prop] = null;}).
      *
      * @param target
      *            the component whose root element to modify, not {@code null}
@@ -68,11 +86,13 @@ public class SetPropertyAction<T> extends Action {
      * @param value
      *            the value to assign — {@code String}, {@code Boolean},
      *            {@code Number}, or any Jackson-serialisable object; may be
-     *            {@code null}
+     *            {@code null} to emit a JS {@code null} (e.g. to clear an
+     *            input's value)
      */
     public SetPropertyAction(Component target, String propertyName,
             @Nullable T value) {
-        this(target, propertyName, new LiteralInput<>(value));
+        this(target, propertyName,
+                value == null ? nullLiteral() : new LiteralInput<>(value));
     }
 
     /**
