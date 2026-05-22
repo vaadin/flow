@@ -676,7 +676,6 @@
         <version>3.12.0</version>
         <configuration>
           <quiet>true</quiet>
-          <failOnError>true</failOnError>
         </configuration>
         <executions>
           <execution>

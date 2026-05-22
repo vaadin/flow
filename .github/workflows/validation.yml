@@ -139,6 +139,20 @@ jobs:
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Surface Javadoc errors
+        if: ${{ failure() }}
+        run: |
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          if [ -f "$LOG" ] && grep -qE '\.java:[0-9]+: error:' "$LOG"; then
+            {
+              echo ""
+              echo "### Javadoc errors"
+              echo ""
+              echo '```'
+              grep -E '\.java:[0-9]+: error:' -A 2 "$LOG" | sed 's/^\[ERROR\] //'
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |
