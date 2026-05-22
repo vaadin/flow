@@ -66,8 +66,7 @@ class LoadingIndicatorConfigurationMapTest
 
     @Test
     void setGetPopoverOptOut() {
-        testBoolean(map,
-                LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY,
+        testBoolean(map, LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY,
                 map::setPopoverOptOut, map::isPopoverOptOut);
     }
 }

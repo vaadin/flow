@@ -67,9 +67,9 @@ public class LoadingIndicatorConfigurator {
 
         MapProperty popoverOptOutProperty = configMap.getProperty(
                 LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY);
-        popoverOptOutProperty.addChangeListener(event -> setPopoverOptOut(
-                event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY_DEFAULT)
-        ));
+        popoverOptOutProperty.addChangeListener(
+                event -> setPopoverOptOut(event.getSource().getValueOrDefault(
+                        LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY_DEFAULT)));
     }
 
     /**
