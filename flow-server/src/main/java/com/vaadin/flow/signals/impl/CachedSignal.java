@@ -219,8 +219,10 @@ public class CachedSignal<T extends @Nullable Object>
 
             state = new CacheState(value, exception, dependencies);
 
-            submit(new SignalCommand.SetCommand(Id.random(), id(),
-                    new CachedPOJONode(state)));
+            CacheState stateToSubmit = state;
+            Effect.runInReadTriggeredUpdateContext(() -> submit(
+                    new SignalCommand.SetCommand(Id.random(), id(),
+                            new CachedPOJONode(stateToSubmit))));
         }
 
         return state;

@@ -52,6 +52,9 @@ public class Effect implements Serializable {
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
+    private static final ThreadLocal<Boolean> inReadTriggeredUpdate = ThreadLocal
+            .withInitial(() -> Boolean.FALSE);
+
     private SerializableExecutor dispatcher;
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
@@ -239,9 +242,13 @@ public class Effect implements Serializable {
         /*
          * Detect loops by checking if the same effect is already active on this
          * thread. Don't check for immediate updates since an immediate update
-         * doesn't run on the same thread that caused the change.
+         * doesn't run on the same thread that caused the change. Also skip the
+         * check if we're in a read-triggered update context (e.g., a cached
+         * signal updating itself during a read), since that's lazy evaluation,
+         * not an actual loop.
          */
-        if (!immediate && activeEffects.get().contains(this)) {
+        if (!immediate && !inReadTriggeredUpdate.get()
+                && activeEffects.get().contains(this)) {
             dispose();
             throw new IllegalStateException(
                     "Infinite loop detected between effect updates. This effect is deactivated.");
@@ -417,6 +424,25 @@ public class Effect implements Serializable {
         }
         if (discardNewRegistrations) {
             newRegistrations.forEach(Registration::remove);
+        }
+    }
+
+    /**
+     * Runs the given action in a read-triggered update context. Change
+     * notifications that occur during this context will not trigger infinite
+     * loop detection, since they are caused by lazy evaluation (e.g., a cached
+     * signal updating itself when read) rather than an actual write loop.
+     *
+     * @param action
+     *            the action to run, not {@code null}
+     */
+    public static void runInReadTriggeredUpdateContext(Runnable action) {
+        Boolean previous = inReadTriggeredUpdate.get();
+        inReadTriggeredUpdate.set(Boolean.TRUE);
+        try {
+            action.run();
+        } finally {
+            inReadTriggeredUpdate.set(previous);
         }
     }
 

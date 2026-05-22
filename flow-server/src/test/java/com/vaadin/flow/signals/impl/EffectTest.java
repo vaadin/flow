@@ -453,6 +453,31 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void infiniteLoopDetection_cachedSignalSelfUpdate_notDetectedAsLoop() {
+        SharedValueSignal<String> source = new SharedValueSignal<>("initial");
+        AtomicInteger effectCount = new AtomicInteger();
+        AtomicInteger cachedCount = new AtomicInteger();
+
+        Signal<String> cached = Signal.cached(() -> {
+            cachedCount.incrementAndGet();
+            return source.get();
+        });
+
+        Signal.unboundEffect(() -> {
+            effectCount.incrementAndGet();
+            cached.get();
+        });
+
+        assertEquals(1, effectCount.get());
+        assertEquals(1, cachedCount.get());
+
+        source.set("update");
+
+        assertEquals(2, effectCount.get());
+        assertEquals(2, cachedCount.get());
+    }
+
+    @Test
     void infiniteLoopDetection_writeUnrelatedSignal_noError() {
         SharedValueSignal<String> other = new SharedValueSignal<>("other");
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal");
