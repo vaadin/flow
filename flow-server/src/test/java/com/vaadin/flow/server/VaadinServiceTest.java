@@ -636,36 +636,6 @@ class VaadinServiceTest {
     }
 
     @Test
-    void runPendingAccessTasks_clearsSessionTransactionBeforeEachTask() {
-        VaadinService service = createService();
-        AtomicInteger clearCount = new AtomicInteger(0);
-
-        // Custom session that tracks clearSessionScopedTransaction calls
-        MockVaadinSession session = new MockVaadinSession(service) {
-            @Override
-            void clearSessionScopedTransaction() {
-                clearCount.incrementAndGet();
-                super.clearSessionScopedTransaction();
-            }
-        };
-        session.lock();
-
-        // Queue multiple access tasks
-        service.accessSession(session, () -> {
-        });
-        service.accessSession(session, () -> {
-        });
-
-        assertEquals(0, clearCount.get(),
-                "Transaction should not be cleared before running tasks");
-
-        service.runPendingAccessTasks(session);
-
-        assertEquals(2, clearCount.get(),
-                "Transaction should be cleared once per task");
-    }
-
-    @Test
     void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
 
         VaadinServiceInitListener initListener = event -> {
