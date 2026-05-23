@@ -98,13 +98,13 @@ class ClipboardTest {
     }
 
     @Test
-    void copyTextFromValue_emitsPropertyInputForValue() {
+    void copyTextFrom_hasValue_emitsPropertyInputForValue() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         TestField field = new TestField();
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        Clipboard.on(button).copyTextFromValue(field);
+        Clipboard.on(button).copyTextFrom(field);
 
         String body = handlerBody(ui);
         assertTrue(body.contains("\"text/plain\":$0[\"value\"]"), body);

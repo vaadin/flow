@@ -39,10 +39,9 @@ import com.vaadin.flow.function.SerializableRunnable;
  *
  * <pre>{@code
  * Button copy = new Button("Copy");
- * Clipboard.on(copy).copyTextFromValue(textField);
+ * Clipboard.on(copy).copyTextFrom(textField);
  *
- * Clipboard.on(copy).copyTextFromValue(textField,
- *         () -> Notification.show("Copied"),
+ * Clipboard.on(copy).copyTextFrom(textField, () -> Notification.show("Copied"),
  *         err -> Notification.show("Failed: " + err));
  * }</pre>
  */
@@ -103,17 +102,17 @@ public final class ClipboardBinding {
      *            component type implementing {@code HasValue<?, String>}
      * @return a registration that removes the trigger when removed
      */
-    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFromValue(
+    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFrom(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         return copyTextFrom(new PropertyInput<>(source, "value", String.class));
     }
 
     /**
-     * Like {@link #copyTextFromValue(Component)} but reports the outcome back
-     * to the server.
+     * Like {@link #copyTextFrom(Component)} but reports the outcome back to the
+     * server.
      */
-    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFromValue(
+    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFrom(
             C source, SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(source, "source must not be null");

@@ -29,7 +29,7 @@ import com.vaadin.flow.component.trigger.internal.Trigger;
  *
  * <pre>{@code
  * Button copyButton = new Button("Copy");
- * Clipboard.on(copyButton).copyTextFromValue(textField);
+ * Clipboard.on(copyButton).copyTextFrom(textField);
  *
  * Clipboard.on(copyButton).copyFrom(
  *         ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
