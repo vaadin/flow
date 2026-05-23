@@ -456,25 +456,26 @@ class EffectTest extends SignalTestBase {
     void infiniteLoopDetection_cachedSignalSelfUpdate_notDetectedAsLoop() {
         SharedValueSignal<String> source = new SharedValueSignal<>("initial");
         AtomicInteger effectCount = new AtomicInteger();
-        AtomicInteger cachedCount = new AtomicInteger();
 
-        Signal<String> cached = Signal.cached(() -> {
-            cachedCount.incrementAndGet();
-            return source.get();
-        });
+        Signal<String> cached = Signal.cached(() -> source.get());
 
         Signal.unboundEffect(() -> {
-            effectCount.incrementAndGet();
+            int count = effectCount.incrementAndGet();
+            // Read cached so the effect registers a listener on cached's tree.
             cached.get();
+            // Trigger a source change from inside the effect on the first run.
+            // The cascade source change → cached's source-dep listener →
+            // revalidateAndListen → submit cached then fires the effect's
+            // listener on cached while this effect is still in activeEffects.
+            // Without the fix, this is mistakenly detected as an infinite loop
+            // even though the submit is just lazy re-evaluation of the cached
+            // state.
+            if (count == 1) {
+                source.set("update");
+            }
         });
 
-        assertEquals(1, effectCount.get());
-        assertEquals(1, cachedCount.get());
-
-        source.set("update");
-
         assertEquals(2, effectCount.get());
-        assertEquals(2, cachedCount.get());
     }
 
     @Test
