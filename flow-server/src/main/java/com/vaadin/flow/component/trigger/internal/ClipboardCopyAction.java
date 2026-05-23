@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.Objects;
+
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -63,8 +65,9 @@ public class ClipboardCopyAction extends PromiseAction {
 
     /**
      * Creates a clipboard-copy action whose outcome is reported back to the
-     * server. See {@link PromiseAction} for the contract on
-     * {@code onSuccess}/{@code onError}.
+     * server. {@code navigator.clipboard.write} resolves to {@code undefined}
+     * so {@code onSuccess} carries no value (a {@link SerializableRunnable});
+     * {@code onError} receives the browser's rejection message.
      *
      * @param textInput
      *            input producing the {@code text/plain} payload, or
@@ -85,10 +88,22 @@ public class ClipboardCopyAction extends PromiseAction {
             Action.@Nullable Input<String> htmlInput,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
-        super(onSuccess, onError);
+        super(adaptOnSuccess(onSuccess), adaptOnError(onError));
         validate(textInput, htmlInput);
         this.textInput = textInput;
         this.htmlInput = htmlInput;
+    }
+
+    private static SerializableConsumer<Success> adaptOnSuccess(
+            SerializableRunnable onSuccess) {
+        Objects.requireNonNull(onSuccess, "onSuccess must not be null");
+        return success -> onSuccess.run();
+    }
+
+    private static SerializableConsumer<Error> adaptOnError(
+            SerializableConsumer<String> onError) {
+        Objects.requireNonNull(onError, "onError must not be null");
+        return err -> onError.accept(err.message());
     }
 
     private static void validate(Action.@Nullable Input<String> text,
