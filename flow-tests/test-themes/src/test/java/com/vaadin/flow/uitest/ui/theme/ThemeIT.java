@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -41,7 +40,6 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.KEYBOARD_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.LEMON_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_TOP_DIV;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
@@ -152,30 +150,6 @@ public class ThemeIT extends ChromeBrowserTest {
                 + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
-    }
-
-    @Test
-    @Ignore("Enable themeComponentStyles featureflag for component theme")
-    public void componentThemeIsApplied() {
-        open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
-    }
-
-    @Test
-    public void componentThemeIsNotAppliedWhenNoFeatureFlag() {
-        open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals(
-                "Polymer text field should have transparent gray background",
-                "rgba(26, 57, 96, 0.1)", input.getCssValue("background-color"));
     }
 
     @Test

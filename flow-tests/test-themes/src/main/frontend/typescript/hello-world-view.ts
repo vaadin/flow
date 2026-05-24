@@ -1,4 +1,3 @@
-import '@vaadin/text-field';
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import styles from './hello-world-view.css?inline';
@@ -10,9 +9,9 @@ export class HelloWorldView extends LitElement {
   static styles = [styles];
 
   render() {
-    return html` <vaadin-text-field label="Your name" @value-changed="${this.nameChanged}"></vaadin-text-field> `;
+    return html` <label>Your name <input type="text" @change="${this.nameChanged}" /></label> `;
   }
-  nameChanged(e: CustomEvent) {
-    this.name = e.detail.value;
+  nameChanged(e: Event) {
+    this.name = (e.target as HTMLInputElement).value;
   }
 }
