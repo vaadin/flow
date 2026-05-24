@@ -17,10 +17,13 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.dom.JsFunction;
+
 /**
  * Input whose value is produced by a JS expression scoped to a specific
- * trigger's handler — typically {@code event[...]} for a
- * {@link DomEventTrigger}.
+ * trigger's handler — typically reading from the {@code event} argument passed
+ * in by the framework (e.g. {@code event.screenX} for a
+ * {@link DomEventTrigger}).
  * <p>
  * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
  * refuses to render an input created by trigger A into the handler of trigger B
@@ -42,12 +45,15 @@ final class HandlerInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected void appendExpression(JsBuilder builder, StringBuilder out) {
+    protected JsFunction toJs(JsBuilder builder) {
         if (builder.trigger() != owner) {
             throw new IllegalArgumentException(
                     "Input is scoped to a different trigger and cannot be"
                             + " used here");
         }
-        out.append(jsExpression);
+        // The expression references `event` (and only `event`); declare it as
+        // a runtime argument so the framework can pass the trigger's event in
+        // when the input function is invoked.
+        return JsFunction.of("return " + jsExpression).withArguments("event");
     }
 }

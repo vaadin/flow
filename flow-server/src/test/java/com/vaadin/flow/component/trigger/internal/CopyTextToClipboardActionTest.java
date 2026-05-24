@@ -37,8 +37,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CopyTextToClipboardActionTest {
 
+    /**
+     * IIFE that binds the text expression to {@code v}, writes it, and resolves
+     * with the same value so {@code onSuccess} sees the exact string that
+     * reached the clipboard. {@code $0} is the text input function.
+     */
+    private static final String PROMISE_BODY = "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))";
+
     @Test
-    void fireAndForget_handlerJsIsPlainWriteText() {
+    void fireAndForget_actionFnIsThePromiseInnerDirectly() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
@@ -50,15 +57,14 @@ class CopyTextToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Fire-and-forget uses the simple writeText call — no IIFE wrap
-        // because the resolved value isn't needed.
-        assertEquals(
-                "((v) => navigator.clipboard.writeText(v).then(() => v))($0[\"value\"]);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Fire-and-forget mode: action is the inner JsFunction with no
+        // observer wrapping.
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        assertEquals(PROMISE_BODY, action.getBody());
     }
 
     @Test
-    void fireAndForget_literalInput_encodesValueAsJsonLiteral() {
+    void fireAndForget_literalInput_capturesValueOnTheInnerInputFunction() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -69,16 +75,17 @@ class CopyTextToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // The literal is JSON-encoded, so the quotes and newline inside are
-        // escaped — proves callers can't accidentally break out of the
-        // string by passing values that contain quotes or newlines.
-        assertEquals(
-                "((v) => navigator.clipboard.writeText(v).then(() => v))(\"hello \\\"world\\\"\\n\");",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // The literal value is captured by JsFunction; quoting/escaping
+        // happens on the wire, not in the body — proves callers can't
+        // accidentally break out of a JS string literal.
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction textFn = (JsFunction) action.getCaptures().get(0);
+        assertEquals("return $0", textFn.getBody());
+        assertEquals("hello \"world\"\n", textFn.getCaptures().get(0));
     }
 
     @Test
-    void withCallbacks_handlerCallsObserverWithWriteTextPromise() {
+    void withCallbacks_actionFnWrapsInnerWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
@@ -93,12 +100,13 @@ class CopyTextToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = field;
-        // the IIFE binds the text to v so the promise resolves with the
-        // copied value.
-        assertEquals(
-                "$0(((v) => navigator.clipboard.writeText(v).then(() => v))($2[\"value\"]), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Action wraps the inner promise function with OBSERVE_PROMISE + the
+        // return channel. The inner still has the IIFE body.
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals(PROMISE_BODY, inner.getBody());
     }
 
     @Test
@@ -156,8 +164,8 @@ class CopyTextToClipboardActionTest {
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        List<ReturnChannelRegistration> channels = handlerOf(
-                singleInstallFn(ui)).getCaptures().stream()
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(o -> o instanceof ReturnChannelRegistration)
                 .map(o -> (ReturnChannelRegistration) o).toList();
         assertEquals(1, channels.size(),
@@ -182,6 +190,13 @@ class CopyTextToClipboardActionTest {
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
                 "Expected install $0 to be the handler JsFunction");
+        return (JsFunction) o;
+    }
+
+    private static JsFunction actionOf(JsFunction handler, int index) {
+        Object o = handler.getCaptures().get(index);
+        assertTrue(o instanceof JsFunction,
+                "Expected handler capture " + index + " to be a JsFunction");
         return (JsFunction) o;
     }
 }

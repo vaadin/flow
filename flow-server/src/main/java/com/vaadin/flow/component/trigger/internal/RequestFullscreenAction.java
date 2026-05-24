@@ -21,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
@@ -110,8 +111,9 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        out.append(builder.reference(target)).append(".requestFullscreen()");
+    protected JsFunction renderPromiseExpression(JsBuilder builder) {
+        // $0 = target element captured by JsFunction; reified on the client
+        // as the DOM node.
+        return JsFunction.of("return $0.requestFullscreen()", target);
     }
 }

@@ -21,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 
 /**
  * Assigns a value to a JavaScript property on a target element when the bound
@@ -54,14 +55,14 @@ import com.vaadin.flow.dom.Element;
 public class SetPropertyAction<T> extends Action {
 
     /**
-     * Singleton input emitting the JS literal {@code null}. Used by the
+     * Singleton input that yields a JS {@code null}. Used by the
      * {@link #SetPropertyAction(Component, String, Object) null-accepting
      * convenience constructor} so {@link LiteralInput} can stay non-null.
      */
     private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
         @Override
-        protected void appendExpression(JsBuilder builder, StringBuilder out) {
-            out.append("null");
+        protected JsFunction toJs(JsBuilder builder) {
+            return JsFunction.of("return null");
         }
     };
 
@@ -114,9 +115,11 @@ public class SetPropertyAction<T> extends Action {
     }
 
     @Override
-    protected void appendStatement(JsBuilder builder, StringBuilder out) {
-        out.append(builder.reference(target)).append("[")
-                .append(JsBuilder.json(propertyName)).append("] = ");
-        source.appendExpression(builder, out);
+    protected JsFunction render(JsBuilder builder) {
+        // $0 = target element (captured), $1 = property name (string
+        // capture, Jackson-quoted on the client), $2 = source JsFunction
+        // (invoked with event so handler-scoped inputs work).
+        return JsFunction.of("$0[$1] = $2(event)", target, propertyName,
+                source.toJs(builder)).withArguments("event");
     }
 }

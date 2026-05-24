@@ -90,14 +90,17 @@ public abstract class Trigger implements Serializable {
                     "At least one action is required");
         }
         JsBuilder builder = new JsBuilder(this);
-        StringBuilder handlerBody = new StringBuilder();
-        for (Action action : actions) {
-            Objects.requireNonNull(action, "Action must not be null");
-            action.appendStatement(builder, handlerBody);
-            handlerBody.append(";");
+        Object[] captures = new Object[actions.length];
+        StringBuilder body = new StringBuilder();
+        for (int i = 0; i < actions.length; i++) {
+            Action action = Objects.requireNonNull(actions[i],
+                    "Action must not be null");
+            // Each action ships as its own JsFunction; the handler body just
+            // invokes them in order, threading the event payload through.
+            captures[i] = action.render(builder);
+            body.append('$').append(i).append("(event);");
         }
-        JsFunction handler = JsFunction
-                .of(handlerBody.toString(), builder.captures())
+        JsFunction handler = JsFunction.of(body.toString(), captures)
                 .withArguments("event");
         registrations.add(host.addJsInitializer(installJs(), handler));
     }

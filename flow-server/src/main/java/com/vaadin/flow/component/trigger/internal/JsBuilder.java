@@ -16,99 +16,49 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
- * Collects element references and produces JS placeholders for them while a
- * trigger builds its {@link com.vaadin.flow.dom.Element#addJsInitializer
- * addJsInitializer} expression.
+ * Render-time context passed to {@link Action#render} and
+ * {@link Action.Input#toJs}. Exposes the surrounding {@link Trigger} so Actions
+ * and Inputs can identify their host element (for return channels,
+ * scope-checks, etc.) without taking it as a separate parameter.
  * <p>
- * The host element is always {@code this} inside the wrapper; other elements
- * are appended to the parameter list and referenced as {@code $0}, {@code $1},
- * … (reusing the same index when the same element is referenced more than
- * once).
+ * Element references, value literals, and other captures are encoded by the
+ * {@link com.vaadin.flow.dom.JsFunction} each Action/Input returns; this
+ * context does not collect captures across renders.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 final class JsBuilder implements Serializable {
 
     private final Trigger trigger;
-    private final List<@Nullable Object> params = new ArrayList<>();
-    private final Map<Element, String> paramByElement = new IdentityHashMap<>();
 
     JsBuilder(Trigger trigger) {
         this.trigger = trigger;
     }
 
     /**
-     * The trigger this builder is collecting JS for. Used by handler-scoped
-     * arguments ({@link HandlerInput}) to refuse being rendered into a
-     * different trigger's handler.
+     * The trigger this render is for. Used by handler-scoped inputs (see
+     * {@link HandlerInput}) to refuse rendering into a different trigger, and
+     * by promise-based actions to register return channels on the trigger
+     * host's state node.
      */
     Trigger trigger() {
         return trigger;
     }
 
     /**
-     * Returns a JS expression that evaluates to the given element at runtime.
-     * Returns {@code "this"} for the host; otherwise allocates a parameter
-     * placeholder.
-     */
-    String reference(Element element) {
-        if (element == trigger.getHost()) {
-            return "this";
-        }
-        String ref = paramByElement.get(element);
-        if (ref == null) {
-            ref = "$" + params.size();
-            params.add(element);
-            paramByElement.put(element, ref);
-        }
-        return ref;
-    }
-
-    /**
-     * Allocates a fresh {@code $N} placeholder for an arbitrary capture value
-     * and returns the reference. Use this for non-{@link Element} values such
-     * as {@link com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration}
-     * — which materialises on the client as a function that calls the
-     * server-side handler — so an action can splice the resulting JS function
-     * into its expression. Each call allocates a new placeholder; values are
-     * not de-duplicated.
-     *
-     * @param value
-     *            the value to capture; must be a type supported as a parameter
-     *            to {@link com.vaadin.flow.dom.Element#executeJs}, may be
-     *            {@code null}
-     * @return the JS placeholder ({@code "$N"}) referencing the captured value
-     */
-    String capture(@Nullable Object value) {
-        String ref = "$" + params.size();
-        params.add(value);
-        return ref;
-    }
-
-    /**
-     * Returns the captures collected by this builder, in the order they were
-     * first referenced — these become the captures of the handler
-     * {@link com.vaadin.flow.dom.JsFunction}.
-     */
-    Object[] captures() {
-        return params.toArray();
-    }
-
-    /**
-     * Encodes a value as a JS literal via Jackson. Strings are JSON-quoted,
-     * numbers/booleans/null become themselves, records and POJOs become JS
-     * object literals.
+     * Encodes {@code value} as a JS literal via Jackson. Strings are
+     * JSON-quoted, numbers/booleans/null become themselves, records and POJOs
+     * become JS object literals.
+     * <p>
+     * Used by {@link Trigger} subclasses whose {@code installJs()} returns a
+     * raw JS string (not a {@link com.vaadin.flow.dom.JsFunction}) and so
+     * cannot let JsFunction's capture machinery do the encoding for them.
      */
     static String json(@Nullable Object value) {
         return JacksonUtils.createNode(value).toString();

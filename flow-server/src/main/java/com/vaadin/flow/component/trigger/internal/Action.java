@@ -17,39 +17,53 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.dom.JsFunction;
+
 /**
- * Something that runs on the client when a {@link Trigger} fires. Subclasses
- * append the JS that runs when the trigger fires by overriding
- * {@link #appendStatement(JsBuilder, StringBuilder)}.
+ * Something that runs on the client when a {@link Trigger} fires.
  * <p>
- * Actions can take their value either from server-side literals or from an
- * {@link Input} — a deferred value expression evaluated in the trigger's
- * handler scope at fire time. A Trigger may expose its own state as one or more
- * {@code Input}s (for example {@link ClickTrigger#screenX()}); other subclasses
- * of {@code Input} read state independent of any trigger (for example
- * {@link PropertyInput}).
+ * Each Action {@linkplain #render renders} into a {@link JsFunction}: a body of
+ * JavaScript plus a list of captures (element references, value literals,
+ * nested {@link JsFunction}s) referenced positionally as {@code $0},
+ * {@code $1}, … The framework composes the per-Action functions into the
+ * trigger's handler — Actions do not concatenate JS source with anything
+ * outside their own body.
+ * <p>
+ * The rendered function takes one runtime argument, {@code event}, which is the
+ * DOM event (or other trigger payload) that fired the trigger. Inputs that need
+ * it ({@link HandlerInput}) read it; Inputs that don't simply ignore it.
+ * <p>
+ * Actions are intentionally one-shot: each {@link #render} produces a single
+ * statement worth of JS. Multi-statement logic belongs in a
+ * {@code window.Vaadin.Flow.*} helper in {@code flow-client} that the Action
+ * calls into (see {@code Clipboard.ts}, {@code Download.ts}).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public abstract class Action implements Serializable {
 
     /**
-     * Appends this action's JS statement to {@code out}. Element references
-     * must go through {@link JsBuilder#reference}.
+     * Builds the {@link JsFunction} that runs this action when the surrounding
+     * trigger fires. The returned function takes one runtime argument named
+     * {@code event} (declared by the framework when it composes the trigger
+     * handler); subclasses do not declare argument names themselves.
+     * <p>
+     * The body is one statement. To embed a value produced on the client,
+     * capture an {@link Input}'s {@link Input#toJs(JsBuilder) JsFunction} as a
+     * capture and invoke it inside the body as {@code $N(event)}.
      *
      * @param builder
-     *            collects element parameter references, not {@code null}
-     * @param out
-     *            buffer to append into, not {@code null}
+     *            render-time context exposing the surrounding {@link Trigger};
+     *            not {@code null}
+     * @return the action's JS function, not {@code null}
      */
-    protected abstract void appendStatement(JsBuilder builder,
-            StringBuilder out);
+    protected abstract JsFunction render(JsBuilder builder);
 
     /**
-     * A value an {@link Action} consumes at fire time — a deferred JS
-     * expression that yields a value when the surrounding trigger fires.
-     * Subclasses produce the JS expression by overriding
-     * {@link #appendExpression(JsBuilder, StringBuilder)}.
+     * A value an {@link Action} consumes at fire time. Renders into a
+     * {@link JsFunction} that, when called, evaluates to the input's value — a
+     * literal, the current value of a DOM property, an event-scoped expression,
+     * anything the producer chooses.
      * <p>
      * Some inputs are bound to a specific trigger's handler scope (see
      * {@link HandlerInput}) and may only be used in actions wired to that
@@ -64,15 +78,18 @@ public abstract class Action implements Serializable {
     public abstract static class Input<T> implements Serializable {
 
         /**
-         * Appends this input's JS expression to {@code out}. Element references
-         * must go through {@link JsBuilder#reference}.
+         * Builds the {@link JsFunction} that yields this input's value when
+         * called. The function may take {@code event} as a runtime argument
+         * (declared by the subclass via
+         * {@link JsFunction#withArguments(String...)}); inputs that don't need
+         * {@code event} simply omit the declaration and ignore the argument the
+         * caller passes.
          *
          * @param builder
-         *            collects element parameter references, not {@code null}
-         * @param out
-         *            buffer to append into, not {@code null}
+         *            render-time context exposing the surrounding
+         *            {@link Trigger}; not {@code null}
+         * @return the input's JS function, not {@code null}
          */
-        protected abstract void appendExpression(JsBuilder builder,
-                StringBuilder out);
+        protected abstract JsFunction toJs(JsBuilder builder);
     }
 }

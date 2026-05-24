@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ClipboardReadActionTest {
 
     @Test
-    void handlerJsCallsObserverWithClipboardReadPromise() {
+    void actionFnWrapsClipboardReadPromiseWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -51,10 +51,14 @@ class ClipboardReadActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the
-        // .then/.catch glue lives inside $0, not in the action's expression.
-        assertEquals("$0(window.Vaadin.Flow.clipboard.readPayload(), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Action wraps the inner promise function with OBSERVE_PROMISE +
+        // return channel. The inner just invokes the Clipboard.ts helper.
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
+                inner.getBody());
     }
 
     @Test
@@ -141,13 +145,20 @@ class ClipboardReadActionTest {
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        List<ReturnChannelRegistration> channels = handlerOf(
-                singleInstallFn(ui)).getCaptures().stream()
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(o -> o instanceof ReturnChannelRegistration)
                 .map(o -> (ReturnChannelRegistration) o).toList();
         assertEquals(1, channels.size(),
                 "Expected exactly one captured return channel");
         return channels.get(0);
+    }
+
+    private static JsFunction actionOf(JsFunction handler, int index) {
+        Object o = handler.getCaptures().get(index);
+        assertTrue(o instanceof JsFunction,
+                "Expected handler capture " + index + " to be a JsFunction");
+        return (JsFunction) o;
     }
 
     private static JsFunction singleInstallFn(UI ui) {

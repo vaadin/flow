@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -89,13 +90,12 @@ public class CopyTextToClipboardAction extends PromiseAction<String> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        // Bind the text expression once on the client, write it, then
-        // resolve the promise with the same value so onCopied sees the
-        // exact string that reached the clipboard.
-        out.append("((v) => navigator.clipboard.writeText(v).then(() => v))(");
-        textInput.appendExpression(builder, out);
-        out.append(")");
+    protected JsFunction renderPromiseExpression(JsBuilder builder) {
+        // IIFE: bind the text once on the client, write it, then resolve the
+        // promise with the same value so onCopied sees the exact string that
+        // reached the clipboard. $0(event) invokes the text input.
+        return JsFunction.of(
+                "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))",
+                textInput.toJs(builder)).withArguments("event");
     }
 }
