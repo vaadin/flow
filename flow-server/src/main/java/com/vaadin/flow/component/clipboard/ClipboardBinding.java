@@ -26,11 +26,12 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Fluent surface returned from {@link Clipboard#on}. Each {@code copy*From}
  * verb attaches one {@link ClipboardCopyAction} to the underlying
- * {@link Trigger} and returns a {@link ClipboardWrite} for removal.
+ * {@link Trigger} and returns a {@link Registration} for removal.
  * <p>
  * Verbs come in two flavours: fire-and-forget (one argument) and observed (with
  * {@code onSuccess}/{@code onError} callbacks). Both consumers are required in
@@ -63,7 +64,7 @@ public final class ClipboardBinding {
      *            the value to copy, not {@code null}
      * @return a registration that removes the trigger when removed
      */
-    public ClipboardWrite copyTextFrom(String literal) {
+    public Registration copyTextFrom(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
         return copyTextFrom(new LiteralInput<>(literal));
     }
@@ -81,7 +82,7 @@ public final class ClipboardBinding {
      *            message, not {@code null}
      * @return a registration that removes the trigger when removed
      */
-    public ClipboardWrite copyTextFrom(String literal,
+    public Registration copyTextFrom(String literal,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
@@ -102,7 +103,7 @@ public final class ClipboardBinding {
      *            component type implementing {@code HasValue<?, String>}
      * @return a registration that removes the trigger when removed
      */
-    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFrom(
+    public <C extends Component & HasValue<?, String>> Registration copyTextFrom(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         return copyTextFrom(new PropertyInput<>(source, "value", String.class));
@@ -112,7 +113,7 @@ public final class ClipboardBinding {
      * Like {@link #copyTextFrom(Component)} but reports the outcome back to the
      * server.
      */
-    public <C extends Component & HasValue<?, String>> ClipboardWrite copyTextFrom(
+    public <C extends Component & HasValue<?, String>> Registration copyTextFrom(
             C source, SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(source, "source must not be null");
@@ -128,7 +129,7 @@ public final class ClipboardBinding {
      *            the input, not {@code null}
      * @return a registration that removes the trigger when removed
      */
-    public ClipboardWrite copyTextFrom(Action.Input<String> source) {
+    public Registration copyTextFrom(Action.Input<String> source) {
         Objects.requireNonNull(source, "source must not be null");
         return bind(new ClipboardCopyAction(source, null));
     }
@@ -137,7 +138,7 @@ public final class ClipboardBinding {
      * Like {@link #copyTextFrom(Action.Input)} but reports the outcome back to
      * the server.
      */
-    public ClipboardWrite copyTextFrom(Action.Input<String> source,
+    public Registration copyTextFrom(Action.Input<String> source,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(source, "source must not be null");
@@ -149,7 +150,7 @@ public final class ClipboardBinding {
     /**
      * Copies a literal HTML string to the clipboard as {@code text/html}.
      */
-    public ClipboardWrite copyHtmlFrom(String literal) {
+    public Registration copyHtmlFrom(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
         return copyHtmlFrom(new LiteralInput<>(literal));
     }
@@ -158,7 +159,7 @@ public final class ClipboardBinding {
      * Like {@link #copyHtmlFrom(String)} but reports the outcome back to the
      * server.
      */
-    public ClipboardWrite copyHtmlFrom(String literal,
+    public Registration copyHtmlFrom(String literal,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
@@ -169,7 +170,7 @@ public final class ClipboardBinding {
      * Copies the value produced by a custom {@link Action.Input} to the
      * clipboard as {@code text/html} when the underlying trigger fires.
      */
-    public ClipboardWrite copyHtmlFrom(Action.Input<String> source) {
+    public Registration copyHtmlFrom(Action.Input<String> source) {
         Objects.requireNonNull(source, "source must not be null");
         return bind(new ClipboardCopyAction(null, source));
     }
@@ -178,7 +179,7 @@ public final class ClipboardBinding {
      * Like {@link #copyHtmlFrom(Action.Input)} but reports the outcome back to
      * the server.
      */
-    public ClipboardWrite copyHtmlFrom(Action.Input<String> source,
+    public Registration copyHtmlFrom(Action.Input<String> source,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(source, "source must not be null");
@@ -197,7 +198,7 @@ public final class ClipboardBinding {
      * @throws IllegalArgumentException
      *             if {@code content} has no slots set
      */
-    public ClipboardWrite copyFrom(ClipboardContent content) {
+    public Registration copyFrom(ClipboardContent content) {
         Objects.requireNonNull(content, "content must not be null");
         return bind(new ClipboardCopyAction(content.getTextInput(),
                 content.getHtmlInput()));
@@ -207,7 +208,7 @@ public final class ClipboardBinding {
      * Like {@link #copyFrom(ClipboardContent)} but reports the outcome back to
      * the server.
      */
-    public ClipboardWrite copyFrom(ClipboardContent content,
+    public Registration copyFrom(ClipboardContent content,
             SerializableRunnable onSuccess,
             SerializableConsumer<String> onError) {
         Objects.requireNonNull(content, "content must not be null");
@@ -217,7 +218,7 @@ public final class ClipboardBinding {
 
     // --- internal -------------------------------------------------------
 
-    private ClipboardWrite bind(ClipboardCopyAction action) {
+    private Registration bind(ClipboardCopyAction action) {
         trigger.triggers(action);
         return trigger::remove;
     }
