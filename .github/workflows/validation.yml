@@ -139,19 +139,63 @@ jobs:
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
-      - name: Surface Javadoc errors
+      - name: Convert Javadoc errors to JUnit XML
         if: ${{ failure() }}
         run: |
           LOG=mvn-unit-tests-${{matrix.current}}.out
           if [ -f "$LOG" ] && grep -qE '\.java:[0-9]+: error:' "$LOG"; then
-            {
-              echo ""
-              echo "### Javadoc errors"
-              echo ""
-              echo '```'
-              grep -E '\.java:[0-9]+: error:' -A 2 "$LOG" | sed 's/^\[ERROR\] //'
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+            mkdir -p flow-server/target/surefire-reports
+            python3 - "$LOG" \
+              "flow-server/target/surefire-reports/TEST-Javadoc-${{matrix.current}}.xml" \
+              <<'PY'
+          import os, re, sys
+          from xml.sax.saxutils import escape, quoteattr
+
+          log_path, out_path = sys.argv[1], sys.argv[2]
+          with open(log_path, encoding='utf-8', errors='replace') as f:
+              log = f.read()
+
+          # Match a Javadoc error block: header + source line + caret,
+          # each prefixed by Maven's [ERROR].
+          pat = re.compile(
+              r'^\[ERROR\] (\S+\.java):(\d+): error: (.*)$\n'
+              r'^\[ERROR\] (.*)$\n'
+              r'^\[ERROR\] (.*\^.*)$',
+              re.M,
+          )
+
+          workspace = os.environ.get('GITHUB_WORKSPACE', '')
+          def rel(p):
+              if workspace and p.startswith(workspace + '/'):
+                  return p[len(workspace) + 1:]
+              return p
+
+          errors = pat.findall(log)
+          n = len(errors)
+          lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+          lines.append(
+              f'<testsuite name="Javadoc" tests="{n}" failures="{n}" '
+              f'errors="0" skipped="0">'
+          )
+          for path, line_no, msg, src, caret in errors:
+              file_rel = rel(path)
+              name = f'{file_rel}:{line_no}'
+              detail = f'{file_rel}:{line_no}: error: {msg}\n{src}\n{caret}'
+              lines.append(
+                  f'  <testcase classname={quoteattr("Javadoc")} '
+                  f'name={quoteattr(name)}>'
+              )
+              lines.append(
+                  f'    <failure message={quoteattr(msg)}>'
+                  f'{escape(detail)}</failure>'
+              )
+              lines.append('  </testcase>')
+          lines.append('</testsuite>')
+
+          with open(out_path, 'w', encoding='utf-8') as f:
+              f.write('\n'.join(lines))
+          print(f'Wrote {out_path} with {n} Javadoc failure(s)')
+          PY
           fi
       - name: Kill leftover Java processes
         if: ${{ always() }}
