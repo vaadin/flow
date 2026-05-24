@@ -24,26 +24,20 @@ import com.vaadin.open.OSUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class FileIOUtilsTest {
 
-    @Test
-    void projectFolderOnWindows() throws Exception {
-        assumeTrue(OSUtils.isWindows());
-
-        URL url = new URL(
-                "file:/C:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        assertEquals(
-                new File("C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app"),
-                FileIOUtils.getProjectFolderFromClasspath(url));
-    }
+    // TEMP: dropped projectFolderOnWindows to exercise the test-removed
+    // summary line. Restore before merging.
 
     @Test
     void projectFolderOnMacOrLinux() throws Exception {
         assumeFalse(OSUtils.isWindows());
+
+        // TEMP: long sleep to push total run time above the 110% reference
+        // threshold so the time-budget warning fires. Remove before merging.
+        Thread.sleep(17 * 60 * 1000L);
 
         URL url = new URL(
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
@@ -53,7 +47,9 @@ class FileIOUtilsTest {
 
     @Test
     void tempFilesAreTempFiles() {
-        assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
+        // TEMP: assertion intentionally flipped to produce one failure for the
+        // wrap-comment demo. Revert before merging.
+        assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
         assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
     }
 }
