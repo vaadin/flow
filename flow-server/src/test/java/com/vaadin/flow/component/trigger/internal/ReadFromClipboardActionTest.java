@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ClipboardReadActionTest {
+class ReadFromClipboardActionTest {
 
     @Test
     void handlerJsCallsObserverWithClipboardReadPromise() {
@@ -45,7 +45,7 @@ class ClipboardReadActionTest {
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(p -> {
+                .triggers(new ReadFromClipboardAction(p -> {
                 }, err -> {
                 }));
 
@@ -65,7 +65,7 @@ class ClipboardReadActionTest {
 
         List<@Nullable ClipboardPayload> received = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(received::add, err -> {
+                .triggers(new ReadFromClipboardAction(received::add, err -> {
                 }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -95,7 +95,7 @@ class ClipboardReadActionTest {
 
         List<@Nullable ClipboardPayload> received = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(received::add, err -> {
+                .triggers(new ReadFromClipboardAction(received::add, err -> {
                 }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -120,7 +120,7 @@ class ClipboardReadActionTest {
 
         List<PromiseAction.Error> failed = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(p -> {
+                .triggers(new ReadFromClipboardAction(p -> {
                 }, failed::add));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
