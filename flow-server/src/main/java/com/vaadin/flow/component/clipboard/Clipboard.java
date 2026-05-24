@@ -29,10 +29,10 @@ import com.vaadin.flow.component.trigger.internal.Trigger;
  *
  * <pre>{@code
  * Button copyButton = new Button("Copy");
- * Clipboard.on(copyButton).copyTextFrom(textField);
+ * Clipboard.on(copyButton).writeText(textField);
  *
- * Clipboard.on(copyButton).copyFrom(
- *         ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
+ * Clipboard.on(copyButton)
+ *         .write(ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
  * }</pre>
  *
  * For non-click DOM gestures (e.g. {@code dblclick}, {@code pointerdown}) or

@@ -61,7 +61,7 @@ class ClipboardTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).copyTextFrom("Hello");
+        Clipboard.on(button).writeText("Hello");
 
         String install = installBody(ui);
         assertTrue(install.contains("\"click\""),
@@ -74,23 +74,22 @@ class ClipboardTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(new DomEventTrigger(button, "keydown"))
-                .copyTextFrom("Hello");
+        Clipboard.on(new DomEventTrigger(button, "keydown")).writeText("Hello");
 
         String install = installBody(ui);
         assertTrue(install.contains("\"keydown\""),
                 "keydown trigger install JS: " + install);
     }
 
-    // --- copy verbs -----------------------------------------------------
+    // --- write verbs ----------------------------------------------------
 
     @Test
-    void copyTextFrom_literal_emitsClipboardItemWithTextPlain() {
+    void writeText_literal_emitsClipboardItemWithTextPlain() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).copyTextFrom("Hello");
+        Clipboard.on(button).writeText("Hello");
 
         String body = handlerBody(ui);
         assertTrue(body.contains("navigator.clipboard.write"), body);
@@ -98,37 +97,37 @@ class ClipboardTest {
     }
 
     @Test
-    void copyTextFrom_hasValue_emitsPropertyInputForValue() {
+    void writeText_hasValue_emitsPropertyInputForValue() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         TestField field = new TestField();
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        Clipboard.on(button).copyTextFrom(field);
+        Clipboard.on(button).writeText(field);
 
         String body = handlerBody(ui);
         assertTrue(body.contains("\"text/plain\":$0[\"value\"]"), body);
     }
 
     @Test
-    void copyHtmlFrom_literal_emitsClipboardItemWithTextHtml() {
+    void writeHtml_literal_emitsClipboardItemWithTextHtml() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).copyHtmlFrom("<b>Hi</b>");
+        Clipboard.on(button).writeHtml("<b>Hi</b>");
 
         String body = handlerBody(ui);
         assertTrue(body.contains("\"text/html\":\"<b>Hi</b>\""), body);
     }
 
     @Test
-    void copyFrom_multiFormat_packsBothTextAndHtml() {
+    void write_multiFormat_packsBothTextAndHtml() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).copyFrom(
+        Clipboard.on(button).write(
                 ClipboardContent.create().text("plain").html("<b>html</b>"));
 
         String body = handlerBody(ui);
@@ -137,10 +136,10 @@ class ClipboardTest {
     }
 
     @Test
-    void copyFrom_emptyContent_throws() {
+    void write_emptyContent_throws() {
         TestButton button = new TestButton();
         assertThrows(IllegalArgumentException.class,
-                () -> Clipboard.on(button).copyFrom(ClipboardContent.create()));
+                () -> Clipboard.on(button).write(ClipboardContent.create()));
     }
 
     // --- helpers --------------------------------------------------------

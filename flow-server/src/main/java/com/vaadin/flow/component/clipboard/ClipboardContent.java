@@ -27,15 +27,15 @@ import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 
 /**
- * Multi-format payload for {@link ClipboardBinding#copyFrom}. Any combination
- * of {@code text/plain} and {@code text/html} can be set; each accessor returns
+ * Multi-format payload for {@link ClipboardBinding#write}. Any combination of
+ * {@code text/plain} and {@code text/html} can be set; each accessor returns
  * {@code null} when the corresponding slot is empty.
  * <p>
  * Use the static factory:
  *
  * <pre>{@code
- * Clipboard.on(button).copyFrom(
- *         ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
+ * Clipboard.on(button)
+ *         .write(ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
  * }</pre>
  *
  * Each setter has overloads accepting a literal value, a component (for value
