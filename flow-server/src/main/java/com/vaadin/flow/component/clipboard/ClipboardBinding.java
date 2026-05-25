@@ -18,6 +18,8 @@ package com.vaadin.flow.component.clipboard;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
@@ -80,7 +82,8 @@ public final class ClipboardBinding implements Serializable {
      *            UI-thread callback receiving the browser's error, not
      *            {@code null}
      */
-    public void writeText(String literal, SerializableConsumer<String> onCopied,
+    public void writeText(String literal,
+            SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
         bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
@@ -124,7 +127,7 @@ public final class ClipboardBinding implements Serializable {
      *            component type implementing {@code HasValue<?, String>}
      */
     public <C extends Component & HasValue<?, String>> void writeText(C source,
-            SerializableConsumer<String> onCopied,
+            SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(
@@ -156,7 +159,8 @@ public final class ClipboardBinding implements Serializable {
      *            UI-thread callback receiving the browser's error, not
      *            {@code null}
      */
-    public void writeHtml(String literal, SerializableConsumer<String> onCopied,
+    public void writeHtml(String literal,
+            SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
         bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
@@ -193,7 +197,7 @@ public final class ClipboardBinding implements Serializable {
      *            {@code null}
      */
     public void write(ClipboardContent content,
-            SerializableConsumer<String> onCopied,
+            SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(content, "content must not be null");
         bind(new WriteToClipboardAction(content.getTextInput(),

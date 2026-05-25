@@ -15,10 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.Objects;
-
 import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.function.SerializableConsumer;
 
@@ -43,7 +40,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class WriteToClipboardAction extends PromiseAction {
+public class WriteToClipboardAction extends PromiseAction<String> {
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -81,7 +78,8 @@ public class WriteToClipboardAction extends PromiseAction {
      * @param onCopied
      *            invoked on the UI thread with the string that was copied after
      *            the client reports the write resolved ({@code text/plain} if
-     *            present, otherwise {@code text/html}), not {@code null}
+     *            present, otherwise {@code text/html}), or {@code null} if the
+     *            JS resolved with {@code undefined}; not {@code null}
      * @param onError
      *            invoked on the UI thread with the browser's error after the
      *            client reports the write rejected, not {@code null}
@@ -90,22 +88,12 @@ public class WriteToClipboardAction extends PromiseAction {
      */
     public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
             Action.@Nullable Input<String> htmlInput,
-            SerializableConsumer<String> onCopied,
+            SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
-        super(adaptOnCopied(onCopied), onError);
+        super(String.class, onCopied, onError);
         validate(textInput, htmlInput);
         this.textInput = textInput;
         this.htmlInput = htmlInput;
-    }
-
-    private static SerializableConsumer<Success> adaptOnCopied(
-            SerializableConsumer<String> onCopied) {
-        Objects.requireNonNull(onCopied, "onCopied must not be null");
-        return success -> onCopied.accept(asString(success.value()));
-    }
-
-    private static String asString(@Nullable JsonNode value) {
-        return value == null || value.isNull() ? "" : value.asString();
     }
 
     private static void validate(Action.@Nullable Input<String> text,

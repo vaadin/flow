@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -35,7 +34,6 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -88,12 +86,12 @@ class PromiseActionTest {
     }
 
     @Test
-    void okChannelInvocation_withValue_runsOnSuccessWithJsonNode() {
+    void okChannelInvocation_withValue_decodesValueToTypedPayload() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<PromiseAction.Success> received = new ArrayList<>();
+        List<@Nullable String> received = new ArrayList<>();
         List<PromiseAction.Error> failed = new ArrayList<>();
         new DomEventTrigger(button, "click")
                 .triggers(new StubPromiseAction(received::add, failed::add));
@@ -107,21 +105,17 @@ class PromiseActionTest {
         args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
-        assertEquals(1, received.size());
-        JsonNode value = received.get(0).value();
-        assertNotNull(value,
-                "value should not be null when JS resolved with one");
-        assertEquals("hello", value.asString());
+        assertEquals(List.of("hello"), received);
         assertEquals(List.of(), failed);
     }
 
     @Test
-    void okChannelInvocation_withNoValue_runsOnSuccessWithNullValue() {
+    void okChannelInvocation_withNoValue_runsOnSuccessWithNull() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<PromiseAction.Success> received = new ArrayList<>();
+        List<@Nullable String> received = new ArrayList<>();
         new DomEventTrigger(button, "click")
                 .triggers(new StubPromiseAction(received::add, err -> {
                 }));
@@ -136,7 +130,7 @@ class PromiseActionTest {
         singleReturnChannel(ui).invoke(args);
 
         assertEquals(1, received.size());
-        assertNull(received.get(0).value(),
+        assertNull(received.get(0),
                 "missing JS 'value' should surface as null on the server");
     }
 
@@ -146,7 +140,7 @@ class PromiseActionTest {
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<PromiseAction.Success> succeeded = new ArrayList<>();
+        List<@Nullable String> succeeded = new ArrayList<>();
         List<PromiseAction.Error> failed = new ArrayList<>();
         new DomEventTrigger(button, "click")
                 .triggers(new StubPromiseAction(succeeded::add, failed::add));
@@ -204,15 +198,18 @@ class PromiseActionTest {
         return (JsFunction) o;
     }
 
-    /** Minimal PromiseAction that emits a constant promise expression. */
-    private static final class StubPromiseAction extends PromiseAction {
+    /**
+     * Minimal PromiseAction&lt;String&gt; that emits a constant promise
+     * expression.
+     */
+    private static final class StubPromiseAction extends PromiseAction<String> {
         StubPromiseAction() {
             super();
         }
 
-        StubPromiseAction(SerializableConsumer<Success> onSuccess,
+        StubPromiseAction(SerializableConsumer<@Nullable String> onSuccess,
                 SerializableConsumer<Error> onError) {
-            super(onSuccess, onError);
+            super(String.class, onSuccess, onError);
         }
 
         @Override
