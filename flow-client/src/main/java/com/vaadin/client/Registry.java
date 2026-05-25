@@ -249,7 +249,7 @@ public class Registry {
      * @return the {@link SystemErrorHandler} singleton
      */
     public SystemErrorHandler getSystemErrorHandler() {
-        return get(SystemErrorHandler.class);
+        return get("SystemErrorHandler");
     }
 
     /**
