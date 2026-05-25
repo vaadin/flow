@@ -69,7 +69,6 @@ public class DefaultRegistry extends Registry {
         set(ResourceLoader.class, new ResourceLoader(this, true));
         set("URIResolver", new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
-        set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
         UILifecycle uiLifecycle = get("UILifecycle");
         StateTree stateTree = new StateTree(this);
@@ -147,6 +146,82 @@ public class DefaultRegistry extends Registry {
                         () -> messageSender.setPushEnabled(false)));
         set("ReconnectConfiguration", new ReconnectConfiguration(stateTree));
         set("Poller", new Poller(stateTree, uiLifecycle));
+
+        // Wire SystemErrorHandler last so its callbacks can reach the rest of
+        // the registry through `this::get*` lookups without forward references.
+        SystemErrorHandlerCallbacks systemErrorCallbacks = new SystemErrorHandlerCallbacks() {
+            @Override
+            public String getServiceUrl() {
+                return applicationConfiguration.getServiceUrl();
+            }
+
+            @Override
+            public boolean isWebComponentMode() {
+                return applicationConfiguration.isWebComponentMode();
+            }
+
+            @Override
+            public boolean isProductionMode() {
+                return applicationConfiguration.isProductionMode();
+            }
+
+            @Override
+            public com.vaadin.client.bootstrap.ErrorMessage getSessionExpiredError() {
+                return applicationConfiguration.getSessionExpiredError();
+            }
+
+            @Override
+            public String[] getExportedWebComponents() {
+                return applicationConfiguration.getExportedWebComponents();
+            }
+
+            @Override
+            public int getHeartbeatInterval() {
+                return applicationConfiguration.getHeartbeatInterval();
+            }
+
+            @Override
+            public void setHeartbeatInterval(int seconds) {
+                getHeartbeat().setInterval(seconds);
+            }
+
+            @Override
+            public boolean isPushEnabled() {
+                return getPushConfiguration().isPushEnabled();
+            }
+
+            @Override
+            public void setPushEnabled(boolean enabled) {
+                getMessageSender().setPushEnabled(enabled);
+            }
+
+            @Override
+            public void disablePushImmediately() {
+                getMessageSender().setPushEnabled(false, false);
+            }
+
+            @Override
+            public void applyResyncResponse(String responseText) {
+                int uiId = applicationConfiguration.getUIId();
+                com.vaadin.client.ValueMap json = MessageHandler
+                        .parseJson(responseText);
+                int newUiId = json.getInt(ApplicationConstants.UI_ID);
+                if (newUiId != uiId) {
+                    com.vaadin.client.Console
+                            .debug("UI ID switched from " + uiId + " to "
+                                    + newUiId + " after resynchronization");
+                    applicationConfiguration.setUIId(newUiId);
+                }
+                reset();
+                getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+                getMessageHandler().handleMessage(json);
+            }
+        };
+        // Keyed by an explicit string because the Registry uses
+        // Class.getName() as a key by default; GWT collapses every native
+        // @JsType to JavaScriptObject so multiple such registrations would
+        // collide (e.g. with the Heartbeat registration above).
+        set("SystemErrorHandler", new SystemErrorHandler(systemErrorCallbacks));
     }
 
 }
