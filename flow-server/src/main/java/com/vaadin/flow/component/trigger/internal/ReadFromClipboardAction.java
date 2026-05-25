@@ -41,19 +41,21 @@ import com.vaadin.flow.function.SerializableConsumer;
  * {@code payload -> {}} or {@code err -> {}} explicitly.
  *
  * <pre>{@code
- * new ClickTrigger(pasteButton).triggers(new ClipboardReadAction(payload -> {
- *     if (payload == null) {
- *         notification.show("Clipboard is empty");
- *     } else {
- *         editor.setValue(
- *                 payload.html() != null ? payload.html() : payload.text());
- *     }
- * }, err -> notification.show("Clipboard read denied: " + err.message())));
+ * new ClickTrigger(pasteButton)
+ *         .triggers(new ReadFromClipboardAction(payload -> {
+ *             if (payload == null) {
+ *                 notification.show("Clipboard is empty");
+ *             } else {
+ *                 editor.setValue(payload.html() != null ? payload.html()
+ *                         : payload.text());
+ *             }
+ *         }, err -> notification
+ *                 .show("Clipboard read denied: " + err.message())));
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
  */
-public class ClipboardReadAction extends PromiseAction<ClipboardPayload> {
+public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
 
     /**
      * Creates an action that reads the user's clipboard and delivers the
@@ -67,7 +69,7 @@ public class ClipboardReadAction extends PromiseAction<ClipboardPayload> {
      *            clipboard read failed (permission denied, unsupported, …); not
      *            {@code null}
      */
-    public ClipboardReadAction(
+    public ReadFromClipboardAction(
             SerializableConsumer<@Nullable ClipboardPayload> onPayload,
             SerializableConsumer<Error> onError) {
         super(ClipboardPayload.class, onPayload, onError);

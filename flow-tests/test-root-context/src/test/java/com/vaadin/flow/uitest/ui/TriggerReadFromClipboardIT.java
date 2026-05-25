@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class TriggerClipboardReadIT extends ChromeBrowserTest {
+public class TriggerReadFromClipboardIT extends ChromeBrowserTest {
 
     @Test
     public void clickReadsClipboard_andServerReceivesPayload() {
