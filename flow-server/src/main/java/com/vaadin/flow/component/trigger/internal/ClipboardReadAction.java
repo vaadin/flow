@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.Objects;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -32,53 +30,55 @@ import com.vaadin.flow.function.SerializableConsumer;
  * read. Bind this action to a {@link Trigger} that fires during such a gesture,
  * typically a {@link ClickTrigger}.
  * <p>
- * The handler receives a {@link ClipboardPayload} with the {@code text/plain}
- * and {@code text/html} representations of the first clipboard item, or
- * {@code null} if the read fails for any reason (permission denied, no item,
- * unsupported browser, …). Error detail is intentionally not exposed — see
- * {@link PromiseAction}'s subclasses for the success/error-split shape if that
- * distinction matters.
+ * Outcome handling extends {@link PromiseAction}: {@code onPayload} receives a
+ * {@link ClipboardPayload} with the {@code text/plain} and {@code text/html}
+ * representations of the first clipboard item (or {@code null} if there were no
+ * items at all), and {@code onError} receives a {@link PromiseAction.Error}
+ * record with the browser's error name and message (typically
+ * {@code "NotAllowedError"} when the user denied permission). Both consumers
+ * are required and must be non-null; to opt out of either notification, pass
+ * {@code payload -> {}} or {@code err -> {}} explicitly.
  *
  * <pre>{@code
  * new ClickTrigger(pasteButton).triggers(new ClipboardReadAction(payload -> {
  *     if (payload == null) {
- *         notification.show("Clipboard read denied");
+ *         notification.show("Clipboard is empty");
  *     } else {
  *         editor.setValue(
  *                 payload.html() != null ? payload.html() : payload.text());
  *     }
- * }));
+ * }, err -> notification.show("Clipboard read denied: " + err.message())));
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
  */
-public class ClipboardReadAction extends Action {
-
-    private final SerializableConsumer<@Nullable ClipboardPayload> handler;
+public class ClipboardReadAction extends PromiseAction<ClipboardPayload> {
 
     /**
      * Creates an action that reads the user's clipboard and delivers the
-     * contents to {@code handler}.
+     * contents to {@code onPayload}, or routes any failure to {@code onError}.
      *
-     * @param handler
+     * @param onPayload
      *            invoked on the UI thread with the clipboard contents, or
-     *            {@code null} if the read failed; not {@code null}
+     *            {@code null} if the clipboard was empty; not {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error when the
+     *            clipboard read failed (permission denied, unsupported, …); not
+     *            {@code null}
      */
     public ClipboardReadAction(
-            SerializableConsumer<@Nullable ClipboardPayload> handler) {
-        this.handler = Objects.requireNonNull(handler,
-                "handler must not be null");
+            SerializableConsumer<@Nullable ClipboardPayload> onPayload,
+            SerializableConsumer<Error> onError) {
+        super(ClipboardPayload.class, onPayload, onError);
     }
 
     @Override
-    protected void appendStatement(JsBuilder builder, StringBuilder out) {
-        String cb = builder.callback(ClipboardPayload.class, handler);
+    protected void appendPromiseExpression(JsBuilder builder,
+            StringBuilder out) {
         // The actual clipboard read + {text, html} extraction lives in
         // Clipboard.ts (window.Vaadin.Flow.clipboard.readPayload); this
-        // Action just routes its resolved value (or null on any failure)
-        // to the typed server callback.
-        out.append("window.Vaadin.Flow.clipboard.readPayload()")
-                .append(".then(p=>").append(cb).append("(p))")
-                .append(".catch(()=>").append(cb).append("(null))");
+        // action just routes the resolved value through the PromiseAction
+        // framework.
+        out.append("window.Vaadin.Flow.clipboard.readPayload()");
     }
 }

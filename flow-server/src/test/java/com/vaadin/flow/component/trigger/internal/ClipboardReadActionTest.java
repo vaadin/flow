@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -31,75 +32,112 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClipboardReadActionTest {
 
     @Test
-    void handlerJsCallsClipboardReadPayloadAndRoutesToCallback() {
+    void handlerJsCallsObserverWithClipboardReadPromise() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
                 .triggers(new ClipboardReadAction(p -> {
+                }, err -> {
                 }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // The action delegates to Clipboard.ts and only renders the routing
-        // glue — the actual clipboard read lives in
-        // window.Vaadin.Flow.clipboard.
-        assertEquals(
-                "window.Vaadin.Flow.clipboard.readPayload()"
-                        + ".then(p=>$0(p)).catch(()=>$0(null));",
+        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the
+        // .then/.catch glue lives inside $0, not in the action's expression.
+        assertEquals("$0(window.Vaadin.Flow.clipboard.readPayload(), $1);",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
     @Test
-    void channelInvocation_withPayload_handsTypedRecordToHandler() {
+    void okChannelInvocation_withPayload_handsTypedRecordToHandler() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<ClipboardPayload> received = new ArrayList<>();
+        List<@Nullable ClipboardPayload> received = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(received::add));
+                .triggers(new ClipboardReadAction(received::add, err -> {
+                }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         ObjectNode payload = JacksonUtils.createObjectNode();
         payload.put("text", "hello");
         payload.put("html", "<b>hello</b>");
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        outcome.set("value", payload);
         ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(payload);
+        args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
         assertEquals(1, received.size());
-        assertEquals("hello", received.get(0).text());
-        assertEquals("<b>hello</b>", received.get(0).html());
+        ClipboardPayload p = received.get(0);
+        assertNotNull(p);
+        assertEquals("hello", p.text());
+        assertEquals("<b>hello</b>", p.html());
     }
 
     @Test
-    void channelInvocation_withNull_handsNullToHandler() {
+    void okChannelInvocation_withNullValue_handsNullToHandler() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        List<ClipboardPayload> received = new ArrayList<>();
-        received.add(new ClipboardPayload("sentinel", null));
+        List<@Nullable ClipboardPayload> received = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new ClipboardReadAction(received::add));
+                .triggers(new ClipboardReadAction(received::add, err -> {
+                }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
+        // Clipboard.ts resolves with null when clipboard is empty.
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        outcome.set("value", JacksonUtils.nullNode());
         ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(JacksonUtils.nullNode());
+        args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
-        assertEquals(2, received.size());
-        assertNull(received.get(1));
+        assertEquals(1, received.size());
+        assertNull(received.get(0));
+    }
+
+    @Test
+    void errChannelInvocation_runsOnErrorWithNameAndMessage() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        List<PromiseAction.Error> failed = new ArrayList<>();
+        new DomEventTrigger(button, "click")
+                .triggers(new ClipboardReadAction(p -> {
+                }, failed::add));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ObjectNode error = JacksonUtils.createObjectNode();
+        error.put("name", "NotAllowedError");
+        error.put("message", "denied");
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", false);
+        outcome.set("error", error);
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        singleReturnChannel(ui).invoke(args);
+
+        assertEquals(1, failed.size());
+        assertEquals("NotAllowedError", failed.get(0).name());
+        assertEquals("denied", failed.get(0).message());
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
