@@ -21,6 +21,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -36,8 +38,8 @@ import java.util.regex.Pattern;
  */
 public class UrlUtil {
 
-    private static final Set<String> DISALLOWED_SCHEMES = Set.of(
-            "javascript");
+    private static final Set<String> DISALLOWED_SCHEMES = new HashSet<>(
+            Arrays.asList("javascript", "data"));
 
     private static final Pattern PERCENT_ENCODED = Pattern
             .compile("%([0-9A-Fa-f]{2})");
@@ -244,11 +246,37 @@ public class UrlUtil {
         return ret.substring(0, ret.length() - 1);
     }
 
-    public static boolean isAllowedUrl(String input) {
-        if (input == null) {
+    /**
+     * Set the URL schemes that should be disallowed. This can be used to
+     * customize the list of schemes that are considered unsafe, such as
+     * "javascript", "data", etc. The check is case-insensitive, and the
+     * provided schemes will be normalized to lower case.
+     *
+     * @param schemes
+     *            the set of URL schemes to disallow
+     */
+    public static void setDisallowedSchemes(Set<String> schemes) {
+        synchronized (DISALLOWED_SCHEMES) {
+            DISALLOWED_SCHEMES.clear();
+            DISALLOWED_SCHEMES.addAll(schemes.stream()
+                    .map(s -> s.toLowerCase(Locale.ROOT)).toList());
+        }
+    }
+
+    /**
+     * Check if the given URL is allowed based on its scheme. This method is
+     * used to prevent potential security issues such as XSS attacks by
+     * disallowing certain URL schemes.
+     *
+     * @param url
+     *            the URL to check
+     * @return true if the URL is allowed, false otherwise
+     */
+    public static boolean isAllowedUrl(String url) {
+        if (url == null) {
             return false;
         }
-        String s = input.trim();
+        String s = url.trim();
         if (s.isEmpty()) {
             return true;
         }
