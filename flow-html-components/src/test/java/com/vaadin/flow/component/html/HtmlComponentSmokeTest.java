@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
@@ -212,6 +213,12 @@ class HtmlComponentSmokeTest {
     private static boolean isSpecialSetter(Method method) {
         if (method.getDeclaringClass() == NativeLabel.class
                 && method.getName().equals("setFor")
+                && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == HasAriaLabel.class
+                && method.getName().equals("setAriaLabelledBy")
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
