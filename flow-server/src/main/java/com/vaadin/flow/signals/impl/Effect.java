@@ -52,9 +52,6 @@ public class Effect implements Serializable {
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
-    private static final ThreadLocal<Boolean> inReadTriggeredUpdate = ThreadLocal
-            .withInitial(() -> Boolean.FALSE);
-
     private SerializableExecutor dispatcher;
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
@@ -242,13 +239,9 @@ public class Effect implements Serializable {
         /*
          * Detect loops by checking if the same effect is already active on this
          * thread. Don't check for immediate updates since an immediate update
-         * doesn't run on the same thread that caused the change. Also skip the
-         * check if we're in a read-triggered update context (e.g., a cached
-         * signal updating itself during a read), since that's lazy evaluation,
-         * not an actual loop.
+         * doesn't run on the same thread that caused the change.
          */
-        if (!immediate && !inReadTriggeredUpdate.get()
-                && activeEffects.get().contains(this)) {
+        if (!immediate && activeEffects.get().contains(this)) {
             dispose();
             throw new IllegalStateException(
                     "Infinite loop detected between effect updates. This effect is deactivated.");
@@ -428,21 +421,27 @@ public class Effect implements Serializable {
     }
 
     /**
-     * Runs the given action in a read-triggered update context. Change
-     * notifications that occur during this context will not trigger infinite
-     * loop detection, since they are caused by lazy evaluation (e.g., a cached
-     * signal updating itself when read) rather than an actual write loop.
+     * Runs the given action with a temporarily cleared active effects list.
+     * This is used when a cached signal updates itself during a read operation.
+     * The currently active effects are stashed and restored after the action
+     * completes. This ensures that:
+     * <ul>
+     * <li>The reading effect won't trigger false infinite loop detection when
+     * notified of the cache update</li>
+     * <li>Any effects that run inside the action will still have proper loop
+     * detection against each other</li>
+     * </ul>
      *
      * @param action
      *            the action to run, not {@code null}
      */
-    public static void runInReadTriggeredUpdateContext(Runnable action) {
-        Boolean previous = inReadTriggeredUpdate.get();
-        inReadTriggeredUpdate.set(Boolean.TRUE);
+    public static void runWithStashedActiveEffects(Runnable action) {
+        LinkedList<Effect> stashed = activeEffects.get();
+        activeEffects.set(new LinkedList<>());
         try {
             action.run();
         } finally {
-            inReadTriggeredUpdate.set(previous);
+            activeEffects.set(stashed);
         }
     }
 

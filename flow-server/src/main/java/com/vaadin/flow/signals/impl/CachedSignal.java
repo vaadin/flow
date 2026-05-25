@@ -220,7 +220,7 @@ public class CachedSignal<T extends @Nullable Object>
             state = new CacheState(value, exception, dependencies);
 
             CacheState finalState = state;
-            Effect.runInReadTriggeredUpdateContext(
+            Effect.runWithStashedActiveEffects(
                     () -> submit(new SignalCommand.SetCommand(Id.random(), id(),
                             new CachedPOJONode(finalState))));
         }
