@@ -154,7 +154,10 @@ function buildSummary(stats) {
 
   const reference = stats.duration - stats.durationDelta;
   const pct = reference > 0 ? Math.round((stats.duration / reference) * 100) : 100;
-  const timeIcon = pct > TIME_WARN_THRESHOLD_PCT ? ':warning:' : ':white_check_mark:';
+  // Use >= so the warning matches the displayed (rounded) percentage. With
+  // strict >, a 109.7% run displays as "110%" yet stays green, which reads as
+  // a UI bug to anyone seeing the threshold.
+  const timeIcon = pct >= TIME_WARN_THRESHOLD_PCT ? ':warning:' : ':white_check_mark:';
   const timeLine = `${timeIcon} ${pct}% of reference time spent (${formatDuration(stats.duration)})`;
 
   let deltaLine;

@@ -128,11 +128,15 @@ test('test count delta drives the third summary line', () => {
   );
 });
 
-test(`time line warns above ${TIME_WARN_THRESHOLD_PCT}%`, () => {
+test(`time line warns at or above ${TIME_WARN_THRESHOLD_PCT}%`, () => {
   const warn = buildSummary({ duration: 4960, durationDelta: 960, failures: 0, testsDelta: 0 })[1];
   assert.match(warn, /^:warning: 124% of reference time spent/);
   const ok = buildSummary({ duration: 4360, durationDelta: 360, failures: 0, testsDelta: 0 })[1];
   assert.match(ok, /^:white_check_mark: 109% of reference time spent/);
+  // Boundary: 5513 / 5024 = 109.74% — rounds to 110% on display, so it must
+  // warn even though the float value is below the threshold.
+  const boundary = buildSummary({ duration: 5513, durationDelta: 489, failures: 0, testsDelta: 0 })[1];
+  assert.match(boundary, /^:warning: 110% of reference time spent/);
 });
 
 test('wrapBody preserves the heading marker and the commit indicator', () => {
