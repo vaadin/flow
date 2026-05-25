@@ -16,11 +16,6 @@
 
 type VaadinFullscreenState = 'UNSUPPORTED' | 'NOT_FULLSCREEN' | 'FULLSCREEN';
 
-interface VaadinFullscreenOutcome {
-  ok: boolean;
-  error?: string;
-}
-
 /**
  * Returns the current fullscreen state synchronously. Used by the bootstrap
  * path to seed the server-side signal without waiting for a DOM event.
@@ -58,34 +53,23 @@ document.addEventListener('fullscreenchange', () => {
   dispatch(currentFullscreenState());
 });
 
-function errorMessage(e: unknown): string {
-  if (e instanceof Error) {
-    return e.message;
-  }
-  return String(e);
-}
-
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
 $wnd.Vaadin.Flow.fullscreen = {
   /**
    * Requests fullscreen for the entire page (document.documentElement).
-   * Resolves with { ok: true } once the browser has entered fullscreen, or
-   * { ok: false, error } if the browser rejected the request (no user
-   * activation, permissions policy, etc.) or fullscreen is not supported.
+   * Resolves once the browser has entered fullscreen; rejects with the
+   * browser's error if the request is refused (no user activation,
+   * permissions policy, etc.) or with a custom error if fullscreen is not
+   * supported.
    */
-  async requestPageFullscreen(): Promise<VaadinFullscreenOutcome> {
+  async requestPageFullscreen(): Promise<void> {
     resetComponentIfActive();
     if (document.fullscreenEnabled !== true) {
-      return { ok: false, error: 'unsupported' };
+      throw new Error('Fullscreen is not supported');
     }
-    try {
-      await document.documentElement.requestFullscreen();
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: errorMessage(e) };
-    }
+    await document.documentElement.requestFullscreen();
   },
 
   /**
@@ -94,17 +78,17 @@ $wnd.Vaadin.Flow.fullscreen = {
    * document.documentElement so that Vaadin theming and overlay
    * components keep working. The component is restored to its original
    * position on exit (programmatic, Escape, or a superseding request).
-   * If the browser rejects the request, the DOM is rolled back before
-   * resolving.
+   * If the browser rejects the request, the DOM is rolled back before the
+   * promise rejects with the browser's error.
    */
-  async requestComponentFullscreen(element: HTMLElement, wrapper: HTMLElement): Promise<VaadinFullscreenOutcome> {
+  async requestComponentFullscreen(element: HTMLElement, wrapper: HTMLElement): Promise<void> {
     resetComponentIfActive();
     if (document.fullscreenEnabled !== true) {
-      return { ok: false, error: 'unsupported' };
+      throw new Error('Fullscreen is not supported');
     }
     const originalParent = element.parentNode;
     if (!originalParent) {
-      return { ok: false, error: 'detached' };
+      throw new Error('Component is not attached to the DOM');
     }
     const placeholder = document.createComment('vaadin-fullscreen-placeholder');
     originalParent.insertBefore(placeholder, element);
@@ -126,12 +110,11 @@ $wnd.Vaadin.Flow.fullscreen = {
 
     try {
       await document.documentElement.requestFullscreen();
-      return { ok: true };
     } catch (e) {
       // Browser rejected the request — undo the DOM changes so the page
       // does not end up looking fullscreened without actually being so.
       resetComponentIfActive();
-      return { ok: false, error: errorMessage(e) };
+      throw e;
     }
   },
 

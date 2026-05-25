@@ -24,12 +24,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -74,8 +71,6 @@ public class Page implements Serializable {
             FullscreenState.UNKNOWN);
     private final Signal<FullscreenState> fullscreenSignalReadOnly = fullscreenSignal
             .asReadonly();
-    private @Nullable FullscreenSession currentFullscreenSession;
-    private boolean expectProgrammaticFullscreenExit;
 
     /**
      * Creates a page instance for the given UI.
@@ -583,14 +578,16 @@ public class Page implements Serializable {
      * code always sees a real value. Subscribe with
      * {@code Signal.effect(owner, ...)} to react to changes; call
      * {@code fullscreenSignal().peek()} for a snapshot outside a reactive
-     * context, and {@code .get()} inside one. Use {@link #requestFullscreen()},
-     * {@link Component#requestFullscreen()}, or {@link #exitFullscreen()} to
-     * change the state.
+     * context, and {@code .get()} inside one.
      * <p>
-     * Note that browsers require transient user activation (e.g. a button
-     * click) to enter fullscreen mode, so the signal will not transition to
-     * {@link FullscreenState#FULLSCREEN FULLSCREEN} in response to a request
-     * from a server push or view constructor.
+     * To enter fullscreen, bind a request to a user gesture via
+     * {@link Fullscreen#on(com.vaadin.flow.component.ClickNotifier)
+     * Fullscreen.on(...).requestPage()} or {@code .requestComponent(...)} —
+     * browsers require transient user activation to enter fullscreen, so the
+     * signal will not transition to {@link FullscreenState#FULLSCREEN
+     * FULLSCREEN} in response to a request from a server push or view
+     * constructor. Call {@link #exitFullscreen()} to leave fullscreen — this
+     * does not require a gesture.
      *
      * <p>
      * <b>Example: toggle a CSS class while fullscreen</b>
@@ -620,163 +617,20 @@ public class Page implements Serializable {
     }
 
     /**
-     * Requests that the browser display the entire page in fullscreen mode.
-     * <p>
-     * This calls {@code document.documentElement.requestFullscreen()} on the
-     * browser. Themes and overlay components (such as Notification and ComboBox
-     * popups) work correctly in this mode. Use
-     * {@link Component#requestFullscreen()} to fullscreen a single component
-     * within the page.
-     * <p>
-     * Note that browsers require transient user activation (e.g. a button
-     * click) to enter fullscreen mode. Calling this method from a server push
-     * or view constructor will not work — the returned session will end up in
-     * {@link FullscreenSessionState#REJECTED REJECTED}. The fullscreen state
-     * can be observed via {@link #fullscreenSignal()}; calls made while the
-     * state is {@link FullscreenState#UNSUPPORTED UNSUPPORTED} resolve to
-     * {@link FullscreenSessionState#REJECTED REJECTED} immediately.
-     * <p>
-     * If a session is already active when this method is called, it is moved to
-     * {@link FullscreenSessionState#EXITED_BY_CODE EXITED_BY_CODE} before the
-     * new session is returned.
-     *
-     * <p>
-     * <b>Example: react to lifecycle transitions</b>
-     *
-     * <pre>
-     * FullscreenSession session = ui.getPage().requestFullscreen();
-     * Signal.effect(this, () -&gt; {
-     *     switch (session.stateSignal().get()) {
-     *     case ACTIVE -&gt; statusLabel.setText("Now fullscreen");
-     *     case REJECTED -&gt; statusLabel.setText("Could not enter fullscreen: "
-     *             + session.error().orElse("unknown"));
-     *     case EXITED_BY_USER -&gt; statusLabel.setText("You exited fullscreen");
-     *     case EXITED_BY_CODE -&gt; statusLabel.setText("Fullscreen ended");
-     *     default -&gt; {
-     *     }
-     *     }
-     * });
-     * </pre>
-     *
-     * @return a session handle for the request, never {@code null}
-     * @see Component#requestFullscreen()
-     * @see #exitFullscreen()
-     * @see #fullscreenSignal()
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API">MDN
-     *      Fullscreen API</a>
-     */
-    public FullscreenSession requestFullscreen() {
-        return startFullscreenSession(null,
-                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
-    }
-
-    /**
-     * Requests that the browser display the given component in fullscreen mode.
-     * The component is moved into a wrapper element and the rest of the view is
-     * hidden so Vaadin theming and overlay components keep working; see
-     * {@link Component#requestFullscreen()} for the rationale.
-     * <p>
-     * This is the same operation as calling
-     * {@link Component#requestFullscreen()} directly; the static-style entry
-     * point is offered for code that already holds a {@link Page} reference and
-     * would rather not reach back through the component to start a fullscreen
-     * session.
-     *
-     * @param component
-     *            the component to fullscreen, not {@code null}
-     * @return a session handle for the request, never {@code null}
-     * @throws NullPointerException
-     *             if {@code component} is {@code null}
-     * @throws IllegalStateException
-     *             if the component is not attached to this page's UI
-     * @see Component#requestFullscreen()
-     * @see #requestFullscreen()
-     * @see #exitFullscreen()
-     */
-    public FullscreenSession requestFullscreen(Component component) {
-        Objects.requireNonNull(component, "component must not be null");
-        UI componentUi = component.getUI()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Component must be attached to the UI to request fullscreen"));
-        if (componentUi != ui) {
-            throw new IllegalStateException(
-                    "Component is attached to a different UI than this page");
-        }
-        return startFullscreenSession(component,
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                component.getElement(), ui.getInternals().getWrapperElement());
-    }
-
-    /**
      * Exits fullscreen mode if the page is currently in fullscreen, otherwise a
-     * no-op.
+     * no-op. The fullscreen state can be observed via
+     * {@link #fullscreenSignal()}.
      * <p>
      * If a component was previously fullscreened via
-     * {@link Component#requestFullscreen()}, it is automatically restored to
-     * its original position in the DOM. The active session, if any, transitions
-     * to {@link FullscreenSessionState#EXITED_BY_CODE EXITED_BY_CODE}.
+     * {@link Fullscreen#on(com.vaadin.flow.component.ClickNotifier) Fullscreen}
+     * {@code .requestComponent(...)}, it is automatically restored to its
+     * original position in the DOM.
      *
-     * @see #requestFullscreen()
-     * @see Component#requestFullscreen()
+     * @see Fullscreen
+     * @see #fullscreenSignal()
      */
     public void exitFullscreen() {
-        expectProgrammaticFullscreenExit = true;
         executeJs("window.Vaadin.Flow.fullscreen.exitFullscreen()");
-    }
-
-    /**
-     * Starts a new fullscreen session by running the given JavaScript
-     * expression on the client and wiring its outcome (a {@code Promise<{ ok,
-     * error? }>}) to the session's state signal.
-     * <p>
-     * If a previous session is still active or pending it is transitioned to
-     * {@link FullscreenSessionState#EXITED_BY_CODE EXITED_BY_CODE} so that only
-     * one session is observable at a time.
-     */
-    FullscreenSession startFullscreenSession(@Nullable Component owner,
-            String requestExpression, Object... parameters) {
-        if (currentFullscreenSession != null
-                && !currentFullscreenSession.isTerminal()) {
-            currentFullscreenSession.setExited(true);
-        }
-        FullscreenSession session = new FullscreenSession(this, owner);
-        currentFullscreenSession = session;
-        executeJs(requestExpression, parameters).then(JsonNode.class,
-                result -> handleRequestOutcome(session, result),
-                errorMessage -> handleRequestError(session, errorMessage));
-        return session;
-    }
-
-    private void handleRequestOutcome(FullscreenSession session,
-            JsonNode result) {
-        if (session.isTerminal()) {
-            return;
-        }
-        JsonNode okNode = result.get("ok");
-        if (okNode != null && okNode.asBoolean()) {
-            session.setActive();
-            return;
-        }
-        JsonNode errorNode = result.get("error");
-        String errorText = errorNode == null || errorNode.isNull() ? null
-                : errorNode.asString();
-        LOGGER.warn(
-                "Fullscreen request was rejected by the browser{}. "
-                        + "Most likely the call was not made from a "
-                        + "user gesture (transient user activation).",
-                errorText == null ? "" : ": " + errorText);
-        session.setRejected(errorText);
-    }
-
-    private void handleRequestError(FullscreenSession session,
-            String errorMessage) {
-        if (session.isTerminal()) {
-            return;
-        }
-        LOGGER.warn("Fullscreen request failed on the client: {}",
-                errorMessage);
-        session.setRejected(errorMessage);
     }
 
     /**
@@ -794,7 +648,7 @@ public class Page implements Serializable {
             return;
         }
         try {
-            applyFullscreenState(FullscreenState.valueOf(value));
+            fullscreenSignal.set(FullscreenState.valueOf(value));
         } catch (IllegalArgumentException e) {
             LOGGER.debug("Unknown fullscreen state value from client: {}",
                     value);
@@ -804,8 +658,7 @@ public class Page implements Serializable {
     /**
      * Drives {@link #fullscreenSignal()} from test code without going through
      * the client bridge. Mirrors the effect of a
-     * {@code vaadin-fullscreen-change} DOM event, including transitioning the
-     * active {@link FullscreenSession} to its appropriate terminal state.
+     * {@code vaadin-fullscreen-change} DOM event.
      * <p>
      * Intended for unit tests. Production code should not need to call this.
      *
@@ -814,20 +667,7 @@ public class Page implements Serializable {
      */
     public void simulateFullscreenChange(FullscreenState newState) {
         Objects.requireNonNull(newState, "newState must not be null");
-        applyFullscreenState(newState);
-    }
-
-    private void applyFullscreenState(FullscreenState newState) {
-        FullscreenState previous = fullscreenSignal.peek();
         fullscreenSignal.set(newState);
-        if (previous == FullscreenState.FULLSCREEN
-                && newState != FullscreenState.FULLSCREEN
-                && currentFullscreenSession != null
-                && !currentFullscreenSession.isTerminal()) {
-            boolean programmatic = expectProgrammaticFullscreenExit;
-            currentFullscreenSession.setExited(programmatic);
-        }
-        expectProgrammaticFullscreenExit = false;
     }
 
     /**

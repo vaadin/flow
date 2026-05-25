@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.page;
 
-import com.vaadin.flow.component.Component;
-
 /**
  * Represents the fullscreen state of a browser page.
  * <p>
@@ -27,9 +25,8 @@ import com.vaadin.flow.component.Component;
  * used before the first value has arrived from the client.
  *
  * @see Page#fullscreenSignal()
- * @see Page#requestFullscreen()
  * @see Page#exitFullscreen()
- * @see Component#requestFullscreen()
+ * @see Fullscreen
  */
 public enum FullscreenState {
 
@@ -46,9 +43,9 @@ public enum FullscreenState {
     /**
      * The browser does not support fullscreen mode, or the document is not
      * permitted to enter it. In the browser, this corresponds to
-     * {@code document.fullscreenEnabled} being {@code false}. Calls to
-     * {@link Page#requestFullscreen()} or {@link Component#requestFullscreen()}
-     * are no-ops in this state.
+     * {@code document.fullscreenEnabled} being {@code false}. Fullscreen
+     * requests bound via {@link Fullscreen} resolve to a rejection in this
+     * state.
      */
     UNSUPPORTED,
 

@@ -44,7 +44,7 @@ public class TriggerRequestFullscreenIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void requestFullscreenRejection_propagatesAsFailureWithNameAndMessage() {
+    public void requestFullscreenRejection_propagatesAsFailureWithMessage() {
         open();
         installRejectingFullscreenShim();
 
@@ -53,17 +53,16 @@ public class TriggerRequestFullscreenIT extends ChromeBrowserTest {
 
         button.click();
 
-        // The shim throws a DOMException with name "NotAllowedError" so the
-        // server-side onError consumer sees both fields populated.
         waitUntil(d -> status.getText() != null
                 && status.getText().startsWith("err:"));
-        Assert.assertEquals("err:NotAllowedError:DeniedByTest",
-                status.getText());
+        Assert.assertEquals("err:DeniedByTest", status.getText());
     }
 
     // Replace Element.prototype.requestFullscreen with a resolving shim so the
     // IT doesn't depend on the browser actually granting fullscreen (which
-    // headless CI Chrome routinely denies).
+    // headless CI Chrome routinely denies). The wrapped action calls
+    // document.documentElement.requestFullscreen() under the hood, so shimming
+    // the prototype covers both component and page modes.
     private void installResolvingFullscreenShim() {
         ((JavascriptExecutor) getDriver())
                 .executeScript("window.__fsCalled = false;"

@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -26,13 +27,58 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestFullscreenActionTest {
 
+    private UI ui;
+
+    @BeforeEach
+    void setUp() {
+        ui = new MockUI();
+        // MockUI skips UI.doInit which is what creates the wrapper in real
+        // usage; seed an app id and create the wrapper explicitly so
+        // component-mode actions can resolve it.
+        ui.getInternals().setFullAppId("test");
+        ui.getInternals().createWrapperElement();
+    }
+
     @Test
-    void fireAndForget_handlerCallsRequestFullscreenOnTarget() {
-        UI ui = new MockUI();
+    void pageMode_fireAndForget_handlerCallsRequestPageFullscreen() {
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new RequestFullscreenAction());
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen();",
+                handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
+    void pageMode_withCallbacks_handlerObservesRequestPageFullscreenPromise() {
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new RequestFullscreenAction(() -> {
+                }, err -> {
+                }));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the .then
+        // /.catch glue lives inside $0, not in the handler body.
+        assertEquals(
+                "$0(window.Vaadin.Flow.fullscreen.requestPageFullscreen(), $1);",
+                handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
+    void componentMode_fireAndForget_handlerCallsRequestComponentFullscreen() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -42,28 +88,14 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("$0.requestFullscreen();",
+        // $0 = panel, $1 = wrapper element from UIInternals.
+        assertEquals(
+                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1);",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
     @Test
-    void targetEqualsHost_renderedAsThis() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        ui.getElement().appendChild(button.getElement());
-
-        new DomEventTrigger(button, "click")
-                .triggers(new RequestFullscreenAction(button));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertEquals("this.requestFullscreen();",
-                handlerOf(singleInstallFn(ui)).getBody());
-    }
-
-    @Test
-    void withCallbacks_handlerCallsObserverWithRequestFullscreenPromise() {
-        UI ui = new MockUI();
+    void componentMode_withCallbacks_handlerObservesRequestComponentFullscreenPromise() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -75,10 +107,17 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = panel;
-        // the .then/.catch glue lives inside $0, not in the handler body.
-        assertEquals("$0($2.requestFullscreen(), $1);",
+        // $0 = OBSERVE_PROMISE, $1 = return channel, $2 = panel, $3 = wrapper.
+        assertEquals(
+                "$0(window.Vaadin.Flow.fullscreen.requestComponentFullscreen($2, $3), $1);",
                 handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
+    void componentMode_detachedComponent_throws() {
+        TagComponent detached = new TagComponent("div");
+        assertThrows(IllegalStateException.class,
+                () -> new RequestFullscreenAction(detached));
     }
 
     private static JsFunction singleInstallFn(UI ui) {
