@@ -18,19 +18,19 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.ClipboardReadAction;
+import com.vaadin.flow.component.trigger.internal.ReadFromClipboardAction;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * Wires a {@link ClickTrigger} on a button to a {@link ClipboardReadAction}
+ * Wires a {@link ClickTrigger} on a button to a {@link ReadFromClipboardAction}
  * that writes the received {@code ClipboardPayload} (or {@code "null"}) into a
  * status div, so the IT can assert both paths. The IT replaces
  * {@code navigator.clipboard.read} with a recording shim so the assertions
  * don't depend on browser clipboard permissions.
  */
-@Route(value = "com.vaadin.flow.uitest.ui.TriggerClipboardReadView", layout = ViewTestLayout.class)
-public class TriggerClipboardReadView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.TriggerReadFromClipboardView", layout = ViewTestLayout.class)
+public class TriggerReadFromClipboardView extends AbstractDivView {
 
     @Override
     protected void onShow() {
@@ -41,12 +41,12 @@ public class TriggerClipboardReadView extends AbstractDivView {
 
         add(readButton, status);
 
-        new ClickTrigger(readButton).triggers(new ClipboardReadAction(p -> {
+        new ClickTrigger(readButton).triggers(new ReadFromClipboardAction(p -> {
             if (p == null) {
                 status.setText("null");
             } else {
                 status.setText("text=" + p.text() + ";html=" + p.html());
             }
-        }));
+        }, err -> status.setText("error=" + err.name())));
     }
 }

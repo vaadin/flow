@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Textual clipboard contents delivered to {@link ClipboardReadAction}'s
+ * Textual clipboard contents delivered to {@link ReadFromClipboardAction}'s
  * handler. Either field may be {@code null} if the corresponding MIME type was
  * not present on the clipboard item.
  * <p>

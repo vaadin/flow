@@ -16,8 +16,10 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -106,7 +108,7 @@ class CopyTextToClipboardActionTest {
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        List<String> copied = new ArrayList<>();
+        List<@Nullable String> copied = new ArrayList<>();
         new DomEventTrigger(button, "click")
                 .triggers(new CopyTextToClipboardAction(
                         new PropertyInput<>(field, "value", String.class),
@@ -126,13 +128,13 @@ class CopyTextToClipboardActionTest {
     }
 
     @Test
-    void onCopied_receivesEmptyStringWhenJsResolvedWithoutValue() {
+    void onCopied_receivesNullWhenJsResolvedWithoutValue() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        List<String> copied = new ArrayList<>();
+        List<@Nullable String> copied = new ArrayList<>();
         new DomEventTrigger(button, "click")
                 .triggers(new CopyTextToClipboardAction(
                         new PropertyInput<>(field, "value", String.class),
@@ -143,12 +145,14 @@ class CopyTextToClipboardActionTest {
 
         ObjectNode outcome = JacksonUtils.createObjectNode();
         outcome.put("ok", true);
-        // No "value" field — defensive: don't blow up, treat as empty.
+        // No "value" field — JS resolved with undefined. The typed Consumer
+        // gets null, honestly reflecting "no value" rather than masking it
+        // as an empty string.
         ArrayNode args = JacksonUtils.createArrayNode();
         args.add(outcome);
         singleReturnChannel(ui).invoke(args);
 
-        assertEquals(List.of(""), copied);
+        assertEquals(Arrays.asList((String) null), copied);
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
