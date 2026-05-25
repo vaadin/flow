@@ -17,9 +17,9 @@ package com.vaadin.flow.component.html;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
@@ -116,20 +116,8 @@ public class NativeLabel extends HtmlContainer {
             throw new IllegalArgumentException(
                     "The provided component cannot be null");
         }
-        getElement().getNode()
-                .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                        .beforeClientResponse(getElement().getNode(),
-                                context -> {
-                                    String id = forComponent.getId()
-                                            .orElseGet(() -> {
-                                                String generatedId = "nativelabel-"
-                                                        + UUID.randomUUID()
-                                                                .toString();
-                                                forComponent.setId(generatedId);
-                                                return generatedId;
-                                            });
-                                    setFor(id);
-                                }));
+        ComponentUtil.resolveOrGenerateIdLater(getElement(), forComponent,
+                "nativelabel-", this::setFor);
     }
 
     /**
