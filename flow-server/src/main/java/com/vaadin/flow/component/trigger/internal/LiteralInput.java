@@ -15,24 +15,46 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import org.jspecify.annotations.Nullable;
+import java.util.Objects;
 
 /**
  * Input backed by a server-side literal that is JSON-encoded into the JS at
  * build time. Lets actions take {@code Action.Input<? extends T>} uniformly
- * while still accepting plain constants from callers.
+ * while still accepting plain constants from callers — e.g. copying a fixed
+ * string to the clipboard:
+ *
+ * <pre>{@code
+ * new ClickTrigger(button).triggers(
+ *         new CopyTextToClipboardAction(new LiteralInput<>("hello"), () -> {
+ *         }, err -> {
+ *         }));
+ * }</pre>
+ *
+ * <p>
+ * The value is required to be non-null: {@code null} as a literal payload
+ * almost never matches a sensible browser API call (e.g.
+ * {@code writeText(null)} writes the string {@code "null"} to the clipboard).
+ * Actions that need to emit a literal {@code null} should do so through their
+ * own mechanism — see {@link SetPropertyAction}'s null-clearing convenience
+ * constructor.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value
  */
-final class LiteralInput<T> extends Action.Input<T> {
+public final class LiteralInput<T> extends Action.Input<T> {
 
-    private final @Nullable T value;
+    private final T value;
 
-    LiteralInput(@Nullable T value) {
-        this.value = value;
+    /**
+     * Creates a literal input wrapping the given value.
+     *
+     * @param value
+     *            the value to encode, not {@code null}
+     */
+    public LiteralInput(T value) {
+        this.value = Objects.requireNonNull(value, "value must not be null");
     }
 
     @Override

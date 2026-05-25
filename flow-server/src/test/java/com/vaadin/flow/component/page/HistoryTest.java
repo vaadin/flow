@@ -21,15 +21,12 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HistoryTest {
 
@@ -72,9 +69,8 @@ class HistoryTest {
     private VaadinSession session = Mockito.mock(VaadinSession.class);
     private DeploymentConfiguration configuration;
 
-    private static final String SET_TIMEOUT_WRAPPER = "setTimeout($0)";
-    private static final String PUSH_STATE_BODY = "window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated'));";
-    private static final String REPLACE_STATE_BODY = "window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated'));";
+    private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
+    private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
 
     private static final String PUSH_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
     private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));";
@@ -91,86 +87,95 @@ class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(false);
     }
 
-    /**
-     * Asserts that the last executeJs call wrapped the given body in a
-     * {@code setTimeout($0)} JsFunction with the given state and path captures.
-     */
-    private void assertSetTimeoutWrapped(String expectedBody,
-            String expectedStateJsonOrNull, String expectedPath) {
-        assertEquals(SET_TIMEOUT_WRAPPER, page.expression,
-                "expected setTimeout wrapper");
-        assertEquals(1, page.parameters.length,
-                "expected single JsFunction parameter");
-        JsFunction fn = assertInstanceOf(JsFunction.class, page.parameters[0],
-                "parameter should be a JsFunction");
-        assertEquals(expectedBody, fn.getBody(), "JsFunction body");
-        assertEquals(2, fn.getCaptures().size(), "JsFunction capture count");
-        Object stateCapture = fn.getCaptures().get(0);
-        if (expectedStateJsonOrNull == null) {
-            assertNull(stateCapture, "state capture should be null");
-        } else {
-            assertEquals(expectedStateJsonOrNull,
-                    ((JsonNode) stateCapture).toString(), "state capture JSON");
-        }
-        assertEquals(expectedPath, fn.getCaptures().get(1), "path capture");
-    }
-
     @Test
     void pushState_locationWithQueryParameters_queryParametersRetained() {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, "{\"foo\":\"bar\"}",
-                "context/view?param=4");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view?param=4", page.parameters[1],
+                "invalid location");
 
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, "{\"foo\":\"bar\"}",
-                "context/view/?param=4");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view/?param=4", page.parameters[1],
+                "invalid location");
     }
 
     @Test
     void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, null, "context/view#foobar");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view#foobar", page.parameters[1],
+                "fragment not retained");
 
         history.pushState(null, "context/view/#foobar");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, null, "context/view/#foobar");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/#foobar", page.parameters[1],
+                "fragment not retained");
     }
 
     @Test // #11628
     void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, null,
-                "context/view?foo=bar#foobar");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        assertSetTimeoutWrapped(PUSH_STATE_BODY, null,
-                "context/view/?foo=bar#foobar");
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
     void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        assertSetTimeoutWrapped(REPLACE_STATE_BODY, null,
-                "context/view?foo=bar#foobar");
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        assertSetTimeoutWrapped(REPLACE_STATE_BODY, null,
-                "context/view/?foo=bar#foobar");
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
     void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
-        assertSetTimeoutWrapped(REPLACE_STATE_BODY, null, ".");
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals(".", page.parameters[1], "location should be '.'");
     }
 
     @Test

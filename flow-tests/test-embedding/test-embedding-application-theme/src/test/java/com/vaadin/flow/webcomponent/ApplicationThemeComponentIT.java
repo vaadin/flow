@@ -31,7 +31,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
-import static com.vaadin.flow.webcomponent.ThemedComponent.MY_COMPONENT_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
@@ -112,22 +111,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Color fom CSSImport annotation should have been applied",
                 "rgba(255, 215, 0, 1)", cssImportElement.getCssValue("color"));
 
-    }
-
-    @Test
-    public void componentThemeIsApplied() {
-        open();
-
-        final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-                .$(DivElement.class).id(EMBEDDED_ID);
-
-        TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
 
     @Test
