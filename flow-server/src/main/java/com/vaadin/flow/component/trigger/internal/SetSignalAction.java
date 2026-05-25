@@ -18,16 +18,12 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
- * Named {@link CallbackAction} that calls {@code set} on a writable signal —
- * the common case of bridging a client-side trigger into server-side signal
- * state. Overloads accept {@link ValueSignal} (local) and
- * {@link SharedValueSignal} (shared, including subclasses like
- * {@code SharedNumberSignal}); for other server-side destinations (logging,
- * custom events, queues, …) use {@link CallbackAction} directly with a method
- * reference.
+ * Named {@link CallbackAction} that calls {@code set} on a {@link ValueSignal}
+ * — the common case of bridging a client-side trigger into server-side signal
+ * state. For other server-side destinations (logging, custom events, queues, …)
+ * use {@link CallbackAction} directly with a method reference.
  *
  * <pre>{@code
  * ValueSignal<String> valueSignal = new ValueSignal<>("");
@@ -65,31 +61,6 @@ public class SetSignalAction<T> extends CallbackAction<T> {
      */
     public SetSignalAction(ValueSignal<? super T> signal, Class<T> valueType,
             Action.Input<? extends T> source) {
-        super(valueType,
-                Objects.requireNonNull(signal, "signal must not be null")::set,
-                source);
-    }
-
-    /**
-     * Creates an action that, when the trigger fires, evaluates {@code source}
-     * on the client, sends the value to the server, decodes it as
-     * {@code valueType}, and assigns it to {@code signal} via
-     * {@link SharedValueSignal#set(Object)}. The returned
-     * {@code SignalOperation} is discarded — wire this overload when
-     * fire-and-forget semantics for the shared write are acceptable.
-     *
-     * @param signal
-     *            the shared value signal to update on the server, not
-     *            {@code null}
-     * @param valueType
-     *            runtime type the JSON value is decoded to before being passed
-     *            to {@link SharedValueSignal#set(Object)}, not {@code null}
-     * @param source
-     *            input that produces the value on the client when the trigger
-     *            fires, not {@code null}
-     */
-    public SetSignalAction(SharedValueSignal<? super T> signal,
-            Class<T> valueType, Action.Input<? extends T> source) {
         super(valueType,
                 Objects.requireNonNull(signal, "signal must not be null")::set,
                 source);
