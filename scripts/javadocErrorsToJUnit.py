@@ -7,8 +7,11 @@ Scans the Maven log for Javadoc error blocks (header + source line +
 caret, each prefixed by Maven's [ERROR] marker) and writes a JUnit XML
 file with one testcase per error. The publish-unit-test-result-action
 in the test-results job then surfaces them in the PR comment and job
-summary alongside surefire/failsafe failures. Writes nothing if no
-Javadoc errors are present in the log.
+summary alongside surefire/failsafe failures. Each error is also
+emitted as a GitHub Actions workflow command (`::error file=...`) so
+the same errors show up inline in the failing job's log and as
+annotations on the PR diff. Writes nothing if no Javadoc errors are
+present in the log.
 """
 
 import os
@@ -28,6 +31,19 @@ def relativize(path, workspace):
     if workspace and path.startswith(workspace + '/'):
         return path[len(workspace) + 1:]
     return path
+
+
+def annotation_escape(value):
+    """Escape a value for use in a GitHub Actions workflow command message."""
+    return value.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+
+def emit_annotation(file_rel, line_no, msg, src, caret):
+    message = annotation_escape(f'{msg}\n{src}\n{caret}')
+    file_attr = annotation_escape(file_rel)
+    print(
+        f'::error file={file_attr},line={line_no},title=Javadoc::{message}'
+    )
 
 
 def main(log_path, out_path):
@@ -50,6 +66,7 @@ def main(log_path, out_path):
         file_rel = relativize(path, workspace)
         name = f'{file_rel}:{line_no}'
         detail = f'{file_rel}:{line_no}: error: {msg}\n{src}\n{caret}'
+        emit_annotation(file_rel, line_no, msg, src, caret)
         parts.append(
             f'  <testcase classname={quoteattr("Javadoc")} '
             f'name={quoteattr(name)}>'
