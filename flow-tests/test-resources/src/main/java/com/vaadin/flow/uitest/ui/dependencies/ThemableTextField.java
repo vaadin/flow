@@ -18,22 +18,16 @@ package com.vaadin.flow.uitest.ui.dependencies;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 
 /**
- * Custom vaadin text field for testing component theming.
+ * Test-only themable component that imitates the shadow-DOM shape of
+ * vaadin-text-field so theme-related ITs can verify Flow's per-component CSS
+ * machinery without pulling in an actual Vaadin web component.
  */
-@JsModule("@vaadin/text-field/vaadin-text-field.js")
-@Tag("vaadin-text-field")
-@NpmPackage(value = "@vaadin/text-field", version = TestVersion.VAADIN)
+@JsModule("./themable-input.js")
+@Tag("themable-input")
 public class ThemableTextField extends Component {
 
-    /**
-     * Set the component id.
-     *
-     * @param id
-     *            value to set
-     */
     public void withId(String id) {
         setId(id);
     }
