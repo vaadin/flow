@@ -7,6 +7,7 @@ import {
 import './Clipboard';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import { isShareSupported } from './WebShare';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -563,6 +564,9 @@ export class Flow {
     if (geolocation) {
       params['v-ga'] = await geolocation.queryAvailability();
     }
+
+    /* Web Share API support */
+    params['v-ws'] = isShareSupported();
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
