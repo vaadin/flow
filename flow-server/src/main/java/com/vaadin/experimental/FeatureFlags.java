@@ -59,7 +59,6 @@ public class FeatureFlags implements Serializable {
     public static final Feature ACCESSIBLE_DISABLED_BUTTONS = CoreFeatureFlagProvider.ACCESSIBLE_DISABLED_BUTTONS;
     public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
     public static final Feature HILLA_FULLSTACK_SIGNALS = HillaFeatureFlagProvider.HILLA_FULLSTACK_SIGNALS;
-    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = FlowComponentsFeatureFlagProvider.MASTER_DETAIL_LAYOUT_COMPONENT;
     public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = FlowComponentsFeatureFlagProvider.LAYOUT_COMPONENT_IMPROVEMENTS;
     public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = FlowComponentsFeatureFlagProvider.DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT;
 
