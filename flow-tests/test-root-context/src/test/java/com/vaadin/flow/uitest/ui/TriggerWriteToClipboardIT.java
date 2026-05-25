@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
+public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
 
     @Test
     public void clickCopiesValue_andServerReceivesCopiedTextOnSuccess() {
@@ -39,13 +39,14 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
 
         button.click();
 
-        Object copied = waitUntil(d -> ((JavascriptExecutor) d)
-                .executeScript("return window.__copied;"));
-        Assert.assertEquals("hello clipboard", copied);
+        // The ClipboardItem the browser would have received carries the
+        // current input value as text/plain.
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        Assert.assertEquals("hello clipboard",
+                ((java.util.Map<?, ?>) written).get("text/plain"));
 
-        // onSuccess receives the copied string back from the resolved
-        // promise — the server learns what actually reached the clipboard
-        // even though the value came from a client-side PropertyInput.
+        // onCopied receives the same string back from the resolved promise.
         waitUntil(d -> "ok:hello clipboard".equals(status.getText()));
     }
 
@@ -60,20 +61,45 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
 
         // The Java-side literal (`hello "world"\n`) is JSON-encoded into the
         // emitted JS at build time, so the value the browser receives back
-        // through the writeText shim is exactly the original String — quotes
+        // through the write shim is exactly the original String — quotes
         // and newline intact.
-        Object copied = waitUntil(d -> ((JavascriptExecutor) d)
-                .executeScript("return window.__copied;"));
-        Assert.assertEquals(TriggerCopyTextToClipboardView.STATIC_TEXT, copied);
-        // `STATIC_TEXT` ends with `\n`; read raw textContent (Selenium's
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        Assert.assertEquals(TriggerWriteToClipboardView.STATIC_TEXT,
+                ((java.util.Map<?, ?>) written).get("text/plain"));
+        // STATIC_TEXT ends with `\n`; read raw textContent (Selenium's
         // getText() collapses/trims whitespace and would drop it).
-        waitUntil(d -> ("ok:" + TriggerCopyTextToClipboardView.STATIC_TEXT)
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.STATIC_TEXT)
                 .equals(((JavascriptExecutor) d).executeScript(
                         "return document.getElementById('status').textContent;")));
     }
 
     @Test
-    public void writeTextRejection_propagatesAsFailureWithNameAndMessage() {
+    public void clickCopiesTextAndHtml_intoOneClipboardItem_resolvingWithText() {
+        open();
+        installResolvingClipboardShim();
+
+        WebElement button = findElement(By.id("copy-multi"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        // The single ClipboardItem carries both MIME types.
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_TEXT,
+                entries.get("text/plain"));
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_HTML,
+                entries.get("text/html"));
+
+        // onCopied resolves with the text/plain value (text wins over html).
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.MULTI_TEXT)
+                .equals(status.getText()));
+    }
+
+    @Test
+    public void writeRejection_propagatesAsFailureWithNameAndMessage() {
         open();
         installRejectingClipboardShim();
 
@@ -91,19 +117,25 @@ public class TriggerCopyTextToClipboardIT extends ChromeBrowserTest {
     }
 
     private void installResolvingClipboardShim() {
+        // ClipboardItem is stubbed to record its entries map (the WriteAction
+        // emits string values for text/plain and text/html). navigator
+        // .clipboard.write resolves immediately and stores the first item's
+        // entries on window.__written for the assertions to read.
         ((JavascriptExecutor) getDriver())
-                .executeScript("window.__copied = null;"
+                .executeScript("window.__written = null;"
+                        + "window.ClipboardItem = function(items) { return { items: items }; };"
                         + "Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"
-                        + "    writeText: t => { window.__copied = t; return Promise.resolve(); }"
+                        + "    write: items => { window.__written = items[0].items; return Promise.resolve(); }"
                         + "  }" + "});");
     }
 
     private void installRejectingClipboardShim() {
-        ((JavascriptExecutor) getDriver())
-                .executeScript("Object.defineProperty(navigator, 'clipboard', {"
+        ((JavascriptExecutor) getDriver()).executeScript(
+                "window.ClipboardItem = function(items) { return { items: items }; };"
+                        + "Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"
-                        + "    writeText: t => Promise.reject("
+                        + "    write: items => Promise.reject("
                         + "      new DOMException('DeniedByTest', 'NotAllowedError'))"
                         + "  }" + "});");
     }
