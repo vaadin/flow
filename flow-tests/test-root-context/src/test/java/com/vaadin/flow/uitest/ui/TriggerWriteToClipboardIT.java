@@ -121,8 +121,8 @@ public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
         // emits string values for text/plain and text/html). navigator
         // .clipboard.write resolves immediately and stores the first item's
         // entries on window.__written for the assertions to read.
-        ((JavascriptExecutor) getDriver()).executeScript(
-                "window.__written = null;"
+        ((JavascriptExecutor) getDriver())
+                .executeScript("window.__written = null;"
                         + "window.ClipboardItem = function(items) { return { items: items }; };"
                         + "Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"

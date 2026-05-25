@@ -122,6 +122,20 @@ class ClipboardTest {
     }
 
     @Test
+    void write_contentTextFromHasValue_emitsPropertyInputForValue() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        TestField field = new TestField();
+        ui.getElement().appendChild(button.getElement(), field.getElement());
+
+        Clipboard.onClick(button).write(ClipboardContent.create().text(field));
+
+        String body = handlerBody(ui);
+        assertTrue(body.contains("\"text/plain\":t"), body);
+        assertTrue(body.contains("$0[\"value\"]"), body);
+    }
+
+    @Test
     void write_emptyContent_throws() {
         TestButton button = new TestButton();
         assertThrows(IllegalArgumentException.class, () -> Clipboard

@@ -56,7 +56,7 @@ public final class ClipboardContent implements Serializable {
     }
 
     /**
-     * Sets the {@code text/plain} payload to a literal value.
+     * Sets the plain text to be written to the clipboard.
      *
      * @param literal
      *            the value, not {@code null}
@@ -69,9 +69,9 @@ public final class ClipboardContent implements Serializable {
     }
 
     /**
-     * Sets the {@code text/plain} payload to the current {@code value} property
-     * of the given component (typically an input field), read on the client
-     * when the trigger fires.
+     * Sets the plain text to be written to the clipboard, taken from the
+     * {@code value} property of the given component (typically an input field).
+     * The value is read on the client when the trigger fires.
      *
      * @param source
      *            the component whose {@code value} property should be read, not
@@ -88,7 +88,7 @@ public final class ClipboardContent implements Serializable {
     }
 
     /**
-     * Sets the {@code text/html} payload to a literal value.
+     * Sets the HTML to be written to the clipboard.
      *
      * @param literal
      *            the value, not {@code null}

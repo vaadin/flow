@@ -64,8 +64,8 @@ class WriteToClipboardActionTest {
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(new LiteralInput<>("plain"),
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new LiteralInput<>("plain"),
                         new LiteralInput<>("<b>html</b>")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -83,8 +83,9 @@ class WriteToClipboardActionTest {
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
-        new DomEventTrigger(button, "click").triggers(
-                new WriteToClipboardAction(null, new LiteralInput<>("<b>hi</b>")));
+        new DomEventTrigger(button, "click")
+                .triggers(new WriteToClipboardAction(null,
+                        new LiteralInput<>("<b>hi</b>")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -151,8 +152,8 @@ class WriteToClipboardActionTest {
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
         List<ReturnChannelRegistration> channels = handlerOf(
                 singleInstallFn(ui)).getCaptures().stream()
-                        .filter(o -> o instanceof ReturnChannelRegistration)
-                        .map(o -> (ReturnChannelRegistration) o).toList();
+                .filter(o -> o instanceof ReturnChannelRegistration)
+                .map(o -> (ReturnChannelRegistration) o).toList();
         assertEquals(1, channels.size(),
                 "Expected exactly one captured return channel");
         return channels.get(0);
