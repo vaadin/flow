@@ -34,12 +34,9 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
  * Use the static factory:
  *
  * <pre>{@code
- * Clipboard.on(button)
+ * Clipboard.onClick(button)
  *         .write(ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
  * }</pre>
- *
- * Each setter has overloads accepting a literal value, a component (for value
- * fields), or a custom {@link Action.Input} for advanced cases.
  */
 public final class ClipboardContent implements Serializable {
 
@@ -83,24 +80,10 @@ public final class ClipboardContent implements Serializable {
      *            component type implementing {@code HasValue<?, String>}
      * @return this builder
      */
-    public <C extends Component & HasValue<?, String>> ClipboardContent textFromValue(
+    public <C extends Component & HasValue<?, String>> ClipboardContent text(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         this.textInput = new PropertyInput<>(source, "value", String.class);
-        return this;
-    }
-
-    /**
-     * Sets the {@code text/plain} payload to the value produced by a custom
-     * input.
-     *
-     * @param source
-     *            the input, not {@code null}
-     * @return this builder
-     */
-    public ClipboardContent text(Action.Input<String> source) {
-        Objects.requireNonNull(source, "source must not be null");
-        this.textInput = source;
         return this;
     }
 
@@ -117,31 +100,11 @@ public final class ClipboardContent implements Serializable {
         return this;
     }
 
-    /**
-     * Sets the {@code text/html} payload to the value produced by a custom
-     * input.
-     *
-     * @param source
-     *            the input, not {@code null}
-     * @return this builder
-     */
-    public ClipboardContent html(Action.Input<String> source) {
-        Objects.requireNonNull(source, "source must not be null");
-        this.htmlInput = source;
-        return this;
-    }
-
-    /**
-     * @return the text input, or {@code null} if no text was set
-     */
-    public Action.@Nullable Input<String> getTextInput() {
+    Action.@Nullable Input<String> getTextInput() {
         return textInput;
     }
 
-    /**
-     * @return the html input, or {@code null} if no html was set
-     */
-    public Action.@Nullable Input<String> getHtmlInput() {
+    Action.@Nullable Input<String> getHtmlInput() {
         return htmlInput;
     }
 }

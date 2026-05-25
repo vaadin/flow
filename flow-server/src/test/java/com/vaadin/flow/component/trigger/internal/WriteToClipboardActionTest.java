@@ -31,71 +31,88 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CopyTextToClipboardActionTest {
+class WriteToClipboardActionTest {
 
     @Test
-    void fireAndForget_handlerJsIsPlainWriteText() {
+    void fireAndForget_textOnly_emitsWriteWrappedInIIFEResolvingWithText() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class)));
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class),
+                        null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Fire-and-forget uses the simple writeText call — no IIFE wrap
-        // because the resolved value isn't needed.
+        // IIFE binds the text expression once, calls write([ClipboardItem
+        // ({"text/plain": t})]), then resolves with the same t so onCopied
+        // (if wired) sees the exact value.
         assertEquals(
-                "((v) => navigator.clipboard.writeText(v).then(() => v))($0[\"value\"]);",
+                "((t) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t})]).then(() => t))($0[\"value\"]);",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
     @Test
-    void fireAndForget_literalInput_encodesValueAsJsonLiteral() {
+    void fireAndForget_textAndHtml_resolvesWithTextWhenBothSet() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new LiteralInput<>("hello \"world\"\n")));
+                .triggers(new WriteToClipboardAction(new LiteralInput<>("plain"),
+                        new LiteralInput<>("<b>html</b>")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // The literal is JSON-encoded, so the quotes and newline inside are
-        // escaped — proves callers can't accidentally break out of the
-        // string by passing values that contain quotes or newlines.
+        // Both slots are packed into one ClipboardItem; .then resolves with
+        // the text value (text/plain wins over text/html for onCopied).
         assertEquals(
-                "((v) => navigator.clipboard.writeText(v).then(() => v))(\"hello \\\"world\\\"\\n\");",
+                "((t,h) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t,\"text/html\":h})]).then(() => t))(\"plain\",\"<b>html</b>\");",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
     @Test
-    void withCallbacks_handlerCallsObserverWithWriteTextPromise() {
+    void fireAndForget_htmlOnly_resolvesWithHtml() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(null, new LiteralInput<>("<b>hi</b>")));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Without text, the promise resolves with the html value.
+        assertEquals(
+                "((h) => navigator.clipboard.write([new ClipboardItem({\"text/html\":h})]).then(() => h))(\"<b>hi</b>\");",
+                handlerOf(singleInstallFn(ui)).getBody());
+    }
+
+    @Test
+    void withCallbacks_handlerWrapsWriteInObserveCall() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class), null,
                         copied -> {
                         }, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = field;
-        // the IIFE binds the text to v so the promise resolves with the
-        // copied value.
+        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = field.
         assertEquals(
-                "$0(((v) => navigator.clipboard.writeText(v).then(() => v))($2[\"value\"]), $1);",
+                "$0(((t) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t})]).then(() => t))($2[\"value\"]), $1);",
                 handlerOf(singleInstallFn(ui)).getBody());
     }
 
@@ -108,8 +125,8 @@ class CopyTextToClipboardActionTest {
 
         List<String> copied = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class), null,
                         copied::add, err -> {
                         }));
 
@@ -126,36 +143,16 @@ class CopyTextToClipboardActionTest {
     }
 
     @Test
-    void onCopied_receivesEmptyStringWhenJsResolvedWithoutValue() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        TagComponent field = new TagComponent("input");
-        ui.getElement().appendChild(button.getElement(), field.getElement());
-
-        List<String> copied = new ArrayList<>();
-        new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
-                        copied::add, err -> {
-                        }));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        ObjectNode outcome = JacksonUtils.createObjectNode();
-        outcome.put("ok", true);
-        // No "value" field — defensive: don't blow up, treat as empty.
-        ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(outcome);
-        singleReturnChannel(ui).invoke(args);
-
-        assertEquals(List.of(""), copied);
+    void constructor_bothInputsNullRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new WriteToClipboardAction(null, null));
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
         List<ReturnChannelRegistration> channels = handlerOf(
                 singleInstallFn(ui)).getCaptures().stream()
-                .filter(o -> o instanceof ReturnChannelRegistration)
-                .map(o -> (ReturnChannelRegistration) o).toList();
+                        .filter(o -> o instanceof ReturnChannelRegistration)
+                        .map(o -> (ReturnChannelRegistration) o).toList();
         assertEquals(1, channels.size(),
                 "Expected exactly one captured return channel");
         return channels.get(0);

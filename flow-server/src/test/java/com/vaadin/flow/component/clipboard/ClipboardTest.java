@@ -26,7 +26,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.trigger.internal.DomEventTrigger;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -53,15 +52,13 @@ class ClipboardTest {
         }
     }
 
-    // --- entry points ---------------------------------------------------
-
     @Test
-    void on_clickNotifier_installsClickTrigger() {
+    void onClick_installsClickTrigger() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).writeText("Hello");
+        Clipboard.onClick(button).writeText("Hello");
 
         String install = installBody(ui);
         assertTrue(install.contains("\"click\""),
@@ -69,31 +66,17 @@ class ClipboardTest {
     }
 
     @Test
-    void on_trigger_usesProvidedTrigger() {
-        UI ui = new MockUI();
-        TestButton button = new TestButton();
-        ui.getElement().appendChild(button.getElement());
-
-        Clipboard.on(new DomEventTrigger(button, "keydown")).writeText("Hello");
-
-        String install = installBody(ui);
-        assertTrue(install.contains("\"keydown\""),
-                "keydown trigger install JS: " + install);
-    }
-
-    // --- write verbs ----------------------------------------------------
-
-    @Test
     void writeText_literal_emitsClipboardItemWithTextPlain() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).writeText("Hello");
+        Clipboard.onClick(button).writeText("Hello");
 
         String body = handlerBody(ui);
         assertTrue(body.contains("navigator.clipboard.write"), body);
-        assertTrue(body.contains("\"text/plain\":\"Hello\""), body);
+        assertTrue(body.contains("\"text/plain\":t"), body);
+        assertTrue(body.contains("\"Hello\""), body);
     }
 
     @Test
@@ -103,10 +86,10 @@ class ClipboardTest {
         TestField field = new TestField();
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        Clipboard.on(button).writeText(field);
+        Clipboard.onClick(button).writeText(field);
 
         String body = handlerBody(ui);
-        assertTrue(body.contains("\"text/plain\":$0[\"value\"]"), body);
+        assertTrue(body.contains("$0[\"value\"]"), body);
     }
 
     @Test
@@ -115,10 +98,11 @@ class ClipboardTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).writeHtml("<b>Hi</b>");
+        Clipboard.onClick(button).writeHtml("<b>Hi</b>");
 
         String body = handlerBody(ui);
-        assertTrue(body.contains("\"text/html\":\"<b>Hi</b>\""), body);
+        assertTrue(body.contains("\"text/html\":h"), body);
+        assertTrue(body.contains("\"<b>Hi</b>\""), body);
     }
 
     @Test
@@ -127,22 +111,22 @@ class ClipboardTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Clipboard.on(button).write(
+        Clipboard.onClick(button).write(
                 ClipboardContent.create().text("plain").html("<b>html</b>"));
 
         String body = handlerBody(ui);
-        assertTrue(body.contains("\"text/plain\":\"plain\""), body);
-        assertTrue(body.contains("\"text/html\":\"<b>html</b>\""), body);
+        assertTrue(body.contains("\"text/plain\":t"), body);
+        assertTrue(body.contains("\"text/html\":h"), body);
+        assertTrue(body.contains("\"plain\""), body);
+        assertTrue(body.contains("\"<b>html</b>\""), body);
     }
 
     @Test
     void write_emptyContent_throws() {
         TestButton button = new TestButton();
-        assertThrows(IllegalArgumentException.class,
-                () -> Clipboard.on(button).write(ClipboardContent.create()));
+        assertThrows(IllegalArgumentException.class, () -> Clipboard
+                .onClick(button).write(ClipboardContent.create()));
     }
-
-    // --- helpers --------------------------------------------------------
 
     private static String installBody(UI ui) {
         return installFn(ui).getBody();

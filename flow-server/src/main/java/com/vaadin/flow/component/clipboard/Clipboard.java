@@ -20,32 +20,21 @@ import java.util.Objects;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.Trigger;
 
 /**
- * Entry point for the browser clipboard API. Bind clipboard verbs to a user
- * gesture by chaining off {@link #on(ClickNotifier)} for the common
- * click-to-copy case, or {@link #on(Trigger)} for any other trigger:
+ * Entry point for the browser clipboard API. Bind clipboard actions to a user
+ * gesture by chaining off {@link #onClick(Component)}:
  *
  * <pre>{@code
  * Button copyButton = new Button("Copy");
- * Clipboard.on(copyButton).writeText(textField);
+ * Clipboard.onClick(copyButton).writeText(textField);
  *
- * Clipboard.on(copyButton)
+ * Clipboard.onClick(copyButton)
  *         .write(ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
  * }</pre>
  *
- * For non-click DOM gestures (e.g. {@code dblclick}, {@code pointerdown}) or
- * custom triggers, construct a {@link Trigger} explicitly and pass it to
- * {@link #on(Trigger)}.
- * <p>
- * The Clipboard API requires a fresh user gesture for each write, so verbs only
- * run during the DOM event that fires the underlying trigger.
- * <p>
- * Active clipboard reads ({@code navigator.clipboard.read()}) and
- * {@code paste}/{@code copy}/{@code cut} event capture are not yet exposed —
- * they require a typed server-callback primitive that is queued behind the
- * trigger framework's step 3.
+ * The Clipboard API requires a fresh user gesture for each write, so actions
+ * only run during the DOM event that fires the underlying trigger.
  */
 public final class Clipboard {
 
@@ -54,29 +43,20 @@ public final class Clipboard {
     }
 
     /**
-     * Returns a binding whose underlying trigger fires when the given component
-     * is clicked. Sugar for {@code on(new ClickTrigger(component))} that avoids
-     * exposing the trigger framework's internal types for the common case.
+     * Registers the given component as a clickable trigger for a clipboard
+     * action — the common shape for copy-to-clipboard buttons. Equivalent to
+     * {@code new ClickTrigger(component)}, without making callers reach for the
+     * trigger framework's internal types.
      *
-     * @param trigger
+     * @param component
      *            the component to listen for clicks on, not {@code null}
-     * @return a new binding
+     * @param <T>
+     *            the component type, must implement {@link ClickNotifier}
+     * @return a new binding that can chain actions to this trigger
      */
-    public static ClipboardBinding on(ClickNotifier<?> trigger) {
-        Objects.requireNonNull(trigger, "trigger must not be null");
-        return new ClipboardBinding(new ClickTrigger((Component) trigger));
-    }
-
-    /**
-     * Returns a binding whose underlying trigger is the given one. Use this for
-     * non-click gestures or any add-on trigger.
-     *
-     * @param trigger
-     *            the trigger, not {@code null}
-     * @return a new binding
-     */
-    public static ClipboardBinding on(Trigger trigger) {
-        Objects.requireNonNull(trigger, "trigger must not be null");
-        return new ClipboardBinding(trigger);
+    public static <T extends Component & ClickNotifier<?>> ClipboardBinding onClick(
+            T component) {
+        Objects.requireNonNull(component, "component must not be null");
+        return new ClipboardBinding(new ClickTrigger(component));
     }
 }
