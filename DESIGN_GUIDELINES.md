@@ -78,6 +78,47 @@ site. Other precedents: `windowSizeSignal`, `validationStatusSignal`.
 - Inside a reactive context, callers use `.get()` (subscribes); outside,
   they use `.peek()` (snapshot). Document this in the accessor's Javadoc.
 
+### Interfaces vs abstract classes
+
+When introducing a new type that callers will receive or pass around
+(e.g. `Trigger`, `Action`, `Argument`), pick *one* of: a single concrete /
+abstract class named `Xyz`, or both an interface `Xyz` and an abstract
+class `AbstractXyz`. Don't introduce one half speculatively.
+
+- **Default to a single abstract (or concrete) class named `Xyz`.** Skip
+  the interface unless you can demonstrate, today, a useful implementation
+  that does *not* extend the abstract class. Introducing the interface
+  later does not retroactively help: every existing method signature that
+  accepts `AbstractXyz` will still reject interface-only implementations,
+  so the migration is just as expensive as not having had an interface at
+  all.
+- **Only add an interface alongside an abstract class if you can ship a
+  worked example of using the interface without the abstract class.** The
+  interface is a commitment that it stands on its own today and keeps
+  standing — not an option you keep open "in case". An interface that
+  only ever has one valid implementation adds noise without value.
+- **Name it `Xyz`, not `AbstractXyz`, unless an interface exists or is
+  explicitly planned.** The class name appears in every method signature
+  that accepts an instance (`doSomething(Trigger trigger)` reads better
+  than `doSomething(AbstractTrigger trigger)`), and renaming later
+  doesn't unblock interface adoption — see above.
+- **Prefer an interface with default methods over an abstract class when
+  there is no state.** Abstract classes earn their keep by holding
+  fields. If today and foreseeably the type has none, an interface is
+  the lighter choice.
+- **Don't reach for multiple inheritance.** The usual motivation for
+  splitting interface + abstract class is "what if someone needs to
+  combine this with another base class?". In practice almost every such
+  case is better served by a separate "view" class that exposes the same
+  underlying state, or by composition. Design the view, then decide if
+  the interface is actually needed.
+- **Don't make a sealed interface that permits a single abstract class.**
+  That combination has no callers it serves: it can't be implemented
+  outside the package (sealed), it can't be subclassed except via the one
+  permitted class, and it adds a type with no behaviour. Either keep just
+  the abstract class, or open the interface up to genuinely independent
+  implementations.
+
 ### Result types: sealed interfaces + pattern matching
 
 For values that are "one of N things" (position-or-error,

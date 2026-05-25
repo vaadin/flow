@@ -27,8 +27,8 @@ import com.vaadin.flow.dom.JsFunction;
  * clipboard:
  *
  * <pre>{@code
- * new ClickTrigger(button).triggers(
- *         new CopyTextToClipboardAction(new LiteralInput<>("hello"), () -> {
+ * new ClickTrigger(button).triggers(new WriteToClipboardAction(
+ *         new LiteralInput<>("hello"), null, copied -> {
  *         }, err -> {
  *         }));
  * }</pre>

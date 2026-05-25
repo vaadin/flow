@@ -33,34 +33,37 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CopyTextToClipboardActionTest {
+class WriteToClipboardActionTest {
 
     /**
-     * IIFE that binds the text expression to {@code v}, writes it, and resolves
-     * with the same value so {@code onSuccess} sees the exact string that
-     * reached the clipboard. {@code $0} is the text input function.
+     * IIFE that binds the text expression to {@code t}, writes a
+     * {@code text/plain} ClipboardItem, and resolves with the same value so
+     * {@code onSuccess} sees the exact string that reached the clipboard.
+     * {@code $0} is the text input function.
      */
-    private static final String PROMISE_BODY = "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))";
+    private static final String TEXT_ONLY_BODY = "return ((t) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t})]).then(() => t))($0(event))";
 
     @Test
-    void fireAndForget_actionFnIsThePromiseInnerDirectly() {
+    void fireAndForget_textOnly_actionFnIsThePromiseInnerDirectly() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class)));
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class),
+                        null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // Fire-and-forget mode: action is the inner JsFunction with no
         // observer wrapping.
         JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
-        assertEquals(PROMISE_BODY, action.getBody());
+        assertEquals(TEXT_ONLY_BODY, action.getBody());
     }
 
     @Test
@@ -70,8 +73,8 @@ class CopyTextToClipboardActionTest {
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new LiteralInput<>("hello \"world\"\n")));
+                .triggers(new WriteToClipboardAction(
+                        new LiteralInput<>("hello \"world\"\n"), null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -85,6 +88,45 @@ class CopyTextToClipboardActionTest {
     }
 
     @Test
+    void fireAndForget_textAndHtml_packsBothSlotsAndResolvesWithText() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new LiteralInput<>("plain"),
+                        new LiteralInput<>("<b>html</b>")));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Both slots are packed into one ClipboardItem; .then resolves with
+        // the text value (text/plain wins over text/html for onCopied).
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        assertEquals(
+                "return ((t,h) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t,\"text/html\":h})]).then(() => t))($0(event),$1(event))",
+                action.getBody());
+    }
+
+    @Test
+    void fireAndForget_htmlOnly_resolvesWithHtml() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new WriteToClipboardAction(null,
+                        new LiteralInput<>("<b>hi</b>")));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Without text, the promise resolves with the html value.
+        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        assertEquals(
+                "return ((h) => navigator.clipboard.write([new ClipboardItem({\"text/html\":h})]).then(() => h))($0(event))",
+                action.getBody());
+    }
+
+    @Test
     void withCallbacks_actionFnWrapsInnerWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
@@ -92,8 +134,8 @@ class CopyTextToClipboardActionTest {
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class), null,
                         copied -> {
                         }, err -> {
                         }));
@@ -106,7 +148,7 @@ class CopyTextToClipboardActionTest {
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(PROMISE_BODY, inner.getBody());
+        assertEquals(TEXT_ONLY_BODY, inner.getBody());
     }
 
     @Test
@@ -118,8 +160,8 @@ class CopyTextToClipboardActionTest {
 
         List<@Nullable String> copied = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class), null,
                         copied::add, err -> {
                         }));
 
@@ -144,8 +186,8 @@ class CopyTextToClipboardActionTest {
 
         List<@Nullable String> copied = new ArrayList<>();
         new DomEventTrigger(button, "click")
-                .triggers(new CopyTextToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                .triggers(new WriteToClipboardAction(
+                        new PropertyInput<>(field, "value", String.class), null,
                         copied::add, err -> {
                         }));
 
@@ -161,6 +203,12 @@ class CopyTextToClipboardActionTest {
         singleReturnChannel(ui).invoke(args);
 
         assertEquals(Arrays.asList((String) null), copied);
+    }
+
+    @Test
+    void constructor_bothInputsNullRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new WriteToClipboardAction(null, null));
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
