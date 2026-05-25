@@ -15,23 +15,54 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
-import com.vaadin.flow.component.login.LoginI18n;
-import com.vaadin.flow.component.login.LoginOverlay;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("my/login/page")
-public class LoginView extends LoginOverlay {
+public class LoginView extends Div {
 
     public LoginView() {
-        LoginI18n i18n = LoginI18n.createDefault();
-        i18n.setHeader(new LoginI18n.Header());
-        i18n.getHeader().setTitle("Spring Security - Flow Test Application");
-        i18n.getHeader().setDescription(
-                "Login using john/john (user) or emma/emma (admin)");
-        i18n.setAdditionalInformation(null);
-        setI18n(i18n);
-        setForgotPasswordButtonVisible(false);
-        setAction("my/login/page");
-        setOpened(true);
+        setId("login-overlay");
+
+        Form form = new Form();
+        form.getElement().setAttribute("action", "my/login/page");
+        form.getElement().setAttribute("method", "post");
+
+        form.add(new H2("Spring Security - Flow Test Application"));
+        form.add(new Paragraph(
+                "Login using john/john (user) or emma/emma (admin)"));
+
+        Input username = new Input();
+        username.setId("vaadinLoginUsername");
+        username.getElement().setAttribute("name", "username");
+        NativeLabel usernameLabel = new NativeLabel("Username");
+        usernameLabel.setFor(username);
+        form.add(usernameLabel, username);
+
+        Input password = new Input();
+        password.setId("vaadinLoginPassword");
+        password.setType("password");
+        password.getElement().setAttribute("name", "password");
+        NativeLabel passwordLabel = new NativeLabel("Password");
+        passwordLabel.setFor(password);
+        form.add(passwordLabel, password);
+
+        NativeButton submit = new NativeButton("Log in");
+        submit.setId("login-submit");
+        submit.getElement().setAttribute("type", "submit");
+        form.add(submit);
+
+        add(form);
+    }
+
+    @Tag("form")
+    private static class Form extends HtmlContainer {
     }
 }

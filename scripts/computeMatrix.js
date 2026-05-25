@@ -32,7 +32,9 @@ const globalExclusions = [
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
 // Container 6:
-//  Live Reload Multimodule test needs being executed in the same container
+//  Live Reload Multimodule test needs being executed in the same container.
+//  Also holds a subset of the lighter spring-security tests offloaded from
+//  container 5, since 5 is dominated by `test-spring` (weight ~20).
 const moduleWeights = {
   'flow-client': { weight: 8 },
   'flow-server': { weight: 10 },
@@ -105,13 +107,16 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-websocket': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-contextpath': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-urlmapping': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-urlmapping': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
+  // Stays at pos:5: depends on test-spring-security-flow (built in the same
+  // reactor via the run-tests profile, but not installed to local .m2 because
+  // the workspace build step uses -DskipTests).
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
   'flow-tests/test-live-reload-multimodule': {pos:6},
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
   'flow-tests/test-live-reload-multimodule/library': {pos:6},
@@ -172,7 +177,8 @@ const moduleWeights = {
 
 // Set split number for modules with several tests
 const moduleSplits = {
-  'flow-tests/test-root-context': 2
+  'flow-tests/test-root-context': 2,
+  'flow-plugins/flow-maven-plugin': 2
 }
 /****************** END CONFIG */
 

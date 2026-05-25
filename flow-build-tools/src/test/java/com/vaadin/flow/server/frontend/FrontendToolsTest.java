@@ -630,7 +630,8 @@ class FrontendToolsTest {
             IllegalStateException exception = assertThrows(
                     IllegalStateException.class, () -> tools.getSuitablePnpm());
             assertTrue(exception.getMessage().contains(
-                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 7.0.0"),
+                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
+                            + SUPPORTED_PNPM_VERSION),
                     "Unexpected exception message content '"
                             + exception.getMessage() + "'");
         } finally {

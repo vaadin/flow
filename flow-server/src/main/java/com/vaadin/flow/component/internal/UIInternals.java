@@ -174,6 +174,8 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
+    private int nextJsInitializerId = 0;
+
     private final StateTree stateTree;
 
     private PushConnection pushConnection = null;
@@ -633,6 +635,19 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+    }
+
+    /**
+     * Returns the next unique id for a JavaScript initializer registered
+     * through {@link Element#addJsInitializer(String, Object...)} on any
+     * element in this UI. Shared across the UI so cleanups can be keyed by the
+     * id alone on the client side.
+     *
+     * @return the next initializer id
+     */
+    public int nextJsInitializerId() {
+        session.checkHasLock();
+        return nextJsInitializerId++;
     }
 
     /**
