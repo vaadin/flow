@@ -39,7 +39,7 @@ def annotation_escape(value):
 
 
 def emit_annotation(file_rel, line_no, msg, src, caret):
-    message = annotation_escape(f'{msg}\n{src}\n{caret}')
+    message = annotation_escape(f'Javadoc error: {msg}\n{src}\n{caret}')
     file_attr = annotation_escape(file_rel)
     print(
         f'::error file={file_attr},line={line_no},title=Javadoc::{message}'
