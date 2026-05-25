@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.clipboard;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -36,7 +37,7 @@ import com.vaadin.flow.component.trigger.internal.ClickTrigger;
  * The Clipboard API requires a fresh user gesture for each write, so actions
  * only run during the DOM event that fires the underlying trigger.
  */
-public final class Clipboard {
+public final class Clipboard implements Serializable {
 
     private Clipboard() {
         // utility class
