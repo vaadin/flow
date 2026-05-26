@@ -421,10 +421,9 @@ public class Effect implements Serializable {
     }
 
     /**
-     * Runs the given action with a temporarily cleared active effects list.
-     * This is used when a cached signal updates itself during a read operation.
-     * The currently active effects are stashed and restored after the action
-     * completes. This ensures that:
+     * Runs the given action in a read-triggered update context. This is used
+     * when a cached signal updates itself during a read operation. It ensures
+     * that:
      * <ul>
      * <li>The reading effect won't trigger false infinite loop detection when
      * notified of the cache update</li>
@@ -435,7 +434,7 @@ public class Effect implements Serializable {
      * @param action
      *            the action to run, not {@code null}
      */
-    public static void runWithStashedActiveEffects(Runnable action) {
+    static void runInReadTriggeredUpdateContext(Runnable action) {
         LinkedList<Effect> stashed = activeEffects.get();
         activeEffects.set(new LinkedList<>());
         try {
