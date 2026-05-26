@@ -106,6 +106,11 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     @Test
     void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
+        // Test when there is no vaadin-version-core.json available
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(null);
+
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
 
@@ -134,6 +139,51 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         packageUpdater.lockVersionForNpm(packageJson);
 
         assertEquals(USER_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void shouldUpdateOldPlatformOverride_whenDependencyVersionBumped()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+
+        // Simulate existing platform override from a previous Flow version.
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+        overridesSection.put(TEST_DEPENDENCY, "0.0.1");
+
+        // vaadin.overrides are missing in package.json from before 25.1
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void shouldUpdatePlatformOverride_whenDependencyVersionBumped()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+
+        // Simulate existing platform override from a previous Flow version.
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+        overridesSection.put(TEST_DEPENDENCY, "0.0.1");
+
+        // vaadin.overrides tracks what Flow last wrote
+        ObjectNode vaadinSection = (ObjectNode) packageJson.get(VAADIN_DEP_KEY);
+        vaadinSection.set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
@@ -349,8 +399,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
             ObjectNode testOverrides) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true)
+        Options options = new MockOptions(classFinder, baseDir)
+                .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
+                .withProductionMode(true)
                 .withFrontendDependenciesScanner(scanner);
 
         return new TaskUpdatePackages(options) {
