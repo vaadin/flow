@@ -24,8 +24,8 @@ import java.util.Objects;
  * string to the clipboard:
  *
  * <pre>{@code
- * new ClickTrigger(button).triggers(
- *         new CopyTextToClipboardAction(new LiteralInput<>("hello"), () -> {
+ * new ClickTrigger(button).triggers(new WriteToClipboardAction(
+ *         new LiteralInput<>("hello"), null, copied -> {
  *         }, err -> {
  *         }));
  * }</pre>
