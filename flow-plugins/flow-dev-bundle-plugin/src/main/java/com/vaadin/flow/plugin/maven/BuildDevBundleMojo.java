@@ -183,6 +183,15 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
+    /**
+     * Npm packages to exclude from running post install scripts.
+     * <p>
+     * Used to skip built-in entries (e.g. {@code esbuild}) when their
+     * postinstall step is known to fail or is not needed.
+     */
+    @Parameter(property = "npm.excludePostinstallPackages", defaultValue = "")
+    private List<String> excludePostinstallPackages;
+
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
     private boolean reactEnable;
 
@@ -514,6 +523,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public List<String> excludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     @Override
