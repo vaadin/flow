@@ -148,6 +148,11 @@ public class Options implements Serializable {
      */
     private List<String> postinstallPackages = new ArrayList<>();
 
+    /**
+     * Npm packages to exclude from running postinstall scripts.
+     */
+    private List<String> excludePostinstallPackages = new ArrayList<>();
+
     private FeatureFlags featureFlags;
 
     private boolean frontendHotdeploy = false;
@@ -699,6 +704,23 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the npm packages to exclude from running {@code postinstall} for.
+     * <p>
+     * Entries here are removed from the built-in default postinstall list (e.g.
+     * {@code esbuild}, {@code @vaadin/vaadin-usage-statistics}) as well as from
+     * any additional packages added via {@link #withPostinstallPackages(List)}.
+     *
+     * @param excludePostinstallPackages
+     *            the npm packages to exclude from postinstall
+     * @return the builder, for chaining
+     */
+    public Options withExcludePostinstallPackages(
+            List<String> excludePostinstallPackages) {
+        this.excludePostinstallPackages = excludePostinstallPackages;
+        return this;
+    }
+
+    /**
      * Get the npm folder used for this build.
      *
      * @return npmFolder
@@ -923,6 +945,10 @@ public class Options implements Serializable {
 
     public List<String> getPostinstallPackages() {
         return postinstallPackages;
+    }
+
+    public List<String> getExcludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     /**

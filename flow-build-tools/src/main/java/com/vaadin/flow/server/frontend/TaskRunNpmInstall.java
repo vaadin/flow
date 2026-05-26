@@ -382,6 +382,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         postinstallPackages.add("esbuild");
         postinstallPackages.add("@vaadin/vaadin-usage-statistics");
         postinstallPackages.addAll(options.getPostinstallPackages());
+        postinstallPackages.removeAll(options.getExcludePostinstallPackages());
 
         for (String postinstallPackage : postinstallPackages) {
             File packageJsonFile = getPackageJsonForModule(postinstallPackage);
