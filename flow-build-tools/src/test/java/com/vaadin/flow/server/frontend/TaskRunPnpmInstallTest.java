@@ -354,6 +354,23 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "Postinstall for 'foo' was not run");
     }
 
+    @Test
+    void runPnpmInstall_postInstall_excludedBuiltinPackageIsSkipped()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        options.withExcludePostinstallPackages(
+                List.of("@vaadin/vaadin-usage-statistics"));
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        assertFalse(
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
+                        "postinstall-file.txt").exists(),
+                "Postinstall for '@vaadin/vaadin-usage-statistics' should have been skipped");
+    }
+
     // https://github.com/vaadin/flow/issues/17663
     @Test
     @Timeout(30)

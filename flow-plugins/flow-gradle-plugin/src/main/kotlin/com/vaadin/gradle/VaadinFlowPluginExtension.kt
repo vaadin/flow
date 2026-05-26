@@ -236,6 +236,13 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val postinstallPackages: ListProperty<String>
 
+    /**
+     * Defines the npm packages to exclude from running postinstall scripts.
+     * Used to skip built-in entries (e.g. `esbuild`) when their postinstall
+     * step is known to fail or is not needed.
+     */
+    public abstract val excludePostinstallPackages: ListProperty<String>
+
     public val classpathFilter: ClasspathFilter = ClasspathFilter()
 
     /**
@@ -556,6 +563,10 @@ public class PluginEffectiveConfiguration(
         extension.postinstallPackages
             .convention(listOf())
 
+    public val excludePostinstallPackages: ListProperty<String> =
+        extension.excludePostinstallPackages
+            .convention(listOf())
+
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
     public val processResourcesTaskName: Property<String> =
@@ -728,6 +739,7 @@ public class PluginEffectiveConfiguration(
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
+            "excludePostinstallPackages=${excludePostinstallPackages.get()}, " +
             "sourceSetName=${sourceSetName.get()}, " +
             "dependencyScope=${dependencyScope.get()}, " +
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
