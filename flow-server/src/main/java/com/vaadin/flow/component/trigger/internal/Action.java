@@ -22,21 +22,21 @@ import com.vaadin.flow.dom.JsFunction;
 /**
  * Something that runs on the client when a {@link Trigger} fires.
  * <p>
- * Each Action {@linkplain #render renders} into a {@link JsFunction}: a body of
- * JavaScript plus a list of captures (element references, value literals,
- * nested {@link JsFunction}s) referenced positionally as {@code $0},
- * {@code $1}, … The framework composes the per-Action functions into the
- * trigger's handler — Actions do not concatenate JS source with anything
- * outside their own body.
+ * Actions are the unit of behaviour you attach to a trigger: copy text to the
+ * clipboard, download a file, scroll an element into view, and so on. Pair an
+ * Action with a {@link Trigger} (typically via
+ * {@code trigger.triggers(action)}) and the framework wires the action to run
+ * whenever the trigger fires.
  * <p>
- * The rendered function takes one runtime argument, {@code event}, which is the
- * DOM event (or other trigger payload) that fired the trigger. Inputs that need
- * it ({@link HandlerInput}) read it; Inputs that don't simply ignore it.
+ * An Action usually consumes one or more {@linkplain Input inputs} that supply
+ * its values — a literal, the current value of a DOM property, an event-scoped
+ * expression — so the data the action acts on is read on the client at fire
+ * time rather than captured on the server.
  * <p>
- * Actions are intentionally one-shot: each {@link #render} produces a single
- * statement worth of JS. Multi-statement logic belongs in a
- * {@code window.Vaadin.Flow.*} helper in {@code flow-client} that the Action
- * calls into (see {@code Clipboard.ts}, {@code Download.ts}).
+ * <em>For Action implementors:</em> override {@link #render(JsBuilder)} to
+ * produce the JavaScript that the trigger handler invokes; reference inputs
+ * through {@link Input#toJs(JsBuilder)} so the same value-supplier abstractions
+ * work with every action.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

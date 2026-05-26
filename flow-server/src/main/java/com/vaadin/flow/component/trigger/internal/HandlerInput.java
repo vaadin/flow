@@ -20,14 +20,14 @@ import java.util.Objects;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
- * Input whose value is produced by a JS expression scoped to a specific
- * trigger's handler — typically reading from the {@code event} argument passed
- * in by the framework (e.g. {@code event.screenX} for a
- * {@link DomEventTrigger}).
+ * Input whose value is produced by a JS expression evaluated inside a specific
+ * trigger's handler scope — referencing variables the framework makes available
+ * there, such as the {@code event} argument supplied by a
+ * {@link DomEventTrigger} (e.g. {@code event.screenX}).
  * <p>
  * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
  * refuses to render an input created by trigger A into the handler of trigger B
- * (where the referenced variable would not be in scope).
+ * (where the referenced variables would not be in scope).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
