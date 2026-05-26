@@ -479,14 +479,14 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void runWithStashedActiveEffects_loopInsideStash_stillDetected() {
-        // The stash only hides effects that were already active outside the
+    void runInReadTriggeredUpdateContext_loopInsideContext_stillDetected() {
+        // The context only hides effects that were already active outside the
         // block. Effects that activate inside the block still register
         // themselves and are therefore still subject to loop detection.
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger throwCount = new AtomicInteger();
 
-        Effect.runWithStashedActiveEffects(() -> {
+        Effect.runInReadTriggeredUpdateContext(() -> {
             Signal.unboundEffect(() -> {
                 signal.get();
                 try {
