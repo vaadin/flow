@@ -310,6 +310,15 @@ public interface PluginAdapterBase {
      */
     List<String> postinstallPackages();
 
+    /**
+     * Npm packages to exclude from running postinstall scripts. Removes
+     * matching entries from the built-in defaults and from any packages added
+     * via {@link #postinstallPackages()}.
+     *
+     * @return a list of packages to exclude
+     */
+    List<String> excludePostinstallPackages();
+
     boolean isFrontendHotdeploy();
 
     /**
