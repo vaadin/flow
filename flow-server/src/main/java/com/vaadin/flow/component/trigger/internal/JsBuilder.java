@@ -17,10 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
-import org.jspecify.annotations.Nullable;
-
-import com.vaadin.flow.internal.JacksonUtils;
-
 /**
  * Render-time context passed to {@link Action#render} and
  * {@link Action.Input#toJs}. Exposes the surrounding {@link Trigger} so Actions
@@ -49,18 +45,5 @@ final class JsBuilder implements Serializable {
      */
     Trigger trigger() {
         return trigger;
-    }
-
-    /**
-     * Encodes {@code value} as a JS literal via Jackson. Strings are
-     * JSON-quoted, numbers/booleans/null become themselves, records and POJOs
-     * become JS object literals.
-     * <p>
-     * Used by {@link Trigger} subclasses whose {@code installJs()} returns a
-     * raw JS string (not a {@link com.vaadin.flow.dom.JsFunction}) and so
-     * cannot let JsFunction's capture machinery do the encoding for them.
-     */
-    static String json(@Nullable Object value) {
-        return JacksonUtils.createNode(value).toString();
     }
 }

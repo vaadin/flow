@@ -38,16 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WriteToClipboardActionTest {
 
-    /**
-     * IIFE that binds the text expression to {@code t}, writes a
-     * {@code text/plain} ClipboardItem, and resolves with the same value so
-     * {@code onSuccess} sees the exact string that reached the clipboard.
-     * {@code $0} is the text input function.
-     */
-    private static final String TEXT_ONLY_BODY = "return ((t) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t})]).then(() => t))($0(event))";
-
     @Test
-    void fireAndForget_textOnly_actionFnIsThePromiseInnerDirectly() {
+    void fireAndForget_textOnly_callsHelperWithHtmlSlotReturningNull() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
@@ -60,35 +52,23 @@ class WriteToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Fire-and-forget mode: action is the inner JsFunction with no
-        // observer wrapping.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
-        assertEquals(TEXT_ONLY_BODY, action.getBody());
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+                action.getBody());
+
+        // $0 is the text input — a PropertyInput that reads from the field.
+        JsFunction text = (JsFunction) action.getCaptures().get(0);
+        assertEquals("return $0[$1]", text.getBody());
+
+        // $1 is the html slot — the no-op "return null" stand-in.
+        JsFunction html = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return null", html.getBody());
+        assertEquals(List.of(), html.getCaptures());
     }
 
     @Test
-    void fireAndForget_literalInput_capturesValueOnTheInnerInputFunction() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        ui.getElement().appendChild(button.getElement());
-
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(
-                        new LiteralInput<>("hello \"world\"\n"), null));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        // The literal value is captured by JsFunction; quoting/escaping
-        // happens on the wire, not in the body — proves callers can't
-        // accidentally break out of a JS string literal.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
-        JsFunction textFn = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0", textFn.getBody());
-        assertEquals("hello \"world\"\n", textFn.getCaptures().get(0));
-    }
-
-    @Test
-    void fireAndForget_textAndHtml_packsBothSlotsAndResolvesWithText() {
+    void fireAndForget_textAndHtml_capturesBothInputFunctions() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -99,16 +79,20 @@ class WriteToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Both slots are packed into one ClipboardItem; .then resolves with
-        // the text value (text/plain wins over text/html for onCopied).
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "return ((t,h) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t,\"text/html\":h})]).then(() => t))($0(event),$1(event))",
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
                 action.getBody());
+
+        JsFunction text = (JsFunction) action.getCaptures().get(0);
+        assertEquals("plain", text.getCaptures().get(0));
+
+        JsFunction html = (JsFunction) action.getCaptures().get(1);
+        assertEquals("<b>html</b>", html.getCaptures().get(0));
     }
 
     @Test
-    void fireAndForget_htmlOnly_resolvesWithHtml() {
+    void fireAndForget_htmlOnly_textSlotReturnsNull() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -119,11 +103,18 @@ class WriteToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Without text, the promise resolves with the html value.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "return ((h) => navigator.clipboard.write([new ClipboardItem({\"text/html\":h})]).then(() => h))($0(event))",
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
                 action.getBody());
+
+        // $0 is the text slot — the no-op stand-in.
+        JsFunction text = (JsFunction) action.getCaptures().get(0);
+        assertEquals("return null", text.getBody());
+
+        // $1 is the html literal input.
+        JsFunction html = (JsFunction) action.getCaptures().get(1);
+        assertEquals("<b>hi</b>", html.getCaptures().get(0));
     }
 
     @Test
@@ -142,13 +133,17 @@ class WriteToClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Action wraps the inner promise function with OBSERVE_PROMISE + the
-        // return channel. The inner still has the IIFE body.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        // With outcome handling, the action wraps the inner promise function
+        // with OBSERVE_PROMISE + the return channel. The inner function still
+        // calls writePayload — the action class itself does no string
+        // assembly beyond the static body constant.
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(TEXT_ONLY_BODY, inner.getBody());
+        assertEquals(
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+                inner.getBody());
     }
 
     @Test
@@ -196,8 +191,7 @@ class WriteToClipboardActionTest {
         ObjectNode outcome = JacksonUtils.createObjectNode();
         outcome.put("ok", true);
         // No "value" field — JS resolved with undefined. The typed Consumer
-        // gets null, honestly reflecting "no value" rather than masking it
-        // as an empty string.
+        // gets null.
         ArrayNode args = JacksonUtils.createArrayNode();
         args.add(outcome);
         singleReturnChannel(ui).invoke(args);
@@ -212,7 +206,7 @@ class WriteToClipboardActionTest {
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(o -> o instanceof ReturnChannelRegistration)
                 .map(o -> (ReturnChannelRegistration) o).toList();
@@ -234,17 +228,11 @@ class WriteToClipboardActionTest {
         return (JsFunction) o;
     }
 
-    private static JsFunction handlerOf(JsFunction installFn) {
+    private static JsFunction actionOf(JsFunction installFn) {
+        // DomEventTrigger captures the action at install $0 by convention.
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction actionOf(JsFunction handler, int index) {
-        Object o = handler.getCaptures().get(index);
-        assertTrue(o instanceof JsFunction,
-                "Expected handler capture " + index + " to be a JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 }

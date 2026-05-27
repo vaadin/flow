@@ -46,7 +46,7 @@ class RequestFullscreenActionTest {
 
         // Fire-and-forget collapses to the inner promise function directly.
         // $0 is the target element captured by JsFunction.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("return $0.requestFullscreen()", action.getBody());
         assertSame(panel.getElement(), action.getCaptures().get(0));
     }
@@ -67,7 +67,7 @@ class RequestFullscreenActionTest {
 
         // With callbacks, PromiseAction wraps the inner function with
         // OBSERVE_PROMISE; the inner still captures the target as $0.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
@@ -89,7 +89,7 @@ class RequestFullscreenActionTest {
         // No "this" special-case: the host element is captured the same way
         // as any other element. The DOM ref is resolved on the client from
         // the JsFunction capture.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         Element captured = (Element) action.getCaptures().get(0);
         assertSame(button.getElement(), captured);
     }
@@ -107,17 +107,11 @@ class RequestFullscreenActionTest {
         return (JsFunction) o;
     }
 
-    private static JsFunction handlerOf(JsFunction installFn) {
+    private static JsFunction actionOf(JsFunction installFn) {
+        // DomEventTrigger captures the action at install $0 by convention.
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction actionOf(JsFunction handler, int index) {
-        Object o = handler.getCaptures().get(index);
-        assertTrue(o instanceof JsFunction,
-                "Expected handler capture " + index + " to be a JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 }

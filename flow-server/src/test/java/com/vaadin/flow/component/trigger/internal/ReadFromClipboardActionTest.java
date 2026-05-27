@@ -53,7 +53,7 @@ class ReadFromClipboardActionTest {
 
         // Action wraps the inner promise function with OBSERVE_PROMISE +
         // return channel. The inner just invokes the Clipboard.ts helper.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
@@ -145,7 +145,7 @@ class ReadFromClipboardActionTest {
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(o -> o instanceof ReturnChannelRegistration)
                 .map(o -> (ReturnChannelRegistration) o).toList();
@@ -154,10 +154,11 @@ class ReadFromClipboardActionTest {
         return channels.get(0);
     }
 
-    private static JsFunction actionOf(JsFunction handler, int index) {
-        Object o = handler.getCaptures().get(index);
+    private static JsFunction actionOf(JsFunction installFn) {
+        // DomEventTrigger captures the action at install $0 by convention.
+        Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected handler capture " + index + " to be a JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 
@@ -171,13 +172,6 @@ class ReadFromClipboardActionTest {
     private static JsFunction installFn(JavaScriptInvocation invocation) {
         Object o = invocation.getParameters().get(2);
         assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
         return (JsFunction) o;
     }
 }

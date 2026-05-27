@@ -18,6 +18,8 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Fires when the host component receives a DOM event with the given name. The
@@ -72,14 +74,17 @@ public class DomEventTrigger extends Trigger {
      *            the runtime type of the value produced
      */
     public <T> Action.Input<T> property(String name) {
-        Objects.requireNonNull(name);
-        return new HandlerInput<>("event[" + JsBuilder.json(name) + "]", this);
+        return new HandlerInput<>(name, this);
     }
 
     @Override
-    protected String installJs() {
-        String evt = JsBuilder.json(eventName);
-        return "this.addEventListener(" + evt + ", $0);"
-                + "return () => this.removeEventListener(" + evt + ", $0);";
+    protected Registration installAction(JsFunction action) {
+        // Action at $0 (the convention the framework documents in
+        // Trigger#installAction), event name at $1 — both captures of the
+        // install JsFunction, no string concatenation around either.
+        return getHost().addJsInitializer("""
+                this.addEventListener($1, $0);\
+                return () => this.removeEventListener($1, $0);""", action,
+                eventName);
     }
 }

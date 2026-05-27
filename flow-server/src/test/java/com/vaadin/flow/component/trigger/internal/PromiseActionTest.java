@@ -51,13 +51,10 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Top-level handler simply invokes the one action.
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        assertEquals("$0(event);", handler.getBody());
-
         // Fire-and-forget mode collapses to the subclass' inner JsFunction
-        // (no observer wrapping, no return channel).
-        JsFunction action = actionOf(handler, 0);
+        // (no observer wrapping, no return channel) — installed directly as
+        // the DOM listener.
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("return " + PROMISE_EXPR, action.getBody());
         assertFalse(captureContainsReturnChannel(action),
                 "fire-and-forget overload captures no return channel");
@@ -79,7 +76,7 @@ class PromiseActionTest {
         // Action body: observer(inner(event), channel) — $0 is OBSERVE_PROMISE,
         // $1 is the inner JsFunction returning the promise, $2 is the return
         // channel.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("$0($1(event), $2)", action.getBody());
 
         List<@Nullable Object> captures = action.getCaptures();
@@ -177,7 +174,7 @@ class PromiseActionTest {
     }
 
     private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(o -> o instanceof ReturnChannelRegistration)
                 .map(o -> (ReturnChannelRegistration) o).toList();
@@ -199,22 +196,10 @@ class PromiseActionTest {
         return (JsFunction) o;
     }
 
-    private static JsFunction handlerOf(JsFunction installFn) {
+    private static JsFunction actionOf(JsFunction installFn) {
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
-
-    /**
-     * Extracts the action JsFunction captured at position {@code index} of the
-     * trigger handler (the top-level JsFunction whose body is
-     * {@code $0(event); $1(event); ...}).
-     */
-    private static JsFunction actionOf(JsFunction handler, int index) {
-        Object o = handler.getCaptures().get(index);
-        assertTrue(o instanceof JsFunction,
-                "Expected handler capture " + index + " to be a JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 

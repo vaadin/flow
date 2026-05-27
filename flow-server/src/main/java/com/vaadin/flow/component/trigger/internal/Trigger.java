@@ -41,12 +41,14 @@ import com.vaadin.flow.shared.Registration;
  * may reach the server arbitrarily later than the gesture itself, after one or
  * more event-loop turns.
  * <p>
- * Each call to {@link #triggers(Action...)} produces one
+ * Each {@link Action} passed to {@link #triggers(Action...)} produces one
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
- * element; {@link #remove()} removes all such registrations. Subclasses provide
- * the JS that installs and tears down the listener by overriding
- * {@link #installJs()}; the action handler is exposed to that JS as a
- * {@link JsFunction} captured at {@code $0}.
+ * element via {@link #installAction(JsFunction)} — so a call with N actions
+ * yields N registrations, all detached by {@link #remove()}. Subclasses
+ * implement {@code installAction} to wire the rendered {@link JsFunction} to
+ * whatever client API the trigger wraps (typically passing it to
+ * {@code addJsInitializer} alongside whatever literal values the install
+ * expression needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -90,34 +92,43 @@ public abstract class Trigger implements Serializable {
                     "At least one action is required");
         }
         JsBuilder builder = new JsBuilder(this);
-        Object[] captures = new Object[actions.length];
-        StringBuilder body = new StringBuilder();
-        for (int i = 0; i < actions.length; i++) {
-            Action action = Objects.requireNonNull(actions[i],
-                    "Action must not be null");
-            // Each action ships as its own JsFunction; the handler body just
-            // invokes them in order, threading the event payload through.
-            captures[i] = action.render(builder);
-            body.append('$').append(i).append("(event);");
+        for (Action action : actions) {
+            Objects.requireNonNull(action, "Action must not be null");
+            registrations.add(Objects.requireNonNull(
+                    installAction(action.render(builder)),
+                    "installAction must return a Registration"));
         }
-        JsFunction handler = JsFunction.of(body.toString(), captures)
-                .withArguments("event");
-        registrations.add(host.addJsInitializer(installJs(), handler));
     }
 
     /**
-     * Builds the JS expression that installs this trigger's listener and
-     * returns a cleanup function that removes it.
+     * Installs the given rendered action as a client-side listener and returns
+     * the {@link Registration} that detaches it. Called once per action passed
+     * to {@link #triggers(Action...)}.
      * <p>
-     * The expression runs with {@code this} bound to the host element. The
-     * handler {@link JsFunction} is available as {@code $0}; subclasses pass it
-     * to whatever client API the trigger wraps (e.g.
-     * {@code this.addEventListener(name, $0)}) and reference the same
-     * {@code $0} in the cleanup callback to detach it.
+     * Implementations typically call
+     * {@link Element#addJsInitializer(String, Object...)
+     * getHost().addJsInitializer} with an install expression that hands the
+     * action {@link JsFunction} to whatever client API the trigger wraps:
      *
-     * @return the JS install expression, not {@code null}
+     * <pre>{@code
+     * return getHost().addJsInitializer(
+     *         "this.addEventListener($1, $0);"
+     *                 + "return () => this.removeEventListener($1, $0);",
+     *         action, eventName);
+     * }</pre>
+     *
+     * The expression runs with {@code this} bound to the host element. The
+     * captures are made available as {@code $0}, {@code $1}, … in the order
+     * passed.
+     *
+     * @param action
+     *            the rendered action {@link JsFunction}; takes one runtime
+     *            argument named {@code event} (the trigger's event payload),
+     *            not {@code null}
+     * @return the registration whose {@link Registration#remove()} detaches the
+     *         listener, not {@code null}
      */
-    protected abstract String installJs();
+    protected abstract Registration installAction(JsFunction action);
 
     /**
      * Removes this trigger and all wirings created from it. The corresponding

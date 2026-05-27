@@ -44,29 +44,29 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
+        // Install JS references action at $0 and event name at $1 — no user
+        // content leaks into the body, both are captures.
         JsFunction install = singleInstallFn(ui);
-        // Install JS references the handler at $0 — no user content leaks
-        // into the install string.
-        assertEquals("this.addEventListener(\"click\", $0);"
-                + "return () => this.removeEventListener(\"click\", $0);",
+        assertEquals(
+                "this.addEventListener($1, $0);"
+                        + "return () => this.removeEventListener($1, $0);",
                 install.getBody());
+        assertEquals("click", install.getCaptures().get(1));
 
-        // The handler just invokes each action's JsFunction.
-        JsFunction handler = handlerOf(install);
-        assertEquals(List.of("event"), handler.getArgumentNames());
-        assertEquals("$0(event);", handler.getBody());
-        assertEquals(1, handler.getCaptures().size());
+        // The install $0 is the action's JsFunction directly — no intermediate
+        // composed handler layer. The action is also the DOM event listener.
+        JsFunction action = actionOf(install);
+        assertEquals(List.of("event"), action.getArgumentNames());
 
         // SetPropertyAction body shape; target captured as $0, property name
         // string capture at $1, source JsFunction invoked as $2(event).
-        JsFunction action = actionOf(handler, 0);
         assertEquals("$0[$1] = $2(event)", action.getBody());
         assertSame(field.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
     }
 
     @Test
-    void multipleActions_invokedInOrderAsSeparateCaptures() {
+    void multipleActions_eachInstalledAsItsOwnListener() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent target = new TagComponent("input");
@@ -78,12 +78,13 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Two actions → handler invokes them positionally in declaration
-        // order.
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        assertEquals("$0(event);$1(event);", handler.getBody());
-        assertEquals("disabled", actionOf(handler, 0).getCaptures().get(1));
-        assertEquals("value", actionOf(handler, 1).getCaptures().get(1));
+        // Two actions → two install registrations, each with one action as
+        // its $0. Order matches the declaration order.
+        List<JsFunction> installs = installFns(ui);
+        assertEquals(2, installs.size());
+        assertEquals("disabled",
+                actionOf(installs.get(0)).getCaptures().get(1));
+        assertEquals("value", actionOf(installs.get(1)).getCaptures().get(1));
     }
 
     @Test
@@ -102,11 +103,11 @@ class TriggerTest {
         // Each action is self-contained — same target element captured by
         // both, not de-duplicated. Trades a duplicate wire reference for
         // simpler per-action rendering.
-        JsFunction handler = handlerOf(singleInstallFn(ui));
+        List<JsFunction> installs = installFns(ui);
         assertSame(target.getElement(),
-                actionOf(handler, 0).getCaptures().get(0));
+                actionOf(installs.get(0)).getCaptures().get(0));
         assertSame(target.getElement(),
-                actionOf(handler, 1).getCaptures().get(0));
+                actionOf(installs.get(1)).getCaptures().get(0));
     }
 
     @Test
@@ -122,12 +123,12 @@ class TriggerTest {
 
         // No "this" special-case: the host is captured as $0 just like any
         // other element.
-        JsFunction action = actionOf(handlerOf(singleInstallFn(ui)), 0);
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertSame(button.getElement(), action.getCaptures().get(0));
     }
 
     @Test
-    void multipleTriggersCalls_eachEmitOwnInitializerWithDistinctCaptures() {
+    void multipleTriggersCalls_eachActionGetsItsOwnInitializer() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent target = new TagComponent("input");
@@ -139,21 +140,15 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(2, pending.size());
+        List<JsFunction> installs = installFns(ui);
+        assertEquals(2, installs.size());
 
-        // Top-level handler bodies are identical ($0(event);), but each
-        // wraps its own action JsFunction whose source-input function
-        // captures the distinct value.
-        JsFunction h0Action = actionOf(
-                handlerOf(installFn(pending.get(0).getInvocation())), 0);
-        JsFunction h1Action = actionOf(
-                handlerOf(installFn(pending.get(1).getInvocation())), 0);
-        Object v0 = ((JsFunction) h0Action.getCaptures().get(2)).getCaptures()
-                .get(0);
-        Object v1 = ((JsFunction) h1Action.getCaptures().get(2)).getCaptures()
-                .get(0);
+        // Each install has its own action JsFunction; the literal value lives
+        // on the source-input function captured by the action.
+        Object v0 = ((JsFunction) actionOf(installs.get(0)).getCaptures()
+                .get(2)).getCaptures().get(0);
+        Object v1 = ((JsFunction) actionOf(installs.get(1)).getCaptures()
+                .get(2)).getCaptures().get(0);
         assertEquals("a", v0);
         assertEquals("b", v1);
     }
@@ -209,17 +204,19 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // HandlerInput renders as a JsFunction taking `event` and returning
-        // the property read.
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        JsFunction action0 = actionOf(handler, 0);
-        JsFunction source0 = (JsFunction) action0.getCaptures().get(2);
+        // HandlerInput renders as a JsFunction taking `event` and capturing
+        // the property name; the body itself is a constant.
+        List<JsFunction> installs = installFns(ui);
+        JsFunction source0 = (JsFunction) actionOf(installs.get(0))
+                .getCaptures().get(2);
         assertEquals(List.of("event"), source0.getArgumentNames());
-        assertEquals("return event[\"screenX\"]", source0.getBody());
+        assertEquals("return event[$0]", source0.getBody());
+        assertEquals("screenX", source0.getCaptures().get(0));
 
-        JsFunction action1 = actionOf(handler, 1);
-        JsFunction source1 = (JsFunction) action1.getCaptures().get(2);
-        assertEquals("return event[\"screenY\"]", source1.getBody());
+        JsFunction source1 = (JsFunction) actionOf(installs.get(1))
+                .getCaptures().get(2);
+        assertEquals("return event[$0]", source1.getBody());
+        assertEquals("screenY", source1.getCaptures().get(0));
     }
 
     @Test
@@ -260,10 +257,15 @@ class TriggerTest {
     }
 
     private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
+        List<JsFunction> installs = installFns(ui);
+        assertEquals(1, installs.size(), "Expected exactly one pending JS");
+        return installs.get(0);
+    }
+
+    private static List<JsFunction> installFns(UI ui) {
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .map(TriggerTest::installFn).toList();
     }
 
     /**
@@ -277,19 +279,14 @@ class TriggerTest {
     }
 
     /**
-     * Inside the install JsFunction, the handler is captured at $0.
+     * DomEventTrigger captures the action at install $0 by convention — with
+     * the per-action install model, that capture IS the action JsFunction (no
+     * intermediate composed-handler layer).
      */
-    private static JsFunction handlerOf(JsFunction installFn) {
+    private static JsFunction actionOf(JsFunction installFn) {
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction actionOf(JsFunction handler, int index) {
-        Object o = handler.getCaptures().get(index);
-        assertTrue(o instanceof JsFunction,
-                "Expected handler capture " + index + " to be a JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 }

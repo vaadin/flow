@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
@@ -45,6 +42,14 @@ import com.vaadin.flow.function.SerializableConsumer;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class WriteToClipboardAction extends PromiseAction<String> {
+
+    /**
+     * Stand-in input that yields a JS {@code null} for a missing MIME slot, so
+     * the rendered call always reaches the TS helper with two arguments
+     * regardless of which slot was set on the server.
+     */
+    private static final JsFunction NULL_INPUT_FN = JsFunction
+            .of("return null");
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -110,74 +115,16 @@ public class WriteToClipboardAction extends PromiseAction<String> {
 
     @Override
     protected JsFunction renderPromiseExpression(JsBuilder builder) {
-        // IIFE: bind the text/html expressions once on the client, call
-        // clipboard.write, then resolve the promise with the same text value
-        // (or html if no text) so onCopied sees the exact string that reached
-        // the clipboard. $0(event), $1(event) invoke the input functions.
-        List<JsFunction> captures = new ArrayList<>(2);
-        StringBuilder body = new StringBuilder("return (");
-        appendParamList(body, "t", "h");
-        body.append(" => navigator.clipboard.write([new ClipboardItem({");
-        appendItemEntries(body);
-        body.append("})]).then(() => ").append(textInput != null ? "t" : "h")
-                .append("))(");
-        appendArgList(builder, body, captures);
-        body.append(')');
-        return JsFunction.of(body.toString(), captures.toArray())
-                .withArguments("event");
-    }
-
-    /** Renders the arrow-function parameter list — only the names we use. */
-    private void appendParamList(StringBuilder out, String textName,
-            String htmlName) {
-        out.append('(');
-        boolean needComma = false;
-        if (textInput != null) {
-            out.append(textName);
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append(htmlName);
-        }
-        out.append(')');
-    }
-
-    /** Renders the ClipboardItem entries against parameter names "t" / "h". */
-    private void appendItemEntries(StringBuilder out) {
-        boolean needComma = false;
-        if (textInput != null) {
-            out.append("\"text/plain\":t");
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append("\"text/html\":h");
-        }
-    }
-
-    /**
-     * Renders the {@code $i(event)} placeholders that invoke the input
-     * functions, and collects the matching {@link JsFunction} captures.
-     */
-    private void appendArgList(JsBuilder builder, StringBuilder out,
-            List<JsFunction> captures) {
-        boolean needComma = false;
-        if (textInput != null) {
-            out.append('$').append(captures.size()).append("(event)");
-            captures.add(textInput.toJs(builder));
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append('$').append(captures.size()).append("(event)");
-            captures.add(htmlInput.toJs(builder));
-        }
+        // Both slots are always present in the call; absent slots become a
+        // no-op input that returns null, so the TS helper sees null and skips
+        // that MIME type. Keeping the call shape uniform across all four
+        // combinations means no per-action JS assembly.
+        JsFunction text = textInput != null ? textInput.toJs(builder)
+                : NULL_INPUT_FN;
+        JsFunction html = htmlInput != null ? htmlInput.toJs(builder)
+                : NULL_INPUT_FN;
+        return JsFunction.of(
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+                text, html).withArguments("event");
     }
 }

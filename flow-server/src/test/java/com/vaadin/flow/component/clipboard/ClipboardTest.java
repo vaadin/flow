@@ -30,6 +30,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,26 +61,22 @@ class ClipboardTest {
 
         Clipboard.onClick(button).writeText("Hello");
 
-        String install = installBody(ui);
-        assertTrue(install.contains("\"click\""),
-                "click trigger install JS: " + install);
+        // ClickTrigger captures the event name as install $1.
+        assertEquals("click", installFn(ui).getCaptures().get(1));
     }
 
     @Test
-    void writeText_literal_emitsClipboardItemWithTextPlain() {
+    void writeText_literal_capturesLiteralAsTextInput() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
         Clipboard.onClick(button).writeText("Hello");
 
+        // Action calls the TS helper; literal is captured by the text input
+        // JsFunction at action $0.
         JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("navigator.clipboard.write"),
-                action.getBody());
-        assertTrue(action.getBody().contains("\"text/plain\":t"),
-                action.getBody());
-        // The literal value is captured by the input JsFunction, not inlined
-        // into the action body.
+        assertTrue(action.getBody().contains("writePayload"), action.getBody());
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
         assertEquals("Hello", textInput.getCaptures().get(0));
     }
@@ -97,21 +94,20 @@ class ClipboardTest {
         // "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
         assertEquals("return $0[$1]", textInput.getBody());
+        assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
 
     @Test
-    void writeHtml_literal_emitsClipboardItemWithTextHtml() {
+    void writeHtml_literal_capturesLiteralAsHtmlInput() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
         Clipboard.onClick(button).writeHtml("<b>Hi</b>");
 
-        JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("\"text/html\":h"),
-                action.getBody());
-        JsFunction htmlInput = (JsFunction) action.getCaptures().get(0);
+        // The html input is at action $1.
+        JsFunction htmlInput = (JsFunction) actionFn(ui).getCaptures().get(1);
         assertEquals("<b>Hi</b>", htmlInput.getCaptures().get(0));
     }
 
@@ -125,10 +121,6 @@ class ClipboardTest {
                 ClipboardContent.create().text("plain").html("<b>html</b>"));
 
         JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("\"text/plain\":t"),
-                action.getBody());
-        assertTrue(action.getBody().contains("\"text/html\":h"),
-                action.getBody());
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
         JsFunction htmlInput = (JsFunction) action.getCaptures().get(1);
         assertEquals("plain", textInput.getCaptures().get(0));
@@ -144,10 +136,7 @@ class ClipboardTest {
 
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
-        JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("\"text/plain\":t"),
-                action.getBody());
-        JsFunction textInput = (JsFunction) action.getCaptures().get(0);
+        JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
         assertEquals("return $0[$1]", textInput.getBody());
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -159,29 +148,15 @@ class ClipboardTest {
                 .onClick(button).write(ClipboardContent.create()));
     }
 
-    private static String installBody(UI ui) {
-        return installFn(ui).getBody();
-    }
-
-    private static String handlerBody(UI ui) {
-        Object handler = installFn(ui).getCaptures().get(0);
-        assertTrue(handler instanceof JsFunction,
-                "install $0 is the handler JsFunction");
-        return ((JsFunction) handler).getBody();
-    }
-
     /**
-     * Returns the action JsFunction for a fire-and-forget binding: the
-     * handler's $0 capture, which in fire-and-forget mode is the IIFE that runs
-     * {@code navigator.clipboard.write}.
+     * Returns the action JsFunction for a fire-and-forget binding: the install
+     * JsFunction's $0 capture, which in fire-and-forget mode is the JsFunction
+     * that calls {@code window.Vaadin.Flow.clipboard.writePayload}.
      */
     private static JsFunction actionFn(UI ui) {
-        Object handler = installFn(ui).getCaptures().get(0);
-        assertTrue(handler instanceof JsFunction,
-                "install $0 is the handler JsFunction");
-        Object action = ((JsFunction) handler).getCaptures().get(0);
+        Object action = installFn(ui).getCaptures().get(0);
         assertTrue(action instanceof JsFunction,
-                "handler $0 is the action JsFunction");
+                "install $0 is the action JsFunction");
         return (JsFunction) action;
     }
 
