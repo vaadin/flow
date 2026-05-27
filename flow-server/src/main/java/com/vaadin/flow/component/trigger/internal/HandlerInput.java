@@ -23,9 +23,13 @@ import com.vaadin.flow.dom.JsFunction;
  * Input that reads a property from a trigger handler's {@code event} argument
  * (e.g. {@code event.screenX} for a {@link DomEventTrigger}).
  * <p>
- * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
- * refuses to render an input created by trigger A into the handler of trigger B
- * (where the referenced {@code event} would not be in scope).
+ * Carries the trigger class the expression is valid for so that
+ * {@link Trigger#triggers(Action...)} refuses to render an input meant for one
+ * trigger family into the handler of an unrelated trigger (where the referenced
+ * variable would not be in scope). Class-based scoping lets a single input
+ * instance be exposed as a {@code public static final} field (see
+ * {@link MouseEventTrigger.Output}) and reused across every instance of the
+ * owning class and its subclasses.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -35,19 +39,19 @@ import com.vaadin.flow.dom.JsFunction;
 final class HandlerInput<T> extends Action.Input<T> {
 
     private final String propertyName;
-    private final Trigger owner;
+    private final Class<? extends Trigger> ownerClass;
 
-    HandlerInput(String propertyName, Trigger owner) {
+    HandlerInput(String propertyName, Class<? extends Trigger> ownerClass) {
         this.propertyName = Objects.requireNonNull(propertyName);
-        this.owner = Objects.requireNonNull(owner);
+        this.ownerClass = Objects.requireNonNull(ownerClass);
     }
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        if (trigger != owner) {
-            throw new IllegalArgumentException(
-                    "Input is scoped to a different trigger and cannot be"
-                            + " used here");
+        if (!ownerClass.isInstance(trigger)) {
+            throw new IllegalArgumentException("Input is scoped to "
+                    + ownerClass.getSimpleName() + " and cannot be used in a "
+                    + trigger.getClass().getSimpleName() + " handler");
         }
         // $0 = property name (string capture, Jackson-quoted on the client),
         // event = the handler argument the framework passes in.

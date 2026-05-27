@@ -18,34 +18,32 @@ package com.vaadin.flow.component.trigger.internal;
 import com.vaadin.flow.component.Component;
 
 /**
- * Fires on the host component's {@code click} DOM event. The event's
+ * Fires on the host component's {@code dblclick} DOM event. The event's
  * coordinates and modifier-key state are available as static
  * {@link Action.Input} sources on {@link MouseEventTrigger.Output} (also
- * reachable as {@code ClickTrigger.Output} through inheritance).
+ * reachable as {@code DoubleClickTrigger.Output} through inheritance).
  * <p>
  * Example:
  *
  * <pre>{@code
- * ClickTrigger click = new ClickTrigger(button);
- * click.triggers(
- *         new SetPropertyAction<>(xField, "value",
- *                 ClickTrigger.Output.screenX),
- *         new SetPropertyAction<>(yField, "value",
- *                 ClickTrigger.Output.screenY));
+ * DoubleClickTrigger dbl = new DoubleClickTrigger(panel);
+ * dbl.triggers(new SetPropertyAction<>(field, "value",
+ *         DoubleClickTrigger.Output.clientX));
  * }</pre>
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class ClickTrigger extends MouseEventTrigger {
+public class DoubleClickTrigger extends MouseEventTrigger {
 
     /**
-     * Creates a click trigger on the given host component's root element.
+     * Creates a double-click trigger on the given host component's root
+     * element.
      *
      * @param host
      *            the component to listen on, not {@code null}
      */
-    public ClickTrigger(Component host) {
-        super(host, "click");
+    public DoubleClickTrigger(Component host) {
+        super(host, "dblclick");
     }
 }
