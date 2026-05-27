@@ -43,12 +43,11 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * Each {@link Action} passed to {@link #triggers(Action...)} produces one
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
- * element via {@link #installAction(JsFunction)} — so a call with N actions
- * yields N registrations, all detached by {@link #remove()}. Subclasses
- * implement {@code installAction} to wire the rendered {@link JsFunction} to
- * whatever client API the trigger wraps (typically passing it to
- * {@code addJsInitializer} alongside whatever literal values the install
- * expression needs).
+ * element via {@link #install(JsFunction)} — so a call with N actions yields N
+ * registrations, all detached by {@link #remove()}. Subclasses implement
+ * {@code install} to wire the rendered {@link JsFunction} to whatever client
+ * API the trigger wraps (typically passing it to {@code addJsInitializer}
+ * alongside whatever literal values the install expression needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -93,9 +92,8 @@ public abstract class Trigger implements Serializable {
         }
         for (Action action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
-            registrations.add(
-                    Objects.requireNonNull(installAction(action.render(this)),
-                            "installAction must return a Registration"));
+            registrations.add(Objects.requireNonNull(install(action.toJs(this)),
+                    "install must return a Registration"));
         }
     }
 
@@ -127,7 +125,7 @@ public abstract class Trigger implements Serializable {
      * @return the registration whose {@link Registration#remove()} detaches the
      *         listener, not {@code null}
      */
-    protected abstract Registration installAction(JsFunction action);
+    protected abstract Registration install(JsFunction action);
 
     /**
      * Removes this trigger and all wirings created from it. The corresponding

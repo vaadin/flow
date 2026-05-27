@@ -40,7 +40,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * file picker, share, web payment, … — and follow the same shape: call the API,
  * then handle the resolved value or the rejection. This class collapses that
  * pattern into one place so subclasses only need to emit the promise-yielding
- * JS function by overriding {@link #renderPromiseExpression(Trigger)}.
+ * JS function by overriding {@link #toPromiseJs(Trigger)}.
  * <p>
  * The type parameter {@code T} is the type of value the JS promise resolves
  * with: it gets Jackson-decoded once before {@code onSuccess} sees it, so
@@ -150,18 +150,17 @@ public abstract class PromiseAction<T> extends Action {
      *            the surrounding trigger this render is for, not {@code null}
      * @return the promise-yielding JS function, not {@code null}
      */
-    protected abstract JsFunction renderPromiseExpression(Trigger trigger);
+    protected abstract JsFunction toPromiseJs(Trigger trigger);
 
     /**
      * Final by design — subclasses customise the rendered JS through
-     * {@link #renderPromiseExpression}, never by overriding the wiring that
-     * subscribes to the promise. Keeping the {@code .then}/{@code .catch} glue
-     * identical across subclasses is what makes the {@link Outcome} wire
-     * contract stable.
+     * {@link #toPromiseJs}, never by overriding the wiring that subscribes to
+     * the promise. Keeping the {@code .then}/{@code .catch} glue identical
+     * across subclasses is what makes the {@link Outcome} wire contract stable.
      */
     @Override
-    protected final JsFunction render(Trigger trigger) {
-        JsFunction inner = renderPromiseExpression(trigger);
+    protected final JsFunction toJs(Trigger trigger) {
+        JsFunction inner = toPromiseJs(trigger);
         // The constructors enforce that onSuccess and onError are either
         // both null (fire-and-forget) or both non-null (with-outcome) — so
         // checking one already determines the mode.

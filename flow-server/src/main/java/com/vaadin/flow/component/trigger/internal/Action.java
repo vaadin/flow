@@ -33,10 +33,10 @@ import com.vaadin.flow.dom.JsFunction;
  * expression — so the data the action acts on is read on the client at fire
  * time rather than captured on the server.
  * <p>
- * <em>For Action implementors:</em> override {@link #render(Trigger)} to
- * produce the JavaScript that the trigger handler invokes; reference inputs
- * through {@link Input#toJs(Trigger)} so the same value-supplier abstractions
- * work with every action.
+ * <em>For Action implementors:</em> override {@link #toJs(Trigger)} to produce
+ * the JavaScript that the trigger handler invokes; reference inputs through
+ * {@link Input#toJs(Trigger)} so the same value-supplier abstractions work with
+ * every action.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -56,7 +56,7 @@ public abstract class Action implements Serializable {
      *            the surrounding trigger this render is for, not {@code null}
      * @return the action's JS function, not {@code null}
      */
-    protected abstract JsFunction render(Trigger trigger);
+    protected abstract JsFunction toJs(Trigger trigger);
 
     /**
      * A value an {@link Action} consumes at fire time. Renders into a

@@ -95,7 +95,7 @@ public class CallbackAction<T> extends Action {
     }
 
     @Override
-    protected final JsFunction render(Trigger trigger) {
+    protected final JsFunction toJs(Trigger trigger) {
         // $0 = the return channel; $1 = the source input's JsFunction.
         // Invoking the source with `event` produces its value, which is
         // forwarded straight into the channel call.

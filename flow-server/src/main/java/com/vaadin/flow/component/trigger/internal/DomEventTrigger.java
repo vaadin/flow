@@ -78,10 +78,10 @@ public class DomEventTrigger extends Trigger {
     }
 
     @Override
-    protected Registration installAction(JsFunction action) {
+    protected Registration install(JsFunction action) {
         // Action at $0 (the convention the framework documents in
-        // Trigger#installAction), event name at $1 — both captures of the
-        // install JsFunction, no string concatenation around either.
+        // Trigger#install), event name at $1 — both captures of the install
+        // JsFunction, no string concatenation around either.
         return getHost().addJsInitializer("""
                 this.addEventListener($1, $0);\
                 return () => this.removeEventListener($1, $0);""", action,

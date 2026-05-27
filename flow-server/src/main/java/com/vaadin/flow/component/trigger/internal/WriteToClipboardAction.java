@@ -114,7 +114,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     }
 
     @Override
-    protected JsFunction renderPromiseExpression(Trigger trigger) {
+    protected JsFunction toPromiseJs(Trigger trigger) {
         // Both slots are always present in the call; absent slots become a
         // no-op input that returns null, so the TS helper sees null and skips
         // that MIME type. Keeping the call shape uniform across all four
