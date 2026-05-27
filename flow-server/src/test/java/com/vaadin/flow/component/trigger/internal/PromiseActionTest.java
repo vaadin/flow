@@ -189,7 +189,7 @@ class PromiseActionTest {
         }
 
         @Override
-        protected JsFunction renderPromiseExpression(JsBuilder builder) {
+        protected JsFunction renderPromiseExpression(Trigger trigger) {
             return JsFunction.of("return " + PROMISE_EXPR);
         }
     }

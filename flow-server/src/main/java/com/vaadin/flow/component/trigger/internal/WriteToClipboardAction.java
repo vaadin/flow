@@ -114,14 +114,14 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     }
 
     @Override
-    protected JsFunction renderPromiseExpression(JsBuilder builder) {
+    protected JsFunction renderPromiseExpression(Trigger trigger) {
         // Both slots are always present in the call; absent slots become a
         // no-op input that returns null, so the TS helper sees null and skips
         // that MIME type. Keeping the call shape uniform across all four
         // combinations means no per-action JS assembly.
-        JsFunction text = textInput != null ? textInput.toJs(builder)
+        JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : NULL_INPUT_FN;
-        JsFunction html = htmlInput != null ? htmlInput.toJs(builder)
+        JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
                 : NULL_INPUT_FN;
         return JsFunction.of(
                 "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",

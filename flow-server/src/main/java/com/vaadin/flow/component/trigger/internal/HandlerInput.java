@@ -43,8 +43,8 @@ final class HandlerInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(JsBuilder builder) {
-        if (builder.trigger() != owner) {
+    protected JsFunction toJs(Trigger trigger) {
+        if (trigger != owner) {
             throw new IllegalArgumentException(
                     "Input is scoped to a different trigger and cannot be"
                             + " used here");

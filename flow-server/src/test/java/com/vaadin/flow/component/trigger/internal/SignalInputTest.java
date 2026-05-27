@@ -142,10 +142,8 @@ class SignalInputTest {
 
         // Property name is the second capture of the rendered JsFunction
         // (`return $0[$1]`, where $1 is the propertyName literal).
-        JsFunction fnA = a
-                .toJs(new JsBuilder(new DomEventTrigger(owner, "click")));
-        JsFunction fnB = b
-                .toJs(new JsBuilder(new DomEventTrigger(owner, "click")));
+        JsFunction fnA = a.toJs(new DomEventTrigger(owner, "click"));
+        JsFunction fnB = b.toJs(new DomEventTrigger(owner, "click"));
 
         assertNotEquals(fnA.getCaptures().get(1), fnB.getCaptures().get(1),
                 "Each SignalInput must use its own property name");

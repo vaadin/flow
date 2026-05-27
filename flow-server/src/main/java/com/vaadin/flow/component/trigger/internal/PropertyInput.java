@@ -63,7 +63,7 @@ public class PropertyInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(JsBuilder builder) {
+    protected JsFunction toJs(Trigger trigger) {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.

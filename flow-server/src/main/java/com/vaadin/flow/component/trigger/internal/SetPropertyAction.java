@@ -61,7 +61,7 @@ public class SetPropertyAction<T> extends Action {
      */
     private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
         @Override
-        protected JsFunction toJs(JsBuilder builder) {
+        protected JsFunction toJs(Trigger trigger) {
             return JsFunction.of("return null");
         }
     };
@@ -115,11 +115,11 @@ public class SetPropertyAction<T> extends Action {
     }
 
     @Override
-    protected JsFunction render(JsBuilder builder) {
+    protected JsFunction render(Trigger trigger) {
         // $0 = target element (captured), $1 = property name (string
         // capture, Jackson-quoted on the client), $2 = source JsFunction
         // (invoked with event so handler-scoped inputs work).
         return JsFunction.of("$0[$1] = $2(event)", target, propertyName,
-                source.toJs(builder)).withArguments("event");
+                source.toJs(trigger)).withArguments("event");
     }
 }

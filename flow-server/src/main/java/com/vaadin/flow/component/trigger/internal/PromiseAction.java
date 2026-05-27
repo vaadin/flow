@@ -40,7 +40,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * file picker, share, web payment, … — and follow the same shape: call the API,
  * then handle the resolved value or the rejection. This class collapses that
  * pattern into one place so subclasses only need to emit the promise-yielding
- * JS function by overriding {@link #renderPromiseExpression(JsBuilder)}.
+ * JS function by overriding {@link #renderPromiseExpression(Trigger)}.
  * <p>
  * The type parameter {@code T} is the type of value the JS promise resolves
  * with: it gets Jackson-decoded once before {@code onSuccess} sees it, so
@@ -143,14 +143,14 @@ public abstract class PromiseAction<T> extends Action {
      * <pre>{@code
      * return JsFunction.of(
      *         "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))",
-     *         textInput.toJs(builder)).withArguments("event");
+     *         textInput.toJs(trigger)).withArguments("event");
      * }</pre>
      *
-     * @param builder
-     *            render-time context, not {@code null}
+     * @param trigger
+     *            the surrounding trigger this render is for, not {@code null}
      * @return the promise-yielding JS function, not {@code null}
      */
-    protected abstract JsFunction renderPromiseExpression(JsBuilder builder);
+    protected abstract JsFunction renderPromiseExpression(Trigger trigger);
 
     /**
      * Final by design — subclasses customise the rendered JS through
@@ -160,8 +160,8 @@ public abstract class PromiseAction<T> extends Action {
      * contract stable.
      */
     @Override
-    protected final JsFunction render(JsBuilder builder) {
-        JsFunction inner = renderPromiseExpression(builder);
+    protected final JsFunction render(Trigger trigger) {
+        JsFunction inner = renderPromiseExpression(trigger);
         // The constructors enforce that onSuccess and onError are either
         // both null (fire-and-forget) or both non-null (with-outcome) — so
         // checking one already determines the mode.
@@ -171,7 +171,7 @@ public abstract class PromiseAction<T> extends Action {
             return inner;
         }
         ReturnChannelRegistration channel = channelFor(
-                builder.trigger().getHost().getNode());
+                trigger.getHost().getNode());
         // $0(observer)($1(event)(promise), $2(channel)) — invoke the inner
         // function to get a Promise, then hand it plus the return channel to
         // the shared observer JsFunction which subscribes to .then/.catch.

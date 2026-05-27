@@ -33,9 +33,9 @@ import com.vaadin.flow.dom.JsFunction;
  * expression — so the data the action acts on is read on the client at fire
  * time rather than captured on the server.
  * <p>
- * <em>For Action implementors:</em> override {@link #render(JsBuilder)} to
+ * <em>For Action implementors:</em> override {@link #render(Trigger)} to
  * produce the JavaScript that the trigger handler invokes; reference inputs
- * through {@link Input#toJs(JsBuilder)} so the same value-supplier abstractions
+ * through {@link Input#toJs(Trigger)} so the same value-supplier abstractions
  * work with every action.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -49,15 +49,14 @@ public abstract class Action implements Serializable {
      * handler); subclasses do not declare argument names themselves.
      * <p>
      * The body is one statement. To embed a value produced on the client,
-     * capture an {@link Input}'s {@link Input#toJs(JsBuilder) JsFunction} as a
+     * capture an {@link Input}'s {@link Input#toJs(Trigger) JsFunction} as a
      * capture and invoke it inside the body as {@code $N(event)}.
      *
-     * @param builder
-     *            render-time context exposing the surrounding {@link Trigger};
-     *            not {@code null}
+     * @param trigger
+     *            the surrounding trigger this render is for, not {@code null}
      * @return the action's JS function, not {@code null}
      */
-    protected abstract JsFunction render(JsBuilder builder);
+    protected abstract JsFunction render(Trigger trigger);
 
     /**
      * A value an {@link Action} consumes at fire time. Renders into a
@@ -85,11 +84,11 @@ public abstract class Action implements Serializable {
          * {@code event} simply omit the declaration and ignore the argument the
          * caller passes.
          *
-         * @param builder
-         *            render-time context exposing the surrounding
-         *            {@link Trigger}; not {@code null}
+         * @param trigger
+         *            the surrounding trigger this render is for, not
+         *            {@code null}
          * @return the input's JS function, not {@code null}
          */
-        protected abstract JsFunction toJs(JsBuilder builder);
+        protected abstract JsFunction toJs(Trigger trigger);
     }
 }

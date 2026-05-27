@@ -91,12 +91,11 @@ public abstract class Trigger implements Serializable {
             throw new IllegalArgumentException(
                     "At least one action is required");
         }
-        JsBuilder builder = new JsBuilder(this);
         for (Action action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
-            registrations.add(Objects.requireNonNull(
-                    installAction(action.render(builder)),
-                    "installAction must return a Registration"));
+            registrations.add(
+                    Objects.requireNonNull(installAction(action.render(this)),
+                            "installAction must return a Registration"));
         }
     }
 

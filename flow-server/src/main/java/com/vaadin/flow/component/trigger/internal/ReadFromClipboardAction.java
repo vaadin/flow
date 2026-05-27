@@ -76,7 +76,7 @@ public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
     }
 
     @Override
-    protected JsFunction renderPromiseExpression(JsBuilder builder) {
+    protected JsFunction renderPromiseExpression(Trigger trigger) {
         // The actual clipboard read + {text, html} extraction lives in
         // Clipboard.ts (window.Vaadin.Flow.clipboard.readPayload); this
         // action just routes the resolved Promise through the PromiseAction
