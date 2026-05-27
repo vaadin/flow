@@ -25,16 +25,15 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WriteToClipboardActionTest {
 
@@ -205,34 +204,4 @@ class WriteToClipboardActionTest {
                 () -> new WriteToClipboardAction(null, null));
     }
 
-    private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        JsFunction action = actionOf(singleInstallFn(ui));
-        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
-                .filter(o -> o instanceof ReturnChannelRegistration)
-                .map(o -> (ReturnChannelRegistration) o).toList();
-        assertEquals(1, channels.size(),
-                "Expected exactly one captured return channel");
-        return channels.get(0);
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction actionOf(JsFunction installFn) {
-        // DomEventTrigger captures the action at install $0 by convention.
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the action JsFunction");
-        return (JsFunction) o;
-    }
 }

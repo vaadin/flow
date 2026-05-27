@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
@@ -35,6 +34,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -90,18 +90,15 @@ class SignalInputTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // The trigger handler reads the mirrored signal value from a
-        // uniquely-named property on the owner element ($0). The property
-        // name is generated, so assert on the shape and substitute it back
-        // into the expected body.
-        String body = handlerOf(singleInstallFn(ui)).getBody();
-        Matcher m = PROPERTY_NAME.matcher(body);
-        assertTrue(m.find(), "Expected property name in handler body: " + body);
-        String property = m.group();
-        assertEquals(
-                "((t) => navigator.clipboard.write([new ClipboardItem({\"text/plain\":t})]).then(() => t))($0[\""
-                        + property + "\"]);",
-                body);
+        // SignalInput renders as `return $0[$1]` with the property name as
+        // capture $1. Reach into the action's captures to find the text
+        // input's JsFunction, then verify the generated property-name shape.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        JsFunction textInput = (JsFunction) action.getCaptures().get(0);
+        assertEquals("return $0[$1]", textInput.getBody());
+        String property = (String) textInput.getCaptures().get(1);
+        assertTrue(PROPERTY_NAME.matcher(property).matches(),
+                "Unexpected property name: " + property);
     }
 
     @Test
@@ -143,16 +140,14 @@ class SignalInputTest {
         SignalInput<String> b = new SignalInput<>(owner,
                 new ValueSignal<>("b"));
 
-        StringBuilder out = new StringBuilder();
-        a.appendExpression(new JsBuilder(new DomEventTrigger(owner, "click")),
-                out);
-        String exprA = out.toString();
-        out.setLength(0);
-        b.appendExpression(new JsBuilder(new DomEventTrigger(owner, "click")),
-                out);
-        String exprB = out.toString();
+        // Property name is the second capture of the rendered JsFunction
+        // (`return $0[$1]`, where $1 is the propertyName literal).
+        JsFunction fnA = a
+                .toJs(new JsBuilder(new DomEventTrigger(owner, "click")));
+        JsFunction fnB = b
+                .toJs(new JsBuilder(new DomEventTrigger(owner, "click")));
 
-        assertNotEquals(exprA, exprB,
+        assertNotEquals(fnA.getCaptures().get(1), fnB.getCaptures().get(1),
                 "Each SignalInput must use its own property name");
     }
 
@@ -191,7 +186,4 @@ class SignalInputTest {
         return installFn;
     }
 
-    private static JsFunction handlerOf(JsFunction installFn) {
-        return (JsFunction) installFn.getCaptures().get(0);
-    }
 }

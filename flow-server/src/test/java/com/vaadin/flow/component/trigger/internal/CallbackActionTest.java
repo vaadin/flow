@@ -22,13 +22,14 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,16 +68,17 @@ class CallbackActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        // $0 = the return channel (the host element is `this`, so no element
-        // capture comes first). The body forwards the source expression
-        // straight into the channel call.
-        assertEquals("$0(this[\"value\"]);", handler.getBody());
-        assertEquals(1, handler.getCaptures().size());
+        JsFunction action = actionOf(singleInstallFn(ui));
+        // $0 = the return channel; $1 = the source input's JsFunction. The
+        // body forwards the source-fn's value straight into the channel call.
+        assertEquals("$0($1(event));", action.getBody());
+        assertEquals(2, action.getCaptures().size());
         assertTrue(
-                handler.getCaptures()
+                action.getCaptures()
                         .get(0) instanceof ReturnChannelRegistration,
-                "Expected the single capture to be the return channel");
+                "Expected $0 to be the return channel");
+        assertTrue(action.getCaptures().get(1) instanceof JsFunction,
+                "Expected $1 to be the source input JsFunction");
     }
 
     @Test
@@ -97,33 +99,4 @@ class CallbackActionTest {
                 () -> singleReturnChannel(ui).invoke(args));
     }
 
-    private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        List<ReturnChannelRegistration> channels = handlerOf(
-                singleInstallFn(ui)).getCaptures().stream()
-                .filter(o -> o instanceof ReturnChannelRegistration)
-                .map(o -> (ReturnChannelRegistration) o).toList();
-        assertEquals(1, channels.size(),
-                "Expected exactly one captured return channel");
-        return channels.get(0);
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
 }
