@@ -58,17 +58,10 @@ import com.vaadin.flow.signals.Signal;
  */
 public class SignalInput<T> extends Action.Input<T> {
 
-    // JVM-wide counter for generating per-SignalInput property names. We only
-    // need uniqueness within a given owner element's property namespace; a
-    // global counter is just the simplest way to deliver that. The counter is
-    // not reset and runs against Long.MAX_VALUE (~9.2 × 10^18) — at one
-    // SignalInput construction per nanosecond it would take ~292 years to
-    // exhaust. On the truly unlikely overflow, AtomicLong wraps to
-    // Long.MIN_VALUE and continues with negative suffixes; those are valid
-    // JS property keys and the only risk is a collision with another live
-    // SignalInput on the same owner — vanishingly small in practice. Class
-    // reload during devmode hotdeploy resets the counter, but the old
-    // SignalInput instances reload with it, so no live collision can result.
+    // Generates unique property-name suffixes; a long won't realistically
+    // overflow. Class reload during devmode hotdeploy resets it, but the
+    // matching SignalInput instances reload with it, so no live collision
+    // can result.
     private static final AtomicLong PROPERTY_INDEX = new AtomicLong();
 
     private final Component owner;
