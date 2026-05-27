@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -108,28 +110,64 @@ public class DomEventTrigger extends Trigger {
     }
 
     @Override
-    protected Registration install(JsFunction action) {
+    protected final Registration install(JsFunction action) {
         // Action at $0 (the convention the framework documents in
         // Trigger#install), event name at $1 — both captures of the install
-        // JsFunction, no string concatenation around either. When either
-        // suppression flag is set, the action is wrapped in a const h so the
-        // same reference is passed to add/removeEventListener.
-        StringBuilder prefix = new StringBuilder();
-        if (preventDefault) {
-            prefix.append("e.preventDefault();");
-        }
-        if (stopPropagation) {
-            prefix.append("e.stopPropagation();");
-        }
-        if (prefix.length() == 0) {
+        // JsFunction, no string concatenation around either. Subclasses
+        // contribute to the wrapper body and extra captures via
+        // appendHandlerBody; when the body is non-empty the action is wrapped
+        // in a const h so the same reference is passed to
+        // add/removeEventListener.
+        StringBuilder body = new StringBuilder();
+        List<Object> extraCaptures = new ArrayList<>();
+        appendHandlerBody(body, extraCaptures);
+        if (body.length() == 0) {
             return getHost().addJsInitializer("""
                     this.addEventListener($1, $0);\
                     return () => this.removeEventListener($1, $0);""", action,
                     eventName);
         }
-        return getHost().addJsInitializer("const h=e=>{" + prefix
-                + "$0(e);};this.addEventListener($1, h);"
-                + "return () => this.removeEventListener($1, h);", action,
-                eventName);
+        Object[] params = new Object[2 + extraCaptures.size()];
+        params[0] = action;
+        params[1] = eventName;
+        for (int i = 0; i < extraCaptures.size(); i++) {
+            params[2 + i] = extraCaptures.get(i);
+        }
+        return getHost().addJsInitializer(
+                "const h=e=>{" + body + "$0(e);};this.addEventListener($1, h);"
+                        + "return () => this.removeEventListener($1, h);",
+                params);
+    }
+
+    /**
+     * Hook for subclasses to contribute statements to the wrapper handler body
+     * and extra captures referenced by those statements. The base
+     * implementation appends {@code e.preventDefault();} and
+     * {@code e.stopPropagation();} when the corresponding flags are set.
+     * <p>
+     * Subclasses overriding this method typically prepend their own guard
+     * statements (and call {@code super.appendHandlerBody} afterwards) so the
+     * guard runs before {@code preventDefault} — preventing the default action
+     * on events the guard would have rejected would be wrong. Each entry added
+     * to {@code extraCaptures} is appended after the event name capture, so the
+     * first extra is referenced as {@code $2} in the body, the next as
+     * {@code $3}, and so on.
+     *
+     * @param body
+     *            the wrapper body so far; statements appended here run inside
+     *            the {@code const h = e => { ... $0(e); }} wrapper, in order,
+     *            with the event available as {@code e}
+     * @param extraCaptures
+     *            mutable list of captures appended after the event-name capture
+     *            ({@code $1}); the first capture added is {@code $2}, etc.
+     */
+    protected void appendHandlerBody(StringBuilder body,
+            List<Object> extraCaptures) {
+        if (preventDefault) {
+            body.append("e.preventDefault();");
+        }
+        if (stopPropagation) {
+            body.append("e.stopPropagation();");
+        }
     }
 }
