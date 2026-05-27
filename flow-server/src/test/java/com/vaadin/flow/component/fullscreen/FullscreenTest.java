@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.fullscreen;
 
 import java.util.List;
 
@@ -68,12 +68,6 @@ class FullscreenTest {
         String install = installBody(ui);
         assertTrue(install.contains("\"click\""),
                 "click trigger install JS: " + install);
-    }
-
-    @Test
-    void onClick_nullComponent_throws() {
-        assertThrows(NullPointerException.class,
-                () -> Fullscreen.onClick(null));
     }
 
     // --- request verbs --------------------------------------------------

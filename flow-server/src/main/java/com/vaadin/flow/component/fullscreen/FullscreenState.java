@@ -13,7 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.fullscreen;
+
+import com.vaadin.flow.component.page.Page;
 
 /**
  * Represents the fullscreen state of a browser page.

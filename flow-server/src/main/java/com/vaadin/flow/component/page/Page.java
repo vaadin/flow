@@ -32,6 +32,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.fullscreen.Fullscreen;
+import com.vaadin.flow.component.fullscreen.FullscreenState;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -581,13 +583,12 @@ public class Page implements Serializable {
      * context, and {@code .get()} inside one.
      * <p>
      * To enter fullscreen, bind a request to a user gesture via
-     * {@link Fullscreen#on(com.vaadin.flow.component.ClickNotifier)
-     * Fullscreen.on(...).requestPage()} or {@code .requestComponent(...)} —
-     * browsers require transient user activation to enter fullscreen, so the
-     * signal will not transition to {@link FullscreenState#FULLSCREEN
-     * FULLSCREEN} in response to a request from a server push or view
-     * constructor. Call {@link #exitFullscreen()} to leave fullscreen — this
-     * does not require a gesture.
+     * {@link Fullscreen#onClick Fullscreen.onClick(...).requestPage()} or
+     * {@code .requestComponent(...)} — browsers require transient user
+     * activation to enter fullscreen, so the signal will not transition to
+     * {@link FullscreenState#FULLSCREEN FULLSCREEN} in response to a request
+     * from a server push or view constructor. Call {@link #exitFullscreen()} to
+     * leave fullscreen — this does not require a gesture.
      *
      * <p>
      * <b>Example: toggle a CSS class while fullscreen</b>
@@ -621,10 +622,9 @@ public class Page implements Serializable {
      * no-op. The fullscreen state can be observed via
      * {@link #fullscreenSignal()}.
      * <p>
-     * If a component was previously fullscreened via
-     * {@link Fullscreen#on(com.vaadin.flow.component.ClickNotifier) Fullscreen}
-     * {@code .requestComponent(...)}, it is automatically restored to its
-     * original position in the DOM.
+     * If a component was previously fullscreened via {@link Fullscreen#onClick
+     * Fullscreen}{@code .requestComponent(...)}, it is automatically restored
+     * to its original position in the DOM.
      *
      * @see Fullscreen
      * @see #fullscreenSignal()

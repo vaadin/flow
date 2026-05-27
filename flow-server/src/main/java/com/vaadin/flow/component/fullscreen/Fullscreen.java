@@ -13,13 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.fullscreen;
 
 import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 
 /**

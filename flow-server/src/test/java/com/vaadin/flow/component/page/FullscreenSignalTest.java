@@ -18,6 +18,7 @@ package com.vaadin.flow.component.page;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.fullscreen.FullscreenState;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
