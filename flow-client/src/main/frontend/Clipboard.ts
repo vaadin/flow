@@ -62,12 +62,12 @@ async function readClipboardPayload(): Promise<VaadinClipboardPayload | null> {
  * string that reached the clipboard.
  */
 async function writeClipboardPayload(text: string | null, html: string | null): Promise<string | null> {
-  const entries: Record<string, Blob> = {};
+  const entries: Record<string, string> = {};
   if (text !== null) {
-    entries['text/plain'] = new Blob([text], { type: 'text/plain' });
+    entries['text/plain'] = text;
   }
   if (html !== null) {
-    entries['text/html'] = new Blob([html], { type: 'text/html' });
+    entries['text/html'] = html;
   }
   await navigator.clipboard.write([new ClipboardItem(entries)]);
   return text !== null ? text : html;
