@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 
 /**
@@ -74,7 +76,7 @@ public class MouseEventTrigger extends DomEventTrigger {
      * remain reachable through the subclass (so {@code ClickTrigger.Output
      * .screenX} continues to resolve to {@link #screenX}).
      */
-    public static class Output {
+    public abstract static class Output implements Serializable {
 
         /**
          * The class exists purely as a namespace for the static
