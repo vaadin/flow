@@ -26,7 +26,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.trigger.internal.DomEventTrigger;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -57,14 +56,14 @@ class FullscreenTest {
         ui.getInternals().createWrapperElement();
     }
 
-    // --- entry points ---------------------------------------------------
+    // --- entry point ----------------------------------------------------
 
     @Test
-    void on_clickNotifier_installsClickTrigger() {
+    void onClick_installsClickTrigger() {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.on(button).requestPage();
+        Fullscreen.onClick(button).requestPage();
 
         String install = installBody(ui);
         assertTrue(install.contains("\"click\""),
@@ -72,21 +71,9 @@ class FullscreenTest {
     }
 
     @Test
-    void on_trigger_usesProvidedTrigger() {
-        TestButton button = new TestButton();
-        ui.getElement().appendChild(button.getElement());
-
-        Fullscreen.on(new DomEventTrigger(button, "keydown")).requestPage();
-
-        String install = installBody(ui);
-        assertTrue(install.contains("\"keydown\""),
-                "keydown trigger install JS: " + install);
-    }
-
-    @Test
-    void on_nullClickNotifier_throws() {
+    void onClick_nullComponent_throws() {
         assertThrows(NullPointerException.class,
-                () -> Fullscreen.on((ClickNotifier<?>) null));
+                () -> Fullscreen.onClick(null));
     }
 
     // --- request verbs --------------------------------------------------
@@ -96,7 +83,7 @@ class FullscreenTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.on(button).requestPage();
+        Fullscreen.onClick(button).requestPage();
 
         assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen();",
                 handlerBody(ui));
@@ -107,7 +94,7 @@ class FullscreenTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.on(button).requestPage(() -> {
+        Fullscreen.onClick(button).requestPage(() -> {
         }, err -> {
         });
 
@@ -123,7 +110,7 @@ class FullscreenTest {
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
 
-        Fullscreen.on(button).requestComponent(panel);
+        Fullscreen.onClick(button).requestComponent(panel);
 
         // $0 = panel, $1 = wrapper element from UIInternals.
         assertEquals(
@@ -137,7 +124,7 @@ class FullscreenTest {
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
 
-        Fullscreen.on(button).requestComponent(panel, () -> {
+        Fullscreen.onClick(button).requestComponent(panel, () -> {
         }, err -> {
         });
 
@@ -153,28 +140,7 @@ class FullscreenTest {
         TestPanel detached = new TestPanel();
         ui.getElement().appendChild(button.getElement());
         assertThrows(IllegalStateException.class,
-                () -> Fullscreen.on(button).requestComponent(detached));
-    }
-
-    @Test
-    void request_returnRemoves_thenNoMoreInstallJs() {
-        TestButton button = new TestButton();
-        ui.getElement().appendChild(button.getElement());
-
-        FullscreenRequest registration = Fullscreen.on(button).requestPage();
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        ui.getInternals().dumpPendingJavaScriptInvocations();
-
-        registration.remove();
-        // Removing the binding should leave no further install JS pending,
-        // only the JS that detaches the listener.
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertTrue(
-                pending.stream()
-                        .noneMatch(p -> p.getInvocation().getExpression()
-                                .contains("addEventListener")),
-                "Expected no new addEventListener installs after remove()");
+                () -> Fullscreen.onClick(button).requestComponent(detached));
     }
 
     // --- helpers --------------------------------------------------------

@@ -44,7 +44,7 @@ public class TriggerRequestFullscreenIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void requestFullscreenRejection_propagatesAsFailureWithMessage() {
+    public void requestFullscreenRejection_propagatesAsFailureWithNameAndMessage() {
         open();
         installRejectingFullscreenShim();
 
@@ -53,9 +53,13 @@ public class TriggerRequestFullscreenIT extends ChromeBrowserTest {
 
         button.click();
 
+        // The shim rejects with a DOMException(name="NotAllowedError",
+        // message="DeniedByTest") — both fields reach the server via the
+        // PromiseAction.Error record.
         waitUntil(d -> status.getText() != null
                 && status.getText().startsWith("err:"));
-        Assert.assertEquals("err:DeniedByTest", status.getText());
+        Assert.assertEquals("err:NotAllowedError:DeniedByTest",
+                status.getText());
     }
 
     // Replace Element.prototype.requestFullscreen with a resolving shim so the

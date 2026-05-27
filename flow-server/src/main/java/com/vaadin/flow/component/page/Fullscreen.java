@@ -21,24 +21,18 @@ import java.util.Objects;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.Trigger;
 
 /**
  * Entry point for the browser Fullscreen API. Bind a fullscreen request to a
- * user gesture by chaining off {@link #on(ClickNotifier)} for the common
- * click-to-fullscreen case, or {@link #on(Trigger)} for any other trigger:
+ * user gesture by chaining off {@link #onClick(Component)}:
  *
  * <pre>{@code
  * Button fullscreenButton = new Button("Fullscreen");
- * Fullscreen.on(fullscreenButton).requestPage();
+ * Fullscreen.onClick(fullscreenButton).requestPage();
  *
- * Fullscreen.on(fullscreenButton).requestComponent(videoPanel);
+ * Fullscreen.onClick(fullscreenButton).requestComponent(videoPanel);
  * }</pre>
  *
- * For non-click DOM gestures (e.g. {@code dblclick}, {@code keydown}) or custom
- * triggers, construct a {@link Trigger} explicitly and pass it to
- * {@link #on(Trigger)}.
- * <p>
  * The Fullscreen API requires transient user activation for each request, so
  * the request only runs during the DOM event that fires the underlying trigger.
  * Calling {@link Page#exitFullscreen()} to leave fullscreen, or observing
@@ -52,29 +46,20 @@ public final class Fullscreen implements Serializable {
     }
 
     /**
-     * Returns a binding whose underlying trigger fires when the given component
-     * is clicked. Sugar for {@code on(new ClickTrigger(component))} that avoids
-     * exposing the trigger framework's internal types for the common case.
+     * Registers the given component as a clickable trigger for a fullscreen
+     * request — the common shape for fullscreen buttons. Equivalent to
+     * {@code new ClickTrigger(component)}, without making callers reach for the
+     * trigger framework's internal types.
      *
-     * @param trigger
+     * @param component
      *            the component to listen for clicks on, not {@code null}
-     * @return a new binding
+     * @param <T>
+     *            the component type, must implement {@link ClickNotifier}
+     * @return a new binding that can chain a fullscreen request to this trigger
      */
-    public static FullscreenBinding on(ClickNotifier<?> trigger) {
-        Objects.requireNonNull(trigger, "trigger must not be null");
-        return new FullscreenBinding(new ClickTrigger((Component) trigger));
-    }
-
-    /**
-     * Returns a binding whose underlying trigger is the given one. Use this for
-     * non-click gestures or any add-on trigger.
-     *
-     * @param trigger
-     *            the trigger, not {@code null}
-     * @return a new binding
-     */
-    public static FullscreenBinding on(Trigger trigger) {
-        Objects.requireNonNull(trigger, "trigger must not be null");
-        return new FullscreenBinding(trigger);
+    public static <T extends Component & ClickNotifier<?>> FullscreenBinding onClick(
+            T component) {
+        Objects.requireNonNull(component, "component must not be null");
+        return new FullscreenBinding(new ClickTrigger(component));
     }
 }

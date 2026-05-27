@@ -19,27 +19,29 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.PromiseAction;
+import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
 /**
- * Fluent surface returned from {@link Fullscreen#on}. Each {@code request*}
- * verb attaches one {@link RequestFullscreenAction} to the underlying
- * {@link Trigger} and returns a {@link FullscreenRequest} for removal.
+ * Fluent surface returned from {@link Fullscreen#onClick}. Each
+ * {@code request*} action attaches one {@link RequestFullscreenAction} to the
+ * underlying {@link Trigger}.
  * <p>
- * Verbs come in two flavours: fire-and-forget (no callbacks) and observed (with
- * {@code onSuccess}/{@code onError} callbacks). Both consumers are required in
- * the observed form — pass {@code () -> {}} or {@code err -> {}} to opt out of
- * one.
+ * Actions come in two flavours: fire-and-forget (no callbacks) and observed
+ * (with {@code onSuccess}/{@code onError} callbacks). {@code onError} receives
+ * an {@link Error} record with the browser's error name and message — the
+ * spec-documented rejection is {@code NotAllowedError} (no gesture /
+ * permissions policy). Both consumers are required in the observed form — pass
+ * {@code () -> {}} or {@code err -> {}} to opt out of one.
  *
  * <pre>{@code
  * Button enter = new Button("Fullscreen");
- * Fullscreen.on(enter).requestComponent(videoPanel,
- *         () -> Notification.show("Entered fullscreen"),
- *         err -> Notification.show("Could not enter fullscreen: " + err));
+ * Fullscreen.onClick(enter).requestComponent(videoPanel,
+ *         () -> Notification.show("Entered fullscreen"), err -> Notification
+ *                 .show("Could not enter fullscreen: " + err.message()));
  * }</pre>
  *
  * Component-fullscreen requests move the target into a Vaadin wrapper element
@@ -61,11 +63,9 @@ public final class FullscreenBinding implements Serializable {
      * underlying trigger fires. Themes and overlay components work correctly in
      * this mode. Use {@link #requestComponent(Component)} to fullscreen a
      * single component instead.
-     *
-     * @return a registration that removes the binding when removed
      */
-    public FullscreenRequest requestPage() {
-        return bind(new RequestFullscreenAction());
+    public void requestPage() {
+        bind(new RequestFullscreenAction());
     }
 
     /**
@@ -74,14 +74,12 @@ public final class FullscreenBinding implements Serializable {
      * @param onSuccess
      *            UI-thread callback on success, not {@code null}
      * @param onError
-     *            UI-thread callback on failure with the browser's error
-     *            message, not {@code null}
-     * @return a registration that removes the binding when removed
+     *            UI-thread callback on failure with the browser's error, not
+     *            {@code null}
      */
-    public FullscreenRequest requestPage(SerializableRunnable onSuccess,
-            SerializableConsumer<String> onError) {
-        return bind(new RequestFullscreenAction(onSuccess,
-                wrapErrorConsumer(onError)));
+    public void requestPage(SerializableRunnable onSuccess,
+            SerializableConsumer<Error> onError) {
+        bind(new RequestFullscreenAction(onSuccess, onError));
     }
 
     /**
@@ -93,13 +91,12 @@ public final class FullscreenBinding implements Serializable {
      * @param component
      *            the component to fullscreen, not {@code null}; must be
      *            attached to a UI when the binding is created
-     * @return a registration that removes the binding when removed
      * @throws IllegalStateException
      *             if {@code component} is not attached to a UI
      */
-    public FullscreenRequest requestComponent(Component component) {
+    public void requestComponent(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        return bind(new RequestFullscreenAction(component));
+        bind(new RequestFullscreenAction(component));
     }
 
     /**
@@ -111,28 +108,19 @@ public final class FullscreenBinding implements Serializable {
      * @param onSuccess
      *            UI-thread callback on success, not {@code null}
      * @param onError
-     *            UI-thread callback on failure with the browser's error
-     *            message, not {@code null}
-     * @return a registration that removes the binding when removed
+     *            UI-thread callback on failure with the browser's error, not
+     *            {@code null}
      * @throws IllegalStateException
      *             if {@code component} is not attached to a UI
      */
-    public FullscreenRequest requestComponent(Component component,
+    public void requestComponent(Component component,
             SerializableRunnable onSuccess,
-            SerializableConsumer<String> onError) {
+            SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        return bind(new RequestFullscreenAction(component, onSuccess,
-                wrapErrorConsumer(onError)));
+        bind(new RequestFullscreenAction(component, onSuccess, onError));
     }
 
-    private static SerializableConsumer<PromiseAction.Error> wrapErrorConsumer(
-            SerializableConsumer<String> onError) {
-        Objects.requireNonNull(onError, "onError must not be null");
-        return err -> onError.accept(err.message());
-    }
-
-    private FullscreenRequest bind(RequestFullscreenAction action) {
+    private void bind(RequestFullscreenAction action) {
         trigger.triggers(action);
-        return trigger::remove;
     }
 }
