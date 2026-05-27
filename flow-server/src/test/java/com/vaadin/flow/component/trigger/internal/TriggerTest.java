@@ -234,6 +234,46 @@ class TriggerTest {
         assertEquals(2, pending.size());
     }
 
+    @Test
+    void preventDefault_stopPropagation_wrapHandlerInInstallJs() {
+        UI ui = new MockUI();
+        TagComponent input = new TagComponent("input");
+        TagComponent field = new TagComponent("input");
+        ui.getElement().appendChild(input.getElement(), field.getElement());
+
+        new DomEventTrigger(input, "keydown").preventDefault().stopPropagation()
+                .triggers(new SetPropertyAction<>(field, "value", ""));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction install = singleInstallFn(ui);
+        // Wrapper is bound to const h so the same reference can be passed to
+        // addEventListener and removeEventListener.
+        assertEquals(
+                "const h=e=>{e.preventDefault();e.stopPropagation();$0(e);};"
+                        + "this.addEventListener(\"keydown\", h);"
+                        + "return () => this.removeEventListener(\"keydown\", h);",
+                install.getBody());
+    }
+
+    @Test
+    void preventDefault_aloneEmitsOnlyPreventDefaultPrefix() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new ClickTrigger(button).preventDefault()
+                .triggers(new SetPropertyAction<>(button, "disabled", true));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction install = singleInstallFn(ui);
+        assertEquals("const h=e=>{e.preventDefault();$0(e);};"
+                + "this.addEventListener(\"click\", h);"
+                + "return () => this.removeEventListener(\"click\", h);",
+                install.getBody());
+    }
+
     private static JsFunction singleInstallFn(UI ui) {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();

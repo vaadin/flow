@@ -39,6 +39,8 @@ import com.vaadin.flow.component.Component;
 public class DomEventTrigger extends Trigger {
 
     private final String eventName;
+    private boolean preventDefault;
+    private boolean stopPropagation;
 
     /**
      * Creates a trigger that fires when the host receives a DOM event with the
@@ -54,6 +56,32 @@ public class DomEventTrigger extends Trigger {
     public DomEventTrigger(Component host, String eventName) {
         super(host);
         this.eventName = Objects.requireNonNull(eventName);
+    }
+
+    /**
+     * Configures the trigger to call {@code event.preventDefault()} when it
+     * fires, suppressing the browser's default action (e.g. submitting a form
+     * on Enter, scrolling on Space). Affects {@link #triggers(Action...)} calls
+     * made after this method; existing wirings are not retroactively changed.
+     *
+     * @return this trigger, for chaining
+     */
+    public DomEventTrigger preventDefault() {
+        this.preventDefault = true;
+        return this;
+    }
+
+    /**
+     * Configures the trigger to call {@code event.stopPropagation()} when it
+     * fires, preventing the event from bubbling to ancestor listeners. Affects
+     * {@link #triggers(Action...)} calls made after this method; existing
+     * wirings are not retroactively changed.
+     *
+     * @return this trigger, for chaining
+     */
+    public DomEventTrigger stopPropagation() {
+        this.stopPropagation = true;
+        return this;
     }
 
     /**
@@ -79,7 +107,19 @@ public class DomEventTrigger extends Trigger {
     @Override
     protected String installJs() {
         String evt = JsBuilder.json(eventName);
-        return "this.addEventListener(" + evt + ", $0);"
-                + "return () => this.removeEventListener(" + evt + ", $0);";
+        StringBuilder prefix = new StringBuilder();
+        if (preventDefault) {
+            prefix.append("e.preventDefault();");
+        }
+        if (stopPropagation) {
+            prefix.append("e.stopPropagation();");
+        }
+        if (prefix.length() == 0) {
+            return "this.addEventListener(" + evt + ", $0);"
+                    + "return () => this.removeEventListener(" + evt + ", $0);";
+        }
+        return "const h=e=>{" + prefix + "$0(e);};" + "this.addEventListener("
+                + evt + ", h);" + "return () => this.removeEventListener(" + evt
+                + ", h);";
     }
 }
