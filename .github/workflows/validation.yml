@@ -139,6 +139,15 @@ jobs:
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Convert Javadoc errors to JUnit XML
+        if: ${{ failure() }}
+        run: |
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          if [ -f "$LOG" ]; then
+            python3 ./scripts/javadocErrorsToJUnit.py \
+              "$LOG" \
+              "flow-server/target/surefire-reports/TEST-Javadoc-${{matrix.current}}.xml"
+          fi
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |

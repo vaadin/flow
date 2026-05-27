@@ -257,6 +257,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private List<String> postinstallPackages;
 
     /**
+     * Npm packages to exclude from running post install scripts.
+     * <p>
+     * Used to skip built-in entries (e.g. {@code esbuild}) when their
+     * postinstall step is known to fail or is not needed.
+     */
+    @Parameter(property = "vaadin.npm.excludePostinstallPackages", defaultValue = "")
+    private List<String> excludePostinstallPackages;
+
+    /**
      * Parameter to control if frontend development server should be used in
      * development mode or not.
      * <p>
@@ -708,6 +717,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public List<String> excludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     @Override
