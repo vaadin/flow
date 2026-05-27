@@ -41,6 +41,8 @@ import com.vaadin.flow.shared.Registration;
 public class DomEventTrigger extends Trigger {
 
     private final String eventName;
+    private boolean preventDefault;
+    private boolean stopPropagation;
 
     /**
      * Creates a trigger that fires when the host receives a DOM event with the
@@ -56,6 +58,32 @@ public class DomEventTrigger extends Trigger {
     public DomEventTrigger(Component host, String eventName) {
         super(host);
         this.eventName = Objects.requireNonNull(eventName);
+    }
+
+    /**
+     * Configures the trigger to call {@code event.preventDefault()} when it
+     * fires, suppressing the browser's default action (e.g. submitting a form
+     * on Enter, scrolling on Space). Affects {@link #triggers(Action...)} calls
+     * made after this method; existing wirings are not retroactively changed.
+     *
+     * @return this trigger, for chaining
+     */
+    public DomEventTrigger preventDefault() {
+        this.preventDefault = true;
+        return this;
+    }
+
+    /**
+     * Configures the trigger to call {@code event.stopPropagation()} when it
+     * fires, preventing the event from bubbling to ancestor listeners. Affects
+     * {@link #triggers(Action...)} calls made after this method; existing
+     * wirings are not retroactively changed.
+     *
+     * @return this trigger, for chaining
+     */
+    public DomEventTrigger stopPropagation() {
+        this.stopPropagation = true;
+        return this;
     }
 
     /**
@@ -83,10 +111,25 @@ public class DomEventTrigger extends Trigger {
     protected Registration install(JsFunction action) {
         // Action at $0 (the convention the framework documents in
         // Trigger#install), event name at $1 — both captures of the install
-        // JsFunction, no string concatenation around either.
-        return getHost().addJsInitializer("""
-                this.addEventListener($1, $0);\
-                return () => this.removeEventListener($1, $0);""", action,
+        // JsFunction, no string concatenation around either. When either
+        // suppression flag is set, the action is wrapped in a const h so the
+        // same reference is passed to add/removeEventListener.
+        StringBuilder prefix = new StringBuilder();
+        if (preventDefault) {
+            prefix.append("e.preventDefault();");
+        }
+        if (stopPropagation) {
+            prefix.append("e.stopPropagation();");
+        }
+        if (prefix.length() == 0) {
+            return getHost().addJsInitializer("""
+                    this.addEventListener($1, $0);\
+                    return () => this.removeEventListener($1, $0);""", action,
+                    eventName);
+        }
+        return getHost().addJsInitializer("const h=e=>{" + prefix
+                + "$0(e);};this.addEventListener($1, h);"
+                + "return () => this.removeEventListener($1, h);", action,
                 eventName);
     }
 }

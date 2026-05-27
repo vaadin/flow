@@ -63,4 +63,47 @@ class DomEventTriggerTest {
         assertEquals("value", action.getCaptures().get(1));
     }
 
+    @Test
+    void preventDefault_stopPropagation_wrapHandlerInInstallJs() {
+        UI ui = new MockUI();
+        TagComponent input = new TagComponent("input");
+        TagComponent field = new TagComponent("input");
+        ui.getElement().appendChild(input.getElement(), field.getElement());
+
+        new DomEventTrigger(input, "keydown").preventDefault().stopPropagation()
+                .triggers(new SetPropertyAction<>(field, "value", ""));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Wrapper is bound to const h so the same reference can be passed to
+        // addEventListener and removeEventListener.
+        JsFunction install = singleInstallFn(ui);
+        assertEquals(
+                "const h=e=>{e.preventDefault();e.stopPropagation();$0(e);};"
+                        + "this.addEventListener($1, h);"
+                        + "return () => this.removeEventListener($1, h);",
+                install.getBody());
+        assertEquals("keydown", install.getCaptures().get(1));
+    }
+
+    @Test
+    void preventDefault_aloneEmitsOnlyPreventDefaultPrefix() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click").preventDefault()
+                .triggers(new SetPropertyAction<>(button, "disabled", true));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction install = singleInstallFn(ui);
+        assertEquals(
+                "const h=e=>{e.preventDefault();$0(e);};"
+                        + "this.addEventListener($1, h);"
+                        + "return () => this.removeEventListener($1, h);",
+                install.getBody());
+        assertEquals("click", install.getCaptures().get(1));
+    }
+
 }
