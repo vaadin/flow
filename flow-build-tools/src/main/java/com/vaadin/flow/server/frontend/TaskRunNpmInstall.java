@@ -24,11 +24,14 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -289,6 +292,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
+        boolean npmSupportsMinReleaseAge = options
+                .getMinimumFrontendPackageAgeDays() > 0
+                && !options.isEnableBun() && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(npmExecutable);
+        getMinimumFrontendPackageAgeArgument(options, npmSupportsMinReleaseAge)
+                .ifPresent(npmInstallCommand::add);
+
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
 
@@ -372,6 +382,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         postinstallPackages.add("esbuild");
         postinstallPackages.add("@vaadin/vaadin-usage-statistics");
         postinstallPackages.addAll(options.getPostinstallPackages());
+        postinstallPackages.removeAll(options.getExcludePostinstallPackages());
 
         for (String postinstallPackage : postinstallPackages) {
             File packageJsonFile = getPackageJsonForModule(postinstallPackage);
@@ -423,6 +434,47 @@ public class TaskRunNpmInstall implements FallibleCommand {
         } else {
             return "npm";
         }
+    }
+
+    /**
+     * Builds the install argument that prevents npm, pnpm or bun from
+     * installing frontend package versions newer than
+     * {@link Options#getMinimumFrontendPackageAgeDays()} days. Returns an empty
+     * optional when the check is disabled.
+     *
+     * @param options
+     *            current build options
+     * @param npmSupportsMinReleaseAge
+     *            {@code true} if the active npm understands
+     *            {@code --min-release-age} (npm 11.10+); when {@code false} the
+     *            legacy {@code --before=<date>} flag is used instead. Ignored
+     *            when bun or pnpm is enabled.
+     */
+    static Optional<String> getMinimumFrontendPackageAgeArgument(
+            Options options, boolean npmSupportsMinReleaseAge) {
+        int days = options.getMinimumFrontendPackageAgeDays();
+        if (days <= 0) {
+            return Optional.empty();
+        }
+        if (options.isEnableBun()) {
+            // bun: --minimum-release-age takes a value in seconds
+            long seconds = (long) days * 24 * 60 * 60;
+            return Optional.of("--minimum-release-age=" + seconds);
+        }
+        if (options.isEnablePnpm()) {
+            // pnpm: minimumReleaseAge is a setting (in minutes), so it has
+            // to be passed via the --config.<name> CLI form, not as a
+            // top-level option
+            long minutes = (long) days * 24 * 60;
+            return Optional.of("--config.minimum-release-age=" + minutes);
+        }
+        if (npmSupportsMinReleaseAge) {
+            // npm 11.10+: --min-release-age takes a value in days
+            return Optional.of("--min-release-age=" + days);
+        }
+        // Older npm: --before takes any Date.parse-able string
+        String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();
+        return Optional.of("--before=" + before);
     }
 
     private void consumeProcessOutput(Process process,

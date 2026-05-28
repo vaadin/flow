@@ -363,6 +363,8 @@ public class BuildFrontendUtil {
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
+                    .withExcludePostinstallPackages(
+                            adapter.excludePostinstallPackages())
                     .withCiBuild(adapter.ciBuild())
                     .withForceProductionBuild(adapter.forceProductionBuild())
                     .withReact(adapter.isReactEnabled())
@@ -375,7 +377,9 @@ public class BuildFrontendUtil {
                     .withFrontendDependenciesScanner(frontendDependencies)
                     .withCommercialBanner(adapter.isCommercialBannerEnabled())
                     .withMetaInfResourcesDirectory(
-                            adapter.resourcesOutputDirectory());
+                            adapter.resourcesOutputDirectory())
+                    .withMinimumFrontendPackageAgeDays(
+                            adapter.minimumFrontendPackageAgeDays());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -438,6 +442,8 @@ public class BuildFrontendUtil {
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
+                    .withExcludePostinstallPackages(
+                            adapter.excludePostinstallPackages())
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
@@ -447,7 +453,9 @@ public class BuildFrontendUtil {
                     .withNpmExcludeWebComponents(
                             adapter.isNpmExcludeWebComponents())
                     .withFrontendIgnoreVersionChecks(
-                            adapter.isFrontendIgnoreVersionChecks());
+                            adapter.isFrontendIgnoreVersionChecks())
+                    .withMinimumFrontendPackageAgeDays(
+                            adapter.minimumFrontendPackageAgeDays());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

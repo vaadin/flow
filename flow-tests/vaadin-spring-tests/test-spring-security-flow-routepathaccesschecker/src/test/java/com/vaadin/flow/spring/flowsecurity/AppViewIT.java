@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
@@ -42,7 +42,7 @@ public class AppViewIT extends AbstractIT {
     private static final String ADMIN_FULLNAME = "Emma the Admin";
 
     private void logout() {
-        if (!$(ButtonElement.class).attribute("id", "logout").exists()) {
+        if (!$(NativeButtonElement.class).attribute("id", "logout").exists()) {
             open("");
             assertRootPageShown();
         }
@@ -51,7 +51,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void clickLogout() {
-        getMainView().$(ButtonElement.class).id("logout").click();
+        getMainView().$(NativeButtonElement.class).id("logout").click();
     }
 
     @Test
@@ -271,7 +271,8 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void navigate_in_thread_without_access() {
         open("");
-        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+        $(NativeButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID)
+                .click();
 
         // This waits for longer than the delay in the UI so we do not need a
         // separate
@@ -283,7 +284,8 @@ public class AppViewIT extends AbstractIT {
     public void navigate_in_thread_with_access() {
         open(LOGIN_PATH);
         loginAdmin();
-        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+        $(NativeButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID)
+                .click();
 
         // This waits for longer than the delay in the UI so we do not need a
         // separate
@@ -422,8 +424,8 @@ public class AppViewIT extends AbstractIT {
     }
 
     private List<MenuItem> getMenuItems() {
-        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first()
-                .$("a").all();
+        List<TestBenchElement> anchors = getMainView().$("*").id("tabs").$("a")
+                .all();
 
         return anchors.stream().map(anchor -> {
             String href = (String) anchor.callFunction("getAttribute", "href");

@@ -722,6 +722,17 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Clears the session-scoped transaction so that the next signal operation
+     * will create a fresh transaction with up-to-date values.
+     * <p>
+     * The session lock must be held when calling this method.
+     */
+    void clearSessionScopedTransaction() {
+        assert hasLock();
+        sessionScopedTransaction = null;
+    }
+
+    /**
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
