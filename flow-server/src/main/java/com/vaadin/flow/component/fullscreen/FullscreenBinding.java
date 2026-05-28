@@ -87,16 +87,17 @@ public final class FullscreenBinding implements Serializable {
      * fires. The component is moved into a Vaadin wrapper element and the rest
      * of the view is hidden so themes and overlay components keep working. The
      * component is restored to its original DOM position when fullscreen exits.
+     * <p>
+     * Safe to call before {@code component} is attached: the action is wired to
+     * the trigger as soon as the component attaches.
      *
      * @param component
-     *            the component to fullscreen, not {@code null}; must be
-     *            attached to a UI when the binding is created
-     * @throws IllegalStateException
-     *             if {@code component} is not attached to a UI
+     *            the component to fullscreen, not {@code null}
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        bind(new RequestFullscreenAction(component));
+        whenAttached(component,
+                () -> bind(new RequestFullscreenAction(component)));
     }
 
     /**
@@ -110,13 +111,20 @@ public final class FullscreenBinding implements Serializable {
      * @param onError
      *            UI-thread callback on failure with the browser's error, not
      *            {@code null}
-     * @throws IllegalStateException
-     *             if {@code component} is not attached to a UI
      */
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        bind(new RequestFullscreenAction(component, onSuccess, onError));
+        whenAttached(component, () -> bind(
+                new RequestFullscreenAction(component, onSuccess, onError)));
+    }
+
+    private static void whenAttached(Component component, Runnable task) {
+        // Defer wiring until attach so the action's wrapper-element lookup
+        // (target.getUI().getInternals().getWrapperElement()) has a UI to
+        // resolve against. runWhenAttached fires immediately if already
+        // attached and is one-shot otherwise.
+        component.getElement().getNode().runWhenAttached(ui -> task.run());
     }
 
     private void bind(RequestFullscreenAction action) {

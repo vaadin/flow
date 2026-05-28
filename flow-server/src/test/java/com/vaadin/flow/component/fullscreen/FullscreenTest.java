@@ -149,12 +149,30 @@ class FullscreenTest {
     }
 
     @Test
-    void enterComponent_detachedComponent_throws() {
+    void enterComponent_detachedComponent_defersUntilAttach() {
         TestButton button = new TestButton();
-        TestPanel detached = new TestPanel();
+        TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement());
-        assertThrows(IllegalStateException.class,
-                () -> Fullscreen.onClick(button).enter(detached));
+
+        // Wire the binding before the target is attached — must not throw,
+        // and must not install any JS yet.
+        Fullscreen.onClick(button).enter(panel);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        long installsBeforeAttach = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .filter(p -> p.getInvocation().getExpression()
+                        .contains("registerInitializer"))
+                .count();
+        assertEquals(0, installsBeforeAttach,
+                "No install JS expected before target attaches");
+
+        // Attach the target — the deferred bind() runs and installs the JS.
+        ui.getElement().appendChild(panel.getElement());
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                action.getBody());
+        assertSame(panel.getElement(), action.getCaptures().get(0));
     }
 
     // --- exit -----------------------------------------------------------
