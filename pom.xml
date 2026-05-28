@@ -51,6 +51,7 @@
     <module>vaadin-spring</module>
     <module>vaadin-micrometer</module>
     <module>vaadin-micrometer-spring</module>
+    <module>vaadin-micrometer-spring-boot</module>
     <module>flow-polymer2lit</module>
   </modules>
   <scm>

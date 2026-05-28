@@ -331,6 +331,7 @@
         <module>test-spring-white-list</module>
         <module>test-spring-filter-packages</module>
         <module>test-spring-micrometer</module>
+        <module>test-spring-boot-micrometer</module>
 
       </modules>
     </profile>
