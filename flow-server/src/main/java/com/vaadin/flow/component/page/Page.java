@@ -60,7 +60,6 @@ public class Page implements Serializable {
 
     private final UI ui;
     private final History history;
-    private final WakeLock wakeLock;
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
@@ -78,7 +77,6 @@ public class Page implements Serializable {
     public Page(UI ui) {
         this.ui = ui;
         history = new History(ui);
-        wakeLock = new WakeLock(ui);
         ui.getElement()
                 .addEventListener("vaadin-page-visibility-change",
                         e -> setPageVisibility(e.getEventDetail(String.class)))
@@ -395,16 +393,6 @@ public class Page implements Serializable {
      */
     public History getHistory() {
         return history;
-    }
-
-    /**
-     * Returns the {@link WakeLock} facade for this page. Use it to keep the
-     * screen from dimming or locking while a view is active.
-     *
-     * @return the wake lock facade, never {@code null}
-     */
-    public WakeLock getWakeLock() {
-        return wakeLock;
     }
 
     /**

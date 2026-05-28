@@ -15,6 +15,7 @@
  */
 
 type VaadinWakeLockState = 'ACTIVE' | 'RELEASED';
+type VaadinWakeLockAvailability = 'SUPPORTED' | 'UNSUPPORTED' | 'UNKNOWN';
 
 // Whether the server-side has asked us to hold the lock. The browser releases
 // the lock whenever the tab is hidden; this flag is what lets the
@@ -102,6 +103,13 @@ $wnd.Vaadin.Flow.wakeLock = {
       // the explicit release() call rejects.
     }
     dispatch(element, 'RELEASED');
+  },
+
+  queryAvailability(): VaadinWakeLockAvailability {
+    if (!window.isSecureContext) {
+      return 'UNSUPPORTED';
+    }
+    return 'wakeLock' in navigator ? 'SUPPORTED' : 'UNSUPPORTED';
   }
 };
 

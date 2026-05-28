@@ -565,6 +565,12 @@ export class Flow {
       params['v-ga'] = await geolocation.queryAvailability();
     }
 
+    /* Wake-lock availability — same guard rationale as geolocation. */
+    const wakeLock = ($wnd.Vaadin.Flow as any)?.wakeLock;
+    if (wakeLock) {
+      params['v-wla'] = wakeLock.queryAvailability();
+    }
+
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
     Object.keys(params).forEach((key) => {

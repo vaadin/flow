@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.wakelock;
 
 import java.util.List;
 
@@ -33,27 +33,27 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class WakeLockSignalTest {
+class WakeLockTest {
 
     @Test
     void activeSignal_isReadOnly() {
-        WakeLock wakeLock = new MockUI().getPage().getWakeLock();
-        Signal<Boolean> signal = wakeLock.activeSignal();
+        MockUI ui = new MockUI();
+        Signal<Boolean> signal = WakeLock.activeSignal(ui);
         assertFalse(signal instanceof ValueSignal,
                 "activeSignal() should return a read-only signal");
     }
 
     @Test
     void activeSignal_defaultsToFalse() {
-        WakeLock wakeLock = new MockUI().getPage().getWakeLock();
-        assertEquals(Boolean.FALSE, wakeLock.activeSignal().peek(),
+        MockUI ui = new MockUI();
+        assertEquals(Boolean.FALSE, WakeLock.activeSignal(ui).peek(),
                 "Before any client confirmation the lock is not held");
     }
 
     @Test
     void activeSignal_readonlyWrapperIsCached() {
-        WakeLock wakeLock = new MockUI().getPage().getWakeLock();
-        assertSame(wakeLock.activeSignal(), wakeLock.activeSignal(),
+        MockUI ui = new MockUI();
+        assertSame(WakeLock.activeSignal(ui), WakeLock.activeSignal(ui),
                 "Repeated calls must return the same read-only wrapper so "
                         + "subscriber identity stays stable");
     }
@@ -61,24 +61,24 @@ class WakeLockSignalTest {
     @Test
     void activeSignal_tracksStateChanges() {
         MockUI ui = new MockUI();
-        WakeLock wakeLock = ui.getPage().getWakeLock();
+        Signal<Boolean> active = WakeLock.activeSignal(ui);
 
         fireStateEvent(ui, "ACTIVE");
-        assertEquals(Boolean.TRUE, wakeLock.activeSignal().peek());
+        assertEquals(Boolean.TRUE, active.peek());
 
         fireStateEvent(ui, "RELEASED");
-        assertEquals(Boolean.FALSE, wakeLock.activeSignal().peek());
+        assertEquals(Boolean.FALSE, active.peek());
     }
 
     @Test
     void activeSignal_unknownDetailKeepsPreviousValue() {
         MockUI ui = new MockUI();
-        WakeLock wakeLock = ui.getPage().getWakeLock();
+        Signal<Boolean> active = WakeLock.activeSignal(ui);
 
         fireStateEvent(ui, "ACTIVE");
         fireStateEvent(ui, "SOMETHING_NEW");
 
-        assertEquals(Boolean.TRUE, wakeLock.activeSignal().peek(),
+        assertEquals(Boolean.TRUE, active.peek(),
                 "Unknown detail values from a newer client should not reset "
                         + "the signal");
     }
@@ -86,7 +86,7 @@ class WakeLockSignalTest {
     @Test
     void request_executesClientCall() {
         MockUI ui = new MockUI();
-        ui.getPage().getWakeLock().request();
+        WakeLock.request(ui);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -99,7 +99,7 @@ class WakeLockSignalTest {
     @Test
     void release_executesClientCall() {
         MockUI ui = new MockUI();
-        ui.getPage().getWakeLock().release();
+        WakeLock.release(ui);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -107,6 +107,36 @@ class WakeLockSignalTest {
                 .anyMatch(i -> i.getInvocation().getExpression()
                         .contains("window.Vaadin.Flow.wakeLock.release(this)")),
                 "release() should invoke window.Vaadin.Flow.wakeLock.release");
+    }
+
+    @Test
+    void availabilitySignal_defaultsToUnknown() {
+        MockUI ui = new MockUI();
+        assertEquals(WakeLockAvailability.UNKNOWN,
+                WakeLock.availabilitySignal(ui).peek(),
+                "Before bootstrap reports a value the availability is UNKNOWN");
+    }
+
+    @Test
+    void availabilitySignal_readonlyWrapperIsCached() {
+        MockUI ui = new MockUI();
+        assertSame(WakeLock.availabilitySignal(ui),
+                WakeLock.availabilitySignal(ui),
+                "Repeated calls must return the same read-only wrapper");
+    }
+
+    @Test
+    void availabilitySignal_tracksUIInternals() {
+        MockUI ui = new MockUI();
+        Signal<WakeLockAvailability> availability = WakeLock
+                .availabilitySignal(ui);
+
+        ui.getInternals().setWakeLockAvailability(WakeLockAvailability.SUPPORTED);
+        assertEquals(WakeLockAvailability.SUPPORTED, availability.peek());
+
+        ui.getInternals()
+                .setWakeLockAvailability(WakeLockAvailability.UNSUPPORTED);
+        assertEquals(WakeLockAvailability.UNSUPPORTED, availability.peek());
     }
 
     private void fireStateEvent(MockUI ui, String state) {
