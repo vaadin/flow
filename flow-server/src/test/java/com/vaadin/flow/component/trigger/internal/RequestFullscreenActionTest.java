@@ -15,23 +15,22 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class RequestFullscreenActionTest {
 
     @Test
-    void fireAndForget_handlerCallsRequestFullscreenOnTarget() {
+    void fireAndForget_actionFnCallsRequestFullscreenOnTargetCapture() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
@@ -42,27 +41,15 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("$0.requestFullscreen();",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Fire-and-forget collapses to the inner promise function directly.
+        // $0 is the target element captured by JsFunction.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("return $0.requestFullscreen()", action.getBody());
+        assertSame(panel.getElement(), action.getCaptures().get(0));
     }
 
     @Test
-    void targetEqualsHost_renderedAsThis() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        ui.getElement().appendChild(button.getElement());
-
-        new DomEventTrigger(button, "click")
-                .triggers(new RequestFullscreenAction(button));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertEquals("this.requestFullscreen();",
-                handlerOf(singleInstallFn(ui)).getBody());
-    }
-
-    @Test
-    void withCallbacks_handlerCallsObserverWithRequestFullscreenPromise() {
+    void withCallbacks_actionFnWrapsInnerWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
@@ -75,29 +62,33 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel, $2 = panel;
-        // the .then/.catch glue lives inside $0, not in the handler body.
-        assertEquals("$0($2.requestFullscreen(), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // With callbacks, PromiseAction wraps the inner function with
+        // OBSERVE_PROMISE; the inner still captures the target as $0.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return $0.requestFullscreen()", inner.getBody());
+        assertSame(panel.getElement(), inner.getCaptures().get(0));
     }
 
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
+    @Test
+    void targetEqualsHost_capturedTheSameWayAsAnyOtherElement() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new RequestFullscreenAction(button));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // No "this" special-case: the host element is captured the same way
+        // as any other element. The DOM ref is resolved on the client from
+        // the JsFunction capture.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        Element captured = (Element) action.getCaptures().get(0);
+        assertSame(button.getElement(), captured);
     }
 
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
 }
