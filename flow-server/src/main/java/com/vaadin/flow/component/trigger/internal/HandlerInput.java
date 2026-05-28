@@ -49,9 +49,8 @@ final class HandlerInput<T> extends Action.Input<T> {
                     "Input is scoped to a different trigger and cannot be"
                             + " used here");
         }
-        // $0 = property name (string capture, Jackson-quoted on the client),
-        // event = the handler argument the framework passes in.
-        return JsFunction.of("return event[$0]", propertyName)
+        return JsFunction.of("return event[propertyName]")
+                .withParameter("propertyName", propertyName)
                 .withArguments("event");
     }
 }

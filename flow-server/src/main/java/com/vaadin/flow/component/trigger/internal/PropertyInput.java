@@ -64,9 +64,8 @@ public class PropertyInput<T> extends Action.Input<T> {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // Both target (Element) and propertyName (String) are JsFunction
-        // captures — JsFunction's wire encoding handles Element-to-DOM-ref
-        // mapping and JSON-quotes the property name.
-        return JsFunction.of("return $0[$1]", target, propertyName);
+        return JsFunction.of("return target[propertyName]")
+                .withParameter("target", target)
+                .withParameter("propertyName", propertyName);
     }
 }

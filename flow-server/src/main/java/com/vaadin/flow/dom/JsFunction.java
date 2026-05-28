@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -58,12 +59,14 @@ public final class JsFunction implements Serializable {
     private final String body;
     private final List<@Nullable Object> captures;
     private final List<String> argumentNames;
+    private final List<String> parameterNames;
 
     private JsFunction(String body, List<@Nullable Object> captures,
-            List<String> argumentNames) {
+            List<String> argumentNames, List<String> parameterNames) {
         this.body = body;
         this.captures = captures;
         this.argumentNames = argumentNames;
+        this.parameterNames = parameterNames;
     }
 
     /**
@@ -94,7 +97,7 @@ public final class JsFunction implements Serializable {
         }
         return new JsFunction(body,
                 Collections.unmodifiableList(Arrays.asList(copy)),
-                Collections.emptyList());
+                Collections.emptyList(), Collections.emptyList());
     }
 
     /**
@@ -122,7 +125,64 @@ public final class JsFunction implements Serializable {
             throw new IllegalStateException(
                     "withArguments has already been called on this JsFunction");
         }
-        return new JsFunction(body, captures, List.of(argumentNames));
+        return new JsFunction(body, captures, List.of(argumentNames),
+                parameterNames);
+    }
+
+    /**
+     * Returns a copy of this function with an additional named capture. The
+     * function body can reference the value as {@code parameterName}; the
+     * implementation prepends {@code let <parameterName>=$<index>;} to the body
+     * and appends the value to the captures list (so positional {@code $N}
+     * access continues to work for captures added via
+     * {@link #of(String, Object...)}).
+     * <p>
+     * Each call adds one parameter; calls may be chained. Parameter names must
+     * be unique within a function and must not collide with names declared by
+     * {@link #withArguments(String...)}.
+     * <p>
+     * Example:
+     *
+     * <pre>
+     * element.addJsInitializer(JsFunction.of("setup(target)")
+     *         .withParameter("target", someElement));
+     * </pre>
+     *
+     * @param parameterName
+     *            the JavaScript identifier under which the value is exposed to
+     *            the body, not {@code null}; must not duplicate an existing
+     *            parameter or argument name
+     * @param value
+     *            the value to capture; must be a type supported as a parameter
+     *            to {@link Element#executeJs(String, Object...)}
+     * @return a new {@code JsFunction} with the additional parameter
+     * @throws IllegalArgumentException
+     *             if the name conflicts with an existing parameter or argument,
+     *             or if the value has a type that cannot be sent to the client
+     */
+    public JsFunction withParameter(String parameterName,
+            @Nullable Object value) {
+        Objects.requireNonNull(parameterName, "parameterName");
+        if (parameterNames.contains(parameterName)) {
+            throw new IllegalArgumentException("Parameter '" + parameterName
+                    + "' is already declared on this JsFunction");
+        }
+        if (argumentNames.contains(parameterName)) {
+            throw new IllegalArgumentException("Parameter '" + parameterName
+                    + "' conflicts with a runtime argument of the same name");
+        }
+        // Dry-run encode so unsupported types fail fast, same as of().
+        JacksonCodec.encodeWithTypeInfo(value);
+
+        List<@Nullable Object> newCaptures = new ArrayList<>(captures);
+        newCaptures.add(value);
+        String newBody = "let " + parameterName + "=$" + captures.size() + ";"
+                + body;
+        List<String> newParameterNames = new ArrayList<>(parameterNames);
+        newParameterNames.add(parameterName);
+        return new JsFunction(newBody,
+                Collections.unmodifiableList(newCaptures), argumentNames,
+                Collections.unmodifiableList(newParameterNames));
     }
 
     /**

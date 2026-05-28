@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
@@ -25,5 +28,42 @@ class JsFunctionTest {
     void withArguments_alreadySet_throws() {
         JsFunction fn = JsFunction.of("return a;").withArguments("a");
         assertThrows(IllegalStateException.class, () -> fn.withArguments("b"));
+    }
+
+    @Test
+    void withParameter_prependsLetAndAppendsCapture() {
+        JsFunction fn = JsFunction.of("return target.id;")
+                .withParameter("target", "value");
+        assertEquals("let target=$0;return target.id;", fn.getBody());
+        assertEquals(List.of("value"), fn.getCaptures());
+    }
+
+    @Test
+    void withParameter_chained_indexesIncrement() {
+        JsFunction fn = JsFunction.of("a + b").withParameter("a", 1)
+                .withParameter("b", 2);
+        assertEquals("let b=$1;let a=$0;a + b", fn.getBody());
+        assertEquals(List.of(1, 2), fn.getCaptures());
+    }
+
+    @Test
+    void withParameter_afterOfCaptures_indexesContinue() {
+        JsFunction fn = JsFunction.of("$0 + b", "x").withParameter("b", 1);
+        assertEquals("let b=$1;$0 + b", fn.getBody());
+        assertEquals(List.of("x", 1), fn.getCaptures());
+    }
+
+    @Test
+    void withParameter_duplicateName_throws() {
+        JsFunction fn = JsFunction.of("x").withParameter("x", 1);
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("x", 2));
+    }
+
+    @Test
+    void withParameter_collidesWithArgumentName_throws() {
+        JsFunction fn = JsFunction.of("x").withArguments("x");
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("x", 1));
     }
 }

@@ -103,20 +103,25 @@ public abstract class Trigger implements Serializable {
      * to {@link #triggers(Action...)}.
      * <p>
      * Implementations typically call
-     * {@link Element#addJsInitializer(String, Object...)
-     * getHost().addJsInitializer} with an install expression that hands the
-     * action {@link JsFunction} to whatever client API the trigger wraps:
+     * {@link Element#addJsInitializer(JsFunction) getHost().addJsInitializer}
+     * with a {@link JsFunction} whose body hands the action to whatever client
+     * API the trigger wraps. Use
+     * {@link JsFunction#withParameter(String, Object)} to expose the action and
+     * any literal install values under readable names:
      *
      * <pre>{@code
-     * return getHost().addJsInitializer(
-     *         "this.addEventListener($1, $0);"
-     *                 + "return () => this.removeEventListener($1, $0);",
-     *         action, eventName);
+     * return getHost().addJsInitializer(JsFunction
+     *         .of("this.addEventListener(eventName, action);"
+     *                 + "return () => this.removeEventListener(eventName, action);")
+     *         .withParameter("action", action)
+     *         .withParameter("eventName", eventName));
      * }</pre>
      *
-     * The expression runs with {@code this} bound to the host element. The
-     * captures are made available as {@code $0}, {@code $1}, … in the order
-     * passed.
+     * The expression runs with {@code this} bound to the host element. Named
+     * captures from {@link JsFunction#withParameter(String, Object)} are
+     * exposed under the given names; positional captures from
+     * {@link JsFunction#of(String, Object...)} are exposed as {@code $0},
+     * {@code $1}, ….
      *
      * @param action
      *            the rendered action {@link JsFunction}; takes one runtime

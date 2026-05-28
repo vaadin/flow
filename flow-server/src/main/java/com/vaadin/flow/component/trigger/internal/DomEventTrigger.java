@@ -79,12 +79,10 @@ public class DomEventTrigger extends Trigger {
 
     @Override
     protected Registration install(JsFunction action) {
-        // Action at $0 (the convention the framework documents in
-        // Trigger#install), event name at $1 — both captures of the install
-        // JsFunction, no string concatenation around either.
-        return getHost().addJsInitializer("""
-                this.addEventListener($1, $0);\
-                return () => this.removeEventListener($1, $0);""", action,
-                eventName);
+        return getHost().addJsInitializer(JsFunction.of("""
+                this.addEventListener(eventName, action);\
+                return () => this.removeEventListener(eventName, action);""")
+                .withParameter("action", action)
+                .withParameter("eventName", eventName));
     }
 }

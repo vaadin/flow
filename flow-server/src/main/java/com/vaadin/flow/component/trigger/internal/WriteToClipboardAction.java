@@ -124,7 +124,8 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
                 : NULL_INPUT_FN;
         return JsFunction.of(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                text, html).withArguments("event");
+                "return window.Vaadin.Flow.clipboard.writePayload(text(event), html(event))")
+                .withParameter("text", text).withParameter("html", html)
+                .withArguments("event");
     }
 }

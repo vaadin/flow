@@ -42,23 +42,29 @@ class DomEventTriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Install JS references action at $0 and event name at $1 — no user
-        // content leaks into the body, both are captures.
+        // Install JS exposes the action and event name as named parameters;
+        // captures still carry the values, no user content leaks into the
+        // body.
         JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "this.addEventListener($1, $0);"
-                        + "return () => this.removeEventListener($1, $0);",
+        assertEquals("let eventName=$1;let action=$0;"
+                + "this.addEventListener(eventName, action);"
+                + "return () => this.removeEventListener(eventName, action);",
                 install.getBody());
         assertEquals("click", install.getCaptures().get(1));
 
-        // The install $0 is the action's JsFunction directly — no intermediate
-        // composed handler layer. The action is also the DOM event listener.
+        // The first install capture is the action's JsFunction directly — no
+        // intermediate composed handler layer. The action is also the DOM
+        // event listener.
         JsFunction action = actionOf(install);
         assertEquals(List.of("event"), action.getArgumentNames());
 
-        // SetPropertyAction body shape; target captured as $0, property name
-        // string capture at $1, source JsFunction invoked as $2(event).
-        assertEquals("$0[$1] = $2(event)", action.getBody());
+        // SetPropertyAction body shape; target, property name, and source
+        // input are all exposed by name via withParameter — captures stay
+        // (target, propertyName, source).
+        assertEquals(
+                "let source=$2;let propertyName=$1;let target=$0;"
+                        + "target[propertyName] = source(event)",
+                action.getBody());
         assertSame(field.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
     }

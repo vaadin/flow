@@ -1877,6 +1877,11 @@ public class Element extends Node<Element> {
      * function, {@code null}, or {@code undefined} (the latter being the
      * implicit value when there is no {@code return}). Returning any other
      * value, including a promise, is logged as an error on the client.
+     * <p>
+     * To pass values by name instead of <code>$0</code>, <code>$1</code>, ...,
+     * build a {@link JsFunction} with
+     * {@link JsFunction#withParameter(String, Object)} and use
+     * {@link #addJsInitializer(JsFunction)}.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
@@ -1888,8 +1893,37 @@ public class Element extends Node<Element> {
     public Registration addJsInitializer(String expression,
             Object... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
-        return new ElementJsInitializerRegistration(getNode(), expression,
-                parameters == null ? new Object[0] : parameters);
+        return addJsInitializer(JsFunction.of(expression,
+                parameters == null ? new Object[0] : parameters));
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * Behaves like {@link #addJsInitializer(String, Object...)}, but accepts a
+     * pre-built {@link JsFunction}. This lets the caller compose the
+     * initializer with named parameters, e.g.
+     *
+     * <pre>
+     * element.addJsInitializer(JsFunction.of("setup(target)")
+     *         .withParameter("target", someElement));
+     * </pre>
+     *
+     * The function's body is executed with this element as <code>this</code>;
+     * any positional captures and named parameters are exposed to the body the
+     * same way as for {@link #executeJs(String, Object...)}.
+     *
+     * @param function
+     *            the initializer function, not <code>null</code>
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     */
+    public Registration addJsInitializer(JsFunction function) {
+        Objects.requireNonNull(function, "Function cannot be null");
+        return new ElementJsInitializerRegistration(getNode(), function);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(

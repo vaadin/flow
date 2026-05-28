@@ -52,13 +52,16 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+        assertEquals("let html=$1;let text=$0;"
+                + "return window.Vaadin.Flow.clipboard.writePayload(text(event), html(event))",
                 action.getBody());
 
-        // $0 is the text input — a PropertyInput that reads from the field.
+        // First capture is the text input — a PropertyInput that reads from
+        // the field.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", text.getBody());
+        assertEquals(
+                "let propertyName=$1;let target=$0;return target[propertyName]",
+                text.getBody());
 
         // $1 is the html slot — the no-op "return null" stand-in.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
@@ -79,8 +82,8 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+        assertEquals("let html=$1;let text=$0;"
+                + "return window.Vaadin.Flow.clipboard.writePayload(text(event), html(event))",
                 action.getBody());
 
         JsFunction text = (JsFunction) action.getCaptures().get(0);
@@ -103,8 +106,8 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+        assertEquals("let html=$1;let text=$0;"
+                + "return window.Vaadin.Flow.clipboard.writePayload(text(event), html(event))",
                 action.getBody());
 
         // $0 is the text slot — the no-op stand-in.
@@ -137,11 +140,12 @@ class WriteToClipboardActionTest {
         // calls writePayload — the action class itself does no string
         // assembly beyond the static body constant.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("let channel=$2;let inner=$1;let observer=$0;"
+                + "observer(inner(event), channel)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+        assertEquals("let html=$1;let text=$0;"
+                + "return window.Vaadin.Flow.clipboard.writePayload(text(event), html(event))",
                 inner.getBody());
     }
 
