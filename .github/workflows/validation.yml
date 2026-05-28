@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: ['25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
+    branches: ['25.2', '25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -139,6 +139,15 @@ jobs:
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Convert Javadoc errors to JUnit XML
+        if: ${{ failure() }}
+        run: |
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          if [ -f "$LOG" ]; then
+            python3 ./scripts/javadocErrorsToJUnit.py \
+              "$LOG" \
+              "flow-server/target/surefire-reports/TEST-Javadoc-${{matrix.current}}.xml"
+          fi
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |

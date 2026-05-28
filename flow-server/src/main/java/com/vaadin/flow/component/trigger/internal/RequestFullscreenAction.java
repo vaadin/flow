@@ -17,8 +17,11 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
@@ -44,10 +47,10 @@ import com.vaadin.flow.function.SerializableRunnable;
  * Outcome handling extends {@link PromiseAction}: use the target-only
  * constructor for fire-and-forget, or the overload taking
  * {@code onSuccess}/{@code onError} consumers. The promise resolves with
- * {@code undefined} so {@code onSuccess} carries no value, but {@code onError}
- * receives a {@link PromiseAction.Error} record with the browser's error name
- * and message — the spec-documented rejection is {@code NotAllowedError} (no
- * gesture / permissions policy).
+ * {@code undefined} so {@code onSuccess} is a {@link SerializableRunnable} with
+ * no value, but {@code onError} receives a {@link PromiseAction.Error} record
+ * with the browser's error name and message — the spec-documented rejection is
+ * {@code NotAllowedError} (no gesture / permissions policy).
  *
  * <pre>{@code
  * RequestFullscreenAction goFs = new RequestFullscreenAction(panel,
@@ -58,7 +61,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  *
  * For internal use only. May be renamed or removed in a future release.
  */
-public class RequestFullscreenAction extends PromiseAction {
+public class RequestFullscreenAction extends PromiseAction<Void> {
 
     private final Element target;
 
@@ -93,20 +96,24 @@ public class RequestFullscreenAction extends PromiseAction {
     public RequestFullscreenAction(Component target,
             SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
-        super(adaptOnSuccess(onSuccess), onError);
+        // The promise resolves with undefined — value is always null — so the
+        // runnable shape is the natural fit; one-line adapter wires it to the
+        // generic Consumer<@Nullable Void> the base class expects.
+        super(Void.class, runnableAsConsumer(onSuccess), onError);
         this.target = Objects.requireNonNull(target, "target must not be null")
                 .getElement();
     }
 
-    @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        out.append(builder.reference(target)).append(".requestFullscreen()");
-    }
-
-    private static SerializableConsumer<Success> adaptOnSuccess(
+    private static SerializableConsumer<@Nullable Void> runnableAsConsumer(
             SerializableRunnable onSuccess) {
         Objects.requireNonNull(onSuccess, "onSuccess must not be null");
-        return success -> onSuccess.run();
+        return ignored -> onSuccess.run();
+    }
+
+    @Override
+    protected JsFunction toPromiseJs(Trigger trigger) {
+        // $0 = target element captured by JsFunction; reified on the client
+        // as the DOM node.
+        return JsFunction.of("return $0.requestFullscreen()", target);
     }
 }
