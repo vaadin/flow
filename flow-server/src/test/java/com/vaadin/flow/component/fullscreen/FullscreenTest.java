@@ -55,6 +55,7 @@ class FullscreenTest {
         // enter(component) can resolve it.
         ui.getInternals().setFullAppId("test");
         ui.getInternals().createWrapperElement();
+        UI.setCurrent(ui);
     }
 
     // --- entry point ----------------------------------------------------
@@ -154,6 +155,27 @@ class FullscreenTest {
         ui.getElement().appendChild(button.getElement());
         assertThrows(IllegalStateException.class,
                 () -> Fullscreen.onClick(button).enter(detached));
+    }
+
+    // --- exit -----------------------------------------------------------
+
+    @Test
+    void exit_executesConnectorJs() {
+        Fullscreen.exit();
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size(),
+                "Expected exactly one pending JS for exit()");
+        assertEquals("window.Vaadin.Flow.fullscreen.exitFullscreen()",
+                pending.get(0).getInvocation().getExpression());
+    }
+
+    @Test
+    void exit_withoutCurrentUi_throws() {
+        UI.setCurrent(null);
+        assertThrows(IllegalStateException.class, Fullscreen::exit);
     }
 
     // --- helpers --------------------------------------------------------

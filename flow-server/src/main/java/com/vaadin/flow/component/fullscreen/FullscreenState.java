@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.fullscreen;
 
-import com.vaadin.flow.component.page.Page;
-
 /**
  * Represents the fullscreen state of a browser page.
  * <p>
@@ -26,9 +24,8 @@ import com.vaadin.flow.component.page.Page;
  * not in it, the page is currently fullscreen, and an {@link #UNKNOWN} sentinel
  * used before the first value has arrived from the client.
  *
- * @see Page#fullscreenSignal()
- * @see Page#exitFullscreen()
- * @see Fullscreen
+ * @see Fullscreen#stateSignal()
+ * @see Fullscreen#exit()
  */
 public enum FullscreenState {
 

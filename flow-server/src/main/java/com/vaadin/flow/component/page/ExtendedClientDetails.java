@@ -26,6 +26,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.fullscreen.Fullscreen;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
@@ -499,7 +500,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
         ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
-        ui.getPage().setFullscreenState(getStringElseNull.apply("v-fs"));
+        Fullscreen.setStateFromClient(ui, getStringElseNull.apply("v-fs"));
         String ga = getStringElseNull.apply("v-ga");
         if (ga != null) {
             try {

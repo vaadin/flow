@@ -32,8 +32,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.fullscreen.Fullscreen;
-import com.vaadin.flow.component.fullscreen.FullscreenState;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -69,10 +67,6 @@ public class Page implements Serializable {
             PageVisibility.UNKNOWN);
     private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
             .asReadonly();
-    private final ValueSignal<FullscreenState> fullscreenSignal = new ValueSignal<>(
-            FullscreenState.UNKNOWN);
-    private final Signal<FullscreenState> fullscreenSignalReadOnly = fullscreenSignal
-            .asReadonly();
 
     /**
      * Creates a page instance for the given UI.
@@ -87,10 +81,6 @@ public class Page implements Serializable {
                 .addEventListener("vaadin-page-visibility-change",
                         e -> setPageVisibility(e.getEventDetail(String.class)))
                 .addEventDetail().debounce(100).allowInert();
-        ui.getElement()
-                .addEventListener("vaadin-fullscreen-change",
-                        e -> setFullscreenState(e.getEventDetail(String.class)))
-                .addEventDetail().allowInert();
     }
 
     /**
@@ -560,97 +550,6 @@ public class Page implements Serializable {
             pageVisibilitySignal.set(PageVisibility.valueOf(value));
         } catch (IllegalArgumentException e) {
             LOGGER.debug("Unknown page visibility value from client: {}",
-                    value);
-        }
-    }
-
-    /**
-     * Returns a read-only signal that tracks the browser's fullscreen state.
-     * <p>
-     * The signal distinguishes between {@link FullscreenState#FULLSCREEN
-     * FULLSCREEN} (the page is currently in fullscreen),
-     * {@link FullscreenState#NOT_FULLSCREEN NOT_FULLSCREEN} (fullscreen is
-     * supported but the page is not in it), {@link FullscreenState#UNSUPPORTED
-     * UNSUPPORTED} (the browser does not support fullscreen or the document is
-     * not permitted to enter it), and {@link FullscreenState#UNKNOWN UNKNOWN}
-     * (the initial value, replaced with a real one before any user code
-     * observes the signal).
-     * <p>
-     * The signal value is seeded from the initial client bootstrap, so user
-     * code always sees a real value. Subscribe with
-     * {@code Signal.effect(owner, ...)} to react to changes; call
-     * {@code fullscreenSignal().peek()} for a snapshot outside a reactive
-     * context, and {@code .get()} inside one.
-     * <p>
-     * To enter fullscreen, bind a request to a user gesture via
-     * {@link Fullscreen#onClick Fullscreen.onClick(...).enter()} or
-     * {@code .enter(component)} — browsers require transient user activation to
-     * enter fullscreen, so the signal will not transition to
-     * {@link FullscreenState#FULLSCREEN FULLSCREEN} in response to a request
-     * from a server push or view constructor. Call {@link #exitFullscreen()} to
-     * leave fullscreen — this does not require a gesture.
-     *
-     * <p>
-     * <b>Example: toggle a CSS class while fullscreen</b>
-     *
-     * <pre>
-     * Page page = UI.getCurrent().getPage();
-     * viewLayout.bindClassName("is-fullscreen", page.fullscreenSignal()
-     *         .map(s -&gt; s == FullscreenState.FULLSCREEN));
-     * </pre>
-     *
-     * <p>
-     * <b>Example: react to state changes with a side effect</b>
-     *
-     * <pre>
-     * Page page = UI.getCurrent().getPage();
-     * Signal.effect(this, () -&gt; {
-     *     if (page.fullscreenSignal().get() == FullscreenState.UNSUPPORTED) {
-     *         fullscreenButton.setVisible(false);
-     *     }
-     * });
-     * </pre>
-     *
-     * @return the read-only fullscreen signal
-     */
-    public Signal<FullscreenState> fullscreenSignal() {
-        return fullscreenSignalReadOnly;
-    }
-
-    /**
-     * Exits fullscreen mode if the page is currently in fullscreen, otherwise a
-     * no-op. The fullscreen state can be observed via
-     * {@link #fullscreenSignal()}.
-     * <p>
-     * If a component was previously fullscreened via {@link Fullscreen#onClick
-     * Fullscreen}{@code .enter(component)}, it is automatically restored to its
-     * original position in the DOM.
-     *
-     * @see Fullscreen
-     * @see #fullscreenSignal()
-     */
-    public void exitFullscreen() {
-        executeJs("window.Vaadin.Flow.fullscreen.exitFullscreen()");
-    }
-
-    /**
-     * Sets the fullscreen state from a raw client-side value (e.g. from the
-     * bootstrap parameters or from a {@code vaadin-fullscreen-change} DOM
-     * event). {@code null} and unknown values are ignored — the latter is
-     * logged at debug level so a forward-compatible client value does not
-     * silently disappear.
-     *
-     * @param value
-     *            the raw value, or {@code null}
-     */
-    void setFullscreenState(String value) {
-        if (value == null) {
-            return;
-        }
-        try {
-            fullscreenSignal.set(FullscreenState.valueOf(value));
-        } catch (IllegalArgumentException e) {
-            LOGGER.debug("Unknown fullscreen state value from client: {}",
                     value);
         }
     }

@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
@@ -48,8 +47,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * Component fullscreen moves the target into a Vaadin wrapper element so that
  * themes and overlay components (Notification, ComboBox popups, …) keep working
  * while fullscreen is active. The component is restored to its original
- * position when fullscreen exits, whether via {@link Page#exitFullscreen()},
- * the user pressing Escape, or a later request superseding this one.
+ * position when fullscreen exits, whether via {@link Fullscreen#exit()}, the
+ * user pressing Escape, or a later request superseding this one.
  */
 public final class FullscreenBinding implements Serializable {
 

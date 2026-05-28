@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.fullscreen;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.component.fullscreen.FullscreenState;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -32,60 +33,62 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class FullscreenSignalTest {
 
-    @Test
-    void fullscreenSignal_isReadOnly() {
-        MockUI ui = new MockUI();
-        Signal<FullscreenState> signal = ui.getPage().fullscreenSignal();
-        assertFalse(signal instanceof ValueSignal,
-                "fullscreenSignal() should return a read-only signal");
+    private UI ui;
+
+    @BeforeEach
+    void setUp() {
+        ui = new MockUI();
+        UI.setCurrent(ui);
     }
 
     @Test
-    void fullscreenSignal_defaultsToUnknownBeforeBootstrap() {
-        MockUI ui = new MockUI();
-        Signal<FullscreenState> signal = ui.getPage().fullscreenSignal();
-        assertEquals(FullscreenState.UNKNOWN, signal.peek(),
+    void stateSignal_isReadOnly() {
+        Signal<FullscreenState> signal = Fullscreen.stateSignal();
+        assertFalse(signal instanceof ValueSignal,
+                "stateSignal() should return a read-only signal");
+    }
+
+    @Test
+    void stateSignal_defaultsToUnknownBeforeBootstrap() {
+        assertEquals(FullscreenState.UNKNOWN, Fullscreen.stateSignal().peek(),
                 "Before bootstrap the value should be UNKNOWN so callers can "
                         + "distinguish 'no data yet' from a real value");
     }
 
     @Test
-    void fullscreenSignal_readonlyWrapperIsCached() {
-        Page page = new MockUI().getPage();
-        assertSame(page.fullscreenSignal(), page.fullscreenSignal(),
+    void stateSignal_readonlyWrapperIsCached() {
+        assertSame(Fullscreen.stateSignal(), Fullscreen.stateSignal(),
                 "Repeated calls must return the same read-only wrapper so "
                         + "subscriber identity stays stable");
     }
 
     @Test
-    void fullscreenSignal_tracksStateChanges() {
-        MockUI ui = new MockUI();
-        Signal<FullscreenState> signal = ui.getPage().fullscreenSignal();
+    void stateSignal_tracksStateChanges() {
+        Signal<FullscreenState> signal = Fullscreen.stateSignal();
 
-        fireFullscreenEvent(ui, "NOT_FULLSCREEN");
+        fireFullscreenEvent("NOT_FULLSCREEN");
         assertEquals(FullscreenState.NOT_FULLSCREEN, signal.peek());
 
-        fireFullscreenEvent(ui, "FULLSCREEN");
+        fireFullscreenEvent("FULLSCREEN");
         assertEquals(FullscreenState.FULLSCREEN, signal.peek());
 
-        fireFullscreenEvent(ui, "UNSUPPORTED");
+        fireFullscreenEvent("UNSUPPORTED");
         assertEquals(FullscreenState.UNSUPPORTED, signal.peek());
     }
 
     @Test
-    void fullscreenSignal_unknownDetailKeepsPreviousValue() {
-        MockUI ui = new MockUI();
-        Signal<FullscreenState> signal = ui.getPage().fullscreenSignal();
+    void stateSignal_unknownDetailKeepsPreviousValue() {
+        Signal<FullscreenState> signal = Fullscreen.stateSignal();
 
-        fireFullscreenEvent(ui, "FULLSCREEN");
-        fireFullscreenEvent(ui, "SOMETHING_NEW");
+        fireFullscreenEvent("FULLSCREEN");
+        fireFullscreenEvent("SOMETHING_NEW");
 
         assertEquals(FullscreenState.FULLSCREEN, signal.peek(),
                 "Unknown detail values from a newer client should not reset "
                         + "the signal");
     }
 
-    private void fireFullscreenEvent(MockUI ui, String state) {
+    private void fireFullscreenEvent(String state) {
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("event.detail", state);
         // No debounce on the listener — DomEvent defaults to LEADING phase.
