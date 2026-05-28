@@ -383,6 +383,7 @@
         <module>test-legacy-frontend</module>
         <module>test-client-queue</module>
         <module>test-commercial-banner</module>
+        <module>vaadin-micrometer-tests</module>
       </modules>
     </profile>
     <profile>

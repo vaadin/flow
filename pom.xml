@@ -49,6 +49,7 @@
     <module>vaadin-dev-server</module>
     <module>flow-jandex</module>
     <module>vaadin-spring</module>
+    <module>vaadin-micrometer</module>
     <module>flow-polymer2lit</module>
   </modules>
   <scm>
