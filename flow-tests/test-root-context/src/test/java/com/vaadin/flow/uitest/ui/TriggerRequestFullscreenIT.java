@@ -40,7 +40,10 @@ public class TriggerRequestFullscreenIT extends ChromeBrowserTest {
         Assert.assertTrue("requestFullscreen shim should have been invoked",
                 called);
 
-        waitUntil(d -> "ok".equals(status.getText()));
+        // status sits inside the view root, which requestComponentFullscreen
+        // hides while fullscreen is active — read textContent rather than
+        // getText() so the assertion does not depend on visibility.
+        waitUntil(d -> "ok".equals(status.getDomProperty("textContent")));
     }
 
     @Test
