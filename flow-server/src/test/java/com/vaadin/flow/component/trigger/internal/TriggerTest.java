@@ -21,12 +21,14 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,21 +46,29 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
+        // Install JS references action at $0 and event name at $1 — no user
+        // content leaks into the body, both are captures.
         JsFunction install = singleInstallFn(ui);
-        // Install JS references the handler at $0 — no user content leaks
-        // into the install string.
-        assertEquals("this.addEventListener(\"click\", $0);"
-                + "return () => this.removeEventListener(\"click\", $0);",
+        assertEquals(
+                "this.addEventListener($1, $0);"
+                        + "return () => this.removeEventListener($1, $0);",
                 install.getBody());
+        assertEquals("click", install.getCaptures().get(1));
 
-        JsFunction handler = handlerOf(install);
-        assertEquals(List.of("event"), handler.getArgumentNames());
-        assertEquals("$0[\"value\"] = \"\";", handler.getBody());
-        assertEquals(List.of(field.getElement()), handler.getCaptures());
+        // The install $0 is the action's JsFunction directly — no intermediate
+        // composed handler layer. The action is also the DOM event listener.
+        JsFunction action = actionOf(install);
+        assertEquals(List.of("event"), action.getArgumentNames());
+
+        // SetPropertyAction body shape; target captured as $0, property name
+        // string capture at $1, source JsFunction invoked as $2(event).
+        assertEquals("$0[$1] = $2(event)", action.getBody());
+        assertSame(field.getElement(), action.getCaptures().get(0));
+        assertEquals("value", action.getCaptures().get(1));
     }
 
     @Test
-    void multipleActions_runInOrder() {
+    void multipleActions_eachInstalledAsItsOwnListener() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent target = new TagComponent("input");
@@ -70,15 +80,17 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        String body = handlerOf(singleInstallFn(ui)).getBody();
-        int disabledIdx = body.indexOf("[\"disabled\"]");
-        int valueIdx = body.indexOf("[\"value\"]");
-        assertTrue(disabledIdx >= 0 && valueIdx > disabledIdx,
-                "Both assignments should appear in order: " + body);
+        // Two actions → two install registrations, each with one action as
+        // its $0. Order matches the declaration order.
+        List<JsFunction> installs = installFns(ui);
+        assertEquals(2, installs.size());
+        assertEquals("disabled",
+                actionOf(installs.get(0)).getCaptures().get(1));
+        assertEquals("value", actionOf(installs.get(1)).getCaptures().get(1));
     }
 
     @Test
-    void sameElementReusesParameterIndex() {
+    void sameElementCapturedIndependentlyPerAction() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent target = new TagComponent("input");
@@ -90,15 +102,18 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        String body = handler.getBody();
-        assertTrue(body.contains("$0[\"disabled\"]"), body);
-        assertTrue(body.contains("$0[\"value\"]"), body);
-        assertEquals(List.of(target.getElement()), handler.getCaptures());
+        // Each action is self-contained — same target element captured by
+        // both, not de-duplicated. Trades a duplicate wire reference for
+        // simpler per-action rendering.
+        List<JsFunction> installs = installFns(ui);
+        assertSame(target.getElement(),
+                actionOf(installs.get(0)).getCaptures().get(0));
+        assertSame(target.getElement(),
+                actionOf(installs.get(1)).getCaptures().get(0));
     }
 
     @Test
-    void hostAsActionTargetIsReferencedAsThis() {
+    void hostAsActionTargetIsCapturedTheSameWayAsAnyOtherElement() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -108,14 +123,14 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        assertEquals("this[\"disabled\"] = true;", handler.getBody());
-        // No element captures — the host is `this`.
-        assertEquals(List.of(), handler.getCaptures());
+        // No "this" special-case: the host is captured as $0 just like any
+        // other element.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertSame(button.getElement(), action.getCaptures().get(0));
     }
 
     @Test
-    void multipleTriggersCalls_eachEmitOwnInitializer() {
+    void multipleTriggersCalls_eachActionGetsItsOwnInitializer() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent target = new TagComponent("input");
@@ -127,15 +142,17 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(2, pending.size());
-        String h0 = handlerOf(installFn(pending.get(0).getInvocation()))
-                .getBody();
-        String h1 = handlerOf(installFn(pending.get(1).getInvocation()))
-                .getBody();
-        assertNotEquals(h0, h1,
-                "Each registration should produce a distinct handler body");
+        List<JsFunction> installs = installFns(ui);
+        assertEquals(2, installs.size());
+
+        // Each install has its own action JsFunction; the literal value lives
+        // on the source-input function captured by the action.
+        Object v0 = ((JsFunction) actionOf(installs.get(0)).getCaptures()
+                .get(2)).getCaptures().get(0);
+        Object v1 = ((JsFunction) actionOf(installs.get(1)).getCaptures()
+                .get(2)).getCaptures().get(0);
+        assertEquals("a", v0);
+        assertEquals("b", v1);
     }
 
     @Test
@@ -189,12 +206,19 @@ class TriggerTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        String body = handler.getBody();
-        assertTrue(body.contains("$0[\"value\"] = event[\"screenX\"]"), body);
-        assertTrue(body.contains("$1[\"value\"] = event[\"screenY\"]"), body);
-        assertEquals(List.of(xField.getElement(), yField.getElement()),
-                handler.getCaptures());
+        // HandlerInput renders as a JsFunction taking `event` and capturing
+        // the property name; the body itself is a constant.
+        List<JsFunction> installs = installFns(ui);
+        JsFunction source0 = (JsFunction) actionOf(installs.get(0))
+                .getCaptures().get(2);
+        assertEquals(List.of("event"), source0.getArgumentNames());
+        assertEquals("return event[$0]", source0.getBody());
+        assertEquals("screenX", source0.getCaptures().get(0));
+
+        JsFunction source1 = (JsFunction) actionOf(installs.get(1))
+                .getCaptures().get(2);
+        assertEquals("return event[$0]", source1.getBody());
+        assertEquals("screenY", source1.getCaptures().get(0));
     }
 
     @Test
@@ -234,30 +258,4 @@ class TriggerTest {
         assertEquals(2, pending.size());
     }
 
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    /**
-     * addJsInitializer wrapper parameters: [element, initializerId, installFn].
-     * The installFn is the trigger's install JsFunction.
-     */
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    /**
-     * Inside the install JsFunction, the handler is captured at $0.
-     */
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
 }

@@ -22,6 +22,7 @@ import java.util.Objects;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -94,12 +95,13 @@ public class CallbackAction<T> extends Action {
     }
 
     @Override
-    protected final void appendStatement(JsBuilder builder, StringBuilder out) {
-        String channelRef = builder
-                .capture(channelFor(builder.trigger().getHost().getNode()));
-        out.append(channelRef).append('(');
-        source.appendExpression(builder, out);
-        out.append(')');
+    protected final JsFunction toJs(Trigger trigger) {
+        // $0 = the return channel; $1 = the source input's JsFunction.
+        // Invoking the source with `event` produces its value, which is
+        // forwarded straight into the channel call.
+        return JsFunction.of("$0($1(event));",
+                channelFor(trigger.getHost().getNode()), source.toJs(trigger))
+                .withArguments("event");
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
