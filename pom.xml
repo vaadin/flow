@@ -50,6 +50,7 @@
     <module>flow-jandex</module>
     <module>vaadin-spring</module>
     <module>vaadin-micrometer</module>
+    <module>vaadin-micrometer-spring</module>
     <module>flow-polymer2lit</module>
   </modules>
   <scm>
