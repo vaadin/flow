@@ -583,9 +583,9 @@ public class Page implements Serializable {
      * context, and {@code .get()} inside one.
      * <p>
      * To enter fullscreen, bind a request to a user gesture via
-     * {@link Fullscreen#onClick Fullscreen.onClick(...).requestPage()} or
-     * {@code .requestComponent(...)} — browsers require transient user
-     * activation to enter fullscreen, so the signal will not transition to
+     * {@link Fullscreen#onClick Fullscreen.onClick(...).enter()} or
+     * {@code .enter(component)} — browsers require transient user activation to
+     * enter fullscreen, so the signal will not transition to
      * {@link FullscreenState#FULLSCREEN FULLSCREEN} in response to a request
      * from a server push or view constructor. Call {@link #exitFullscreen()} to
      * leave fullscreen — this does not require a gesture.
@@ -623,8 +623,8 @@ public class Page implements Serializable {
      * {@link #fullscreenSignal()}.
      * <p>
      * If a component was previously fullscreened via {@link Fullscreen#onClick
-     * Fullscreen}{@code .requestComponent(...)}, it is automatically restored
-     * to its original position in the DOM.
+     * Fullscreen}{@code .enter(component)}, it is automatically restored to its
+     * original position in the DOM.
      *
      * @see Fullscreen
      * @see #fullscreenSignal()

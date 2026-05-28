@@ -52,7 +52,7 @@ class FullscreenTest {
         ui = new MockUI();
         // MockUI skips UI.doInit which creates the wrapper in real usage;
         // seed an app id and create the wrapper explicitly so
-        // requestComponent(...) can resolve it.
+        // enter(component) can resolve it.
         ui.getInternals().setFullAppId("test");
         ui.getInternals().createWrapperElement();
     }
@@ -64,7 +64,7 @@ class FullscreenTest {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.onClick(button).requestPage();
+        Fullscreen.onClick(button).enter();
 
         // DomEventTrigger emits "this.addEventListener($1, $0); ..." where
         // $1 is the event name capture; the actual "click" string lives in
@@ -75,14 +75,14 @@ class FullscreenTest {
                         + installFn.getCaptures());
     }
 
-    // --- request verbs --------------------------------------------------
+    // --- enter actions --------------------------------------------------
 
     @Test
-    void requestPage_fireAndForget_actionFnCallsRequestPageFullscreen() {
+    void enter_fireAndForget_actionFnCallsRequestPageFullscreen() {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.onClick(button).requestPage();
+        Fullscreen.onClick(button).enter();
 
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
@@ -91,11 +91,11 @@ class FullscreenTest {
     }
 
     @Test
-    void requestPage_withCallbacks_wrapsWithObserver() {
+    void enter_withCallbacks_wrapsWithObserver() {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
-        Fullscreen.onClick(button).requestPage(() -> {
+        Fullscreen.onClick(button).enter(() -> {
         }, err -> {
         });
 
@@ -109,12 +109,12 @@ class FullscreenTest {
     }
 
     @Test
-    void requestComponent_fireAndForget_actionFnCallsRequestComponentFullscreenWithTargetAndWrapper() {
+    void enterComponent_fireAndForget_actionFnCallsRequestComponentFullscreenWithTargetAndWrapper() {
         TestButton button = new TestButton();
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
 
-        Fullscreen.onClick(button).requestComponent(panel);
+        Fullscreen.onClick(button).enter(panel);
 
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
@@ -126,12 +126,12 @@ class FullscreenTest {
     }
 
     @Test
-    void requestComponent_withCallbacks_wrapsWithObserver() {
+    void enterComponent_withCallbacks_wrapsWithObserver() {
         TestButton button = new TestButton();
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
 
-        Fullscreen.onClick(button).requestComponent(panel, () -> {
+        Fullscreen.onClick(button).enter(panel, () -> {
         }, err -> {
         });
 
@@ -148,12 +148,12 @@ class FullscreenTest {
     }
 
     @Test
-    void requestComponent_detachedComponent_throws() {
+    void enterComponent_detachedComponent_throws() {
         TestButton button = new TestButton();
         TestPanel detached = new TestPanel();
         ui.getElement().appendChild(button.getElement());
         assertThrows(IllegalStateException.class,
-                () -> Fullscreen.onClick(button).requestComponent(detached));
+                () -> Fullscreen.onClick(button).enter(detached));
     }
 
     // --- helpers --------------------------------------------------------

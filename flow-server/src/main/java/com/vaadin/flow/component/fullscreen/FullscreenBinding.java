@@ -27,9 +27,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
 /**
- * Fluent surface returned from {@link Fullscreen#onClick}. Each
- * {@code request*} action attaches one {@link RequestFullscreenAction} to the
- * underlying {@link Trigger}.
+ * Fluent surface returned from {@link Fullscreen#onClick}. Each {@code enter}
+ * action attaches one {@link RequestFullscreenAction} to the underlying
+ * {@link Trigger}.
  * <p>
  * Actions come in two flavours: fire-and-forget (no callbacks) and observed
  * (with {@code onSuccess}/{@code onError} callbacks). {@code onError} receives
@@ -40,14 +40,14 @@ import com.vaadin.flow.function.SerializableRunnable;
  *
  * <pre>{@code
  * Button enter = new Button("Fullscreen");
- * Fullscreen.onClick(enter).requestComponent(videoPanel,
+ * Fullscreen.onClick(enter).enter(videoPanel,
  *         () -> Notification.show("Entered fullscreen"), err -> Notification
  *                 .show("Could not enter fullscreen: " + err.message()));
  * }</pre>
  *
- * Component-fullscreen requests move the target into a Vaadin wrapper element
- * so that themes and overlay components (Notification, ComboBox popups, …) keep
- * working while fullscreen is active. The component is restored to its original
+ * Component fullscreen moves the target into a Vaadin wrapper element so that
+ * themes and overlay components (Notification, ComboBox popups, …) keep working
+ * while fullscreen is active. The component is restored to its original
  * position when fullscreen exits, whether via {@link Page#exitFullscreen()},
  * the user pressing Escape, or a later request superseding this one.
  */
@@ -60,17 +60,17 @@ public final class FullscreenBinding implements Serializable {
     }
 
     /**
-     * Fullscreens the entire page ({@code document.documentElement}) when the
-     * underlying trigger fires. Themes and overlay components work correctly in
-     * this mode. Use {@link #requestComponent(Component)} to fullscreen a
+     * Enters fullscreen for the entire page ({@code document.documentElement})
+     * when the underlying trigger fires. Themes and overlay components work
+     * correctly in this mode. Use {@link #enter(Component)} to fullscreen a
      * single component instead.
      */
-    public void requestPage() {
+    public void enter() {
         bind(new RequestFullscreenAction());
     }
 
     /**
-     * Like {@link #requestPage()} but reports the outcome back to the server.
+     * Like {@link #enter()} but reports the outcome back to the server.
      *
      * @param onSuccess
      *            UI-thread callback on success, not {@code null}
@@ -78,16 +78,16 @@ public final class FullscreenBinding implements Serializable {
      *            UI-thread callback on failure with the browser's error, not
      *            {@code null}
      */
-    public void requestPage(SerializableRunnable onSuccess,
+    public void enter(SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         bind(new RequestFullscreenAction(onSuccess, onError));
     }
 
     /**
-     * Fullscreens the given component when the underlying trigger fires. The
-     * component is moved into a Vaadin wrapper element and the rest of the view
-     * is hidden so themes and overlay components keep working. The component is
-     * restored to its original DOM position when fullscreen exits.
+     * Enters fullscreen for the given component when the underlying trigger
+     * fires. The component is moved into a Vaadin wrapper element and the rest
+     * of the view is hidden so themes and overlay components keep working. The
+     * component is restored to its original DOM position when fullscreen exits.
      *
      * @param component
      *            the component to fullscreen, not {@code null}; must be
@@ -95,14 +95,14 @@ public final class FullscreenBinding implements Serializable {
      * @throws IllegalStateException
      *             if {@code component} is not attached to a UI
      */
-    public void requestComponent(Component component) {
+    public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         bind(new RequestFullscreenAction(component));
     }
 
     /**
-     * Like {@link #requestComponent(Component)} but reports the outcome back to
-     * the server.
+     * Like {@link #enter(Component)} but reports the outcome back to the
+     * server.
      *
      * @param component
      *            the component to fullscreen, not {@code null}
@@ -114,8 +114,7 @@ public final class FullscreenBinding implements Serializable {
      * @throws IllegalStateException
      *             if {@code component} is not attached to a UI
      */
-    public void requestComponent(Component component,
-            SerializableRunnable onSuccess,
+    public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
         bind(new RequestFullscreenAction(component, onSuccess, onError));

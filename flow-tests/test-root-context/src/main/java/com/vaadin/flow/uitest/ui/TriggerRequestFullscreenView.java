@@ -22,13 +22,12 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * Wires {@code Fullscreen.onClick(button).requestComponent(panel, ...)} so a
- * click on the button asks for fullscreen on the target {@link Div}. The
- * success/error consumers write the outcome into a status div so the IT can
- * assert both paths. The IT replaces
- * {@code Element.prototype.requestFullscreen} with a recording shim so the
- * assertions don't depend on browser fullscreen permissions (which CI Chrome
- * routinely denies).
+ * Wires {@code Fullscreen.onClick(button).enter(panel, ...)} so a click on the
+ * button asks for fullscreen on the target {@link Div}. The success/error
+ * consumers write the outcome into a status div so the IT can assert both
+ * paths. The IT replaces {@code Element.prototype.requestFullscreen} with a
+ * recording shim so the assertions don't depend on browser fullscreen
+ * permissions (which CI Chrome routinely denies).
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerRequestFullscreenView", layout = ViewTestLayout.class)
 public class TriggerRequestFullscreenView extends AbstractDivView {
@@ -45,8 +44,8 @@ public class TriggerRequestFullscreenView extends AbstractDivView {
 
         add(panel, goButton, status);
 
-        Fullscreen.onClick(goButton).requestComponent(panel,
-                () -> status.setText("ok"), err -> status
+        Fullscreen.onClick(goButton).enter(panel, () -> status.setText("ok"),
+                err -> status
                         .setText("err:" + err.name() + ":" + err.message()));
     }
 }

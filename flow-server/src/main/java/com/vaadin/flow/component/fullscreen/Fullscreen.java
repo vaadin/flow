@@ -29,9 +29,9 @@ import com.vaadin.flow.component.trigger.internal.ClickTrigger;
  *
  * <pre>{@code
  * Button fullscreenButton = new Button("Fullscreen");
- * Fullscreen.onClick(fullscreenButton).requestPage();
+ * Fullscreen.onClick(fullscreenButton).enter();
  *
- * Fullscreen.onClick(fullscreenButton).requestComponent(videoPanel);
+ * Fullscreen.onClick(fullscreenButton).enter(videoPanel);
  * }</pre>
  *
  * The Fullscreen API requires transient user activation for each request, so
