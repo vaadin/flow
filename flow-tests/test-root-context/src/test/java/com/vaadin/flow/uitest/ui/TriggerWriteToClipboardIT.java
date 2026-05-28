@@ -99,6 +99,51 @@ public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void clickCopiesSignalValue_andTracksSignalAfterChange() {
+        open();
+        installResolvingClipboardShim();
+
+        WebElement copySignal = findElement(By.id("copy-signal"));
+        WebElement changeSignal = findElement(By.id("change-signal"));
+        WebElement signalDisplay = findElement(By.id("signal-value"));
+        WebElement status = findElement(By.id("status"));
+
+        // The bound span renders the signal value via bindText; wait for the
+        // initial render to land so we know the SignalInput's mirror has
+        // also reached the client.
+        waitUntil(d -> TriggerWriteToClipboardView.SIGNAL_INITIAL_TEXT
+                .equals(signalDisplay.getText()));
+
+        copySignal.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        Assert.assertEquals(TriggerWriteToClipboardView.SIGNAL_INITIAL_TEXT,
+                ((java.util.Map<?, ?>) written).get("text/plain"));
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.SIGNAL_INITIAL_TEXT)
+                .equals(status.getText()));
+
+        // Mutate the signal from the server. Both the bound span and the
+        // SignalInput's mirrored property update from the same effect pass,
+        // so the span's text is a deterministic sync point for the next
+        // copy click.
+        ((JavascriptExecutor) getDriver())
+                .executeScript("window.__written = null;");
+        changeSignal.click();
+        waitUntil(d -> TriggerWriteToClipboardView.SIGNAL_UPDATED_TEXT
+                .equals(signalDisplay.getText()));
+
+        copySignal.click();
+
+        Object writtenAgain = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        Assert.assertEquals(TriggerWriteToClipboardView.SIGNAL_UPDATED_TEXT,
+                ((java.util.Map<?, ?>) writtenAgain).get("text/plain"));
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.SIGNAL_UPDATED_TEXT)
+                .equals(status.getText()));
+    }
+
+    @Test
     public void writeRejection_propagatesAsFailureWithNameAndMessage() {
         open();
         installRejectingClipboardShim();
