@@ -86,7 +86,7 @@ class SignalInputTest {
         ValueSignal<String> signal = new ValueSignal<>("hello");
         new DomEventTrigger(button, "click").triggers(
                 new WriteToClipboardAction(new SignalInput<>(owner, signal),
-                        null));
+                        null, null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -110,7 +110,7 @@ class SignalInputTest {
         ValueSignal<String> signal = new ValueSignal<>("first");
         new DomEventTrigger(button, "click").triggers(
                 new WriteToClipboardAction(new SignalInput<>(owner, signal),
-                        null));
+                        null, null));
 
         // After triggers(), the effect has been installed and the initial
         // pass queued an executeJs that mirrors the signal to the owner.

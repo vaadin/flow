@@ -46,7 +46,7 @@ import com.vaadin.flow.signals.Signal;
  * <pre>{@code
  * ValueSignal<String> textSignal = new ValueSignal<>("Hello");
  * new ClickTrigger(copyButton).triggers(new WriteToClipboardAction(
- *         new SignalInput<>(this, textSignal), null));
+ *         new SignalInput<>(this, textSignal), null, null));
  * textSignal.set("Goodbye");
  * // Clicking the button after the set copies "Goodbye".
  * }</pre>

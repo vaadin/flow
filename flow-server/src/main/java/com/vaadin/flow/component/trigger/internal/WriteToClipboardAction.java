@@ -22,8 +22,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 
 /**
  * Writes a {@code ClipboardItem} to the user's clipboard via
- * {@code navigator.clipboard.write}. Supports two concurrent text MIME types in
- * one item: {@code text/plain} and {@code text/html}. Any combination is
+ * {@code navigator.clipboard.write}. Supports up to three concurrent MIME types
+ * in one item: {@code text/plain}, {@code text/html} and {@code image/png}
+ * (typically produced by an {@link ImageBlobInput}). Any combination is
  * allowed; at least one slot must be set.
  * <p>
  * The Clipboard API requires the {@code write} call to happen inside a
@@ -34,10 +35,10 @@ import com.vaadin.flow.function.SerializableConsumer;
  * constructor for fire-and-forget, or the overload taking
  * {@code onCopied}/{@code onError} consumers. {@code onCopied} receives the
  * exact string that was copied — the {@code text/plain} value if present,
- * otherwise the {@code text/html} value — useful when the input was a
- * {@link PropertyInput} whose value is only known on the client.
- * {@code onError} receives a {@link PromiseAction.Error} record with the
- * browser's error name and message.
+ * otherwise the {@code text/html} value, otherwise {@code null} (image-only
+ * case) — useful when the input was a {@link PropertyInput} whose value is only
+ * known on the client. {@code onError} receives a {@link PromiseAction.Error}
+ * record with the browser's error name and message.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -45,14 +46,15 @@ public class WriteToClipboardAction extends PromiseAction<String> {
 
     /**
      * Stand-in input that yields a JS {@code null} for a missing MIME slot, so
-     * the rendered call always reaches the TS helper with two arguments
-     * regardless of which slot was set on the server.
+     * the rendered call always reaches the TS helper with three arguments
+     * regardless of which slots were set on the server.
      */
     private static final JsFunction NULL_INPUT_FN = JsFunction
             .of("return null");
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
+    private final Action.@Nullable Input<?> imageInput;
 
     /**
      * Creates a fire-and-forget clipboard-copy action.
@@ -63,15 +65,21 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      * @param htmlInput
      *            input producing the {@code text/html} payload, or {@code null}
      *            to omit
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload (typically an
+     *            {@link ImageBlobInput}), or {@code null} to omit
      * @throws IllegalArgumentException
-     *             if both inputs are {@code null}
+     *             if all three inputs are {@code null}
      */
     public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput) {
+            Action.@Nullable Input<String> htmlInput,
+            Action.@Nullable Input<?> imageInput) {
         super();
-        validate(textInput, htmlInput);
+        validate(textInput, htmlInput, imageInput);
         this.textInput = textInput;
         this.htmlInput = htmlInput;
+        this.imageInput = imageInput;
     }
 
     /**
@@ -84,47 +92,56 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      * @param htmlInput
      *            input producing the {@code text/html} payload, or {@code null}
      *            to omit
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload, or {@code null} to omit
      * @param onCopied
      *            invoked on the UI thread with the string that was copied after
      *            the client reports the write resolved ({@code text/plain} if
-     *            present, otherwise {@code text/html}), or {@code null} if the
-     *            JS resolved with {@code undefined}; not {@code null}
+     *            present, otherwise {@code text/html}, otherwise {@code null}
+     *            in the image-only case), or {@code null} if the JS resolved
+     *            with {@code undefined}; not {@code null}
      * @param onError
      *            invoked on the UI thread with the browser's error after the
      *            client reports the write rejected, not {@code null}
      * @throws IllegalArgumentException
-     *             if both inputs are {@code null}
+     *             if all three inputs are {@code null}
      */
     public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
             Action.@Nullable Input<String> htmlInput,
+            Action.@Nullable Input<?> imageInput,
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         super(String.class, onCopied, onError);
-        validate(textInput, htmlInput);
+        validate(textInput, htmlInput, imageInput);
         this.textInput = textInput;
         this.htmlInput = htmlInput;
+        this.imageInput = imageInput;
     }
 
     private static void validate(Action.@Nullable Input<String> text,
-            Action.@Nullable Input<String> html) {
-        if (text == null && html == null) {
+            Action.@Nullable Input<String> html,
+            Action.@Nullable Input<?> image) {
+        if (text == null && html == null && image == null) {
             throw new IllegalArgumentException(
-                    "At least one of textInput, htmlInput must be non-null");
+                    "At least one of textInput, htmlInput, imageInput must be non-null");
         }
     }
 
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
-        // Both slots are always present in the call; absent slots become a
-        // no-op input that returns null, so the TS helper sees null and skips
-        // that MIME type. Keeping the call shape uniform across all four
+        // All three slots are always present in the call; absent slots become
+        // a no-op input that returns null, so the TS helper sees null and
+        // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
         JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : NULL_INPUT_FN;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
                 : NULL_INPUT_FN;
+        JsFunction image = imageInput != null ? imageInput.toJs(trigger)
+                : NULL_INPUT_FN;
         return JsFunction.of(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                text, html).withArguments("event");
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))",
+                text, html, image).withArguments("event");
     }
 }

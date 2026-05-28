@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
@@ -66,7 +67,8 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeText(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null));
+        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
+                null));
     }
 
     /**
@@ -86,7 +88,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
+        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null, null,
                 onCopied, onError));
     }
 
@@ -107,7 +109,8 @@ public final class ClipboardBinding implements Serializable {
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null));
+                new PropertyInput<>(source, "value", String.class), null,
+                null));
     }
 
     /**
@@ -131,7 +134,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null,
+                new PropertyInput<>(source, "value", String.class), null, null,
                 onCopied, onError));
     }
 
@@ -144,7 +147,8 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeHtml(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal)));
+        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
+                null));
     }
 
     /**
@@ -163,7 +167,50 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
+        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal), null,
+                onCopied, onError));
+    }
+
+    /**
+     * Copies the given component's root {@code <img>} element to the clipboard
+     * as {@code image/png} when the underlying trigger fires. The image is
+     * drawn on a canvas and exported as PNG on the client, so the source can be
+     * any rasterisable format ({@code image/png}, {@code image/jpeg},
+     * {@code image/svg+xml}, ...) as long as it has intrinsic dimensions.
+     * <p>
+     * Cross-origin images need {@code crossorigin="anonymous"} on the
+     * {@code <img>} plus matching CORS headers; otherwise the canvas is tainted
+     * and the write fails. Same-origin and {@code data:} URLs always work.
+     *
+     * @param source
+     *            the component whose root {@code <img>} should be copied, not
+     *            {@code null}
+     */
+    public void writeImage(Component source) {
+        Objects.requireNonNull(source, "source must not be null");
+        bind(new WriteToClipboardAction(null, null,
+                new ImageBlobInput(source)));
+    }
+
+    /**
+     * Like {@link #writeImage(Component)} but reports the outcome back to the
+     * server. {@code onCopied} receives {@code null} — the image-only write has
+     * no meaningful string value.
+     *
+     * @param source
+     *            the component whose root {@code <img>} should be copied, not
+     *            {@code null}
+     * @param onCopied
+     *            UI-thread callback receiving {@code null}, not {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, not
+     *            {@code null}
+     */
+    public void writeImage(Component source,
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        Objects.requireNonNull(source, "source must not be null");
+        bind(new WriteToClipboardAction(null, null, new ImageBlobInput(source),
                 onCopied, onError));
     }
 
@@ -179,7 +226,7 @@ public final class ClipboardBinding implements Serializable {
     public void write(ClipboardContent content) {
         Objects.requireNonNull(content, "content must not be null");
         bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput()));
+                content.getHtmlInput(), content.getImageInput()));
     }
 
     /**
@@ -201,7 +248,8 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(content, "content must not be null");
         bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput(), onCopied, onError));
+                content.getHtmlInput(), content.getImageInput(), onCopied,
+                onError));
     }
 
     private void bind(WriteToClipboardAction action) {

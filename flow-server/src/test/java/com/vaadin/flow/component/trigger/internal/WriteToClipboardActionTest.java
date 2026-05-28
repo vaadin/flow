@@ -33,12 +33,15 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionO
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class WriteToClipboardActionTest {
 
+    private static final String HELPER_BODY = "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))";
+
     @Test
-    void fireAndForget_textOnly_callsHelperWithHtmlSlotReturningNull() {
+    void fireAndForget_textOnly_callsHelperWithHtmlAndImageSlotsReturningNull() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
@@ -46,15 +49,13 @@ class WriteToClipboardActionTest {
 
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+                        new PropertyInput<>(field, "value", String.class), null,
                         null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                action.getBody());
+        assertEquals(HELPER_BODY, action.getBody());
 
         // $0 is the text input — a PropertyInput that reads from the field.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
@@ -64,6 +65,11 @@ class WriteToClipboardActionTest {
         JsFunction html = (JsFunction) action.getCaptures().get(1);
         assertEquals("return null", html.getBody());
         assertEquals(List.of(), html.getCaptures());
+
+        // $2 is the image slot — also the no-op stand-in.
+        JsFunction image = (JsFunction) action.getCaptures().get(2);
+        assertEquals("return null", image.getBody());
+        assertEquals(List.of(), image.getCaptures());
     }
 
     @Test
@@ -74,38 +80,38 @@ class WriteToClipboardActionTest {
 
         new DomEventTrigger(button, "click").triggers(
                 new WriteToClipboardAction(new LiteralInput<>("plain"),
-                        new LiteralInput<>("<b>html</b>")));
+                        new LiteralInput<>("<b>html</b>"), null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                action.getBody());
+        assertEquals(HELPER_BODY, action.getBody());
 
         JsFunction text = (JsFunction) action.getCaptures().get(0);
         assertEquals("plain", text.getCaptures().get(0));
 
         JsFunction html = (JsFunction) action.getCaptures().get(1);
         assertEquals("<b>html</b>", html.getCaptures().get(0));
+
+        // image slot is the no-op stand-in.
+        JsFunction image = (JsFunction) action.getCaptures().get(2);
+        assertEquals("return null", image.getBody());
     }
 
     @Test
-    void fireAndForget_htmlOnly_textSlotReturnsNull() {
+    void fireAndForget_htmlOnly_textAndImageSlotsReturnNull() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(null,
-                        new LiteralInput<>("<b>hi</b>")));
+                        new LiteralInput<>("<b>hi</b>"), null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                action.getBody());
+        assertEquals(HELPER_BODY, action.getBody());
 
         // $0 is the text slot — the no-op stand-in.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
@@ -114,6 +120,64 @@ class WriteToClipboardActionTest {
         // $1 is the html literal input.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
         assertEquals("<b>hi</b>", html.getCaptures().get(0));
+
+        // $2 is the image slot — the no-op stand-in.
+        JsFunction image = (JsFunction) action.getCaptures().get(2);
+        assertEquals("return null", image.getBody());
+    }
+
+    @Test
+    void fireAndForget_imageOnly_textAndHtmlSlotsReturnNull() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent img = new TagComponent("img");
+        ui.getElement().appendChild(button.getElement(), img.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new WriteToClipboardAction(null, null,
+                        new ImageBlobInput(img)));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(HELPER_BODY, action.getBody());
+
+        // $0 and $1 are the no-op stand-ins.
+        assertEquals("return null",
+                ((JsFunction) action.getCaptures().get(0)).getBody());
+        assertEquals("return null",
+                ((JsFunction) action.getCaptures().get(1)).getBody());
+
+        // $2 is the image input — yields the source <img> element verbatim,
+        // captured at $0 of its JsFunction.
+        JsFunction image = (JsFunction) action.getCaptures().get(2);
+        assertEquals("return $0", image.getBody());
+        assertSame(img.getElement(), image.getCaptures().get(0));
+    }
+
+    @Test
+    void fireAndForget_allThreeSlots_eachInputCapturedInOrder() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent img = new TagComponent("img");
+        ui.getElement().appendChild(button.getElement(), img.getElement());
+
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new LiteralInput<>("plain"),
+                        new LiteralInput<>("<b>html</b>"),
+                        new ImageBlobInput(img)));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(HELPER_BODY, action.getBody());
+
+        assertEquals("plain", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+        assertEquals("<b>html</b>", ((JsFunction) action.getCaptures().get(1))
+                .getCaptures().get(0));
+        assertSame(img.getElement(), ((JsFunction) action.getCaptures().get(2))
+                .getCaptures().get(0));
     }
 
     @Test
@@ -126,7 +190,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        copied -> {
+                        null, copied -> {
                         }, err -> {
                         }));
 
@@ -140,9 +204,7 @@ class WriteToClipboardActionTest {
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
-                inner.getBody());
+        assertEquals(HELPER_BODY, inner.getBody());
     }
 
     @Test
@@ -156,7 +218,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        copied::add, err -> {
+                        null, copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -182,7 +244,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        copied::add, err -> {
+                        null, copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -199,9 +261,9 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void constructor_bothInputsNullRejected() {
+    void constructor_allInputsNullRejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> new WriteToClipboardAction(null, null));
+                () -> new WriteToClipboardAction(null, null, null));
     }
 
 }
