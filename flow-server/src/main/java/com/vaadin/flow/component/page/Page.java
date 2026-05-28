@@ -656,21 +656,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * Drives {@link #fullscreenSignal()} from test code without going through
-     * the client bridge. Mirrors the effect of a
-     * {@code vaadin-fullscreen-change} DOM event.
-     * <p>
-     * Intended for unit tests. Production code should not need to call this.
-     *
-     * @param newState
-     *            the state to set, not {@code null}
-     */
-    public void simulateFullscreenChange(FullscreenState newState) {
-        Objects.requireNonNull(newState, "newState must not be null");
-        fullscreenSignal.set(newState);
-    }
-
-    /**
      * Opens the given url in a new tab.
      *
      * @param url
