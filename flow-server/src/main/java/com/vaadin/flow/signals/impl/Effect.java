@@ -421,6 +421,30 @@ public class Effect implements Serializable {
     }
 
     /**
+     * Runs the given action in a read-triggered update context. This is used
+     * when a cached signal updates itself during a read operation. It ensures
+     * that:
+     * <ul>
+     * <li>The reading effect won't trigger false infinite loop detection when
+     * notified of the cache update</li>
+     * <li>Any effects that run inside the action will still have proper loop
+     * detection against each other</li>
+     * </ul>
+     *
+     * @param action
+     *            the action to run, not {@code null}
+     */
+    static void runInReadTriggeredUpdateContext(Runnable action) {
+        LinkedList<Effect> stashed = activeEffects.get();
+        activeEffects.set(new LinkedList<>());
+        try {
+            action.run();
+        } finally {
+            activeEffects.set(stashed);
+        }
+    }
+
+    /**
      * Disposes this effect by unregistering all current dependencies and
      * preventing the action from running again.
      */

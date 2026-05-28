@@ -453,6 +453,54 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void infiniteLoopDetection_cachedSignalSelfUpdate_notDetectedAsLoop() {
+        SharedValueSignal<String> source = new SharedValueSignal<>("initial");
+        AtomicInteger effectCount = new AtomicInteger();
+
+        Signal<String> cached = Signal.cached(() -> source.get());
+
+        Signal.unboundEffect(() -> {
+            int count = effectCount.incrementAndGet();
+            // Read cached so the effect registers a listener on cached's tree.
+            cached.get();
+            // Trigger a source change from inside the effect on the first run.
+            // The cascade source change → cached's source-dep listener →
+            // revalidateAndListen → submit cached then fires the effect's
+            // listener on cached while this effect is still in activeEffects.
+            // Without the fix, this is mistakenly detected as an infinite loop
+            // even though the submit is just lazy re-evaluation of the cached
+            // state.
+            if (count == 1) {
+                source.set("update");
+            }
+        });
+
+        assertEquals(2, effectCount.get());
+    }
+
+    @Test
+    void runInReadTriggeredUpdateContext_loopInsideContext_stillDetected() {
+        // The context only hides effects that were already active outside the
+        // block. Effects that activate inside the block still register
+        // themselves and are therefore still subject to loop detection.
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        AtomicInteger throwCount = new AtomicInteger();
+
+        Effect.runInReadTriggeredUpdateContext(() -> {
+            Signal.unboundEffect(() -> {
+                signal.get();
+                try {
+                    signal.set("new");
+                } catch (IllegalStateException e) {
+                    throwCount.incrementAndGet();
+                }
+            });
+        });
+
+        assertEquals(1, throwCount.get());
+    }
+
+    @Test
     void infiniteLoopDetection_writeUnrelatedSignal_noError() {
         SharedValueSignal<String> other = new SharedValueSignal<>("other");
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal");

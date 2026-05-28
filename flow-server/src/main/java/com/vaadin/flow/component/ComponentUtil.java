@@ -39,6 +39,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -819,6 +820,100 @@ public class ComponentUtil {
                                             });
                                     idConsumer.accept(id);
                                 }));
+    }
+
+    /**
+     * Gets the child components of the given parent component, including
+     * components attached as virtual children.
+     * <p>
+     * Like {@link #getChildren(Component)}, this finds child components by
+     * traversing each child {@link Element} tree. In addition, it also descends
+     * into elements attached via
+     * {@link Element#appendVirtualChild(Element...)}, which covers e.g. slotted
+     * components added through helpers like {@code addToFooter} on web
+     * component wrappers, overlays attached to the {@link UI}, and the
+     * client-side routing wrapper.
+     * <p>
+     * Children injected into a template via {@code @Id} are still excluded:
+     * shadow root contents are not traversed.
+     * <p>
+     * The order is regular DOM children first (in DOM order), followed by
+     * virtual children in their attachment order.
+     *
+     * @param parent
+     *            the parent component from which to get the child components
+     * @return the child components of the given parent component, including
+     *         virtual children
+     */
+    public static Stream<Component> getAllChildren(Component parent) {
+        if (parent instanceof Composite) {
+            return parent.getChildren();
+        }
+        if (!parent.getElement().getComponent().isPresent()) {
+            throw new IllegalStateException(
+                    "You cannot use getAllChildren() on a wrapped component. Use Component.from(Element, Class) to include the component in the hierarchy");
+        }
+
+        Builder<Component> childComponents = Stream.builder();
+        forEachChildElement(parent.getElement(),
+                childElement -> findComponentsIncludingVirtual(childElement,
+                        childComponents::add));
+        return childComponents.build();
+    }
+
+    /**
+     * Streams all descendant components of the given parent component in
+     * pre-order (each component before its own descendants). The parent itself
+     * is not included.
+     * <p>
+     * Traversal uses {@link #getAllChildren(Component)} at every level, so
+     * virtual children (slotted components, overlays, the routing wrapper) are
+     * included. Shadow root contents are not traversed.
+     *
+     * @param parent
+     *            the parent component to start the traversal from
+     * @return a stream of all descendant components in pre-order
+     */
+    public static Stream<Component> streamDescendants(Component parent) {
+        Builder<Component> descendants = Stream.builder();
+        collectDescendants(parent, descendants);
+        return descendants.build();
+    }
+
+    private static void collectDescendants(Component parent,
+            Builder<Component> descendants) {
+        getAllChildren(parent).forEach(child -> {
+            descendants.add(child);
+            collectDescendants(child, descendants);
+        });
+    }
+
+    private static void findComponentsIncludingVirtual(Element element,
+            Consumer<Component> componentConsumer) {
+        Optional<Component> maybeComponent = element.getComponent();
+        if (maybeComponent.isPresent()) {
+            componentConsumer.accept(maybeComponent.get());
+            return;
+        }
+        forEachChildElement(element,
+                child -> findComponentsIncludingVirtual(child,
+                        componentConsumer));
+    }
+
+    private static void forEachChildElement(Element parent,
+            Consumer<Element> action) {
+        parent.getChildren().forEach(action);
+        // VirtualChildrenList is not configured on every node type
+        // (text nodes don't have it), so guard with hasFeature first —
+        // getFeatureIfInitialized throws if the feature isn't configured.
+        if (parent.getNode().hasFeature(VirtualChildrenList.class)) {
+            parent.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> list.forEachChild(node -> {
+                        if (!ShadowRoot.isShadowRoot(node)) {
+                            action.accept(Element.get(node));
+                        }
+                    }));
+        }
     }
 
 }
