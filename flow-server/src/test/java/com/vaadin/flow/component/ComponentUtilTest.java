@@ -16,11 +16,15 @@
 package com.vaadin.flow.component;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -132,6 +136,116 @@ class ComponentUtilTest {
 
         assertTrue(retrievedClasses.isEmpty(),
                 "The retrieved classes should be empty for an unregistered tag");
+    }
+
+    @Test
+    void getAllChildren_includesVirtualChildren() {
+        // parent
+        // ├── regular (direct DOM child)
+        // └── virtual (appendVirtualChild)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        TestComponent regular = new TestComponent(ElementFactory.createSpan());
+        TestComponent virtual = new TestComponent(ElementFactory.createDiv());
+
+        parent.getElement().appendChild(regular.getElement());
+        parent.getElement().appendVirtualChild(virtual.getElement());
+
+        assertEquals(List.of(regular), parent.getChildren().toList(),
+                "getChildren must keep ignoring virtual children");
+        assertEquals(List.of(regular, virtual),
+                ComponentUtil.getAllChildren(parent).toList(),
+                "getAllChildren must return regular children first, virtual children last");
+    }
+
+    @Test
+    void getAllChildren_doesNotFailOnTextNodeChild() {
+        // parent
+        // └── (plain element, no component)
+        // └── text node (no VirtualChildrenList feature)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        Element wrapper = ElementFactory.createDiv();
+        wrapper.appendChild(Element.createText("hello"));
+        parent.getElement().appendChild(wrapper);
+
+        assertTrue(ComponentUtil.getAllChildren(parent).toList().isEmpty(),
+                "Walking past a text node must not throw");
+    }
+
+    @Test
+    void getAllChildren_skipsNonComponentWrapperElement() {
+        // parent
+        // └── (plain element, no component)
+        // └── virtual (appendVirtualChild on the wrapper)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        Element wrapper = ElementFactory.createDiv();
+        TestComponent virtual = new TestComponent(ElementFactory.createSpan());
+
+        parent.getElement().appendChild(wrapper);
+        wrapper.appendVirtualChild(virtual.getElement());
+
+        assertEquals(List.of(virtual),
+                ComponentUtil.getAllChildren(parent).toList(),
+                "Walker must descend through plain elements and find virtual children on them");
+    }
+
+    @Test
+    void streamDescendants_preOrderIncludingVirtual() {
+        // parent
+        // ├── child1
+        // │ ├── grandchild1 (regular)
+        // │ └── grandchild2 (virtual)
+        // └── child2 (virtual)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        TestComponent child1 = new TestComponent(ElementFactory.createDiv());
+        TestComponent grandchild1 = new TestComponent(
+                ElementFactory.createSpan());
+        TestComponent grandchild2 = new TestComponent(
+                ElementFactory.createSpan());
+        TestComponent child2 = new TestComponent(ElementFactory.createDiv());
+
+        parent.getElement().appendChild(child1.getElement());
+        parent.getElement().appendVirtualChild(child2.getElement());
+        child1.getElement().appendChild(grandchild1.getElement());
+        child1.getElement().appendVirtualChild(grandchild2.getElement());
+
+        assertEquals(List.of(child1, grandchild1, grandchild2, child2),
+                ComponentUtil.streamDescendants(parent).toList(),
+                "streamDescendants must walk pre-order and include virtual children");
+    }
+
+    @Test
+    void getAllChildren_compositeReturnsContent() {
+        TestComponent content = new TestComponent(ElementFactory.createDiv());
+        Composite<TestComponent> composite = new Composite<TestComponent>() {
+            @Override
+            protected TestComponent initContent() {
+                return content;
+            }
+        };
+
+        assertEquals(List.of(content),
+                ComponentUtil.getAllChildren(composite).toList(),
+                "getAllChildren on a Composite must return its content");
+    }
+
+    @Test
+    void streamDescendants_recursesIntoCompositeContent() {
+        TestComponent grandchild = new TestComponent(
+                ElementFactory.createSpan());
+        TestComponent contentWithChild = new TestComponent(
+                ElementFactory.createDiv());
+        contentWithChild.getElement().appendChild(grandchild.getElement());
+
+        Composite<TestComponent> composite = new Composite<TestComponent>() {
+            @Override
+            protected TestComponent initContent() {
+                return contentWithChild;
+            }
+        };
+
+        assertEquals(List.of(contentWithChild, grandchild),
+                ComponentUtil.streamDescendants(composite).toList(),
+                "streamDescendants must recurse through Composite content");
     }
 
 }
