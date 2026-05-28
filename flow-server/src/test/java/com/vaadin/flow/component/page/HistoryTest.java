@@ -53,7 +53,7 @@ class HistoryTest {
         }
 
         @Override
-        public PendingJavaScriptExecution executeJs(String expression,
+        public PendingJavaScriptResult executeJs(String expression,
                 Object... parameters) {
             this.expression = expression;
             this.parameters = parameters;

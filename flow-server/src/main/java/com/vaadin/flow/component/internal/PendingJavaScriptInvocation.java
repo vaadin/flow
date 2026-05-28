@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -38,8 +37,7 @@ import com.vaadin.flow.internal.StateNode;
  *
  * @since 2.0
  */
-public class PendingJavaScriptInvocation
-        implements PendingJavaScriptResult, PendingJavaScriptExecution {
+public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private static final String EXECUTION_CANCELED = "Execution canceled";
 
     private static final Pattern PARAMETER_NAME_PATTERN = Pattern

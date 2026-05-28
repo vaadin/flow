@@ -45,7 +45,6 @@ import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptExecution;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
@@ -1810,11 +1809,11 @@ public class Element extends Node<Element> {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
-     * @return a pending execution that can be used to get a value returned from
+     * @return a pending result that can be used to get a value returned from
      *         the expression and to add named parameters via
-     *         {@link PendingJavaScriptExecution#withParameter(String, Object)}
+     *         {@link PendingJavaScriptResult#withParameter(String, Object)}
      */
-    public PendingJavaScriptExecution executeJs(String expression,
+    public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
 
         // Add "this" as the last parameter
