@@ -17,14 +17,15 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.dom.JsFunction;
+
 /**
- * Input whose value is produced by a JS expression scoped to a specific
- * trigger's handler — typically {@code event[...]} for a
- * {@link DomEventTrigger}.
+ * Input that reads a property from a trigger handler's {@code event} argument
+ * (e.g. {@code event.screenX} for a {@link DomEventTrigger}).
  * <p>
  * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
  * refuses to render an input created by trigger A into the handler of trigger B
- * (where the referenced variable would not be in scope).
+ * (where the referenced {@code event} would not be in scope).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -33,21 +34,24 @@ import java.util.Objects;
  */
 final class HandlerInput<T> extends Action.Input<T> {
 
-    private final String jsExpression;
+    private final String propertyName;
     private final Trigger owner;
 
-    HandlerInput(String jsExpression, Trigger owner) {
-        this.jsExpression = Objects.requireNonNull(jsExpression);
+    HandlerInput(String propertyName, Trigger owner) {
+        this.propertyName = Objects.requireNonNull(propertyName);
         this.owner = Objects.requireNonNull(owner);
     }
 
     @Override
-    protected void appendExpression(JsBuilder builder, StringBuilder out) {
-        if (builder.trigger() != owner) {
+    protected JsFunction toJs(Trigger trigger) {
+        if (trigger != owner) {
             throw new IllegalArgumentException(
                     "Input is scoped to a different trigger and cannot be"
                             + " used here");
         }
-        out.append(jsExpression);
+        // $0 = property name (string capture, Jackson-quoted on the client),
+        // event = the handler argument the framework passes in.
+        return JsFunction.of("return event[$0]", propertyName)
+                .withArguments("event");
     }
 }

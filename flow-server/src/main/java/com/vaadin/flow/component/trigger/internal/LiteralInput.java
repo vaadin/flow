@@ -17,11 +17,14 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.dom.JsFunction;
+
 /**
- * Input backed by a server-side literal that is JSON-encoded into the JS at
- * build time. Lets actions take {@code Action.Input<? extends T>} uniformly
- * while still accepting plain constants from callers — e.g. copying a fixed
- * string to the clipboard:
+ * Input backed by a server-side literal that is captured into the rendered
+ * {@link JsFunction} and Jackson-encoded into a JS value on the client. Lets
+ * actions take {@code Action.Input<? extends T>} uniformly while still
+ * accepting plain constants from callers — e.g. copying a fixed string to the
+ * clipboard:
  *
  * <pre>{@code
  * new ClickTrigger(button).triggers(new WriteToClipboardAction(
@@ -58,7 +61,9 @@ public final class LiteralInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected void appendExpression(JsBuilder builder, StringBuilder out) {
-        out.append(JsBuilder.json(value));
+    protected JsFunction toJs(Trigger trigger) {
+        // The value is captured (not stringified into the body), so Jackson
+        // handles all encoding — quoting, escaping, nested objects, etc.
+        return JsFunction.of("return $0", value);
     }
 }

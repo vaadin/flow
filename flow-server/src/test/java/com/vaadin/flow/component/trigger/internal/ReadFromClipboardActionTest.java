@@ -24,22 +24,21 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReadFromClipboardActionTest {
 
     @Test
-    void handlerJsCallsObserverWithClipboardReadPromise() {
+    void actionFnWrapsClipboardReadPromiseWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -51,10 +50,14 @@ class ReadFromClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the
-        // .then/.catch glue lives inside $0, not in the action's expression.
-        assertEquals("$0(window.Vaadin.Flow.clipboard.readPayload(), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Action wraps the inner promise function with OBSERVE_PROMISE +
+        // return channel. The inner just invokes the Clipboard.ts helper.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
+                inner.getBody());
     }
 
     @Test
@@ -140,33 +143,4 @@ class ReadFromClipboardActionTest {
         assertEquals("denied", failed.get(0).message());
     }
 
-    private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        List<ReturnChannelRegistration> channels = handlerOf(
-                singleInstallFn(ui)).getCaptures().stream()
-                .filter(o -> o instanceof ReturnChannelRegistration)
-                .map(o -> (ReturnChannelRegistration) o).toList();
-        assertEquals(1, channels.size(),
-                "Expected exactly one captured return channel");
-        return channels.get(0);
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
 }
