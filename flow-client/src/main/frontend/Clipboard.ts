@@ -48,26 +48,80 @@ async function readClipboardPayload(): Promise<VaadinClipboardPayload | null> {
 }
 
 /**
- * Writes the given text/plain and/or text/html representations to the system
- * clipboard as a single ClipboardItem. Either argument may be {@code null} to
- * omit that MIME type; at least one is expected to be non-null (the caller
- * enforces this).
+ * Re-encodes the given {@code <img>} as {@code image/png} via a canvas
+ * round-trip. The source can be any rasterisable format the browser already
+ * decodes ({@code image/png}, {@code image/jpeg}, {@code image/svg+xml}, ...);
+ * the output is always a {@code Promise<Blob>} of {@code image/png}, the only
+ * image MIME type every browser's asynchronous Clipboard API accepts on write.
+ *
+ * Cross-origin images need {@code crossorigin="anonymous"} on the {@code <img>}
+ * plus matching CORS headers, otherwise the canvas is tainted and
+ * {@code toBlob} throws.
+ */
+function imageToPngBlob(img: HTMLImageElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const draw = () => {
+      try {
+        const width = img.naturalWidth || img.width;
+        const height = img.naturalHeight || img.height;
+        if (!width || !height) {
+          reject(new Error('image has no intrinsic size'));
+          return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('2D canvas context not available'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((png) => (png ? resolve(png) : reject(new Error('canvas.toBlob returned null'))), 'image/png');
+      } catch (err) {
+        reject(err);
+      }
+    };
+    if (img.complete && img.naturalWidth > 0) {
+      draw();
+    } else {
+      img.addEventListener('load', draw, { once: true });
+      img.addEventListener('error', () => reject(new Error('image load failed')), { once: true });
+    }
+  });
+}
+
+/**
+ * Writes any combination of text/plain, text/html and image/png to the system
+ * clipboard as a single ClipboardItem. Any argument may be {@code null} to omit
+ * that MIME type; at least one is expected to be non-null (the caller enforces
+ * this). The image argument is the source {@code <img>}; it is re-encoded as
+ * {@code image/png} via {@link imageToPngBlob} and the resulting
+ * {@code Promise<Blob>} is fed directly to {@code ClipboardItem} so the
+ * {@code navigator.clipboard.write} call stays synchronous inside the user
+ * gesture (Safari otherwise loses activation on the first await).
  *
  * The caller is expected to be inside a transient user gesture; otherwise
  * {@code navigator.clipboard.write} rejects and this function propagates the
  * rejection.
  *
  * Resolves with the {@code text/plain} value if present, otherwise with the
- * {@code text/html} value — so the caller's success handler sees the exact
- * string that reached the clipboard.
+ * {@code text/html} value, otherwise with {@code null} (image-only case).
  */
-async function writeClipboardPayload(text: string | null, html: string | null): Promise<string | null> {
-  const entries: Record<string, string> = {};
+async function writeClipboardPayload(
+  text: string | null,
+  html: string | null,
+  image: HTMLImageElement | null
+): Promise<string | null> {
+  const entries: Record<string, string | Promise<Blob>> = {};
   if (text !== null) {
     entries['text/plain'] = text;
   }
   if (html !== null) {
     entries['text/html'] = html;
+  }
+  if (image !== null) {
+    entries['image/png'] = imageToPngBlob(image);
   }
   await navigator.clipboard.write([new ClipboardItem(entries)]);
   return text !== null ? text : html;

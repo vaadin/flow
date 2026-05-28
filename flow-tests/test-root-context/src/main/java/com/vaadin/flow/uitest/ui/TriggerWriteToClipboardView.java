@@ -93,23 +93,24 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
         Action.Input<String> value = new PropertyInput<>(field, "value",
                 String.class);
         new ClickTrigger(copyButton).triggers(new WriteToClipboardAction(value,
-                null, copied -> status.setText("ok:" + copied), err -> status
+                null, null, copied -> status.setText("ok:" + copied),
+                err -> status
                         .setText("err:" + err.name() + ":" + err.message())));
 
         new ClickTrigger(copyStaticButton).triggers(new WriteToClipboardAction(
-                new LiteralInput<>(STATIC_TEXT), null,
+                new LiteralInput<>(STATIC_TEXT), null, null,
                 copied -> status.setText("ok:" + copied), err -> status
                         .setText("err:" + err.name() + ":" + err.message())));
 
         new ClickTrigger(copyMultiButton).triggers(new WriteToClipboardAction(
                 new LiteralInput<>(MULTI_TEXT), new LiteralInput<>(MULTI_HTML),
-                copied -> status.setText("ok:" + copied), err -> status
+                null, copied -> status.setText("ok:" + copied), err -> status
                         .setText("err:" + err.name() + ":" + err.message())));
 
         ValueSignal<String> textSignal = new ValueSignal<>(SIGNAL_INITIAL_TEXT);
         signalDisplay.getElement().bindText(textSignal);
         new ClickTrigger(copySignalButton).triggers(new WriteToClipboardAction(
-                new SignalInput<>(this, textSignal), null,
+                new SignalInput<>(this, textSignal), null, null,
                 copied -> status.setText("ok:" + copied), err -> status
                         .setText("err:" + err.name() + ":" + err.message())));
         changeSignalButton

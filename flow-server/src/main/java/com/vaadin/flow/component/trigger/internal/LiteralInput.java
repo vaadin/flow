@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * <pre>{@code
  * new ClickTrigger(button).triggers(new WriteToClipboardAction(
- *         new LiteralInput<>("hello"), null, copied -> {
+ *         new LiteralInput<>("hello"), null, null, copied -> {
  *         }, err -> {
  *         }));
  * }</pre>
