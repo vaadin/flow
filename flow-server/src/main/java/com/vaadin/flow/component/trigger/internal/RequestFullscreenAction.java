@@ -112,8 +112,7 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
 
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
-        // $0 = target element captured by JsFunction; reified on the client
-        // as the DOM node.
-        return JsFunction.of("return $0.requestFullscreen()", target);
+        return JsFunction.of("return target.requestFullscreen()")
+                .withParameter("target", target);
     }
 }

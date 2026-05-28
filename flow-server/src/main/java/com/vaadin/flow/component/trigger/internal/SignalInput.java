@@ -95,10 +95,11 @@ public class SignalInput<T> extends Action.Input<T> {
     @Override
     protected JsFunction toJs(Trigger trigger) {
         installEffectIfNeeded();
-        // $0 = the owner element (resolved to a DOM ref on the wire); $1 =
-        // the mirrored property name. Matches PropertyInput's shape — both
-        // read a property from a known element.
-        return JsFunction.of("return $0[$1]", owner.getElement(), propertyName);
+        // Same shape as PropertyInput — both read a named property from a
+        // known element.
+        return JsFunction.of("return target[propertyName]")
+                .withParameter("target", owner.getElement())
+                .withParameter("propertyName", propertyName);
     }
 
     private void installEffectIfNeeded() {

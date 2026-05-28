@@ -90,12 +90,15 @@ class SignalInputTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // SignalInput renders as `return $0[$1]` with the property name as
-        // capture $1. Reach into the action's captures to find the text
-        // input's JsFunction, then verify the generated property-name shape.
+        // SignalInput renders as `return target[propertyName]` with the
+        // property name as the second capture. Reach into the action's
+        // captures to find the text input's JsFunction, then verify the
+        // generated property-name shape.
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals(
+                "let propertyName=$1;let target=$0;return target[propertyName]",
+                textInput.getBody());
         String property = (String) textInput.getCaptures().get(1);
         assertTrue(PROPERTY_NAME.matcher(property).matches(),
                 "Unexpected property name: " + property);
@@ -141,7 +144,8 @@ class SignalInputTest {
                 new ValueSignal<>("b"));
 
         // Property name is the second capture of the rendered JsFunction
-        // (`return $0[$1]`, where $1 is the propertyName literal).
+        // (`return target[propertyName]`, with propertyName as a named
+        // capture at index 1).
         JsFunction fnA = a.toJs(new DomEventTrigger(owner, "click"));
         JsFunction fnB = b.toJs(new DomEventTrigger(owner, "click"));
 

@@ -74,11 +74,12 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Action body: observer(inner(event), channel) — $0 is OBSERVE_PROMISE,
-        // $1 is the inner JsFunction returning the promise, $2 is the return
-        // channel.
+        // Action body: observer(inner(event), channel) — all three are
+        // exposed by name; captures still carry observer, inner and the
+        // return channel in declaration order.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("let channel=$2;let inner=$1;let observer=$0;"
+                + "observer(inner(event), channel)", action.getBody());
 
         List<@Nullable Object> captures = action.getCaptures();
         assertEquals(3, captures.size(),

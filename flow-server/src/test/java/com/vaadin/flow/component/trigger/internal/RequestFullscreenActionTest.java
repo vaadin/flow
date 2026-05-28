@@ -42,9 +42,10 @@ class RequestFullscreenActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // Fire-and-forget collapses to the inner promise function directly.
-        // $0 is the target element captured by JsFunction.
+        // The target element is exposed by name and is the only capture.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("return $0.requestFullscreen()", action.getBody());
+        assertEquals("let target=$0;return target.requestFullscreen()",
+                action.getBody());
         assertSame(panel.getElement(), action.getCaptures().get(0));
     }
 
@@ -63,12 +64,15 @@ class RequestFullscreenActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // With callbacks, PromiseAction wraps the inner function with
-        // OBSERVE_PROMISE; the inner still captures the target as $0.
+        // OBSERVE_PROMISE and routes through a return channel; all three are
+        // exposed by name.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("let channel=$2;let inner=$1;let observer=$0;"
+                + "observer(inner(event), channel)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return $0.requestFullscreen()", inner.getBody());
+        assertEquals("let target=$0;return target.requestFullscreen()",
+                inner.getBody());
         assertSame(panel.getElement(), inner.getCaptures().get(0));
     }
 

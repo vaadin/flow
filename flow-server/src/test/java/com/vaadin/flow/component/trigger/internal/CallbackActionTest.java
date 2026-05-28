@@ -69,16 +69,17 @@ class CallbackActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        // $0 = the return channel; $1 = the source input's JsFunction. The
-        // body forwards the source-fn's value straight into the channel call.
-        assertEquals("$0($1(event));", action.getBody());
+        // Body forwards the source-fn's value straight into the channel call;
+        // both are exposed by name via withParameter.
+        assertEquals("let source=$1;let channel=$0;channel(source(event));",
+                action.getBody());
         assertEquals(2, action.getCaptures().size());
         assertTrue(
                 action.getCaptures()
                         .get(0) instanceof ReturnChannelRegistration,
-                "Expected $0 to be the return channel");
+                "Expected the return channel as the first capture");
         assertTrue(action.getCaptures().get(1) instanceof JsFunction,
-                "Expected $1 to be the source input JsFunction");
+                "Expected the source input JsFunction as the second capture");
     }
 
     @Test

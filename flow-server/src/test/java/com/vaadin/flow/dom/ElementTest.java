@@ -2477,6 +2477,27 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void addJsInitializer_jsFunctionWithNamedParameter_capturesValue() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer(JsFunction.of("return () => target.focus();")
+                .withParameter("target", element));
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+
+        JsFunction userFn = (JsFunction) pending.get(0).getInvocation()
+                .getParameters().get(2);
+        assertEquals("let target=$0;return () => target.focus();",
+                userFn.getBody());
+        assertEquals(List.of(element), userFn.getCaptures());
+    }
+
+    @Test
     void addJsInitializer_sameRoundTripDetachReattach_doesNotRerun() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();

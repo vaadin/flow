@@ -116,10 +116,10 @@ public class SetPropertyAction<T> extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // $0 = target element (captured), $1 = property name (string
-        // capture, Jackson-quoted on the client), $2 = source JsFunction
-        // (invoked with event so handler-scoped inputs work).
-        return JsFunction.of("$0[$1] = $2(event)", target, propertyName,
-                source.toJs(trigger)).withArguments("event");
+        return JsFunction.of("target[propertyName] = source(event)")
+                .withParameter("target", target)
+                .withParameter("propertyName", propertyName)
+                .withParameter("source", source.toJs(trigger))
+                .withArguments("event");
     }
 }

@@ -53,12 +53,14 @@ class ClickTriggerTest {
         JsFunction source0 = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
         assertEquals(List.of("event"), source0.getArgumentNames());
-        assertEquals("return event[$0]", source0.getBody());
+        assertEquals("let propertyName=$0;return event[propertyName]",
+                source0.getBody());
         assertEquals("screenX", source0.getCaptures().get(0));
 
         JsFunction source1 = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("return event[$0]", source1.getBody());
+        assertEquals("let propertyName=$0;return event[propertyName]",
+                source1.getBody());
         assertEquals("screenY", source1.getCaptures().get(0));
     }
 

@@ -81,18 +81,14 @@ public final class ElementJsInitializerRegistration implements Registration {
      *
      * @param node
      *            the owning state node, not {@code null}
-     * @param expression
-     *            the user-supplied expression, not {@code null}
-     * @param parameters
-     *            the user-supplied parameters, captured by the JsFunction
+     * @param userFunction
+     *            the user-supplied initializer function, not {@code null}
      */
-    public ElementJsInitializerRegistration(StateNode node, String expression,
-            Object[] parameters) {
+    public ElementJsInitializerRegistration(StateNode node,
+            JsFunction userFunction) {
         this.node = Objects.requireNonNull(node, "node");
-        Objects.requireNonNull(expression, "expression");
-        // JsFunction.of validates each capture, so unsupported parameter
-        // types fail fast here rather than at execution time.
-        this.userFunction = JsFunction.of(expression, parameters);
+        this.userFunction = Objects.requireNonNull(userFunction,
+                "userFunction");
 
         attachListenerRegistration = node.addAttachListener(this::onAttach);
         if (node.isAttached()) {

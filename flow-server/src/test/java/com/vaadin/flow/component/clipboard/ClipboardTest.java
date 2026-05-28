@@ -90,10 +90,12 @@ class ClipboardTest {
 
         Clipboard.onClick(button).writeText(field);
 
-        // PropertyInput renders as `return $0[$1]` and captures (element,
-        // "value").
+        // PropertyInput renders as `return target[propertyName]` and
+        // captures (element, "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals(
+                "let propertyName=$1;let target=$0;return target[propertyName]",
+                textInput.getBody());
         assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -137,7 +139,9 @@ class ClipboardTest {
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals(
+                "let propertyName=$1;let target=$0;return target[propertyName]",
+                textInput.getBody());
         assertEquals("value", textInput.getCaptures().get(1));
     }
 
