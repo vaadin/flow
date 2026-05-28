@@ -16,6 +16,17 @@
 
 type VaadinWakeLockState = 'ACTIVE' | 'RELEASED';
 type VaadinWakeLockAvailability = 'SUPPORTED' | 'UNSUPPORTED' | 'UNKNOWN';
+type VaadinWakeLockErrorCode = 'UNSUPPORTED' | 'NOT_ALLOWED' | 'UNKNOWN';
+
+/**
+ * Outcome of a request() call. 'granted' = lock held; 'deferred' = page hidden,
+ * the visibilitychange listener will re-attempt; 'error' = persistent failure
+ * the application can surface to the user.
+ */
+type VaadinWakeLockRequestResult =
+  | { state: 'granted' }
+  | { state: 'deferred' }
+  | { state: 'error'; errorCode: VaadinWakeLockErrorCode; message: string };
 
 // Whether the server-side has asked us to hold the lock. The browser releases
 // the lock whenever the tab is hidden; this flag is what lets the
@@ -28,12 +39,18 @@ function dispatch(element: HTMLElement, state: VaadinWakeLockState): void {
   element.dispatchEvent(new CustomEvent('vaadin-wake-lock-change', { detail: state }));
 }
 
-async function acquire(element: HTMLElement): Promise<void> {
+async function acquire(element: HTMLElement): Promise<VaadinWakeLockRequestResult> {
   if (sentinel) {
-    return;
+    return { state: 'granted' };
   }
-  if (!('wakeLock' in navigator)) {
-    return;
+  if (!window.isSecureContext || !('wakeLock' in navigator)) {
+    return {
+      state: 'error',
+      errorCode: 'UNSUPPORTED',
+      message: window.isSecureContext
+        ? 'Screen Wake Lock API not implemented in this browser'
+        : 'Screen Wake Lock API requires a secure context (HTTPS or localhost)'
+    };
   }
   try {
     const next = await (navigator as any).wakeLock.request('screen');
@@ -46,7 +63,7 @@ async function acquire(element: HTMLElement): Promise<void> {
         // Ignore; releasing an already-released sentinel throws on some
         // browsers and there is nothing meaningful to do here.
       }
-      return;
+      return { state: 'deferred' };
     }
     sentinel = next;
     next.addEventListener('release', () => {
@@ -54,10 +71,15 @@ async function acquire(element: HTMLElement): Promise<void> {
       dispatch(element, 'RELEASED');
     });
     dispatch(element, 'ACTIVE');
-  } catch (_e) {
-    // The browser refused (insecure context, feature unavailable, low battery,
-    // user revoked, …). The signal stays in 'RELEASED'; no need to surface
-    // the error — applications observe activeSignal() to know the truth.
+    return { state: 'granted' };
+  } catch (e: any) {
+    const name = e?.name;
+    const errorCode: VaadinWakeLockErrorCode = name === 'NotAllowedError' ? 'NOT_ALLOWED' : 'UNKNOWN';
+    return {
+      state: 'error',
+      errorCode,
+      message: e?.message ? String(e.message) : String(e)
+    };
   }
 }
 
@@ -77,13 +99,13 @@ const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
 $wnd.Vaadin.Flow.wakeLock = {
-  request(element: HTMLElement): Promise<void> {
+  request(element: HTMLElement): Promise<VaadinWakeLockRequestResult> {
     wanted = true;
     installVisibilityListener(element);
     if (document.visibilityState !== 'visible') {
       // The browser will not grant a lock while the page is hidden; the
       // visibilitychange listener will pick it up on the next 'visible'.
-      return Promise.resolve();
+      return Promise.resolve({ state: 'deferred' });
     }
     return acquire(element);
   },

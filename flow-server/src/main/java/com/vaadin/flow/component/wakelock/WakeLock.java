@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.wakelock;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -23,6 +24,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.ErrorHandler;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -101,11 +106,111 @@ public final class WakeLock {
      */
     public static void request(UI ui) {
         Objects.requireNonNull(ui, "ui must not be null");
+        requestInternal(ui, null);
+    }
+
+    /**
+     * Asks the browser to acquire a screen wake lock for the current UI, with
+     * an error callback for persistent failures. Same lifecycle semantics as
+     * {@link #request()}, but if the browser permanently refuses the request
+     * (feature unavailable, insecure context, {@code NotAllowedError}) the
+     * consumer is invoked on the UI thread with a {@link WakeLockError}
+     * describing the cause.
+     * <p>
+     * The error callback fires only for persistent failures the application may
+     * want to surface — typically by re-enabling a "Keep screen on" toggle and
+     * showing a message. It is <b>not</b> called when the lock is simply
+     * deferred (page hidden until the user returns to the tab) or when the
+     * browser temporarily releases the lock for power-management reasons; for
+     * those, observe {@link #activeSignal()}.
+     *
+     * @param onError
+     *            consumer invoked on the UI thread when the request fails,
+     *            never {@code null}
+     * @throws NullPointerException
+     *             if {@code onError} is {@code null}
+     * @throws IllegalStateException
+     *             if there is no current UI
+     */
+    public static void request(SerializableConsumer<WakeLockError> onError) {
+        request(onError, UI.getCurrentOrThrow());
+    }
+
+    /**
+     * Same as {@link #request(SerializableConsumer)} on the given UI. Use this
+     * overload from background threads or anywhere {@link UI#getCurrent()} is
+     * unreliable.
+     *
+     * @param onError
+     *            consumer invoked on the UI thread when the request fails,
+     *            never {@code null}
+     * @param ui
+     *            the UI to dispatch the request through, never {@code null}
+     * @throws NullPointerException
+     *             if either argument is {@code null}
+     */
+    public static void request(SerializableConsumer<WakeLockError> onError,
+            UI ui) {
+        Objects.requireNonNull(onError, "onError must not be null");
+        Objects.requireNonNull(ui, "ui must not be null");
+        requestInternal(ui, onError);
+    }
+
+    private static void requestInternal(UI ui,
+            @Nullable SerializableConsumer<WakeLockError> onError) {
         ensureWired(ui);
-        ui.getElement().executeJs("window.Vaadin.Flow.wakeLock.request(this)")
-                .then(ignored -> {
-                }, err -> LOGGER
-                        .debug("Client-side wakeLock.request failed: {}", err));
+        if (onError != null
+                && ui.getInternals().getWakeLockAvailabilitySignalReadOnly()
+                        .peek() == WakeLockAvailability.UNSUPPORTED) {
+            // Bootstrap probe already established the API is unusable here.
+            // Deliver the error synchronously so the caller does not pay a
+            // round-trip just to learn that.
+            deliverSafely(ui, () -> onError.accept(new WakeLockError(
+                    WakeLockErrorCode.UNSUPPORTED,
+                    "Screen Wake Lock API is not available in this context")));
+            return;
+        }
+        ui.getElement()
+                .executeJs("return window.Vaadin.Flow.wakeLock.request(this)")
+                .then(RequestResult.class,
+                        result -> handleResult(ui, onError, result), err -> {
+                            LOGGER.debug(
+                                    "Client-side wakeLock.request failed: {}",
+                                    err);
+                            if (onError != null) {
+                                deliverSafely(ui,
+                                        () -> onError.accept(new WakeLockError(
+                                                WakeLockErrorCode.UNKNOWN,
+                                                "Client-side wakeLock bridge failure: "
+                                                        + err)));
+                            }
+                        });
+    }
+
+    private static void handleResult(UI ui,
+            @Nullable SerializableConsumer<WakeLockError> onError,
+            @Nullable RequestResult result) {
+        if (onError == null || result == null
+                || !"error".equals(result.state())) {
+            return;
+        }
+        WakeLockErrorCode code;
+        try {
+            code = result.errorCode() != null
+                    ? WakeLockErrorCode.valueOf(result.errorCode())
+                    : WakeLockErrorCode.UNKNOWN;
+        } catch (IllegalArgumentException e) {
+            code = WakeLockErrorCode.UNKNOWN;
+        }
+        String message = result.message() != null ? result.message() : "";
+        WakeLockErrorCode finalCode = code;
+        deliverSafely(ui,
+                () -> onError.accept(new WakeLockError(finalCode, message)));
+    }
+
+    private record RequestResult(@Nullable String state,
+            @Nullable String errorCode,
+            @Nullable String message) implements Serializable {
     }
 
     /**
@@ -234,6 +339,21 @@ public final class WakeLock {
         case "RELEASED" -> internals.setWakeLockActive(false);
         default ->
             LOGGER.debug("Unknown wake lock state from client: {}", value);
+        }
+    }
+
+    private static void deliverSafely(UI ui, Runnable callback) {
+        try {
+            callback.run();
+        } catch (RuntimeException e) {
+            VaadinSession session = ui.getSession();
+            ErrorHandler handler = session == null ? null
+                    : session.getErrorHandler();
+            if (handler != null) {
+                handler.error(new ErrorEvent(e));
+            } else {
+                throw e;
+            }
         }
     }
 }

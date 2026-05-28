@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.wakelock;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
@@ -30,6 +31,8 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -138,6 +141,61 @@ class WakeLockTest {
         ui.getInternals()
                 .setWakeLockAvailability(WakeLockAvailability.UNSUPPORTED);
         assertEquals(WakeLockAvailability.UNSUPPORTED, availability.peek());
+    }
+
+    @Test
+    void request_withErrorHandler_failsFastWhenUnsupported() {
+        MockUI ui = new MockUI();
+        ui.getInternals()
+                .setWakeLockAvailability(WakeLockAvailability.UNSUPPORTED);
+        AtomicReference<WakeLockError> received = new AtomicReference<>();
+
+        WakeLock.request(received::set, ui);
+
+        WakeLockError error = received.get();
+        assertNotNull(error, "Error handler should fire on UNSUPPORTED before "
+                + "the client round-trip");
+        assertEquals(WakeLockErrorCode.UNSUPPORTED, error.code());
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertTrue(invocations.stream()
+                .noneMatch(i -> i.getInvocation().getExpression()
+                        .contains("window.Vaadin.Flow.wakeLock.request")),
+                "Fail-fast on UNSUPPORTED should not invoke the client");
+    }
+
+    @Test
+    void request_withErrorHandler_invokesClientWhenSupported() {
+        MockUI ui = new MockUI();
+        ui.getInternals()
+                .setWakeLockAvailability(WakeLockAvailability.SUPPORTED);
+        AtomicReference<WakeLockError> received = new AtomicReference<>();
+
+        WakeLock.request(received::set, ui);
+
+        assertNull(received.get(), "No error before the client reports back");
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertTrue(invocations.stream()
+                .anyMatch(i -> i.getInvocation().getExpression().contains(
+                        "return window.Vaadin.Flow.wakeLock.request(this)")),
+                "Request should round-trip via executeJs with a return value");
+    }
+
+    @Test
+    void request_withErrorHandler_invokesClientWhenAvailabilityUnknown() {
+        MockUI ui = new MockUI();
+        AtomicReference<WakeLockError> received = new AtomicReference<>();
+
+        WakeLock.request(received::set, ui);
+
+        assertNull(received.get(),
+                "UNKNOWN availability must not preempt the client call");
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertTrue(invocations.stream()
+                .anyMatch(i -> i.getInvocation().getExpression().contains(
+                        "return window.Vaadin.Flow.wakeLock.request(this)")));
     }
 
     private void fireStateEvent(MockUI ui, String state) {
