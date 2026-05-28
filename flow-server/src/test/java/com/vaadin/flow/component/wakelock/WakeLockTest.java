@@ -131,7 +131,8 @@ class WakeLockTest {
         Signal<WakeLockAvailability> availability = WakeLock
                 .availabilitySignal(ui);
 
-        ui.getInternals().setWakeLockAvailability(WakeLockAvailability.SUPPORTED);
+        ui.getInternals()
+                .setWakeLockAvailability(WakeLockAvailability.SUPPORTED);
         assertEquals(WakeLockAvailability.SUPPORTED, availability.peek());
 
         ui.getInternals()
