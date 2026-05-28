@@ -44,9 +44,13 @@ final class HandlerInput<T> extends Action.Input<T> {
     @Override
     protected void appendExpression(JsBuilder builder, StringBuilder out) {
         if (builder.trigger() != owner) {
-            throw new IllegalArgumentException(
-                    "Input is scoped to a different trigger and cannot be"
-                            + " used here");
+            throw new IllegalArgumentException("Input '" + jsExpression
+                    + "' was created by " + owner.getClass().getSimpleName()
+                    + " and cannot be used in "
+                    + builder.trigger().getClass().getSimpleName()
+                    + "'s handler — the variable it references is not in scope"
+                    + " there. Obtain an equivalent input from the surrounding"
+                    + " trigger instead.");
         }
         out.append(jsExpression);
     }

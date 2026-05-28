@@ -27,9 +27,9 @@ import com.vaadin.flow.dom.Element;
  * Common targets and properties:
  * <ul>
  * <li>{@code TextField.value} →
- * {@code new PropertyInput<>(textField, "value", String.class)}
+ * {@code new PropertyInput<String>(textField, "value")}
  * <li>{@code Checkbox.checked} →
- * {@code new PropertyInput<>(checkbox, "checked", Boolean.class)}
+ * {@code new PropertyInput<Boolean>(checkbox, "checked")}
  * </ul>
  *
  * <p>
@@ -51,14 +51,10 @@ public class PropertyInput<T> extends Action.Input<T> {
      *            the component to read from, not {@code null}
      * @param propertyName
      *            the JS property name, not {@code null}
-     * @param valueType
-     *            runtime type of the produced value, not {@code null}
      */
-    public PropertyInput(Component target, String propertyName,
-            Class<T> valueType) {
+    public PropertyInput(Component target, String propertyName) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
-        Objects.requireNonNull(valueType);
     }
 
     @Override

@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.JacksonUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-final class JsBuilder implements Serializable {
+public final class JsBuilder implements Serializable {
 
     private final Trigger trigger;
     private final List<@Nullable Object> params = new ArrayList<>();
@@ -50,10 +50,12 @@ final class JsBuilder implements Serializable {
 
     /**
      * The trigger this builder is collecting JS for. Used by handler-scoped
-     * arguments ({@link HandlerInput}) to refuse being rendered into a
-     * different trigger's handler.
+     * inputs ({@link HandlerInput}) to refuse being rendered into a different
+     * trigger's handler.
+     *
+     * @return the surrounding trigger, never {@code null}
      */
-    Trigger trigger() {
+    public Trigger trigger() {
         return trigger;
     }
 
@@ -61,8 +63,12 @@ final class JsBuilder implements Serializable {
      * Returns a JS expression that evaluates to the given element at runtime.
      * Returns {@code "this"} for the host; otherwise allocates a parameter
      * placeholder.
+     *
+     * @param element
+     *            the element to reference, not {@code null}
+     * @return the JS expression, never {@code null}
      */
-    String reference(Element element) {
+    public String reference(Element element) {
         if (element == trigger.getHost()) {
             return "this";
         }
@@ -109,8 +115,12 @@ final class JsBuilder implements Serializable {
      * Encodes a value as a JS literal via Jackson. Strings are JSON-quoted,
      * numbers/booleans/null become themselves, records and POJOs become JS
      * object literals.
+     *
+     * @param value
+     *            the value to encode, may be {@code null}
+     * @return the JS literal, never {@code null}
      */
-    static String json(@Nullable Object value) {
+    public static String json(@Nullable Object value) {
         return JacksonUtils.createNode(value).toString();
     }
 }
