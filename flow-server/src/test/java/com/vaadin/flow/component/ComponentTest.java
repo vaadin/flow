@@ -1030,6 +1030,22 @@ public class ComponentTest {
     }
 
     @Test
+    public void getAllChildren_throwsForWrappedComponent() {
+        // Element.as creates a Component that references the Element but the
+        // Element does not reference the Component back, so getAllChildren
+        // cannot resolve children mapped to the wrapped component. This
+        // mirrors the behavior asserted for getChildren above.
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        button.as(TestButton.class);
+        TestDiv wrappedDiv = div.as(TestDiv.class);
+        assertThrows(IllegalStateException.class,
+                () -> ComponentUtil.getAllChildren(wrappedDiv));
+    }
+
+    @Test
     public void componentFromHierarchy() {
         Element div = new Element("div");
         Element button = new Element("button");

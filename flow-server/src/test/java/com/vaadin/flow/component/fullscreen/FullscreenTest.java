@@ -30,6 +30,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -65,26 +66,32 @@ class FullscreenTest {
 
         Fullscreen.onClick(button).requestPage();
 
-        String install = installBody(ui);
-        assertTrue(install.contains("\"click\""),
-                "click trigger install JS: " + install);
+        // DomEventTrigger emits "this.addEventListener($1, $0); ..." where
+        // $1 is the event name capture; the actual "click" string lives in
+        // the install JsFunction's captures, not its body.
+        JsFunction installFn = singleInstallFn(ui);
+        assertTrue(installFn.getCaptures().contains("click"),
+                "Expected install captures to include the event name: "
+                        + installFn.getCaptures());
     }
 
     // --- request verbs --------------------------------------------------
 
     @Test
-    void requestPage_fireAndForget_emitsRequestPageFullscreen() {
+    void requestPage_fireAndForget_actionFnCallsRequestPageFullscreen() {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
         Fullscreen.onClick(button).requestPage();
 
-        assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen();",
-                handlerBody(ui));
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                action.getBody());
     }
 
     @Test
-    void requestPage_withCallbacks_emitsObservedPromise() {
+    void requestPage_withCallbacks_wrapsWithObserver() {
         TestButton button = new TestButton();
         ui.getElement().appendChild(button.getElement());
 
@@ -92,28 +99,34 @@ class FullscreenTest {
         }, err -> {
         });
 
-        // $0 = OBSERVE_PROMISE, $1 = channel; observe wraps the request.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
-                "$0(window.Vaadin.Flow.fullscreen.requestPageFullscreen(), $1);",
-                handlerBody(ui));
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                inner.getBody());
     }
 
     @Test
-    void requestComponent_fireAndForget_emitsRequestComponentFullscreen() {
+    void requestComponent_fireAndForget_actionFnCallsRequestComponentFullscreenWithTargetAndWrapper() {
         TestButton button = new TestButton();
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
 
         Fullscreen.onClick(button).requestComponent(panel);
 
-        // $0 = panel, $1 = wrapper element from UIInternals.
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1);",
-                handlerBody(ui));
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                action.getBody());
+        assertSame(panel.getElement(), action.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                action.getCaptures().get(1));
     }
 
     @Test
-    void requestComponent_withCallbacks_emitsObservedPromise() {
+    void requestComponent_withCallbacks_wrapsWithObserver() {
         TestButton button = new TestButton();
         TestPanel panel = new TestPanel();
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -122,10 +135,16 @@ class FullscreenTest {
         }, err -> {
         });
 
-        // $0 = OBSERVE_PROMISE, $1 = channel, $2 = panel, $3 = wrapper.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
-                "$0(window.Vaadin.Flow.fullscreen.requestComponentFullscreen($2, $3), $1);",
-                handlerBody(ui));
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                inner.getBody());
+        assertSame(panel.getElement(), inner.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                inner.getCaptures().get(1));
     }
 
     @Test
@@ -139,35 +158,22 @@ class FullscreenTest {
 
     // --- helpers --------------------------------------------------------
 
-    private static String installBody(UI ui) {
-        // The wrapper expression on the invocation is framework-owned init
-        // glue; the trigger's actual install JS is the body of the JsFunction
-        // passed as the third parameter.
-        return singleInstallFn(ui).getBody();
-    }
-
-    private static String handlerBody(UI ui) {
-        return handlerOf(singleInstallFn(ui)).getBody();
-    }
-
-    private static JavaScriptInvocation singleInstall(UI ui) {
+    private static JsFunction singleInstallFn(UI ui) {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return pending.get(0).getInvocation();
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        Object o = singleInstall(ui).getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        Object o = invocation.getParameters().get(2);
+        assertTrue(o instanceof JsFunction,
+                "Expected install param $2 to be a JsFunction");
         return (JsFunction) o;
     }
 
-    private static JsFunction handlerOf(JsFunction installFn) {
+    private static JsFunction actionOf(JsFunction installFn) {
         Object o = installFn.getCaptures().get(0);
         assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
+                "Expected install $0 to be the action JsFunction");
         return (JsFunction) o;
     }
 }

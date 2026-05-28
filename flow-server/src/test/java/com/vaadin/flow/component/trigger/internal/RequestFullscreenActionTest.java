@@ -15,20 +15,18 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestFullscreenActionTest {
 
@@ -37,15 +35,15 @@ class RequestFullscreenActionTest {
     @BeforeEach
     void setUp() {
         ui = new MockUI();
-        // MockUI skips UI.doInit which is what creates the wrapper in real
-        // usage; seed an app id and create the wrapper explicitly so
-        // component-mode actions can resolve it.
+        // MockUI skips UI.doInit which creates the wrapper in real usage;
+        // seed an app id and create the wrapper explicitly so component-mode
+        // actions can resolve it.
         ui.getInternals().setFullAppId("test");
         ui.getInternals().createWrapperElement();
     }
 
     @Test
-    void pageMode_fireAndForget_handlerCallsRequestPageFullscreen() {
+    void pageMode_fireAndForget_callsRequestPageFullscreen() {
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
@@ -54,12 +52,15 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("window.Vaadin.Flow.fullscreen.requestPageFullscreen();",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // Fire-and-forget: action function is the inner promise function.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                action.getBody());
     }
 
     @Test
-    void pageMode_withCallbacks_handlerObservesRequestPageFullscreenPromise() {
+    void pageMode_withCallbacks_wrapsRequestPageFullscreenWithObserver() {
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
 
@@ -70,15 +71,19 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the .then
-        // /.catch glue lives inside $0, not in the handler body.
+        // With callbacks: outer function is the observer wrapper; the inner
+        // function is captured at $1 and contains the actual fullscreen call.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
-                "$0(window.Vaadin.Flow.fullscreen.requestPageFullscreen(), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                inner.getBody());
     }
 
     @Test
-    void componentMode_fireAndForget_handlerCallsRequestComponentFullscreen() {
+    void componentMode_fireAndForget_callsRequestComponentFullscreenWithTargetAndWrapper() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -88,14 +93,18 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = panel, $1 = wrapper element from UIInternals.
+        // $0 = target element, $1 = wrapper element from UIInternals.
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                action.getBody());
+        assertSame(panel.getElement(), action.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                action.getCaptures().get(1));
     }
 
     @Test
-    void componentMode_withCallbacks_handlerObservesRequestComponentFullscreenPromise() {
+    void componentMode_withCallbacks_wrapsRequestComponentFullscreenWithObserver() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -107,10 +116,16 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE, $1 = return channel, $2 = panel, $3 = wrapper.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
-                "$0(window.Vaadin.Flow.fullscreen.requestComponentFullscreen($2, $3), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                inner.getBody());
+        assertSame(panel.getElement(), inner.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                inner.getCaptures().get(1));
     }
 
     @Test
@@ -118,25 +133,5 @@ class RequestFullscreenActionTest {
         TagComponent detached = new TagComponent("div");
         assertThrows(IllegalStateException.class,
                 () -> new RequestFullscreenAction(detached));
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
     }
 }

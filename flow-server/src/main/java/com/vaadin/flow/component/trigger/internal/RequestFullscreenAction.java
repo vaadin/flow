@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
@@ -159,17 +160,15 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
+    protected JsFunction toPromiseJs(Trigger trigger) {
         if (target == null) {
-            out.append("window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
-        } else {
-            // wrapper is non-null when target is non-null
-            out.append(
-                    "window.Vaadin.Flow.fullscreen.requestComponentFullscreen(")
-                    .append(builder.reference(target)).append(", ")
-                    .append(builder.reference(Objects.requireNonNull(wrapper)))
-                    .append(")");
+            return JsFunction.of(
+                    "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
         }
+        // wrapper is non-null when target is non-null — resolveWrapper
+        // throws otherwise. $0 = target element, $1 = the UI wrapper element.
+        return JsFunction.of(
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                target, Objects.requireNonNull(wrapper));
     }
 }
