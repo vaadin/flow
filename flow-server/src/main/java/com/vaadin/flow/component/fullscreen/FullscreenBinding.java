@@ -39,8 +39,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * {@code () -> {}} or {@code err -> {}} to opt out of one.
  *
  * <pre>{@code
- * Button enter = new Button("Fullscreen");
- * Fullscreen.onClick(enter).enter(videoPanel,
+ * Button fullscreenButton = new Button("Fullscreen");
+ * Fullscreen.onClick(fullscreenButton).enter(videoPanel,
  *         () -> Notification.show("Entered fullscreen"), err -> Notification
  *                 .show("Could not enter fullscreen: " + err.message()));
  * }</pre>
