@@ -49,9 +49,9 @@ import com.vaadin.flow.shared.Registration;
  * {@link PasteEvent}. Unlike the write API, {@code onPaste} does not need a
  * click binding &mdash; it attaches a DOM listener directly to the given
  * component and fires on every paste gesture targeting it (or any of its
- * descendants, since {@code paste} bubbles). Pass the {@link UI} as the
- * component for UI-wide scope; the
- * {@link #onPaste(Component, PasteOptions, SerializableConsumer) options
+ * descendants, since {@code paste} bubbles). Pass the
+ * {@link com.vaadin.flow.component.UI UI} as the component for UI-wide scope;
+ * the {@link #onPaste(Component, PasteOptions, SerializableConsumer) options
  * overload} lets the application skip pastes whose target is a form field
  * &mdash; useful for page-wide listeners that should only react to pastes
  * intended for the page as a whole.
@@ -108,9 +108,9 @@ public final class Clipboard implements Serializable {
      * <p>
      * The browser only fires {@code paste} when the target element is focused
      * at the moment the user invokes paste. For non-editable elements such as a
-     * {@link com.vaadin.flow.component.html.Div Div} this means the element
-     * must be made focusable, typically via {@code tabindex="0"}. See
-     * {@link PasteEvent} for the rest of the browser caveats.
+     * {@code Div} this means the element must be made focusable, typically via
+     * {@code tabindex="0"}. See {@link PasteEvent} for the rest of the browser
+     * caveats.
      *
      * <p>
      * Example:
@@ -147,9 +147,9 @@ public final class Clipboard implements Serializable {
      * component with the given {@link PasteOptions}. The listener is invoked on
      * the UI thread for each paste gesture targeting {@code component} (or any
      * descendant, since {@code paste} bubbles) whose target matches the
-     * options. For UI-wide scope, pass the {@link UI} as the component; the
-     * UI's root element is {@code <body>} so it receives every paste event that
-     * bubbles up from anywhere on the page.
+     * options. For UI-wide scope, pass the {@link com.vaadin.flow.component.UI
+     * UI} as the component; the UI's root element is {@code <body>} so it
+     * receives every paste event that bubbles up from anywhere on the page.
      * <p>
      * The component does not need to be attached at registration time — the
      * underlying DOM listener is bound to the component's element and is

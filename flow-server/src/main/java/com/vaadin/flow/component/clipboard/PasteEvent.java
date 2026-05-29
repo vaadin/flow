@@ -57,9 +57,8 @@ import com.vaadin.flow.dom.Element;
  * <ul>
  * <li>The browser only fires {@code paste} when the target element is focused
  * at the moment the user invokes paste. Non-editable elements (such as a plain
- * {@link com.vaadin.flow.component.html.Div Div}) need to be made focusable
- * &mdash; typically via {@code tabindex="0"} &mdash; before they will receive
- * paste events.</li>
+ * {@code Div}) need to be made focusable &mdash; typically via
+ * {@code tabindex="0"} &mdash; before they will receive paste events.</li>
  * <li>On editable targets ({@code <input>}, {@code <textarea>}, elements with
  * {@code contenteditable}), the browser still performs its native paste
  * insertion. {@code onPaste} does <em>not</em> call {@code preventDefault()};
