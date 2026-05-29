@@ -5,6 +5,7 @@ import {
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
 import './Clipboard';
+import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
 
@@ -545,6 +546,8 @@ export class Flow {
     params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
     /* Page visibility — initial state of document.hidden / document.hasFocus() */
     params['v-pv'] = currentVisibility();
+    /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
+    params['v-fs'] = currentFullscreenState();
 
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
