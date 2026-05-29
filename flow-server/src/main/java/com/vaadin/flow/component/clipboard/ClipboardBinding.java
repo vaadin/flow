@@ -67,8 +67,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeText(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
-                null));
+        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null));
     }
 
     /**
@@ -88,7 +87,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null, null,
+        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
                 onCopied, onError));
     }
 
@@ -109,8 +108,7 @@ public final class ClipboardBinding implements Serializable {
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null,
-                null));
+                new PropertyInput<>(source, "value", String.class), null));
     }
 
     /**
@@ -134,7 +132,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null, null,
+                new PropertyInput<>(source, "value", String.class), null,
                 onCopied, onError));
     }
 
@@ -147,8 +145,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeHtml(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
-                null));
+        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal)));
     }
 
     /**
@@ -167,7 +164,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal), null,
+        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
                 onCopied, onError));
     }
 
@@ -188,8 +185,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeImage(Component source) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(null, null,
-                new ImageBlobInput(source)));
+        bind(new WriteToClipboardAction(new ImageBlobInput(source)));
     }
 
     /**
@@ -210,8 +206,8 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(null, null, new ImageBlobInput(source),
-                onCopied, onError));
+        bind(new WriteToClipboardAction(new ImageBlobInput(source), onCopied,
+                onError));
     }
 
     /**

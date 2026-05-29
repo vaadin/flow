@@ -49,7 +49,7 @@ class WriteToClipboardActionTest {
 
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class), null,
+                        new PropertyInput<>(field, "value", String.class),
                         null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -80,7 +80,7 @@ class WriteToClipboardActionTest {
 
         new DomEventTrigger(button, "click").triggers(
                 new WriteToClipboardAction(new LiteralInput<>("plain"),
-                        new LiteralInput<>("<b>html</b>"), null));
+                        new LiteralInput<>("<b>html</b>")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -106,7 +106,7 @@ class WriteToClipboardActionTest {
 
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(null,
-                        new LiteralInput<>("<b>hi</b>"), null));
+                        new LiteralInput<>("<b>hi</b>")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -134,8 +134,7 @@ class WriteToClipboardActionTest {
         ui.getElement().appendChild(button.getElement(), img.getElement());
 
         new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(null, null,
-                        new ImageBlobInput(img)));
+                .triggers(new WriteToClipboardAction(new ImageBlobInput(img)));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -190,7 +189,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        null, copied -> {
+                        copied -> {
                         }, err -> {
                         }));
 
@@ -208,6 +207,31 @@ class WriteToClipboardActionTest {
     }
 
     @Test
+    void withCallbacks_imageOnly_wrapsInnerWithObserverAndChannel() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent img = new TagComponent("img");
+        ui.getElement().appendChild(button.getElement(), img.getElement());
+
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new ImageBlobInput(img), copied -> {
+                }, err -> {
+                }));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // The dedicated image observed constructor produces the same outer
+        // shape as the text/html one — only the inner $2 (image) slot differs.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals(HELPER_BODY, inner.getBody());
+        JsFunction image = (JsFunction) inner.getCaptures().get(2);
+        assertSame(img.getElement(), image.getCaptures().get(0));
+    }
+
+    @Test
     void onCopied_receivesTheStringFromTheResolvedPromise() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
@@ -218,7 +242,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        null, copied::add, err -> {
+                        copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -244,7 +268,7 @@ class WriteToClipboardActionTest {
         new DomEventTrigger(button, "click")
                 .triggers(new WriteToClipboardAction(
                         new PropertyInput<>(field, "value", String.class), null,
-                        null, copied::add, err -> {
+                        copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -261,9 +285,19 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void constructor_allInputsNullRejected() {
+    void constructor_textHtml_bothNullRejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> new WriteToClipboardAction(null, null, null));
+                () -> new WriteToClipboardAction(null, null));
+    }
+
+    @Test
+    void constructor_multiFormat_allInputsNullRejected() {
+        Action.@Nullable Input<String> nullText = null;
+        Action.@Nullable Input<String> nullHtml = null;
+        Action.@Nullable Input<?> nullImage = null;
+        assertThrows(IllegalArgumentException.class,
+                () -> new WriteToClipboardAction(nullText, nullHtml,
+                        nullImage));
     }
 
 }
