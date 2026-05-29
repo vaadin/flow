@@ -111,6 +111,7 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     public RequestFullscreenAction(Component target) {
         super();
         Objects.requireNonNull(target, "target must not be null");
+        warnIfNotVisible(target, "Fullscreen.enter()");
         this.target = target.getElement();
         this.wrapper = resolveWrapper(target);
     }
@@ -134,6 +135,7 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
             SerializableConsumer<Error> onError) {
         super(Void.class, runnableAsConsumer(onSuccess), onError);
         Objects.requireNonNull(target, "target must not be null");
+        warnIfNotVisible(target, "Fullscreen.enter()");
         this.target = target.getElement();
         this.wrapper = resolveWrapper(target);
     }

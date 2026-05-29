@@ -122,8 +122,10 @@ public final class FullscreenBinding implements Serializable {
     private static void whenAttached(Component component, Runnable task) {
         // Defer wiring until attach so the action's wrapper-element lookup
         // (target.getUI().getInternals().getWrapperElement()) has a UI to
-        // resolve against. runWhenAttached fires immediately if already
-        // attached and is one-shot otherwise.
+        // resolve against, and so that RequestFullscreenAction's visibility
+        // check sees the same visibility state as the install JS would.
+        // runWhenAttached fires immediately if already attached and is
+        // one-shot otherwise.
         component.getElement().getNode().runWhenAttached(ui -> task.run());
     }
 
