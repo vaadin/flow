@@ -29,12 +29,12 @@ import com.vaadin.flow.router.RouteConfiguration;
  * values it will admit; further values are bucketed under
  * {@link MeterNames#ROUTE_OTHER}.
  */
-final class RouteTagResolver {
+public final class RouteTagResolver {
 
     private final int limit;
     private final Set<String> seen = ConcurrentHashMap.newKeySet();
 
-    RouteTagResolver(int limit) {
+    public RouteTagResolver(int limit) {
         this.limit = limit;
     }
 
@@ -42,7 +42,7 @@ final class RouteTagResolver {
      * Resolves the tag value for a navigation target. {@code null} input is
      * treated as an unknown route.
      */
-    String tagFor(Class<? extends Component> navigationTarget) {
+    public String tagFor(Class<? extends Component> navigationTarget) {
         if (navigationTarget == null) {
             return MeterNames.ROUTE_UNKNOWN;
         }
@@ -67,6 +67,25 @@ final class RouteTagResolver {
             // No current session bound; fall back to simple name.
             return Optional.empty();
         }
+    }
+
+    /**
+     * Bucketizes an already-resolved route template against the cardinality
+     * limit. Useful when the template is already known and we only need the
+     * overflow behavior.
+     */
+    public String tagForTemplate(String template) {
+        if (template == null) {
+            return MeterNames.ROUTE_UNKNOWN;
+        }
+        if (seen.contains(template)) {
+            return template;
+        }
+        if (seen.size() < limit) {
+            seen.add(template);
+            return template;
+        }
+        return MeterNames.ROUTE_OTHER;
     }
 
     int trackedCount() {

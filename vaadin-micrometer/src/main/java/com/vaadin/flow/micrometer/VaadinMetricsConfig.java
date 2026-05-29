@@ -30,12 +30,20 @@ public final class VaadinMetricsConfig implements Serializable {
      */
     public static final int DEFAULT_ROUTE_CARDINALITY_LIMIT = 200;
 
+    /**
+     * Default per-session ceiling on accepted client samples. Excess samples
+     * are dropped and counted in {@code vaadin.client.throttled}.
+     */
+    public static final int DEFAULT_CLIENT_RATE_PER_SESSION = 100;
+
     private final boolean sessions;
     private final boolean uis;
     private final boolean navigation;
     private final boolean requests;
     private final boolean errors;
+    private final boolean client;
     private final int routeCardinalityLimit;
+    private final int clientRatePerSession;
 
     private VaadinMetricsConfig(Builder b) {
         this.sessions = b.sessions;
@@ -43,7 +51,9 @@ public final class VaadinMetricsConfig implements Serializable {
         this.navigation = b.navigation;
         this.requests = b.requests;
         this.errors = b.errors;
+        this.client = b.client;
         this.routeCardinalityLimit = b.routeCardinalityLimit;
+        this.clientRatePerSession = b.clientRatePerSession;
     }
 
     public static VaadinMetricsConfig defaults() {
@@ -74,8 +84,16 @@ public final class VaadinMetricsConfig implements Serializable {
         return errors;
     }
 
+    public boolean isClient() {
+        return client;
+    }
+
     public int getRouteCardinalityLimit() {
         return routeCardinalityLimit;
+    }
+
+    public int getClientRatePerSession() {
+        return clientRatePerSession;
     }
 
     public static final class Builder {
@@ -84,7 +102,9 @@ public final class VaadinMetricsConfig implements Serializable {
         private boolean navigation = true;
         private boolean requests = true;
         private boolean errors = true;
+        private boolean client = true;
         private int routeCardinalityLimit = DEFAULT_ROUTE_CARDINALITY_LIMIT;
+        private int clientRatePerSession = DEFAULT_CLIENT_RATE_PER_SESSION;
 
         public Builder sessions(boolean enabled) {
             this.sessions = enabled;
@@ -111,12 +131,26 @@ public final class VaadinMetricsConfig implements Serializable {
             return this;
         }
 
+        public Builder client(boolean enabled) {
+            this.client = enabled;
+            return this;
+        }
+
         public Builder routeCardinalityLimit(int limit) {
             if (limit < 1) {
                 throw new IllegalArgumentException(
                         "routeCardinalityLimit must be >= 1, got " + limit);
             }
             this.routeCardinalityLimit = limit;
+            return this;
+        }
+
+        public Builder clientRatePerSession(int rate) {
+            if (rate < 0) {
+                throw new IllegalArgumentException(
+                        "clientRatePerSession must be >= 0, got " + rate);
+            }
+            this.clientRatePerSession = rate;
             return this;
         }
 

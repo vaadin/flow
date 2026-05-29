@@ -22,6 +22,8 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.micrometer.client.ClientMetricsBinder;
+import com.vaadin.flow.micrometer.client.MetricsCollectorElement;
 import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 
@@ -31,12 +33,15 @@ import com.vaadin.flow.server.UIInitListener;
  */
 final class UiMetricsBinder implements UIInitListener {
 
+    private final MeterRegistry registry;
     private final VaadinMetricsConfig config;
     private final Counter created;
     private final AtomicLong active = new AtomicLong();
     private final NavigationMetricsBinder navigationBinder;
+    private final ClientMetricsBinder clientBinder;
 
     UiMetricsBinder(MeterRegistry registry, VaadinMetricsConfig config) {
+        this.registry = registry;
         this.config = config;
         this.created = Counter.builder(MeterNames.UI_CREATED)
                 .register(registry);
@@ -46,20 +51,25 @@ final class UiMetricsBinder implements UIInitListener {
                 ? new NavigationMetricsBinder(registry,
                         new RouteTagResolver(config.getRouteCardinalityLimit()))
                 : null;
+        this.clientBinder = config.isClient()
+                ? new ClientMetricsBinder(registry, config)
+                : null;
     }
 
     @Override
     public void uiInit(UIInitEvent event) {
+        UI ui = event.getUI();
         if (config.isUis()) {
             created.increment();
             active.incrementAndGet();
-            UI ui = event.getUI();
             ui.addDetachListener(e -> active.decrementAndGet());
         }
         if (navigationBinder != null) {
-            UI ui = event.getUI();
             ui.addBeforeEnterListener(navigationBinder);
             ui.addAfterNavigationListener(navigationBinder);
+        }
+        if (clientBinder != null) {
+            ui.add(new MetricsCollectorElement(clientBinder, config));
         }
     }
 }

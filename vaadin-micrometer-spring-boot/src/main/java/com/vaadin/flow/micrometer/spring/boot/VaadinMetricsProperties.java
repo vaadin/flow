@@ -32,7 +32,9 @@ public class VaadinMetricsProperties {
     private boolean navigation = true;
     private boolean requests = true;
     private boolean errors = true;
+    private boolean client = true;
     private int routeCardinalityLimit = VaadinMetricsConfig.DEFAULT_ROUTE_CARDINALITY_LIMIT;
+    private int clientRatePerSession = VaadinMetricsConfig.DEFAULT_CLIENT_RATE_PER_SESSION;
 
     public boolean isEnabled() {
         return enabled;
@@ -82,6 +84,14 @@ public class VaadinMetricsProperties {
         this.errors = errors;
     }
 
+    public boolean isClient() {
+        return client;
+    }
+
+    public void setClient(boolean client) {
+        this.client = client;
+    }
+
     public int getRouteCardinalityLimit() {
         return routeCardinalityLimit;
     }
@@ -90,9 +100,18 @@ public class VaadinMetricsProperties {
         this.routeCardinalityLimit = routeCardinalityLimit;
     }
 
+    public int getClientRatePerSession() {
+        return clientRatePerSession;
+    }
+
+    public void setClientRatePerSession(int clientRatePerSession) {
+        this.clientRatePerSession = clientRatePerSession;
+    }
+
     public VaadinMetricsConfig toConfig() {
         return VaadinMetricsConfig.builder().sessions(sessions).uis(uis)
                 .navigation(navigation).requests(requests).errors(errors)
-                .routeCardinalityLimit(routeCardinalityLimit).build();
+                .client(client).routeCardinalityLimit(routeCardinalityLimit)
+                .clientRatePerSession(clientRatePerSession).build();
     }
 }

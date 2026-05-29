@@ -67,6 +67,49 @@ public class VaadinMicrometerIT extends ChromeBrowserTest {
                 metrics.contains("vaadin.request.duration"));
     }
 
+    @Test
+    public void clientMetricsArriveViaUidlAfterFlush() throws IOException {
+        open();
+        // Wait until the view rendered, ensuring the collector is attached
+        // and the client script has installed itself.
+        $(SpanElement.class).id("greeting");
+
+        // Force an immediate flush of whatever the client buffered so the
+        // IT does not have to wait for the 5 s periodic timer. window.
+        // __vaadinMicrometer.flush is exposed by VaadinMetricsClient.js
+        // explicitly for tests.
+        executeScript("window.__vaadinMicrometer && window."
+                + "__vaadinMicrometer.flush();");
+
+        // Poll the /metrics endpoint until at least one vaadin.client.*
+        // sample appears. We give the server up to ~5 s to ingest, then
+        // fail if the collector never delivered anything.
+        String metrics = pollUntilClientMetrics();
+
+        Assert.assertTrue(
+                "expected at least one vaadin.client.* meter in registry, "
+                        + "got:\n" + metrics,
+                metrics.contains("vaadin.client."));
+    }
+
+    private String pollUntilClientMetrics() throws IOException {
+        long deadline = System.currentTimeMillis() + 5_000L;
+        String last = "";
+        while (System.currentTimeMillis() < deadline) {
+            last = fetchMetrics();
+            if (last.contains("vaadin.client.")) {
+                return last;
+            }
+            try {
+                Thread.sleep(250L);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return last;
+    }
+
     private String fetchMetrics() throws IOException {
         HttpURLConnection conn = (HttpURLConnection) URI
                 .create(getRootURL() + "/metrics").toURL().openConnection();
