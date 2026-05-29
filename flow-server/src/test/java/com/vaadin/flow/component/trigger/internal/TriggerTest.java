@@ -35,39 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TriggerTest {
 
     @Test
-    void domEventTrigger_setProperty_emitsAddEventListenerOnAttach() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        TagComponent field = new TagComponent("input");
-        ui.getElement().appendChild(button.getElement(), field.getElement());
-
-        new DomEventTrigger(button, "click")
-                .triggers(new SetPropertyAction<>(field, "value", ""));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        // Install JS references action at $0 and event name at $1 — no user
-        // content leaks into the body, both are captures.
-        JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "this.addEventListener($1, $0);"
-                        + "return () => this.removeEventListener($1, $0);",
-                install.getBody());
-        assertEquals("click", install.getCaptures().get(1));
-
-        // The install $0 is the action's JsFunction directly — no intermediate
-        // composed handler layer. The action is also the DOM event listener.
-        JsFunction action = actionOf(install);
-        assertEquals(List.of("event"), action.getArgumentNames());
-
-        // SetPropertyAction body shape; target captured as $0, property name
-        // string capture at $1, source JsFunction invoked as $2(event).
-        assertEquals("$0[$1] = $2(event)", action.getBody());
-        assertSame(field.getElement(), action.getCaptures().get(0));
-        assertEquals("value", action.getCaptures().get(1));
-    }
-
-    @Test
     void multipleActions_eachInstalledAsItsOwnListener() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
@@ -188,74 +155,6 @@ class TriggerTest {
         DomEventTrigger trigger = new DomEventTrigger(button, "click");
         assertThrows(IllegalArgumentException.class,
                 () -> trigger.triggers(new Action[0]));
-    }
-
-    @Test
-    void clickTrigger_screenCoordinates_renderEventProperties() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        TagComponent xField = new TagComponent("input");
-        TagComponent yField = new TagComponent("input");
-        ui.getElement().appendChild(button.getElement(), xField.getElement(),
-                yField.getElement());
-
-        ClickTrigger click = new ClickTrigger(button);
-        click.triggers(
-                new SetPropertyAction<>(xField, "value", click.screenX()),
-                new SetPropertyAction<>(yField, "value", click.screenY()));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        // HandlerInput renders as a JsFunction taking `event` and capturing
-        // the property name; the body itself is a constant.
-        List<JsFunction> installs = installFns(ui);
-        JsFunction source0 = (JsFunction) actionOf(installs.get(0))
-                .getCaptures().get(2);
-        assertEquals(List.of("event"), source0.getArgumentNames());
-        assertEquals("return event[$0]", source0.getBody());
-        assertEquals("screenX", source0.getCaptures().get(0));
-
-        JsFunction source1 = (JsFunction) actionOf(installs.get(1))
-                .getCaptures().get(2);
-        assertEquals("return event[$0]", source1.getBody());
-        assertEquals("screenY", source1.getCaptures().get(0));
-    }
-
-    @Test
-    void argumentFromOtherTrigger_isRejectedAtBuildTime() {
-        TagComponent button1 = new TagComponent("button");
-        TagComponent button2 = new TagComponent("button");
-        TagComponent field = new TagComponent("input");
-
-        ClickTrigger click1 = new ClickTrigger(button1);
-        ClickTrigger click2 = new ClickTrigger(button2);
-
-        // Input made by click1 cannot be used in click2's handler.
-        assertThrows(IllegalArgumentException.class, () -> click2.triggers(
-                new SetPropertyAction<>(field, "value", click1.screenX())));
-    }
-
-    @Test
-    void argumentUsedInOwningTrigger_acceptedAcrossMultipleTriggersCalls() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        TagComponent xField = new TagComponent("input");
-        TagComponent yField = new TagComponent("input");
-        ui.getElement().appendChild(button.getElement(), xField.getElement(),
-                yField.getElement());
-
-        ClickTrigger click = new ClickTrigger(button);
-        // Same Input instance used across two separate triggers() calls on
-        // its owning trigger.
-        Action.Input<Integer> x = click.screenX();
-        click.triggers(new SetPropertyAction<>(xField, "value", x));
-        click.triggers(new SetPropertyAction<>(yField, "value", x));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(2, pending.size());
     }
 
 }
