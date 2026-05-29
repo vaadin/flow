@@ -624,7 +624,7 @@ public class IndexHtmlRequestHandlerTest {
                 elements, "apple-mobile-web-app-status-bar-style");
         assertTrue(appleMobileWebAppStatusBar.isPresent(),
                 "'apple-mobile-web-app-status-bar-style' meta link should exists.");
-        assertEquals("#ffffff",
+        assertEquals("black-translucent",
                 appleMobileWebAppStatusBar.get().attr("content"));
 
         Optional<Element> mobileWebAppCapableElements = findFirstElementByNameAttrEqualTo(
