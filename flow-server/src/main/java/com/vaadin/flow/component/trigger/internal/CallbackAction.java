@@ -46,7 +46,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <pre>{@code
  * ClickTrigger click = new ClickTrigger(button);
  * click.triggers(new CallbackAction<>(Integer.class,
- *         x -> logger.info("clicked at {}", x), click.screenX()));
+ *         x -> logger.info("clicked at {}", x),
+ *         ClickTrigger.EventData.screenX));
  * }</pre>
  *
  * <p>
