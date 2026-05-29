@@ -33,6 +33,8 @@ public class VaadinMetricsProperties {
     private boolean requests = true;
     private boolean errors = true;
     private boolean client = true;
+    private boolean traces = true;
+    private boolean tracesSessionId = false;
     private int routeCardinalityLimit = VaadinMetricsConfig.DEFAULT_ROUTE_CARDINALITY_LIMIT;
     private int clientRatePerSession = VaadinMetricsConfig.DEFAULT_CLIENT_RATE_PER_SESSION;
 
@@ -92,6 +94,22 @@ public class VaadinMetricsProperties {
         this.client = client;
     }
 
+    public boolean isTraces() {
+        return traces;
+    }
+
+    public void setTraces(boolean traces) {
+        this.traces = traces;
+    }
+
+    public boolean isTracesSessionId() {
+        return tracesSessionId;
+    }
+
+    public void setTracesSessionId(boolean tracesSessionId) {
+        this.tracesSessionId = tracesSessionId;
+    }
+
     public int getRouteCardinalityLimit() {
         return routeCardinalityLimit;
     }
@@ -111,7 +129,8 @@ public class VaadinMetricsProperties {
     public VaadinMetricsConfig toConfig() {
         return VaadinMetricsConfig.builder().sessions(sessions).uis(uis)
                 .navigation(navigation).requests(requests).errors(errors)
-                .client(client).routeCardinalityLimit(routeCardinalityLimit)
+                .client(client).traces(traces).tracesSessionId(tracesSessionId)
+                .routeCardinalityLimit(routeCardinalityLimit)
                 .clientRatePerSession(clientRatePerSession).build();
     }
 }

@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
+import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Standalone bootstrap entry point for Vaadin Flow Micrometer instrumentation.
@@ -34,6 +36,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 public final class VaadinMicrometer {
 
     private static final AtomicReference<MeterRegistry> REGISTRY = new AtomicReference<>();
+    private static final AtomicReference<ObservationRegistry> OBSERVATION_REGISTRY = new AtomicReference<>();
     private static final AtomicReference<VaadinMetricsConfig> CONFIG = new AtomicReference<>();
 
     private VaadinMicrometer() {
@@ -45,6 +48,11 @@ public final class VaadinMicrometer {
      * Vaadin service is initialized, typically from a
      * {@link jakarta.servlet.ServletContextListener} or equivalent
      * application-startup hook.
+     * <p>
+     * If {@link VaadinMetricsConfig#isTraces()} is {@code true}, an internal
+     * {@link ObservationRegistry} is created and a
+     * {@link DefaultMeterObservationHandler} is registered against the given
+     * meter registry so Observations produce timers.
      *
      * @param registry
      *            Micrometer meter registry, not {@code null}
@@ -53,7 +61,27 @@ public final class VaadinMicrometer {
      */
     public static void install(MeterRegistry registry,
             VaadinMetricsConfig config) {
+        Objects.requireNonNull(registry, "registry");
+        Objects.requireNonNull(config, "config");
+        ObservationRegistry observations = null;
+        if (config.isTraces()) {
+            observations = ObservationRegistry.create();
+            observations.observationConfig().observationHandler(
+                    new DefaultMeterObservationHandler(registry));
+        }
+        install(registry, observations, config);
+    }
+
+    /**
+     * Installs a registry, observation registry, and configuration for the
+     * standalone path. Use this overload when supplying a pre-configured
+     * {@link ObservationRegistry} (e.g. one already wired with a tracer).
+     */
+    public static void install(MeterRegistry registry,
+            ObservationRegistry observationRegistry,
+            VaadinMetricsConfig config) {
         REGISTRY.set(Objects.requireNonNull(registry, "registry"));
+        OBSERVATION_REGISTRY.set(observationRegistry);
         CONFIG.set(Objects.requireNonNull(config, "config"));
     }
 
@@ -63,11 +91,16 @@ public final class VaadinMicrometer {
      */
     public static void uninstall() {
         REGISTRY.set(null);
+        OBSERVATION_REGISTRY.set(null);
         CONFIG.set(null);
     }
 
     static MeterRegistry registry() {
         return REGISTRY.get();
+    }
+
+    static ObservationRegistry observationRegistry() {
+        return OBSERVATION_REGISTRY.get();
     }
 
     static VaadinMetricsConfig config() {

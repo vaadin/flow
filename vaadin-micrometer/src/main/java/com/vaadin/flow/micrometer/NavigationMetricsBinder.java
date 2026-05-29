@@ -17,9 +17,12 @@ package com.vaadin.flow.micrometer;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.micrometer.trace.VaadinObservationNames;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -27,8 +30,13 @@ import com.vaadin.flow.router.BeforeEnterListener;
 
 /**
  * Times each navigation from {@code beforeEnter} to {@code afterNavigation}.
- * Per-UI sample state is stored as a UI attribute via {@link ComponentUtil} so
- * each UI's navigations are tracked independently.
+ * <p>
+ * When an {@link ObservationRegistry} is supplied and
+ * {@link VaadinMetricsConfig#isTraces()} is on, the navigation is observed
+ * (producing both a span and, through a registered
+ * {@code DefaultMeterObservationHandler}, the Timer). Otherwise the binder
+ * falls back to direct Timer recording. Per-UI state is stored as a UI
+ * attribute so concurrent UIs are tracked independently.
  */
 final class NavigationMetricsBinder
         implements BeforeEnterListener, AfterNavigationListener {
@@ -37,22 +45,52 @@ final class NavigationMetricsBinder
             .getName() + ".sample";
     private static final String ROUTE_KEY = NavigationMetricsBinder.class
             .getName() + ".route";
+    private static final String OBSERVATION_KEY = NavigationMetricsBinder.class
+            .getName() + ".observation";
+    private static final String OBSERVATION_SCOPE_KEY = NavigationMetricsBinder.class
+            .getName() + ".observation.scope";
 
     private final MeterRegistry registry;
+    private final ObservationRegistry observationRegistry;
+    private final VaadinMetricsConfig config;
     private final RouteTagResolver routes;
 
     NavigationMetricsBinder(MeterRegistry registry, RouteTagResolver routes) {
+        this(registry, null, VaadinMetricsConfig.defaults(), routes);
+    }
+
+    NavigationMetricsBinder(MeterRegistry registry,
+            ObservationRegistry observationRegistry, VaadinMetricsConfig config,
+            RouteTagResolver routes) {
         this.registry = registry;
+        this.observationRegistry = observationRegistry;
+        this.config = config;
         this.routes = routes;
+    }
+
+    private boolean useObservation() {
+        return config.isTraces() && observationRegistry != null;
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         UI ui = event.getUI();
-        Timer.Sample sample = Timer.start(registry);
-        ComponentUtil.setData(ui, SAMPLE_KEY, sample);
-        ComponentUtil.setData(ui, ROUTE_KEY,
-                routes.tagFor(event.getNavigationTarget()));
+        String route = routes.tagFor(event.getNavigationTarget());
+        ComponentUtil.setData(ui, ROUTE_KEY, route);
+        if (useObservation()) {
+            Observation obs = Observation
+                    .createNotStarted(MeterNames.NAVIGATION,
+                            observationRegistry)
+                    .contextualName(
+                            VaadinObservationNames.NAVIGATION + " " + route)
+                    .lowCardinalityKeyValue(VaadinObservationNames.KEY_ROUTE,
+                            route)
+                    .start();
+            ComponentUtil.setData(ui, OBSERVATION_KEY, obs);
+            ComponentUtil.setData(ui, OBSERVATION_SCOPE_KEY, obs.openScope());
+        } else {
+            ComponentUtil.setData(ui, SAMPLE_KEY, Timer.start(registry));
+        }
     }
 
     @Override
@@ -63,12 +101,24 @@ final class NavigationMetricsBinder
         }
         Object sample = ComponentUtil.getData(ui, SAMPLE_KEY);
         Object route = ComponentUtil.getData(ui, ROUTE_KEY);
+        Object obsObj = ComponentUtil.getData(ui, OBSERVATION_KEY);
+        Object scopeObj = ComponentUtil.getData(ui, OBSERVATION_SCOPE_KEY);
         ComponentUtil.setData(ui, SAMPLE_KEY, null);
         ComponentUtil.setData(ui, ROUTE_KEY, null);
+        ComponentUtil.setData(ui, OBSERVATION_KEY, null);
+        ComponentUtil.setData(ui, OBSERVATION_SCOPE_KEY, null);
         if (sample instanceof Timer.Sample s) {
             s.stop(registry.timer(MeterNames.NAVIGATION, MeterNames.TAG_ROUTE,
                     route instanceof String r ? r : MeterNames.ROUTE_UNKNOWN,
                     MeterNames.TAG_OUTCOME, MeterNames.OUTCOME_SUCCESS));
+        }
+        if (scopeObj instanceof Observation.Scope scope) {
+            scope.close();
+        }
+        if (obsObj instanceof Observation obs) {
+            obs.lowCardinalityKeyValue(VaadinObservationNames.KEY_OUTCOME,
+                    VaadinObservationNames.OUTCOME_SUCCESS);
+            obs.stop();
         }
     }
 }

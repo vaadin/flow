@@ -33,6 +33,11 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-micrometer-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>vaadin-spring</artifactId>
       <version>${project.version}</version>
     </dependency>

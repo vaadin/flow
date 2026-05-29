@@ -16,6 +16,8 @@
 package com.vaadin.flow.micrometer.spring.boot;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -55,7 +57,40 @@ public class VaadinMetricsAutoConfiguration {
     @ConditionalOnBean(MeterRegistry.class)
     @ConditionalOnMissingBean
     public MetricsServiceInitListener metricsServiceInitListener(
-            MeterRegistry registry, VaadinMetricsConfig config) {
-        return new MetricsServiceInitListener(registry, config);
+            MeterRegistry registry,
+            ObjectProvider<ObservationRegistry> observationRegistry,
+            VaadinMetricsConfig config) {
+        return new BootMetricsServiceInitListener(registry,
+                observationRegistry.getIfAvailable(), config);
+    }
+
+    /**
+     * Boot-aware listener that skips registering
+     * {@link io.micrometer.core.instrument.observation.DefaultMeterObservationHandler}
+     * because Spring Boot Actuator's {@code ObservationAutoConfiguration}
+     * already does so.
+     */
+    static final class BootMetricsServiceInitListener
+            extends MetricsServiceInitListener {
+
+        BootMetricsServiceInitListener(MeterRegistry registry,
+                ObservationRegistry observationRegistry,
+                VaadinMetricsConfig config) {
+            super(registry, observationRegistry, config);
+        }
+
+        @Override
+        protected void installDefaultObservationHandlers(
+                ObservationRegistry observationRegistry,
+                MeterRegistry registry) {
+            // No-op: Boot Actuator already handles this.
+        }
+
+        @Override
+        protected void enrichHttpObservation(
+                com.vaadin.flow.server.VaadinRequest request, String type) {
+            com.vaadin.flow.micrometer.spring.SpringHttpObservationEnricher
+                    .enrich(request, type);
+        }
     }
 }

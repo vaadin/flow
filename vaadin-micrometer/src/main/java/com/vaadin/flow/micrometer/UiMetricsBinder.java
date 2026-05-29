@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.micrometer.client.ClientMetricsBinder;
@@ -41,6 +42,12 @@ final class UiMetricsBinder implements UIInitListener {
     private final ClientMetricsBinder clientBinder;
 
     UiMetricsBinder(MeterRegistry registry, VaadinMetricsConfig config) {
+        this(registry, null, config);
+    }
+
+    UiMetricsBinder(MeterRegistry registry,
+            ObservationRegistry observationRegistry,
+            VaadinMetricsConfig config) {
         this.registry = registry;
         this.config = config;
         this.created = Counter.builder(MeterNames.UI_CREATED)
@@ -48,7 +55,8 @@ final class UiMetricsBinder implements UIInitListener {
         Gauge.builder(MeterNames.UI_ACTIVE, active, AtomicLong::get)
                 .register(registry);
         this.navigationBinder = config.isNavigation()
-                ? new NavigationMetricsBinder(registry,
+                ? new NavigationMetricsBinder(registry, observationRegistry,
+                        config,
                         new RouteTagResolver(config.getRouteCardinalityLimit()))
                 : null;
         this.clientBinder = config.isClient()

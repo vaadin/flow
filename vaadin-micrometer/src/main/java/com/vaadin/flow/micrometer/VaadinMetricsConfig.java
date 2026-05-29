@@ -42,6 +42,8 @@ public final class VaadinMetricsConfig implements Serializable {
     private final boolean requests;
     private final boolean errors;
     private final boolean client;
+    private final boolean traces;
+    private final boolean tracesSessionId;
     private final int routeCardinalityLimit;
     private final int clientRatePerSession;
 
@@ -52,6 +54,8 @@ public final class VaadinMetricsConfig implements Serializable {
         this.requests = b.requests;
         this.errors = b.errors;
         this.client = b.client;
+        this.traces = b.traces;
+        this.tracesSessionId = b.tracesSessionId;
         this.routeCardinalityLimit = b.routeCardinalityLimit;
         this.clientRatePerSession = b.clientRatePerSession;
     }
@@ -88,6 +92,14 @@ public final class VaadinMetricsConfig implements Serializable {
         return client;
     }
 
+    public boolean isTraces() {
+        return traces;
+    }
+
+    public boolean isTracesSessionId() {
+        return tracesSessionId;
+    }
+
     public int getRouteCardinalityLimit() {
         return routeCardinalityLimit;
     }
@@ -103,6 +115,8 @@ public final class VaadinMetricsConfig implements Serializable {
         private boolean requests = true;
         private boolean errors = true;
         private boolean client = true;
+        private boolean traces = true;
+        private boolean tracesSessionId = false;
         private int routeCardinalityLimit = DEFAULT_ROUTE_CARDINALITY_LIMIT;
         private int clientRatePerSession = DEFAULT_CLIENT_RATE_PER_SESSION;
 
@@ -133,6 +147,16 @@ public final class VaadinMetricsConfig implements Serializable {
 
         public Builder client(boolean enabled) {
             this.client = enabled;
+            return this;
+        }
+
+        public Builder traces(boolean enabled) {
+            this.traces = enabled;
+            return this;
+        }
+
+        public Builder tracesSessionId(boolean enabled) {
+            this.tracesSessionId = enabled;
             return this;
         }
 
