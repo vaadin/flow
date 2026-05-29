@@ -17,6 +17,11 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
@@ -42,6 +47,8 @@ import com.vaadin.flow.dom.JsFunction;
  */
 public abstract class Action implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Action.class);
+
     /**
      * Builds the {@link JsFunction} that runs this action when the surrounding
      * trigger fires. The returned function takes one runtime argument named
@@ -57,6 +64,36 @@ public abstract class Action implements Serializable {
      * @return the action's JS function, not {@code null}
      */
     protected abstract JsFunction toJs(Trigger trigger);
+
+    /**
+     * Logs a warning if {@code target} is not visible. Intended for actions
+     * that capture another component's element as a JsFunction reference: an
+     * invisible component is not sent to the client, the captured element
+     * reference resolves to {@code null} when the install JS runs, and the
+     * action fails at fire time. JsFunction captures are bound by value at
+     * install time, so restoring visibility later does not recover the binding.
+     * <p>
+     * Call this after the target is known to be attached (typically inside a
+     * {@code runWhenAttached} callback) so the check sees the visibility state
+     * at the time the install JS would be sent to the client.
+     *
+     * @param target
+     *            the component whose visibility to check, not {@code null}
+     * @param actionDescription
+     *            human-readable name of the action being wired, used in the
+     *            warning message (e.g. {@code "Fullscreen.enter()"}), not
+     *            {@code null}
+     */
+    protected static void warnIfNotVisible(Component target,
+            String actionDescription) {
+        if (!ComponentUtil.isEffectivelyVisible(target)) {
+            LOGGER.warn(
+                    "Target component {} is not visible; {} will not work. "
+                            + "Make the component visible before wiring the "
+                            + "trigger.",
+                    target.getClass().getName(), actionDescription);
+        }
+    }
 
     /**
      * A value an {@link Action} consumes at fire time. Renders into a

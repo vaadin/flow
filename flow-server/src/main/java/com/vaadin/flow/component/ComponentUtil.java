@@ -241,6 +241,23 @@ public class ComponentUtil {
     }
 
     /**
+     * Checks whether the given component is effectively visible — the component
+     * itself and every ancestor up to the root are visible.
+     * {@link Component#isVisible()} only reports the component's own visibility
+     * flag; a component whose own flag is {@code true} can still be invisible
+     * on the client if any ancestor was hidden via {@code setVisible(false)}.
+     * This method walks the parent chain and returns {@code false} as soon as
+     * any node in the chain is hidden.
+     *
+     * @param component
+     *            the component to check, not {@code null}
+     * @return {@code true} if the component and all its ancestors are visible
+     */
+    public static boolean isEffectivelyVisible(Component component) {
+        return component.getElement().getNode().isVisible();
+    }
+
+    /**
      * Gets the innermost mapped component for the element.
      * <p>
      * This returns {@link Element#getComponent()} if something else than a
