@@ -15,17 +15,33 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import javax.imageio.ImageIO;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+
+import com.vaadin.flow.component.clipboard.Clipboard;
+import com.vaadin.flow.component.clipboard.ClipboardContent;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.component.trigger.internal.SignalInput;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -35,10 +51,13 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * one copies a fixed string with embedded escape characters to verify JSON
  * encoding round-trips, one packs both {@code text/plain} and {@code text/html}
  * into a single {@link com.vaadin.flow.component.html.Div ClipboardItem} to
- * verify the multi-format path resolves with the text value, and one copies the
+ * verify the multi-format path resolves with the text value, one copies the
  * current value of a server-side {@link ValueSignal} (via {@link SignalInput})
  * — a second button mutates the signal so the IT can verify the copied value
- * tracks the server signal. A {@link Span} bound to the signal via
+ * tracks the server signal, one copies an {@link Image} as {@code image/png}
+ * (via {@link ImageBlobInput}), one packs text and image into one
+ * {@link ClipboardContent}, and one copies an image served by a
+ * {@link DownloadHandler}. A {@link Span} bound to the signal via
  * {@code bindText} acts as the sync point. Each action's success/error
  * consumers write the outcome into the status {@link Div}. The IT replaces
  * {@code navigator.clipboard.write} and {@code ClipboardItem} with recording
@@ -67,6 +86,29 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
      */
     static final String SIGNAL_UPDATED_TEXT = "signal updated";
 
+    /** A 4x4 red PNG generated at class load and reused across image cases. */
+    static final byte[] PNG_BYTES = generatePng();
+
+    /** Data-URL form of {@link #PNG_BYTES} for the in-DOM Image source. */
+    static final String PNG_DATA_URL = "data:image/png;base64,"
+            + Base64.getEncoder().encodeToString(PNG_BYTES);
+
+    private static byte[] generatePng() {
+        try {
+            BufferedImage img = new BufferedImage(4, 4,
+                    BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = img.createGraphics();
+            g.setColor(Color.RED);
+            g.fillRect(0, 0, 4, 4);
+            g.dispose();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(img, "png", baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
     @Override
     protected void onShow() {
         Input field = new Input();
@@ -82,13 +124,25 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
         NativeButton changeSignalButton = new NativeButton(
                 "Change signal value");
         changeSignalButton.setId("change-signal");
+        NativeButton copyImageButton = new NativeButton("Copy image");
+        copyImageButton.setId("copy-image");
+        NativeButton copyMultiImageButton = new NativeButton(
+                "Copy text + image");
+        copyMultiImageButton.setId("copy-multi-image");
+        NativeButton copyImageHandlerButton = new NativeButton(
+                "Copy image via handler");
+        copyImageHandlerButton.setId("copy-image-handler");
+        Image sourceImage = new Image(PNG_DATA_URL, "test source");
+        sourceImage.setId("source-image");
         Span signalDisplay = new Span();
         signalDisplay.setId("signal-value");
         Div status = new Div();
         status.setId("status");
 
         add(field, copyButton, copyStaticButton, copyMultiButton,
-                copySignalButton, changeSignalButton, signalDisplay, status);
+                copySignalButton, changeSignalButton, copyImageButton,
+                copyMultiImageButton, copyImageHandlerButton, sourceImage,
+                signalDisplay, status);
 
         Action.Input<String> value = new PropertyInput<>(field, "value",
                 String.class);
@@ -114,5 +168,23 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
                         .setText("err:" + err.name() + ":" + err.message())));
         changeSignalButton
                 .addClickListener(e -> textSignal.set(SIGNAL_UPDATED_TEXT));
+
+        new ClickTrigger(copyImageButton).triggers(new WriteToClipboardAction(
+                new ImageBlobInput(sourceImage),
+                copied -> status.setText("ok:" + copied), err -> status
+                        .setText("err:" + err.name() + ":" + err.message())));
+
+        Clipboard.onClick(copyMultiImageButton).write(
+                ClipboardContent.create().text(MULTI_TEXT).image(sourceImage),
+                copied -> status.setText("ok:" + copied), err -> status
+                        .setText("err:" + err.name() + ":" + err.message()));
+
+        DownloadHandler imageHandler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(PNG_BYTES), "test.png",
+                        "image/png", PNG_BYTES.length));
+        Clipboard.onClick(copyImageHandlerButton).writeImage(imageHandler,
+                copied -> status.setText("ok:" + copied), err -> status
+                        .setText("err:" + err.name() + ":" + err.message()));
     }
 }
