@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
@@ -85,7 +86,7 @@ public abstract class Action implements Serializable {
      */
     protected static void warnIfNotVisible(Component target,
             String actionDescription) {
-        if (!target.isVisible()) {
+        if (!ComponentUtil.isEffectivelyVisible(target)) {
             LOGGER.warn(
                     "Target component {} is not visible; {} will not work. "
                             + "Make the component visible before wiring the "
