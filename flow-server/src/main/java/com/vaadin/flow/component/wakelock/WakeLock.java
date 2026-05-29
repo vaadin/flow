@@ -173,7 +173,8 @@ public final class WakeLock {
         ui.getElement()
                 .executeJs("return window.Vaadin.Flow.wakeLock.request(this)")
                 .then(RequestResult.class,
-                        result -> handleResult(ui, onError, result), err -> {
+                        result -> handleResultError(ui, onError, result),
+                        err -> {
                             LOGGER.debug(
                                     "Client-side wakeLock.request failed: {}",
                                     err);
@@ -187,7 +188,14 @@ public final class WakeLock {
                         });
     }
 
-    private static void handleResult(UI ui,
+    /*
+     * Processes the given {@code RequestResult} to handle wake lock errors. If
+     * the result indicates an error state and an error handler is provided, it
+     * evaluates the error code and message, constructs a {@link WakeLockError},
+     * and delivers it to the error handler on the given UI. Successful results
+     * are ignored because they do not carry any interesting information.
+     */
+    private static void handleResultError(UI ui,
             @Nullable SerializableConsumer<WakeLockError> onError,
             @Nullable RequestResult result) {
         if (onError == null || result == null
