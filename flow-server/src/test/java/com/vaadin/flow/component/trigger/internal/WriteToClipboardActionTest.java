@@ -25,6 +25,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.clipboard.ClipboardContent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.tests.util.MockUI;
@@ -155,16 +156,16 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void fireAndForget_allThreeSlots_eachInputCapturedInOrder() {
+    void fireAndForget_allThreeSlotsViaContent_eachInputCapturedInOrder() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent img = new TagComponent("img");
         ui.getElement().appendChild(button.getElement(), img.getElement());
 
-        new DomEventTrigger(button, "click").triggers(
-                new WriteToClipboardAction(new LiteralInput<>("plain"),
-                        new LiteralInput<>("<b>html</b>"),
-                        new ImageBlobInput(img)));
+        ClipboardContent content = ClipboardContent.create().text("plain")
+                .html("<b>html</b>").image(img);
+        new DomEventTrigger(button, "click")
+                .triggers(new WriteToClipboardAction(content));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -291,13 +292,9 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void constructor_multiFormat_allInputsNullRejected() {
-        Action.@Nullable Input<String> nullText = null;
-        Action.@Nullable Input<String> nullHtml = null;
-        Action.@Nullable Input<?> nullImage = null;
+    void constructor_emptyContent_rejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> new WriteToClipboardAction(nullText, nullHtml,
-                        nullImage));
+                () -> new WriteToClipboardAction(ClipboardContent.create()));
     }
 
 }

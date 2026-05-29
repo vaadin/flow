@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.clipboard.ClipboardContent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 
@@ -38,7 +39,8 @@ import com.vaadin.flow.function.SerializableConsumer;
  * <ul>
  * <li>Text/HTML — the typical case for copying a string</li>
  * <li>Image — the typical case for copying an image</li>
- * <li>Multi-format — combine any of the three slots in one item</li>
+ * <li>Multi-format via {@link ClipboardContent} — combine any of the three
+ * slots in one item</li>
  * </ul>
  * {@code onCopied} receives the exact string that was copied — the
  * {@code text/plain} value if present, otherwise the {@code text/html} value,
@@ -145,53 +147,29 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     }
 
     /**
-     * Creates a fire-and-forget multi-format clipboard-copy action. Prefer
-     * {@link #WriteToClipboardAction(Action.Input, Action.Input)} for the
-     * text/HTML case or {@link #WriteToClipboardAction(Action.Input)} for the
-     * image case; use this constructor when an item needs to carry more than
-     * one of the three MIME types.
+     * Creates a fire-and-forget multi-format clipboard-copy action from a
+     * {@link ClipboardContent} describing the payload. Use
+     * {@code Clipboard.onClick(...).write(content)} as the typical entry point.
      *
-     * @param textInput
-     *            input producing the {@code text/plain} payload, or
-     *            {@code null} to omit
-     * @param htmlInput
-     *            input producing the {@code text/html} payload, or {@code null}
-     *            to omit
-     * @param imageInput
-     *            input producing the source {@code <img>} for the
-     *            {@code image/png} payload (typically an
-     *            {@link ImageBlobInput}), or {@code null} to omit
+     * @param content
+     *            the clipboard payload, not {@code null}; must have at least
+     *            one slot set
      * @throws IllegalArgumentException
-     *             if all three inputs are {@code null}
+     *             if {@code content} has no slots set
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput,
-            Action.@Nullable Input<?> imageInput) {
-        super();
-        validate(textInput, htmlInput, imageInput);
-        this.textInput = textInput;
-        this.htmlInput = htmlInput;
-        this.imageInput = imageInput;
+    public WriteToClipboardAction(ClipboardContent content) {
+        this(Objects.requireNonNull(content, "content must not be null")
+                .getTextInput(), content.getHtmlInput(),
+                content.getImageInput());
     }
 
     /**
-     * Creates a multi-format clipboard-copy action whose outcome is reported
-     * back to the server. Prefer
-     * {@link #WriteToClipboardAction(Action.Input, Action.Input, SerializableConsumer, SerializableConsumer)}
-     * for the text/HTML case or
-     * {@link #WriteToClipboardAction(Action.Input, SerializableConsumer, SerializableConsumer)}
-     * for the image case; use this constructor when an item needs to carry more
-     * than one of the three MIME types.
+     * Creates a multi-format clipboard-copy action from a
+     * {@link ClipboardContent} whose outcome is reported back to the server.
      *
-     * @param textInput
-     *            input producing the {@code text/plain} payload, or
-     *            {@code null} to omit
-     * @param htmlInput
-     *            input producing the {@code text/html} payload, or {@code null}
-     *            to omit
-     * @param imageInput
-     *            input producing the source {@code <img>} for the
-     *            {@code image/png} payload, or {@code null} to omit
+     * @param content
+     *            the clipboard payload, not {@code null}; must have at least
+     *            one slot set
      * @param onCopied
      *            invoked on the UI thread with the string that was copied after
      *            the client reports the write resolved ({@code text/plain} if
@@ -202,9 +180,27 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      *            invoked on the UI thread with the browser's error after the
      *            client reports the write rejected, not {@code null}
      * @throws IllegalArgumentException
-     *             if all three inputs are {@code null}
+     *             if {@code content} has no slots set
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+    public WriteToClipboardAction(ClipboardContent content,
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        this(Objects.requireNonNull(content, "content must not be null")
+                .getTextInput(), content.getHtmlInput(),
+                content.getImageInput(), onCopied, onError);
+    }
+
+    private WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+            Action.@Nullable Input<String> htmlInput,
+            Action.@Nullable Input<?> imageInput) {
+        super();
+        validate(textInput, htmlInput, imageInput);
+        this.textInput = textInput;
+        this.htmlInput = htmlInput;
+        this.imageInput = imageInput;
+    }
+
+    private WriteToClipboardAction(Action.@Nullable Input<String> textInput,
             Action.@Nullable Input<String> htmlInput,
             Action.@Nullable Input<?> imageInput,
             SerializableConsumer<@Nullable String> onCopied,

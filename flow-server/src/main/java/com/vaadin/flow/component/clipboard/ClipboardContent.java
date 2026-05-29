@@ -122,15 +122,24 @@ public final class ClipboardContent implements Serializable {
         return this;
     }
 
-    Action.@Nullable Input<String> getTextInput() {
+    /**
+     * @return the text input, or {@code null} if no text was set
+     */
+    public Action.@Nullable Input<String> getTextInput() {
         return textInput;
     }
 
-    Action.@Nullable Input<String> getHtmlInput() {
+    /**
+     * @return the html input, or {@code null} if no html was set
+     */
+    public Action.@Nullable Input<String> getHtmlInput() {
         return htmlInput;
     }
 
-    Action.@Nullable Input<?> getImageInput() {
+    /**
+     * @return the image input, or {@code null} if no image was set
+     */
+    public Action.@Nullable Input<?> getImageInput() {
         return imageInput;
     }
 }
