@@ -27,7 +27,9 @@ import com.vaadin.flow.component.Component;
  * <p>
  * The {@code Output} fields are bound to {@code MouseEventTrigger.class}, so
  * the same field instance can be used as the source for any
- * {@code MouseEventTrigger} subclass:
+ * {@code MouseEventTrigger} subclass — both snippets below mirror the click's
+ * screen X coordinate into {@code xField.value}, one on single click, one on
+ * double click:
  *
  * <pre>{@code
  * ClickTrigger click = new ClickTrigger(button);
@@ -65,6 +67,11 @@ public class MouseEventTrigger extends DomEventTrigger {
      * The {@code MouseEvent} properties exposed as static {@link Action.Input}
      * sources. Use these as the value source of an {@link Action} wired to any
      * {@link MouseEventTrigger} subclass.
+     * <p>
+     * The class is named {@code Output} from the trigger's perspective — these
+     * are the values the trigger produces from the fired event. The same fields
+     * are typed as {@link Action.Input} from the {@link Action}'s perspective —
+     * what an action consumes. One value, two roles in the data flow.
      * <p>
      * Each field is bound to {@link MouseEventTrigger}; using it in the handler
      * of an unrelated trigger (e.g. a keyboard trigger) throws

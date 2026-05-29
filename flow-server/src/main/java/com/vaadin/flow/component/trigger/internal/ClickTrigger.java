@@ -23,7 +23,8 @@ import com.vaadin.flow.component.Component;
  * {@link Action.Input} sources on {@link MouseEventTrigger.Output} (also
  * reachable as {@code ClickTrigger.Output} through inheritance).
  * <p>
- * Example:
+ * Example — on click, mirror the screen coordinates of the click into two input
+ * fields' {@code value} properties:
  *
  * <pre>{@code
  * ClickTrigger click = new ClickTrigger(button);

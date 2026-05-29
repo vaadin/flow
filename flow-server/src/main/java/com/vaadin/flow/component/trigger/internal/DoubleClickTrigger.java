@@ -23,7 +23,8 @@ import com.vaadin.flow.component.Component;
  * {@link Action.Input} sources on {@link MouseEventTrigger.Output} (also
  * reachable as {@code DoubleClickTrigger.Output} through inheritance).
  * <p>
- * Example:
+ * Example — on double-click, mirror the viewport X coordinate into a field's
+ * {@code value} property:
  *
  * <pre>{@code
  * DoubleClickTrigger dbl = new DoubleClickTrigger(panel);
