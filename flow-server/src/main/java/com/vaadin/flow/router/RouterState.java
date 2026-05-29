@@ -32,9 +32,20 @@ import com.vaadin.flow.component.HasElement;
  * attach.
  * <p>
  * The snapshot covers the same data already available through
- * {@link AfterNavigationEvent} plus the navigation target class. It is produced
- * at the same point that {@code AfterNavigationEvent} is dispatched, so the
- * signal value and the listener notification are always consistent.
+ * {@link AfterNavigationEvent} plus the navigation target class. Each
+ * navigation produces two consecutive updates to the signal:
+ * <ol>
+ * <li>An early update emitted before the new chain is instantiated, exposing
+ * the upcoming {@link #location()}, {@link #routeParameters()} and
+ * {@link #navigationTarget()} while {@link #activeChain()} is still empty. This
+ * lets code running in layout/view constructors read the target of the
+ * navigation that is in progress.</li>
+ * <li>A final update emitted at the same point that
+ * {@code AfterNavigationEvent} is dispatched, after the new chain has been
+ * attached to the UI. At this point {@link #activeChain()} is populated, and
+ * the signal value is consistent with what {@link AfterNavigationListener}s
+ * observe.</li>
+ * </ol>
  *
  * @param location
  *            the location of the current view (path, query parameters,
@@ -46,10 +57,12 @@ import com.vaadin.flow.component.HasElement;
  * @param activeChain
  *            unmodifiable list of the currently active route target and its
  *            parent layouts, leaf first. Never {@code null}; empty before the
- *            first navigation completes.
+ *            first navigation completes and while a navigation is in progress
+ *            (between the early and final signal updates).
  * @param navigationTarget
- *            the class of the leaf route target. {@code null} before the first
- *            navigation completes.
+ *            the class of the leaf route target. {@code null} only before the
+ *            first navigation has started; once a navigation begins, the target
+ *            is set immediately so it is visible to layout/view constructors.
  */
 public record RouterState(Location location, RouteParameters routeParameters,
         List<HasElement> activeChain,

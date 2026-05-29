@@ -74,6 +74,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockInstantiator;
@@ -387,6 +388,31 @@ class NavigationStateRendererTest {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             beforeEnterCount.getAndIncrement();
+        }
+    }
+
+    // Captures RouterState snapshots seen by the layout/view constructors.
+    // Used to verify that UI#routerStateSignal() exposes the upcoming
+    // navigation target while route components are still being instantiated
+    // (see #24471).
+    private static final List<RouterState> capturedSignalDuringConstruction = Collections
+            .synchronizedList(new ArrayList<>());
+
+    @Tag("div")
+    private static class SignalCapturingLayout extends Component
+            implements RouterLayout {
+        SignalCapturingLayout() {
+            capturedSignalDuringConstruction
+                    .add(UI.getCurrent().routerStateSignal().peek());
+        }
+    }
+
+    @Route(value = "signal-capturing", layout = SignalCapturingLayout.class)
+    @Tag("div")
+    private static class SignalCapturingView extends Component {
+        SignalCapturingView() {
+            capturedSignalDuringConstruction
+                    .add(UI.getCurrent().routerStateSignal().peek());
         }
     }
 
@@ -1320,6 +1346,56 @@ class NavigationStateRendererTest {
                     (Class<? extends Component>) event.getNavigationTarget(),
                     new RouteParameters("id", id));
         }
+    }
+
+    @Test
+    void handle_routerStateSignal_reflectsUpcomingTargetDuringConstruction() {
+        // Fixes #24471: while the layout chain is being instantiated, the
+        // routerStateSignal value must already reflect the upcoming
+        // navigation (target/location/parameters). Otherwise code in a
+        // layout/view constructor that reads navigationTarget() — e.g.
+        // a Signal.map() inside bindText — sees the stale initial state
+        // and NPEs on the null navigationTarget.
+        capturedSignalDuringConstruction.clear();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        MockUI ui = new MockUI(session);
+
+        // Register the route + layout so the renderer can resolve the
+        // SignalCapturingLayout chain via getRouterLayoutTypes.
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(SignalCapturingView.class);
+
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(SignalCapturingView.class));
+
+        renderer.handle(
+                new NavigationEvent(router, new Location("signal-capturing"),
+                        ui, NavigationTrigger.UI_NAVIGATE));
+
+        assertEquals(2, capturedSignalDuringConstruction.size(),
+                "Both the layout and the view constructors should have run");
+
+        RouterState layoutSnapshot = capturedSignalDuringConstruction.get(0);
+        RouterState viewSnapshot = capturedSignalDuringConstruction.get(1);
+
+        assertEquals(SignalCapturingView.class,
+                layoutSnapshot.navigationTarget(),
+                "Layout constructor should see the upcoming navigation target");
+        assertEquals("signal-capturing", layoutSnapshot.location().getPath(),
+                "Layout constructor should see the upcoming location");
+        assertEquals(SignalCapturingView.class, viewSnapshot.navigationTarget(),
+                "View constructor should see the upcoming navigation target");
+        assertEquals("signal-capturing", viewSnapshot.location().getPath(),
+                "View constructor should see the upcoming location");
+
+        RouterState afterNav = ui.routerStateSignal().peek();
+        assertEquals(SignalCapturingView.class, afterNav.navigationTarget(),
+                "After navigation the signal should still hold the new target");
+        assertEquals("signal-capturing", afterNav.location().getPath());
+        assertFalse(afterNav.activeChain().isEmpty(),
+                "After navigation the active chain should be populated");
     }
 
     @Test

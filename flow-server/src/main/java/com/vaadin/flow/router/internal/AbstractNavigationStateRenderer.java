@@ -224,6 +224,16 @@ public abstract class AbstractNavigationStateRenderer
         // See https://github.com/vaadin/flow/issues/3619 for more info.
         pushHistoryStateIfNeeded(event, ui);
 
+        // Expose the upcoming navigation target via routerStateSignal before
+        // the chain is instantiated, so that code running in layout/view
+        // constructors (e.g. a Signal.map() bound via bindText) sees the new
+        // target instead of the previous one. The activeChain is left empty
+        // here because the new chain has not been built yet; it is filled in
+        // by handleAfterNavigationEvents once navigation completes.
+        // See https://github.com/vaadin/flow/issues/24471.
+        ui.getInternals().updateRouterState(new RouterState(event.getLocation(),
+                parameters, Collections.emptyList(), routeTargetType));
+
         result = handleBeforeNavigationEvents(event, routeTargetType,
                 parameters, chain);
         if (result.isPresent()) {
