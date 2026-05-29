@@ -5,6 +5,7 @@ import {
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
 import './Clipboard';
+import './ElementSizeObserver';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
 

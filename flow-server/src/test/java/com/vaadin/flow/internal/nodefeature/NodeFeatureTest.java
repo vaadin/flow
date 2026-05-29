@@ -106,6 +106,7 @@ class NodeFeatureTest {
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
         expectedIds.put(SignalBindingFeature.class,
                 NodeFeatures.SIGNAL_BINDING);
+        expectedIds.put(SizeSignalFeature.class, NodeFeatures.SIZE_SIGNAL);
 
         return expectedIds;
     }
@@ -148,7 +149,7 @@ class NodeFeatureTest {
                 BasicTypeValue.class,
 
                 /* Signal binding feature */
-                SignalBindingFeature.class,
+                SignalBindingFeature.class, SizeSignalFeature.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,
