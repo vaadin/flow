@@ -20,8 +20,8 @@ import com.vaadin.flow.component.Component;
 /**
  * Fires on the host component's {@code click} DOM event. The event's
  * coordinates and modifier-key state are available as static
- * {@link Action.Input} sources on {@link MouseEventTrigger.Output} (also
- * reachable as {@code ClickTrigger.Output} through inheritance).
+ * {@link Action.Input} sources on {@link MouseEventTrigger.EventData} (also
+ * reachable as {@code ClickTrigger.EventData} through inheritance).
  * <p>
  * Example — on click, mirror the screen coordinates of the click into two input
  * fields' {@code value} properties:
@@ -30,9 +30,9 @@ import com.vaadin.flow.component.Component;
  * ClickTrigger click = new ClickTrigger(button);
  * click.triggers(
  *         new SetPropertyAction<>(xField, "value",
- *                 ClickTrigger.Output.screenX),
+ *                 ClickTrigger.EventData.screenX),
  *         new SetPropertyAction<>(yField, "value",
- *                 ClickTrigger.Output.screenY));
+ *                 ClickTrigger.EventData.screenY));
  * }</pre>
  *
  * <p>

@@ -28,14 +28,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DoubleClickTriggerTest {
 
     @Test
-    void usesDblclickAndSharesMouseEventOutput() {
+    void usesDblclickAndSharesMouseEventData() {
         UI ui = new MockUI();
         TagComponent panel = new TagComponent("div");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(panel.getElement(), field.getElement());
 
         new DoubleClickTrigger(panel).triggers(new SetPropertyAction<>(field,
-                "value", DoubleClickTrigger.Output.clientX));
+                "value", DoubleClickTrigger.EventData.clientX));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -49,7 +49,7 @@ class DoubleClickTriggerTest {
                 install.getBody());
         assertEquals("dblclick", install.getCaptures().get(1));
 
-        // The Output field is inherited from MouseEventTrigger.Output and
+        // The EventData field is inherited from MouseEventTrigger.EventData and
         // resolves to the same event[clientX] expression as on ClickTrigger.
         JsFunction source = (JsFunction) actionOf(install).getCaptures().get(2);
         assertEquals("clientX", source.getCaptures().get(0));

@@ -34,7 +34,7 @@ import com.vaadin.flow.dom.JsFunction;
  * time rather than captured on the server. A trigger family may expose its
  * event state as one or more {@code Input}s, typically as
  * {@code public static final} fields (for example
- * {@link MouseEventTrigger.Output#screenX}); other inputs read state
+ * {@link MouseEventTrigger.EventData#screenX}); other inputs read state
  * independent of any trigger (for example {@link PropertyInput}).
  * <p>
  * <em>For Action implementors:</em> override {@link #toJs(Trigger)} to produce

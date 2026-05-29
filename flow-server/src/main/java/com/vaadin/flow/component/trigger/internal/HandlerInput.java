@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.JsFunction;
  * trigger family into the handler of an unrelated trigger (where the referenced
  * variable would not be in scope). Class-based scoping lets a single input
  * instance be exposed as a {@code public static final} field (see
- * {@link MouseEventTrigger.Output}) and reused across every instance of the
+ * {@link MouseEventTrigger.EventData}) and reused across every instance of the
  * owning class and its subclasses.
  * <p>
  * For internal use only. May be renamed or removed in a future release.

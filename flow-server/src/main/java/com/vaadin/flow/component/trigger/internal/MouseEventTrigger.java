@@ -23,9 +23,9 @@ import com.vaadin.flow.component.Component;
  * Common super class for triggers that fire on a DOM {@code MouseEvent} —
  * {@link ClickTrigger}, {@link DoubleClickTrigger}, and any future mouse-event
  * trigger. Exposes the {@code MouseEvent} properties shared by all of them as
- * static {@link Action.Input} fields on {@link Output}.
+ * static {@link Action.Input} fields on {@link EventData}.
  * <p>
- * The {@code Output} fields are bound to {@code MouseEventTrigger.class}, so
+ * The {@code EventData} fields are bound to {@code MouseEventTrigger.class}, so
  * the same field instance can be used as the source for any
  * {@code MouseEventTrigger} subclass — both snippets below mirror the click's
  * screen X coordinate into {@code xField.value}, one on single click, one on
@@ -34,11 +34,11 @@ import com.vaadin.flow.component.Component;
  * <pre>{@code
  * ClickTrigger click = new ClickTrigger(button);
  * click.triggers(new SetPropertyAction<>(xField, "value",
- *         ClickTrigger.Output.screenX));
+ *         ClickTrigger.EventData.screenX));
  *
  * DoubleClickTrigger dbl = new DoubleClickTrigger(button);
  * dbl.triggers(new SetPropertyAction<>(xField, "value",
- *         DoubleClickTrigger.Output.screenX));
+ *         DoubleClickTrigger.EventData.screenX));
  * }</pre>
  *
  * <p>
@@ -65,13 +65,9 @@ public class MouseEventTrigger extends DomEventTrigger {
 
     /**
      * The {@code MouseEvent} properties exposed as static {@link Action.Input}
-     * sources. Use these as the value source of an {@link Action} wired to any
-     * {@link MouseEventTrigger} subclass.
-     * <p>
-     * The class is named {@code Output} from the trigger's perspective — these
-     * are the values the trigger produces from the fired event. The same fields
-     * are typed as {@link Action.Input} from the {@link Action}'s perspective —
-     * what an action consumes. One value, two roles in the data flow.
+     * sources. Each field reads one property off the DOM event that fires the
+     * trigger; pass any of them as the value source of an {@link Action} wired
+     * to a {@link MouseEventTrigger} subclass.
      * <p>
      * Each field is bound to {@link MouseEventTrigger}; using it in the handler
      * of an unrelated trigger (e.g. a keyboard trigger) throws
@@ -79,17 +75,18 @@ public class MouseEventTrigger extends DomEventTrigger {
      * time.
      * <p>
      * Trigger subclasses that need their own properties may declare their own
-     * nested {@code Output} extending this class — the inherited static fields
-     * remain reachable through the subclass (so {@code ClickTrigger.Output
-     * .screenX} continues to resolve to {@link #screenX}).
+     * nested {@code EventData} extending this class — the inherited static
+     * fields remain reachable through the subclass, so
+     * {@code ClickTrigger.EventData.screenX} continues to resolve to
+     * {@link #screenX}.
      */
-    public abstract static class Output implements Serializable {
+    public abstract static class EventData implements Serializable {
 
         /**
          * The class exists purely as a namespace for the static
          * {@link Action.Input} fields.
          */
-        protected Output() {
+        protected EventData() {
         }
 
         /** {@code event.screenX} — X coordinate relative to the screen. */

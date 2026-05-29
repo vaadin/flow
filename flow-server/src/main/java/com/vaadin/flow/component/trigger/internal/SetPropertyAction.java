@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.JsFunction;
  * <p>
  * The value to assign can be either a literal (constant, serialised at build
  * time) or an {@link Action.Input} that produces the value on the client when
- * the trigger fires — for example, {@link MouseEventTrigger.Output#screenX}
+ * the trigger fires — for example, {@link MouseEventTrigger.EventData#screenX}
  * feeds the click's screen coordinate.
  * <p>
  * Common idioms:
@@ -41,7 +41,7 @@ import com.vaadin.flow.dom.JsFunction;
  * <li>Disable a button: {@code new SetPropertyAction(button, "disabled", true)}
  * <li>Clear an input: {@code new SetPropertyAction(input, "value", "")}
  * <li>Mirror a click coordinate:
- * {@code new SetPropertyAction(field, "value", ClickTrigger.Output.screenX)}
+ * {@code new SetPropertyAction(field, "value", ClickTrigger.EventData.screenX)}
  * </ul>
  *
  * Server-side state is not updated by this action; the change lives in the

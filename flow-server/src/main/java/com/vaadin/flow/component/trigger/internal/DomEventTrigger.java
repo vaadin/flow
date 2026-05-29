@@ -63,7 +63,7 @@ public class DomEventTrigger extends Trigger {
      * time, valid in the handler of any trigger that is an instance of
      * {@code ownerClass}. Used by trigger families that expose their event
      * properties as {@code public static final} fields — see
-     * {@link MouseEventTrigger.Output}.
+     * {@link MouseEventTrigger.EventData}.
      *
      * @param name
      *            the event property name, not {@code null}
