@@ -84,15 +84,72 @@ public class RequestMetricsBinderObservationTest {
 
         Assert.assertEquals(1, recorder.names.size());
         Assert.assertEquals(MeterNames.REQUEST_DURATION, recorder.names.get(0));
+        // No poll/navigation marked, so a plain UIDL request is labelled as a
+        // generic "rpc" interaction rather than the opaque "uidl".
         Assert.assertEquals(
                 VaadinObservationNames.REQUEST + "."
-                        + VaadinObservationNames.REQUEST_TYPE_UIDL,
+                        + VaadinObservationNames.INTERACTION_RPC,
                 recorder.contextualNames.get(0));
         Assert.assertEquals("uidl", recorder.tags.get(0)
                 .get(VaadinObservationNames.KEY_REQUEST_TYPE));
+        Assert.assertEquals(VaadinObservationNames.INTERACTION_RPC,
+                recorder.tags.get(0)
+                        .get(VaadinObservationNames.KEY_INTERACTION));
         Assert.assertEquals(VaadinObservationNames.OUTCOME_SUCCESS,
                 recorder.tags.get(0).get(VaadinObservationNames.KEY_OUTCOME));
         Assert.assertFalse(recorder.errored.get());
+    }
+
+    @Test
+    public void pollMarkerLabelsRequestAsPoll() {
+        ObservationRegistry obs = ObservationRegistry.create();
+        RecordingHandler recorder = new RecordingHandler();
+        obs.observationConfig().observationHandler(recorder);
+
+        RequestMetricsBinder binder = new RequestMetricsBinder(
+                new SimpleMeterRegistry(), obs, VaadinMetricsConfig.defaults());
+
+        VaadinRequest req = Mockito.mock(VaadinRequest.class);
+        Mockito.when(req.getParameter("v-r")).thenReturn("uidl");
+        VaadinResponse resp = Mockito.mock(VaadinResponse.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+
+        binder.requestStart(req, resp);
+        // Simulate a poll listener firing during request handling.
+        RequestInteraction.mark(VaadinObservationNames.INTERACTION_POLL);
+        binder.requestEnd(req, resp, session);
+
+        Assert.assertEquals(
+                VaadinObservationNames.REQUEST + "."
+                        + VaadinObservationNames.INTERACTION_POLL,
+                recorder.contextualNames.get(0));
+        Assert.assertEquals(VaadinObservationNames.INTERACTION_POLL,
+                recorder.tags.get(0)
+                        .get(VaadinObservationNames.KEY_INTERACTION));
+    }
+
+    @Test
+    public void staleMarkerIsClearedAtRequestStart() {
+        ObservationRegistry obs = ObservationRegistry.create();
+        RecordingHandler recorder = new RecordingHandler();
+        obs.observationConfig().observationHandler(recorder);
+
+        RequestMetricsBinder binder = new RequestMetricsBinder(
+                new SimpleMeterRegistry(), obs, VaadinMetricsConfig.defaults());
+
+        VaadinRequest req = Mockito.mock(VaadinRequest.class);
+        Mockito.when(req.getParameter("v-r")).thenReturn("uidl");
+        VaadinResponse resp = Mockito.mock(VaadinResponse.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+
+        // Leftover marker from a prior request on this thread.
+        RequestInteraction.mark(VaadinObservationNames.INTERACTION_POLL);
+        binder.requestStart(req, resp);
+        binder.requestEnd(req, resp, session);
+
+        Assert.assertEquals(VaadinObservationNames.INTERACTION_RPC,
+                recorder.tags.get(0)
+                        .get(VaadinObservationNames.KEY_INTERACTION));
     }
 
     @Test

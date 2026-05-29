@@ -78,6 +78,9 @@ final class NavigationMetricsBinder
         String route = routes.tagFor(event.getNavigationTarget());
         ComponentUtil.setData(ui, ROUTE_KEY, route);
         if (useObservation()) {
+            // Tell the enclosing request span this UIDL request navigated.
+            RequestInteraction
+                    .mark(VaadinObservationNames.INTERACTION_NAVIGATION);
             Observation obs = Observation
                     .createNotStarted(MeterNames.NAVIGATION,
                             observationRegistry)

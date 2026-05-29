@@ -25,6 +25,7 @@ import io.micrometer.observation.ObservationRegistry;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.micrometer.client.ClientMetricsBinder;
 import com.vaadin.flow.micrometer.client.MetricsCollectorElement;
+import com.vaadin.flow.micrometer.trace.VaadinObservationNames;
 import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 
@@ -35,6 +36,7 @@ import com.vaadin.flow.server.UIInitListener;
 final class UiMetricsBinder implements UIInitListener {
 
     private final MeterRegistry registry;
+    private final ObservationRegistry observationRegistry;
     private final VaadinMetricsConfig config;
     private final Counter created;
     private final AtomicLong active = new AtomicLong();
@@ -49,6 +51,7 @@ final class UiMetricsBinder implements UIInitListener {
             ObservationRegistry observationRegistry,
             VaadinMetricsConfig config) {
         this.registry = registry;
+        this.observationRegistry = observationRegistry;
         this.config = config;
         this.created = Counter.builder(MeterNames.UI_CREATED)
                 .register(registry);
@@ -75,6 +78,13 @@ final class UiMetricsBinder implements UIInitListener {
         if (navigationBinder != null) {
             ui.addBeforeEnterListener(navigationBinder);
             ui.addAfterNavigationListener(navigationBinder);
+        }
+        if (config.isTraces() && observationRegistry != null) {
+            // Polls are the high-frequency UIDL noise; labelling them lets the
+            // request span read "vaadin.request.poll" instead of an opaque
+            // "vaadin.request.uidl".
+            ui.addPollListener(e -> RequestInteraction
+                    .mark(VaadinObservationNames.INTERACTION_POLL));
         }
         if (clientBinder != null) {
             ui.add(new MetricsCollectorElement(clientBinder, config));

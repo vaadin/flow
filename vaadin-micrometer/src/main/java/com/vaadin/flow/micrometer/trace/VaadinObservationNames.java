@@ -33,10 +33,26 @@ public final class VaadinObservationNames {
 
     public static final String KEY_OUTCOME = "outcome";
     public static final String KEY_REQUEST_TYPE = "vaadin.request.type";
+    public static final String KEY_INTERACTION = "vaadin.interaction";
     public static final String KEY_ROUTE = "route";
     public static final String KEY_HTTP_METHOD = "http.method";
     public static final String KEY_SESSION_ID = "vaadin.session.id";
     public static final String KEY_UI_ID = "ui.id";
+    public static final String KEY_CLIENT_LOCATION = "vaadin.client.location";
+
+    /** A poll request triggered by a configured poll interval. */
+    public static final String INTERACTION_POLL = "poll";
+    /** The request performed a server-side navigation. */
+    public static final String INTERACTION_NAVIGATION = "navigation";
+    /**
+     * A real client→server RPC (DOM event, {@code @ClientCallable}, property
+     * sync, return channel) that we cannot break down further without parsing
+     * the UIDL body.
+     */
+    public static final String INTERACTION_RPC = "rpc";
+
+    public static final String UI_ID_UNKNOWN = "_unknown";
+    public static final String LOCATION_UNKNOWN = "_unknown";
 
     public static final String OUTCOME_SUCCESS = "success";
     public static final String OUTCOME_ERROR = "error";

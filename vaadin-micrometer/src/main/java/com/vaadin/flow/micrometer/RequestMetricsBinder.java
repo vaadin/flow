@@ -90,6 +90,9 @@ final class RequestMetricsBinder implements VaadinRequestInterceptor {
 
     @Override
     public void requestStart(VaadinRequest request, VaadinResponse response) {
+        // Drop any interaction marker left by a previous request on this
+        // pooled thread; poll/navigation listeners re-mark during handling.
+        RequestInteraction.clear();
         if (useObservation()) {
             String type = requestType(request);
             // Let DI integrations (Spring/Boot) lift Vaadin type into the
@@ -105,6 +108,11 @@ final class RequestMetricsBinder implements VaadinRequestInterceptor {
                     .lowCardinalityKeyValue(
                             VaadinObservationNames.KEY_HTTP_METHOD,
                             httpMethod(request))
+                    .lowCardinalityKeyValue(VaadinObservationNames.KEY_UI_ID,
+                            uiId(request))
+                    .lowCardinalityKeyValue(
+                            VaadinObservationNames.KEY_CLIENT_LOCATION,
+                            clientLocation(request))
                     .start();
             observation.set(obs);
             observationScope.set(obs.openScope());
@@ -119,6 +127,47 @@ final class RequestMetricsBinder implements VaadinRequestInterceptor {
         }
         String m = request.getMethod();
         return m == null ? "unknown" : m;
+    }
+
+    private static String uiId(VaadinRequest request) {
+        if (request == null) {
+            return VaadinObservationNames.UI_ID_UNKNOWN;
+        }
+        String id = request.getParameter("v-uiId");
+        return id != null ? id : VaadinObservationNames.UI_ID_UNKNOWN;
+    }
+
+    /**
+     * Extracts the page path the UIDL request was sent from. Falls back to the
+     * Referer header path so we always emit something useful for dashboards
+     * filtering by view, without ever exposing PII (the path goes through the
+     * parent navigation observation's route template mapping in dashboards; we
+     * deliberately keep it un-templated here so the span captures the literal
+     * client path).
+     */
+    private static String clientLocation(VaadinRequest request) {
+        if (request == null) {
+            return VaadinObservationNames.LOCATION_UNKNOWN;
+        }
+        String referer = request.getHeader("Referer");
+        if (referer == null || referer.isEmpty()) {
+            return VaadinObservationNames.LOCATION_UNKNOWN;
+        }
+        // Strip scheme+host: keep just the path (and optional query) so
+        // tag cardinality stays modest and we never emit hostnames.
+        int schemeEnd = referer.indexOf("://");
+        if (schemeEnd < 0) {
+            return referer;
+        }
+        int pathStart = referer.indexOf('/', schemeEnd + 3);
+        if (pathStart < 0) {
+            return "/";
+        }
+        int queryStart = referer.indexOf('?', pathStart);
+        if (queryStart < 0) {
+            return referer.substring(pathStart);
+        }
+        return referer.substring(pathStart, queryStart);
     }
 
     @Override
@@ -156,7 +205,19 @@ final class RequestMetricsBinder implements VaadinRequestInterceptor {
         }
         Observation obs = observation.get();
         observation.remove();
+        // Consume whatever a poll/navigation listener recorded for this
+        // request so the span name reflects what actually happened instead
+        // of the opaque protocol-level "uidl".
+        String interaction = RequestInteraction.take();
         if (obs != null) {
+            String type = requestType(request);
+            if (VaadinObservationNames.REQUEST_TYPE_UIDL.equals(type)) {
+                String kind = interaction != null ? interaction
+                        : VaadinObservationNames.INTERACTION_RPC;
+                obs.lowCardinalityKeyValue(
+                        VaadinObservationNames.KEY_INTERACTION, kind);
+                obs.contextualName(VaadinObservationNames.REQUEST + "." + kind);
+            }
             obs.lowCardinalityKeyValue(VaadinObservationNames.KEY_OUTCOME,
                     outcome);
             obs.stop();
