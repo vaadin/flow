@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.Objects;
+
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
@@ -31,14 +33,19 @@ import com.vaadin.flow.function.SerializableConsumer;
  * short-lived user gesture (click, key press, ...). Bind this action to a
  * trigger that fires during such a gesture.
  * <p>
- * Outcome handling extends {@link PromiseAction}: use the no-arg outcome
- * constructor for fire-and-forget, or the overload taking
- * {@code onCopied}/{@code onError} consumers. {@code onCopied} receives the
- * exact string that was copied — the {@code text/plain} value if present,
- * otherwise the {@code text/html} value, otherwise {@code null} (image-only
- * case) — useful when the input was a {@link PropertyInput} whose value is only
- * known on the client. {@code onError} receives a {@link PromiseAction.Error}
- * record with the browser's error name and message.
+ * Construction comes in three flavours, each available as fire-and-forget and
+ * as a with-outcome variant taking {@code onCopied}/{@code onError} consumers:
+ * <ul>
+ * <li>Text/HTML — the typical case for copying a string</li>
+ * <li>Image — the typical case for copying an image</li>
+ * <li>Multi-format — combine any of the three slots in one item</li>
+ * </ul>
+ * {@code onCopied} receives the exact string that was copied — the
+ * {@code text/plain} value if present, otherwise the {@code text/html} value,
+ * otherwise {@code null} (image-only case) — useful when the input was a
+ * {@link PropertyInput} whose value is only known on the client.
+ * {@code onError} receives a {@link PromiseAction.Error} record with the
+ * browser's error name and message.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -57,7 +64,92 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     private final Action.@Nullable Input<?> imageInput;
 
     /**
-     * Creates a fire-and-forget clipboard-copy action.
+     * Creates a fire-and-forget text/HTML clipboard-copy action.
+     *
+     * @param textInput
+     *            input producing the {@code text/plain} payload, or
+     *            {@code null} to omit
+     * @param htmlInput
+     *            input producing the {@code text/html} payload, or {@code null}
+     *            to omit
+     * @throws IllegalArgumentException
+     *             if both inputs are {@code null}
+     */
+    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+            Action.@Nullable Input<String> htmlInput) {
+        this(textInput, htmlInput, null);
+    }
+
+    /**
+     * Creates a text/HTML clipboard-copy action whose outcome is reported back
+     * to the server.
+     *
+     * @param textInput
+     *            input producing the {@code text/plain} payload, or
+     *            {@code null} to omit
+     * @param htmlInput
+     *            input producing the {@code text/html} payload, or {@code null}
+     *            to omit
+     * @param onCopied
+     *            invoked on the UI thread with the string that was copied after
+     *            the client reports the write resolved ({@code text/plain} if
+     *            present, otherwise {@code text/html}), or {@code null} if the
+     *            JS resolved with {@code undefined}; not {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports the write rejected, not {@code null}
+     * @throws IllegalArgumentException
+     *             if both inputs are {@code null}
+     */
+    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+            Action.@Nullable Input<String> htmlInput,
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        this(textInput, htmlInput, null, onCopied, onError);
+    }
+
+    /**
+     * Creates a fire-and-forget image clipboard-copy action.
+     *
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload (typically an
+     *            {@link ImageBlobInput}), not {@code null}
+     */
+    public WriteToClipboardAction(Action.Input<?> imageInput) {
+        this(null, null, Objects.requireNonNull(imageInput,
+                "imageInput must not be null"));
+    }
+
+    /**
+     * Creates an image clipboard-copy action whose outcome is reported back to
+     * the server. {@code onCopied} receives {@code null} — the image-only write
+     * has no meaningful string value.
+     *
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload (typically an
+     *            {@link ImageBlobInput}), not {@code null}
+     * @param onCopied
+     *            invoked on the UI thread with {@code null} after the client
+     *            reports the write resolved, not {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports the write rejected, not {@code null}
+     */
+    public WriteToClipboardAction(Action.Input<?> imageInput,
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        this(null, null, Objects.requireNonNull(imageInput,
+                "imageInput must not be null"), onCopied, onError);
+    }
+
+    /**
+     * Creates a fire-and-forget multi-format clipboard-copy action. Prefer
+     * {@link #WriteToClipboardAction(Action.Input, Action.Input)} for the
+     * text/HTML case or {@link #WriteToClipboardAction(Action.Input)} for the
+     * image case; use this constructor when an item needs to carry more than
+     * one of the three MIME types.
      *
      * @param textInput
      *            input producing the {@code text/plain} payload, or
@@ -83,8 +175,13 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     }
 
     /**
-     * Creates a clipboard-copy action whose outcome is reported back to the
-     * server.
+     * Creates a multi-format clipboard-copy action whose outcome is reported
+     * back to the server. Prefer
+     * {@link #WriteToClipboardAction(Action.Input, Action.Input, SerializableConsumer, SerializableConsumer)}
+     * for the text/HTML case or
+     * {@link #WriteToClipboardAction(Action.Input, SerializableConsumer, SerializableConsumer)}
+     * for the image case; use this constructor when an item needs to carry more
+     * than one of the three MIME types.
      *
      * @param textInput
      *            input producing the {@code text/plain} payload, or
