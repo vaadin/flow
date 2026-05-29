@@ -206,6 +206,38 @@ public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void clickCopiesAllThreeSlots_packsTextHtmlAndImageIntoOneClipboardItem() {
+        open();
+        installResolvingClipboardShim();
+
+        waitUntil(
+                d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                        "var i = document.getElementById('source-image');"
+                                + "return i && i.complete && i.naturalWidth > 0;")));
+
+        WebElement button = findElement(By.id("copy-all-slots"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_TEXT,
+                entries.get("text/plain"));
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_HTML,
+                entries.get("text/html"));
+        java.util.Map<?, ?> imageEntry = (java.util.Map<?, ?>) entries
+                .get("image/png");
+        Assert.assertNotNull("image/png entry expected", imageEntry);
+        Assert.assertEquals("image/png", imageEntry.get("type"));
+
+        // text wins over html and image as the onCopied value.
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.MULTI_TEXT)
+                .equals(status.getText()));
+    }
+
+    @Test
     public void clickCopiesImageViaDownloadHandler_emitsImagePngBlob() {
         open();
         installResolvingClipboardShim();
