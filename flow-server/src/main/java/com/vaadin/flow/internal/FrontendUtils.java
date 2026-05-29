@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -547,6 +548,13 @@ public class FrontendUtils {
                 content = getFileFromClassPath(service, path);
             } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
+                if (content == null) {
+                    // Vite does not serve the default index.html generated
+                    // into the frontend generated/ folder, since that folder
+                    // is not under vite's root. Fall back to reading it
+                    // directly from disk.
+                    content = getFileFromFrontendDir(config, path);
+                }
             } else {
                 // Get directly from the frontend folder in the project
                 content = getFileFromFrontendDir(config, path);
@@ -570,7 +578,14 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(getProjectFrontendDir(config), path);
+        File frontendDir = getProjectFrontendDir(config);
+        File file = new File(frontendDir, path);
+        if (!file.exists()) {
+            // Fall back to the frontend generated/ folder, where the default
+            // index.html and other Flow-generated client files live when the
+            // user has not provided their own.
+            file = new File(getFrontendGeneratedFolder(frontendDir), path);
+        }
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
@@ -600,8 +615,12 @@ public class FrontendUtils {
 
     private static InputStream getFileFromDevModeHandler(
             DevModeHandler devModeHandler, String filePath) throws IOException {
-        return devModeHandler.prepareConnection("/" + filePath, "GET")
-                .getInputStream();
+        HttpURLConnection connection = devModeHandler
+                .prepareConnection("/" + filePath, "GET");
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+            return null;
+        }
+        return connection.getInputStream();
     }
 
     /**

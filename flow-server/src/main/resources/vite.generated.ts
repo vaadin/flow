@@ -54,7 +54,10 @@ const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
-const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
+// Resolved by the Java side: points at the user's frontend/index.html when
+// they have one, otherwise at the default copy generated into the frontend
+// generated/ folder.
+const projectIndexHtml = path.resolve(__dirname, settings.clientIndexHtmlSource);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
