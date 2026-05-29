@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -26,12 +26,64 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionO
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RequestFullscreenActionTest {
 
+    private UI ui;
+
+    @BeforeEach
+    void setUp() {
+        ui = new MockUI();
+        // MockUI skips UI.doInit which creates the wrapper in real usage;
+        // seed an app id and create the wrapper explicitly so component-mode
+        // actions can resolve it.
+        ui.getInternals().setFullAppId("test");
+        ui.getInternals().createWrapperElement();
+    }
+
     @Test
-    void fireAndForget_actionFnCallsRequestFullscreenOnTargetCapture() {
-        UI ui = new MockUI();
+    void pageMode_fireAndForget_callsRequestPageFullscreen() {
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new RequestFullscreenAction());
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Fire-and-forget: action function is the inner promise function.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                action.getBody());
+    }
+
+    @Test
+    void pageMode_withCallbacks_wrapsRequestPageFullscreenWithObserver() {
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new RequestFullscreenAction(() -> {
+                }, err -> {
+                }));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // With callbacks: outer function is the observer wrapper; the inner
+        // function is captured at $1 and contains the actual fullscreen call.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
+                inner.getBody());
+    }
+
+    @Test
+    void componentMode_fireAndForget_callsRequestComponentFullscreenWithTargetAndWrapper() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -41,16 +93,18 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Fire-and-forget collapses to the inner promise function directly.
-        // $0 is the target element captured by JsFunction.
+        // $0 = target element, $1 = wrapper element from UIInternals.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("return $0.requestFullscreen()", action.getBody());
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                action.getBody());
         assertSame(panel.getElement(), action.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                action.getCaptures().get(1));
     }
 
     @Test
-    void withCallbacks_actionFnWrapsInnerWithObserverAndChannel() {
-        UI ui = new MockUI();
+    void componentMode_withCallbacks_wrapsRequestComponentFullscreenWithObserver() {
         TagComponent button = new TagComponent("button");
         TagComponent panel = new TagComponent("div");
         ui.getElement().appendChild(button.getElement(), panel.getElement());
@@ -62,33 +116,22 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // With callbacks, PromiseAction wraps the inner function with
-        // OBSERVE_PROMISE; the inner still captures the target as $0.
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("$0($1(event), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return $0.requestFullscreen()", inner.getBody());
+        assertEquals(
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                inner.getBody());
         assertSame(panel.getElement(), inner.getCaptures().get(0));
+        assertSame(ui.getInternals().getWrapperElement(),
+                inner.getCaptures().get(1));
     }
 
     @Test
-    void targetEqualsHost_capturedTheSameWayAsAnyOtherElement() {
-        UI ui = new MockUI();
-        TagComponent button = new TagComponent("button");
-        ui.getElement().appendChild(button.getElement());
-
-        new DomEventTrigger(button, "click")
-                .triggers(new RequestFullscreenAction(button));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        // No "this" special-case: the host element is captured the same way
-        // as any other element. The DOM ref is resolved on the client from
-        // the JsFunction capture.
-        JsFunction action = actionOf(singleInstallFn(ui));
-        Element captured = (Element) action.getCaptures().get(0);
-        assertSame(button.getElement(), captured);
+    void componentMode_detachedComponent_throws() {
+        TagComponent detached = new TagComponent("div");
+        assertThrows(IllegalStateException.class,
+                () -> new RequestFullscreenAction(detached));
     }
-
 }
