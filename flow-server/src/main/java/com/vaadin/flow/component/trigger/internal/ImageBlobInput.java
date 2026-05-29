@@ -50,13 +50,28 @@ public class ImageBlobInput extends Action.Input<Object> {
      *             if the source's root element is not an {@code <img>}
      */
     public ImageBlobInput(Component source) {
-        Element element = Objects.requireNonNull(source).getElement();
-        if (!Tag.IMG.equals(element.getTag())) {
+        this(Objects.requireNonNull(source, "source must not be null")
+                .getElement());
+    }
+
+    /**
+     * Creates an image input that yields the given element as the source
+     * {@code <img>}.
+     *
+     * @param source
+     *            the source {@code <img>} element, not {@code null}; its tag
+     *            must be {@code img}
+     * @throws IllegalArgumentException
+     *             if the source element is not an {@code <img>}
+     */
+    public ImageBlobInput(Element source) {
+        Objects.requireNonNull(source, "source must not be null");
+        if (!Tag.IMG.equals(source.getTag())) {
             throw new IllegalArgumentException(
-                    "source root element must be <img>, was <"
-                            + element.getTag() + ">");
+                    "source element must be <img>, was <" + source.getTag()
+                            + ">");
         }
-        this.source = element;
+        this.source = source;
     }
 
     @Override

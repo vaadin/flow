@@ -22,13 +22,17 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Fluent surface returned from {@link Clipboard#onClick}. Each {@code write*}
@@ -208,6 +212,65 @@ public final class ClipboardBinding implements Serializable {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(new ImageBlobInput(source), onCopied,
                 onError));
+    }
+
+    /**
+     * Copies the image served by the given {@link DownloadHandler} to the
+     * clipboard as {@code image/png} when the underlying trigger fires.
+     * <p>
+     * A hidden {@code <img>} bound to the handler is appended to the trigger
+     * host, so the browser begins downloading the image as soon as this method
+     * is called — well before the user can click. At fire time the image is
+     * already decoded (or finishes decoding inside the canvas converter's
+     * {@code load} listener), drawn onto a canvas, and exported as PNG.
+     * <p>
+     * Cross-origin concerns do not apply because the handler is served by the
+     * same origin as the application.
+     *
+     * @param handler
+     *            the download handler producing the image bytes, not
+     *            {@code null}
+     */
+    public void writeImage(DownloadHandler handler) {
+        Objects.requireNonNull(handler, "handler must not be null");
+        bind(new WriteToClipboardAction(
+                new ImageBlobInput(attachHiddenImg(handler))));
+    }
+
+    /**
+     * Like {@link #writeImage(DownloadHandler)} but reports the outcome back to
+     * the server. {@code onCopied} receives {@code null} — the image-only write
+     * has no meaningful string value.
+     *
+     * @param handler
+     *            the download handler producing the image bytes, not
+     *            {@code null}
+     * @param onCopied
+     *            UI-thread callback receiving {@code null}, not {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, not
+     *            {@code null}
+     */
+    public void writeImage(DownloadHandler handler,
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        Objects.requireNonNull(handler, "handler must not be null");
+        bind(new WriteToClipboardAction(
+                new ImageBlobInput(attachHiddenImg(handler)), onCopied,
+                onError));
+    }
+
+    private Element attachHiddenImg(DownloadHandler handler) {
+        // AbstractDownloadHandler defaults to Content-Disposition: attachment;
+        // for an in-page <img> we want inline. Mirrors Image#setSrc.
+        if (handler instanceof AbstractDownloadHandler<?> ah) {
+            ah.inline();
+        }
+        Element img = new Element(Tag.IMG);
+        img.getStyle().set("display", "none");
+        img.setAttribute("src", handler.allowDisabled());
+        trigger.getHost().appendChild(img);
+        return img;
     }
 
     /**
