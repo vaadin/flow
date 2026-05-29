@@ -221,8 +221,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void write(ClipboardContent content) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput(), content.getImageInput()));
+        bind(new WriteToClipboardAction(content));
     }
 
     /**
@@ -243,9 +242,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput(), content.getImageInput(), onCopied,
-                onError));
+        bind(new WriteToClipboardAction(content, onCopied, onError));
     }
 
     private void bind(WriteToClipboardAction action) {
