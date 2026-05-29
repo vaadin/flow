@@ -40,10 +40,11 @@ class ClickTriggerTest {
         ui.getElement().appendChild(button.getElement(), xField.getElement(),
                 yField.getElement());
 
-        ClickTrigger click = new ClickTrigger(button);
-        click.triggers(
-                new SetPropertyAction<>(xField, "value", click.screenX()),
-                new SetPropertyAction<>(yField, "value", click.screenY()));
+        new ClickTrigger(button).triggers(
+                new SetPropertyAction<>(xField, "value",
+                        ClickTrigger.EventData.screenX),
+                new SetPropertyAction<>(yField, "value",
+                        ClickTrigger.EventData.screenY));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -63,21 +64,32 @@ class ClickTriggerTest {
     }
 
     @Test
-    void argumentFromOtherTrigger_isRejectedAtBuildTime() {
+    void mouseEventData_sharedAcrossInstances_renderedPerHandler() {
+        // The same static EventData field is the source for two separate
+        // ClickTrigger instances on different hosts — both renders succeed
+        // because the input is bound to the trigger class, not an instance.
+        UI ui = new MockUI();
         TagComponent button1 = new TagComponent("button");
         TagComponent button2 = new TagComponent("button");
         TagComponent field = new TagComponent("input");
+        ui.getElement().appendChild(button1.getElement(), button2.getElement(),
+                field.getElement());
 
-        ClickTrigger click1 = new ClickTrigger(button1);
-        ClickTrigger click2 = new ClickTrigger(button2);
+        Action.Input<Integer> sharedX = ClickTrigger.EventData.screenX;
+        new ClickTrigger(button1)
+                .triggers(new SetPropertyAction<>(field, "value", sharedX));
+        new ClickTrigger(button2)
+                .triggers(new SetPropertyAction<>(field, "value", sharedX));
 
-        // Input made by click1 cannot be used in click2's handler.
-        assertThrows(IllegalArgumentException.class, () -> click2.triggers(
-                new SetPropertyAction<>(field, "value", click1.screenX())));
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pending.size());
     }
 
     @Test
-    void argumentUsedInOwningTrigger_acceptedAcrossMultipleTriggersCalls() {
+    void mouseEventData_acceptedAcrossMultipleTriggersCalls() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent xField = new TagComponent("input");
@@ -86,9 +98,9 @@ class ClickTriggerTest {
                 yField.getElement());
 
         ClickTrigger click = new ClickTrigger(button);
-        // Same Input instance used across two separate triggers() calls on
-        // its owning trigger.
-        Action.Input<Integer> x = click.screenX();
+        // Same static EventData field used across two separate triggers() calls
+        // on the same trigger instance.
+        Action.Input<Integer> x = ClickTrigger.EventData.screenX;
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 
@@ -97,6 +109,20 @@ class ClickTriggerTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
+    }
+
+    @Test
+    void mouseEventData_rejectedInNonMouseEventTrigger() {
+        // ClickTrigger.EventData.screenX is bound to MouseEventTrigger; a plain
+        // DomEventTrigger is not a MouseEventTrigger so wiring it through such
+        // a handler must fail at triggers() time.
+        TagComponent input = new TagComponent("input");
+        TagComponent field = new TagComponent("input");
+
+        DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
+        assertThrows(IllegalArgumentException.class,
+                () -> keypress.triggers(new SetPropertyAction<>(field, "value",
+                        ClickTrigger.EventData.screenX)));
     }
 
 }
