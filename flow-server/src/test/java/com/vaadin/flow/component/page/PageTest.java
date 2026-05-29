@@ -502,5 +502,4 @@ class PageTest {
         page.setColorScheme(ColorScheme.Value.NORMAL);
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
-
 }
