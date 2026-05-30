@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
+import com.vaadin.client.communication.AtmospherePushConnection;
+import com.vaadin.client.communication.AtmospherePushConnectionCallbacks;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandlerCallbacks;
 import com.vaadin.client.communication.Heartbeat;
@@ -30,12 +32,12 @@ import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.MessageSenderCallbacks;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
-import com.vaadin.client.communication.PushConnectionFactory;
 import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
+import com.vaadin.client.communication.XhrConnectionCallbacks;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
@@ -113,8 +115,6 @@ public class DefaultRegistry extends Registry {
         messageHandlerCallbacks.setRedirect(WidgetUtil::redirect);
         set("MessageHandler", new MessageHandler(messageHandlerCallbacks));
 
-        PushConnectionFactory pushConnectionFactory = com.google.gwt.core.client.GWT
-                .create(PushConnectionFactory.class);
         MessageSenderCallbacks messageSenderCallbacks = new MessageSenderCallbacks();
         messageSenderCallbacks.setGetMessageHandler(this::getMessageHandler);
         messageSenderCallbacks.setGetUiLifecycle(this::getUILifecycle);
@@ -130,8 +130,8 @@ public class DefaultRegistry extends Registry {
         messageSenderCallbacks
                 .setSendXhr(payload -> getXhrConnection().send(payload));
         messageSenderCallbacks.setGetXhrUri(() -> getXhrConnection().getUri());
-        messageSenderCallbacks.setCreatePushConnection(
-                () -> pushConnectionFactory.create(DefaultRegistry.this));
+        messageSenderCallbacks
+                .setCreatePushConnection(this::createPushConnection);
         MessageSender messageSender = new MessageSender(messageSenderCallbacks);
         set("MessageSender", messageSender);
 
@@ -202,7 +202,15 @@ public class DefaultRegistry extends Registry {
         connectionStateCallbacks.setGetMessageSender(this::getMessageSender);
         set("ConnectionStateHandler",
                 new DefaultConnectionStateHandler(connectionStateCallbacks));
-        set(XhrConnection.class, new XhrConnection(this));
+        XhrConnectionCallbacks xhrConnectionCallbacks = new XhrConnectionCallbacks();
+        xhrConnectionCallbacks.setGetMessageHandler(this::getMessageHandler);
+        xhrConnectionCallbacks
+                .setGetConnectionStateHandler(this::getConnectionStateHandler);
+        xhrConnectionCallbacks
+                .setGetRequestResponseTracker(this::getRequestResponseTracker);
+        xhrConnectionCallbacks.setGetApplicationConfiguration(
+                this::getApplicationConfiguration);
+        set("XhrConnection", new XhrConnection(xhrConnectionCallbacks));
         set("PushConfiguration",
                 new PushConfiguration(stateTree,
                         () -> messageSender.setPushEnabled(true),
@@ -285,6 +293,27 @@ public class DefaultRegistry extends Registry {
         // @JsType to JavaScriptObject so multiple such registrations would
         // collide (e.g. with the Heartbeat registration above).
         set("SystemErrorHandler", new SystemErrorHandler(systemErrorCallbacks));
+    }
+
+    /**
+     * Builds the callbacks struct for a new {@link AtmospherePushConnection}
+     * and returns the freshly constructed instance. Used by
+     * {@link MessageSender} (through the {@code createPushConnection} callback)
+     * so the push connection is only instantiated when push is actually
+     * enabled.
+     */
+    private AtmospherePushConnection createPushConnection() {
+        AtmospherePushConnectionCallbacks pushCallbacks = new AtmospherePushConnectionCallbacks();
+        pushCallbacks.setGetUiLifecycle(this::getUILifecycle);
+        pushCallbacks.setGetPushConfiguration(this::getPushConfiguration);
+        pushCallbacks.setGetApplicationConfiguration(
+                this::getApplicationConfiguration);
+        pushCallbacks.setGetURIResolver(this::getURIResolver);
+        pushCallbacks.setGetMessageHandler(this::getMessageHandler);
+        pushCallbacks
+                .setGetConnectionStateHandler(this::getConnectionStateHandler);
+        pushCallbacks.setGetResourceLoader(this::getResourceLoader);
+        return new AtmospherePushConnection(pushCallbacks);
     }
 
 }

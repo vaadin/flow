@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.communication;
 
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.Command;
 
 import elemental.json.JsonObject;
@@ -25,82 +27,56 @@ import elemental.json.JsonObject;
  * receive UIDL messages from the server (either asynchronously or as a response
  * to a UIDL request).
  *
+ * <p>
+ * Declared as a native {@code @JsType} interface so the TS-side
+ * {@link AtmospherePushConnection} (also a native {@code @JsType}) can declare
+ * it as an implemented interface; the actual implementation lives in
+ * {@code src/main/frontend/internal/client/communication/PushConnection.ts}.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "PushConnection")
 public interface PushConnection {
 
     /**
      * Pushes a message to the server. Will throw an exception if the connection
      * is not active (see {@link #isActive()}).
+     *
      * <p>
-     * Implementation detail: If the push connection is not connected and the
-     * message can thus not be sent, the implementation must call
-     * {@link ConnectionStateHandler#pushNotConnected(JsonObject)}, which will
-     * retry the send later.
+     * Implementation detail: if the push connection is not connected, the
+     * implementation must call
+     * {@link ConnectionStateHandler#pushNotConnected(JsonObject)} so the
+     * message can be retried later.
+     *
      * <p>
      * This method must not be called if the push connection is not
-     * bidirectional (if {@link #isBidirectional()} returns false)
-     *
-     * @param payload
-     *            the payload to push
-     * @throws IllegalStateException
-     *             if this connection is not active
-     *
-     * @see #isActive()
+     * bidirectional ({@link #isBidirectional()} returns false).
      */
     void push(JsonObject payload);
 
     /**
      * Checks whether this push connection is in a state where it can push
-     * messages to the server. A connection is active until
-     * {@link #disconnect(Command)} has been called.
-     *
-     * @return <code>true</code> if this connection can accept new messages;
-     *         <code>false</code> if this connection is disconnected or
-     *         disconnecting.
+     * messages to the server. Active until {@link #disconnect(Command)} is
+     * called.
      */
     boolean isActive();
 
     /**
-     * Closes the push connection. To ensure correct message delivery order, new
-     * messages should not be sent using any other channel until it has been
-     * confirmed that all messages pending for this connection have been
-     * delivered. The provided command callback is invoked when messages can be
-     * passed using some other communication channel.
-     * <p>
-     * After this method has been called, {@link #isActive()} returns
-     * <code>false</code>. Calling this method for a connection that is no
-     * longer active will throw an exception.
-     *
-     * @param command
-     *            command to invoke when the connection has been properly
-     *            disconnected
-     * @throws IllegalStateException
-     *             if this connection is not active
+     * Closes the push connection. Invokes the {@code command} once messages can
+     * safely be sent through some other communication channel.
      */
     void disconnect(Command command);
 
     /**
      * Returns a human readable string representation of the transport type used
      * to communicate with the server.
-     *
-     * @return A human readable string representation of the transport type
      */
     String getTransportType();
 
     /**
      * Checks whether this push connection should be used for communication in
-     * both directions or if an XHR should be used for client to server
-     * communication.
-     *
-     * A bidirectional push connection must be able to reliably inform about its
-     * connection state.
-     *
-     * @return true if the push connection should be used for messages in both
-     *         directions, false if it should only be used for server to client
-     *         messages
+     * both directions or if XHR should be used for client-to-server messages.
      */
     boolean isBidirectional();
-
 }
