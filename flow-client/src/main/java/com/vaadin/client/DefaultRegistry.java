@@ -19,15 +19,18 @@ import java.util.function.Supplier;
 
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
-import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
+import com.vaadin.client.communication.DefaultConnectionStateHandlerCallbacks;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.HeartbeatCallbacks;
 import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.communication.MessageHandlerCallbacks;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.MessageSenderCallbacks;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.PushConnectionFactory;
 import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
@@ -79,18 +82,59 @@ public class DefaultRegistry extends Registry {
         set("StateTree", stateTree);
         RequestResponseTracker requestResponseTracker = new RequestResponseTracker(
                 () -> {
-                    com.vaadin.client.communication.MessageSender ms = getMessageSender();
+                    MessageSender ms = getMessageSender();
                     if ((getUILifecycle().isRunning()
                             && getServerRpcQueue().isFlushPending())
-                            || ms.getResynchronizationState() == com.vaadin.client.communication.MessageSender.ResynchronizationState.SEND_TO_SERVER
+                            || ms.getResynchronizationState() == MessageSender.ResynchronizationState.SEND_TO_SERVER
                             || ms.hasQueuedMessages()) {
                         ms.sendInvocationsToServer();
                     }
                 });
         set("RequestResponseTracker", requestResponseTracker);
-        set(MessageHandler.class, new MessageHandler(this));
-        MessageSender messageSender = new MessageSender(this);
-        set(MessageSender.class, messageSender);
+
+        MessageHandlerCallbacks messageHandlerCallbacks = new MessageHandlerCallbacks();
+        messageHandlerCallbacks.setGetMessageSender(this::getMessageSender);
+        messageHandlerCallbacks.setGetUiLifecycle(this::getUILifecycle);
+        messageHandlerCallbacks.setGetStateTree(this::getStateTree);
+        messageHandlerCallbacks.setGetConstantPool(this::getConstantPool);
+        messageHandlerCallbacks
+                .setGetSystemErrorHandler(this::getSystemErrorHandler);
+        messageHandlerCallbacks.setGetExecuteJavaScriptProcessor(
+                this::getExecuteJavaScriptProcessor);
+        messageHandlerCallbacks
+                .setGetDependencyLoader(this::getDependencyLoader);
+        messageHandlerCallbacks.setGetResourceLoader(this::getResourceLoader);
+        messageHandlerCallbacks
+                .setGetRequestResponseTracker(this::getRequestResponseTracker);
+        messageHandlerCallbacks.setGetLoadingIndicatorStateHandler(
+                this::getLoadingIndicatorStateHandler);
+        messageHandlerCallbacks.setGetApplicationConfiguration(
+                this::getApplicationConfiguration);
+        messageHandlerCallbacks.setRedirect(WidgetUtil::redirect);
+        set("MessageHandler", new MessageHandler(messageHandlerCallbacks));
+
+        PushConnectionFactory pushConnectionFactory = com.google.gwt.core.client.GWT
+                .create(PushConnectionFactory.class);
+        MessageSenderCallbacks messageSenderCallbacks = new MessageSenderCallbacks();
+        messageSenderCallbacks.setGetMessageHandler(this::getMessageHandler);
+        messageSenderCallbacks.setGetUiLifecycle(this::getUILifecycle);
+        messageSenderCallbacks
+                .setGetRequestResponseTracker(this::getRequestResponseTracker);
+        messageSenderCallbacks.setGetLoadingIndicatorStateHandler(
+                this::getLoadingIndicatorStateHandler);
+        messageSenderCallbacks
+                .setGetPushConfiguration(this::getPushConfiguration);
+        messageSenderCallbacks.setGetServerRpcQueue(this::getServerRpcQueue);
+        messageSenderCallbacks.setGetApplicationConfiguration(
+                this::getApplicationConfiguration);
+        messageSenderCallbacks
+                .setSendXhr(payload -> getXhrConnection().send(payload));
+        messageSenderCallbacks.setGetXhrUri(() -> getXhrConnection().getUri());
+        messageSenderCallbacks.setCreatePushConnection(
+                () -> pushConnectionFactory.create(DefaultRegistry.this));
+        MessageSender messageSender = new MessageSender(messageSenderCallbacks);
+        set("MessageSender", messageSender);
+
         ServerRpcQueue serverRpcQueue = new ServerRpcQueue(uiLifecycle,
                 () -> messageSender.sendInvocationsToServer());
         set("ServerRpcQueue", serverRpcQueue);
@@ -133,7 +177,7 @@ public class DefaultRegistry extends Registry {
                 @Override
                 public void onException(XMLHttpRequest xhr, String message) {
                     getConnectionStateHandler().heartbeatException(xhr,
-                            new RuntimeException(message));
+                            message);
                 }
             };
             return new Heartbeat(uri,
@@ -141,8 +185,23 @@ public class DefaultRegistry extends Registry {
                     uiLifecycle, callbacks);
         };
         set(Heartbeat.class, heartbeatSupplier);
-        set(ConnectionStateHandler.class,
-                new DefaultConnectionStateHandler(this));
+
+        DefaultConnectionStateHandlerCallbacks connectionStateCallbacks = new DefaultConnectionStateHandlerCallbacks();
+        connectionStateCallbacks.setGetUiLifecycle(this::getUILifecycle);
+        connectionStateCallbacks
+                .setGetSystemErrorHandler(this::getSystemErrorHandler);
+        connectionStateCallbacks.setGetHeartbeat(this::getHeartbeat);
+        connectionStateCallbacks
+                .setGetReconnectConfiguration(this::getReconnectConfiguration);
+        connectionStateCallbacks
+                .setGetRequestResponseTracker(this::getRequestResponseTracker);
+        connectionStateCallbacks.setGetLoadingIndicatorStateHandler(
+                this::getLoadingIndicatorStateHandler);
+        connectionStateCallbacks.setGetApplicationConfiguration(
+                this::getApplicationConfiguration);
+        connectionStateCallbacks.setGetMessageSender(this::getMessageSender);
+        set("ConnectionStateHandler",
+                new DefaultConnectionStateHandler(connectionStateCallbacks));
         set(XhrConnection.class, new XhrConnection(this));
         set("PushConfiguration",
                 new PushConfiguration(stateTree,
