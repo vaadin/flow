@@ -75,7 +75,7 @@ export const WidgetUtil = {
     // Java caller compares JSO references whose `equals` is identity-only.
     if (a === b) return true;
     if (a == null || b == null) return false;
-    // eslint-disable-next-line eqeqeq
+
     return a == b;
   },
 

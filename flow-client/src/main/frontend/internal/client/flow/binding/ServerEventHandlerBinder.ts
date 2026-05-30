@@ -40,7 +40,6 @@ type StateNodeLike = {
  * that resolves to `ServerEventObject.get(element)`.
  */
 export const ServerEventHandlerBinder = {
-  // eslint-disable-next-line @typescript-eslint/max-params
   bindServerEventHandlerNames(
     objectProvider: () => ServerEventObjectLike,
     node: StateNodeLike,
