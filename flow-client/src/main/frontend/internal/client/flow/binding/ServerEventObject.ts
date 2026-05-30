@@ -106,7 +106,7 @@ export class ServerEventObject {
     self[methodName] = function (this: ServerEventObjectShape, eventParameter: Event | undefined): unknown {
       const proto = Object.getPrototypeOf(this) as Record<string, unknown>;
       const protoMethod = proto[methodName];
-      // eslint-disable-next-line prefer-rest-params
+
       const callArgs = arguments as unknown as unknown[];
       if (typeof protoMethod === 'function') {
         protoMethod.apply(this, callArgs);

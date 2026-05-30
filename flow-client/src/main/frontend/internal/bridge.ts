@@ -21,6 +21,8 @@
 import { ApplicationConfiguration } from './client/ApplicationConfiguration';
 import { ApplicationConnection } from './client/ApplicationConnection';
 import { BrowserInfo } from './client/BrowserInfo';
+import { DefaultRegistry } from './client/DefaultRegistry';
+import { Registry } from './client/Registry';
 import { ConnectionIndicator } from './client/ConnectionIndicator';
 import { Console } from './client/Console';
 import { ElementUtil } from './client/ElementUtil';
@@ -38,6 +40,7 @@ import { UILifecycle } from './client/UILifecycle';
 import { URIResolver } from './client/URIResolver';
 import { WidgetUtil } from './client/WidgetUtil';
 import { Bootstrapper } from './client/bootstrap/Bootstrapper';
+import { JsoConfiguration } from './client/bootstrap/JsoConfiguration';
 import { AtmospherePushConnection } from './client/communication/AtmospherePushConnection';
 import { DefaultConnectionStateHandler } from './client/communication/DefaultConnectionStateHandler';
 import { Heartbeat } from './client/communication/Heartbeat';
@@ -111,7 +114,10 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'UILifecycle', UILifecycle);
   registerGwtBridge('client', 'URIResolver', URIResolver);
   registerGwtBridge('client', 'WidgetUtil', WidgetUtil);
+  registerGwtBridge('client', 'Registry', Registry);
+  registerGwtBridge('client', 'DefaultRegistry', DefaultRegistry);
   registerGwtBridge('client.bootstrap', 'Bootstrapper', Bootstrapper);
+  registerGwtBridge('client.bootstrap', 'JsoConfiguration', JsoConfiguration);
   registerGwtBridge('client.communication', 'AtmospherePushConnection', AtmospherePushConnection);
   registerGwtBridge('client.communication', 'DefaultConnectionStateHandler', DefaultConnectionStateHandler);
   registerGwtBridge('client.communication', 'Heartbeat', Heartbeat);

@@ -76,7 +76,6 @@ export class ServerRpcQueue {
     return this.flushPending;
   }
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   showLoadingIndicator(): boolean {
     return true;
   }
