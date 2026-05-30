@@ -141,7 +141,7 @@ public class Registry {
      * @return the {@link MessageSender} singleton
      */
     public MessageSender getMessageSender() {
-        return get(MessageSender.class);
+        return get("MessageSender");
     }
 
     /**
@@ -150,7 +150,7 @@ public class Registry {
      * @return the {@link MessageHandler} singleton
      */
     public MessageHandler getMessageHandler() {
-        return get(MessageHandler.class);
+        return get("MessageHandler");
     }
 
     /**
@@ -177,7 +177,7 @@ public class Registry {
      * @return the {@link ConnectionStateHandler} singleton
      */
     public ConnectionStateHandler getConnectionStateHandler() {
-        return get(ConnectionStateHandler.class);
+        return get("ConnectionStateHandler");
     }
 
     /**

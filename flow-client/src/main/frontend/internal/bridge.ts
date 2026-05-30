@@ -39,6 +39,7 @@ import { URIResolver } from './client/URIResolver';
 import { WidgetUtil } from './client/WidgetUtil';
 import { Bootstrapper } from './client/bootstrap/Bootstrapper';
 import { AtmospherePushConnection } from './client/communication/AtmospherePushConnection';
+import { DefaultConnectionStateHandler } from './client/communication/DefaultConnectionStateHandler';
 import { Heartbeat } from './client/communication/Heartbeat';
 import { LoadingIndicatorConfigurator } from './client/communication/LoadingIndicatorConfigurator';
 import { LoadingIndicatorStateHandler } from './client/communication/LoadingIndicatorStateHandler';
@@ -112,6 +113,7 @@ export function installGwtBridge(): void {
   registerGwtBridge('client', 'WidgetUtil', WidgetUtil);
   registerGwtBridge('client.bootstrap', 'Bootstrapper', Bootstrapper);
   registerGwtBridge('client.communication', 'AtmospherePushConnection', AtmospherePushConnection);
+  registerGwtBridge('client.communication', 'DefaultConnectionStateHandler', DefaultConnectionStateHandler);
   registerGwtBridge('client.communication', 'Heartbeat', Heartbeat);
   registerGwtBridge('client.communication', 'LoadingIndicatorConfigurator', LoadingIndicatorConfigurator);
   registerGwtBridge('client.communication', 'LoadingIndicatorStateHandler', LoadingIndicatorStateHandler);
