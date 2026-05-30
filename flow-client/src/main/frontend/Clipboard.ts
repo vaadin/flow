@@ -127,12 +127,71 @@ async function writeClipboardPayload(
   return text !== null ? text : html;
 }
 
+/**
+ * Posts each file from a {@code paste} event's {@code clipboardData.files} as
+ * its own XHR to the URL stored as the named attribute on {@code element}. The
+ * wire format matches vaadin-upload: raw body, percent-encoded {@code X-Filename}
+ * header, MIME type in {@code Content-Type}.
+ *
+ * The {@code paste} listener on the server pairs this call with a filter that
+ * always returns false, so the function returns false too — no server event
+ * is dispatched, the per-file UploadHandler callback delivers completion.
+ *
+ * Editable targets ({@code <input>}, {@code <textarea>}, {@code contentEditable})
+ * are not given any special treatment here: browsers do not paste files into
+ * those elements, so a paste containing a file in a focused text field is
+ * still a "the user tried to drop a file on the page" event from the
+ * application's point of view.
+ */
+// Monotonic counter incremented once per paste gesture so server-side
+// handlers can correlate the parallel fetch POSTs that belong to the same
+// paste, and order pastes against each other. Scoped to the browser tab —
+// a different tab gets its own counter, but no server-side state crosses
+// tabs in this flow.
+let pasteSequence = 0;
+
+function uploadPastedFiles(event: ClipboardEvent, element: Element, urlAttribute: string): boolean {
+  const files = event.clipboardData?.files;
+  if (!files || files.length === 0) {
+    return false;
+  }
+  const url = element.getAttribute(urlAttribute);
+  if (!url) {
+    return false;
+  }
+  pasteSequence += 1;
+  const pasteId = String(pasteSequence);
+  // Surface the file count too: the session-style server handler needs it
+  // to know when the paste has been fully delivered (one fetch per file
+  // means the server only observes arrivals, not the total).
+  const fileCount = String(files.length);
+  for (const file of files) {
+    const headers: Record<string, string> = {
+      'X-Filename': encodeURIComponent(file.name),
+      'X-Paste-Id': pasteId,
+      'X-Paste-File-Count': fileCount
+    };
+    if (file.type) {
+      headers['Content-Type'] = file.type;
+    }
+    // Fire-and-forget: the per-file UploadHandler callback delivers
+    // completion through the regular server channel, so the only thing we
+    // need to do here is log network/connectivity failures the server will
+    // never see otherwise.
+    fetch(url, { method: 'POST', headers: headers, body: file }).catch((err) => {
+      console.error('Vaadin clipboard file upload failed', err);
+    });
+  }
+  return false;
+}
+
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
 $wnd.Vaadin.Flow.clipboard = {
   readPayload: readClipboardPayload,
-  writePayload: writeClipboardPayload
+  writePayload: writeClipboardPayload,
+  uploadPastedFiles: uploadPastedFiles
 };
 
 // Empty export to ensure TypeScript emits this as an ES module,
