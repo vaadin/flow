@@ -15,283 +15,56 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.flow.shared.BrowserDetails;
+import jsinterop.annotations.JsType;
 
 /**
- * Provides a way to query information about web browser.
- *
- * Browser details are detected only once and those are stored in this singleton
- * class.
+ * Provides a way to query information about the web browser. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/BrowserInfo.ts}. The TS module
+ * inlines a small UA-string parser, replacing the previous dependency on
+ * {@code BrowserDetails} from {@code flow-shared}.
  *
  * @since 1.0
  */
-public class BrowserInfo {
-
-    private static final String BROWSER_OPERA = "op";
-    private static final String BROWSER_IE = "ie";
-    private static final String BROWSER_EDGE = "edge";
-    private static final String BROWSER_FIREFOX = "ff";
-    private static final String BROWSER_SAFARI = "sa";
-
-    public static final String ENGINE_GECKO = "gecko";
-    public static final String ENGINE_WEBKIT = "webkit";
-    public static final String ENGINE_PRESTO = "presto";
-    public static final String ENGINE_TRIDENT = "trident";
-
-    private static final String OS_WINDOWS = "win";
-    private static final String OS_LINUX = "lin";
-    private static final String OS_MACOSX = "mac";
-    private static final String OS_ANDROID = "android";
-
-    private static BrowserInfo instance;
-
-    private String cssClass = null;
-
-    private BrowserDetails browserDetails;
-    private boolean touchDevice;
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client", name = "BrowserInfo")
+public final class BrowserInfo {
 
     private BrowserInfo() {
-        browserDetails = new BrowserDetails(getBrowserString());
-
-        touchDevice = checkForTouchDevice();
+        // Native, not instantiated from Java
     }
 
-    /**
-     * Singleton method to get BrowserInfo object.
-     *
-     * @return instance of BrowserInfo object
-     */
-    public static BrowserInfo get() {
-        if (instance == null) {
-            instance = new BrowserInfo();
-        }
-        return instance;
-    }
+    /** Singleton accessor. */
+    public static native BrowserInfo get();
 
-    private boolean checkForTouchDevice() {
-        return NativeBrowserInfo.checkForTouchDevice();
-    }
+    public native boolean isIE();
 
-    /**
-     * Checks if the browser is IE.
-     *
-     * @return true if the browser is IE, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isIE() {
-        return browserDetails.isIE();
-    }
+    public native boolean isEdge();
 
-    /**
-     * Checks if the browser is Edge.
-     *
-     * @return true if the browser is Edge, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isEdge() {
-        return browserDetails.isEdge();
-    }
+    public native boolean isFirefox();
 
-    /**
-     * Checks if the browser is Firefox.
-     *
-     * @return true if the browser is Firefox, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isFirefox() {
-        return browserDetails.isFirefox();
-    }
+    public native boolean isSafari();
 
-    /**
-     * Checks if the browser is Safari.
-     *
-     * @return true if the browser is Safari, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isSafari() {
-        return browserDetails.isSafari();
-    }
+    public native boolean isSafariOrIOS();
 
-    /**
-     * Checks if the browser is Safari or runs on IOS (covering also Chrome on
-     * iOS).
-     *
-     * @return true if the browser is Safari or running on IOS, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isSafariOrIOS() {
-        return isSafari() || isIos();
-    }
+    public native boolean isChrome();
 
-    /**
-     * Checks if the browser is Chrome.
-     *
-     * @return true if the browser is Chrome, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isChrome() {
-        return browserDetails.isChrome();
-    }
+    public native boolean isGecko();
 
-    /**
-     * Checks if the browser using the Gecko engine.
-     *
-     * @return true if the browser is using Gecko, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isGecko() {
-        return browserDetails.isGecko();
-    }
+    public native boolean isWebkit();
 
-    /**
-     * Checks if the browser using the Webkit engine.
-     *
-     * @return true if the browser is using Webkit, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isWebkit() {
-        return browserDetails.isWebKit();
-    }
+    public native boolean isOpera();
 
-    /**
-     * Returns the Gecko version if the browser is Gecko based. The Gecko
-     * version for Firefox 2 is 1.8 and 1.9 for Firefox 3.
-     *
-     * @return The Gecko version or -1 if the browser is not Gecko based
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public float getGeckoVersion() {
-        if (!browserDetails.isGecko()) {
-            return -1;
-        }
+    public native boolean isAndroid();
 
-        return browserDetails.getBrowserEngineVersion();
-    }
+    public native boolean isTouchDevice();
 
-    /**
-     * Returns the WebKit version if the browser is WebKit based. The WebKit
-     * version returned is the major version e.g., 523.
-     *
-     * @return The WebKit version or -1 if the browser is not WebKit based
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public float getWebkitVersion() {
-        if (!browserDetails.isWebKit()) {
-            return -1;
-        }
+    public native boolean isAndroidWithBrokenScrollTop();
 
-        return browserDetails.getBrowserEngineVersion();
-    }
+    public native int getBrowserMajorVersion();
 
-    /**
-     * Checks if the browser is Opera.
-     *
-     * @return true if the browser is Opera, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isOpera() {
-        return browserDetails.isOpera();
-    }
+    public native int getBrowserMinorVersion();
 
-    private static String getBrowserString() {
-        return NativeBrowserInfo.getBrowserString();
-    }
+    public native float getGeckoVersion();
 
-    private static boolean isIos() {
-        return NativeBrowserInfo.isIos();
-    }
-
-    /**
-     * Checks if the browser runs on a touch capable device.
-     *
-     * @return true if the browser runs on a touch based device, false otherwise
-     */
-    public boolean isTouchDevice() {
-        return touchDevice;
-    }
-
-    /**
-     * Checks if the browser is run on Android.
-     *
-     * @return true if the browser is run on Android, false otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public boolean isAndroid() {
-        return browserDetails.isAndroid();
-    }
-
-    /**
-     * Tests if this is an Android devices with a broken scrollTop
-     * implementation.
-     *
-     * @return true if scrollTop cannot be trusted on this device, false
-     *         otherwise
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()} and check version
-     *             against known issues.
-     */
-    @Deprecated
-    public boolean isAndroidWithBrokenScrollTop() {
-        return isAndroid() && (getOperatingSystemMajorVersion() == 3
-                || getOperatingSystemMajorVersion() == 4);
-    }
-
-    private int getOperatingSystemMajorVersion() {
-        return browserDetails.getOperatingSystemMajorVersion();
-    }
-
-    /**
-     * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome
-     * 4, 8 for Internet Explorer 8.
-     * <p>
-     * Note that Internet Explorer 8 and newer will return the document mode so
-     * IE8 rendering as IE7 will return 7.
-     *
-     * @return The major version of the browser.
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public int getBrowserMajorVersion() {
-        return browserDetails.getBrowserMajorVersion();
-    }
-
-    /**
-     * Returns the browser minor version e.g., 5 for Firefox 3.5.
-     *
-     * @see #getBrowserMajorVersion()
-     *
-     * @return The minor version of the browser, or -1 if not known/parsed.
-     * @deprecated use a parsing library like ua-parser-js to parse the user
-     *             agent from {@link #getBrowserString()}
-     */
-    @Deprecated
-    public int getBrowserMinorVersion() {
-        return browserDetails.getBrowserMinorVersion();
-    }
-
+    public native float getWebkitVersion();
 }
