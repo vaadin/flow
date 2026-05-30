@@ -66,9 +66,13 @@ public class DefaultRegistry extends Registry {
         set("ApplicationConfiguration", applicationConfiguration);
 
         // Classes with no constructor dependencies
-        set(ResourceLoader.class, new ResourceLoader(this, true));
-        set("URIResolver", new URIResolver(this));
-        set(DependencyLoader.class, new DependencyLoader(this));
+        ResourceLoader resourceLoader = new ResourceLoader(
+                message -> getSystemErrorHandler().handleError(message), true);
+        set("ResourceLoader", resourceLoader);
+        URIResolver uriResolver = new URIResolver(this);
+        set("URIResolver", uriResolver);
+        set("DependencyLoader",
+                new DependencyLoader(uriResolver, resourceLoader));
         set("UILifecycle", (Supplier<UILifecycle>) UILifecycle::new);
         UILifecycle uiLifecycle = get("UILifecycle");
         StateTree stateTree = new StateTree(this);
