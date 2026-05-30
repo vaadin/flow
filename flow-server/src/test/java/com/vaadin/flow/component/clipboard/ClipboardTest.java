@@ -36,9 +36,15 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -367,6 +373,83 @@ class ClipboardTest {
         assertEquals(1, channels.size(),
                 "Expected exactly one captured return channel");
         return channels.get(0);
+    }
+
+    @Test
+    void onFilePaste_registersUploadAttributeAndPasteListenerWithUploadFilter() {
+        UI ui = uiWithRealSession();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        Clipboard.onFilePaste(target, UploadHandler.inMemory((m, b) -> {
+        }));
+
+        // The handler is stored as a stream-resource-backed attribute named
+        // "_vaadin-paste-upload-*". The exact suffix comes from a static
+        // AtomicLong, so don't pin it — find the attribute by prefix.
+        String uploadAttribute = target.getElement().getAttributeNames()
+                .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
+                .orElse(null);
+        assertNotNull(uploadAttribute,
+                "expected upload URL attribute on host element");
+        String url = target.getElement().getAttribute(uploadAttribute);
+        assertNotNull(url, "upload attribute resolved to a URL");
+        assertTrue(url.contains("VAADIN/dynamic/resource"),
+                "upload URL should point at the dynamic resource handler, got "
+                        + url);
+
+        // The paste listener carries a single filter expression: a call into
+        // the TS helper window.Vaadin.Flow.clipboard.uploadPastedFiles. The
+        // helper does the actual XHRs client-side; here we just verify the
+        // Java→TS wiring carries the per-registration attribute name.
+        String filter = target.getElement().getNode()
+                .getFeature(ElementListenerMap.class).getExpressions("paste")
+                .stream().filter(e -> e.contains("uploadPastedFiles"))
+                .findFirst().orElse(null);
+        assertNotNull(filter,
+                "expected file-paste filter expression on paste listener");
+        assertTrue(filter.contains("'" + uploadAttribute + "'"),
+                "filter should pass the per-registration upload attribute");
+        assertTrue(filter.contains("event") && filter.contains("element"),
+                "filter should hand the helper both event and element");
+    }
+
+    @Test
+    void onFilePaste_remove_clearsAttributeAndListener() {
+        UI ui = uiWithRealSession();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        Registration registration = Clipboard.onFilePaste(target,
+                UploadHandler.inMemory((m, b) -> {
+                }));
+
+        String uploadAttribute = target.getElement().getAttributeNames()
+                .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
+                .orElseThrow();
+
+        registration.remove();
+
+        assertFalse(target.getElement().hasAttribute(uploadAttribute),
+                "remove() should drop the upload URL attribute");
+        assertTrue(
+                target.getElement().getNode()
+                        .getFeature(ElementListenerMap.class)
+                        .getExpressions("paste").isEmpty(),
+                "remove() should drop the paste filter expression");
+    }
+
+    /**
+     * Builds a MockUI backed by a real VaadinSession so that
+     * {@link com.vaadin.flow.dom.Element#setAttribute(String, com.vaadin.flow.server.streams.ElementRequestHandler)}
+     * can register against the session's stream resource registry. The default
+     * MockUI uses a Mockito-mocked session whose registry is null.
+     */
+    private static UI uiWithRealSession() {
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        VaadinSession.setCurrent(session);
+        return new MockUI(session);
     }
 
     /**
