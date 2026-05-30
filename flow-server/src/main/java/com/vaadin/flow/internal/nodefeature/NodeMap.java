@@ -361,7 +361,27 @@ public abstract class NodeMap extends NodeFeature {
      * @return the removed value, <code>null</code> if no value was removed
      */
     protected Serializable remove(String key) {
-        setChanged(key);
+        return remove(key, true);
+    }
+
+    /**
+     * Removes the value stored for the given key.
+     *
+     * @param key
+     *            the key for which to remove the value
+     * @param emitChange
+     *            true to create a change event for the client side; false to
+     *            also clear any previously pending change for this key (used
+     *            when realigning the server view after a client-originated
+     *            change so the removal is not echoed back)
+     * @return the removed value, <code>null</code> if no value was removed
+     */
+    protected Serializable remove(String key, boolean emitChange) {
+        if (emitChange) {
+            setChanged(key);
+        } else {
+            setUnChanged(key);
+        }
         Serializable oldValue;
 
         if (values == null) {

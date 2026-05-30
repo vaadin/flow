@@ -74,11 +74,30 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void set(String attribute, String value) {
+        set(attribute, value, true);
+    }
+
+    /**
+     * Sets the given attribute to the given value, optionally without emitting
+     * a change event to the client.
+     * <p>
+     * {@code null} value removes the attribute. Pass {@code emitChange = false}
+     * to realign the server view after a client-originated change so the value
+     * is not echoed back to the client.
+     *
+     * @param attribute
+     *            the attribute name
+     * @param value
+     *            the value, {@code null} to remove the attribute
+     * @param emitChange
+     *            true to create a change event for the client side
+     */
+    public void set(String attribute, String value, boolean emitChange) {
         if (hasSignal(attribute)) {
             throw new BindingActiveException(
                     "setAttribute is not allowed while a binding for the given attribute exists.");
         }
-        doSet(attribute, value);
+        doSet(attribute, value, emitChange);
     }
 
     /**
@@ -286,16 +305,21 @@ public class ElementAttributeMap extends NodeMap {
     }
 
     private void doSet(String attribute, Serializable value) {
+        doSet(attribute, value, true);
+    }
+
+    private void doSet(String attribute, Serializable value,
+            boolean emitChange) {
         unregisterResource(attribute);
         if (hasSignal(attribute)) {
             InternalSignalBinding binding = (InternalSignalBinding) super.get(
                     attribute);
             put(attribute, new InternalSignalBinding(binding.signal(),
-                    (String) value, null));
+                    (String) value, null), emitChange);
         } else if (value == null) {
-            super.remove(attribute);
+            super.remove(attribute, emitChange);
         } else {
-            put(attribute, value);
+            put(attribute, value, emitChange);
         }
     }
 
