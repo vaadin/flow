@@ -222,7 +222,7 @@ public class Registry {
      * @return the {@link XhrConnection} singleton
      */
     public XhrConnection getXhrConnection() {
-        return get(XhrConnection.class);
+        return get("XhrConnection");
     }
 
     /**

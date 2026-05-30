@@ -15,191 +15,32 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.xhr.client.XMLHttpRequest;
+import jsinterop.annotations.JsType;
 
-import com.vaadin.client.BrowserInfo;
-import com.vaadin.client.Console;
-import com.vaadin.client.Profiler;
-import com.vaadin.client.Registry;
-import com.vaadin.client.ValueMap;
-import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.gwt.elemental.js.util.Xhr;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.util.SharedUtil;
-
-import elemental.client.Browser;
 import elemental.json.JsonObject;
 
 /**
- * Provides a connection to the UIDL request handler on the server and knows how
- * to send messages to that end point.
+ * Provides a connection to the UIDL request handler on the server. Pure
+ * {@code @JsType(isNative=true)} binding to the TypeScript implementation at
+ * {@code src/main/frontend/internal/client/communication/XhrConnection.ts}.
+ *
+ * <p>
+ * Construction takes an {@link XhrConnectionCallbacks} adapter so the TS class
+ * does not need to reach back through the Java {@code Registry} facade.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(isNative = true, namespace = "Vaadin.Flow.internal.client.communication", name = "XhrConnection")
 public class XhrConnection {
 
-    /**
-     * Webkit will ignore outgoing requests while waiting for a response to a
-     * navigation event (indicated by a beforeunload event). When this happens,
-     * we should keep trying to send the request every now and then until there
-     * is a response or until it throws an exception saying that it is already
-     * being sent.
-     */
-    private boolean webkitMaybeIgnoringRequests = false;
-
-    private Registry registry;
-
-    /**
-     * Creates a new instance connected to the given registry.
-     *
-     * @param registry
-     *            the global registry
-     */
-    public XhrConnection(Registry registry) {
-        this.registry = registry;
-        Browser.getWindow().addEventListener("beforeunload",
-                event -> webkitMaybeIgnoringRequests = true, false);
-
-        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                () -> webkitMaybeIgnoringRequests = false);
+    public XhrConnection(XhrConnectionCallbacks callbacks) {
+        // Defined by the TS class constructor.
     }
 
-    protected XhrResponseHandler createResponseHandler() {
-        return new XhrResponseHandler();
-    }
+    /** Sends an asynchronous UIDL request to the server. */
+    public native void send(JsonObject payload);
 
-    /**
-     * Handles the response from the server by forwarding the received message
-     * to {@link MessageHandler} or failures to the appropriate method in
-     * {@link ConnectionStateHandler}.
-     *
-     */
-    public class XhrResponseHandler implements Xhr.Callback {
-
-        private JsonObject payload;
-        private double requestStartTime;
-
-        public XhrResponseHandler() {
-        }
-
-        /**
-         * Sets the payload which was sent to the server.
-         *
-         * @param payload
-         *            the payload which was sent to the server
-         */
-        public void setPayload(JsonObject payload) {
-            this.payload = payload;
-        }
-
-        @Override
-        public void onFail(XMLHttpRequest xhr, Exception e) {
-            XhrConnectionError errorEvent = new XhrConnectionError(xhr, payload,
-                    e);
-            if (e == null) {
-                // Response other than 200
-
-                registry.getConnectionStateHandler()
-                        .xhrInvalidStatusCode(errorEvent);
-                return;
-            } else {
-                registry.getConnectionStateHandler().xhrException(errorEvent);
-            }
-
-        }
-
-        @Override
-        public void onSuccess(XMLHttpRequest xhr) {
-            Console.debug("Server visit took "
-                    + Profiler.getRelativeTimeString(requestStartTime) + "ms");
-
-            String responseText = xhr.getResponseText();
-
-            ValueMap json = MessageHandler.parseJson(responseText);
-            if (json == null) {
-                // Invalid JSON string
-                registry.getConnectionStateHandler().xhrInvalidContent(
-                        new XhrConnectionError(xhr, payload, null));
-                return;
-            }
-
-            registry.getConnectionStateHandler().xhrOk();
-            Console.debug("Received xhr message: " + responseText);
-            registry.getMessageHandler().handleMessage(json);
-        }
-
-        /**
-         * Sets the relative time (see {@link Profiler#getRelativeTimeMillis()})
-         * when the request was sent.
-         *
-         * @param requestStartTime
-         *            the relative time when the request was sent
-         */
-        private void setRequestStartTime(double requestStartTime) {
-            this.requestStartTime = requestStartTime;
-
-        }
-    };
-
-    /**
-     * Sends an asynchronous UIDL request to the server using the given URI.
-     *
-     * @param payload
-     *            The URI to use for the request. May includes GET parameters
-     */
-    public void send(JsonObject payload) {
-        XhrResponseHandler responseHandler = createResponseHandler();
-        responseHandler.setPayload(payload);
-        responseHandler.setRequestStartTime(Profiler.getRelativeTimeMillis());
-
-        String payloadJson = WidgetUtil.stringify(payload);
-        XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson,
-                JsonConstants.JSON_CONTENT_TYPE, responseHandler);
-
-        Console.debug("Sending xhr message to server: " + payloadJson);
-
-        if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
-            final int retryTimeout = 250;
-            new Timer() {
-                @Override
-                public void run() {
-                    // Use native js to access private field in Request
-                    if (resendRequest(xhr) && webkitMaybeIgnoringRequests) {
-                        // Schedule retry if still needed
-                        schedule(retryTimeout);
-                    }
-                }
-            }.schedule(retryTimeout);
-        }
-    }
-
-    /**
-     * Retrieves the URI to use when sending RPCs to the server
-     *
-     * @return The URI to use for server messages.
-     */
-    public String getUri() {
-        // This code is in one line because an odd bug in GWT
-        // compiler inlining this piece of code and not declaring
-        // the variable in JS scope, breaking strict mode which is
-        // needed for ES6 imports.
-        // See https://github.com/vaadin/flow/pull/6227
-        return SharedUtil
-                .addGetParameter(
-                        SharedUtil.addGetParameter(
-                                registry.getApplicationConfiguration()
-                                        .getServiceUrl(),
-                                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                                ApplicationConstants.REQUEST_TYPE_UIDL),
-                        ApplicationConstants.UI_ID_PARAMETER,
-                        registry.getApplicationConfiguration().getUIId());
-    }
-
-    private static boolean resendRequest(XMLHttpRequest xhr) {
-        return NativeXhrConnection.resendRequest(xhr);
-    }
-
+    /** Returns the URI to use when sending RPCs to the server. */
+    public native String getUri();
 }
