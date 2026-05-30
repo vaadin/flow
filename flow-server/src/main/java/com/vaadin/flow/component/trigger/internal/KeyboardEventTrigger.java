@@ -125,13 +125,18 @@ public class KeyboardEventTrigger extends DomEventTrigger {
             List<Object> extraCaptures) {
         // Filter guard runs before preventDefault/stopPropagation — calling
         // either on an event the user didn't want to handle would be wrong.
+        // Match against both event.key and event.code so the filter works
+        // regardless of which side of Key#getKeys() the entries come from
+        // (Key.ENTER is "Enter" on event.key; Key.KEY_S is "KeyS" on
+        // event.code; Key.SHIFT carries both).
         if (!keyFilter.isEmpty()) {
             List<String> allowed = keyFilter.stream()
                     .flatMap(k -> k.getKeys().stream()).distinct().toList();
             int captureIndex = 2 + extraCaptures.size();
             extraCaptures.add(allowed);
             body.append("if(!$").append(captureIndex)
-                    .append(".includes(e.key))return;");
+                    .append(".includes(e.key)&&!$").append(captureIndex)
+                    .append(".includes(e.code))return;");
         }
         super.appendHandlerBody(body, extraCaptures);
     }

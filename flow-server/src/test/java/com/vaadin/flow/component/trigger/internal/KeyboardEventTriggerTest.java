@@ -94,9 +94,12 @@ class KeyboardEventTriggerTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction install = singleInstallFn(ui);
+        // Guard checks event.key OR event.code so the filter works for both
+        // event.key-style names (Enter) and event.code-style names (KeyS) in
+        // the same list — see KeyboardEventTrigger#appendHandlerBody.
         assertEquals(
-                "const h=e=>{if(!$2.includes(e.key))return;$0(e);};"
-                        + "this.addEventListener($1, h);"
+                "const h=e=>{if(!$2.includes(e.key)&&!$2.includes(e.code))"
+                        + "return;$0(e);};" + "this.addEventListener($1, h);"
                         + "return () => this.removeEventListener($1, h);",
                 install.getBody());
         assertEquals("keydown", install.getCaptures().get(1));
@@ -124,11 +127,10 @@ class KeyboardEventTriggerTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "const h=e=>{if(!$2.includes(e.key))return;"
-                        + "e.preventDefault();$0(e);};"
-                        + "this.addEventListener($1, h);"
-                        + "return () => this.removeEventListener($1, h);",
+        assertEquals("const h=e=>{if(!$2.includes(e.key)&&"
+                + "!$2.includes(e.code))return;" + "e.preventDefault();$0(e);};"
+                + "this.addEventListener($1, h);"
+                + "return () => this.removeEventListener($1, h);",
                 install.getBody());
     }
 
