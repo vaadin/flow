@@ -240,7 +240,7 @@ public class Registry {
      * @return the {@link DependencyLoader} singleton
      */
     public DependencyLoader getDependencyLoader() {
-        return get(DependencyLoader.class);
+        return get("DependencyLoader");
     }
 
     /**
@@ -304,7 +304,7 @@ public class Registry {
      * @return the {@link ResourceLoader} singleton
      */
     public ResourceLoader getResourceLoader() {
-        return get(ResourceLoader.class);
+        return get("ResourceLoader");
     }
 
     /**
