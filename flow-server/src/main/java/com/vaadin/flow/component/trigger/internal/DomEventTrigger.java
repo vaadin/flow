@@ -121,7 +121,9 @@ public class DomEventTrigger extends Trigger {
         StringBuilder body = new StringBuilder();
         List<Object> extraCaptures = new ArrayList<>();
         appendHandlerBody(body, extraCaptures);
-        if (body.length() == 0) {
+        StringBuilder prelude = new StringBuilder();
+        appendInstallPrelude(prelude);
+        if (body.length() == 0 && prelude.length() == 0) {
             return getHost().addJsInitializer("""
                     this.addEventListener($1, $0);\
                     return () => this.removeEventListener($1, $0);""", action,
@@ -134,7 +136,8 @@ public class DomEventTrigger extends Trigger {
             params[2 + i] = extraCaptures.get(i);
         }
         return getHost().addJsInitializer(
-                "const h=e=>{" + body + "$0(e);};this.addEventListener($1, h);"
+                prelude + "const h=e=>{" + body
+                        + "$0(e);};this.addEventListener($1, h);"
                         + "return () => this.removeEventListener($1, h);",
                 params);
     }
@@ -169,5 +172,24 @@ public class DomEventTrigger extends Trigger {
         if (stopPropagation) {
             body.append("e.stopPropagation();");
         }
+    }
+
+    /**
+     * Hook for subclasses to inject JavaScript that runs once per install,
+     * before the {@code const h = e => {...}} wrapper is created. Use this to
+     * declare closure variables (e.g. {@code let i = 0;} for sequence tracking)
+     * that the wrapper body then captures by lexical scope.
+     * <p>
+     * The prelude has access to the same captures as the rest of the install JS
+     * — {@code $0} is the action, {@code $1} is the event name, and any extras
+     * added via {@link #appendHandlerBody} appear at {@code $2}+. The base
+     * implementation is empty.
+     *
+     * @param prelude
+     *            the prelude buffer; statements appended here run before the
+     *            wrapper is created and remain in scope inside it
+     */
+    protected void appendInstallPrelude(StringBuilder prelude) {
+        // No prelude needed by default.
     }
 }
