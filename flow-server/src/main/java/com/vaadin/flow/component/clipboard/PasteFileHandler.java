@@ -56,7 +56,7 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * does not drop any files on the application's behalf, so a slow tail upload
  * from an earlier paste still arrives at the listener.
  */
-public final class PasteFileHandler {
+public final class PasteFileHandler implements Serializable {
 
     private PasteFileHandler() {
         // factory
