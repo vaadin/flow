@@ -18,13 +18,14 @@ package com.vaadin.client.flow.model;
 import jsinterop.annotations.JsType;
 
 import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
+import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsArray;
 
 /**
  * Storage class for the set of updatable model properties on a
- * {@link StateNode}, consulted by {@link SimpleElementBindingStrategy} when
- * deciding whether to push a polymer property update to the server.
+ * {@link StateNode}, consulted by the TypeScript binding implementation
+ * dispatched through {@link Binder} when deciding whether to push a polymer
+ * property update to the server.
  *
  * <p>
  * Pure {@code @JsType(isNative = true)} binding to the TypeScript
