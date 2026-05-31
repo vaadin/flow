@@ -526,7 +526,6 @@ export class ResourceLoader {
       }
     }
   }
-
 }
 
 /**
