@@ -133,12 +133,6 @@ let instance: BrowserInfo | null = null;
 
 /**
  * Browser-detection helpers. Migrated from `com.vaadin.client.BrowserInfo`.
- *
- * <p>
- * The Java side is a thin `@JsType(isNative=true)` facade. Java callers reach
- * this class through `Vaadin.Flow.internal.client.BrowserInfo`. The static
- * helpers (`getBrowserString`, `isIos`, `checkForTouchDevice`) stay accessible
- * since the GWT-compiled code references them by name.
  */
 export class BrowserInfo {
   private readonly ua: ParsedUa;
@@ -146,7 +140,7 @@ export class BrowserInfo {
 
   private constructor() {
     this.ua = parseUa(navigator.userAgent);
-    this.touchDevice = BrowserInfo.checkForTouchDevice();
+    this.touchDevice = checkForTouchDevice();
   }
 
   static get(): BrowserInfo {
@@ -173,7 +167,7 @@ export class BrowserInfo {
   }
 
   isSafariOrIOS(): boolean {
-    return this.ua.isSafari || BrowserInfo.isIos();
+    return this.ua.isSafari || isIos();
   }
 
   isChrome(): boolean {
@@ -219,37 +213,31 @@ export class BrowserInfo {
   getWebkitVersion(): number {
     return this.ua.isWebkit ? this.ua.engineVersion : -1;
   }
+}
 
-  // ---------------- Static helpers retained for GWT-compiled call sites ----------------
-
-  static checkForTouchDevice(): boolean {
-    const nav = navigator as MsTouchNavigator;
-    if (nav && 'maxTouchPoints' in nav) {
-      return (nav.maxTouchPoints ?? 0) > 0;
-    }
-    if (nav && 'msMaxTouchPoints' in nav) {
-      return ((nav as MsTouchNavigator).msMaxTouchPoints ?? 0) > 0;
-    }
-    const mq = typeof matchMedia === 'function' ? matchMedia('(pointer:coarse)') : null;
-    if (mq && mq.media === '(pointer:coarse)') {
-      return mq.matches;
-    }
-    try {
-      document.createEvent('TouchEvent');
-      return true;
-    } catch {
-      return false;
-    }
+function checkForTouchDevice(): boolean {
+  const nav = navigator as MsTouchNavigator;
+  if (nav && 'maxTouchPoints' in nav) {
+    return (nav.maxTouchPoints ?? 0) > 0;
   }
-
-  static getBrowserString(): string {
-    return navigator.userAgent;
+  if (nav && 'msMaxTouchPoints' in nav) {
+    return ((nav as MsTouchNavigator).msMaxTouchPoints ?? 0) > 0;
   }
-
-  static isIos(): boolean {
-    return (
-      /iPad|iPhone|iPod/.test(navigator.platform) ||
-      (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1)
-    );
+  const mq = typeof matchMedia === 'function' ? matchMedia('(pointer:coarse)') : null;
+  if (mq && mq.media === '(pointer:coarse)') {
+    return mq.matches;
   }
+  try {
+    document.createEvent('TouchEvent');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isIos(): boolean {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.platform) ||
+    (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1)
+  );
 }

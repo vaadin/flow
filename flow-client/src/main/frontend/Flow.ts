@@ -7,12 +7,6 @@ import {
 import './Clipboard';
 import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
-// Publishes TS implementations of classes migrated from the GWT Java sources
-// under window.Vaadin.Flow.internal.*. Imported eagerly so the namespace is in
-// place before FlowClient.init() runs, and re-installed before each init() in
-// case the surrounding code wipes window.Vaadin (e.g. between tests). See
-// MIGRATION.md.
-import { installGwtBridge } from './internal/bridge';
 import { currentVisibility } from './PageVisibility';
 
 export interface FlowConfig {
@@ -349,8 +343,7 @@ export class Flow {
       }
 
       // Load flow-client module
-      const clientMod = await import('./FlowClient');
-      await this.flowInitClient(clientMod);
+      await this.flowInitClient();
 
       // hide flow progress indicator
       this.loadingFinished();
@@ -404,13 +397,11 @@ export class Flow {
     document.body.append(scriptAppId);
   }
 
-  // After the flow-client javascript module has been loaded, this initializes flow UI
-  // in the browser.
-  private async flowInitClient(clientMod: any): Promise<void> {
-    // GWT init reads window.Vaadin.Flow.internal.*; tests delete window.Vaadin
-    // between runs, so republish before each init.
-    installGwtBridge();
-    clientMod.init();
+  // Boots the flow-client engine and waits until all running applications
+  // have finished initial processing.
+  private async flowInitClient(): Promise<void> {
+    const { Bootstrapper } = await import('./internal/client/bootstrap/Bootstrapper');
+    Bootstrapper.initModule();
     // client init is async, we need to loop until initialized
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {

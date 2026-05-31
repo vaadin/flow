@@ -21,8 +21,7 @@ interface DocumentRegistrationRoot {
 }
 
 /**
- * DOM lookup helpers migrated from `com.vaadin.client.ElementUtil`. The Java
- * class is a pure `@JsType(isNative=true)` facade onto this module.
+ * DOM lookup helpers migrated from `com.vaadin.client.ElementUtil`.
  */
 export const ElementUtil = {
   hasTag(node: Node | null, tag: string): boolean {

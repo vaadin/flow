@@ -38,11 +38,6 @@ type StateTreeLike = {
 /**
  * Reactive view of the reconnect-dialog configuration on the root state
  * node. Migrated from `com.vaadin.client.communication.ReconnectConfiguration`.
- *
- * The static `bind(ConnectionStateHandler)` helper stays on the Java side as
- * an `@JsOverlay` because it wires `Reactive.runWhenDependenciesChange` — that
- * helper constructs a Java `Computation` subclass that can't be expressed
- * from TypeScript.
  */
 export class ReconnectConfiguration {
   private readonly tree: StateTreeLike;

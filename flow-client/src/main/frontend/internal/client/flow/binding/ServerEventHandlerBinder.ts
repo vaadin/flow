@@ -32,12 +32,6 @@ type StateNodeLike = {
 /**
  * Binds and updates server-event handler names. Migrated from
  * `com.vaadin.client.flow.binding.ServerEventHandlerBinder`.
- *
- * Both Java callers go through `bindServerEventHandlerNames`. The original
- * short form (`bindServerEventHandlerNames(element, node)`) is reconstructed
- * on the Java facade side as an `@JsOverlay` that delegates here with the
- * `CLIENT_DELEGATE_HANDLERS` feature id, returnValue=true, and a supplier
- * that resolves to `ServerEventObject.get(element)`.
  */
 export const ServerEventHandlerBinder = {
   bindServerEventHandlerNames(

@@ -6,7 +6,7 @@ import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import '../../main/frontend/FlowBootstrap';
-import '../../main/frontend/FlowClient';
+import '../../main/frontend/internal/client/bootstrap/Bootstrapper';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';

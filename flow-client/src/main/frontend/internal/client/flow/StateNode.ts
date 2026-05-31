@@ -30,10 +30,7 @@ type StateNodeLike = any;
 
 /**
  * Client-side representation of a server-side state node. Migrated from
- * `com.vaadin.client.flow.StateNode`.
- *
- * `nodeData` is keyed by string (Java callers pass the class simple name via
- * the @JsType-native facade's @JsOverlay helpers).
+ * `com.vaadin.client.flow.StateNode`. `nodeData` is keyed by string.
  */
 export class StateNode {
   readonly tree: StateTreeLike;

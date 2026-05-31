@@ -29,12 +29,6 @@ interface LoadableElement extends Element {
   readyState?: string;
 }
 
-/**
- * Registry-like adapter shape the TS class needs to reach back into Java
- * services. The Java {@code Registry} satisfies this shape because the
- * {@code getSystemErrorHandler()} method is already part of the
- * {@code @JsType} Java {@code Registry} class.
- */
 /** Single-method error sink used for "could not load resource X" logs. */
 export type ResourceLoaderErrorHandler = (message: string) => void;
 
@@ -59,13 +53,7 @@ export class ResourceLoadEvent {
   }
 }
 
-/**
- * Internal listener shape used inside the TS resource-loading cluster.
- * External Java callers pass an equivalent {@code @JsType} interface that this
- * matches at runtime (the Java facade {@link ResourceLoader} splits listener
- * objects into two callbacks before crossing into TS to avoid GWT-OBF method
- * name mangling on Java anonymous interface implementations).
- */
+/** Listener shape used inside the TS resource-loading cluster. */
 export interface ResourceLoadListener {
   onLoad(event: ResourceLoadEvent): void;
   onError(event: ResourceLoadEvent): void;
@@ -171,9 +159,7 @@ function findCommentInHead(comment: string): Node | null {
  * without being evaluated. This enables downloading multiple resources at once
  * while still controlling in which order e.g. scripts are executed.
  *
- * Migrated from {@code com.vaadin.client.ResourceLoader}. Reached from
- * GWT-compiled Java code via the {@code @JsType(isNative=true)} facade
- * published at {@code Vaadin.Flow.internal.client.ResourceLoader}.
+ * Migrated from {@code com.vaadin.client.ResourceLoader}.
  */
 export class ResourceLoader {
   private readonly loadedResources = new Set<string>();
@@ -541,36 +527,6 @@ export class ResourceLoader {
     }
   }
 
-  // ---------------- Static helpers retained for legacy GWT call sites ----------------
-  // The previous NativeResourceLoader shim exposed these names as static
-  // members on the same JS object. Java code compiled before the migration
-  // still references them via the namespace lookup, so keep them here so any
-  // not-yet-recompiled callers continue to link.
-
-  static supportsHtmlWhenReady(): boolean {
-    return supportsHtmlWhenReady();
-  }
-
-  static addHtmlImportsReadyHandler(handler: () => void): void {
-    addHtmlImportsReadyHandler(handler);
-  }
-
-  static addOnloadHandler(element: Element, onLoad: () => void, onError: () => void): void {
-    addOnloadHandlerNative(element, onLoad, onError);
-  }
-
-  static getStyleSheetLength(url: string): number {
-    return getStyleSheetLengthNative(url);
-  }
-
-  static runPromiseExpression(
-    expression: string,
-    promiseSupplier: () => unknown,
-    onSuccess: () => void,
-    onError: () => void
-  ): void {
-    runPromiseExpressionNative(expression, promiseSupplier, onSuccess, onError);
-  }
 }
 
 /**

@@ -126,10 +126,6 @@ interface ExecuteJavaScriptProcessorLike {
  * resolution (sibling MessageSender, the registry-reset hook) and direct
  * service references for everything that is already constructed by the time
  * MessageHandler is created.
- *
- * The Java {@code DefaultRegistry} supplies this object at construction so
- * the TS class does not need to dispatch back through a Java {@code Registry}
- * facade (whose instance method names would be GWT-OBF mangled).
  */
 export interface MessageHandlerCallbacks {
   getMessageSender(): MessageSenderLike;
@@ -187,14 +183,9 @@ function getArray(obj: JsonObject, key: string): unknown[] {
  * from `com.vaadin.client.communication.MessageHandler`.
  *
  * Wiring (sibling MessageSender, the registry-reset hook and the various
- * services) is delivered through {@link MessageHandlerCallbacks} so the TS
- * class never reaches back through the Java {@code Registry} facade.
+ * services) is delivered through {@link MessageHandlerCallbacks}.
  */
 export class MessageHandler {
-  // Browser-touching helpers retained as static methods so the Java facade
-  // can keep them on the @JsType(isNative=true) declaration; XhrConnection
-  // and AtmospherePushConnection both call `MessageHandler.parseJson(...)`
-  // statically.
   static removeStylesheetByIdFromDom(dependencyId: string): void {
     const selector = `link[data-id="${dependencyId}"], style[data-id="${dependencyId}"]`;
     for (const el of Array.from(document.querySelectorAll(selector))) {
@@ -492,7 +483,6 @@ export class MessageHandler {
       const meta = (valueMap.meta as JsonObject | undefined) ?? null;
 
       if (meta != null) {
-        Profiler.enter('Error handling');
         const lifecycle = this.callbacks.getUiLifecycle();
         const uiState = lifecycle.getStateName();
         if (hasKey(meta, META_SESSION_EXPIRED)) {
@@ -519,7 +509,6 @@ export class MessageHandler {
             );
           lifecycle.setStateName('TERMINATED');
         }
-        Profiler.leave('Error handling');
       }
       this.nextResponseSessionExpiredHandler = null;
 
@@ -535,22 +524,12 @@ export class MessageHandler {
         }
 
         this.bootstrapTime = MessageHandler.calculateBootstrapTime();
-        if (Profiler.isEnabled() && this.bootstrapTime !== -1) {
-          Profiler.logBootstrapTimings();
-        }
       }
     } finally {
       Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
 
       this.endRequestIfResponse(valueMap);
       this.resumeResponseHandling(lock);
-
-      if (Profiler.isEnabled()) {
-        setTimeout(() => {
-          Profiler.logTimings();
-          Profiler.reset();
-        }, 0);
-      }
     }
   }
 

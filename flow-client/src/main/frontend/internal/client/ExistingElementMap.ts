@@ -16,12 +16,7 @@
 
 /**
  * Mapping between server-side node identifiers and their attached existing
- * client-side elements.
- *
- * Migrated from `com.vaadin.client.ExistingElementMap`. The Java shim under
- * GWT delegates to this class via `NativeExistingElementMap`; the JVM path
- * keeps its own `HashMap`-backed copy so `ExistingElementMapTest` stays
- * green without changes.
+ * client-side elements. Migrated from `com.vaadin.client.ExistingElementMap`.
  */
 export class ExistingElementMap {
   private readonly elementToId = new Map<Element, number>();

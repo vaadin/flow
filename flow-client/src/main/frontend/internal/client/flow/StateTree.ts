@@ -78,9 +78,7 @@ const FEATURE_DEBUG_NAMES: Record<number, string> = {
 
 /**
  * Client-side representation of a server-side state tree. Migrated from
- * `com.vaadin.client.flow.StateTree`. State (idToNode, rootNode flags) is
- * here in TS; methods that dispatch into the Java Registry / ServerConnector
- * stay on the Java side as @JsOverlay helpers.
+ * `com.vaadin.client.flow.StateTree`.
  */
 export class StateTree {
   private readonly idToNode = new Map<number, StateNode>();

@@ -252,9 +252,7 @@ export class ApplicationConnection {
 
 /**
  * Reactive subscription: re-runs `configurationUpdated()` whenever the
- * reconnect-dialog configuration on the root node changes. Equivalent to the
- * `ReconnectConfiguration.bind(stateHandler)` @JsOverlay helper on the Java
- * side.
+ * reconnect-dialog configuration on the root node changes.
  */
 function bindReconnectConfiguration(stateHandler: { configurationUpdated(): void }): void {
   // Constructing a Computation registers the callback and primes the initial

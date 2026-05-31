@@ -44,12 +44,6 @@ type DependencyJson = Record<string, unknown>;
  */
 type Loader = (payload: string, listener: ResourceLoadListener) => void;
 
-/**
- * Registry-like adapter shape the TS class needs to reach back into Java
- * services. The Java {@code Registry} class satisfies this shape directly
- * because both {@code getURIResolver()} and {@code getResourceLoader()} are
- * already part of the {@code @JsType} Java {@code Registry} class.
- */
 /** Minimal URI resolver shape — a thin slice of the URIResolver TS facade. */
 interface UriResolverLike {
   resolveVaadinUri(uri: string): string;
@@ -128,9 +122,7 @@ function getDependencyId(dependencyJson: DependencyJson): string | null {
 /**
  * Handles loading of dependencies (stylesheets and scripts) in the application.
  *
- * Migrated from {@code com.vaadin.client.DependencyLoader}. Reached from
- * GWT-compiled Java code via the {@code @JsType(isNative=true)} facade
- * published at {@code Vaadin.Flow.internal.client.DependencyLoader}.
+ * Migrated from {@code com.vaadin.client.DependencyLoader}.
  */
 export class DependencyLoader {
   private readonly uriResolver: UriResolverLike;

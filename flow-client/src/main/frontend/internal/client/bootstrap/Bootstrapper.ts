@@ -17,7 +17,6 @@
 import { ApplicationConfiguration } from '../ApplicationConfiguration';
 import { ApplicationConnection } from '../ApplicationConnection';
 import { Console } from '../Console';
-import { Profiler } from '../Profiler';
 import { WidgetUtil } from '../WidgetUtil';
 import { JsoConfiguration } from './JsoConfiguration';
 
@@ -110,11 +109,9 @@ function getConfigFromDOM(appId: string): ApplicationConfiguration {
 }
 
 function doStartApplication(applicationId: string): void {
-  Profiler.enter('Bootstrapper.startApplication');
   const appConf = getConfigFromDOM(applicationId);
   const applicationConnection = new ApplicationConnection(appConf);
   runningApplications.push(applicationConnection);
-  Profiler.leave('Bootstrapper.startApplication');
 
   const initialUidl = getJsoConfiguration(applicationId).getUIDL();
   applicationConnection.start(initialUidl);
@@ -148,9 +145,8 @@ function registerCallback(widgetsetName: string): void {
 
 /**
  * Bootstraps the Flow client engine. Migrated from
- * `com.vaadin.client.bootstrap.Bootstrapper`. Entry point invoked by the
- * `FlowClient` ES-module wrapper, which is itself imported lazily by
- * `Flow.ts` after the per-app `FlowBootstrap.init(response)` registers the
+ * `com.vaadin.client.bootstrap.Bootstrapper`. `Flow.ts` imports this
+ * lazily after the per-app `FlowBootstrap.init(response)` registers the
  * application under `window.Vaadin.Flow.getApp(appId)`.
  */
 export const Bootstrapper = {
@@ -162,31 +158,6 @@ export const Bootstrapper = {
       return;
     }
 
-    Profiler.initialize();
-
     registerCallback(WIDGETSET_NAME);
-  },
-
-  /** Returns a snapshot of the active application connections. */
-  getRunningApplications(): ApplicationConnection[] {
-    return runningApplications;
-  },
-
-  // -- Browser-touching helpers preserved for any consumer that still reaches
-  //    into the Bootstrapper namespace through the published bridge. Keeping
-  //    them here means the public TS API stays equivalent to the previous
-  //    @JsType native facade surface.
-
-  getJsoConfiguration(appId: string): unknown {
-    return vaadinFlow()?.getApp?.(appId);
-  },
-
-  vaadinBootstrapLoaded,
-  startApplicationImmediately,
-  deferStartApplication(applicationId: string, doStart: (id: string) => void): void {
-    globalThis.addEventListener('WebComponentsReady', () => doStart(applicationId));
-  },
-  registerCallback(widgetsetName: string, startApp: (appId: string) => void): void {
-    vaadinFlow()?.registerWidgetset?.(widgetsetName, startApp);
   }
 };

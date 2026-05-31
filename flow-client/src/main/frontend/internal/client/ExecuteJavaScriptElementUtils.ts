@@ -15,6 +15,7 @@
  */
 import { Console } from './Console';
 import { PolymerUtils } from './PolymerUtils';
+import { UpdatableModelProperties } from './flow/model/UpdatableModelProperties';
 import { Reactive } from './flow/reactive/Reactive';
 
 // Mirrors NodeFeatures + NodeProperties constants the helpers need.
@@ -56,9 +57,7 @@ type StateNodeLike = {
   addUnregisterListener(listener: (event: unknown) => void): void;
 };
 
-// Per-state-node map of initializer-id -> cleanup callback. Mirrors the Java
-// @JsOverlay `initializerCleanups` map; lookup keys must match Java's double
-// representation, hence a plain number.
+// Per-state-node map of initializer-id -> cleanup callback.
 const initializerCleanups = new Map<StateNodeLike, Map<number, () => void>>();
 
 type ExistingElementMapLike = {
@@ -68,41 +67,8 @@ type ExistingElementMapLike = {
 
 type UpdatableModelPropertiesLike = { isUpdatableProperty(property: string): boolean };
 
-type UpdatableModelPropertiesCtor = new (properties: string[]) => UpdatableModelPropertiesLike;
-
-declare global {
-  interface Window {
-    Vaadin: {
-      Flow?: {
-        internal?: {
-          client?: {
-            flow?: { model?: { UpdatableModelProperties?: UpdatableModelPropertiesCtor } };
-          };
-        };
-      };
-    };
-  }
-}
-
-function getUpdatableModelPropertiesCtor(): UpdatableModelPropertiesCtor {
-  const ctor = window.Vaadin?.Flow?.internal?.client?.flow?.model?.UpdatableModelProperties;
-  if (!ctor) {
-    throw new Error('UpdatableModelProperties constructor is not registered in the GWT bridge');
-  }
-  return ctor;
-}
-
 /**
- * Helpers used by `ExecuteJavaScriptProcessor`'s per-execution context. The
- * Java class is a pure `@JsType(isNative=true)` facade onto this module.
- *
- * The `attachExistingElement` / `populateModelProperties` /
- * `registerUpdatableModelProperties` methods all reach into TS-migrated
- * collaborators (`StateNode`, `StateTree`, `MapProperty`, `PolymerUtils`,
- * `Reactive`, `ExistingElementMap`, `UpdatableModelProperties`) and use the
- * `UPDATABLE_MODEL_PROPERTIES_KEY` string constant that mirrors
- * `UpdatableModelProperties.NODE_DATA_KEY` so Java callers that use the same
- * constant find the same slot.
+ * Helpers used by `ExecuteJavaScriptProcessor`'s per-execution context.
  */
 export const ExecuteJavaScriptElementUtils = {
   isPropertyDefined(node: Node, property: string): boolean {
@@ -179,8 +145,7 @@ export const ExecuteJavaScriptElementUtils = {
     if (properties.length === 0) {
       return;
     }
-    const Ctor = getUpdatableModelPropertiesCtor();
-    const data = new Ctor(properties);
+    const data = new UpdatableModelProperties(properties);
     node.setNodeData(UPDATABLE_MODEL_PROPERTIES_KEY, data);
   },
 

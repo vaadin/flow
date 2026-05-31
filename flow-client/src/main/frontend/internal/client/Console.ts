@@ -34,8 +34,7 @@ function shouldLog(): boolean {
  * Helper for routed access to `window.console`. In production mode no message
  * is logged unless `localStorage['vaadin.browserLog']` is `'true'`.
  *
- * Migrated from `com.vaadin.client.Console`. Reached from GWT-compiled code
- * via the `NativeConsole` JsType shim.
+ * Migrated from `com.vaadin.client.Console`.
  */
 export const Console = {
   setProductionMode(value: boolean): void {

@@ -26,9 +26,7 @@ type StateChangeHandler = (event: { getUiLifecycle(): UILifecycle }) => void;
 /**
  * Manages the lifecycle of a UI. Migrated from
  * `com.vaadin.client.UILifecycle`. The state is exposed as the string name
- * of the matching {@code UIState} enum constant; the Java facade adapts
- * between {@code UIState} and the string on each side of the JsInterop
- * boundary.
+ * of the matching {@code UIState} enum constant.
  */
 export class UILifecycle {
   private state: State = 'INITIALIZING';

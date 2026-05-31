@@ -150,9 +150,6 @@ class BindingContext {
 /**
  * Binding strategy for a simple (not template) Element node. Migrated from
  * `com.vaadin.client.flow.binding.SimpleElementBindingStrategy`.
- *
- * Reached from GWT-compiled code via the `Binder.bind` namespace entry point,
- * which in turn dispatches to instances of this class.
  */
 export class SimpleElementBindingStrategyImpl implements BindingStrategy<Element> {
   create(node: StateNodeLike): Element {
@@ -675,28 +672,16 @@ function updateAttributeValue(
   }
 }
 
-// Resolves the ApplicationConfiguration from a state node's registry by way
-// of a known lookup key. The Java registry's `getApplicationConfiguration()`
-// method is renamed during GWT OBF compilation, so we cannot call it from
-// the TS-emitted JS. The lookup table itself is stored in the registry under
-// a fixed `String` key, so we reach it via the (also obfuscated) `get`
-// method by name — but only inside a `try` so a runtime miss does not break
-// attribute updates.
+// Resolves the ApplicationConfiguration from a state node's registry, guarded
+// so a runtime miss does not break attribute updates.
 function getApplicationConfiguration(
   stateNode: StateNodeLike
 ): { webComponentMode?: boolean; serviceUrl?: string | null } | null {
   try {
     const registry = stateNode.getTree().getRegistry();
-    // Prefer the @JsType-exposed accessor — works in dev mode and in any
-    // build configuration that doesn't rename @JsType methods.
     if (typeof registry.getApplicationConfiguration === 'function') {
       return registry.getApplicationConfiguration();
     }
-    // Fall back to the namespace-published TS class. The Bootstrapper
-    // assigns the live instance to `window.Vaadin.Flow.clients.<appId>.appConfig`,
-    // but the simpler `appConfig` slot may not be reliably populated; in
-    // that case attribute URI rewriting silently skips webComponentMode
-    // handling, which matches the existing fall-through for non-URI values.
     return null;
   } catch {
     return null;
@@ -1376,9 +1361,7 @@ function bindClientCallableMethods(context: BindingContext): Registration {
 // Mirrors com.vaadin.flow.internal.nodefeature.NodeFeatures.CLIENT_DELEGATE_HANDLERS.
 const CLIENT_DELEGATE_HANDLERS = 19;
 
-// Equivalent of the `ServerEventHandlerBinder.bindServerEventHandlerNames(element, node)`
-// Java @JsOverlay shortcut. We materialize it in TS so the binding code does
-// not need to round-trip through the Java side.
+// Short form of `ServerEventHandlerBinder.bindServerEventHandlerNames`.
 function bindServerEventHandlerNamesShort(element: Element, node: StateNodeLike): Registration {
   return ServerEventHandlerBinder.bindServerEventHandlerNames(
     () => ServerEventObject.get(element) as any,
@@ -1498,11 +1481,10 @@ function getClosestStateNodeIdToDomNode(
 
 /**
  * Polymer integration helpers migrated from
- * `com.vaadin.client.flow.binding.SimpleElementBindingStrategy`. Reached from
- * GWT-compiled code via the `NativeSimpleElementBindingStrategy` JsType shim.
- * The Java side hands over an `onHookUp` callback and the three Java methods
- * called back from inside the Polymer prototype patches; this module owns the
- * choreography but not the binding logic.
+ * `com.vaadin.client.flow.binding.SimpleElementBindingStrategy`. Callers hand
+ * over an `onHookUp` callback and the three methods invoked from inside the
+ * Polymer prototype patches; this module owns the choreography but not the
+ * binding logic.
  */
 export const SimpleElementBindingStrategy = {
   bindPolymerModelProperties(element: Element, onHookUp: () => void): void {

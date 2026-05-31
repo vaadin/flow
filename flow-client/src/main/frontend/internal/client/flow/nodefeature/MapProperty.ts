@@ -26,16 +26,7 @@ const NO_OP = (): void => {};
 /**
  * A property in a node map. Migrated from
  * `com.vaadin.client.flow.nodefeature.MapProperty`. State (value, hasValue,
- * isServerUpdate, previousDomValue, eventRouter) lives here; Java consumers
- * see a @JsType(isNative=true) facade with the same API surface.
- *
- * The `Optional<Object> getPreviousDomValue()` Java return is reconstructed on
- * the Java @JsOverlay side from {@link hasPreviousDomValue} +
- * {@link getPreviousDomValueRaw}.
- *
- * `syncToServer` / `getSyncToServerCommand` stay on the Java side as
- * @JsOverlay helpers because they need to dispatch into the still-Java
- * NodeMap/StateNode/StateTree chain.
+ * isServerUpdate, previousDomValue, eventRouter) lives here.
  */
 export class MapProperty {
   private readonly eventRouter: ReactiveEventRouter;

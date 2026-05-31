@@ -21,9 +21,7 @@ interface ReactReadyElement {
 /**
  * Helpers for interacting with React-based custom elements from the binding code.
  *
- * Migrated from `com.vaadin.client.ReactUtils`. Reached from GWT-compiled code
- * via the `NativeReactUtils` JsType shim. The pure-Java `isInitialized` helper
- * was left in place — there is no browser API to delegate to.
+ * Migrated from `com.vaadin.client.ReactUtils`.
  */
 export const ReactUtils = {
   addReadyCallback(element: Element, name: string, runnable: () => void): void {

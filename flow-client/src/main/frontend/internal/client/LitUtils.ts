@@ -24,8 +24,7 @@ interface MaybeLitElement {
 /**
  * Helpers for interacting with Lit-based custom elements from the binding code.
  *
- * Migrated from `com.vaadin.client.LitUtils`. Reached from GWT-compiled code
- * via the `NativeLitUtils` JsType shim.
+ * Migrated from `com.vaadin.client.LitUtils`.
  */
 export const LitUtils = {
   isLitElement(element: unknown): boolean {

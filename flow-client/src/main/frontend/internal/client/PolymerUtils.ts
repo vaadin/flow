@@ -91,7 +91,6 @@ const readyListeners = new WeakMap<Element, Set<() => void>>();
 
 /**
  * Polymer integration helpers migrated from `com.vaadin.client.PolymerUtils`.
- * The Java class is a pure `@JsType(isNative=true)` facade onto this module.
  */
 export const PolymerUtils = {
   setListValueByIndex(htmlNode: Element, path: string, listIndex: number, newValue: unknown): void {

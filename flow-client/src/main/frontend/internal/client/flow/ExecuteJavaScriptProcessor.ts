@@ -191,9 +191,8 @@ export class ExecuteJavaScriptProcessor {
 
   /**
    * Builds the per-execution `this`-object that user JS sees when Flow runs
-   * `executeJs` payloads. Migrated from the JSNI body of the original Java
-   * `getContextExecutionObject`. Static so callers can compose contexts
-   * directly without an enclosing processor instance.
+   * `executeJs` payloads. Static so callers can compose contexts directly
+   * without an enclosing processor instance.
    */
   // eslint-disable-next-line @typescript-eslint/max-params
   static getContextExecutionObject(

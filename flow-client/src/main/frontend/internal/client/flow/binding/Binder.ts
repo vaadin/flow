@@ -77,9 +77,7 @@ function getApplicableStrategy(node: StateNodeLike): BindingStrategy {
 
 /**
  * Entry point for binding DOM nodes to state nodes. Migrated from
- * `com.vaadin.client.flow.binding.Binder`. The Java `Binder.bind` facade
- * delegates here through the
- * `Vaadin.Flow.internal.client.flow.binding.Binder.bind` namespace.
+ * `com.vaadin.client.flow.binding.Binder`.
  */
 export const Binder = {
   /**

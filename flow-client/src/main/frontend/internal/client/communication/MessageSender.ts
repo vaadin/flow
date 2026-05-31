@@ -84,10 +84,9 @@ export interface PushConnectionLike {
 
 /**
  * Wiring required by {@link MessageSender}: dependencies that need lazy
- * resolution (sibling MessageHandler), still-Java services that have to be
- * reached through @JsFunction callbacks (XhrConnection), and direct TS
- * service references for everything that is already constructed by the time
- * MessageSender is created.
+ * resolution (sibling MessageHandler) and direct service references for
+ * everything that is already constructed by the time MessageSender is
+ * created.
  */
 export interface MessageSenderCallbacks {
   getMessageHandler(): MessageHandlerLike;
@@ -448,16 +447,6 @@ export class MessageSender {
   }
 
   getResynchronizationState(): ResynchronizationState {
-    return this.resynchronizationState;
-  }
-
-  /**
-   * Alias used by the Java {@code @JsOverlay} wrapper that adapts the TS
-   * string return value into the Java {@code ResynchronizationState} enum.
-   * Kept as a separate method so the Java enum-typed
-   * {@code getResynchronizationState()} can keep its name.
-   */
-  getResynchronizationStateName(): string {
     return this.resynchronizationState;
   }
 

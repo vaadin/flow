@@ -17,8 +17,7 @@
 const ABSOLUTE_URL_RE = /^(?:[a-zA-Z]+:)?\/\//;
 
 /**
- * Browser-touching helpers from `com.vaadin.client.WidgetUtil`. The Java
- * class is a pure `@JsType(isNative=true)` facade onto this module.
+ * Browser-touching helpers from `com.vaadin.client.WidgetUtil`.
  */
 export const WidgetUtil = {
   refresh(): void {
