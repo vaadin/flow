@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
@@ -97,6 +98,67 @@ public abstract class Action implements Serializable {
                             + "trigger.",
                     target.getClass().getName(), actionDescription);
         }
+    }
+
+    /**
+     * Renders the boilerplate shared by every "apply X, then undo X" action:
+     * stashes the original value on the first fire of a cycle, coalesces rapid
+     * re-fires (clearing the previous revert timer instead of re-snapshotting
+     * the already-modified state), and reverts the stashed value when the timer
+     * expires.
+     * <p>
+     * Subclasses provide three payload-specific sub-functions:
+     * <ul>
+     * <li>{@code snapshot} — no arguments, returns the value to stash; only
+     * called on the first fire of a cycle.</li>
+     * <li>{@code apply} — one argument named {@code event}, performs the
+     * temporary change; called on every fire.</li>
+     * <li>{@code revert} — one argument named {@code original}, restores the
+     * stashed value; called once per cycle when the timer expires.</li>
+     * </ul>
+     *
+     * The per-element stash is keyed by {@code stashKey}, so two temporary
+     * modifications on the same element with different keys (e.g. different
+     * property names) do not interfere; two with the same key (e.g. two
+     * triggers both flashing the same property) share an original and a single
+     * revert deadline.
+     *
+     * @param stashElement
+     *            element to hang the stash off — typically the modified target,
+     *            not {@code null}
+     * @param stashKey
+     *            identifier of what is being modified (e.g. property name);
+     *            separates unrelated temporary modifications on the same
+     *            element, not {@code null}
+     * @param snapshot
+     *            reads the current value to stash, no arguments, not
+     *            {@code null}
+     * @param apply
+     *            performs the change, declares one argument named
+     *            {@code event}, not {@code null}
+     * @param revert
+     *            restores the stashed value, declares one argument named
+     *            {@code original}, not {@code null}
+     * @param timeoutMillis
+     *            delay before reverting, in milliseconds; must be non-negative
+     * @return a {@link JsFunction} with one runtime argument named
+     *         {@code event}, suitable for returning from an action's
+     *         {@link #toJs(Trigger)}, not {@code null}
+     */
+    protected static JsFunction applyTemporarily(Element stashElement,
+            String stashKey, JsFunction snapshot, JsFunction apply,
+            JsFunction revert, long timeoutMillis) {
+        // Delegate to the TS module: keeps non-trivial client-side plumbing
+        // (per-element stash, timer coalescing, revert) in TriggerActions.ts
+        // where it can be evolved without per-action churn, while the Java
+        // side stays a one-line capture of the action's payload functions.
+        return JsFunction
+                .of("""
+                        window.Vaadin.Flow.triggerActions.applyTemporarily(\
+                        $0, $1, { snapshot: $2, apply: $3, revert: $4, timeoutMs: $5 }, event)""",
+                        stashElement, stashKey, snapshot, apply, revert,
+                        timeoutMillis)
+                .withArguments("event");
     }
 
     /**

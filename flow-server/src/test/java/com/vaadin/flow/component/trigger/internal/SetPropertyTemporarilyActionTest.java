@@ -44,8 +44,9 @@ class SetPropertyTemporarilyActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        // $3 is the timeout in ms; default is 1000.
-        assertEquals(1000L, action.getCaptures().get(3));
+        // Capture order from Action.applyTemporarily: $0 stashElement,
+        // $1 stashKey, $2 snapshot, $3 apply, $4 revert, $5 timeoutMs.
+        assertEquals(1000L, action.getCaptures().get(5));
     }
 
     @Test
@@ -62,11 +63,10 @@ class SetPropertyTemporarilyActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        // Capture order: $0 target element, $1 property name, $2 source
-        // JsFunction, $3 timeout ms.
+        // stashElement is the target element, stashKey is the property name.
         assertSame(target.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
-        assertEquals(500L, action.getCaptures().get(3));
+        assertEquals(500L, action.getCaptures().get(5));
     }
 
     @Test
@@ -83,7 +83,7 @@ class SetPropertyTemporarilyActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(0L, action.getCaptures().get(3));
+        assertEquals(0L, action.getCaptures().get(5));
     }
 
     @Test

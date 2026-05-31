@@ -29,11 +29,14 @@ import com.vaadin.flow.dom.JsFunction;
  * trigger fires, then reverts the property to its previous value after a
  * configurable timeout. Pure client-side — no server round-trip.
  * <p>
- * The "previous" value is read on the client at fire time, immediately before
- * the new value is assigned, and the reversion is scheduled via
- * {@code setTimeout}. Each firing captures its own previous value and schedules
- * its own reversion; overlapping firings within the timeout window are not
- * coalesced.
+ * The "previous" value is read on the client at the first fire of a cycle,
+ * before the new value is assigned. Rapid re-fires within the timeout window
+ * are coalesced: the original captured on the first fire is preserved, the new
+ * value is applied again, and the revert timer is reset. This means a second
+ * click on a flashing button extends the flash by one timeout, rather than
+ * capturing the already-flashed value as "original". Coalescing is keyed per
+ * element and per property name, so unrelated temporary modifications on the
+ * same element do not interfere.
  * <p>
  * The default timeout is {@value #DEFAULT_TIMEOUT_MS} ms
  * ({@link #DEFAULT_TIMEOUT}). Passing {@link Duration#ZERO} is allowed and
@@ -185,17 +188,18 @@ public class SetPropertyTemporarilyAction<T> extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // $0 = target element (captured), $1 = property name (Jackson-quoted
-        // on the client), $2 = source JsFunction (invoked with event so
-        // handler-scoped inputs work), $3 = timeout in ms (Jackson-encoded
-        // number — never string-concatenated into the body).
-        // The IIFE keeps the action a single statement (the base class
-        // convention) while reading the previous value at fire time and
-        // scheduling the reversion.
-        return JsFunction.of("""
-                (() => { const prev = $0[$1]; $0[$1] = $2(event); \
-                setTimeout(() => { $0[$1] = prev; }, $3); })()""", target,
-                propertyName, source.toJs(trigger), timeoutMillis)
-                .withArguments("event");
+        // Three payload-specific sub-functions: snapshot reads the property,
+        // apply assigns the source value, revert assigns the stashed
+        // original. The base helper handles per-element stashing, re-fire
+        // coalescing, and timer management — all in TriggerActions.ts.
+        JsFunction snapshot = JsFunction.of("return $0[$1]", target,
+                propertyName);
+        JsFunction apply = JsFunction.of("$0[$1] = $2(event)", target,
+                propertyName, source.toJs(trigger)).withArguments("event");
+        JsFunction revert = JsFunction
+                .of("$0[$1] = original", target, propertyName)
+                .withArguments("original");
+        return applyTemporarily(target, propertyName, snapshot, apply, revert,
+                timeoutMillis);
     }
 }

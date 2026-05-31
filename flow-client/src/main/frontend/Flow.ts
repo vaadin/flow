@@ -7,6 +7,7 @@ import {
 import './Clipboard';
 import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
+import './TriggerActions';
 import { currentVisibility } from './PageVisibility';
 
 export interface FlowConfig {
