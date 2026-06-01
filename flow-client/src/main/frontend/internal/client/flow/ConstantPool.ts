@@ -14,11 +14,6 @@
  * the License.
  */
 
-interface JsonObjectLike {
-  keys(): string[];
-  get(key: string): unknown;
-}
-
 /**
  * Map of constant values received from the server. Migrated from
  * `com.vaadin.client.flow.ConstantPool`.
@@ -27,10 +22,10 @@ export class ConstantPool {
   private readonly constants = new Map<string, unknown>();
 
   /** Imports new constants into this pool. */
-  importFromJson(json: JsonObjectLike): void {
-    for (const key of json.keys()) {
+  importFromJson(json: Record<string, unknown>): void {
+    for (const key of Object.keys(json)) {
       // Server-side never re-publishes the same key with a different value.
-      this.constants.set(key, json.get(key));
+      this.constants.set(key, json[key]);
     }
   }
 

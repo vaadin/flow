@@ -43,11 +43,14 @@ export class MapProperty {
     this.name = name;
     this.map = map;
     this.forceValueUpdate = forceValueUpdate;
+    // Mirrors Java MapProperty: wrap turns a ReactiveValueChangeListener into
+    // a MapPropertyChangeListener whose `onPropertyChange` fires the
+    // value-change handler.
     this.eventRouter = new ReactiveEventRouter(
       this,
-      (listener: AnyListener) =>
-        (event: unknown): void =>
-          listener.onValueChange(event),
+      (listener: AnyListener) => ({
+        onPropertyChange: (event: unknown): void => listener.onValueChange(event)
+      }),
       (listener: AnyListener, event: unknown): void => listener.onPropertyChange(event)
     );
   }
@@ -124,7 +127,11 @@ export class MapProperty {
   }
 
   addChangeListener(listener: AnyListener): { remove(): void } {
-    return this.eventRouter.addListener(listener);
+    // Accept either a bare `(event) => void` callback (the common Java
+    // `MapPropertyChangeListener` lambda) or an object with
+    // `onPropertyChange`. Normalize to the latter.
+    const adapted = typeof listener === 'function' ? { onPropertyChange: listener } : listener;
+    return this.eventRouter.addListener(adapted);
   }
 
   addReactiveValueChangeListener(listener: AnyListener): { remove(): void } {

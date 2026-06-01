@@ -40,11 +40,15 @@ export class NodeMap extends NodeFeature {
 
   constructor(id: number, node: StateNodeLike) {
     super(id, node);
+    // Mirrors Java NodeMap: wrap turns a ReactiveValueChangeListener into a
+    // MapPropertyAddListener whose `onPropertyAdd` fires the value-change
+    // handler — so iterating properties registers a reactive dependency that
+    // is invalidated when a new property is added.
     this.eventRouter = new ReactiveEventRouter(
       this,
-      (listener: AnyListener) =>
-        (event: unknown): void =>
-          listener.onValueChange(event),
+      (listener: AnyListener) => ({
+        onPropertyAdd: (event: unknown): void => listener.onValueChange(event)
+      }),
       (listener: AnyListener, event: unknown): void => listener.onPropertyAdd(event)
     );
   }
@@ -103,6 +107,11 @@ export class NodeMap extends NodeFeature {
   }
 
   addPropertyAddListener(listener: AnyListener): { remove(): void } {
-    return this.eventRouter.addListener(listener);
+    // Accept either a bare `(event) => void` callback (the common Java
+    // `MapPropertyAddListener` lambda) or an object that already has
+    // `onPropertyAdd`. Normalize to the latter so dispatchFn finds the
+    // expected method.
+    const adapted = typeof listener === 'function' ? { onPropertyAdd: listener } : listener;
+    return this.eventRouter.addListener(adapted);
   }
 }

@@ -48,7 +48,7 @@ type StateTreeLike = {
 type RegistryLike = {
   getStateTree(): StateTreeLike;
   getUILifecycle(): { isTerminated(): boolean; setState(state: string): void };
-  getApplicationConfiguration(): { isProductionMode(): boolean; getApplicationId(): string };
+  getApplicationConfiguration(): { productionMode: boolean; applicationId: string | null };
 };
 
 /**
@@ -159,7 +159,7 @@ export class ExecuteJavaScriptProcessor {
     } catch (exception) {
       Console.reportStacktrace(exception);
       Console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
-      if (!this.registry.getApplicationConfiguration().isProductionMode()) {
+      if (!this.registry.getApplicationConfiguration().productionMode) {
         const code = parameterNamesAndCode.join(', ');
         Console.error(`The error has occurred in the JS code: '${code}'`);
       }
@@ -167,7 +167,7 @@ export class ExecuteJavaScriptProcessor {
   }
 
   private getContextExecutionObject(nodeParameters: Map<unknown, StateNodeLike>, stopApplication: () => void): object {
-    const cleanedAppId = this.registry.getApplicationConfiguration().getApplicationId().replace(/-\d+$/, '');
+    const cleanedAppId = (this.registry.getApplicationConfiguration().applicationId ?? '').replace(/-\d+$/, '');
     return ExecuteJavaScriptProcessor.getContextExecutionObject(
       nodeParameters as Map<unknown, unknown>,
       cleanedAppId,

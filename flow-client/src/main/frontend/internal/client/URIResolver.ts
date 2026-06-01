@@ -18,7 +18,7 @@ const CONTEXT_PROTOCOL_PREFIX = 'context://';
 const BASE_PROTOCOL_PREFIX = 'base://';
 
 type RegistryLike = {
-  getApplicationConfiguration(): { getContextRootUrl(): string };
+  getApplicationConfiguration(): { contextRootUrl: string | null };
 };
 
 /**
@@ -42,7 +42,7 @@ export class URIResolver {
   }
 
   protected getContextRootUrl(): string {
-    const root = this.registry.getApplicationConfiguration().getContextRootUrl();
+    const root = this.registry.getApplicationConfiguration().contextRootUrl ?? '';
     if (!root.endsWith('/')) {
       throw new Error('context root URL must end with /');
     }

@@ -34,11 +34,13 @@ export class NodeList extends NodeFeature {
 
   constructor(id: number, node: StateNodeLike) {
     super(id, node);
+    // Mirrors Java NodeList: wrap turns a ReactiveValueChangeListener into a
+    // ListSpliceListener whose `onSplice` fires the value-change handler.
     this.eventRouter = new ReactiveEventRouter(
       this,
-      (listener: AnyListener) =>
-        (event: unknown): void =>
-          listener.onValueChange(event),
+      (listener: AnyListener) => ({
+        onSplice: (event: unknown): void => listener.onValueChange(event)
+      }),
       (listener: AnyListener, event: unknown): void => listener.onSplice(event)
     );
   }
@@ -90,7 +92,11 @@ export class NodeList extends NodeFeature {
   }
 
   addSpliceListener(listener: AnyListener): { remove(): void } {
-    return this.eventRouter.addListener(listener);
+    // Accept either a bare `(event) => void` callback (the common Java
+    // `ListSpliceListener` lambda) or an object that already has
+    // `onSplice`. Normalize to the latter.
+    const adapted = typeof listener === 'function' ? { onSplice: listener } : listener;
+    return this.eventRouter.addListener(adapted);
   }
 
   addReactiveValueChangeListener(listener: AnyListener): { remove(): void } {
