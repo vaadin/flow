@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Size;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;
 
@@ -26,19 +27,20 @@ import com.vaadin.flow.shared.Registration;
  * observer callback with a synthetic event whose {@code width} and
  * {@code height} hold the rounded pixel size of the element's content box.
  * <p>
- * The size values are exposed through {@link #width()}, {@link #height()} and
- * {@link #size()} so downstream actions can consume them. The shape of the
- * value produced by {@link #size()} matches the {@link Size} record so it can
- * be deserialised directly on the server when forwarded through an action that
- * decodes its input on the server.
+ * The size values are exposed as static {@link Action.Input} sources on
+ * {@link EventData}. The whole-event source {@link EventData#size} is shaped to
+ * match the {@link Size} record so it can be deserialised directly on the
+ * server when forwarded through an action that decodes its input on the server.
  * <p>
  * Example — mirror the element's pixel size into two display fields:
  *
  * <pre>{@code
  * SizeTrigger resize = new SizeTrigger(panel);
  * resize.triggers(
- *         new SetPropertyAction<>(widthSpan, "textContent", resize.width()),
- *         new SetPropertyAction<>(heightSpan, "textContent", resize.height()));
+ *         new SetPropertyAction<>(widthSpan, "textContent",
+ *                 SizeTrigger.EventData.width),
+ *         new SetPropertyAction<>(heightSpan, "textContent",
+ *                 SizeTrigger.EventData.height));
  * }</pre>
  *
  * <p>
@@ -57,33 +59,52 @@ public class SizeTrigger extends Trigger {
     }
 
     /**
-     * {@code event.width} — the element's rounded content-box width in pixels.
+     * The resize-event properties exposed as static {@link Action.Input}
+     * sources. Each field reads off the synthetic {@code {width, height}} event
+     * that fires the trigger; pass any of them as the value source of an
+     * {@link Action} wired to a {@link SizeTrigger}.
+     * <p>
+     * Each field is bound to {@link SizeTrigger}; using it in the handler of an
+     * unrelated trigger throws {@link IllegalArgumentException} at
+     * {@link Trigger#triggers(Action...)} time.
      */
-    public Action.Input<Integer> width() {
-        return new HandlerInput<>("width", this);
-    }
+    public abstract static class EventData implements Serializable {
 
-    /**
-     * {@code event.height} — the element's rounded content-box height in
-     * pixels.
-     */
-    public Action.Input<Integer> height() {
-        return new HandlerInput<>("height", this);
-    }
+        /**
+         * The class exists purely as a namespace for the static
+         * {@link Action.Input} fields.
+         */
+        protected EventData() {
+        }
 
-    /**
-     * The synthetic event object as a whole, shaped as {@code {width, height}}
-     * — Jackson-deserialisable into the {@link Size} record when consumed by an
-     * action that decodes its input on the server.
-     */
-    public Action.Input<Size> size() {
-        return new Action.Input<>() {
+        /**
+         * {@code event.width} — the element's rounded content-box width in
+         * pixels.
+         */
+        public static final Action.Input<Integer> width = new HandlerInput<>(
+                "width", SizeTrigger.class);
+
+        /**
+         * {@code event.height} — the element's rounded content-box height in
+         * pixels.
+         */
+        public static final Action.Input<Integer> height = new HandlerInput<>(
+                "height", SizeTrigger.class);
+
+        /**
+         * The synthetic event object as a whole, shaped as
+         * {@code {width, height}} — Jackson-deserialisable into the
+         * {@link Size} record when consumed by an action that decodes its input
+         * on the server.
+         */
+        public static final Action.Input<Size> size = new Action.Input<>() {
             @Override
             protected JsFunction toJs(Trigger trigger) {
-                if (trigger != SizeTrigger.this) {
-                    throw new IllegalArgumentException(
-                            "Input is scoped to a different trigger and cannot"
-                                    + " be used here");
+                if (!(trigger instanceof SizeTrigger)) {
+                    throw new IllegalArgumentException("Input is scoped to "
+                            + SizeTrigger.class.getSimpleName()
+                            + " and cannot be used in a "
+                            + trigger.getClass().getSimpleName() + " handler");
                 }
                 return JsFunction.of("return event").withArguments("event");
             }

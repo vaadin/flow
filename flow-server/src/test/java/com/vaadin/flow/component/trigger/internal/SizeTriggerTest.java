@@ -39,8 +39,8 @@ class SizeTriggerTest {
         ui.getElement().appendChild(panel.getElement(), field.getElement());
 
         SizeTrigger resize = new SizeTrigger(panel);
-        resize.triggers(
-                new SetPropertyAction<>(field, "value", resize.width()));
+        resize.triggers(new SetPropertyAction<>(field, "value",
+                SizeTrigger.EventData.width));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -66,8 +66,10 @@ class SizeTriggerTest {
 
         SizeTrigger resize = new SizeTrigger(panel);
         resize.triggers(
-                new SetPropertyAction<>(xField, "value", resize.width()),
-                new SetPropertyAction<>(yField, "value", resize.height()));
+                new SetPropertyAction<>(xField, "value",
+                        SizeTrigger.EventData.width),
+                new SetPropertyAction<>(yField, "value",
+                        SizeTrigger.EventData.height));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -95,11 +97,11 @@ class SizeTriggerTest {
         ui.getElement().appendChild(panel.getElement(), field.getElement());
 
         SizeTrigger resize = new SizeTrigger(panel);
-        // size() produces the synthetic event object as a whole — its
+        // EventData.size produces the synthetic event object as a whole — its
         // source-input function returns `event` directly, with no property
         // capture.
-        resize.triggers(
-                new SetPropertyAction<>(field, "data-size", resize.size()));
+        resize.triggers(new SetPropertyAction<>(field, "data-size",
+                SizeTrigger.EventData.size));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -111,28 +113,41 @@ class SizeTriggerTest {
     }
 
     @Test
-    void inputFromOtherTrigger_isRejected() {
+    void eventData_sharedAcrossInstances_accepted() {
+        // The static EventData fields are bound to the trigger class, not an
+        // instance, so the same field is a valid source for two separate
+        // SizeTrigger instances on different hosts.
         TagComponent panel1 = new TagComponent("div");
         TagComponent panel2 = new TagComponent("div");
         TagComponent field = new TagComponent("input");
 
-        SizeTrigger resize1 = new SizeTrigger(panel1);
-        SizeTrigger resize2 = new SizeTrigger(panel2);
-
-        assertThrows(IllegalArgumentException.class, () -> resize2.triggers(
-                new SetPropertyAction<>(field, "value", resize1.width())));
+        new SizeTrigger(panel1).triggers(new SetPropertyAction<>(field, "value",
+                SizeTrigger.EventData.width));
+        new SizeTrigger(panel2).triggers(new SetPropertyAction<>(field,
+                "data-size", SizeTrigger.EventData.size));
     }
 
     @Test
-    void sizeFromOtherTrigger_isRejected() {
-        TagComponent panel1 = new TagComponent("div");
-        TagComponent panel2 = new TagComponent("div");
+    void widthFromNonSizeTrigger_isRejected() {
+        TagComponent input = new TagComponent("input");
         TagComponent field = new TagComponent("input");
 
-        SizeTrigger resize1 = new SizeTrigger(panel1);
-        SizeTrigger resize2 = new SizeTrigger(panel2);
+        // EventData.width is bound to SizeTrigger; a plain DomEventTrigger is
+        // not a SizeTrigger, so wiring it through such a handler must fail.
+        DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
+        assertThrows(IllegalArgumentException.class,
+                () -> keypress.triggers(new SetPropertyAction<>(field, "value",
+                        SizeTrigger.EventData.width)));
+    }
 
-        assertThrows(IllegalArgumentException.class, () -> resize2.triggers(
-                new SetPropertyAction<>(field, "data-size", resize1.size())));
+    @Test
+    void sizeFromNonSizeTrigger_isRejected() {
+        TagComponent input = new TagComponent("input");
+        TagComponent field = new TagComponent("input");
+
+        DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
+        assertThrows(IllegalArgumentException.class,
+                () -> keypress.triggers(new SetPropertyAction<>(field,
+                        "data-size", SizeTrigger.EventData.size)));
     }
 }

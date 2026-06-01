@@ -56,9 +56,9 @@ public class TriggerSizeView extends AbstractDivView {
         SizeTrigger resize = new SizeTrigger(panel);
         resize.triggers(
                 new SetPropertyAction<>(widthDiv, "textContent",
-                        resize.width()),
+                        SizeTrigger.EventData.width),
                 new SetPropertyAction<>(heightDiv, "textContent",
-                        resize.height()));
+                        SizeTrigger.EventData.height));
 
         add(panel, widthDiv, heightDiv);
     }
