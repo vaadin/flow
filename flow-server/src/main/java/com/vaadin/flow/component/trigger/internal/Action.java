@@ -36,7 +36,11 @@ import com.vaadin.flow.dom.JsFunction;
  * An Action usually consumes one or more {@linkplain Input inputs} that supply
  * its values — a literal, the current value of a DOM property, an event-scoped
  * expression — so the data the action acts on is read on the client at fire
- * time rather than captured on the server.
+ * time rather than captured on the server. A trigger family may expose its
+ * event state as one or more {@code Input}s, typically as
+ * {@code public static final} fields (for example
+ * {@link MouseEventTrigger.EventData#screenX}); other inputs read state
+ * independent of any trigger (for example {@link PropertyInput}).
  * <p>
  * <em>For Action implementors:</em> override {@link #toJs(Trigger)} to produce
  * the JavaScript that the trigger handler invokes; reference inputs through
