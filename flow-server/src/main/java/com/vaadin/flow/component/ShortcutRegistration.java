@@ -656,22 +656,12 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (lifecycleOwner == null) {
             return;
         }
-        if (ancestorsOrSelfAreVisible(lifecycleOwner) && (lifecycleOwner
-                .getElement().isEnabled()
-                || DisabledUpdateMode.ALWAYS.equals(getDisabledUpdateMode()))) {
+        if (ComponentUtil.isEffectivelyVisible(lifecycleOwner)
+                && (lifecycleOwner.getElement().isEnabled()
+                        || DisabledUpdateMode.ALWAYS
+                                .equals(getDisabledUpdateMode()))) {
             invokeShortcutEventListener(component);
         }
-    }
-
-    private boolean ancestorsOrSelfAreVisible(Component component) {
-        if (!component.isVisible()) {
-            return false;
-        }
-        Optional<Component> parent = component.getParent();
-        if (parent.isPresent()) {
-            return ancestorsOrSelfAreVisible(parent.get());
-        }
-        return true;
     }
 
     private void configureHandlerListenerRegistration(int listenOnIndex) {
