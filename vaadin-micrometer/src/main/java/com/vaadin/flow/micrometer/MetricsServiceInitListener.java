@@ -151,6 +151,8 @@ public class MetricsServiceInitListener implements VaadinServiceInitListener {
             SessionMetricsBinder sessions = new SessionMetricsBinder(registry);
             service.addSessionInitListener(sessions);
             service.addSessionDestroyListener(sessions);
+            service.addSessionLockListener(
+                    new SessionLockMetricsBinder(registry));
         }
 
         if (config.isUis() || config.isNavigation()) {
