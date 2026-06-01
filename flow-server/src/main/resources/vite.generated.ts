@@ -58,6 +58,13 @@ const webComponentTags = '#webComponentTags#';
 // they have one, otherwise at the default copy generated into the frontend
 // generated/ folder.
 const projectIndexHtml = path.resolve(__dirname, settings.clientIndexHtmlSource);
+// Path of the index.html relative to the vite root (frontendFolder). Used
+// to identify the HTML in `transformIndexHtml` and to normalize the
+// emitted asset back to `index.html` when the source lives in a subfolder.
+const indexHtmlRelativePath = path
+  .relative(frontendFolder, projectIndexHtml)
+  .replace(/\\/g, '/');
+const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -613,7 +620,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           order: 'pre',
           handler(_html, { path, server }) {
-            if (path !== '/index.html') {
+            if (path !== indexHtmlUrlPath) {
               return;
             }
 
@@ -639,6 +646,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
               });
             }
             return scripts;
+          }
+        },
+        // When the default index.html is generated into frontend/generated/,
+        // rolldown emits it at the same relative path under outDir. Rename
+        // the bundled asset to index.html so consumers (stats plugin,
+        // server) always find it at the build output root.
+        generateBundle(_options, bundle) {
+          if (indexHtmlRelativePath === 'index.html') {
+            return;
+          }
+          const asset = bundle[indexHtmlRelativePath];
+          if (asset) {
+            asset.fileName = 'index.html';
+            bundle['index.html'] = asset;
+            delete bundle[indexHtmlRelativePath];
           }
         }
       },
