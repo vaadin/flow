@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -796,6 +797,46 @@ public class ComponentUtil {
         parent.getElement().getChildren().forEach(childElement -> ComponentUtil
                 .findComponents(childElement, childComponents::add));
         return childComponents.build();
+    }
+
+    /**
+     * Resolves the id of {@code targetComponent} lazily, before the next client
+     * response after {@code sourceElement} is attached. If the target still
+     * does not have an id at that point, one is generated using
+     * {@code generatedIdPrefix} followed by a random UUID and assigned to the
+     * target. The resolved id is then passed to {@code idConsumer}.
+     * <p>
+     * This allows components that need to reference another component by id
+     * (e.g. for {@code for} or {@code aria-labelledby} attributes) to accept a
+     * {@link Component} instead of requiring the caller to assign an id first.
+     *
+     * @param sourceElement
+     *            the element whose attachment triggers the resolution, not
+     *            {@code null}
+     * @param targetComponent
+     *            the component whose id should be resolved, not {@code null}
+     * @param generatedIdPrefix
+     *            prefix used when an id needs to be generated, not {@code null}
+     * @param idConsumer
+     *            receives the resolved id at sync time, not {@code null}
+     */
+    public static void resolveOrGenerateIdLater(Element sourceElement,
+            Component targetComponent, String generatedIdPrefix,
+            Consumer<String> idConsumer) {
+        sourceElement.getNode()
+                .runWhenAttached(ui -> ui.getInternals().getStateTree()
+                        .beforeClientResponse(sourceElement.getNode(),
+                                context -> {
+                                    String id = targetComponent.getId()
+                                            .orElseGet(() -> {
+                                                String generated = generatedIdPrefix
+                                                        + UUID.randomUUID();
+                                                targetComponent
+                                                        .setId(generated);
+                                                return generated;
+                                            });
+                                    idConsumer.accept(id);
+                                }));
     }
 
     /**

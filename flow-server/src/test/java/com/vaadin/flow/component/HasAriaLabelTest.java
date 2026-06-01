@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasAriaLabelTest {
 
@@ -76,7 +77,7 @@ class HasAriaLabelTest {
     @Test
     void withNullAriaLabelledBy_getAriaLabelledByReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
-        component.setAriaLabelledBy(null);
+        component.setAriaLabelledBy((String) null);
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
@@ -92,7 +93,7 @@ class HasAriaLabelTest {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("test AriaLabelledBy");
 
-        component.setAriaLabelledBy(null);
+        component.setAriaLabelledBy((String) null);
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
@@ -103,5 +104,50 @@ class HasAriaLabelTest {
 
         assertEquals("test AriaLabelledBy",
                 component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_withExistingId() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        labelComponent.setId("the-label");
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("the-label", component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_withoutId_generatesId() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        assertFalse(labelComponent.getId().isPresent());
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertTrue(labelComponent.getId().isPresent());
+        assertTrue(labelComponent.getId().get().startsWith("arialabelledby-"));
+        assertEquals(labelComponent.getId().get(),
+                component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_idSetLater() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        labelComponent.setId("manually-set-id");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("manually-set-id", component.getAriaLabelledBy().get());
     }
 }
