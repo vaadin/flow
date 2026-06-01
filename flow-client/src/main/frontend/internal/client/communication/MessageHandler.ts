@@ -724,14 +724,17 @@ export class MessageHandler {
   /**
    * Returns the profiling data array exposed on the client as
    * {@code client.getProfilingData()}: {@code [lastProcessingTime,
-   * totalProcessingTime, serverTimingInfo OR -1, -1, bootstrapTime]}.
+   * totalProcessingTime, serverTimingInfo[0], serverTimingInfo[1],
+   * bootstrapTime]}. When server-side timings are unavailable, both
+   * server-side slots default to -1 so the array shape stays at 5 entries.
    */
   getProfilingData(): unknown[] {
     const data: unknown[] = [];
     data.push(this.lastProcessingTime);
     data.push(this.totalProcessingTime);
-    if (this.serverTimingInfo !== null) {
-      data.push(this.serverTimingInfo);
+    if (Array.isArray(this.serverTimingInfo)) {
+      data.push((this.serverTimingInfo as unknown[])[0]);
+      data.push((this.serverTimingInfo as unknown[])[1]);
     } else {
       data.push(-1);
       data.push(-1);
