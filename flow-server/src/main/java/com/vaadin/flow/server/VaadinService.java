@@ -84,6 +84,8 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.RpcInvocationEvent;
+import com.vaadin.flow.server.communication.RpcInvocationListener;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -160,6 +162,7 @@ public abstract class VaadinService implements Serializable {
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
     private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
+    private final List<RpcInvocationListener> rpcInvocationListeners = new CopyOnWriteArrayList<>();
     private final List<SessionLockListener> sessionLockListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
@@ -813,6 +816,93 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addUIInitListener(UIInitListener listener) {
         return Registration.addAndRemove(uiInitListeners, listener);
+    }
+
+    /**
+     * Adds a listener that gets notified around the handling of individual
+     * client-to-server RPC invocations, enabling per-invocation observation
+     * (for example to emit a tracing span per DOM event or
+     * {@code @ClientCallable} call).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}; see
+     * {@link RpcInvocationListener} for the callback contract.
+     *
+     * @param listener
+     *            the RPC invocation listener
+     * @return a handle that can be used for removing the listener
+     * @see RpcInvocationListener
+     */
+    public Registration addRpcInvocationListener(
+            RpcInvocationListener listener) {
+        return Registration.addAndRemove(rpcInvocationListeners, listener);
+    }
+
+    /**
+     * Tells whether any {@link RpcInvocationListener} is registered, so callers
+     * can skip building per-invocation events when nobody is observing.
+     *
+     * @return {@code true} if at least one listener is registered
+     */
+    public boolean hasRpcInvocationListeners() {
+        return !rpcInvocationListeners.isEmpty();
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation is about
+     * to start. For internal use by the RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     */
+    public void fireRpcInvocationStarted(RpcInvocationEvent event) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationStarted(event);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationStarted", e);
+            }
+        }
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation threw.
+     * For internal use by the RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     * @param error
+     *            the throwable raised by the invocation handler
+     */
+    public void fireRpcInvocationFailed(RpcInvocationEvent event,
+            Throwable error) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationFailed(event, error);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationFailed", e);
+            }
+        }
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation has
+     * finished, whether normally or via an exception. For internal use by the
+     * RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     */
+    public void fireRpcInvocationEnded(RpcInvocationEvent event) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationEnded(event);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationEnded", e);
+            }
+        }
     }
 
     /**
