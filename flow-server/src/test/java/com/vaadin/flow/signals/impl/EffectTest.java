@@ -17,10 +17,12 @@ package com.vaadin.flow.signals.impl;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
@@ -1268,5 +1271,112 @@ class EffectTest extends SignalTestBase {
                         callerFailure.get());
             }
         }
+    }
+
+    @Test
+    void concurrentRevalidations_doNotDoubleRegisterObservers()
+            throws Exception {
+        // revalidate() drains stale registrations in its first synchronized
+        // block, runs the action without the monitor held, then
+        // unconditionally adds the freshly created registrations in its second
+        // synchronized block. Unlike activate()'s fast path -- which discards
+        // its new registrations when it observes that another revalidation
+        // already installed some (the !registrations.isEmpty() guard) --
+        // revalidate() performs no such check. Two revalidations that both
+        // pass the first block while registrations is empty therefore each add
+        // their own observers, leaving the effect (and the signal tree) with
+        // two generations of listeners.
+        //
+        // The interleaving is made deterministic with a queueing dispatcher
+        // (so the scheduled invalidate runs on demand) and a latch that
+        // freezes one revalidation inside the action -- after it has captured
+        // its observers but before its second synchronized block -- while the
+        // other revalidation runs to completion.
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        // A private queue so only this effect's own dispatches land here,
+        // isolated from the shared environment dispatcher.
+        List<Runnable> dispatchQueue = new ArrayList<>();
+        SerializableExecutor dispatcher = dispatchQueue::add;
+
+        AtomicBoolean freezeArmed = new AtomicBoolean(false);
+        CountDownLatch actionFrozen = new CountDownLatch(1);
+        CountDownLatch releaseAction = new CountDownLatch(1);
+
+        Effect effect = new Effect(() -> {
+            signal.get();
+            if (freezeArmed.compareAndSet(true, false)) {
+                actionFrozen.countDown();
+                try {
+                    releaseAction.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }, dispatcher);
+
+        // Initial revalidation registers the first observer generation.
+        runPending(dispatchQueue);
+        assertEquals(1, registrationCount(effect));
+
+        // A change schedules an invalidate (queued, not yet run) and removes
+        // the observer that fired.
+        signal.set("update");
+        assertEquals(1, dispatchQueue.size());
+
+        // Passivate drains the registrations; the pending invalidate stays
+        // queued.
+        effect.passivate();
+
+        // Arm the freeze so the revalidation driven by activate() blocks inside
+        // the action, between capturing its observers and its second
+        // synchronized block.
+        freezeArmed.set(true);
+        AtomicReference<Throwable> activateFailure = new AtomicReference<>();
+        Thread activator = new Thread(() -> {
+            try {
+                effect.activate();
+            } catch (Throwable t) {
+                activateFailure.set(t);
+            }
+        }, "activate-revalidation");
+        activator.setDaemon(true);
+        activator.start();
+
+        // Wait until activate()'s revalidation is frozen mid-action.
+        assertTrue(actionFrozen.await(5, TimeUnit.SECONDS),
+                "activate() revalidation did not reach the action");
+
+        // Run the queued invalidate now. Its revalidation sees an empty
+        // registration list (the frozen one has not reached its second block
+        // yet), runs the action, and installs its own observer generation.
+        runPending(dispatchQueue);
+
+        // Release the frozen revalidation so it completes its second block and
+        // adds a second observer generation on top of the first.
+        releaseAction.countDown();
+        activator.join(5000);
+        assertFalse(activator.isAlive(),
+                "activate() revalidation did not finish");
+        if (activateFailure.get() != null) {
+            throw new AssertionError("activate() failed",
+                    activateFailure.get());
+        }
+
+        // The effect must hold exactly one generation of observers. Two means
+        // the concurrent revalidations both registered and leaked listeners.
+        assertEquals(1, registrationCount(effect),
+                "Concurrent revalidations double-registered observers");
+    }
+
+    private static int registrationCount(Effect effect) throws Exception {
+        Field field = Effect.class.getDeclaredField("registrations");
+        field.setAccessible(true);
+        return ((List<?>) field.get(effect)).size();
+    }
+
+    private static void runPending(List<Runnable> queue) {
+        List<Runnable> pending = List.copyOf(queue);
+        queue.clear();
+        pending.forEach(Runnable::run);
     }
 }
