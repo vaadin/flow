@@ -30,6 +30,7 @@ public final class VaadinObservationNames {
     public static final String REQUEST = "vaadin.request";
     public static final String NAVIGATION = "vaadin.navigation";
     public static final String UI_ACCESS = "vaadin.ui.access";
+    public static final String RPC = "vaadin.rpc";
 
     public static final String KEY_OUTCOME = "outcome";
     public static final String KEY_REQUEST_TYPE = "vaadin.request.type";
@@ -39,6 +40,14 @@ public final class VaadinObservationNames {
     public static final String KEY_SESSION_ID = "vaadin.session.id";
     public static final String KEY_UI_ID = "ui.id";
     public static final String KEY_CLIENT_LOCATION = "vaadin.client.location";
+    /**
+     * Low-cardinality RPC invocation type ({@code event}, {@code mSync}, ...).
+     */
+    public static final String KEY_RPC_TYPE = "vaadin.rpc.type";
+    /** High-cardinality RPC detail: DOM event name, method name, location. */
+    public static final String KEY_RPC_NAME = "vaadin.rpc.name";
+    /** High-cardinality id of the targeted {@code StateNode}. */
+    public static final String KEY_NODE_ID = "vaadin.node.id";
 
     /** A poll request triggered by a configured poll interval. */
     public static final String INTERACTION_POLL = "poll";

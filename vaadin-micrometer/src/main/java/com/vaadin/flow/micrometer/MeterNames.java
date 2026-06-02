@@ -35,6 +35,8 @@ public final class MeterNames {
 
     public static final String REQUEST_DURATION = "vaadin.request.duration";
 
+    public static final String RPC_DURATION = "vaadin.rpc.duration";
+
     public static final String ERRORS = "vaadin.errors";
 
     public static final String CLIENT_BOOTSTRAP_DURATION = "vaadin.client.bootstrap.duration";

@@ -168,6 +168,9 @@ public class MetricsServiceInitListener implements VaadinServiceInitListener {
         if (config.isTraces() && observationRegistry != null) {
             event.getExecutor().ifPresent(exec -> event.setExecutor(
                     new TracingExecutor(exec, observationRegistry)));
+            // Break a long lock-hold span down into per-invocation RPC spans.
+            service.addRpcInvocationListener(
+                    new RpcMetricsBinder(observationRegistry));
         }
     }
 }

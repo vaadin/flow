@@ -64,6 +64,7 @@ final class SessionLockMetricsBinder implements SessionLockListener {
     private final transient ThreadLocal<Long> holdStart = new ThreadLocal<>();
     private final transient ThreadLocal<Observation> waitObservation = new ThreadLocal<>();
     private final transient ThreadLocal<Observation> holdObservation = new ThreadLocal<>();
+    private final transient ThreadLocal<Observation.Scope> holdScope = new ThreadLocal<>();
 
     SessionLockMetricsBinder(MeterRegistry registry) {
         this(registry, null, false);
@@ -113,6 +114,9 @@ final class SessionLockMetricsBinder implements SessionLockListener {
                     .lowCardinalityKeyValue(MeterNames.TAG_CONTEXT, context())
                     .start();
             holdObservation.set(hold);
+            // Keep the hold span current for the duration of the critical
+            // section so per-invocation RPC spans nest underneath it.
+            holdScope.set(hold.openScope());
             return;
         }
         long now = System.nanoTime();
@@ -129,6 +133,11 @@ final class SessionLockMetricsBinder implements SessionLockListener {
     @Override
     public void lockReleased(SessionLockEvent event) {
         if (useObservation()) {
+            Observation.Scope scope = holdScope.get();
+            holdScope.remove();
+            if (scope != null) {
+                scope.close();
+            }
             Observation hold = holdObservation.get();
             holdObservation.remove();
             if (hold != null) {
