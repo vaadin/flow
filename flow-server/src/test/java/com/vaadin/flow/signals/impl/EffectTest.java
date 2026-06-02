@@ -1368,6 +1368,119 @@ class EffectTest extends SignalTestBase {
                 "Concurrent revalidations double-registered observers");
     }
 
+    @Test
+    void concurrentRevalidations_latestGenerationWins() throws Exception {
+        // A stale revalidation must never win over a newer one. Two
+        // revalidations run concurrently: an older one (reading signalA) and a
+        // newer one (reading signalB). Even though the older one is released to
+        // commit its second synchronized block first, the effect must end up
+        // tracking signalB -- the dependency of the most recent run. A naive
+        // "discard if registrations is non-empty" guard would instead keep
+        // whichever attempt committed first (the stale signalA observer),
+        // leaving the effect blind to later signalB changes.
+        SharedValueSignal<String> signalA = new SharedValueSignal<>("a");
+        SharedValueSignal<String> signalB = new SharedValueSignal<>("b");
+        List<Runnable> dispatchQueue = new ArrayList<>();
+        SerializableExecutor dispatcher = dispatchQueue::add;
+
+        AtomicInteger runCount = new AtomicInteger();
+        CountDownLatch oldStarted = new CountDownLatch(1);
+        CountDownLatch releaseOld = new CountDownLatch(1);
+        CountDownLatch newStarted = new CountDownLatch(1);
+        CountDownLatch releaseNew = new CountDownLatch(1);
+
+        Effect effect = new Effect(() -> {
+            int run = runCount.incrementAndGet();
+            // Older runs depend on signalA, later runs on signalB.
+            if (run <= 2) {
+                signalA.get();
+            } else {
+                signalB.get();
+            }
+            if (run == 2) {
+                oldStarted.countDown();
+                await(releaseOld);
+            } else if (run == 3) {
+                newStarted.countDown();
+                await(releaseNew);
+            }
+        }, dispatcher);
+
+        // Initial revalidation (run 1) tracks signalA.
+        runPending(dispatchQueue);
+        assertEquals(1, registrationCount(effect));
+
+        // Change signalA to schedule the invalidate that drives the newer
+        // attempt.
+        signalA.set("a2");
+        assertEquals(1, dispatchQueue.size());
+
+        effect.passivate();
+
+        // Older attempt: activate() revalidates (run 2, signalA) and freezes
+        // before its second synchronized block.
+        AtomicReference<Throwable> oldFailure = new AtomicReference<>();
+        Thread older = new Thread(() -> {
+            try {
+                effect.activate();
+            } catch (Throwable t) {
+                oldFailure.set(t);
+            }
+        }, "older-revalidation");
+        older.setDaemon(true);
+        older.start();
+        assertTrue(oldStarted.await(5, TimeUnit.SECONDS),
+                "older revalidation did not reach the action");
+
+        // Newer attempt: the queued invalidate revalidates (run 3, signalB)
+        // and freezes before its second synchronized block.
+        AtomicReference<Throwable> newFailure = new AtomicReference<>();
+        Thread newer = new Thread(() -> {
+            try {
+                runPending(dispatchQueue);
+            } catch (Throwable t) {
+                newFailure.set(t);
+            }
+        }, "newer-revalidation");
+        newer.setDaemon(true);
+        newer.start();
+        assertTrue(newStarted.await(5, TimeUnit.SECONDS),
+                "newer revalidation did not reach the action");
+
+        // Let the older attempt commit first, then the newer one.
+        releaseOld.countDown();
+        older.join(5000);
+        releaseNew.countDown();
+        newer.join(5000);
+        assertFalse(older.isAlive() || newer.isAlive(),
+                "revalidations did not finish");
+        if (oldFailure.get() != null) {
+            throw new AssertionError("older revalidation failed",
+                    oldFailure.get());
+        }
+        if (newFailure.get() != null) {
+            throw new AssertionError("newer revalidation failed",
+                    newFailure.get());
+        }
+
+        // The effect must track signalB (the latest run), not the stale
+        // signalA dependency.
+        assertEquals(1, registrationCount(effect));
+        int beforeB = runCount.get();
+        signalB.set("b2");
+        runPending(dispatchQueue);
+        assertTrue(runCount.get() > beforeB,
+                "effect did not react to signalB; it kept a stale dependency set");
+    }
+
+    private static void await(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     private static int registrationCount(Effect effect) throws Exception {
         Field field = Effect.class.getDeclaredField("registrations");
         field.setAccessible(true);
