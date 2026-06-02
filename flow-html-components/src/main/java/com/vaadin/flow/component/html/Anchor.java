@@ -26,7 +26,6 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -273,9 +272,6 @@ public class Anchor extends HtmlContainer
     public void setHref(String href) {
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
-        }
-        if (!UrlUtil.isAllowedUrl(href)) {
-            throw new IllegalArgumentException("Source URL is not allowed");
         }
         this.href = href;
         assignHrefAttribute();
