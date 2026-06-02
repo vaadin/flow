@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -75,12 +76,12 @@ public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
+    protected JsFunction toPromiseJs(Trigger trigger) {
         // The actual clipboard read + {text, html} extraction lives in
         // Clipboard.ts (window.Vaadin.Flow.clipboard.readPayload); this
-        // action just routes the resolved value through the PromiseAction
+        // action just routes the resolved Promise through the PromiseAction
         // framework.
-        out.append("window.Vaadin.Flow.clipboard.readPayload()");
+        return JsFunction
+                .of("return window.Vaadin.Flow.clipboard.readPayload()");
     }
 }

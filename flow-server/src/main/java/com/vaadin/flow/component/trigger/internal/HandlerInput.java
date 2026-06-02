@@ -17,14 +17,19 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.dom.JsFunction;
+
 /**
- * Input whose value is produced by a JS expression scoped to a specific
- * trigger's handler — typically {@code event[...]} for a
- * {@link DomEventTrigger}.
+ * Input that reads a property from a trigger handler's {@code event} argument
+ * (e.g. {@code event.screenX} for a {@link DomEventTrigger}).
  * <p>
- * Carries the owning trigger so that {@link Trigger#triggers(Action...)}
- * refuses to render an input created by trigger A into the handler of trigger B
- * (where the referenced variable would not be in scope).
+ * Carries the trigger class the expression is valid for so that
+ * {@link Trigger#triggers(Action...)} refuses to render an input meant for one
+ * trigger family into the handler of an unrelated trigger (where the referenced
+ * variable would not be in scope). Class-based scoping lets a single input
+ * instance be exposed as a {@code public static final} field (see
+ * {@link MouseEventTrigger.EventData}) and reused across every instance of the
+ * owning class and its subclasses.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -33,21 +38,24 @@ import java.util.Objects;
  */
 final class HandlerInput<T> extends Action.Input<T> {
 
-    private final String jsExpression;
-    private final Trigger owner;
+    private final String propertyName;
+    private final Class<? extends Trigger> ownerClass;
 
-    HandlerInput(String jsExpression, Trigger owner) {
-        this.jsExpression = Objects.requireNonNull(jsExpression);
-        this.owner = Objects.requireNonNull(owner);
+    HandlerInput(String propertyName, Class<? extends Trigger> ownerClass) {
+        this.propertyName = Objects.requireNonNull(propertyName);
+        this.ownerClass = Objects.requireNonNull(ownerClass);
     }
 
     @Override
-    protected void appendExpression(JsBuilder builder, StringBuilder out) {
-        if (builder.trigger() != owner) {
-            throw new IllegalArgumentException(
-                    "Input is scoped to a different trigger and cannot be"
-                            + " used here");
+    protected JsFunction toJs(Trigger trigger) {
+        if (!ownerClass.isInstance(trigger)) {
+            throw new IllegalArgumentException("Input is scoped to "
+                    + ownerClass.getSimpleName() + " and cannot be used in a "
+                    + trigger.getClass().getSimpleName() + " handler");
         }
-        out.append(jsExpression);
+        // $0 = property name (string capture, Jackson-quoted on the client),
+        // event = the handler argument the framework passes in.
+        return JsFunction.of("return event[$0]", propertyName)
+                .withArguments("event");
     }
 }

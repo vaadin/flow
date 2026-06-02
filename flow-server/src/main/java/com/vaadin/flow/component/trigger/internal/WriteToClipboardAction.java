@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -41,6 +42,14 @@ import com.vaadin.flow.function.SerializableConsumer;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class WriteToClipboardAction extends PromiseAction<String> {
+
+    /**
+     * Stand-in input that yields a JS {@code null} for a missing MIME slot, so
+     * the rendered call always reaches the TS helper with two arguments
+     * regardless of which slot was set on the server.
+     */
+    private static final JsFunction NULL_INPUT_FN = JsFunction
+            .of("return null");
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -105,66 +114,17 @@ public class WriteToClipboardAction extends PromiseAction<String> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        // Bind the text and html expressions once on the client, then write
-        // them, then resolve the promise with the text (or html if no text)
-        // so onCopied sees the exact string that reached the clipboard.
-        out.append('(');
-        appendParamList(out, "t", "h");
-        out.append(" => navigator.clipboard.write([new ClipboardItem({");
-        appendItemEntries(out);
-        out.append("})]).then(() => ").append(textInput != null ? "t" : "h")
-                .append("))(");
-        appendArgList(builder, out);
-        out.append(')');
-    }
-
-    /** Renders the arrow-function parameter list — only the names we use. */
-    private void appendParamList(StringBuilder out, String textName,
-            String htmlName) {
-        out.append('(');
-        boolean needComma = false;
-        if (textInput != null) {
-            out.append(textName);
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append(htmlName);
-        }
-        out.append(')');
-    }
-
-    /** Renders the ClipboardItem entries against parameter names "t" / "h". */
-    private void appendItemEntries(StringBuilder out) {
-        boolean needComma = false;
-        if (textInput != null) {
-            out.append("\"text/plain\":t");
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append("\"text/html\":h");
-        }
-    }
-
-    /** Renders the actual input expressions passed into the IIFE. */
-    private void appendArgList(JsBuilder builder, StringBuilder out) {
-        boolean needComma = false;
-        if (textInput != null) {
-            textInput.appendExpression(builder, out);
-            needComma = true;
-        }
-        if (htmlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            htmlInput.appendExpression(builder, out);
-        }
+    protected JsFunction toPromiseJs(Trigger trigger) {
+        // Both slots are always present in the call; absent slots become a
+        // no-op input that returns null, so the TS helper sees null and skips
+        // that MIME type. Keeping the call shape uniform across all four
+        // combinations means no per-action JS assembly.
+        JsFunction text = textInput != null ? textInput.toJs(trigger)
+                : NULL_INPUT_FN;
+        JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
+                : NULL_INPUT_FN;
+        return JsFunction.of(
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event))",
+                text, html).withArguments("event");
     }
 }

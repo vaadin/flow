@@ -18,6 +18,8 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Fires when the host component receives a DOM event with the given name. The
@@ -58,28 +60,33 @@ public class DomEventTrigger extends Trigger {
 
     /**
      * Returns an {@link Action.Input} that yields {@code event[name]} at fire
-     * time — the value of a property on the DOM event object.
-     * <p>
-     * The returned input is only valid in actions wired to this trigger; using
-     * it elsewhere throws {@link IllegalArgumentException} at the
-     * {@link #triggers(Action...)} call site.
+     * time, valid in the handler of any trigger that is an instance of
+     * {@code ownerClass}. Used by trigger families that expose their event
+     * properties as {@code public static final} fields — see
+     * {@link MouseEventTrigger.EventData}.
      *
      * @param name
-     *            the event property name (e.g. {@code "screenX"},
-     *            {@code "key"}), not {@code null}
-     * @return an input that resolves to {@code event[name]} on fire
+     *            the event property name, not {@code null}
+     * @param ownerClass
+     *            the trigger class the expression is valid for, not
+     *            {@code null}
      * @param <T>
      *            the runtime type of the value produced
+     * @return an input that resolves to {@code event[name]} on fire
      */
-    public <T> Action.Input<T> property(String name) {
-        Objects.requireNonNull(name);
-        return new HandlerInput<>("event[" + JsBuilder.json(name) + "]", this);
+    static <T> Action.Input<T> eventProperty(String name,
+            Class<? extends DomEventTrigger> ownerClass) {
+        return new HandlerInput<>(name, ownerClass);
     }
 
     @Override
-    protected String installJs() {
-        String evt = JsBuilder.json(eventName);
-        return "this.addEventListener(" + evt + ", $0);"
-                + "return () => this.removeEventListener(" + evt + ", $0);";
+    protected Registration install(JsFunction action) {
+        // Action at $0 (the convention the framework documents in
+        // Trigger#install), event name at $1 — both captures of the install
+        // JsFunction, no string concatenation around either.
+        return getHost().addJsInitializer("""
+                this.addEventListener($1, $0);\
+                return () => this.removeEventListener($1, $0);""", action,
+                eventName);
     }
 }

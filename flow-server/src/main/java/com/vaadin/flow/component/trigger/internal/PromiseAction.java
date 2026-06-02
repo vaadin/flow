@@ -40,8 +40,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * file picker, share, web payment, … — and follow the same shape: call the API,
  * then handle the resolved value or the rejection. This class collapses that
  * pattern into one place so subclasses only need to emit the promise-yielding
- * JS expression by overriding
- * {@link #appendPromiseExpression(JsBuilder, StringBuilder)}.
+ * JS function by overriding {@link #toPromiseJs(Trigger)}.
  * <p>
  * The type parameter {@code T} is the type of value the JS promise resolves
  * with: it gets Jackson-decoded once before {@code onSuccess} sees it, so
@@ -60,8 +59,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * pass {@code v -> {}} or {@code err -> {}} to opt out). The handlers run on
  * the UI thread after the client reports the outcome of the promise.</li>
  * </ul>
- * Under the hood, the with-outcome mode renders one call to a shared
- * {@link JsFunction} that subscribes to the promise and pushes an
+ * Under the hood, the with-outcome mode wraps the subclass JsFunction in a
+ * shared observer JsFunction that subscribes to the promise and pushes an
  * {@link Outcome} through a lazily-registered {@link ReturnChannelRegistration}
  * on the trigger host node.
  * <p>
@@ -134,47 +133,50 @@ public abstract class PromiseAction<T> extends Action {
     }
 
     /**
-     * Subclasses append a JS expression that evaluates to a {@code Promise}
-     * when the trigger fires. The value the promise resolves with is decoded to
-     * {@code T} on the server and handed to {@code onSuccess}. To deliver a
-     * typed value, subclasses can wrap their API call in an IIFE — for example,
-     * copying a string and resolving with it:
+     * Subclasses return a {@link JsFunction} that, when invoked with the
+     * trigger's event, evaluates to a {@code Promise}. The value the promise
+     * resolves with is decoded to {@code T} on the server and handed to
+     * {@code onSuccess}. To deliver a typed value, subclasses can wrap their
+     * API call in an IIFE inside the function body — for example, copying a
+     * string and resolving with it:
      *
      * <pre>{@code
-     * ((v) => navigator.clipboard.writeText(v).then(() => v))(<textExpr>)
+     * return JsFunction.of(
+     *         "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))",
+     *         textInput.toJs(trigger)).withArguments("event");
      * }</pre>
      *
-     * @param builder
-     *            collects element parameter references, not {@code null}
-     * @param out
-     *            buffer to append into, not {@code null}
+     * @param trigger
+     *            the surrounding trigger this render is for, not {@code null}
+     * @return the promise-yielding JS function, not {@code null}
      */
-    protected abstract void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out);
+    protected abstract JsFunction toPromiseJs(Trigger trigger);
 
     /**
      * Final by design — subclasses customise the rendered JS through
-     * {@link #appendPromiseExpression}, never by overriding the wiring that
-     * subscribes to the promise. Keeping the {@code .then}/{@code .catch} glue
-     * identical across subclasses is what makes the {@link Outcome} wire
-     * contract stable.
+     * {@link #toPromiseJs}, never by overriding the wiring that subscribes to
+     * the promise. Keeping the {@code .then}/{@code .catch} glue identical
+     * across subclasses is what makes the {@link Outcome} wire contract stable.
      */
     @Override
-    protected final void appendStatement(JsBuilder builder, StringBuilder out) {
+    protected final JsFunction toJs(Trigger trigger) {
+        JsFunction inner = toPromiseJs(trigger);
         // The constructors enforce that onSuccess and onError are either
         // both null (fire-and-forget) or both non-null (with-outcome) — so
-        // checking one already determines the mode. Asserting on both keeps
-        // the invariant defensive against constructor changes.
+        // checking one already determines the mode.
         if (onSuccess == null && onError == null) {
-            appendPromiseExpression(builder, out);
-            return;
+            // Fire-and-forget: the trigger handler invokes the inner function
+            // directly with event; the returned Promise is discarded.
+            return inner;
         }
-        String observe = builder.capture(OBSERVE_PROMISE);
-        String channel = builder
-                .capture(channelFor(builder.trigger().getHost().getNode()));
-        out.append(observe).append('(');
-        appendPromiseExpression(builder, out);
-        out.append(", ").append(channel).append(')');
+        ReturnChannelRegistration channel = channelFor(
+                trigger.getHost().getNode());
+        // $0(observer)($1(event)(promise), $2(channel)) — invoke the inner
+        // function to get a Promise, then hand it plus the return channel to
+        // the shared observer JsFunction which subscribes to .then/.catch.
+        return JsFunction
+                .of("$0($1(event), $2)", OBSERVE_PROMISE, inner, channel)
+                .withArguments("event");
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
