@@ -9,6 +9,7 @@ import { currentFullscreenState } from './Fullscreen';
 import './ElementResize';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import './WakeLock';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -566,6 +567,12 @@ export class Flow {
     const geolocation = ($wnd.Vaadin.Flow as any)?.geolocation;
     if (geolocation) {
       params['v-ga'] = await geolocation.queryAvailability();
+    }
+
+    /* Wake-lock availability — same guard rationale as geolocation. */
+    const wakeLock = ($wnd.Vaadin.Flow as any)?.wakeLock;
+    if (wakeLock) {
+      params['v-wla'] = wakeLock.queryAvailability();
     }
 
     /* Stringify each value (they are parsed on the server side) */
