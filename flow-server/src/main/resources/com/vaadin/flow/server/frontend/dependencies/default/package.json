@@ -3,7 +3,7 @@
   "description": "A list of default Flow dependencies",
   "dependencies": {
     "@polymer/polymer": "3.5.2",
-    "@vaadin/common-frontend": "0.0.22",
+    "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.3.3"
   },
