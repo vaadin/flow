@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,6 +62,55 @@ public class SessionLockListenerTest {
 
         Assert.assertEquals(List.of("requested", "acquired", "released"),
                 listener.events);
+    }
+
+    @Test
+    public void tryLockSucceeds_firesRequestedAcquiredReleased() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        RecordingListener listener = new RecordingListener();
+        service.addSessionLockListener(listener);
+
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        Assert.assertTrue(lock.tryLock());
+
+        lock.unlock();
+
+        Assert.assertEquals(List.of("requested", "acquired", "released"),
+                listener.events);
+    }
+
+    @Test
+    public void tryLockFails_firesNothing() throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService();
+        RecordingListener listener = new RecordingListener();
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+
+        // Hold the lock from another thread so tryLock can't take it.
+        CountDownLatch locked = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        Thread holder = new Thread(() -> {
+            lock.lock();
+            locked.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.unlock();
+            }
+        });
+        holder.start();
+        locked.await();
+        // Register the listener after the lock is held, so the
+        // holder's own acquisition is not recorded and the list can only grow
+        // if the failing tryLock wrongly emits an event.
+        service.addSessionLockListener(listener);
+
+        Assert.assertFalse(lock.tryLock());
+        Assert.assertTrue(listener.events.isEmpty());
+
+        release.countDown();
+        holder.join();
     }
 
     @Test

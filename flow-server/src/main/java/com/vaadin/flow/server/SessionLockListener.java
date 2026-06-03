@@ -58,7 +58,10 @@ public interface SessionLockListener extends Serializable {
      * Invoked on the locking thread immediately before it attempts to acquire
      * the session lock for an outermost (non-reentrant) acquisition. The thread
      * may block between this callback and {@link #lockAcquired}; the elapsed
-     * time is the lock wait time.
+     * time is the lock wait time. For a non-blocking acquisition
+     * ({@code tryLock}) this is delivered together with {@link #lockAcquired}
+     * only when the lock was actually taken, so the reported wait time is
+     * effectively zero.
      *
      * @param event
      *            the session lock event
