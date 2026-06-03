@@ -871,7 +871,13 @@ public abstract class VaadinService implements Serializable {
             return;
         }
         SessionLockEvent event = new SessionLockEvent(this);
-        for (SessionLockListener listener : sessionLockListeners) {
+        // Released is fired in reverse registration order so that listeners
+        // are nested: a listener's lockReleased runs before the lockReleased
+        // of the listeners that were notified before it on lockAcquired.
+        List<SessionLockListener> listeners = new ArrayList<>(
+                sessionLockListeners);
+        Collections.reverse(listeners);
+        for (SessionLockListener listener : listeners) {
             try {
                 listener.lockReleased(event);
             } catch (RuntimeException e) {

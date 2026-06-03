@@ -32,6 +32,13 @@ import java.io.Serializable;
  * {@code lockRequested}, derive the wait time on {@code lockAcquired}, and the
  * hold time on {@code lockReleased}.
  * <p>
+ * When several listeners are registered, {@link #lockRequested} and
+ * {@link #lockAcquired} are delivered in registration order while
+ * {@link #lockReleased} is delivered in reverse registration order, so the
+ * callbacks nest like {@code try}/{@code finally} blocks: a listener registered
+ * later sees its {@code lockReleased} run before that of a listener registered
+ * earlier.
+ * <p>
  * Implementations must be fast and non-blocking: callbacks run on the
  * request/access thread directly around the lock operation. Exceptions thrown
  * from a callback are logged and suppressed so they cannot disrupt session

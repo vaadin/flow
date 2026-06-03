@@ -80,6 +80,45 @@ public class SessionLockListenerTest {
     }
 
     @Test
+    public void multipleListeners_releasedFiresInReverseRegistrationOrder() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        List<String> order = new ArrayList<>();
+        service.addSessionLockListener(new SessionLockListener() {
+            @Override
+            public void lockAcquired(SessionLockEvent event) {
+                order.add("acquired-first");
+            }
+
+            @Override
+            public void lockReleased(SessionLockEvent event) {
+                order.add("released-first");
+            }
+        });
+        service.addSessionLockListener(new SessionLockListener() {
+            @Override
+            public void lockAcquired(SessionLockEvent event) {
+                order.add("acquired-second");
+            }
+
+            @Override
+            public void lockReleased(SessionLockEvent event) {
+                order.add("released-second");
+            }
+        });
+
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        lock.lock();
+        try {
+            // critical section
+        } finally {
+            lock.unlock();
+        }
+
+        Assert.assertEquals(List.of("acquired-first", "acquired-second",
+                "released-second", "released-first"), order);
+    }
+
+    @Test
     public void removedListener_isNotNotified() {
         MockVaadinServletService service = new MockVaadinServletService();
         RecordingListener listener = new RecordingListener();
