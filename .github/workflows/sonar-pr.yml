@@ -46,10 +46,16 @@ jobs:
           cache: 'maven'
 
       - name: Run Sonar analysis
+        # Unit tests run so the JaCoCo agent (wired in via the parent pom)
+        # produces per-module target/site/jacoco/jacoco.xml reports that the
+        # Sonar scanner reads for coverage. Integration tests (-DskipITs) and
+        # the flow-tests module are skipped: they require a browser/TestBench
+        # license and are excluded from Sonar analysis (sonar.skip=true).
         run: |
           mvn clean install sonar:sonar \
             -ntp -B -e -V \
-            -DskipTests \
+            -DskipITs \
+            -pl '!flow-tests' \
             -Dsonar.projectKey=vaadin_flow \
             -Dsonar.organization=vaadin \
             -Dsonar.host.url=https://sonarcloud.io \

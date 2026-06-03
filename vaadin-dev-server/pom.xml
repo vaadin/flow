@@ -12,7 +12,6 @@
   <description>${project.name}</description>
 
   <properties>
-    <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
     <skipTests>${maven.test.skip}</skipTests>
@@ -127,6 +126,16 @@
               <exclude>src/main/resources/META-INF/frontend/vaadin-dev-tools//**</exclude>
             </excludes>
           </typescript>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- These tests need access to java.net internals. Append the
+             argument after ${surefire.argLine} so the JaCoCo coverage agent
+             injected there by jacoco-maven-plugin is preserved. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${surefire.argLine} --add-opens=java.base/java.net=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
       <plugin>

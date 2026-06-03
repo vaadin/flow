@@ -101,6 +101,7 @@
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
     <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
+    <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
@@ -761,6 +762,34 @@
             <goals>
               <goal>bnd-process</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Produces code-coverage data consumed by SonarCloud. The
+             prepare-agent goal sets ${surefire.argLine} so the coverage
+             agent is attached when Surefire runs the unit tests; the report
+             goal writes target/site/jacoco/jacoco.xml, which the Sonar
+             scanner picks up automatically. -->
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>jacoco-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <propertyName>surefire.argLine</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>test</phase>
           </execution>
         </executions>
       </plugin>
