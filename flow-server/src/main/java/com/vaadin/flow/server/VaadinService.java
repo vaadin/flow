@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -159,6 +160,7 @@ public abstract class VaadinService implements Serializable {
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
     private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
+    private final List<SessionLockListener> sessionLockListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
@@ -814,6 +816,79 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Adds a listener that gets notified when a session lock for this service
+     * is acquired and released, enabling observation of session-lock contention
+     * (for example to publish lock wait and hold-time metrics).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}. Listeners
+     * are notified for the outermost lock acquisition only; see
+     * {@link SessionLockListener} for the callback contract.
+     *
+     * @param listener
+     *            the session lock listener
+     * @return a handle that can be used for removing the listener
+     * @see SessionLockListener
+     */
+    public Registration addSessionLockListener(SessionLockListener listener) {
+        return Registration.addAndRemove(sessionLockListeners, listener);
+    }
+
+    boolean hasSessionLockListeners() {
+        return !sessionLockListeners.isEmpty();
+    }
+
+    void fireSessionLockRequested() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        for (SessionLockListener listener : sessionLockListeners) {
+            try {
+                listener.lockRequested(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockRequested",
+                        e);
+            }
+        }
+    }
+
+    void fireSessionLockAcquired() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        for (SessionLockListener listener : sessionLockListeners) {
+            try {
+                listener.lockAcquired(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockAcquired",
+                        e);
+            }
+        }
+    }
+
+    void fireSessionLockReleased() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        // Released is fired in reverse registration order so that listeners
+        // are nested: a listener's lockReleased runs before the lockReleased
+        // of the listeners that were notified before it on lockAcquired.
+        ListIterator<SessionLockListener> listeners = sessionLockListeners
+                .listIterator(sessionLockListeners.size());
+        while (listeners.hasPrevious()) {
+            SessionLockListener listener = listeners.previous();
+            try {
+                listener.lockReleased(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockReleased",
+                        e);
+            }
+        }
+    }
+
+    /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
      *
@@ -1027,7 +1102,7 @@ public abstract class VaadinService implements Serializable {
             synchronized (VaadinService.class) {
                 lock = getSessionLock(wrappedSession);
                 if (lock == null) {
-                    lock = new ReentrantLock();
+                    lock = new InstrumentedReentrantLock(this);
                     setSessionLock(wrappedSession, lock);
                 }
             }
