@@ -625,14 +625,57 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
+        VaadinService service = ui.getSession().getService();
+        RpcInvocationEvent event = service.hasRpcInvocationListeners()
+                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
+                        invocationName(type, invocationJson))
+                : null;
+        if (event != null) {
+            service.fireRpcInvocationStarted(event);
+        }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
             assert !handle.isPresent()
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
+            if (event != null) {
+                service.fireRpcInvocationFailed(event, throwable);
+            }
             callErrorHandler(ui, invocationJson, throwable);
+        } finally {
+            if (event != null) {
+                service.fireRpcInvocationEnded(event);
+            }
         }
+    }
+
+    private static int nodeId(JsonNode invocationJson) {
+        JsonNode node = invocationJson.get(JsonConstants.RPC_NODE);
+        return node != null ? node.intValue() : -1;
+    }
+
+    /**
+     * Extracts a human-readable identifier for an invocation so observers can
+     * label it without parsing the protocol JSON: the DOM event name for
+     * {@code event}, the invoked method for {@code publishedEventHandler}, the
+     * location for {@code navigation}, the channel id for {@code channel}.
+     */
+    private static String invocationName(String type, JsonNode invocationJson) {
+        String key = switch (type) {
+        case JsonConstants.RPC_TYPE_EVENT -> JsonConstants.RPC_EVENT_TYPE;
+        case JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER ->
+            JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME;
+        case JsonConstants.RPC_TYPE_NAVIGATION ->
+            JsonConstants.RPC_NAVIGATION_LOCATION;
+        case JsonConstants.RPC_TYPE_CHANNEL -> JsonConstants.RPC_CHANNEL;
+        default -> null;
+        };
+        if (key == null) {
+            return null;
+        }
+        JsonNode value = invocationJson.get(key);
+        return value != null ? value.asString() : null;
     }
 
     private static void callErrorHandler(UI ui, JsonNode invocationJson,
