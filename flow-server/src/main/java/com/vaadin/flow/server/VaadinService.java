@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -874,10 +875,10 @@ public abstract class VaadinService implements Serializable {
         // Released is fired in reverse registration order so that listeners
         // are nested: a listener's lockReleased runs before the lockReleased
         // of the listeners that were notified before it on lockAcquired.
-        List<SessionLockListener> listeners = new ArrayList<>(
-                sessionLockListeners);
-        Collections.reverse(listeners);
-        for (SessionLockListener listener : listeners) {
+        ListIterator<SessionLockListener> listeners = sessionLockListeners
+                .listIterator(sessionLockListeners.size());
+        while (listeners.hasPrevious()) {
+            SessionLockListener listener = listeners.previous();
             try {
                 listener.lockReleased(event);
             } catch (RuntimeException e) {
