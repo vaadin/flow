@@ -209,10 +209,12 @@ class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle web-component request");
 
-        assertFalse(
-                out.toString().contains("window.Vaadin.featureFlagsUpdaters"),
-                "Response should not have a Feature Flags updater script "
-                        + "when no feature flags are enabled");
+        String generatedScript = out.toString();
+        assertTrue(generatedScript.contains("web-component/my-component"),
+                "Response should contain the web component bootstrap script "
+                        + "for the exported component");
+        assertTrue(generatedScript.contains("web-component-bootstrap.js"),
+                "Response should reference the web component bootstrap module");
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),

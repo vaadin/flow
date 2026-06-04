@@ -46,9 +46,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.ColorScheme;
@@ -221,6 +224,31 @@ public class IndexHtmlRequestHandlerTest {
         assertFalse(indexHtml.contains("window.Vaadin.featureFlagsUpdaters"),
                 "Response should not have a Feature Flags updater script "
                         + "when no feature flags are enabled");
+    }
+
+    @Test
+    public void serveIndexHtml_featureFlagEnabled_updaterScriptPresent()
+            throws IOException {
+        Feature enabledFeature = new Feature("Example feature",
+                "exampleFeature", "", false, null);
+        enabledFeature.setEnabled(true);
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.getFeatures())
+                .thenReturn(List.of(enabledFeature));
+        try (MockedStatic<FeatureFlags> featureFlagsMock = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            featureFlagsMock.when(() -> FeatureFlags.get(Mockito.any()))
+                    .thenReturn(featureFlags);
+            indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                    createVaadinRequest("/"), response);
+        }
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        assertTrue(indexHtml.contains(
+                "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
+                "Response should have a Feature Flags updater script when a "
+                        + "feature flag is enabled");
+        assertTrue(indexHtml.contains("activator(\"exampleFeature\");"),
+                "Updater script should activate the enabled feature flag");
     }
 
     @Test
