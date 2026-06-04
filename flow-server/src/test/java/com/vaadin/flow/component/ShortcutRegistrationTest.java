@@ -592,10 +592,11 @@ class ShortcutRegistrationTest {
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
                 Key.KEY_A);
 
-        mockLifecycle(true);
+        Element ownerElement = mockLifecycle(true);
 
         FakeComponent component = new FakeComponent();
         component.setVisible(false);
+        component.getElement().appendChild(ownerElement);
         Mockito.when(lifecycleOwner.getParent())
                 .thenReturn(Optional.of(component));
 
@@ -761,6 +762,7 @@ class ShortcutRegistrationTest {
     private Element mockLifecycle(boolean visible) {
         Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
         Element element = ElementFactory.createAnchor();
+        element.setVisible(visible);
         Mockito.when(lifecycleOwner.getElement()).thenReturn(element);
         return element;
     }
