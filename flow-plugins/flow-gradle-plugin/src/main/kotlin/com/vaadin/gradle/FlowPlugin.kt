@@ -83,10 +83,16 @@ public class FlowPlugin : Plugin<Project> {
                         svc?.ensureToken()
                     }
                 }
-            } else {
-                // In development mode, processResources copies stuff from
-                // build/vaadin-generated (which is populated by
-                // vaadinPrepareFrontend) and therefore must run after it.
+            } else if (config.alwaysExecutePrepareFrontend.get()) {
+                // In development mode, vaadinPrepareFrontend is not
+                // auto-triggered by default. Since Vaadin 25, the dev
+                // server handles frontend preparation at runtime, so
+                // running the task during every IDE-triggered build is
+                // unnecessary and can interfere with the running Vite
+                // dev server.
+                // However, if alwaysExecutePrepareFrontend is set,
+                // restore the old behavior and chain the task to
+                // processResources.
                 project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
             }
 

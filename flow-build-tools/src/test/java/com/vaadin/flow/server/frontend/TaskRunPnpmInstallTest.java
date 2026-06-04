@@ -38,7 +38,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -224,6 +223,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         assertTrue(npmRcFile.exists());
         String content = Files.readString(npmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
+        assertTrue(content.contains("node-linker=hoisted"));
     }
 
     @Test
@@ -343,6 +343,23 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 new File(new File(options.getNodeModulesFolder(), "foo"),
                         "postinstall-file.txt").exists(),
                 "Postinstall for 'foo' was not run");
+    }
+
+    @Test
+    void runPnpmInstall_postInstall_excludedBuiltinPackageIsSkipped()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        options.withExcludePostinstallPackages(
+                List.of("@vaadin/vaadin-usage-statistics"));
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        assertFalse(
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
+                        "postinstall-file.txt").exists(),
+                "Postinstall for '@vaadin/vaadin-usage-statistics' should have been skipped");
     }
 
     // https://github.com/vaadin/flow/issues/17663
@@ -492,8 +509,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private NodeUpdater createNodeUpdater(String versionsContent) {
         options.withBuildDirectory(TARGET);
 
-        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        return new NodeUpdater(options) {
 
             @Override
             public void execute() {

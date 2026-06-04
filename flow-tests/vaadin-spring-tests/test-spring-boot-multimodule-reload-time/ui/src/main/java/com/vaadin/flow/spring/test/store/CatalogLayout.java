@@ -16,9 +16,8 @@
 package com.vaadin.flow.spring.test.store;
 
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
@@ -27,19 +26,23 @@ import com.vaadin.flow.spring.test.MainLayout;
 
 @RoutePrefix("catalog")
 @ParentLayout(MainLayout.class)
-public class CatalogLayout extends VerticalLayout implements RouterLayout {
+public class CatalogLayout extends Div implements RouterLayout {
 
-    private VerticalLayout rightSideLayout;
+    private final Div rightSideLayout = new Div();
 
     public CatalogLayout() {
-        rightSideLayout = new VerticalLayout();
+        getStyle().set("display", "flex").set("flex-direction", "column");
 
         add(new H1("Product Catalog"));
 
-        var leftSideLayout = new VerticalLayout();
-        var layout = new HorizontalLayout();
-        layout.setWidthFull();
-        layout.addAndExpand(leftSideLayout, rightSideLayout);
+        Div leftSideLayout = new Div();
+        leftSideLayout.getStyle().set("display", "flex").set("flex-direction",
+                "column");
+
+        rightSideLayout.getStyle().set("flex", "1");
+
+        Div layout = new Div(leftSideLayout, rightSideLayout);
+        layout.getStyle().set("display", "flex").set("width", "100%");
 
         for (int index = 0; index < 10; index++) {
             leftSideLayout.add(new RouterLink("Product " + index,

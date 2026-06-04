@@ -2,9 +2,9 @@
   "private": true,
   "description": "Tailwind CSS dependencies",
   "dependencies": {
-    "tailwindcss": "4.2.2"
+    "tailwindcss": "4.3.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "4.2.2"
+    "@tailwindcss/vite": "4.3.0"
   }
 }

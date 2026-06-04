@@ -592,6 +592,7 @@ public class MessageHandler {
             // End the request if the received message was a
             // response, not sent asynchronously
             registry.getRequestResponseTracker().endRequest();
+            registry.getLoadingIndicatorStateHandler().stopLoading();
         }
     }
 

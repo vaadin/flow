@@ -273,6 +273,9 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
+        String[] excludePostinstallPackages = config.getStringProperty(
+                InitParameters.EXCLUDE_POSTINSTALL_PACKAGES, "").split(",");
+
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(frontendFolder.getPath(), FrontendUtils.GENERATED)
@@ -303,6 +306,8 @@ public class DevModeInitializer implements Serializable {
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
                         Arrays.asList(additionalPostinstallPackages))
+                .withExcludePostinstallPackages(
+                        Arrays.asList(excludePostinstallPackages))
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)

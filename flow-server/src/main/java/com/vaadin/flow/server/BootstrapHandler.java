@@ -1388,9 +1388,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
             try {
                 JsonNode json = JacksonUtils.readTree(browserDetailsJson);
-                ExtendedClientDetails details = ExtendedClientDetails
-                        .fromJson(ui, json);
-                ui.getInternals().setExtendedClientDetails(details);
+                ExtendedClientDetails.updateFromJson(ui, json);
             } catch (Exception e) {
                 // Log and continue without browser details
                 getLogger().debug(
@@ -1748,7 +1746,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
             head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-status-bar-style")
-                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+                    .attr(CONTENT_ATTRIBUTE, "black-translucent");
 
             // Add manifest
             head.appendElement("link").attr("rel", "manifest").attr("href",

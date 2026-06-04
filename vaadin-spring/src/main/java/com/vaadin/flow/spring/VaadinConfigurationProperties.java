@@ -145,6 +145,12 @@ public class VaadinConfigurationProperties {
     private int launchBrowserDelay = 30;
 
     /**
+     * Enables the client-side bootstrap page to include the initial JSON data
+     * fragment.
+     */
+    private boolean eagerServerLoad = false;
+
+    /**
      * URL patterns that should not be handled by the Vaadin servlet when mapped
      * to the context root.
      */
@@ -442,6 +448,29 @@ public class VaadinConfigurationProperties {
      */
     public void setLaunchBrowserDelay(int launchBrowser) {
         this.launchBrowserDelay = launchBrowser;
+    }
+
+    /**
+     * Returns whether the client-side bootstrap page should include the initial
+     * JSON data fragment.
+     *
+     * @return {@code true} if eager server load is enabled, {@code false}
+     *         otherwise
+     */
+    public boolean isEagerServerLoad() {
+        return eagerServerLoad;
+    }
+
+    /**
+     * Sets whether the client-side bootstrap page should include the initial
+     * JSON data fragment.
+     *
+     * @param eagerServerLoad
+     *            {@code true} to enable eager server load, {@code false}
+     *            otherwise
+     */
+    public void setEagerServerLoad(boolean eagerServerLoad) {
+        this.eagerServerLoad = eagerServerLoad;
     }
 
     /**

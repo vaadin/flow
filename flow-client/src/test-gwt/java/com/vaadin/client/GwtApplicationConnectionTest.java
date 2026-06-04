@@ -30,6 +30,7 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
 
     public void test_should_not_addNavigationEvents_forWebComponents() {
         mockFlowBootstrapScript(true);
+        createDummyConnectionState();
 
         JsonObject windowEvents = Json.createObject();
         addEventsObserver(Browser.getWindow(), windowEvents);
@@ -86,11 +87,6 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
                     }
                 }
             },
-            connectionState: {
-                setState: function(state) {
-                    // NOP
-                }
-            }
         };
     }-*/;
 

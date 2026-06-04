@@ -19,7 +19,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.apache.maven.artifact.Artifact;
@@ -146,6 +145,17 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             + "resources/")
     private File resourcesOutputDirectory;
 
+    /**
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
+     * where a compromised version is briefly available on the registry.
+     * Defaults to {@code 1} day; set to {@code 0} to disable. Requires pnpm
+     * &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "1")
+    private int minimumFrontendPackageAgeDays;
+
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
@@ -190,8 +200,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 if (cleanFrontendFiles()) {
                     cleanTask.execute();
                 }
-            } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
+            } catch (URISyntaxException | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
@@ -303,6 +312,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public File resourcesOutputDirectory() {
         return resourcesOutputDirectory;
+    }
+
+    @Override
+    public int minimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     @Override

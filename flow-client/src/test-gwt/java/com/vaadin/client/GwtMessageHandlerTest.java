@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Timer;
+import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.RequestResponseTracker;
@@ -194,6 +195,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                 set(ExecuteJavaScriptProcessor.class,
                         new TestExecuteJavaScriptProcessor(this));
                 set(UILifecycle.class, new TestUILifecycle());
+                set(LoadingIndicatorStateHandler.class, new LoadingIndicatorStateHandler(this));
             }
         };
         handler = new TestMessageHandler(registry);

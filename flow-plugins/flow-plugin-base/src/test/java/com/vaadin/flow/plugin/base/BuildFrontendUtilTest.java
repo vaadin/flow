@@ -39,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
 import org.mockito.InOrder;
@@ -107,6 +109,7 @@ class BuildFrontendUtilTest {
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory()).thenReturn(tmpDir);
         Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
+        Mockito.when(adapter.optimizeBundle()).thenReturn(true);
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 getClass().getClassLoader());
         lookup = Mockito.spy(new LookupImpl(classFinder));
@@ -628,6 +631,93 @@ class BuildFrontendUtilTest {
         });
     }
 
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerDisabled_failsWithOptimizeBundleAwareMessage()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+        Mockito.when(adapter.optimizeBundle()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Set<String> commercialProducts = new HashSet<>();
+        commercialProducts.add("comm-comp");
+        commercialProducts.add("comm-comp2");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            commercialProducts.forEach(product -> assertTrue(
+                    exception.getMessage().contains(product),
+                    "Exception should list all commercial products but "
+                            + product + " is missing"));
+            String message = exception.getMessage();
+            assertTrue(message.contains("optimizeBundle"),
+                    "Expected message to mention the optimizeBundle property but was: "
+                            + message);
+            assertTrue(message.contains("vaadin-core"),
+                    "Expected message to suggest switching to vaadin-core but was: "
+                            + message);
+            assertTrue(message.contains("provided"),
+                    "Expected message to mention provided scope for add-on authors but was: "
+                            + message);
+            assertTrue(message.contains(InitParameters.COMMERCIAL_WITH_BANNER),
+                    "Expected message to still suggest the commercial banner build but was: "
+                            + message);
+            assertFalse(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be deleted but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerEnabled_propagateMissingKeyExceptionUnchanged()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        Mockito.when(adapter.optimizeBundle()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            assertThrows(MissingLicenseKeyException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            assertTrue(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be preserved but was not");
+        });
+    }
+
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
@@ -787,6 +877,42 @@ class BuildFrontendUtilTest {
 
         FileIOUtils.writeIfChanged(tokenFile,
                 buildInfo.toPrettyString() + "\n");
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void runVite_nonZeroExit_doesNotLeakEnvironment() throws Exception {
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(), """
+                #!/bin/sh
+                echo TEST_OUTPUT_LINE
+                exit 7
+                """);
+        assertTrue(fakeNode.setExecutable(true));
+
+        File viteJs = new File(baseDir, "node_modules/vite/bin/vite.js");
+
+        FrontendTools frontendTools = Mockito.mock(FrontendTools.class);
+        Mockito.when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+        Mockito.when(
+                frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
+                .thenReturn(viteJs.toPath());
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+
+        String message = ex.getMessage();
+        assertTrue(message.contains("exited with non-zero exit code 7"),
+                () -> "missing exit code in: " + message);
+        assertTrue(message.contains("TEST_OUTPUT_LINE"),
+                () -> "missing process output in: " + message);
+        // zt-exec exception messages started with "with environment {…}" —
+        // proving its absence proves we are off the leak path.
+        assertFalse(message.contains("with environment"),
+                () -> "leaked env marker in: " + message);
+        // No zt-exec exception should be chained as cause.
+        assertEquals(null, ex.getCause());
     }
 
     private static String statsJsonWithCommercialComponents() {

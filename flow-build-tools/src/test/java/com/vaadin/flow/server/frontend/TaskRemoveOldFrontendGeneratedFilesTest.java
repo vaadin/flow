@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.tests.util.MockOptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,26 +151,51 @@ class TaskRemoveOldFrontendGeneratedFilesTest {
 
     @Test
     void execute_knownFiles_notDeleted() throws Exception {
+        Path hillaGeneratedFilesIndex = generatedFolder.toPath()
+                .resolve("generated-file-list.txt");
+
         Set<File> knownFiles = Set.of(generatedFolder.toPath()
-                .resolve(Path.of("flow", "generated-flow-imports.js")).toFile(),
+                .resolve(Path.of("flow", FrontendUtils.IMPORTS_NAME)).toFile(),
                 generatedFolder.toPath()
-                        .resolve(Path.of("flow", "generated-flow-imports.d.ts"))
+                        .resolve(Path.of("flow",
+                                FrontendUtils.IMPORTS_D_TS_NAME))
                         .toFile(),
                 generatedFolder.toPath()
                         .resolve(Path.of("flow",
-                                "generated-flow-webcomponent-imports.js"))
+                                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME))
                         .toFile(),
-                new File(generatedFolder, "routes.tsx"),
-                new File(generatedFolder, "routes.ts"),
+                new File(generatedFolder, FrontendUtils.ROUTES_TSX),
+                new File(generatedFolder, FrontendUtils.ROUTES_TS),
                 generatedFolder.toPath().resolve(Path.of("flow", "Flow.tsx"))
                         .toFile(),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_DEV_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_INDEX),
+                new File(generatedFolder,
+                        FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME),
+                new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_NAME),
                 new File(generatedFolder, "file-routes.ts"),
+                new File(generatedFolder, "file-routes.json"),
                 new File(generatedFolder, "css.generated.js"),
-                new File(generatedFolder, "css.generated.d.ts"));
+                new File(generatedFolder, "css.generated.d.ts"),
+                hillaGeneratedFilesIndex.toFile(),
+                new File(generatedFolder, "hilla-1.js"),
+                new File(generatedFolder, "hilla-2.js"),
+                generatedFolder.toPath().resolve(Path.of("sub", "hilla-3.js"))
+                        .toFile());
+
         for (File file : knownFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
+        Files.writeString(hillaGeneratedFilesIndex, """
+                hilla-1.js
+                hilla-2.js
+                sub/hilla-3.js
+                """);
 
         TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
                 options);

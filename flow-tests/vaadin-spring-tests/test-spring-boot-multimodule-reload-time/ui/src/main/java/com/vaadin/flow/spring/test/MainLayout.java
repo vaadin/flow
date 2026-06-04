@@ -15,70 +15,61 @@
  */
 package com.vaadin.flow.spring.test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
-/**
- * The main view is a top-level placeholder for other views.
- */
-public class MainLayout extends AppLayout implements AfterNavigationObserver {
+public class MainLayout extends Div
+        implements RouterLayout, AfterNavigationObserver {
 
-    private H2 viewTitle;
+    private final H2 viewTitle = new H2();
+    private final Div drawer = new Div();
+    private final Div content = new Div();
 
     public MainLayout() {
-        setPrimarySection(Section.DRAWER);
-        addDrawerContent();
-        addHeaderContent();
-    }
+        getStyle().set("display", "flex").set("flex-direction", "column");
 
-    private void addHeaderContent() {
-        DrawerToggle toggle = new DrawerToggle();
+        NativeButton toggle = new NativeButton("☰",
+                e -> drawer.setVisible(!drawer.isVisible()));
 
-        viewTitle = new H2();
-        viewTitle.addClassNames(LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.NONE);
+        Header navbar = new Header(toggle, viewTitle);
+        navbar.getStyle().set("display", "flex").set("gap", "0.5rem");
 
-        addToNavbar(true, toggle, viewTitle);
-    }
-
-    private void addDrawerContent() {
         H1 appName = new H1("My Spring App");
-        appName.addClassNames(LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.NONE);
-        Header header = new Header(appName);
-
-        Scroller scroller = new Scroller(createNavigation());
-
-        addToDrawer(header, scroller, createFooter());
-    }
-
-    private VerticalLayout createNavigation() {
-        VerticalLayout layout = new VerticalLayout();
+        Div nav = new Div();
+        nav.getStyle().set("display", "flex").set("flex-direction", "column");
         UI.getCurrent().getInternals().getRouter().getRegistry()
-                .getRegisteredRoutes().forEach(route -> {
-                    layout.add(new RouterLink(route.getTemplate(),
-                            route.getNavigationTarget()));
-                });
+                .getRegisteredRoutes()
+                .forEach(route -> nav.add(new RouterLink(route.getTemplate(),
+                        route.getNavigationTarget())));
 
-        return layout;
+        drawer.add(new Header(appName), nav, new Footer());
+        drawer.getStyle().set("display", "flex").set("flex-direction",
+                "column");
+
+        Div body = new Div(drawer, content);
+        body.getStyle().set("display", "flex").set("flex", "1");
+
+        add(navbar, body);
     }
 
-    private Footer createFooter() {
-        Footer layout = new Footer();
-
-        return layout;
+    @Override
+    public void showRouterLayoutContent(HasElement contentElement) {
+        content.removeAll();
+        if (contentElement != null) {
+            content.getElement().appendChild(contentElement.getElement());
+        }
     }
 
     @Override
@@ -87,8 +78,15 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     }
 
     private String getCurrentPageTitle() {
-        PageTitle title = getContent().getClass()
-                .getAnnotation(PageTitle.class);
+        Component current = currentContent();
+        if (current == null) {
+            return "";
+        }
+        PageTitle title = current.getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
+    }
+
+    private Component currentContent() {
+        return content.getChildren().findFirst().orElse(null);
     }
 }

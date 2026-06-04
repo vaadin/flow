@@ -10,6 +10,12 @@ export function addFunctionComponentSourceLocationBabel() {
    * Writes debug info as Name.__debugSourceDefine={...} after the given statement ("path").
    * This is used to make the source location of the function (defined by the loc parameter) available in the browser in development mode.
    * The name __debugSourceDefine is prefixed by __ to mark this is not a public API.
+   *
+   * Must be combined with retainLines:true in Babel options so the inserted
+   * statement doesn't shift subsequent lines when Babel regenerates the file.
+   * This keeps OXC's view of JSX source locations correct and also allows
+   * nested component functions (where insertAfter inserts into the enclosing
+   * function's scope so the component name is in scope).
    */
   function addDebugInfo(path, name, filename, loc) {
     const lineNumber = loc.start.line;
@@ -56,7 +62,7 @@ export function addFunctionComponentSourceLocationBabel() {
 
       FunctionDeclaration(path, state) {
         // Finds declarations such as
-        // functio Foo() { return <div/>; }
+        // function Foo() { return <div/>; }
         // export function Bar() { return <span>Hello</span>;}
 
         // and writes a Foo.__debugSourceDefine= {..} after it, referring to the start of the function body

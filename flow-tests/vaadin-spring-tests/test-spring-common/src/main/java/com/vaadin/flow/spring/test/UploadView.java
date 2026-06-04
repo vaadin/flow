@@ -19,46 +19,79 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
-
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.UploadHandler;
 
 @Route("multipart-upload")
 public class UploadView extends Div {
 
+    public static final String UPLOAD_ID = "upl";
+
     public UploadView() {
-        MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
-        Upload upload = new Upload(buffer);
-        upload.setId("upl");
+        UploadHandler handler = event -> {
+            if (!event.getContentType().startsWith("text")) {
+                event.reject("Only text uploads are supported");
+                return;
+            }
+            String content;
+            try (InputStream stream = event.getInputStream()) {
+                content = new String(stream.readAllBytes(),
+                        StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                content = "exception reading stream";
+            }
+            String text = content;
+            event.getUI().access(() -> {
+                Div div = new Div();
+                div.setText(text);
+                div.addClassName("uploaded-text");
+                add(div);
+            });
+        };
 
-        upload.addSucceededListener(event -> {
-            Component component = createComponent(event.getMIMEType(),
-                    event.getFileName(),
-                    buffer.getInputStream(event.getFileName()));
-            add(component);
+        StreamResourceRegistry resourceRegistry = VaadinSession.getCurrent()
+                .getResourceRegistry();
+        StreamRegistration registration = resourceRegistry
+                .registerResource(handler);
+        String uploadUrl = resourceRegistry
+                .getTargetURI(registration.getResource()).toString();
+
+        // The upload posts via fetch(), which does not piggyback Flow's
+        // UIDL sync. Click a hidden button after the response to force a
+        // server roundtrip that pulls down the queued DOM updates.
+        NativeButton sync = new NativeButton("", event -> {
         });
+        sync.getStyle().set("display", "none");
 
-        add(upload);
-    }
-
-    private Component createComponent(String mimeType, String fileName,
-            InputStream stream) {
-        if (!mimeType.startsWith("text")) {
-            throw new IllegalStateException();
-        }
-        String text = "";
-        try {
-            text = IOUtils.toString(stream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            text = "exception reading stream";
-        }
-        Div div = new Div();
-        div.setText(text);
-        div.addClassName("uploaded-text");
-        return div;
+        Input upload = new Input();
+        upload.setType("file");
+        upload.setId(UPLOAD_ID);
+        // Send the file as a raw XHR body with X-Filename rather than as
+        // multipart/form-data, since the test-spring servlet is not
+        // @MultipartConfig-annotated and Vaadin's UploadHandler accepts
+        // both forms (raw body is the default in 25.0+).
+        upload.getElement().executeJs(
+                """
+                        this.addEventListener('change', () => {
+                            const file = this.files[0];
+                            if (!file) return;
+                            fetch($0, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': file.type || 'application/octet-stream',
+                                    'X-Filename': encodeURIComponent(file.name)
+                                },
+                                body: file
+                            }).then(() => $1.click());
+                        });
+                        """,
+                uploadUrl, sync.getElement());
+        add(upload, sync);
     }
 }

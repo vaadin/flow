@@ -18,14 +18,17 @@ package com.vaadin.flow.component.html;
 import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,6 +71,29 @@ class IFrameTest extends ComponentTest {
     @Override
     protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
+    }
+
+    @Test
+    void setSrc_downloadHandler_disabledUpdateModeIsAlways() {
+        Element element = Mockito.mock(Element.class);
+        class TestIFrame extends IFrame {
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+        // Plain lambda DownloadHandler, not an AbstractDownloadHandler subclass
+        DownloadHandler lambda = event -> {
+        };
+
+        new TestIFrame().setSrc(lambda);
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        Mockito.verify(element).setAttribute(Mockito.eq("src"),
+                captor.capture());
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                captor.getValue().getDisabledUpdateMode());
     }
 
     @Test

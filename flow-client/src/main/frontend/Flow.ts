@@ -4,6 +4,12 @@ import {
   type ConnectionStateChangeListener,
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
+import './Clipboard';
+import { currentFullscreenState } from './Fullscreen';
+import './ElementResize';
+import './Geolocation';
+import { currentVisibility } from './PageVisibility';
+import './WakeLock';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -420,13 +426,13 @@ export class Flow {
       return Promise.resolve(initial);
     }
 
+    const browserDetails = await this.collectBrowserDetails();
+
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      // Collect browser details to send with init request as JSON
-      const browserDetails = this.collectBrowserDetails();
       const browserDetailsParam = browserDetails
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
@@ -459,7 +465,7 @@ export class Flow {
   }
 
   // Collects browser details parameters
-  private collectBrowserDetails(): Record<string, string> {
+  private async collectBrowserDetails(): Promise<Record<string, string>> {
     const params: Record<string, any> = {};
 
     /* Screen height and width */
@@ -540,6 +546,11 @@ export class Flow {
     const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
     // "normal" is the default value and means no color scheme is set
     params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
+    /* Page visibility — initial state of document.hidden / document.hasFocus() */
+    params['v-pv'] = currentVisibility();
+    /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
+    params['v-fs'] = currentFullscreenState();
+
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';
@@ -549,6 +560,20 @@ export class Flow {
       themeName = 'aura';
     }
     params['v-tn'] = themeName;
+
+    /* Geolocation availability — guarded because tests may reset
+       window.Vaadin between runs, removing the namespace that
+       Geolocation.ts installs at import time. */
+    const geolocation = ($wnd.Vaadin.Flow as any)?.geolocation;
+    if (geolocation) {
+      params['v-ga'] = await geolocation.queryAvailability();
+    }
+
+    /* Wake-lock availability — same guard rationale as geolocation. */
+    const wakeLock = ($wnd.Vaadin.Flow as any)?.wakeLock;
+    if (wakeLock) {
+      params['v-wla'] = wakeLock.queryAvailability();
+    }
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,9 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
@@ -57,6 +60,7 @@ import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -232,6 +236,11 @@ class TaskUpdatePackagesNpmTest {
         ObjectNode packageJson = getOrCreatePackageJson();
         packageJson.set(OVERRIDES, JacksonUtils.createObjectNode());
         ((ObjectNode) packageJson.get(OVERRIDES)).put("@vaadin/aura", "1.0");
+        // Assuming Vaadin added the override, set Vaadin overrides accordingly
+        JacksonUtils.setNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, "@vaadin/aura"),
+                StringNode.valueOf("1.0"),
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
 
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
@@ -358,6 +367,10 @@ class TaskUpdatePackagesNpmTest {
         ObjectNode packageJson = getOrCreatePackageJson();
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
                 .put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+        // Remove VAADIN_ELEMENT_MIXIN override from Vaadin overrides
+        JacksonUtils.removeNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_ELEMENT_MIXIN));
+        // Save modified package.json
         FileUtils.writeStringToFile(this.packageJson,
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
 
@@ -370,6 +383,46 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersionLockingWithNpmOverrides(true, true, true);
+    }
+
+    @Test
+    void npmIsInUse_emptyVaadinOverrides_obsoleteOverride_overrideRemoved()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
+                PLATFORM_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+        TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+
+        // Remove platform lock for vaadin-element-mixin
+        final ObjectNode versions = JacksonUtils.readTree(FileUtils
+                .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
+        ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
+        FileUtils.writeStringToFile(versionJsonFile, versions.toString(),
+                StandardCharsets.UTF_8);
+
+        // Remove Vaadin overrides from package.json (simulate old style
+        // overrides not tracked using Vaadin overrides section introduced in
+        // PR #24008)
+        ObjectNode packageJson = getOrCreatePackageJson();
+        JacksonUtils.removeNestedKey(packageJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES));
+        FileUtils.writeStringToFile(this.packageJson,
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        // Remove VAADIN_ELEMENT_MIXIN from the application dependencies
+        applicationDependencies.remove(VAADIN_ELEMENT_MIXIN);
+        task = createTask(applicationDependencies);
+
+        task.execute();
+
+        assertTrue(task.modified, "Updates not picked");
+
+        verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
     @Test
@@ -775,9 +828,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final ObjectNode newPackageJson = getOrCreatePackageJson();
@@ -808,9 +861,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -840,9 +893,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(new HashMap<>());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(true)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -871,9 +924,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(createApplicationDependencies());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
-                .withBundleBuild(true).withReact(false);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
         final JsonNode newPackageJson = getOrCreatePackageJson();
@@ -1033,8 +1086,9 @@ class TaskUpdatePackagesNpmTest {
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(scannedApplicationDependencies);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        options = options
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        final TaskUpdatePackages task = new TaskUpdatePackages(options) {
         };
         task.execute();
     }
@@ -1124,9 +1178,9 @@ class TaskUpdatePackagesNpmTest {
                 .thenReturn(applicationDependencies);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
-                .withBundleBuild(true).withReact(false);
-
-        return new TaskUpdatePackages(frontendDependenciesScanner, options) {
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        return new TaskUpdatePackages(options) {
         };
     }
 
@@ -1259,6 +1313,567 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
 
         verifyVersions(newVersion, newVersion, newVersion);
+    }
+
+    @Test
+    void npmIsInUse_pwaOfflineEnabled_workboxOverridesAdded()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        final TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, true);
+        task.execute();
+
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(OVERRIDES), "overrides section should exist");
+        JsonNode overrides = pkgJson.get(OVERRIDES);
+
+        // Verify workbox-build nested object override is present
+        assertTrue(overrides.has("workbox-build"),
+                "workbox-build override should be added when PWA offline is enabled");
+        JsonNode workboxBuildOverride = overrides.get("workbox-build");
+        assertTrue(workboxBuildOverride.isObject(),
+                "workbox-build override should be a nested object");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
+    }
+
+    @Test
+    void npmIsInUse_pwaOfflineDisabled_workboxOverridesNotAdded()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        final TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, false);
+        task.execute();
+
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        if (pkgJson.has(OVERRIDES)) {
+            JsonNode overrides = pkgJson.get(OVERRIDES);
+            assertFalse(overrides.has("workbox-build"),
+                    "workbox-build override should not be added when PWA offline is disabled");
+        }
+    }
+
+    @Test
+    void npmIsInUse_pwaOfflineEnabled_overridesTrackedInVaadinSection()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        final TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, true);
+        task.execute();
+
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
+        JsonNode vaadin = pkgJson.get(VAADIN_DEP_KEY);
+        assertTrue(vaadin.has(OVERRIDES),
+                "vaadin.overrides section should exist");
+        JsonNode vaadinOverrides = vaadin.get(OVERRIDES);
+
+        // Verify workbox-build is tracked in vaadin.overrides
+        assertTrue(vaadinOverrides.has("workbox-build"),
+                "workbox-build should be tracked in vaadin.overrides");
+    }
+
+    @Test
+    void npmIsInUse_pwaOfflineDisabledAfterEnabled_workboxOverridesRemoved()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+
+        // First run with PWA offline enabled
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, true);
+        task.execute();
+
+        // Verify workbox override was added
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(OVERRIDES));
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be present after first run");
+        JsonNode workboxOverride = pkgJson.get(OVERRIDES).get("workbox-build");
+        assertTrue(workboxOverride.isObject(),
+                "workbox-build should be a nested object");
+
+        // Verify nested structure exists
+        assertTrue(((ObjectNode) workboxOverride).size() > 0,
+                "workbox-build nested object should have at least one child");
+
+        // Second run with PWA offline disabled
+        task = createTaskWithPwa(createApplicationDependencies(), false, false);
+        task.execute();
+
+        // Verify workbox override was removed
+        pkgJson = getOrCreatePackageJson();
+        if (pkgJson.has(OVERRIDES)) {
+            assertFalse(pkgJson.get(OVERRIDES).has("workbox-build"),
+                    "workbox-build override should be removed when PWA offline is disabled");
+            // Verify the entire nested object structure is gone, not just the
+            // key
+            ObjectNode overridesSection = (ObjectNode) pkgJson.get(OVERRIDES);
+            for (String key : JacksonUtils.getKeys(overridesSection)) {
+                assertFalse(key.equals("workbox-build"),
+                        "No workbox-build key should remain in any form");
+            }
+        }
+
+        // Verify vaadin.overrides was cleaned up properly
+        if (pkgJson.has(VAADIN_DEP_KEY)
+                && pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES)) {
+            assertFalse(
+                    pkgJson.get(VAADIN_DEP_KEY).get(OVERRIDES)
+                            .has("workbox-build"),
+                    "workbox-build should be removed from vaadin.overrides");
+            // Verify empty vaadin.overrides section is removed
+            JsonNode vaadinOverrides = pkgJson.get(VAADIN_DEP_KEY)
+                    .get(OVERRIDES);
+            if (vaadinOverrides != null && vaadinOverrides.size() == 0) {
+                assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                        "Empty vaadin.overrides should be removed");
+            }
+        }
+
+        // Add user override and re-enable PWA to verify proper coexistence
+        pkgJson = getOrCreatePackageJson();
+        if (!pkgJson.has(OVERRIDES)) {
+            pkgJson.set(OVERRIDES, JacksonUtils.createObjectNode());
+        }
+        ((ObjectNode) pkgJson.get(OVERRIDES)).put("user-dep", "1.0.0");
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Third run with PWA re-enabled
+        task = createTaskWithPwa(createApplicationDependencies(), false, true);
+        task.execute();
+
+        // Verify both user override and workbox override coexist
+        pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.get(OVERRIDES).has("user-dep"),
+                "User override should be preserved");
+        assertEquals("1.0.0",
+                pkgJson.get(OVERRIDES).get("user-dep").asString());
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be re-added");
+    }
+
+    @Test
+    void npmIsInUse_nestedObjectOverrides_handledCorrectlyInVersionLocking()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+
+        // Create package.json with a nested object override (not a string)
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        ObjectNode nestedOverride = JacksonUtils.createObjectNode();
+        nestedOverride.put("some-dep", "1.0.0");
+        overrides.set("parent-pkg", nestedOverride);
+        pkgJson.set(OVERRIDES, overrides);
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Run the task - should not fail with nested object overrides
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        // Verify the nested override is preserved (not treated as string)
+        pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(OVERRIDES));
+        JsonNode parentPkgOverride = pkgJson.get(OVERRIDES).get("parent-pkg");
+        if (parentPkgOverride != null) {
+            assertTrue(parentPkgOverride.isObject(),
+                    "nested object override should be preserved");
+        }
+    }
+
+    @Test
+    void npmIsInUse_emptyVaadinOverrides_removedFromPackageJson()
+            throws IOException {
+        // Setup: Create package.json with vaadin.overrides that will be removed
+        FileUtils.write(versionJsonFile, "{}", StandardCharsets.UTF_8);
+
+        // First run to create a valid package.json with empty dependencies
+        TaskUpdatePackages task = createTask(Map.of());
+        task.execute();
+
+        // Now add a Vaadin-managed override (both in vaadin.overrides and main
+        // overrides). This simulates an override that was added by Vaadin but
+        // is no longer needed.
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        pkgJson.set(VAADIN_DEP_KEY,
+                JacksonUtils.createObjectNode().set(OVERRIDES, JacksonUtils
+                        .createObjectNode().put("some-old-override", "value")));
+
+        // Also add to main overrides section (this makes it a "Vaadin-managed"
+        // override)
+        pkgJson.set(OVERRIDES, JacksonUtils.createObjectNode()
+                .put("some-old-override", "value"));
+
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Execute task again
+        task.execute();
+
+        // Verify vaadin.overrides is removed when empty
+        ObjectNode resultJson = getOrCreatePackageJson();
+        ObjectNode resultVaadin = (ObjectNode) resultJson.get(VAADIN_DEP_KEY);
+        assertFalse(resultVaadin.has(OVERRIDES),
+                "Empty vaadin.overrides should be removed from package.json");
+    }
+
+    @Test
+    void pnpmIsInUse_pwaOfflineEnabled_workboxOverridesFlattened()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        final TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), true, true);
+        task.execute();
+
+        ObjectNode pkgJson = getOrCreatePackageJson();
+
+        // Verify npm-style overrides are NOT at root level
+        assertFalse(pkgJson.has(OVERRIDES),
+                "npm overrides should not exist at root when pnpm is enabled");
+
+        // Verify pnpm.overrides section exists
+        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
+        JsonNode pnpm = pkgJson.get(PNPM);
+        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
+        JsonNode overrides = pnpm.get(OVERRIDES);
+
+        // Verify workbox-build nested overrides are flattened with > separator
+        assertTrue(overrides.has("workbox-build>glob"),
+                "Flattened workbox-build>glob should be present");
+
+        // Verify the values are strings, not nested objects
+        assertTrue(overrides.get("workbox-build>glob").isString(),
+                "Flattened override should be a string value");
+
+        // Verify nested object form does NOT exist
+        assertFalse(overrides.has("workbox-build"),
+                "Nested object workbox-build should not exist in pnpm overrides");
+    }
+
+    @Test
+    void pnpmIsInUse_pwaOfflineDisabledAfterEnabled_flattenedOverridesRemoved()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+
+        // First run with PWA offline enabled (creates flattened overrides)
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), true, true);
+        task.execute();
+
+        // Verify flattened overrides were added
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES));
+        assertTrue(pkgJson.get(PNPM).get(OVERRIDES).has("workbox-build>glob"),
+                "Flattened override should be present after first run");
+
+        // Second run with PWA offline disabled
+        task = createTaskWithPwa(createApplicationDependencies(), true, false);
+        task.execute();
+
+        // Verify all flattened workbox overrides were removed
+        pkgJson = getOrCreatePackageJson();
+        if (pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES)) {
+            JsonNode overrides = pkgJson.get(PNPM).get(OVERRIDES);
+            assertFalse(overrides.has("workbox-build>glob"),
+                    "Flattened workbox-build>glob should be removed");
+        }
+
+        // Also verify vaadin.overrides was cleaned up
+        if (pkgJson.has(VAADIN_DEP_KEY)
+                && pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES)) {
+            assertFalse(
+                    pkgJson.get(VAADIN_DEP_KEY).get(OVERRIDES)
+                            .has("workbox-build"),
+                    "workbox-build should be removed from vaadin.overrides");
+        }
+    }
+
+    /**
+     * This tests that other systems generate the same hash as we get for a
+     * Windows machine. There was an issue in the jackson indenter that used
+     * different line separators on windows (\r\n) and linux (\n).
+     */
+    @Test
+    void windowsHashedPackageJson_otherSystemsGetSameHash() {
+        var json = """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "type": "module",
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.22",
+                    "@vaadin/react-components": "25.1.2",
+                    "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                    "adaptivecards": "1.2.6",
+                    "brace": "0.11.1",
+                    "date-fns": "4.1.0",
+                    "lit": "3.3.2",
+                    "react": "19.2.4",
+                    "react-dom": "19.2.4",
+                    "react-router": "7.13.1"
+                  },
+                  "devDependencies": {
+                    "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                    "@types/node": "25.5.0",
+                    "@types/react": "19.2.14",
+                    "@types/react-dom": "19.2.3",
+                    "typescript": "5.9.3",
+                    "vite": "7.3.2",
+                    "vite-plugin-checker": "0.12.0"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                        "@vaadin/common-frontend": "0.0.22",
+                        "@vaadin/react-components": "25.1.2",
+                        "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                        "adaptivecards": "1.2.6",
+                        "brace": "0.11.1",
+                        "date-fns": "4.1.0",
+                        "lit": "3.3.2",
+                        "react": "19.2.4",
+                        "react-dom": "19.2.4",
+                        "react-router": "7.13.1"
+                    },
+                    "devDependencies": {
+                        "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                        "@types/node": "25.5.0",
+                        "@types/react": "19.2.14",
+                        "@types/react-dom": "19.2.3",
+                        "typescript": "5.9.3",
+                        "vite": "7.3.2",
+                        "vite-plugin-checker": "0.12.0"
+                    },
+                    "hash": "a4b492aecb32fe13902befbcc4ad0efbe6417273e8ca60346c4839973ae8242c"
+                  }
+                }
+                """;
+
+        var packageJson = JacksonUtils.readTree(json);
+        var hash = TaskUpdatePackages.generatePackageJsonHash(packageJson);
+        Assert.assertEquals(packageJson.get("vaadin").get("hash").asString(),
+                hash);
+    }
+
+    @Test
+    void generatePackageJsonHash_pnpmOverrides_includedInHash()
+            throws IOException {
+        // Create package.json with pnpm overrides
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
+        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
+        pnpmOverrides.put("some-package", "1.0.0");
+        pnpmSection.set(OVERRIDES, pnpmOverrides);
+        pkgJson.set(PNPM, pnpmSection);
+
+        String hashWithPnpmOverrides = TaskUpdatePackages
+                .generatePackageJsonHash(pkgJson);
+
+        // Modify pnpm overrides and verify hash changes
+        pnpmOverrides.put("some-package", "2.0.0");
+        String hashWithModifiedOverrides = TaskUpdatePackages
+                .generatePackageJsonHash(pkgJson);
+
+        assertNotEquals(hashWithPnpmOverrides, hashWithModifiedOverrides,
+                "Hash should change when pnpm overrides are modified");
+    }
+
+    @Test
+    void generatePackageJsonHash_pnpmOverridesAdded_hashChanges()
+            throws IOException {
+        // Create package.json without pnpm overrides
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        String hashWithoutPnpmOverrides = TaskUpdatePackages
+                .generatePackageJsonHash(pkgJson);
+
+        // Add pnpm overrides
+        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
+        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
+        pnpmOverrides.put("workbox-build>glob", "13.0.5");
+        pnpmSection.set(OVERRIDES, pnpmOverrides);
+        pkgJson.set(PNPM, pnpmSection);
+
+        String hashWithPnpmOverrides = TaskUpdatePackages
+                .generatePackageJsonHash(pkgJson);
+
+        assertNotEquals(hashWithoutPnpmOverrides, hashWithPnpmOverrides,
+                "Hash should change when pnpm overrides are added");
+    }
+
+    @Test
+    void pnpmIsInUse_pwaOfflineEnabled_hashIncludesWorkboxOverrides()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+
+        // First run without PWA - record the hash
+        TaskUpdatePackages taskNoPwa = createTaskWithPwa(
+                createApplicationDependencies(), true, false);
+        taskNoPwa.execute();
+
+        ObjectNode pkgJsonNoPwa = getOrCreatePackageJson();
+        String hashWithoutWorkboxOverrides = pkgJsonNoPwa.get(VAADIN_DEP_KEY)
+                .get("hash").asString();
+
+        // Reset package.json
+        FileUtils.writeStringToFile(packageJson, "{\"dependencies\": {}}",
+                StandardCharsets.UTF_8);
+
+        // Second run with PWA offline enabled - should have different hash
+        TaskUpdatePackages taskWithPwa = createTaskWithPwa(
+                createApplicationDependencies(), true, true);
+        taskWithPwa.execute();
+
+        ObjectNode pkgJsonWithPwa = getOrCreatePackageJson();
+        String hashWithWorkboxOverrides = pkgJsonWithPwa.get(VAADIN_DEP_KEY)
+                .get("hash").asString();
+
+        assertNotEquals(hashWithoutWorkboxOverrides, hashWithWorkboxOverrides,
+                "Hash should be different when workbox overrides are added");
+
+        // Verify flattened overrides exist
+        assertTrue(pkgJsonWithPwa.has(PNPM));
+        assertTrue(pkgJsonWithPwa.get(PNPM).has(OVERRIDES));
+        assertTrue(
+                pkgJsonWithPwa.get(PNPM).get(OVERRIDES)
+                        .has("workbox-build>glob"),
+                "Flattened workbox override should be present");
+    }
+
+    @Test
+    void pwaOfflineEnabled_npmToPnpmTransition_workboxOverridesFlattened()
+            throws IOException {
+        // Create initial package.json in npm mode
+        createBasicVaadinVersionsJson();
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), false, true);
+        task.execute();
+
+        // Add user nested override (npm format)
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ((ObjectNode) pkgJson.get(OVERRIDES)).set("user-nested", JacksonUtils
+                .createObjectNode().put(".", "1.0").put("dep", "2.0"));
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Run update in pnpm mode
+        task = createTaskWithPwa(createApplicationDependencies(), true, true);
+        task.execute();
+
+        pkgJson = getOrCreatePackageJson();
+
+        // Verify npm-style overrides are NOT at root level
+        assertFalse(pkgJson.has(OVERRIDES),
+                "npm overrides should not exist at root when pnpm is enabled");
+
+        // Verify pnpm.overrides section exists
+        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
+        JsonNode pnpm = pkgJson.get(PNPM);
+        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
+        JsonNode overrides = pnpm.get(OVERRIDES);
+
+        // Verify workbox-build nested overrides are flattened with > separator
+        assertTrue(overrides.has("workbox-build>glob"),
+                "Flattened workbox-build>glob should be present");
+
+        // Verify user overrides are converted to pnpm format
+        assertTrue(overrides.has("user-nested"),
+                "Flattened user-nested should be present");
+        assertTrue(overrides.has("user-nested>dep"),
+                "Flattened user-nested>dep should be present");
+
+        // Verify the values are strings, not nested objects
+        assertTrue(overrides.get("workbox-build>glob").isString(),
+                "Flattened override should be a string value");
+
+        // Verify nested object form does NOT exist
+        assertFalse(overrides.has("workbox-build"),
+                "Nested object workbox-build should not exist in pnpm overrides");
+    }
+
+    @Test
+    void pwaOfflineEnabled_pnpmToNpmTransition_workboxOverridesFlattened()
+            throws IOException {
+        // Create initial package.json in pnpm mode
+        createBasicVaadinVersionsJson();
+        TaskUpdatePackages task = createTaskWithPwa(
+                createApplicationDependencies(), true, true);
+        task.execute();
+
+        // Add user nested override (pnpm format)
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ((ObjectNode) pkgJson.get(PNPM).get(OVERRIDES))
+                .put("user-nested", "1.0").put("user-nested>dep", "2.0")
+                .put("user-nested-reverse>dep", "3.0")
+                .put("user-nested-reverse", "4.0");
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Run update in npm mode
+        task = createTaskWithPwa(createApplicationDependencies(), false, true);
+        task.execute();
+
+        pkgJson = getOrCreatePackageJson();
+        assertTrue(pkgJson.has(OVERRIDES), "overrides section should exist");
+        JsonNode overrides = pkgJson.get(OVERRIDES);
+
+        // Verify workbox-build nested object override is present
+        assertTrue(overrides.has("workbox-build"),
+                "workbox-build override should be added when PWA offline is enabled");
+        JsonNode workboxBuildOverride = overrides.get("workbox-build");
+        assertTrue(workboxBuildOverride.isObject(),
+                "workbox-build override should be a nested object");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
+
+        // Verify user overrides are converted to npm format
+        JsonNode nestedOverride = overrides.get("user-nested");
+        assertNotNull(nestedOverride, "user-nested override should be present");
+        assertTrue(nestedOverride.isObject(),
+                "user-nested override should be an object");
+        assertTrue(nestedOverride.has("."),
+                "user-nested override should have a version");
+        assertTrue(nestedOverride.has("dep"),
+                "user-nested>dep override should have a version");
+        JsonNode nestedReverse = overrides.get("user-nested-reverse");
+        assertNotNull(nestedReverse,
+                "user-nested-reverse override should be present");
+        assertTrue(nestedReverse.isObject(),
+                "user-nested-reverse override should be an object");
+        assertTrue(nestedReverse.has("."),
+                "user-nested-reverse override should have a version");
+        assertTrue(nestedReverse.has("dep"),
+                "user-nested-reverse>dep override should have a version");
+
+        // Verify pnpm.overrides was removed
+        assertFalse(pkgJson.has(PNPM));
+    }
+
+    private TaskUpdatePackages createTaskWithPwa(
+            Map<String, String> applicationDependencies, boolean enablePnpm,
+            boolean pwaOfflineEnabled) {
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(applicationDependencies);
+
+        PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
+        Mockito.when(pwaConfig.isOfflineEnabled())
+                .thenReturn(pwaOfflineEnabled);
+        Mockito.when(frontendDependenciesScanner.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        // Use a real ClassFinder to access workbox resources from flow-server
+        ClassFinder realFinder = new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader());
+
+        Options options = new MockOptions(realFinder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner);
+
+        return new TaskUpdatePackages(options) {
+        };
     }
 
 }

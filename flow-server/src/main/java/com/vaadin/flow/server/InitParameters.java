@@ -235,6 +235,13 @@ public class InitParameters implements Serializable {
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 
     /**
+     * Packages to exclude from running postinstall scripts. Used to skip
+     * built-in entries (e.g. {@code esbuild}) when their postinstall step is
+     * known to fail or is not needed.
+     */
+    public static final String EXCLUDE_POSTINSTALL_PACKAGES = "npm.excludePostinstallPackages";
+
+    /**
      * Configuration name for enabling development using the frontend
      * development server instead of using an application bundle.
      */
@@ -300,5 +307,12 @@ public class InitParameters implements Serializable {
      * tests). When enabled, dev server related warnings are suppressed.
      */
     public static final String BROWSERLESS = "browserless";
+
+    /**
+     * Configuration name for the minimum age (in days) a frontend (npm) package
+     * version must have before npm, pnpm or bun is allowed to install it.
+     * Defaults to {@code 1} day; set to {@code 0} to disable.
+     */
+    public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";
 
 }

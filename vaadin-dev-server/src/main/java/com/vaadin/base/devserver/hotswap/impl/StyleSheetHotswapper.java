@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +50,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -300,12 +302,23 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
                 // Remove old stylesheets
                 for (String url : removedStylesheets) {
+                    // Use the same canonical form the dependency was
+                    // registered with by UIInternals.addComponentDependencies
+                    // (and the per-session tracker). Looking up by the raw
+                    // annotation value would miss the entry and leave the
+                    // <link> in the DOM.
+                    String resolvedUrl = FrontendDependencyUrlResolver
+                            .resolveToContextRoot(url);
+                    if (resolvedUrl == null) {
+                        continue;
+                    }
                     if (registry.previousState(clazz) == null) {
                         // This is the first time the component class is
                         // processed by the hotswapper
                         // remove existing dependency for the url
                         Dependency dependency = ui.getInternals()
-                                .getDependencyList().getDependencyByUrl(url,
+                                .getDependencyList()
+                                .getDependencyByUrl(resolvedUrl,
                                         Dependency.Type.STYLESHEET);
                         if (dependency != null) {
                             ui.getInternals()
@@ -313,8 +326,9 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                             // Track removal for this session
                             ActiveStyleSheetTracker
                                     .get(event.getVaadinService())
-                                    .trackRemoveForComponent(url);
-                            String normalized = normalizeStylesheetUrl(url);
+                                    .trackRemoveForComponent(resolvedUrl);
+                            String normalized = normalizeStylesheetUrl(
+                                    resolvedUrl);
                             if (normalized != null) {
                                 event.updateClientResource(
                                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
@@ -324,18 +338,19 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                             event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
                         }
                     } else {
-                        registry.removeRegistration(clazz, url)
+                        registry.removeRegistration(clazz, resolvedUrl)
                                 .ifPresent(dependencyId -> {
                                     ui.getInternals()
                                             .removeStyleSheet(dependencyId);
                                     // Track removal for this session
                                     ActiveStyleSheetTracker
                                             .get(event.getVaadinService())
-                                            .trackRemoveForComponent(url);
+                                            .trackRemoveForComponent(
+                                                    resolvedUrl);
                                     // Also notify client to remove any inline
                                     // style tag pushed earlier
                                     String normalized = normalizeStylesheetUrl(
-                                            url);
+                                            resolvedUrl);
                                     if (normalized != null) {
                                         event.updateClientResource(
                                                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
@@ -347,9 +362,9 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                                 });
                     }
                     if (isAppShell) {
-                        // Remove link tag added to head during page bootstrap
-                        // Sends removal for stylesheet added by
-                        // AppShellRegistry
+                        // Remove link tag added to head during page bootstrap.
+                        // The data-id used by AppShellRegistry is keyed by
+                        // the raw annotation value, so use the raw url here.
                         ui.getInternals().removeStyleSheet("appShell-" + url);
                         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
                     }
@@ -359,17 +374,23 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
                 // Add new stylesheets
                 for (String url : addedStylesheets) {
+                    String resolvedUrl = FrontendDependencyUrlResolver
+                            .resolveToContextRoot(url);
+                    if (resolvedUrl == null) {
+                        continue;
+                    }
                     try {
-                        ui.getPage().addStyleSheet(url);
+                        ui.getPage().addStyleSheet(resolvedUrl);
                         Dependency dependency = ui.getInternals()
-                                .getDependencyList().getDependencyByUrl(url,
+                                .getDependencyList()
+                                .getDependencyByUrl(resolvedUrl,
                                         Dependency.Type.STYLESHEET);
                         registry.addRegistration(clazz, dependency);
                         ActiveStyleSheetTracker.get(event.getVaadinService())
-                                .trackAddForComponent(url);
+                                .trackAddForComponent(resolvedUrl);
                         // Immediately push bundled CSS content for the added
                         // URL so client applies it without link reload
-                        String normalized = normalizeStylesheetUrl(url);
+                        String normalized = normalizeStylesheetUrl(resolvedUrl);
                         if (normalized != null) {
                             tryBundlePublicStylesheet(event, normalized)
                                     .ifPresent(content -> event
@@ -605,7 +626,8 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
             if (child.getClass().isAnnotationPresent(StyleSheet.class)) {
                 ComponentUtil.getDependencies(vaadinService, child.getClass())
                         .getStyleSheets().stream().map(StyleSheet::value)
-                        .forEach(allUrls::add);
+                        .map(FrontendDependencyUrlResolver::resolveToContextRoot)
+                        .filter(Objects::nonNull).forEach(allUrls::add);
             }
             lookupUrlsForComponents(child, allUrls, vaadinService);
         });
