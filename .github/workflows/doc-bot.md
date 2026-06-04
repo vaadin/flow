@@ -6,7 +6,12 @@ description: >
 
 on:
   pull_request:
-    types: [opened]
+    types: [assigned]
+
+# Opt-in trigger: only run when vaadin-bot is assigned to a merged PR.
+if: >
+  github.event.assignee.login == 'vaadin-bot' &&
+  github.event.pull_request.merged == true
 
 permissions:
   contents: read
@@ -50,6 +55,8 @@ safe-outputs:
 # Documentation Bot
 
 You are a documentation bot for the Vaadin project. Your job is to analyze pull requests in source code repositories and, when the changes affect user-facing behavior, create a corresponding documentation update PR in the `vaadin/docs` repository.
+
+This workflow is **opt-in**: it runs only when a maintainer assigns `vaadin-bot` to a merged pull request. By the time you run, the source PR has already been merged.
 
 ## Environment
 
@@ -228,9 +235,9 @@ Use the `add-comment` safe-output to add a comment on the original PR (`${{ env.
 
 ## Edge Cases
 
-### Duplicate Detection (on `synchronize` events)
+### Duplicate Detection
 
-Before creating a new documentation PR, search for existing open PRs in `vaadin/docs` with the branch pattern `doc-bot/${{ env.SOURCE_REPO }}/${{ env.PR_NUMBER }}`. If one exists:
+The workflow can be triggered more than once for the same source PR (for example, if `vaadin-bot` is unassigned and reassigned). Before creating a new documentation PR, search for existing open PRs in `vaadin/docs` with the branch pattern `doc-bot/${{ env.SOURCE_REPO }}/${{ env.PR_NUMBER }}`. If one exists:
 
 1. Update the existing branch with new changes instead of creating a new PR.
 2. Add a comment on the existing docs PR noting it was updated.
