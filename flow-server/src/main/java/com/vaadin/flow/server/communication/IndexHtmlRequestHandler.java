@@ -61,6 +61,7 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevToolsToken;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -147,9 +148,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         String frameOptions = config.getFrameOptions();
-        if (frameOptions != null && !frameOptions.isEmpty()
-                && !response.containsHeader("X-Frame-Options")) {
-            response.setHeader("X-Frame-Options", frameOptions);
+        if (frameOptions != null && !frameOptions.isEmpty()) {
+            if (response.containsHeader("X-Frame-Options")) {
+                // Don't override a header set elsewhere (e.g. by a servlet
+                // filter), but warn if an explicitly configured value is
+                // being ignored because of it.
+                if (config.getStringProperty(
+                        InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,
+                        null) != null) {
+                    getLogger().warn(
+                            "The configured '{}' value '{}' is ignored because "
+                                    + "the response already has an X-Frame-Options header.",
+                            InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,
+                            frameOptions);
+                }
+            } else {
+                response.setHeader("X-Frame-Options", frameOptions);
+            }
         }
 
         VaadinContext context = session.getService().getContext();
