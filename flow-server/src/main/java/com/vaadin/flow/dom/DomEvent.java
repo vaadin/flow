@@ -121,7 +121,11 @@ public class DomEvent extends EventObject {
         }
         final Element mappedElementOrNull = matchingNode.get();
         // prevent spoofing invisible elements by sending bad state node ids
-        if (mappedElementOrNull != null && !mappedElementOrNull.isVisible()) {
+        // — use the state-node check that also walks ancestors so an
+        // element whose own flag is true but whose ancestor was hidden is
+        // also rejected.
+        if (mappedElementOrNull != null
+                && !mappedElementOrNull.getNode().isVisible()) {
             return null;
         }
         return mappedElementOrNull;
