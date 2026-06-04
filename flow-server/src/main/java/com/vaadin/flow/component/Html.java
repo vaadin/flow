@@ -26,6 +26,7 @@ import org.jsoup.helper.DataUtil;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
+import org.jsoup.safety.Safelist;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
@@ -44,6 +45,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * dangerous parts of the HTML before sending it to the user through this
  * component. Passing raw input data to the user will possibly lead to
  * cross-site scripting attacks.
+ * <p>
+ * To help with sanitization, every HTML-accepting method has an overload that
+ * additionally takes a jsoup {@link Safelist}. These overloads run the content
+ * through {@link Jsoup#clean(String, Safelist)} before using it, so any element
+ * or attribute that the safelist doesn't permit is removed:
+ *
+ * <pre>
+ * new Html(untrustedHtml, Safelist.basic());
+ * </pre>
+ *
+ * The safelist must permit the fragment's single root element; otherwise the
+ * root is stripped and the resulting fragment no longer has exactly one root
+ * element.
  * <p>
  * This component does not expand the HTML fragment into a server side DOM tree
  * so you cannot traverse or modify the HTML on the server. The root element can
@@ -101,6 +115,45 @@ public class Html extends Component {
     }
 
     /**
+     * Creates an instance based on the HTML fragment read from the stream,
+     * sanitized using the given {@link Safelist}. The fragment must have
+     * exactly one root element after sanitization.
+     * <p>
+     * The content is run through {@link Jsoup#clean(String, Safelist)} before
+     * being used, so any element or attribute that the safelist doesn't permit
+     * is removed. The safelist must permit the root element.
+     * <p>
+     * A best effort is done to parse broken HTML but no guarantees are given
+     * for how invalid HTML is handled.
+     * <p>
+     * Any heading or trailing whitespace is removed while parsing but any
+     * whitespace inside the root tag is preserved.
+     *
+     * @param stream
+     *            the input stream which provides the HTML in UTF-8
+     * @param safelist
+     *            the safelist of permitted elements and attributes, not
+     *            <code>null</code>
+     * @throws UncheckedIOException
+     *             if reading the stream fails
+     */
+    public Html(InputStream stream, Safelist safelist) {
+        super(null);
+        if (stream == null) {
+            throw new IllegalArgumentException("HTML stream cannot be null");
+        }
+        Objects.requireNonNull(safelist, "Safelist cannot be null");
+        try {
+            String outerHtml = UTF_8
+                    .decode(DataUtil.readToByteBuffer(stream, 0)).toString();
+            setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read HTML from stream",
+                    e);
+        }
+    }
+
+    /**
      * Creates an instance based on the given HTML fragment. The fragment must
      * have exactly one root element.
      * <p>
@@ -120,6 +173,37 @@ public class Html extends Component {
         }
 
         setOuterHtml(outerHtml, false);
+    }
+
+    /**
+     * Creates an instance based on the given HTML fragment, sanitized using the
+     * given {@link Safelist}. The fragment must have exactly one root element
+     * after sanitization.
+     * <p>
+     * The content is run through {@link Jsoup#clean(String, Safelist)} before
+     * being used, so any element or attribute that the safelist doesn't permit
+     * is removed. The safelist must permit the root element.
+     * <p>
+     * A best effort is done to parse broken HTML but no guarantees are given
+     * for how invalid HTML is handled.
+     * <p>
+     * Any heading or trailing whitespace is removed while parsing but any
+     * whitespace inside the root tag is preserved.
+     *
+     * @param outerHtml
+     *            the HTML to wrap
+     * @param safelist
+     *            the safelist of permitted elements and attributes, not
+     *            <code>null</code>
+     */
+    public Html(String outerHtml, Safelist safelist) {
+        super(null);
+        if (outerHtml == null || outerHtml.isEmpty()) {
+            throw new IllegalArgumentException("HTML cannot be null or empty");
+        }
+        Objects.requireNonNull(safelist, "Safelist cannot be null");
+
+        setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
     }
 
     /**
@@ -152,6 +236,44 @@ public class Html extends Component {
     }
 
     /**
+     * Creates an instance based on the given HTML fragment signal, with every
+     * value sanitized using the given {@link Safelist}. The signal's current
+     * value must have exactly one root element after sanitization. Subsequent
+     * changes to the signal will update the component's content (root tag
+     * cannot be changed after creation).
+     * <p>
+     * Both the initial value and every subsequent value are run through
+     * {@link Jsoup#clean(String, Safelist)}, so any element or attribute that
+     * the safelist doesn't permit is removed. The safelist must permit the root
+     * element.
+     *
+     * @param htmlSignal
+     *            the signal that provides the HTML outer content
+     * @param safelist
+     *            the safelist of permitted elements and attributes, not
+     *            <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the signal is {@code null} or its current value is null or
+     *             empty, or doesn't have exactly one root element
+     */
+    public Html(Signal<String> htmlSignal, Safelist safelist) {
+        super(null);
+        if (htmlSignal == null) {
+            throw new IllegalArgumentException("HTML signal cannot be null");
+        }
+        Objects.requireNonNull(safelist, "Safelist cannot be null");
+        String outerHtml = htmlSignal.peek();
+        if (outerHtml == null || outerHtml.isEmpty()) {
+            throw new IllegalArgumentException("HTML cannot be null or empty");
+        }
+        // Initialize from the sanitized current signal value (sets the root
+        // element and attrs)
+        setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
+        // Bind further updates, sanitizing each value (root tag cannot change)
+        bindHtmlContent(htmlSignal, safelist);
+    }
+
+    /**
      * Sets the content based on the given HTML fragment. The fragment must have
      * exactly one root element, which matches the existing one.
      * <p>
@@ -175,6 +297,41 @@ public class Html extends Component {
                     }
                 });
         setOuterHtml(html, true);
+    }
+
+    /**
+     * Sets the content based on the given HTML fragment, sanitized using the
+     * given {@link Safelist}. The fragment must have exactly one root element
+     * after sanitization, which matches the existing one.
+     * <p>
+     * The content is run through {@link Jsoup#clean(String, Safelist)} before
+     * being used, so any element or attribute that the safelist doesn't permit
+     * is removed. The safelist must permit the root element.
+     * <p>
+     * A best effort is done to parse broken HTML but no guarantees are given
+     * for how invalid HTML is handled.
+     * <p>
+     * Any heading or trailing whitespace is removed while parsing but any
+     * whitespace inside the root tag is preserved.
+     *
+     * @param html
+     *            the HTML to wrap
+     * @param safelist
+     *            the safelist of permitted elements and attributes, not
+     *            <code>null</code>
+     */
+    public void setHtmlContent(String html, Safelist safelist) {
+        Objects.requireNonNull(safelist, "Safelist cannot be null");
+        // Disallow manual setting while a binding exists
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
+                        throw new BindingActiveException(
+                                "setHtmlContent is not allowed while a binding for HTML content exists.");
+                    }
+                });
+        setOuterHtml(Jsoup.clean(html, safelist), true);
     }
 
     private void setOuterHtml(String outerHtml, boolean update) {
@@ -271,6 +428,55 @@ public class Html extends Component {
 
         SignalBinding<String> binding = ElementEffect.bind(getElement(),
                 htmlSignal, (element, value) -> setOuterHtml(value, true));
+        feature.setBinding(SignalBindingFeature.HTML_CONTENT, htmlSignal);
+        return binding;
+    }
+
+    /**
+     * Binds a {@link com.vaadin.flow.signals.Signal}'s value to this
+     * component's HTML content (outer HTML), sanitizing every value using the
+     * given {@link Safelist}. The content is set immediately with the current
+     * signal value when the binding is created, and is kept synchronized with
+     * any subsequent signal value changes while the component is attached. When
+     * the component is detached, signal value changes have no effect.
+     * <p>
+     * Every value is run through {@link Jsoup#clean(String, Safelist)}, so any
+     * element or attribute that the safelist doesn't permit is removed. The
+     * safelist must permit the root element.
+     * <p>
+     * While a Signal is bound to the HTML content, any attempt to set the HTML
+     * content manually via {@link #setHtmlContent(String)} throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
+     * <p>
+     * The first value of the signal must have exactly one root element. When
+     * updating the content, the root tag name must remain the same as the
+     * component's current root tag.
+     *
+     * @param htmlSignal
+     *            the signal to bind, not <code>null</code>
+     * @param safelist
+     *            the safelist of permitted elements and attributes, not
+     *            <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     */
+    public SignalBinding<String> bindHtmlContent(Signal<String> htmlSignal,
+            Safelist safelist) {
+        Objects.requireNonNull(htmlSignal, "Signal cannot be null");
+        Objects.requireNonNull(safelist, "Safelist cannot be null");
+        SignalBindingFeature feature = getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
+            throw new BindingActiveException();
+        }
+
+        SignalBinding<String> binding = ElementEffect.bind(getElement(),
+                htmlSignal,
+                (element, value) -> setOuterHtml(
+                        value == null ? value : Jsoup.clean(value, safelist),
+                        true));
         feature.setBinding(SignalBindingFeature.HTML_CONTENT, htmlSignal);
         return binding;
     }
