@@ -21,10 +21,20 @@ engine: codex
 
 tools:
   github:
+    # gh-proxy routes GitHub API access through the pre-authenticated gh CLI,
+    # so api.github.com does not need to be in the network allowlist.
+    mode: gh-proxy
     toolsets: [repos, pull_requests, search]
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   edit:
   bash: true
+
+# Allow GitHub domains (github.com, *.githubusercontent.com, ...) so the agent
+# can read and update the vaadin/docs repository.
+network:
+  allowed:
+    - defaults
+    - github
 
 timeout-minutes: 30
 
