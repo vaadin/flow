@@ -147,7 +147,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         String frameOptions = config.getFrameOptions();
-        if (frameOptions != null && !frameOptions.isEmpty()) {
+        if (frameOptions != null && !frameOptions.isEmpty()
+                && !response.containsHeader("X-Frame-Options")) {
             response.setHeader("X-Frame-Options", frameOptions);
         }
 

@@ -223,6 +223,17 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void serveIndexHtml_frameOptionsAlreadyPresent_doesNotOverride()
+            throws IOException {
+        Mockito.when(response.containsHeader("X-Frame-Options"))
+                .thenReturn(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
     public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
