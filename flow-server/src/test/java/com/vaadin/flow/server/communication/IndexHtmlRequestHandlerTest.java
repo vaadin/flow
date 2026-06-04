@@ -213,14 +213,14 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_featureFlagsSetter_isPresent()
+    public void serveIndexHtml_noFeatureFlagsEnabled_updaterScriptOmitted()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        assertTrue(indexHtml.contains(
-                "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
-                "Response should have Feature Flags updater function");
+        assertFalse(indexHtml.contains("window.Vaadin.featureFlagsUpdaters"),
+                "Response should not have a Feature Flags updater script "
+                        + "when no feature flags are enabled");
     }
 
     @Test
