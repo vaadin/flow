@@ -146,6 +146,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
+        String frameOptions = config.getFrameOptions();
+        if (frameOptions != null && !frameOptions.isEmpty()) {
+            response.setHeader("X-Frame-Options", frameOptions);
+        }
+
         VaadinContext context = session.getService().getContext();
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
