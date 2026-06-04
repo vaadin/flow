@@ -115,6 +115,8 @@ public final class ClipboardContent implements Serializable {
      *            the component whose root {@code <img>} should be copied, not
      *            {@code null}
      * @return this builder
+     * @throws IllegalArgumentException
+     *             if the source's root element is not an {@code <img>}
      */
     public ClipboardContent image(Component source) {
         Objects.requireNonNull(source, "source must not be null");
@@ -122,24 +124,15 @@ public final class ClipboardContent implements Serializable {
         return this;
     }
 
-    /**
-     * @return the text input, or {@code null} if no text was set
-     */
-    public Action.@Nullable Input<String> getTextInput() {
+    Action.@Nullable Input<String> getTextInput() {
         return textInput;
     }
 
-    /**
-     * @return the html input, or {@code null} if no html was set
-     */
-    public Action.@Nullable Input<String> getHtmlInput() {
+    Action.@Nullable Input<String> getHtmlInput() {
         return htmlInput;
     }
 
-    /**
-     * @return the image input, or {@code null} if no image was set
-     */
-    public Action.@Nullable Input<?> getImageInput() {
+    Action.@Nullable Input<?> getImageInput() {
         return imageInput;
     }
 }

@@ -25,7 +25,6 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.clipboard.ClipboardContent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.tests.util.MockUI;
@@ -156,16 +155,16 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void fireAndForget_allThreeSlotsViaContent_eachInputCapturedInOrder() {
+    void fireAndForget_allThreeSlots_eachInputCapturedInOrder() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         TagComponent img = new TagComponent("img");
         ui.getElement().appendChild(button.getElement(), img.getElement());
 
-        ClipboardContent content = ClipboardContent.create().text("plain")
-                .html("<b>html</b>").image(img);
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(content));
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new LiteralInput<>("plain"),
+                        new LiteralInput<>("<b>html</b>"),
+                        new ImageBlobInput(img)));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -215,7 +214,7 @@ class WriteToClipboardActionTest {
         ui.getElement().appendChild(button.getElement(), img.getElement());
 
         new DomEventTrigger(button, "click").triggers(
-                new WriteToClipboardAction(new ImageBlobInput(img), copied -> {
+                new WriteToClipboardAction(new ImageBlobInput(img), () -> {
                 }, err -> {
                 }));
 
@@ -292,9 +291,10 @@ class WriteToClipboardActionTest {
     }
 
     @Test
-    void constructor_emptyContent_rejected() {
+    void constructor_allSlotsNull_rejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> new WriteToClipboardAction(ClipboardContent.create()));
+                () -> new WriteToClipboardAction((Action.Input<String>) null,
+                        (Action.Input<String>) null, (Action.Input<?>) null));
     }
 
 }

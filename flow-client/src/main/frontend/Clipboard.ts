@@ -82,8 +82,16 @@ function imageToPngBlob(img: HTMLImageElement): Promise<Blob> {
         reject(err);
       }
     };
-    if (img.complete && img.naturalWidth > 0) {
-      draw();
+    if (img.complete) {
+      // `complete` is also true for an image that already failed to load or has
+      // an empty src; those have naturalWidth === 0 and their load/error events
+      // have already fired and will never fire again, so we must settle here
+      // rather than wait for an event that never comes.
+      if (img.naturalWidth > 0) {
+        draw();
+      } else {
+        reject(new Error('image failed to load or has empty src'));
+      }
     } else {
       img.addEventListener('load', draw, { once: true });
       img.addEventListener('error', () => reject(new Error('image load failed')), { once: true });

@@ -239,7 +239,7 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
 
         new ClickTrigger(copyImageButton).triggers(new WriteToClipboardAction(
                 new ImageBlobInput(sourceImage),
-                copied -> status.setText("ok:" + copied), err -> status
+                () -> status.setText("ok:null"), err -> status
                         .setText("err:" + err.name() + ":" + err.message())));
 
         Clipboard.onClick(copyMultiImageButton).write(
@@ -258,7 +258,7 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
                         new ByteArrayInputStream(HANDLER_PNG_BYTES),
                         "handler.png", "image/png", HANDLER_PNG_BYTES.length));
         Clipboard.onClick(copyImageHandlerButton).writeImage(imageHandler,
-                copied -> status.setText("ok:" + copied), err -> status
+                () -> status.setText("ok:null"), err -> status
                         .setText("err:" + err.name() + ":" + err.message()));
     }
 

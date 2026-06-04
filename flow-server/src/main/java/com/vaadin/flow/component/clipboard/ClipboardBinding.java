@@ -31,7 +31,7 @@ import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -186,6 +186,8 @@ public final class ClipboardBinding implements Serializable {
      * @param source
      *            the component whose root {@code <img>} should be copied, not
      *            {@code null}
+     * @throws IllegalArgumentException
+     *             if the source's root element is not an {@code <img>}
      */
     public void writeImage(Component source) {
         Objects.requireNonNull(source, "source must not be null");
@@ -194,20 +196,22 @@ public final class ClipboardBinding implements Serializable {
 
     /**
      * Like {@link #writeImage(Component)} but reports the outcome back to the
-     * server. {@code onCopied} receives {@code null} — the image-only write has
-     * no meaningful string value.
+     * server. An image-only write has no string value, so success is reported
+     * as a plain {@link SerializableRunnable} rather than a value callback.
      *
      * @param source
      *            the component whose root {@code <img>} should be copied, not
      *            {@code null}
      * @param onCopied
-     *            UI-thread callback receiving {@code null}, not {@code null}
+     *            UI-thread callback invoked once the write resolves, not
+     *            {@code null}
      * @param onError
      *            UI-thread callback receiving the browser's error, not
      *            {@code null}
+     * @throws IllegalArgumentException
+     *             if the source's root element is not an {@code <img>}
      */
-    public void writeImage(Component source,
-            SerializableConsumer<@Nullable String> onCopied,
+    public void writeImage(Component source, SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
         bind(new WriteToClipboardAction(new ImageBlobInput(source), onCopied,
@@ -239,20 +243,22 @@ public final class ClipboardBinding implements Serializable {
 
     /**
      * Like {@link #writeImage(DownloadHandler)} but reports the outcome back to
-     * the server. {@code onCopied} receives {@code null} — the image-only write
-     * has no meaningful string value.
+     * the server. An image-only write has no string value, so success is
+     * reported as a plain {@link SerializableRunnable} rather than a value
+     * callback.
      *
      * @param handler
      *            the download handler producing the image bytes, not
      *            {@code null}
      * @param onCopied
-     *            UI-thread callback receiving {@code null}, not {@code null}
+     *            UI-thread callback invoked once the write resolves, not
+     *            {@code null}
      * @param onError
      *            UI-thread callback receiving the browser's error, not
      *            {@code null}
      */
     public void writeImage(DownloadHandler handler,
-            SerializableConsumer<@Nullable String> onCopied,
+            SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(handler, "handler must not be null");
         bind(new WriteToClipboardAction(
@@ -261,11 +267,6 @@ public final class ClipboardBinding implements Serializable {
     }
 
     private Element attachHiddenImg(DownloadHandler handler) {
-        // AbstractDownloadHandler defaults to Content-Disposition: attachment;
-        // for an in-page <img> we want inline. Mirrors Image#setSrc.
-        if (handler instanceof AbstractDownloadHandler<?> ah) {
-            ah.inline();
-        }
         Element img = new Element(Tag.IMG);
         img.getStyle().set("display", "none");
         img.setAttribute("src", handler.allowDisabled());
@@ -284,7 +285,8 @@ public final class ClipboardBinding implements Serializable {
      */
     public void write(ClipboardContent content) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content));
+        bind(new WriteToClipboardAction(content.getTextInput(),
+                content.getHtmlInput(), content.getImageInput()));
     }
 
     /**
@@ -305,7 +307,9 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content, onCopied, onError));
+        bind(new WriteToClipboardAction(content.getTextInput(),
+                content.getHtmlInput(), content.getImageInput(), onCopied,
+                onError));
     }
 
     private void bind(WriteToClipboardAction action) {

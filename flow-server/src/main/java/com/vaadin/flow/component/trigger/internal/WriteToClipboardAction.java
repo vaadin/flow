@@ -19,9 +19,9 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.component.clipboard.ClipboardContent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 
 /**
  * Writes a {@code ClipboardItem} to the user's clipboard via
@@ -35,12 +35,13 @@ import com.vaadin.flow.function.SerializableConsumer;
  * trigger that fires during such a gesture.
  * <p>
  * Construction comes in three flavours, each available as fire-and-forget and
- * as a with-outcome variant taking {@code onCopied}/{@code onError} consumers:
+ * as a with-outcome variant:
  * <ul>
  * <li>Text/HTML — the typical case for copying a string</li>
- * <li>Image — the typical case for copying an image</li>
- * <li>Multi-format via {@link ClipboardContent} — combine any of the three
- * slots in one item</li>
+ * <li>Image — the typical case for copying an image; the write has no string
+ * value, so success is reported via a {@link SerializableRunnable}</li>
+ * <li>Multi-format — pass any combination of the {@code text}, {@code html} and
+ * {@code image} inputs to combine them in one item</li>
  * </ul>
  * {@code onCopied} receives the exact string that was copied — the
  * {@code text/plain} value if present, otherwise the {@code text/html} value,
@@ -125,72 +126,46 @@ public class WriteToClipboardAction extends PromiseAction<String> {
 
     /**
      * Creates an image clipboard-copy action whose outcome is reported back to
-     * the server. {@code onCopied} receives {@code null} — the image-only write
-     * has no meaningful string value.
+     * the server. An image-only write has no string value, so success is
+     * reported via a {@link SerializableRunnable} rather than a value callback.
      *
      * @param imageInput
      *            input producing the source {@code <img>} for the
      *            {@code image/png} payload (typically an
      *            {@link ImageBlobInput}), not {@code null}
      * @param onCopied
-     *            invoked on the UI thread with {@code null} after the client
-     *            reports the write resolved, not {@code null}
+     *            invoked on the UI thread after the client reports the write
+     *            resolved, not {@code null}
      * @param onError
      *            invoked on the UI thread with the browser's error after the
      *            client reports the write rejected, not {@code null}
      */
     public WriteToClipboardAction(Action.Input<?> imageInput,
-            SerializableConsumer<@Nullable String> onCopied,
+            SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
-        this(null, null, Objects.requireNonNull(imageInput,
-                "imageInput must not be null"), onCopied, onError);
+        this(null, null,
+                Objects.requireNonNull(imageInput,
+                        "imageInput must not be null"),
+                runnableAsConsumer(onCopied), onError);
     }
 
     /**
-     * Creates a fire-and-forget multi-format clipboard-copy action from a
-     * {@link ClipboardContent} describing the payload. Use
-     * {@code Clipboard.onClick(...).write(content)} as the typical entry point.
+     * Creates a fire-and-forget multi-format clipboard-copy action. Pass any
+     * combination of inputs; at least one must be non-{@code null}.
      *
-     * @param content
-     *            the clipboard payload, not {@code null}; must have at least
-     *            one slot set
+     * @param textInput
+     *            input producing the {@code text/plain} payload, or
+     *            {@code null} to omit
+     * @param htmlInput
+     *            input producing the {@code text/html} payload, or {@code null}
+     *            to omit
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload, or {@code null} to omit
      * @throws IllegalArgumentException
-     *             if {@code content} has no slots set
+     *             if all inputs are {@code null}
      */
-    public WriteToClipboardAction(ClipboardContent content) {
-        this(Objects.requireNonNull(content, "content must not be null")
-                .getTextInput(), content.getHtmlInput(),
-                content.getImageInput());
-    }
-
-    /**
-     * Creates a multi-format clipboard-copy action from a
-     * {@link ClipboardContent} whose outcome is reported back to the server.
-     *
-     * @param content
-     *            the clipboard payload, not {@code null}; must have at least
-     *            one slot set
-     * @param onCopied
-     *            invoked on the UI thread with the string that was copied after
-     *            the client reports the write resolved ({@code text/plain} if
-     *            present, otherwise {@code text/html}, otherwise {@code null}
-     *            in the image-only case), or {@code null} if the JS resolved
-     *            with {@code undefined}; not {@code null}
-     * @param onError
-     *            invoked on the UI thread with the browser's error after the
-     *            client reports the write rejected, not {@code null}
-     * @throws IllegalArgumentException
-     *             if {@code content} has no slots set
-     */
-    public WriteToClipboardAction(ClipboardContent content,
-            SerializableConsumer<@Nullable String> onCopied,
-            SerializableConsumer<Error> onError) {
-        this(Objects.requireNonNull(content, "content must not be null")
-                .getTextInput(), content.getHtmlInput(),
-                content.getImageInput(), onCopied, onError);
-    }
-
-    private WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
             Action.@Nullable Input<String> htmlInput,
             Action.@Nullable Input<?> imageInput) {
         super();
@@ -200,7 +175,32 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         this.imageInput = imageInput;
     }
 
-    private WriteToClipboardAction(Action.@Nullable Input<String> textInput,
+    /**
+     * Creates a multi-format clipboard-copy action whose outcome is reported
+     * back to the server. Pass any combination of inputs; at least one must be
+     * non-{@code null}.
+     *
+     * @param textInput
+     *            input producing the {@code text/plain} payload, or
+     *            {@code null} to omit
+     * @param htmlInput
+     *            input producing the {@code text/html} payload, or {@code null}
+     *            to omit
+     * @param imageInput
+     *            input producing the source {@code <img>} for the
+     *            {@code image/png} payload, or {@code null} to omit
+     * @param onCopied
+     *            invoked on the UI thread with the string that was copied after
+     *            the client reports the write resolved ({@code text/plain} if
+     *            present, otherwise {@code text/html}, otherwise {@code null}
+     *            in the image-only case); not {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports the write rejected, not {@code null}
+     * @throws IllegalArgumentException
+     *             if all inputs are {@code null}
+     */
+    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
             Action.@Nullable Input<String> htmlInput,
             Action.@Nullable Input<?> imageInput,
             SerializableConsumer<@Nullable String> onCopied,
@@ -210,6 +210,12 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         this.textInput = textInput;
         this.htmlInput = htmlInput;
         this.imageInput = imageInput;
+    }
+
+    private static SerializableConsumer<@Nullable String> runnableAsConsumer(
+            SerializableRunnable onCopied) {
+        Objects.requireNonNull(onCopied, "onCopied must not be null");
+        return ignored -> onCopied.run();
     }
 
     private static void validate(Action.@Nullable Input<String> text,
