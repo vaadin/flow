@@ -313,16 +313,17 @@ public class ServerRpcHandler implements Serializable {
      *            The {@link Reader} used to read the JSON.
      * @param request
      *            The request through which the RPC was received
+     * @return {@link RpcRequest} or null
      * @throws IOException
      *             If reading the message fails.
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
      */
-    public void handleRpc(UI ui, Reader reader, VaadinRequest request)
+    public RpcRequest handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException,
             MessageIdSyncException {
-        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
+        return handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
                 request);
     }
 
@@ -336,17 +337,18 @@ public class ServerRpcHandler implements Serializable {
      *            The JSON message from the request.
      * @param request
      *            The request through which the RPC was received
+     * @return {@link RpcRequest} or null
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
      */
-    public void handleRpc(UI ui, String message, VaadinRequest request)
+    public RpcRequest handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
 
         if (message == null || message.isEmpty()) {
             // The client sometimes sends empty messages, this is probably a bug
-            return;
+            return null;
         }
 
         RpcRequest rpcRequest = new RpcRequest(message, request.getService()
@@ -437,7 +439,7 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().warn(
                         "MPR is in use, so full page reload will be done to achieve re-sync.");
                 ui.getPage().reload();
-                return;
+                return rpcRequest;
             }
 
             // Run detach listeners and re-attach all nodes again to the
@@ -462,6 +464,7 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug("UI closed with a beacon request");
             }
         }
+        return rpcRequest;
     }
 
     private void enforceIfNeeded(VaadinRequest request, RpcRequest rpcRequest) {
