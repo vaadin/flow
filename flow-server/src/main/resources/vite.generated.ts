@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, Stats } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync, Stats } from 'fs';
 import { createHash } from 'crypto';
 import * as net from 'net';
 
@@ -648,20 +648,34 @@ export const vaadinConfig: UserConfigFn = (env) => {
             return scripts;
           }
         },
-        // When the default index.html is generated into frontend/generated/,
-        // rolldown emits it at the same relative path under outDir. Rename
-        // the bundled asset to index.html so consumers (stats plugin,
-        // server) always find it at the build output root.
-        generateBundle(_options, bundle) {
+        // When the default index.html source lives in frontend/generated/,
+        // rolldown emits it at the same relative path under outDir (HTML
+        // files are written outside the bundle object, so they cannot be
+        // renamed via `generateBundle`). Move the emitted file to the
+        // build output root so the stats plugin and the runtime (which
+        // both expect index.html at the root) find it, and strip the
+        // leading `../` that rolldown added to relative asset URLs to
+        // climb out of `generated/`. Runs before the stats plugin's
+        // `writeBundle` (which uses `enforce: 'post'`).
+        writeBundle() {
           if (indexHtmlRelativePath === 'index.html') {
             return;
           }
-          const asset = bundle[indexHtmlRelativePath];
-          if (asset) {
-            asset.fileName = 'index.html';
-            bundle['index.html'] = asset;
-            delete bundle[indexHtmlRelativePath];
+          const src = path.resolve(buildOutputFolder, indexHtmlRelativePath);
+          const dst = path.resolve(buildOutputFolder, 'index.html');
+          if (!existsSync(src)) {
+            return;
           }
+          const depth = indexHtmlRelativePath.split('/').length - 1;
+          const upPrefix = '../'.repeat(depth);
+          const attrRegex = new RegExp(
+            `(\\b(?:src|href)=["'])${upPrefix.replace(/\./g, '\\.')}`,
+            'g'
+          );
+          const html = readFileSync(src, { encoding: 'utf-8' })
+            .replace(attrRegex, '$1');
+          writeFileSync(dst, html);
+          unlinkSync(src);
         }
       },
       //#vitePluginFileSystemRouter#
