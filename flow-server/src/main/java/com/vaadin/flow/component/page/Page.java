@@ -605,11 +605,8 @@ public class Page implements Serializable {
      */
     public void open(String url, String windowName) {
         if (!UrlUtil.isSafeUrl(url)) {
-            throw new IllegalArgumentException(String.format(
-                    "The URL \"%s\" uses a scheme that is not considered safe. "
-                            + "Configure the safe schemes with the \"%s\" property, "
-                            + "or use openUnsafe(String, String) if this URL is intentional and trusted.",
-                    url, InitParameters.URL_SAFE_SCHEMES));
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "URL", url, "openUnsafe(String, String)"));
         }
         openInternal(url, windowName);
     }

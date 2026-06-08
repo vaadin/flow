@@ -170,11 +170,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public void setSrc(String src) {
         if (src != null && !UrlUtil.isSafeUrl(src)) {
-            throw new IllegalArgumentException(String.format(
-                    "The src \"%s\" uses a scheme that is not considered safe. "
-                            + "Configure the safe schemes with the \"%s\" property, "
-                            + "or use setUnsafeSrc(String) if this URL is intentional and trusted.",
-                    src, InitParameters.URL_SAFE_SCHEMES));
+            throw new IllegalArgumentException(UrlUtil
+                    .getUnsafeUrlMessage("src", src, "setUnsafeSrc(String)"));
         }
         set(srcDescriptor, src);
     }

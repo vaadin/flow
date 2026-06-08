@@ -281,6 +281,32 @@ public class UrlUtil {
     }
 
     /**
+     * Builds the message for the {@link IllegalArgumentException} that a
+     * validating URL setter throws when given a URL whose scheme is not
+     * considered safe. The message points to both the
+     * {@link InitParameters#URL_SAFE_SCHEMES} configuration property and the
+     * setter that bypasses validation.
+     *
+     * @param type
+     *            the kind of URL being set, for example {@code "href"},
+     *            {@code "src"} or {@code "path"}
+     * @param url
+     *            the rejected URL
+     * @param unsafeMethod
+     *            the signature of the method that bypasses validation, for
+     *            example {@code "setUnsafeHref(String)"}
+     * @return the exception message
+     */
+    public static String getUnsafeUrlMessage(String type, String url,
+            String unsafeMethod) {
+        return String.format(
+                "The %s \"%s\" uses a scheme that is not considered safe. "
+                        + "Configure the safe schemes with the \"%s\" property, "
+                        + "or use %s if this URL is intentional and trusted.",
+                type, url, InitParameters.URL_SAFE_SCHEMES, unsafeMethod);
+    }
+
+    /**
      * Checks whether the scheme of the given URL is part of the given set of
      * safe schemes. See {@link #isSafeUrl(String)} for the validation rules.
      *

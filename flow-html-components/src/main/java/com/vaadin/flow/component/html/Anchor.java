@@ -281,11 +281,8 @@ public class Anchor extends HtmlContainer
             throw new IllegalArgumentException("Href must not be null");
         }
         if (!UrlUtil.isSafeUrl(href)) {
-            throw new IllegalArgumentException(String.format(
-                    "The href \"%s\" uses a scheme that is not considered safe. "
-                            + "Configure the safe schemes with the \"%s\" property, "
-                            + "or use setUnsafeHref(String) if this URL is intentional and trusted.",
-                    href, InitParameters.URL_SAFE_SCHEMES));
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "href", href, "setUnsafeHref(String)"));
         }
         this.href = href;
         assignHrefAttribute();
