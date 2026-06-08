@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -366,5 +367,176 @@ class RouteHierarchyTest {
                 () -> RouteHierarchy.resolveParent(null, routeConfiguration));
         assertThrows(NullPointerException.class,
                 () -> RouteHierarchy.resolveParent(FooView.class, null));
+    }
+
+    // ----- Scenario 15: param-aware resolveAncestors, non-@Route returns empty
+    // -----
+
+    @Test
+    void resolveAncestors_paramAware_classWithoutRouteAnnotation_returnsEmptyList() {
+        List<RouteHierarchy.Entry> entries = RouteHierarchy.resolveAncestors(
+                PlainComponent.class, RouteParameters.empty(),
+                routeConfiguration);
+        assertTrue(entries.isEmpty());
+    }
+
+    // ----- Scenario 16: param-aware resolveAncestors, single non-parameterised
+    // route returns Entry with empty params -----
+
+    @Test
+    void resolveAncestors_paramAware_singleRouteNoParams_returnsEntryWithEmptyParams() {
+        routeConfiguration.setAnnotatedRoute(FooView.class);
+
+        List<RouteHierarchy.Entry> entries = RouteHierarchy.resolveAncestors(
+                FooView.class, RouteParameters.empty(), routeConfiguration);
+        assertEquals(List.of(new RouteHierarchy.Entry(FooView.class,
+                RouteParameters.empty())), entries);
+    }
+
+    // ----- Scenario 17: param-aware resolveAncestors projects leaf parameters
+    // onto the parameterised template only -----
+
+    @Test
+    void resolveAncestors_paramAware_parameterisedLeaf_projectsParamsToLeafOnly() {
+        routeConfiguration.setAnnotatedRoute(UsersView.class);
+        routeConfiguration.setAnnotatedRoute(UserDetailView.class);
+
+        RouteParameters available = new RouteParameters(Map.of("id", "42"));
+        List<RouteHierarchy.Entry> entries = RouteHierarchy.resolveAncestors(
+                UserDetailView.class, available, routeConfiguration);
+
+        assertEquals(2, entries.size());
+        assertEquals(new RouteHierarchy.Entry(UsersView.class,
+                RouteParameters.empty()), entries.get(0));
+        assertEquals(
+                new RouteHierarchy.Entry(UserDetailView.class,
+                        new RouteParameters(Map.of("id", "42"))),
+                entries.get(1));
+    }
+
+    // ----- Scenario 18: deep parameterised hierarchy - each ancestor gets only
+    // the parameters its template declares (UC4 from vaadin/use-cases) -----
+
+    @Tag(Tag.DIV)
+    @Route("projects")
+    static class ProjectsView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("projects/:projectId")
+    @RouteParent(ProjectsView.class)
+    static class ProjectView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("projects/:projectId/tasks")
+    @RouteParent(ProjectView.class)
+    static class TasksView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("projects/:projectId/tasks/:taskId")
+    @RouteParent(TasksView.class)
+    static class TaskDetailView extends Component {
+    }
+
+    @Test
+    void resolveAncestors_paramAware_deepParameterisedHierarchy_projectsPerTemplate() {
+        routeConfiguration.setAnnotatedRoute(ProjectsView.class);
+        routeConfiguration.setAnnotatedRoute(ProjectView.class);
+        routeConfiguration.setAnnotatedRoute(TasksView.class);
+        routeConfiguration.setAnnotatedRoute(TaskDetailView.class);
+
+        RouteParameters available = new RouteParameters(
+                Map.of("projectId", "apollo", "taskId", "2"));
+        List<RouteHierarchy.Entry> entries = RouteHierarchy.resolveAncestors(
+                TaskDetailView.class, available, routeConfiguration);
+
+        assertEquals(4, entries.size());
+        // Root has no template parameters.
+        assertEquals(new RouteHierarchy.Entry(ProjectsView.class,
+                RouteParameters.empty()), entries.get(0));
+        // Two middle ancestors keep :projectId only - never :taskId.
+        RouteParameters projectIdOnly = new RouteParameters(
+                Map.of("projectId", "apollo"));
+        assertEquals(new RouteHierarchy.Entry(ProjectView.class, projectIdOnly),
+                entries.get(1));
+        assertEquals(new RouteHierarchy.Entry(TasksView.class, projectIdOnly),
+                entries.get(2));
+        // Leaf carries both.
+        assertEquals(new RouteHierarchy.Entry(TaskDetailView.class, available),
+                entries.get(3));
+    }
+
+    // ----- Scenario 19: param-aware resolveAncestors drops parameters not
+    // declared by any ancestor's template -----
+
+    @Test
+    void resolveAncestors_paramAware_dropsUnknownParameters() {
+        routeConfiguration.setAnnotatedRoute(UsersView.class);
+        routeConfiguration.setAnnotatedRoute(UserDetailView.class);
+
+        RouteParameters available = new RouteParameters(
+                Map.of("id", "42", "unrelated", "ignored"));
+        List<RouteHierarchy.Entry> entries = RouteHierarchy.resolveAncestors(
+                UserDetailView.class, available, routeConfiguration);
+
+        RouteParameters leafParams = entries.get(1).parameters();
+        assertEquals(Optional.of("42"), leafParams.get("id"));
+        assertTrue(leafParams.get("unrelated").isEmpty(),
+                "Unknown parameter must not appear in projected params");
+    }
+
+    // ----- Scenario 20: param-aware resolveParent returns projected parent
+    // entry -----
+
+    @Test
+    void resolveParent_paramAware_returnsProjectedParentEntry() {
+        routeConfiguration.setAnnotatedRoute(ProjectsView.class);
+        routeConfiguration.setAnnotatedRoute(ProjectView.class);
+        routeConfiguration.setAnnotatedRoute(TasksView.class);
+
+        RouteParameters available = new RouteParameters(
+                Map.of("projectId", "apollo"));
+        Optional<RouteHierarchy.Entry> parent = RouteHierarchy
+                .resolveParent(TasksView.class, available, routeConfiguration);
+
+        assertEquals(
+                Optional.of(new RouteHierarchy.Entry(ProjectView.class,
+                        new RouteParameters(Map.of("projectId", "apollo")))),
+                parent);
+    }
+
+    // ----- Scenario 21: param-aware resolveParent returns empty for root view
+    // -----
+
+    @Test
+    void resolveParent_paramAware_singletonChain_returnsEmpty() {
+        routeConfiguration.setAnnotatedRoute(FooView.class);
+
+        Optional<RouteHierarchy.Entry> parent = RouteHierarchy.resolveParent(
+                FooView.class, RouteParameters.empty(), routeConfiguration);
+        assertEquals(Optional.empty(), parent);
+    }
+
+    // ----- Scenario 22: param-aware null arguments throw NPE -----
+
+    @Test
+    void paramAware_nullArguments_throwNullPointerException() {
+        assertThrows(NullPointerException.class,
+                () -> RouteHierarchy.resolveAncestors(null,
+                        RouteParameters.empty(), routeConfiguration));
+        assertThrows(NullPointerException.class, () -> RouteHierarchy
+                .resolveAncestors(FooView.class, null, routeConfiguration));
+        assertThrows(NullPointerException.class,
+                () -> RouteHierarchy.resolveAncestors(FooView.class,
+                        RouteParameters.empty(), null));
+        assertThrows(NullPointerException.class,
+                () -> RouteHierarchy.resolveParent(null,
+                        RouteParameters.empty(), routeConfiguration));
+        assertThrows(NullPointerException.class, () -> RouteHierarchy
+                .resolveParent(FooView.class, null, routeConfiguration));
+        assertThrows(NullPointerException.class, () -> RouteHierarchy
+                .resolveParent(FooView.class, RouteParameters.empty(), null));
     }
 }
