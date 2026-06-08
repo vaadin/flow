@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -74,6 +75,16 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
     protected void assertCountEquals(int expectedCount, String counter)
             throws IOException {
         Assert.assertEquals(expectedCount, getCount(counter));
+    }
+
+    protected void waitForCount(int expectedCount, String counter) {
+        waitUntil(driver -> {
+            try {
+                return getCount(counter) == expectedCount;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, 10);
     }
 
     protected void assertTextEquals(String expectedText, String elementId) {

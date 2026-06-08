@@ -50,6 +50,7 @@ import com.vaadin.cdi.util.DependentProvider;
 public class VaadinExtension implements Extension {
 
     private VaadinServiceScopedContext serviceScopedContext;
+    private VaadinSessionScopedContext sessionScopedContext;
     private UIScopedContext uiScopedContext;
     private RouteScopedContext routeScopedContext;
     private Set<BeanInfo> beanInfoSet = new HashSet<>();
@@ -62,11 +63,11 @@ public class VaadinExtension implements Extension {
     private void addContexts(@Observes AfterBeanDiscovery afterBeanDiscovery,
             BeanManager beanManager) {
         serviceScopedContext = new VaadinServiceScopedContext(beanManager);
+        sessionScopedContext = new VaadinSessionScopedContext(beanManager);
         uiScopedContext = new UIScopedContext(beanManager);
         routeScopedContext = new RouteScopedContext(beanManager);
         addContext(afterBeanDiscovery, serviceScopedContext, null);
-        addContext(afterBeanDiscovery,
-                new VaadinSessionScopedContext(beanManager), null);
+        addContext(afterBeanDiscovery, sessionScopedContext, null);
         addContext(afterBeanDiscovery, uiScopedContext, NormalUIScoped.class);
         addContext(afterBeanDiscovery, routeScopedContext,
                 NormalRouteScoped.class);
@@ -77,6 +78,7 @@ public class VaadinExtension implements Extension {
     private void initializeContexts(@Observes AfterDeploymentValidation adv,
             BeanManager beanManager) {
         serviceScopedContext.init(beanManager);
+        sessionScopedContext.init(beanManager);
         uiScopedContext.init(beanManager);
         routeScopedContext.init(beanManager, uiScopedContext::isActive);
     }
