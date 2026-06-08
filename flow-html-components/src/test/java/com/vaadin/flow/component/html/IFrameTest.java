@@ -30,6 +30,7 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IFrameTest extends ComponentTest {
@@ -115,5 +116,19 @@ class IFrameTest extends ComponentTest {
         assertFalse(handler.isInline());
         new TestIFrame(handler);
         assertTrue(handler.isInline());
+    }
+
+    @Test
+    void setSrc_disallowedScheme_throws() {
+        IFrame iframe = new IFrame();
+        assertThrows(IllegalArgumentException.class,
+                () -> iframe.setSrc("javascript:alert(1)"));
+    }
+
+    @Test
+    void setUnsafeSrc_disallowedScheme_setsSrcWithoutValidation() {
+        IFrame iframe = new IFrame();
+        iframe.setUnsafeSrc("javascript:alert(1)");
+        assertEquals("javascript:alert(1)", iframe.getSrc());
     }
 }

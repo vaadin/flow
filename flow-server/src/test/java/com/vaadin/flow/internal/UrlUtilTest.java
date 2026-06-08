@@ -17,6 +17,8 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -203,5 +205,79 @@ class UrlUtilTest {
         String result = UrlUtil.appendQueryParameter("/styles.css", "v-c",
                 null);
         assertEquals("/styles.css", result);
+    }
+
+    @Test
+    void isSafeUrl_allowedScheme_returnsTrue() {
+        assertTrue(UrlUtil.isSafeUrl("https://vaadin.com",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_disallowedScheme_returnsFalse() {
+        assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+        assertFalse(UrlUtil.isSafeUrl("data:text/html,<script>",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_schemeMatchIsCaseInsensitive_returnsFalse() {
+        assertFalse(UrlUtil.isSafeUrl("JavaScript:alert(1)",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_relativeUrl_returnsTrue() {
+        assertTrue(UrlUtil.isSafeUrl("/path/to/view",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+        assertTrue(UrlUtil.isSafeUrl("foo", UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_relativeUrlWithSpecialCharacters_returnsTrue() {
+        // A strict URI parser would reject this, but it is a valid relative URL
+        assertTrue(UrlUtil.isSafeUrl("/search?q=a b&x=[1]",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+        // A colon in the path must not be mistaken for a scheme separator
+        assertTrue(UrlUtil.isSafeUrl("/path:with:colon",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_emptyOrBlank_returnsTrue() {
+        assertTrue(UrlUtil.isSafeUrl("", UrlUtil.DEFAULT_SAFE_SCHEMES));
+        assertTrue(UrlUtil.isSafeUrl("   ", UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_null_returnsFalse() {
+        assertFalse(UrlUtil.isSafeUrl(null, UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_controlCharacterObfuscation_returnsFalse() {
+        assertFalse(UrlUtil.isSafeUrl("java\tscript:alert(1)",
+                UrlUtil.DEFAULT_SAFE_SCHEMES));
+    }
+
+    @Test
+    void isSafeUrl_wildcard_allowsAnyScheme() {
+        assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)",
+                Set.of(UrlUtil.ALL_SCHEMES_SAFE)));
+    }
+
+    @Test
+    void parseSafeSchemes_nullOrBlank_returnsDefault() {
+        assertEquals(UrlUtil.DEFAULT_SAFE_SCHEMES,
+                UrlUtil.parseSafeSchemes(null));
+        assertEquals(UrlUtil.DEFAULT_SAFE_SCHEMES,
+                UrlUtil.parseSafeSchemes("   "));
+    }
+
+    @Test
+    void parseSafeSchemes_commaSeparated_isTrimmedAndLowerCased() {
+        assertEquals(Set.of("https", "myapp"),
+                UrlUtil.parseSafeSchemes(" HTTPS , MyApp "));
     }
 }

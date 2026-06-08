@@ -32,6 +32,7 @@ import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnchorTest extends ComponentTest {
@@ -426,6 +427,21 @@ class AnchorTest extends ComponentTest {
 
         assertTrue(anchor.isDownload(),
                 "Custom download handlers should by default add download attribute");
+    }
+
+    @Test
+    void setHref_disallowedScheme_throws() {
+        Anchor anchor = new Anchor();
+        assertThrows(IllegalArgumentException.class,
+                () -> anchor.setHref("javascript:alert(1)"));
+    }
+
+    @Test
+    void setUnsafeHref_disallowedScheme_setsHrefWithoutValidation() {
+        Anchor anchor = new Anchor();
+        anchor.setUnsafeHref("javascript:alert(1)");
+        assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
     }
 
     private void mockUI() {

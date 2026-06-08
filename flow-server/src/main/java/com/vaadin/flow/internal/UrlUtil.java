@@ -20,8 +20,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Internal utility class for URL handling.
@@ -236,5 +242,138 @@ public class UrlUtil {
             return ".";
         }
         return ret.substring(0, ret.length() - 1);
+    }
+
+    /**
+     * The URL schemes that are considered safe by default when no custom set is
+     * configured through the {@link InitParameters#URL_SAFE_SCHEMES} property.
+     * <p>
+     * Script-capable schemes such as {@code javascript} and {@code data} are
+     * intentionally excluded as they can be used to execute scripts in the
+     * browser when used as a link or frame target.
+     */
+    public static final Set<String> DEFAULT_SAFE_SCHEMES = Set.of("http",
+            "https", "mailto", "tel", "ftp");
+
+    /**
+     * Special {@link InitParameters#URL_SAFE_SCHEMES} value that marks every
+     * scheme as safe, disabling scheme validation.
+     */
+    public static final String ALL_SCHEMES_SAFE = "*";
+
+    /**
+     * Checks whether the scheme of the given URL is considered safe by the
+     * current deployment configuration.
+     * <p>
+     * The set of safe schemes is read from the
+     * {@link InitParameters#URL_SAFE_SCHEMES} configuration property, falling
+     * back to {@link #DEFAULT_SAFE_SCHEMES} when the property is not set or
+     * when no {@link VaadinService} is available. Relative URLs (without a
+     * scheme) are always considered safe, whereas URLs containing control
+     * characters are rejected as they can be used to obfuscate the scheme.
+     *
+     * @param url
+     *            the URL to check, may be {@code null}
+     * @return {@code true} if the URL is safe, {@code false} otherwise
+     */
+    public static boolean isSafeUrl(String url) {
+        return isSafeUrl(url, getConfiguredSafeSchemes());
+    }
+
+    /**
+     * Checks whether the scheme of the given URL is part of the given set of
+     * safe schemes. See {@link #isSafeUrl(String)} for the validation rules.
+     *
+     * @param url
+     *            the URL to check, may be {@code null}
+     * @param safeSchemes
+     *            the set of safe lower-case schemes, or a set containing
+     *            {@link #ALL_SCHEMES_SAFE} to treat any scheme as safe
+     * @return {@code true} if the URL is safe, {@code false} otherwise
+     */
+    static boolean isSafeUrl(String url, Set<String> safeSchemes) {
+        if (url == null) {
+            return false;
+        }
+        // A wildcard entry treats every scheme as safe, keeping the behaviour
+        // fully backwards compatible for applications that opt out.
+        if (safeSchemes.contains(ALL_SCHEMES_SAFE)) {
+            return true;
+        }
+        String trimmed = url.trim();
+        if (trimmed.isEmpty()) {
+            return true;
+        }
+        // Reject control characters which browsers may strip, allowing a
+        // different URL to be acted upon than the one validated here (for
+        // example "java\tscript:alert(1)").
+        for (int i = 0; i < trimmed.length(); i++) {
+            if (Character.isISOControl(trimmed.charAt(i))) {
+                return false;
+            }
+        }
+        String scheme = extractScheme(trimmed);
+        if (scheme == null) {
+            // Relative URLs have no scheme and cannot trigger scheme-based
+            // script execution.
+            return true;
+        }
+        return safeSchemes.contains(scheme.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Extracts the scheme from the given URL, or returns {@code null} if the
+     * URL is relative (has no scheme). The scheme is determined according to
+     * RFC 3986: a letter followed by any number of letters, digits,
+     * {@code '+'}, {@code '-'} or {@code '.'}, terminated by a {@code ':'} that
+     * occurs before any {@code '/'}, {@code '?'} or {@code '#'}.
+     * <p>
+     * The scheme is extracted without parsing the whole URL so that valid
+     * relative URLs containing characters that a strict URI parser would reject
+     * (such as spaces) are not falsely flagged.
+     */
+    private static String extractScheme(String url) {
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (c == ':') {
+                return i == 0 ? null : url.substring(0, i);
+            }
+            boolean validSchemeChar = (i == 0) ? isAlpha(c)
+                    : (isAlpha(c) || (c >= '0' && c <= '9') || c == '+'
+                            || c == '-' || c == '.');
+            if (!validSchemeChar) {
+                // The ':' (if any) belongs to the path or query, so there is no
+                // scheme and the URL is relative.
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    private static Set<String> getConfiguredSafeSchemes() {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return DEFAULT_SAFE_SCHEMES;
+        }
+        return parseSafeSchemes(service.getDeploymentConfiguration()
+                .getStringProperty(InitParameters.URL_SAFE_SCHEMES, null));
+    }
+
+    static Set<String> parseSafeSchemes(String configured) {
+        if (configured == null || configured.isBlank()) {
+            return DEFAULT_SAFE_SCHEMES;
+        }
+        Set<String> schemes = new HashSet<>();
+        for (String scheme : configured.split(",")) {
+            String trimmed = scheme.trim();
+            if (!trimmed.isEmpty()) {
+                schemes.add(trimmed.toLowerCase(Locale.ROOT));
+            }
+        }
+        return schemes.isEmpty() ? DEFAULT_SAFE_SCHEMES : schemes;
     }
 }

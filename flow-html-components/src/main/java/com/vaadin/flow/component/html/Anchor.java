@@ -26,7 +26,9 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
@@ -268,8 +270,43 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the href to set
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setHref(String href) {
+        if (href == null) {
+            throw new IllegalArgumentException("Href must not be null");
+        }
+        if (!UrlUtil.isSafeUrl(href)) {
+            throw new IllegalArgumentException(String.format(
+                    "The href \"%s\" uses a scheme that is not considered safe. "
+                            + "Configure the safe schemes with the \"%s\" property, "
+                            + "or use setUnsafeHref(String) if this URL is intentional and trusted.",
+                    href, InitParameters.URL_SAFE_SCHEMES));
+        }
+        this.href = href;
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to without validating its scheme.
+     * <p>
+     * Unlike {@link #setHref(String)}, this method does not reject URLs based
+     * on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it
+     * only for URLs that are fully under your control and known to be safe,
+     * such as a hard-coded {@code javascript:} or {@code data:} URL. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #setHref(String)
+     *
+     * @param href
+     *            the href to set
+     */
+    public void setUnsafeHref(String href) {
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }
