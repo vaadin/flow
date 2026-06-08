@@ -41,7 +41,6 @@ function startDownload(url: string, filename?: string): void {
   // browser's native download handling instead of being intercepted as an
   // in-app navigation. Matches Anchor.setHref(DownloadHandler).
   a.setAttribute('router-ignore', '');
-  a.rel = 'noopener';
   // Hidden but in the document — some browsers ignore clicks on detached
   // anchors.
   a.style.display = 'none';
