@@ -351,12 +351,12 @@ class PageTest {
     }
 
     @Test
-    void open_disallowedScheme_throws() {
+    void open_unsafeScheme_throws() {
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
-                return fail("Disallowed URL should not reach the client");
+                return fail("Unsafe URL should not reach the client");
             }
         };
 
@@ -367,7 +367,7 @@ class PageTest {
     }
 
     @Test
-    void openUnsafe_disallowedScheme_opensWithoutValidation() {
+    void openUnsafe_unsafeScheme_opensWithoutValidation() {
         AtomicReference<String> capture = new AtomicReference<>();
         List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {

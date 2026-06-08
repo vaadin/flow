@@ -208,13 +208,13 @@ class UrlUtilTest {
     }
 
     @Test
-    void isSafeUrl_allowedScheme_returnsTrue() {
+    void isSafeUrl_safeScheme_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("https://vaadin.com",
                 UrlUtil.DEFAULT_SAFE_SCHEMES));
     }
 
     @Test
-    void isSafeUrl_disallowedScheme_returnsFalse() {
+    void isSafeUrl_unsafeScheme_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)",
                 UrlUtil.DEFAULT_SAFE_SCHEMES));
         assertFalse(UrlUtil.isSafeUrl("data:text/html,<script>",

@@ -430,14 +430,14 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void setHref_disallowedScheme_throws() {
+    void setHref_unsafeScheme_throws() {
         Anchor anchor = new Anchor();
         assertThrows(IllegalArgumentException.class,
                 () -> anchor.setHref("javascript:alert(1)"));
     }
 
     @Test
-    void setUnsafeHref_disallowedScheme_setsHrefWithoutValidation() {
+    void setUnsafeHref_unsafeScheme_setsHrefWithoutValidation() {
         Anchor anchor = new Anchor();
         anchor.setUnsafeHref("javascript:alert(1)");
         assertEquals("javascript:alert(1)",
