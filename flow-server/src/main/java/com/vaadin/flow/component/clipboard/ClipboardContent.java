@@ -23,25 +23,27 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.trigger.internal.Action;
+import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 
 /**
  * Multi-format payload for {@link ClipboardBinding#write}. Any combination of
- * {@code text/plain} and {@code text/html} can be set; each accessor returns
- * {@code null} when the corresponding slot is empty.
+ * {@code text/plain}, {@code text/html} and an image source can be set; each
+ * accessor returns {@code null} when the corresponding slot is empty.
  * <p>
  * Use the static factory:
  *
  * <pre>{@code
- * Clipboard.onClick(button)
- *         .write(ClipboardContent.create().text("Hello").html("<b>Hello</b>"));
+ * Clipboard.onClick(button).write(ClipboardContent.create().text("Hello")
+ *         .html("<b>Hello</b>").image(previewImage));
  * }</pre>
  */
 public final class ClipboardContent implements Serializable {
 
     private Action.@Nullable Input<String> textInput;
     private Action.@Nullable Input<String> htmlInput;
+    private Action.@Nullable Input<?> imageInput;
 
     private ClipboardContent() {
     }
@@ -100,11 +102,37 @@ public final class ClipboardContent implements Serializable {
         return this;
     }
 
+    /**
+     * Sets the {@code image/png} payload to a PNG re-encoding of the given
+     * component's root {@code <img>} element, produced on the client when the
+     * trigger fires. The source can be any rasterisable image
+     * ({@code image/png}, {@code image/jpeg}, {@code image/svg+xml}, ...) with
+     * intrinsic dimensions; cross-origin sources need
+     * {@code crossorigin="anonymous"} on the {@code <img>} plus matching CORS
+     * headers, otherwise the canvas is tainted and the write fails.
+     *
+     * @param source
+     *            the component whose root {@code <img>} should be copied, not
+     *            {@code null}
+     * @return this builder
+     * @throws IllegalArgumentException
+     *             if the source's root element is not an {@code <img>}
+     */
+    public ClipboardContent image(Component source) {
+        Objects.requireNonNull(source, "source must not be null");
+        this.imageInput = new ImageBlobInput(source);
+        return this;
+    }
+
     Action.@Nullable Input<String> getTextInput() {
         return textInput;
     }
 
     Action.@Nullable Input<String> getHtmlInput() {
         return htmlInput;
+    }
+
+    Action.@Nullable Input<?> getImageInput() {
+        return imageInput;
     }
 }

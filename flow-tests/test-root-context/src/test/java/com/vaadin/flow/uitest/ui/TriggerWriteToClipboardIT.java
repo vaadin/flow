@@ -144,6 +144,131 @@ public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void clickCopiesImage_emitsImagePngBlobIntoClipboardItem() {
+        open();
+        installResolvingClipboardShim();
+
+        // Wait for the source <img> to finish loading so naturalWidth/
+        // naturalHeight are populated before the canvas converter runs.
+        waitUntil(
+                d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                        "var i = document.getElementById('source-image');"
+                                + "return i && i.complete && i.naturalWidth > 0;")));
+
+        WebElement button = findElement(By.id("copy-image"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        java.util.Map<?, ?> imageEntry = (java.util.Map<?, ?>) entries
+                .get("image/png");
+        Assert.assertNotNull("image/png entry expected", imageEntry);
+        Assert.assertEquals("image/png", imageEntry.get("type"));
+        Assert.assertTrue("blob should have non-zero size",
+                ((Number) imageEntry.get("size")).longValue() > 0);
+
+        // Image-only write resolves with null per the dedicated image
+        // constructor's contract; onCopied receives "null".
+        waitUntil(d -> "ok:null".equals(status.getText()));
+    }
+
+    @Test
+    public void clickCopiesTextAndImage_packsBothIntoOneClipboardItem() {
+        open();
+        installResolvingClipboardShim();
+
+        waitUntil(
+                d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                        "var i = document.getElementById('source-image');"
+                                + "return i && i.complete && i.naturalWidth > 0;")));
+
+        WebElement button = findElement(By.id("copy-multi-image"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_TEXT,
+                entries.get("text/plain"));
+        java.util.Map<?, ?> imageEntry = (java.util.Map<?, ?>) entries
+                .get("image/png");
+        Assert.assertNotNull("image/png entry expected", imageEntry);
+        Assert.assertEquals("image/png", imageEntry.get("type"));
+
+        // text wins over image as the onCopied value.
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.MULTI_TEXT)
+                .equals(status.getText()));
+    }
+
+    @Test
+    public void clickCopiesAllThreeSlots_packsTextHtmlAndImageIntoOneClipboardItem() {
+        open();
+        installResolvingClipboardShim();
+
+        waitUntil(
+                d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                        "var i = document.getElementById('source-image');"
+                                + "return i && i.complete && i.naturalWidth > 0;")));
+
+        WebElement button = findElement(By.id("copy-all-slots"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_TEXT,
+                entries.get("text/plain"));
+        Assert.assertEquals(TriggerWriteToClipboardView.MULTI_HTML,
+                entries.get("text/html"));
+        java.util.Map<?, ?> imageEntry = (java.util.Map<?, ?>) entries
+                .get("image/png");
+        Assert.assertNotNull("image/png entry expected", imageEntry);
+        Assert.assertEquals("image/png", imageEntry.get("type"));
+
+        // text wins over html and image as the onCopied value.
+        waitUntil(d -> ("ok:" + TriggerWriteToClipboardView.MULTI_TEXT)
+                .equals(status.getText()));
+    }
+
+    @Test
+    public void clickCopiesImageViaDownloadHandler_emitsImagePngBlob() {
+        open();
+        installResolvingClipboardShim();
+
+        // The binding has attached a hidden <img> child to the host button;
+        // wait for that one to load too.
+        waitUntil(
+                d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                        "var b = document.getElementById('copy-image-handler');"
+                                + "var i = b && b.querySelector('img');"
+                                + "return i && i.complete && i.naturalWidth > 0;")));
+
+        WebElement button = findElement(By.id("copy-image-handler"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        Object written = waitUntil(d -> ((JavascriptExecutor) d)
+                .executeScript("return window.__written;"));
+        java.util.Map<?, ?> entries = (java.util.Map<?, ?>) written;
+        java.util.Map<?, ?> imageEntry = (java.util.Map<?, ?>) entries
+                .get("image/png");
+        Assert.assertNotNull("image/png entry expected", imageEntry);
+        Assert.assertEquals("image/png", imageEntry.get("type"));
+        Assert.assertTrue("blob should have non-zero size",
+                ((Number) imageEntry.get("size")).longValue() > 0);
+
+        waitUntil(d -> "ok:null".equals(status.getText()));
+    }
+
+    @Test
     public void writeRejection_propagatesAsFailureWithNameAndMessage() {
         open();
         installRejectingClipboardShim();
@@ -162,17 +287,28 @@ public class TriggerWriteToClipboardIT extends ChromeBrowserTest {
     }
 
     private void installResolvingClipboardShim() {
-        // ClipboardItem is stubbed to record its entries map (the WriteAction
-        // emits string values for text/plain and text/html). navigator
-        // .clipboard.write resolves immediately and stores the first item's
-        // entries on window.__written for the assertions to read.
+        // ClipboardItem is stubbed to record its entries map. The shim handles
+        // three value shapes: string values (text/plain and text/html, emitted
+        // verbatim by the action), Blob values, and Promise<Blob> values (the
+        // image/png slot, which is fed as a promise so navigator.clipboard
+        // .write stays synchronous inside the user gesture). Promises and
+        // Blobs are normalised to {type, size} so the assertions can inspect
+        // the resulting blob without dealing with binary content.
         ((JavascriptExecutor) getDriver())
                 .executeScript("window.__written = null;"
                         + "window.ClipboardItem = function(items) { return { items: items }; };"
                         + "Object.defineProperty(navigator, 'clipboard', {"
                         + "  configurable: true, value: {"
-                        + "    write: items => { window.__written = items[0].items; return Promise.resolve(); }"
-                        + "  }" + "});");
+                        + "    write: async items => {"
+                        + "      const entries = items[0].items;"
+                        + "      const resolved = {};"
+                        + "      for (const k of Object.keys(entries)) {"
+                        + "        const v = entries[k];"
+                        + "        if (typeof v === 'string') { resolved[k] = v; }"
+                        + "        else if (v instanceof Blob) { resolved[k] = {type: v.type, size: v.size}; }"
+                        + "        else { const b = await v; resolved[k] = {type: b.type, size: b.size}; }"
+                        + "      }" + "      window.__written = resolved;"
+                        + "    }" + "  }" + "});");
     }
 
     private void installRejectingClipboardShim() {
