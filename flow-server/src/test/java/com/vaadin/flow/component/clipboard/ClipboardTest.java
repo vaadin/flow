@@ -53,6 +53,10 @@ class ClipboardTest {
         }
     }
 
+    @Tag("img")
+    static final class TestImage extends Component {
+    }
+
     @Test
     void onClick_installsClickTrigger() {
         UI ui = new MockUI();
@@ -128,6 +132,42 @@ class ClipboardTest {
     }
 
     @Test
+    void writeImage_capturesImageElementAsImageInput() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        TestImage image = new TestImage();
+        ui.getElement().appendChild(button.getElement(), image.getElement());
+
+        Clipboard.onClick(button).writeImage(image);
+
+        // ImageBlobInput renders as `return $0` and captures the image
+        // element. The action puts it at slot 2.
+        JsFunction imageInput = (JsFunction) actionFn(ui).getCaptures().get(2);
+        assertEquals("return $0", imageInput.getBody());
+        assertSame(image.getElement(), imageInput.getCaptures().get(0));
+    }
+
+    @Test
+    void write_multiFormat_packsAllThreeSlots() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        TestImage image = new TestImage();
+        ui.getElement().appendChild(button.getElement(), image.getElement());
+
+        Clipboard.onClick(button).write(ClipboardContent.create().text("plain")
+                .html("<b>html</b>").image(image));
+
+        JsFunction action = actionFn(ui);
+        assertEquals("plain", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+        assertEquals("<b>html</b>", ((JsFunction) action.getCaptures().get(1))
+                .getCaptures().get(0));
+        assertSame(image.getElement(),
+                ((JsFunction) action.getCaptures().get(2)).getCaptures()
+                        .get(0));
+    }
+
+    @Test
     void write_contentTextFromHasValue_emitsPropertyInputForValue() {
         UI ui = new MockUI();
         TestButton button = new TestButton();
@@ -146,6 +186,14 @@ class ClipboardTest {
         TestButton button = new TestButton();
         assertThrows(IllegalArgumentException.class, () -> Clipboard
                 .onClick(button).write(ClipboardContent.create()));
+    }
+
+    @Test
+    void writeImage_nonImgComponent_throws() {
+        TestButton button = new TestButton();
+        // TestButton's root is <test-button>, not <img>.
+        assertThrows(IllegalArgumentException.class,
+                () -> Clipboard.onClick(button).writeImage(button));
     }
 
     /**
