@@ -22,6 +22,13 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the page title for a navigation target.
+ * <p>
+ * The title can be defined either as a static {@link #value()} or, when it
+ * needs to be computed, through a {@link #generator()}. A generator resolves
+ * the title without creating an instance of the navigation target, which makes
+ * it usable for routes that are not currently shown (for example the routes of
+ * a breadcrumb trail or a menu). For a title that depends on the live state of
+ * an already shown view, implement {@link HasDynamicTitle} instead.
  *
  * @since 1.0
  */
@@ -30,15 +37,32 @@ import java.lang.annotation.Target;
 public @interface PageTitle {
 
     /**
-     * Gets the title that should be used.
+     * Gets the static title that should be used.
      * <p>
      * Empty string will clear any previous page title. In that case the browser
      * will decide what to show as the title, most likely the url.
      * <p>
-     * You may dynamically update the title for a view by implementing the
-     * {@link HasDynamicTitle#getPageTitle()} method.
+     * Ignored when a {@link #generator()} is set.
+     * <p>
+     * You may dynamically update the title for an already shown view by
+     * implementing the {@link HasDynamicTitle#getPageTitle()} method.
      *
      * @return a page title string
      */
-    String value();
+    String value() default "";
+
+    /**
+     * Gets the {@link PageTitleGenerator} that resolves the title dynamically
+     * without requiring an instance of the navigation target.
+     * <p>
+     * When set to a generator other than the default {@link PageTitleGenerator}
+     * marker, the generator is used to resolve the title and {@link #value()}
+     * is ignored. This allows the title to be computed from the route
+     * parameters even for routes that are not instantiated, such as the entries
+     * of a breadcrumb trail.
+     *
+     * @return the generator type, or {@link PageTitleGenerator} itself when no
+     *         generator is used
+     */
+    Class<? extends PageTitleGenerator> generator() default PageTitleGenerator.class;
 }

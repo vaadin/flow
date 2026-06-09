@@ -43,12 +43,16 @@ import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.DevBundleUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
@@ -248,14 +252,55 @@ public class MenuRegistry {
 
     /**
      * Get page title for route or simple name if no PageTitle is set.
+     * <p>
+     * Resolves a {@link PageTitle#generator()} with empty route parameters when
+     * one is configured. Use {@link #getTitle(Class, RouteParameters)} to pass
+     * the actual route parameters to the generator.
      *
      * @param target
      *            route class to get title for
      * @return title to use for route
      */
     public static String getTitle(Class<? extends Component> target) {
-        return Optional.ofNullable(target.getAnnotation(PageTitle.class))
-                .map(PageTitle::value).orElse(target.getSimpleName());
+        return getTitle(target, RouteParameters.empty());
+    }
+
+    /**
+     * Get page title for route or simple name if no PageTitle is set.
+     * <p>
+     * When the route declares a {@link PageTitle#generator()}, the generator is
+     * resolved with the given route parameters without instantiating the route
+     * class. This allows resolving titles for routes that are not currently
+     * shown, such as the entries of a breadcrumb trail.
+     *
+     * @param target
+     *            route class to get title for
+     * @param parameters
+     *            the route parameters handed to a {@link PageTitleGenerator},
+     *            not {@code null}
+     * @return title to use for route
+     */
+    public static String getTitle(Class<? extends Component> target,
+            RouteParameters parameters) {
+        PageTitle annotation = target.getAnnotation(PageTitle.class);
+        if (annotation == null) {
+            return target.getSimpleName();
+        }
+        if (!PageTitleGenerator.class.equals(annotation.generator())) {
+            return instantiateGenerator(annotation.generator())
+                    .generatePageTitle(
+                            new PageTitleContext(target, parameters));
+        }
+        return annotation.value();
+    }
+
+    private static PageTitleGenerator instantiateGenerator(
+            Class<? extends PageTitleGenerator> generatorType) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service != null) {
+            return service.getInstantiator().getOrCreate(generatorType);
+        }
+        return ReflectTools.createInstance(generatorType);
     }
 
     /**

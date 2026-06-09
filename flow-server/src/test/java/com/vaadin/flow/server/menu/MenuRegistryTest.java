@@ -49,8 +49,12 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
@@ -141,6 +145,35 @@ class MenuRegistryTest {
         frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
+    }
+
+    @Test
+    void getTitle_staticPageTitle_returnsValue() {
+        assertEquals("Static Title",
+                MenuRegistry.getTitle(StaticTitleRoute.class));
+    }
+
+    @Test
+    void getTitle_noPageTitle_returnsSimpleName() {
+        assertEquals("MyRoute", MenuRegistry.getTitle(MyRoute.class));
+    }
+
+    @Test
+    void getTitle_generator_resolvedWithoutInstance() {
+        GeneratedTitleRoute.instantiated = false;
+
+        String title = MenuRegistry.getTitle(GeneratedTitleRoute.class,
+                new RouteParameters("productId", "7"));
+
+        assertEquals("Product 7", title);
+        assertFalse(GeneratedTitleRoute.instantiated,
+                "Generator-based title resolution must not instantiate the route");
+    }
+
+    @Test
+    void getTitle_generatorWithoutParameters_usesEmptyParameters() {
+        assertEquals("Product ",
+                MenuRegistry.getTitle(GeneratedTitleRoute.class));
     }
 
     @Test
@@ -584,6 +617,31 @@ class MenuRegistryTest {
     @Route("home")
     @Menu(title = "Home")
     public static class MyRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("static")
+    @PageTitle("Static Title")
+    public static class StaticTitleRoute extends Component {
+    }
+
+    public static class ProductTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Product "
+                    + context.getRouteParameters().get("productId").orElse("");
+        }
+    }
+
+    @Tag("div")
+    @Route("product/:productId")
+    @PageTitle(generator = ProductTitleGenerator.class)
+    public static class GeneratedTitleRoute extends Component {
+        static boolean instantiated = false;
+
+        public GeneratedTitleRoute() {
+            instantiated = true;
+        }
     }
 
     @Tag("div")
