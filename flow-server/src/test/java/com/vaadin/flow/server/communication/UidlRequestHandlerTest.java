@@ -302,7 +302,7 @@ class UidlRequestHandlerTest {
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
-            public RpcRequest handleRpc(UI ui, String requestBody,
+            public void handleRpc(UI ui, String requestBody,
                     VaadinRequest request) {
                 throw new DauEnforcementException(
                         new EnforcementException("test"));
@@ -338,7 +338,7 @@ class UidlRequestHandlerTest {
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
-            public RpcRequest handleRpc(UI ui, String requestBody,
+            public void handleRpc(UI ui, String requestBody,
                     VaadinRequest request)
                     throws ServerRpcHandler.MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
@@ -387,7 +387,7 @@ class UidlRequestHandlerTest {
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
-            public RpcRequest handleRpc(UI ui, String requestBody,
+            public void handleRpc(UI ui, String requestBody,
                     VaadinRequest request) throws MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
             }
@@ -434,7 +434,7 @@ class UidlRequestHandlerTest {
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
-            public RpcRequest handleRpc(UI ui, String requestBody,
+            public void handleRpc(UI ui, String requestBody,
                     VaadinRequest request) throws MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
             }
