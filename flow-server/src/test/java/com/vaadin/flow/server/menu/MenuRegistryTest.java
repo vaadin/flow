@@ -183,6 +183,31 @@ class MenuRegistryTest {
     }
 
     @Test
+    void getTitle_defaultGenerator_usedWhenNoRouteGenerator() {
+        PageTitleGenerator defaultGenerator = context -> "default:"
+                + context.navigationTarget().getSimpleName() + ":"
+                + context.value();
+        Mockito.when(vaadinService.getInstantiator())
+                .thenReturn(new DefaultInstantiator(vaadinService) {
+                    @Override
+                    public PageTitleGenerator getPageTitleGenerator() {
+                        return defaultGenerator;
+                    }
+                });
+
+        // no @PageTitle: the default generator replaces the simple-name
+        // fallback
+        assertEquals("default:MyRoute:", MenuRegistry.getTitle(MyRoute.class));
+        // static @PageTitle value is handed to the default generator
+        assertEquals("default:StaticTitleRoute:Static Title",
+                MenuRegistry.getTitle(StaticTitleRoute.class));
+        // a per-route generator still takes precedence
+        assertEquals("Product 7",
+                MenuRegistry.getTitle(GeneratedTitleRoute.class,
+                        new RouteParameters("productId", "7")));
+    }
+
+    @Test
     void getMenuItemsContainsExpectedClientPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();

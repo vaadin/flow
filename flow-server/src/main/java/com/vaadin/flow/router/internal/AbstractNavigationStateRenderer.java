@@ -1156,16 +1156,25 @@ public abstract class AbstractNavigationStateRenderer
             Class<?> routeTarget, RouteParameters parameters,
             QueryParameters queryParameters) {
         PageTitle annotation = routeTarget.getAnnotation(PageTitle.class);
-        if (annotation == null) {
-            return "";
-        }
-        if (!PageTitleGenerator.class.equals(annotation.generator())) {
+        String value = annotation != null ? annotation.value() : "";
+
+        // 1. per-route generator
+        if (annotation != null
+                && !PageTitleGenerator.class.equals(annotation.generator())) {
             return instantiator.getOrCreate(annotation.generator())
                     .generatePageTitle(new PageTitleContext(
                             (Class<? extends Component>) routeTarget,
-                            parameters, queryParameters, annotation.value()));
+                            parameters, queryParameters, value));
         }
-        return annotation.value();
+        // 2. application-wide default generator
+        PageTitleGenerator generator = instantiator.getPageTitleGenerator();
+        if (generator != null) {
+            return generator.generatePageTitle(new PageTitleContext(
+                    (Class<? extends Component>) routeTarget, parameters,
+                    queryParameters, value));
+        }
+        // 3. static value (empty when not annotated)
+        return value;
     }
 
     private static boolean isPreserveOnRefreshTarget(

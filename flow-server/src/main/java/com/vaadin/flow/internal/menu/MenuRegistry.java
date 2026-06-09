@@ -284,15 +284,23 @@ public class MenuRegistry {
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {
         PageTitle annotation = target.getAnnotation(PageTitle.class);
-        if (annotation == null) {
-            return target.getSimpleName();
-        }
-        if (!PageTitleGenerator.class.equals(annotation.generator())) {
+        String value = annotation != null ? annotation.value() : "";
+
+        // 1. per-route generator
+        if (annotation != null
+                && !PageTitleGenerator.class.equals(annotation.generator())) {
             return instantiateGenerator(annotation.generator())
                     .generatePageTitle(new PageTitleContext(target, parameters,
-                            QueryParameters.empty(), annotation.value()));
+                            QueryParameters.empty(), value));
         }
-        return annotation.value();
+        // 2. application-wide default generator
+        PageTitleGenerator generator = getDefaultPageTitleGenerator();
+        if (generator != null) {
+            return generator.generatePageTitle(new PageTitleContext(target,
+                    parameters, QueryParameters.empty(), value));
+        }
+        // 3. static value, or class simple name when not annotated
+        return annotation != null ? value : target.getSimpleName();
     }
 
     private static PageTitleGenerator instantiateGenerator(
@@ -302,6 +310,13 @@ public class MenuRegistry {
             return service.getInstantiator().getOrCreate(generatorType);
         }
         return ReflectTools.createInstance(generatorType);
+    }
+
+    private static PageTitleGenerator getDefaultPageTitleGenerator() {
+        VaadinService service = VaadinService.getCurrent();
+        return service != null
+                ? service.getInstantiator().getPageTitleGenerator()
+                : null;
     }
 
     /**
