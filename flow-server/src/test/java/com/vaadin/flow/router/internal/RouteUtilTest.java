@@ -1137,26 +1137,26 @@ class RouteUtilTest {
     }
 
     @Test
-    void breadcrumbTrail_resolvesParentsAndTitlesWithoutInstance() {
+    void routeHierarchy_resolvesParentsAndTitlesWithoutInstance() {
         OrgView.instantiated = false;
         ProjectView.instantiated = false;
 
         RouteParameters parameters = new RouteParameters(
                 Map.of("orgId", "acme", "projectId", "42"));
 
-        List<RouteParentReference> trail = RouteUtil
-                .getBreadcrumbTrail(ProjectView.class, parameters);
+        List<RouteParentReference> hierarchy = RouteUtil
+                .getRouteHierarchy(ProjectView.class, parameters);
 
         // ordered from root to current target
-        assertEquals(List.of(OrgView.class, ProjectView.class), trail.stream()
-                .map(RouteParentReference::navigationTarget).toList());
+        assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
+                .stream().map(RouteParentReference::navigationTarget).toList());
 
         // the org parameter is carried over to the parent reference
         assertEquals("acme",
-                trail.get(0).routeParameters().get("orgId").orElseThrow());
+                hierarchy.get(0).routeParameters().get("orgId").orElseThrow());
 
         // titles compose with PageTitleGenerator, also without an instance
-        List<String> titles = trail.stream()
+        List<String> titles = hierarchy.stream()
                 .map(reference -> MenuRegistry.getTitle(
                         reference.navigationTarget(),
                         reference.routeParameters()))
@@ -1164,9 +1164,9 @@ class RouteUtilTest {
         assertEquals(List.of("Org acme", "Project 42"), titles);
 
         assertFalse(OrgView.instantiated,
-                "Breadcrumb resolution must not instantiate the route");
+                "Hierarchy resolution must not instantiate the route");
         assertFalse(ProjectView.instantiated,
-                "Breadcrumb resolution must not instantiate the route");
+                "Hierarchy resolution must not instantiate the route");
     }
 
     @Test

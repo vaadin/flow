@@ -789,40 +789,42 @@ public class RouteUtil {
     }
 
     /**
-     * Builds the logical breadcrumb trail for the given navigation target by
-     * climbing the {@link RouteParent} hierarchy, without instantiating any of
-     * the routes.
+     * Resolves the logical route hierarchy of the given navigation target by
+     * climbing the {@link RouteParent} links, without instantiating any of the
+     * routes.
      * <p>
-     * The returned list is ordered from the hierarchy root to the given
-     * navigation target, with the target itself as the last element. Each entry
-     * carries the route parameters it should be resolved with, so the title of
-     * every entry can be resolved with
-     * {@link MenuRegistry#getTitle(Class, RouteParameters)} (which honors
-     * {@code PageTitleGenerator}). A guard stops the walk if the hierarchy
+     * The returned list is the chain of the target and all its logical
+     * ancestors, ordered from the hierarchy root to the given navigation target
+     * (the target itself is the last element). Each entry carries the route
+     * parameters it should be resolved with, so the title of every entry can be
+     * resolved with {@link MenuRegistry#getTitle(Class, RouteParameters)}
+     * (which honors {@code PageTitleGenerator}). This is what a breadcrumb or a
+     * hierarchical menu is built from. A guard stops the walk if the hierarchy
      * contains a cycle.
      *
      * @param navigationTarget
-     *            the navigation target to build the trail for, not {@code null}
+     *            the navigation target to resolve the hierarchy for, not
+     *            {@code null}
      * @param parameters
      *            the route parameters the navigation target is resolved with,
      *            not {@code null}
-     * @return the breadcrumb trail ordered from root to the navigation target,
-     *         never empty
+     * @return the chain of the target and its logical ancestors, ordered from
+     *         root to the navigation target, never empty
      */
-    public static List<RouteParentReference> getBreadcrumbTrail(
+    public static List<RouteParentReference> getRouteHierarchy(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        List<RouteParentReference> trail = new ArrayList<>();
+        List<RouteParentReference> hierarchy = new ArrayList<>();
         Set<Class<? extends Component>> visited = new HashSet<>();
         RouteParentReference current = new RouteParentReference(
                 navigationTarget, parameters);
         while (current != null && visited.add(current.navigationTarget())) {
-            trail.add(current);
+            hierarchy.add(current);
             current = getRouteParent(current.navigationTarget(),
                     current.routeParameters()).orElse(null);
         }
-        Collections.reverse(trail);
-        return trail;
+        Collections.reverse(hierarchy);
+        return hierarchy;
     }
 
     private static RouteParentResolver instantiateResolver(
