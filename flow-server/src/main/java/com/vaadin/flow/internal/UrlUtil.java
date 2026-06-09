@@ -271,6 +271,10 @@ public class UrlUtil {
      * when no {@link VaadinService} is available. Relative URLs (without a
      * scheme) are always considered safe, whereas URLs containing control
      * characters are rejected as they can be used to obfuscate the scheme.
+     * <p>
+     * When called from a thread without a current {@link VaadinService}, the
+     * configured safe schemes are not read and {@link #DEFAULT_SAFE_SCHEMES} is
+     * used instead.
      *
      * @param url
      *            the URL to check, may be {@code null}
