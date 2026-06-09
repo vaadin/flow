@@ -54,6 +54,33 @@ public class TriggerReadFromClipboardIT extends ChromeBrowserTest {
         waitUntil(d -> "error=Error".equals(status.getText()));
     }
 
+    @Test
+    public void clickReadText_deliversOnlyTextPlainFieldToServer() {
+        open();
+        installResolvingClipboardShim("clipped", "<b>clipped</b>");
+
+        WebElement button = findElement(By.id("read-text"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        // readText's adapter drops the html field; status carries just text.
+        waitUntil(d -> "text=clipped".equals(status.getText()));
+    }
+
+    @Test
+    public void clickReadHtml_deliversOnlyTextHtmlFieldToServer() {
+        open();
+        installResolvingClipboardShim("clipped", "<b>clipped</b>");
+
+        WebElement button = findElement(By.id("read-html"));
+        WebElement status = findElement(By.id("status"));
+
+        button.click();
+
+        waitUntil(d -> "html=<b>clipped</b>".equals(status.getText()));
+    }
+
     // Replace navigator.clipboard.read with a Promise that resolves to a
     // single fake ClipboardItem exposing text/plain and text/html blobs.
     private void installResolvingClipboardShim(String text, String html) {
