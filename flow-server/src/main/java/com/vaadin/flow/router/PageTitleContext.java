@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
@@ -30,47 +29,13 @@ import com.vaadin.flow.component.Component;
  * object by an id contained in the parameters).
  *
  * @param navigationTarget
- *            the navigation target class the title is resolved for, never
- *            {@code null}
+ *            the navigation target class the title is resolved for
  * @param routeParameters
- *            the route parameters the navigation target is resolved with, never
- *            {@code null}; {@link RouteParameters#empty()} when no parameters
- *            are available (for example when resolving menu titles)
+ *            the route parameters the navigation target is resolved with;
+ *            {@link RouteParameters#empty()} when no parameters are available
+ *            (for example when resolving menu titles)
  * @author Vaadin Ltd
  */
 public record PageTitleContext(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {
-
-    /**
-     * Creates a new context.
-     *
-     * @param navigationTarget
-     *            the navigation target class, not {@code null}
-     * @param routeParameters
-     *            the route parameters, not {@code null}
-     */
-    public PageTitleContext {
-        Objects.requireNonNull(navigationTarget,
-                "navigationTarget must not be null");
-        Objects.requireNonNull(routeParameters,
-                "routeParameters must not be null");
-    }
-
-    /**
-     * Gets the navigation target class the title is resolved for.
-     *
-     * @return the navigation target class, never {@code null}
-     */
-    public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
-    }
-
-    /**
-     * Gets the route parameters the navigation target is resolved with.
-     *
-     * @return the route parameters, never {@code null}
-     */
-    public RouteParameters getRouteParameters() {
-        return routeParameters;
-    }
 }

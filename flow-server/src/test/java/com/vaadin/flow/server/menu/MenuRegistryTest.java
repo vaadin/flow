@@ -629,7 +629,7 @@ class MenuRegistryTest {
         @Override
         public String generatePageTitle(PageTitleContext context) {
             return "Product "
-                    + context.getRouteParameters().get("productId").orElse("");
+                    + context.routeParameters().get("productId").orElse("");
         }
     }
 

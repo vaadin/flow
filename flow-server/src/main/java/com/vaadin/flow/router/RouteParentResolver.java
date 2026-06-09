@@ -44,7 +44,7 @@ import java.util.Optional;
  *             RouteParentContext context) {
  *         // carry over only the parameters the parent route needs
  *         RouteParameters parentParameters = new RouteParameters("orgId",
- *                 context.getRouteParameters().get("orgId").orElseThrow());
+ *                 context.routeParameters().get("orgId").orElseThrow());
  *         return Optional.of(
  *                 new RouteParentReference(OrgView.class, parentParameters));
  *     }

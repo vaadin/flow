@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
@@ -30,47 +29,12 @@ import com.vaadin.flow.component.Component;
  * example to carry over a subset of the parameters to the parent route).
  *
  * @param navigationTarget
- *            the navigation target class whose parent is resolved, never
- *            {@code null}
+ *            the navigation target class whose parent is resolved
  * @param routeParameters
- *            the route parameters the navigation target is resolved with, never
- *            {@code null}; {@link RouteParameters#empty()} when no parameters
- *            are available
+ *            the route parameters the navigation target is resolved with;
+ *            {@link RouteParameters#empty()} when no parameters are available
  * @author Vaadin Ltd
  */
 public record RouteParentContext(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {
-
-    /**
-     * Creates a new context.
-     *
-     * @param navigationTarget
-     *            the navigation target class, not {@code null}
-     * @param routeParameters
-     *            the route parameters, not {@code null}
-     */
-    public RouteParentContext {
-        Objects.requireNonNull(navigationTarget,
-                "navigationTarget must not be null");
-        Objects.requireNonNull(routeParameters,
-                "routeParameters must not be null");
-    }
-
-    /**
-     * Gets the navigation target class whose parent is resolved.
-     *
-     * @return the navigation target class, never {@code null}
-     */
-    public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
-    }
-
-    /**
-     * Gets the route parameters the navigation target is resolved with.
-     *
-     * @return the route parameters, never {@code null}
-     */
-    public RouteParameters getRouteParameters() {
-        return routeParameters;
-    }
 }

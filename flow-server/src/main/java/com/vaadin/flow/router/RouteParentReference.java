@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
@@ -33,55 +32,11 @@ import com.vaadin.flow.component.Component;
  * resolve the parent's own title and to resolve its parent in turn.
  *
  * @param navigationTarget
- *            the navigation target class, never {@code null}
+ *            the navigation target class
  * @param routeParameters
- *            the route parameters to resolve the navigation target with, never
- *            {@code null}
+ *            the route parameters to resolve the navigation target with
  * @author Vaadin Ltd
  */
 public record RouteParentReference(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {
-
-    /**
-     * Creates a new reference.
-     *
-     * @param navigationTarget
-     *            the navigation target class, not {@code null}
-     * @param routeParameters
-     *            the route parameters, not {@code null}
-     */
-    public RouteParentReference {
-        Objects.requireNonNull(navigationTarget,
-                "navigationTarget must not be null");
-        Objects.requireNonNull(routeParameters,
-                "routeParameters must not be null");
-    }
-
-    /**
-     * Creates a new reference with empty route parameters.
-     *
-     * @param navigationTarget
-     *            the navigation target class, not {@code null}
-     */
-    public RouteParentReference(Class<? extends Component> navigationTarget) {
-        this(navigationTarget, RouteParameters.empty());
-    }
-
-    /**
-     * Gets the navigation target class.
-     *
-     * @return the navigation target class, never {@code null}
-     */
-    public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
-    }
-
-    /**
-     * Gets the route parameters to resolve the navigation target with.
-     *
-     * @return the route parameters, never {@code null}
-     */
-    public RouteParameters getRouteParameters() {
-        return routeParameters;
-    }
 }

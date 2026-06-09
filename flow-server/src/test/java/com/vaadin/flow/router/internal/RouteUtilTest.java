@@ -1153,7 +1153,7 @@ class RouteUtilTest {
 
         // the org parameter is carried over to the parent reference
         assertEquals("acme",
-                trail.get(0).getRouteParameters().get("orgId").orElseThrow());
+                trail.get(0).routeParameters().get("orgId").orElseThrow());
 
         // titles compose with PageTitleGenerator, also without an instance
         List<String> titles = trail.stream()
@@ -1178,7 +1178,7 @@ class RouteUtilTest {
 
         assertEquals(OrgView.class, parent.navigationTarget());
         assertEquals("acme",
-                parent.getRouteParameters().get("orgId").orElseThrow());
+                parent.routeParameters().get("orgId").orElseThrow());
     }
 
     @Test
@@ -1191,8 +1191,7 @@ class RouteUtilTest {
     public static class OrgTitleGenerator implements PageTitleGenerator {
         @Override
         public String generatePageTitle(PageTitleContext context) {
-            return "Org "
-                    + context.getRouteParameters().get("orgId").orElse("");
+            return "Org " + context.routeParameters().get("orgId").orElse("");
         }
     }
 
@@ -1200,7 +1199,7 @@ class RouteUtilTest {
         @Override
         public String generatePageTitle(PageTitleContext context) {
             return "Project "
-                    + context.getRouteParameters().get("projectId").orElse("");
+                    + context.routeParameters().get("projectId").orElse("");
         }
     }
 
@@ -1209,7 +1208,7 @@ class RouteUtilTest {
         public Optional<RouteParentReference> resolveParent(
                 RouteParentContext context) {
             RouteParameters parentParameters = new RouteParameters("orgId",
-                    context.getRouteParameters().get("orgId").orElseThrow());
+                    context.routeParameters().get("orgId").orElseThrow());
             return Optional.of(
                     new RouteParentReference(OrgView.class, parentParameters));
         }

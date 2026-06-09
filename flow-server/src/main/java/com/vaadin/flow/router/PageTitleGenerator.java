@@ -42,7 +42,7 @@ import java.io.Serializable;
  * public class ProductTitleGenerator implements PageTitleGenerator {
  *     &#64;Override
  *     public String generatePageTitle(PageTitleContext context) {
- *         String id = context.getRouteParameters().get("productId").orElse("");
+ *         String id = context.routeParameters().get("productId").orElse("");
  *         return "Product " + id;
  *     }
  * }
