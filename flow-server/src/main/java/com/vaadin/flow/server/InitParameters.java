@@ -324,7 +324,7 @@ public class InitParameters implements Serializable {
      * When not set, a built-in default set of safe schemes is used (for example
      * {@code http}, {@code https}, {@code mailto}, {@code tel} and
      * {@code ftp}), which excludes script-capable schemes such as
-     * {@code javascript} and {@code data}. The single value {@code *} marks
+     * {@code javascript} and {@code data}. Any entry equal to {@code *} marks
      * every scheme as safe, disabling scheme validation. URLs whose scheme is
      * not safe can still be set through the dedicated {@code setUnsafe*}
      * methods.

@@ -256,8 +256,9 @@ public class UrlUtil {
             "https", "mailto", "tel", "ftp");
 
     /**
-     * Special {@link InitParameters#URL_SAFE_SCHEMES} value that marks every
-     * scheme as safe, disabling scheme validation.
+     * Special {@link InitParameters#URL_SAFE_SCHEMES} entry that marks every
+     * scheme as safe, disabling scheme validation. Mixing this entry with other
+     * schemes still disables validation.
      */
     public static final String ALL_SCHEMES_SAFE = "*";
 
