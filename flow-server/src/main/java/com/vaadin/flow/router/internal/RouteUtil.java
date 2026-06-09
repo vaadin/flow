@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -757,8 +758,8 @@ public class RouteUtil {
      * <ol>
      * <li>if the target has a {@link RouteParent} annotation, its dynamic
      * {@link RouteParent#resolver()} or static {@link RouteParent#value()} is
-     * used (the resolver takes precedence; a static parent is resolved with the
-     * same route parameters as the target);</li>
+     * used (the resolver takes precedence; a static parent inherits the target
+     * route parameters narrowed to the parent's own template);</li>
      * <li>otherwise the parent is derived from the route URL by walking up the
      * registered route serving the nearest ancestor path.</li>
      * </ol>
@@ -787,10 +788,46 @@ public class RouteUtil {
             }
             if (!Component.class.equals(annotation.value())) {
                 return Optional.of(new RouteParentReference(annotation.value(),
-                        parameters));
+                        narrowParametersToTemplate(annotation.value(),
+                                parameters)));
             }
         }
         return getUrlBasedRouteParent(navigationTarget, parameters);
+    }
+
+    /**
+     * Narrows the given route parameters down to only the names the target's
+     * own route template declares.
+     * <p>
+     * A static {@link RouteParent} parent is resolved with the child's
+     * parameters, but the parent route typically declares fewer (or no)
+     * parameters. Forwarding the full set would make building a link to the
+     * parent fail, so the parameters are filtered to the parent template here,
+     * matching what the URL-derived resolution already does. When the template
+     * cannot be resolved (no registry available), the parameters are returned
+     * unchanged.
+     */
+    private static RouteParameters narrowParametersToTemplate(
+            Class<? extends Component> target, RouteParameters parameters) {
+        if (parameters.getParameterNames().isEmpty()
+                || VaadinService.getCurrent() == null) {
+            return parameters;
+        }
+        Optional<String> template = RouteConfiguration.forApplicationScope()
+                .getTemplate(target);
+        if (template.isEmpty()) {
+            return parameters;
+        }
+        Map<String, String> subset = new LinkedHashMap<>();
+        for (String segment : PathUtil.getSegmentsList(template.get())) {
+            if (RouteFormat.isParameter(segment)) {
+                String name = new ParameterInfo(segment).getName();
+                parameters.get(name)
+                        .ifPresent(value -> subset.put(name, value));
+            }
+        }
+        return subset.isEmpty() ? RouteParameters.empty()
+                : new RouteParameters(subset);
     }
 
     /**

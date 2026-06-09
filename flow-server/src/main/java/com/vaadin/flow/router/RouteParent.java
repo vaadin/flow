@@ -46,9 +46,11 @@ public @interface RouteParent {
     /**
      * Gets the static logical parent navigation target.
      * <p>
-     * The parent is resolved with the same {@link RouteParameters} as the
-     * annotated route; use a {@link #resolver()} when the parent or its
-     * parameters need to be computed.
+     * The parent inherits the {@link RouteParameters} of the annotated route,
+     * narrowed to the names the parent's own route template declares (so a
+     * parent with fewer or no parameters still resolves to a working link). Use
+     * a {@link #resolver()} when the parent or its parameters need to be
+     * computed differently.
      * <p>
      * Ignored when a {@link #resolver()} is set. Defaults to {@link Component}
      * itself, which marks "no static parent".

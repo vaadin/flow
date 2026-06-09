@@ -1189,6 +1189,32 @@ class RouteUtilTest {
     }
 
     @Test
+    void getRouteParent_staticParentWithFewerParameters_narrowsParameters() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+        try {
+            RouteConfiguration configuration = RouteConfiguration
+                    .forApplicationScope();
+            configuration.setAnnotatedRoute(OrdersView.class);
+            configuration.setAnnotatedRoute(OrderDetailView.class);
+
+            RouteParentReference parent = RouteUtil
+                    .getRouteParent(OrderDetailView.class,
+                            new RouteParameters("orderId", "1001"))
+                    .orElseThrow();
+
+            assertEquals(OrdersView.class, parent.navigationTarget());
+            // the parent route declares no parameters, so orderId is dropped
+            assertTrue(parent.routeParameters().getParameterNames().isEmpty());
+            // and a link to the parent can actually be built
+            assertEquals("uc2", configuration.getUrl(parent.navigationTarget(),
+                    parent.routeParameters()));
+        } finally {
+            VaadinService.setCurrent(null);
+        }
+    }
+
+    @Test
     void getRouteParent_noAnnotation_derivedFromRouteUrl() {
         MockVaadinServletService service = new MockVaadinServletService();
         VaadinService.setCurrent(service);
@@ -1272,6 +1298,17 @@ class RouteUtilTest {
     @Tag(Tag.DIV)
     @Route("orgs/:orgId/members")
     public static class MembersView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("uc2")
+    public static class OrdersView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("order-detail/:orderId")
+    @RouteParent(OrdersView.class)
+    public static class OrderDetailView extends Component {
     }
 
     private static class MockRouteTarget extends RouteTarget {
