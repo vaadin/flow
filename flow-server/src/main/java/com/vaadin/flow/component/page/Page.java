@@ -675,6 +675,12 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe; call
+     *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
+     *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -686,6 +692,13 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe; call
+     *             {@code openUnsafe(uri.toString(), "_self")} to bypass scheme
+     *             validation, and see the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());

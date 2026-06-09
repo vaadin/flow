@@ -367,6 +367,20 @@ class PageTest {
     }
 
     @Test
+    void setLocation_unsafeScheme_throws() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class,
+                () -> page.setLocation("javascript:alert(1)"));
+    }
+
+    @Test
     void open_nullUrl_throwsWithUsefulMessage() {
         Page page = new Page(new MockUI()) {
             @Override
