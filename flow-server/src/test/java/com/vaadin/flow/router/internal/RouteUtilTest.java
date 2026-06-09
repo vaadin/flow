@@ -1182,10 +1182,35 @@ class RouteUtilTest {
     }
 
     @Test
-    void getRouteParent_noAnnotation_isEmpty() {
+    void getRouteParent_noAnnotationNoRegistry_isEmpty() {
         assertFalse(
                 RouteUtil.getRouteParent(OrgView.class, RouteParameters.empty())
                         .isPresent());
+    }
+
+    @Test
+    void getRouteParent_noAnnotation_derivedFromRouteUrl() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+        try {
+            RouteConfiguration configuration = RouteConfiguration
+                    .forApplicationScope();
+            configuration.setAnnotatedRoute(OrgView.class);
+            configuration.setAnnotatedRoute(MembersView.class);
+
+            // orgs/:orgId/members has no @RouteParent, so the parent is the
+            // route serving the nearest ancestor path orgs/:orgId
+            RouteParentReference parent = RouteUtil
+                    .getRouteParent(MembersView.class,
+                            new RouteParameters("orgId", "acme"))
+                    .orElseThrow();
+
+            assertEquals(OrgView.class, parent.navigationTarget());
+            assertEquals("acme",
+                    parent.routeParameters().get("orgId").orElseThrow());
+        } finally {
+            VaadinService.setCurrent(null);
+        }
     }
 
     public static class OrgTitleGenerator implements PageTitleGenerator {
@@ -1242,6 +1267,11 @@ class RouteUtilTest {
     @PageTitle("Settings")
     @RouteParent(OrgView.class)
     public static class SettingsView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/members")
+    public static class MembersView extends Component {
     }
 
     private static class MockRouteTarget extends RouteTarget {
