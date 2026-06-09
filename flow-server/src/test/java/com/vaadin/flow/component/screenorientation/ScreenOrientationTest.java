@@ -13,16 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.screenorientation;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -37,93 +41,100 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class PageScreenOrientationTest {
+class ScreenOrientationTest {
 
-    @Test
-    void screenOrientationSignal_isReadOnly() {
-        MockUI ui = new MockUI();
-        Signal<ScreenOrientationData> signal = ui.getPage()
-                .screenOrientationSignal();
-        assertFalse(signal instanceof ValueSignal,
-                "screenOrientationSignal() should return a read-only signal");
+    private MockUI ui;
+
+    @BeforeEach
+    void setUp() {
+        ui = new MockUI();
+        UI.setCurrent(ui);
+    }
+
+    @AfterEach
+    void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test
-    void screenOrientationSignal_defaultsToUnknownBeforeBootstrap() {
-        MockUI ui = new MockUI();
-        Signal<ScreenOrientationData> signal = ui.getPage()
-                .screenOrientationSignal();
-        assertEquals(ScreenOrientation.UNKNOWN, signal.peek().type(),
+    void orientationSignal_isReadOnly() {
+        Signal<ScreenOrientationData> signal = ScreenOrientation
+                .orientationSignal();
+        assertFalse(signal instanceof ValueSignal,
+                "orientationSignal() should return a read-only signal");
+    }
+
+    @Test
+    void orientationSignal_defaultsToUnknownBeforeBootstrap() {
+        Signal<ScreenOrientationData> signal = ScreenOrientation
+                .orientationSignal();
+        assertEquals(ScreenOrientationType.UNKNOWN, signal.peek().type(),
                 "Before bootstrap the type should be UNKNOWN so callers can "
                         + "distinguish 'no data yet' from a real value");
         assertEquals(0, signal.peek().angle());
     }
 
     @Test
-    void screenOrientationSignal_readonlyWrapperIsCached() {
-        Page page = new MockUI().getPage();
-        assertSame(page.screenOrientationSignal(),
-                page.screenOrientationSignal(),
+    void orientationSignal_readonlyWrapperIsCached() {
+        assertSame(ScreenOrientation.orientationSignal(),
+                ScreenOrientation.orientationSignal(),
                 "Repeated calls must return the same read-only wrapper so "
                         + "subscriber identity stays stable");
     }
 
     @Test
-    void screenOrientationSignal_tracksOrientationChanges() {
-        MockUI ui = new MockUI();
-        Signal<ScreenOrientationData> signal = ui.getPage()
-                .screenOrientationSignal();
+    void orientationSignal_tracksOrientationChanges() {
+        Signal<ScreenOrientationData> signal = ScreenOrientation
+                .orientationSignal();
 
         fireOrientationEvent(ui, "landscape-primary", 90);
-        assertEquals(ScreenOrientation.LANDSCAPE_PRIMARY, signal.peek().type());
+        assertEquals(ScreenOrientationType.LANDSCAPE_PRIMARY,
+                signal.peek().type());
         assertEquals(90, signal.peek().angle());
 
         fireOrientationEvent(ui, "portrait-secondary", 180);
-        assertEquals(ScreenOrientation.PORTRAIT_SECONDARY,
+        assertEquals(ScreenOrientationType.PORTRAIT_SECONDARY,
                 signal.peek().type());
         assertEquals(180, signal.peek().angle());
     }
 
     @Test
-    void screenOrientationSignal_unknownTypeKeepsPreviousValue() {
-        MockUI ui = new MockUI();
-        Signal<ScreenOrientationData> signal = ui.getPage()
-                .screenOrientationSignal();
+    void orientationSignal_unknownTypeKeepsPreviousValue() {
+        Signal<ScreenOrientationData> signal = ScreenOrientation
+                .orientationSignal();
 
         fireOrientationEvent(ui, "landscape-primary", 90);
         fireOrientationEvent(ui, "diagonal-future", 45);
 
-        assertEquals(ScreenOrientation.LANDSCAPE_PRIMARY, signal.peek().type(),
+        assertEquals(ScreenOrientationType.LANDSCAPE_PRIMARY,
+                signal.peek().type(),
                 "Unknown type values from a newer client should not reset "
                         + "the signal");
         assertEquals(90, signal.peek().angle());
     }
 
     @Test
-    void setScreenOrientation_fromBootstrapSeedsSignal() {
-        MockUI ui = new MockUI();
-        ui.getPage().setScreenOrientation("landscape-secondary", "270");
+    void setStateFromClient_fromBootstrapSeedsSignal() {
+        ScreenOrientation.setStateFromClient(ui, "landscape-secondary", "270");
 
-        ScreenOrientationData data = ui.getPage().screenOrientationSignal()
+        ScreenOrientationData data = ScreenOrientation.orientationSignal()
                 .peek();
-        assertEquals(ScreenOrientation.LANDSCAPE_SECONDARY, data.type());
+        assertEquals(ScreenOrientationType.LANDSCAPE_SECONDARY, data.type());
         assertEquals(270, data.angle());
     }
 
     @Test
-    void setScreenOrientation_emptyTypeIsIgnored() {
-        MockUI ui = new MockUI();
-        ui.getPage().setScreenOrientation("", "0");
-        assertEquals(ScreenOrientation.UNKNOWN,
-                ui.getPage().screenOrientationSignal().peek().type(),
+    void setStateFromClient_emptyTypeIsIgnored() {
+        ScreenOrientation.setStateFromClient(ui, "", "0");
+        assertEquals(ScreenOrientationType.UNKNOWN,
+                ScreenOrientation.orientationSignal().peek().type(),
                 "Empty type from a browser without the Screen Orientation API "
                         + "must keep UNKNOWN, not crash");
     }
 
     @Test
-    void lockOrientation_executesCorrectJs() {
-        MockUI ui = new MockUI();
-        ui.getPage().lockOrientation(ScreenOrientation.LANDSCAPE_PRIMARY);
+    void lock_executesCorrectJs() {
+        ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -133,24 +144,21 @@ class PageScreenOrientationTest {
     }
 
     @Test
-    void lockOrientation_unknownIsRejected() {
-        Page page = new MockUI().getPage();
+    void lock_unknownIsRejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> page.lockOrientation(ScreenOrientation.UNKNOWN));
+                () -> ScreenOrientation.lock(ScreenOrientationType.UNKNOWN));
     }
 
     @Test
-    void lockOrientation_unsupportedIsRejected() {
-        Page page = new MockUI().getPage();
-        assertThrows(IllegalArgumentException.class,
-                () -> page.lockOrientation(ScreenOrientation.UNSUPPORTED));
+    void lock_unsupportedIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> ScreenOrientation
+                .lock(ScreenOrientationType.UNSUPPORTED));
     }
 
     @Test
-    void lockOrientation_successCallbackFires() {
-        MockUI ui = new MockUI();
+    void lock_successCallbackFires() {
         AtomicBoolean success = new AtomicBoolean();
-        ui.getPage().lockOrientation(ScreenOrientation.LANDSCAPE_PRIMARY,
+        ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY,
                 () -> success.set(true),
                 error -> fail("onError should not fire: " + error.message()));
 
@@ -163,10 +171,9 @@ class PageScreenOrientationTest {
     }
 
     @Test
-    void lockOrientation_errorCallbackFires() {
-        MockUI ui = new MockUI();
+    void lock_errorCallbackFires() {
         AtomicReference<ScreenOrientationLockError> captured = new AtomicReference<>();
-        ui.getPage().lockOrientation(ScreenOrientation.LANDSCAPE_PRIMARY,
+        ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY,
                 () -> fail("onSuccess should not fire"), captured::set);
 
         ObjectNode result = JacksonUtils.createObjectNode();
@@ -197,9 +204,8 @@ class PageScreenOrientationTest {
     }
 
     @Test
-    void unlockOrientation_executesCorrectJs() {
-        MockUI ui = new MockUI();
-        ui.getPage().unlockOrientation();
+    void unlock_executesCorrectJs() {
+        ScreenOrientation.unlock();
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -209,10 +215,9 @@ class PageScreenOrientationTest {
     }
 
     @Test
-    void unlockOrientation_completionCallbackFires() {
-        MockUI ui = new MockUI();
+    void unlock_completionCallbackFires() {
         AtomicBoolean done = new AtomicBoolean();
-        ui.getPage().unlockOrientation(() -> done.set(true));
+        ScreenOrientation.unlock(() -> done.set(true));
 
         PendingJavaScriptInvocation invocation = ui.dumpPendingJsInvocations()
                 .stream()
@@ -226,56 +231,54 @@ class PageScreenOrientationTest {
     }
 
     @Test
-    void screenOrientation_fromClientValue() {
-        assertEquals(ScreenOrientation.PORTRAIT_PRIMARY,
-                ScreenOrientation.fromClientValue("portrait-primary"));
-        assertEquals(ScreenOrientation.LANDSCAPE_SECONDARY,
-                ScreenOrientation.fromClientValue("landscape-secondary"));
-        assertEquals(ScreenOrientation.UNSUPPORTED,
-                ScreenOrientation.fromClientValue("unsupported"));
+    void screenOrientationType_fromClientValue() {
+        assertEquals(ScreenOrientationType.PORTRAIT_PRIMARY,
+                ScreenOrientationType.fromClientValue("portrait-primary"));
+        assertEquals(ScreenOrientationType.LANDSCAPE_SECONDARY,
+                ScreenOrientationType.fromClientValue("landscape-secondary"));
+        assertEquals(ScreenOrientationType.UNSUPPORTED,
+                ScreenOrientationType.fromClientValue("unsupported"));
         assertThrows(IllegalArgumentException.class,
-                () -> ScreenOrientation.fromClientValue("diagonal-future"));
+                () -> ScreenOrientationType.fromClientValue("diagonal-future"));
     }
 
     @Test
     void isLandscape_isPortrait() {
-        assertTrue(ScreenOrientation.LANDSCAPE_PRIMARY.isLandscape());
-        assertTrue(ScreenOrientation.LANDSCAPE_SECONDARY.isLandscape());
-        assertFalse(ScreenOrientation.PORTRAIT_PRIMARY.isLandscape());
-        assertFalse(ScreenOrientation.UNKNOWN.isLandscape());
-        assertFalse(ScreenOrientation.UNSUPPORTED.isLandscape());
+        assertTrue(ScreenOrientationType.LANDSCAPE_PRIMARY.isLandscape());
+        assertTrue(ScreenOrientationType.LANDSCAPE_SECONDARY.isLandscape());
+        assertFalse(ScreenOrientationType.PORTRAIT_PRIMARY.isLandscape());
+        assertFalse(ScreenOrientationType.UNKNOWN.isLandscape());
+        assertFalse(ScreenOrientationType.UNSUPPORTED.isLandscape());
 
-        assertTrue(ScreenOrientation.PORTRAIT_PRIMARY.isPortrait());
-        assertTrue(ScreenOrientation.PORTRAIT_SECONDARY.isPortrait());
-        assertFalse(ScreenOrientation.LANDSCAPE_PRIMARY.isPortrait());
-        assertFalse(ScreenOrientation.UNKNOWN.isPortrait());
-        assertFalse(ScreenOrientation.UNSUPPORTED.isPortrait());
+        assertTrue(ScreenOrientationType.PORTRAIT_PRIMARY.isPortrait());
+        assertTrue(ScreenOrientationType.PORTRAIT_SECONDARY.isPortrait());
+        assertFalse(ScreenOrientationType.LANDSCAPE_PRIMARY.isPortrait());
+        assertFalse(ScreenOrientationType.UNKNOWN.isPortrait());
+        assertFalse(ScreenOrientationType.UNSUPPORTED.isPortrait());
     }
 
     @Test
-    void setScreenOrientation_unsupportedFromBootstrap() {
-        MockUI ui = new MockUI();
-        ui.getPage().setScreenOrientation("unsupported", "0");
-        assertEquals(ScreenOrientation.UNSUPPORTED,
-                ui.getPage().screenOrientationSignal().peek().type(),
+    void setStateFromClient_unsupportedFromBootstrap() {
+        ScreenOrientation.setStateFromClient(ui, "unsupported", "0");
+        assertEquals(ScreenOrientationType.UNSUPPORTED,
+                ScreenOrientation.orientationSignal().peek().type(),
                 "Client-side 'unsupported' must be observable distinctly "
                         + "from the pre-bootstrap UNKNOWN state");
     }
 
     @Test
     void isScreenOrientationSupported_reflectsSignalState() {
-        MockUI ui = new MockUI();
         ExtendedClientDetails details = ui.getPage().getExtendedClientDetails();
 
         assertFalse(details.isScreenOrientationSupported(),
                 "Before bootstrap (UNKNOWN) the feature-detect must be "
                         + "false so callers don't expose unusable UI");
 
-        ui.getPage().setScreenOrientation("unsupported", "0");
+        ScreenOrientation.setStateFromClient(ui, "unsupported", "0");
         assertFalse(details.isScreenOrientationSupported(),
                 "UNSUPPORTED bootstrap value must yield false");
 
-        ui.getPage().setScreenOrientation("landscape-primary", "90");
+        ScreenOrientation.setStateFromClient(ui, "landscape-primary", "90");
         assertTrue(details.isScreenOrientationSupported(),
                 "A real orientation from the bootstrap means the API is "
                         + "available");
@@ -290,7 +293,7 @@ class PageScreenOrientationTest {
         invocation.complete(result);
     }
 
-    private void fireOrientationEvent(MockUI ui, String type, int angle) {
+    private void fireOrientationEvent(UI ui, String type, int angle) {
         ObjectNode detail = JacksonUtils.createObjectNode();
         detail.put("type", type);
         detail.put("angle", angle);

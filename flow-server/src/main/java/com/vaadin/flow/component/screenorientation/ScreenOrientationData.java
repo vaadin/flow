@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.screenorientation;
 
 import java.io.Serializable;
 
@@ -26,6 +26,6 @@ import java.io.Serializable;
  * @param angle
  *            the screen orientation angle in degrees
  */
-public record ScreenOrientationData(ScreenOrientation type,
+public record ScreenOrientationData(ScreenOrientationType type,
         int angle) implements Serializable {
 }

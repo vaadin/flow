@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.screenorientation;
 
 import java.io.Serializable;
 

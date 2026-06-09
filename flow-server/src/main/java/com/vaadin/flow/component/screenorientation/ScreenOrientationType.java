@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.page;
+package com.vaadin.flow.component.screenorientation;
 
 /**
- * Represents the orientation of the browser screen.
+ * Represents the orientation type of the browser screen.
  * <p>
  * Mirrors the values reported by the browser's <a href=
  * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
@@ -24,9 +24,9 @@ package com.vaadin.flow.component.page;
  * value has arrived from the client and an {@link #UNSUPPORTED} sentinel for
  * browsers that do not implement the API.
  *
- * @see Page#screenOrientationSignal()
+ * @see ScreenOrientation#orientationSignal()
  */
-public enum ScreenOrientation {
+public enum ScreenOrientationType {
 
     /**
      * No value has been reported by the browser yet. Used as the initial value
@@ -71,7 +71,7 @@ public enum ScreenOrientation {
 
     private final String clientValue;
 
-    ScreenOrientation(String clientValue) {
+    ScreenOrientationType(String clientValue) {
         this.clientValue = clientValue;
     }
 
@@ -116,8 +116,8 @@ public enum ScreenOrientation {
      * @throws IllegalArgumentException
      *             if the value does not match any known orientation type
      */
-    public static ScreenOrientation fromClientValue(String clientValue) {
-        for (ScreenOrientation orientation : values()) {
+    public static ScreenOrientationType fromClientValue(String clientValue) {
+        for (ScreenOrientationType orientation : values()) {
             if (orientation.clientValue.equals(clientValue)) {
                 return orientation;
             }

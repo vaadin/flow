@@ -39,7 +39,6 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -68,10 +67,6 @@ public class Page implements Serializable {
             PageVisibility.UNKNOWN);
     private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
             .asReadonly();
-    private final ValueSignal<ScreenOrientationData> screenOrientationSignal = new ValueSignal<>(
-            new ScreenOrientationData(ScreenOrientation.UNKNOWN, 0));
-    private final Signal<ScreenOrientationData> screenOrientationReadOnly = screenOrientationSignal
-            .asReadonly();
 
     /**
      * Creates a page instance for the given UI.
@@ -86,14 +81,6 @@ public class Page implements Serializable {
                 .addEventListener("vaadin-page-visibility-change",
                         e -> setPageVisibility(e.getEventDetail(String.class)))
                 .addEventDetail().debounce(100).allowInert();
-        ui.getElement().addEventListener("vaadin-screen-orientation-change",
-                e -> setScreenOrientation(
-                        e.getEventDetail(ScreenOrientationDetail.class)))
-                .addEventDetail().allowInert();
-    }
-
-    private record ScreenOrientationDetail(String type,
-            int angle) implements Serializable {
     }
 
     /**
@@ -504,177 +491,6 @@ public class Page implements Serializable {
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
         }
-    }
-
-    /**
-     * Returns a read-only signal that tracks the current screen orientation and
-     * its rotation angle.
-     * <p>
-     * The signal is seeded from the initial client bootstrap, so user code
-     * always sees a real value when the browser supports the <a href=
-     * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
-     * Orientation API</a>. Browsers that do not implement the API report
-     * {@link ScreenOrientation#UNSUPPORTED} after bootstrap; the initial value
-     * before bootstrap is {@link ScreenOrientation#UNKNOWN}. Once a real value
-     * has arrived, the signal never returns to {@code UNKNOWN}.
-     * <p>
-     * Subscribe with {@code Signal.effect(owner, ...)} to react to changes;
-     * call {@code screenOrientationSignal().peek()} for a snapshot outside a
-     * reactive context, and {@code .get()} inside one.
-     *
-     * @return the read-only screen orientation signal
-     */
-    public Signal<ScreenOrientationData> screenOrientationSignal() {
-        return screenOrientationReadOnly;
-    }
-
-    /**
-     * Locks the screen orientation to the given type for as long as the user
-     * remains on the current page. Most browsers require the document to be in
-     * fullscreen mode, and locking is generally only honored on devices where a
-     * physical orientation actually exists (mobile, tablet).
-     * <p>
-     * This overload is fire-and-forget: failures are logged at {@code DEBUG}
-     * but not otherwise surfaced. Use
-     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)}
-     * to react to success or to the specific lock error.
-     *
-     * @param orientation
-     *            the orientation to lock to, not {@code null} and not
-     *            {@link ScreenOrientation#UNKNOWN} or
-     *            {@link ScreenOrientation#UNSUPPORTED}
-     */
-    public void lockOrientation(ScreenOrientation orientation) {
-        lockOrientation(orientation, () -> {
-        }, error -> LOGGER.debug("Screen orientation lock failed: {} ({})",
-                error.message(), error.name()));
-    }
-
-    /**
-     * Locks the screen orientation to the given type and notifies the matching
-     * callback when the browser resolves the request. Mirrors the
-     * {@link com.vaadin.flow.component.geolocation.Geolocation#getPosition
-     * Geolocation.getPosition} pattern so applications can bind UI to lock
-     * success and failure without having to write JavaScript glue.
-     * <p>
-     * The browser dispatches exactly one of the two callbacks on the UI thread.
-     * A lock typically requires fullscreen and a device that physically rotates
-     * — see {@link ScreenOrientationLockError} for the {@code DOMException}
-     * names you can expect on failure.
-     *
-     * @param orientation
-     *            the orientation to lock to, not {@code null} and not
-     *            {@link ScreenOrientation#UNKNOWN} or
-     *            {@link ScreenOrientation#UNSUPPORTED}
-     * @param onSuccess
-     *            invoked when the browser confirms the lock; not {@code null}
-     * @param onError
-     *            invoked when the browser rejects the request, or when the
-     *            Screen Orientation API is not available; not {@code null}
-     */
-    public void lockOrientation(ScreenOrientation orientation,
-            SerializableRunnable onSuccess,
-            SerializableConsumer<ScreenOrientationLockError> onError) {
-        Objects.requireNonNull(orientation, "orientation cannot be null");
-        Objects.requireNonNull(onSuccess, "onSuccess callback cannot be null");
-        Objects.requireNonNull(onError, "onError callback cannot be null");
-        if (orientation == ScreenOrientation.UNKNOWN
-                || orientation == ScreenOrientation.UNSUPPORTED) {
-            throw new IllegalArgumentException(
-                    "Cannot lock to ScreenOrientation." + orientation.name());
-        }
-        ui.getElement()
-                .executeJs(
-                        "return window.Vaadin.Flow.screenOrientation.lock($0)",
-                        orientation.getClientValue())
-                .then(LockResult.class, result -> {
-                    if (result.success()) {
-                        onSuccess.run();
-                    } else {
-                        onError.accept(new ScreenOrientationLockError(
-                                result.name() == null ? "UnknownError"
-                                        : result.name(),
-                                result.message() == null ? ""
-                                        : result.message()));
-                    }
-                }, bridgeError -> onError.accept(new ScreenOrientationLockError(
-                        "BridgeError", bridgeError)));
-    }
-
-    private record LockResult(boolean success, String name,
-            String message) implements Serializable {
-    }
-
-    /**
-     * Releases a previous
-     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)
-     * lock}, allowing the screen to follow the device orientation again. A
-     * no-op on browsers that do not implement the Screen Orientation API.
-     * <p>
-     * Fire-and-forget: use {@link #unlockOrientation(SerializableRunnable)} to
-     * be notified when the browser has applied the unlock.
-     */
-    public void unlockOrientation() {
-        executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
-    }
-
-    /**
-     * Releases a previous
-     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)
-     * lock} and notifies the given callback after the browser has applied the
-     * unlock. A no-op (but the callback still fires) on browsers that do not
-     * implement the Screen Orientation API.
-     * <p>
-     * Mirrors the callback shape of
-     * {@link #lockOrientation(ScreenOrientation, SerializableRunnable, SerializableConsumer)}
-     * so cleanup flows ("leaving fullscreen — am I fully unlocked yet?") can be
-     * sequenced reactively rather than assuming the unlock has landed.
-     *
-     * @param onComplete
-     *            invoked on the UI thread once the unlock round-trip has
-     *            completed; not {@code null}
-     */
-    public void unlockOrientation(SerializableRunnable onComplete) {
-        Objects.requireNonNull(onComplete,
-                "onComplete callback cannot be null");
-        executeJs("window.Vaadin.Flow.screenOrientation.unlock()")
-                .then(ignored -> onComplete.run());
-    }
-
-    /**
-     * Sets the screen orientation from raw client-side values (e.g. from the
-     * bootstrap parameters). {@code null} type means the bootstrap parameters
-     * are absent (e.g. in a unit-test scenario) and the previous value is
-     * preserved. The client reports {@code "unsupported"} when the browser does
-     * not implement the Screen Orientation API, which maps to
-     * {@link ScreenOrientation#UNSUPPORTED}. Unknown type values are logged at
-     * debug level so a forward-compatible client value does not silently
-     * disappear.
-     *
-     * @param type
-     *            the raw orientation type from the client, or {@code null}
-     * @param angle
-     *            the raw orientation angle from the client, or {@code null}
-     */
-    void setScreenOrientation(String type, String angle) {
-        if (type == null || type.isEmpty()) {
-            return;
-        }
-        try {
-            int angleValue = angle == null ? 0 : Integer.parseInt(angle);
-            screenOrientationSignal.set(new ScreenOrientationData(
-                    ScreenOrientation.fromClientValue(type), angleValue));
-        } catch (IllegalArgumentException e) {
-            LOGGER.debug("Unknown screen orientation value from client: "
-                    + "type={} angle={}", type, angle);
-        }
-    }
-
-    private void setScreenOrientation(ScreenOrientationDetail detail) {
-        if (detail == null) {
-            return;
-        }
-        setScreenOrientation(detail.type(), String.valueOf(detail.angle()));
     }
 
     /**

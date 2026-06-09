@@ -28,6 +28,8 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.fullscreen.Fullscreen;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
+import com.vaadin.flow.component.screenorientation.ScreenOrientation;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
@@ -428,14 +430,14 @@ public class ExtendedClientDetails implements Serializable {
      * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
      * Orientation API</a>.
      * <p>
-     * Mirrors the current state of {@link Page#screenOrientationSignal()}:
-     * {@code true} once the bootstrap has seeded the signal with a real
-     * orientation, {@code false} when the browser reports
-     * {@link ScreenOrientation#UNSUPPORTED} or before the client handshake has
-     * completed (signal is still {@link ScreenOrientation#UNKNOWN}). Lets
-     * callers decide synchronously whether to expose UI affordances that rely
-     * on the API (such as an orientation lock button) without subscribing to
-     * the signal first.
+     * Mirrors the current state of
+     * {@link ScreenOrientation#orientationSignal()}: {@code true} once the
+     * bootstrap has seeded the signal with a real orientation, {@code false}
+     * when the browser reports {@link ScreenOrientationType#UNSUPPORTED} or
+     * before the client handshake has completed (signal is still
+     * {@link ScreenOrientationType#UNKNOWN}). Lets callers decide synchronously
+     * whether to expose UI affordances that rely on the API (such as an
+     * orientation lock button) without subscribing to the signal first.
      *
      * @return {@code true} if the Screen Orientation API is available
      */
@@ -443,10 +445,10 @@ public class ExtendedClientDetails implements Serializable {
         if (ui == null) {
             return false;
         }
-        ScreenOrientation type = ui.getPage().screenOrientationSignal().peek()
-                .type();
-        return type != ScreenOrientation.UNKNOWN
-                && type != ScreenOrientation.UNSUPPORTED;
+        ScreenOrientationType type = ScreenOrientation.orientationSignal(ui)
+                .peek().type();
+        return type != ScreenOrientationType.UNKNOWN
+                && type != ScreenOrientationType.UNSUPPORTED;
     }
 
     /**
@@ -527,7 +529,8 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
         ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
-        ui.getPage().setScreenOrientation(getStringElseNull.apply("v-so"),
+        ScreenOrientation.setStateFromClient(ui,
+                getStringElseNull.apply("v-so"),
                 getStringElseNull.apply("v-soa"));
         Fullscreen.setStateFromClient(ui, getStringElseNull.apply("v-fs"));
         String ga = getStringElseNull.apply("v-ga");

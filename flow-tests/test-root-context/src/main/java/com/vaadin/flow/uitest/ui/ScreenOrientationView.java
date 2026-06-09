@@ -17,9 +17,9 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.ScreenOrientationData;
+import com.vaadin.flow.component.screenorientation.ScreenOrientation;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -38,8 +38,8 @@ public class ScreenOrientationView extends AbstractDivView {
         updates.setText("0");
         add(type, angle, updates);
 
-        Signal<ScreenOrientationData> signal = UI.getCurrent().getPage()
-                .screenOrientationSignal();
+        Signal<ScreenOrientationData> signal = ScreenOrientation
+                .orientationSignal();
         AtomicInteger count = new AtomicInteger();
         Signal.effect(this, () -> {
             ScreenOrientationData data = signal.get();
