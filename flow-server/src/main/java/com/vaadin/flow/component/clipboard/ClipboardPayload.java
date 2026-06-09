@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger.internal;
+package com.vaadin.flow.component.clipboard;
 
 import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Textual clipboard contents delivered to {@link ReadFromClipboardAction}'s
- * handler. Either field may be {@code null} if the corresponding MIME type was
- * not present on the clipboard item.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
+ * Textual clipboard contents delivered to {@link ClipboardBinding#read}'s
+ * payload handler. Either field may be {@code null} if the corresponding MIME
+ * type was not present on the clipboard item.
  *
  * @param text
  *            {@code text/plain} contents, or {@code null} if not present
