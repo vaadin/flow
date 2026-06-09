@@ -199,6 +199,8 @@ class BuildFrontendMojoTest {
                 Paths.get(projectBase.toString(), "target").toString());
         ReflectionUtils.setVariableValueInObject(mojo, "postinstallPackages",
                 Collections.emptyList());
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "excludePostinstallPackages", Collections.emptyList());
         Mockito.doReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()))
                 .when(mojo).getJarFiles();

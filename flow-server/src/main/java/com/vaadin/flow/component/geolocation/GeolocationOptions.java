@@ -28,7 +28,10 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Every field is optional. A {@code null} field means "let the browser decide":
  * high accuracy defaults to {@code false}, timeout defaults to no timeout at
- * all, and cached readings are never accepted unless explicitly allowed.
+ * all, and cached readings are never accepted unless explicitly allowed. An
+ * instance with no fields set ({@code GeolocationOptions.builder().build()})
+ * therefore represents the browser defaults; the {@code Geolocation} overloads
+ * that take no {@code options} argument use the same instance internally.
  * <p>
  * Hand-written code should use {@link #builder()} rather than the canonical
  * constructor: the builder labels each setting at the call site and accepts

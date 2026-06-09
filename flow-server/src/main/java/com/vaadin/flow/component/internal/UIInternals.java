@@ -48,9 +48,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
+import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -85,6 +87,7 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -172,6 +175,8 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
+    private int nextJsInitializerId = 0;
+
     private final StateTree stateTree;
 
     private PushConnection pushConnection = null;
@@ -244,6 +249,24 @@ public class UIInternals implements Serializable {
 
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
+
+    private GeolocationClient geolocationClient;
+
+    private Registration geolocationClientAvailabilityRegistration;
+
+    private final ValueSignal<Boolean> wakeLockActiveSignal = new ValueSignal<>(
+            Boolean.FALSE);
+
+    private final Signal<Boolean> wakeLockActiveReadOnly = wakeLockActiveSignal
+            .asReadonly();
+
+    private final ValueSignal<WakeLockAvailability> wakeLockAvailabilitySignal = new ValueSignal<>(
+            WakeLockAvailability.UNKNOWN);
+
+    private final Signal<WakeLockAvailability> wakeLockAvailabilityReadOnly = wakeLockAvailabilitySignal
+            .asReadonly();
+
+    private boolean wakeLockListenerInstalled;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -627,6 +650,19 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+    }
+
+    /**
+     * Returns the next unique id for a JavaScript initializer registered
+     * through {@link Element#addJsInitializer(String, Object...)} on any
+     * element in this UI. Shared across the UI so cleanups can be keyed by the
+     * id alone on the client side.
+     *
+     * @return the next initializer id
+     */
+    public int nextJsInitializerId() {
+        session.checkHasLock();
+        return nextJsInitializerId++;
     }
 
     /**
@@ -1087,14 +1123,24 @@ public class UIInternals implements Serializable {
             triggerChunkLoading(componentClass);
         }
 
-        dependencies.getStyleSheets().forEach(styleSheet -> page
-                .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+        dependencies.getStyleSheets().forEach(styleSheet -> {
+            String resolved = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet.value());
+            if (resolved != null) {
+                page.addStyleSheet(resolved, styleSheet.loadMode());
+            }
+        });
 
         VaadinService service = session.getService();
         if (!service.getDeploymentConfiguration().isProductionMode()) {
-            dependencies.getStyleSheets()
-                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
-                            .trackAddForComponent(styleSheet.value()));
+            dependencies.getStyleSheets().forEach(styleSheet -> {
+                String resolved = FrontendDependencyUrlResolver
+                        .resolveToContextRoot(styleSheet.value());
+                if (resolved != null) {
+                    ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(resolved);
+                }
+            });
         }
 
         warnForUnavailableBundledDependencies(componentClass, dependencies);
@@ -1462,6 +1508,106 @@ public class UIInternals implements Serializable {
     public void setGeolocationAvailability(
             GeolocationAvailability availability) {
         this.geolocationAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns the geolocation client currently bound to this UI, or
+     * {@code null} if none has been installed yet. Framework-internal:
+     * application code resolves the client through the static
+     * {@link com.vaadin.flow.component.geolocation.Geolocation} API, which
+     * lazily installs a default client on first use.
+     *
+     * @return the installed geolocation client, or {@code null}
+     */
+    public GeolocationClient getGeolocationClient() {
+        return geolocationClient;
+    }
+
+    /**
+     * Installs the given geolocation client on this UI, replacing any previous
+     * one. The previous client is closed; the availability signal is seeded
+     * with the new client's current availability and updated whenever the
+     * client reports a change. Framework-internal entry point used by the
+     * default {@code Geolocation} bootstrap and by external test drivers that
+     * substitute a browserless client.
+     *
+     * @param client
+     *            the client to install, never {@code null}
+     */
+    public void setGeolocationClient(GeolocationClient client) {
+        if (geolocationClient != null) {
+            geolocationClient.close();
+        }
+        if (geolocationClientAvailabilityRegistration != null) {
+            geolocationClientAvailabilityRegistration.remove();
+        }
+        geolocationClient = client;
+        setGeolocationAvailability(client.currentAvailability());
+        geolocationClientAvailabilityRegistration = client
+                .subscribeAvailability(this::setGeolocationAvailability);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock active signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#activeSignal()}.
+     *
+     * @return the read-only active signal
+     */
+    public Signal<Boolean> getWakeLockActiveSignalReadOnly() {
+        return wakeLockActiveReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock active signal. For framework use only.
+     *
+     * @param active
+     *            the new active state
+     */
+    public void setWakeLockActive(boolean active) {
+        this.wakeLockActiveSignal.set(active);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock availability signal for this
+     * UI. Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#availabilitySignal()}.
+     *
+     * @return the read-only availability signal
+     */
+    public Signal<WakeLockAvailability> getWakeLockAvailabilitySignalReadOnly() {
+        return wakeLockAvailabilityReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     */
+    public void setWakeLockAvailability(WakeLockAvailability availability) {
+        this.wakeLockAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns whether the per-UI DOM listener that bridges
+     * {@code vaadin-wake-lock-change} events into
+     * {@link #setWakeLockActive(boolean)} has already been installed. For
+     * framework use only.
+     *
+     * @return {@code true} if the listener has been installed
+     */
+    public boolean isWakeLockListenerInstalled() {
+        return wakeLockListenerInstalled;
+    }
+
+    /**
+     * Marks the per-UI wake-lock DOM listener as installed so subsequent
+     * {@link com.vaadin.flow.component.wakelock.WakeLock} calls do not install
+     * a duplicate. For framework use only.
+     */
+    public void markWakeLockListenerInstalled() {
+        this.wakeLockListenerInstalled = true;
     }
 
     /**

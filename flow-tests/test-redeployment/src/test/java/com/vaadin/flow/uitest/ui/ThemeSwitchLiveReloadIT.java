@@ -27,7 +27,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -35,10 +34,9 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
-public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
+public class ThemeSwitchLiveReloadIT extends AbstractReloadIT {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
@@ -51,21 +49,6 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
         return super.getTestPath().replace("/view", "");
-    }
-
-    @Before
-    @Override
-    public void checkIfServerAvailable() {
-        // Make sure the server is not still restarting
-        waitUntil(driver -> {
-            String rootUrl = getRootURL();
-            try {
-                super.checkIfServerAvailable();
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        });
     }
 
     @After

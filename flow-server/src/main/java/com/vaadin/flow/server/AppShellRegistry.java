@@ -280,48 +280,22 @@ public class AppShellRegistry implements Serializable {
 
     private static String resolveStyleSheetHref(String href,
             VaadinRequest request) {
-        if (href == null || href.isBlank()) {
+        String normalized = FrontendDependencyUrlResolver
+                .resolveToContextRoot(href);
+        if (normalized == null) {
             return null;
-        }
-        if (HandlerHelper
-                .isPathUnsafe(href.startsWith("/") ? href : "/" + href)) {
-            log.warn(
-                    "@StyleSheet href containing traversals ('../') are not allowed, ignored: {}",
-                    href);
-            return null;
-        }
-        href = href.trim();
-        // Accept absolute http(s) URLs unchanged
-        String lower = href.toLowerCase();
-        if (lower.startsWith("http://") || lower.startsWith("https://")) {
-            return href;
-        }
-        // Treat ./ as relative path to static resources location
-        if (href.startsWith("./")) {
-            href = href.substring(2);
-        }
-        // Accept bare paths beginning with '/' as-is
-        if (href.startsWith("/")) {
-            return href;
-        }
-
-        String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
-        if (!lower.startsWith(contextProtocol)) {
-            // Prepend context protocol so URL is resolved against the
-            // context root by the bootstrap URI resolver below.
-            href = contextProtocol + href;
         }
         // Use the servlet-relative path (e.g. "./", "../") rather than the
         // absolute context path. The emitted href is then resolved by the
         // browser against <base>, which Vaadin sets from the actual request
-        // URL (honoring X-Forwarded-* headers). This works correctly behind
-        // reverse proxies that rewrite or strip the context path in the
-        // public URL.
+        // URL (honoring X-Forwarded-* headers). This matches how the
+        // bootstrap CONTEXT_ROOT_URL is computed for the UIDL path and works
+        // correctly behind reverse proxies that rewrite the public path.
         String servletPathToContextRoot = request.getService()
                 .getContextRootRelativePath(request);
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
                 servletPathToContextRoot, null);
-        return resolver.resolveVaadinUri(href);
+        return resolver.resolveVaadinUri(normalized);
     }
 
     /**

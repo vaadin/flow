@@ -276,6 +276,9 @@ internal class GradlePluginAdapter private constructor(
     override fun postinstallPackages(): List<String> =
         config.postinstallPackages.get()
 
+    override fun excludePostinstallPackages(): List<String> =
+        config.excludePostinstallPackages.get()
+
     override fun isFrontendHotdeploy(): Boolean = config.frontendHotdeploy.get()
 
     override fun ciBuild(): Boolean = config.ciBuild.get()
@@ -335,5 +338,8 @@ internal class GradlePluginAdapter private constructor(
     override fun isCommercialBannerEnabled(): Boolean {
         return config.commercialWithBanner.get()
     }
+
+    override fun minimumFrontendPackageAgeDays(): Int =
+        config.minimumFrontendPackageAgeDays.get()
 
 }

@@ -67,6 +67,15 @@ public class Effect implements Serializable {
     private volatile boolean invalidatedFromBackground = false;
     private boolean passivated = false;
 
+    // Identifies the latest re-registration attempt. Each revalidation,
+    // invalidation and activation bumps it while holding the monitor. Because
+    // observers are registered without the monitor held (to avoid an ABBA
+    // deadlock with the signal tree lock), several attempts can run
+    // concurrently; only the one whose captured value still matches is allowed
+    // to install its observers, so the most recent attempt always wins and
+    // stale attempts discard their observers instead of leaking them.
+    private long generation = 0;
+
     /**
      * Creates a signal effect with the given action and the default dispatcher.
      * The action is run when the effect is created and is subsequently run
@@ -161,33 +170,43 @@ public class Effect implements Serializable {
         assert dispatcher != null;
         this.dispatcher = dispatcher;
 
-        dispatcher.execute(() -> {
-            synchronized (this) {
-                revalidate();
-            }
-        });
+        dispatcher.execute(this::revalidate);
     }
 
     private void revalidate() {
-        assert registrations.isEmpty();
-
-        if (action == null || passivated) {
-            // closed or passivated
-            return;
+        SerializableRunnable currentAction;
+        List<Registration> staleRegistrations;
+        long myGeneration;
+        synchronized (this) {
+            if (action == null || passivated) {
+                // closed or passivated
+                return;
+            }
+            // This attempt becomes the latest one; any concurrent attempt
+            // that captured an earlier generation will discard its observers
+            // when it reaches its second sync block.
+            myGeneration = ++generation;
+            // Drain any leftover registrations so the observer set is rebuilt
+            // from scratch by this attempt.
+            staleRegistrations = drainRegistrations();
+            usages.clear();
+            currentAction = action;
         }
+        staleRegistrations.forEach(Registration::remove);
 
-        usages.clear();
+        List<UsageTracker.Usage> newUsages = new ArrayList<>();
+        List<Registration> newRegistrations = new ArrayList<>();
+        boolean[] hasSignalUsage = { false };
+        // Ensure effect runs only once per change event, even if the same
+        // signal is read multiple times (each read registers a listener)
+        boolean[] changeHandled = { false };
 
         activeEffects.get().add(this);
         try {
-            boolean[] hasSignalUsage = { false };
-            // Ensure effect runs only once per change event, even if the same
-            // signal is read multiple times (each read registers a listener)
-            boolean[] changeHandled = { false };
-            UsageTracker.track(action, usage -> {
+            UsageTracker.track(currentAction, usage -> {
                 hasSignalUsage[0] = true;
-                usages.add(usage);
-                registrations.add(usage
+                newUsages.add(usage);
+                newRegistrations.add(usage
                         .onNextChange(createChangeListener(changeHandled)));
             });
             if (!hasSignalUsage[0]) {
@@ -197,6 +216,22 @@ public class Effect implements Serializable {
         } finally {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
+        }
+
+        boolean superseded;
+        synchronized (this) {
+            // Discard if disposed or passivated concurrently, or if a newer
+            // attempt superseded this one. Removing the observers we just
+            // registered avoids leaking listeners on the signal trees.
+            superseded = action == null || passivated
+                    || generation != myGeneration;
+            if (!superseded) {
+                usages.addAll(newUsages);
+                registrations.addAll(newRegistrations);
+            }
+        }
+        if (superseded) {
+            newRegistrations.forEach(Registration::remove);
         }
     }
 
@@ -252,17 +287,31 @@ public class Effect implements Serializable {
         }
     }
 
-    private synchronized void invalidate() {
+    private void invalidate() {
         invalidateScheduled.set(false);
 
-        clearRegistrations();
+        // Remove registrations outside the synchronized block to avoid ABBA
+        // deadlock.
+        List<Registration> toRemove;
+        synchronized (this) {
+            // Supersede any revalidation already in flight so it discards its
+            // observers; the revalidate() call below installs the fresh set.
+            ++generation;
+            toRemove = drainRegistrations();
+        }
+        toRemove.forEach(Registration::remove);
 
         revalidate();
     }
 
-    private void clearRegistrations() {
-        registrations.forEach(Registration::remove);
+    private List<Registration> drainRegistrations() {
+        assert Thread.holdsLock(this);
+        if (registrations.isEmpty()) {
+            return List.of();
+        }
+        List<Registration> drained = new ArrayList<>(registrations);
         registrations.clear();
+        return drained;
     }
 
     /**
@@ -299,9 +348,17 @@ public class Effect implements Serializable {
      * {@link #activate()}, which will check if any tracked values have changed
      * and only re-run the callback if needed.
      */
-    public synchronized void passivate() {
-        clearRegistrations();
-        passivated = true;
+    public void passivate() {
+        // Drain registrations under the monitor but call Registration::remove
+        // outside it: removal acquires the SignalTree lock and a concurrent
+        // signal writer holding that lock can drive Effect.invalidate, which
+        // needs the Effect monitor (ABBA deadlock otherwise).
+        List<Registration> toRemove;
+        synchronized (this) {
+            passivated = true;
+            toRemove = drainRegistrations();
+        }
+        toRemove.forEach(Registration::remove);
     }
 
     /**
@@ -311,38 +368,93 @@ public class Effect implements Serializable {
      * has changed, the effect simply re-registers its dependency listeners
      * without running the callback.
      */
-    public synchronized void activate() {
-        if (action == null || !passivated) {
+    public void activate() {
+        List<UsageTracker.Usage> snapshot;
+        long myGeneration;
+        synchronized (this) {
+            if (action == null || !passivated) {
+                return;
+            }
+            passivated = false;
+            firstRun = true;
+            myGeneration = ++generation;
+            snapshot = new ArrayList<>(usages);
+        }
+
+        // hasChanges() reads signal state but does not acquire the
+        // SignalTree lock, so it is safe to call without the monitor held.
+        boolean needsRevalidation = snapshot.isEmpty()
+                || snapshot.stream().anyMatch(UsageTracker.Usage::hasChanges);
+
+        if (needsRevalidation) {
+            // Full revalidation re-runs the action. revalidate's first
+            // sync block drains any stale registrations a concurrent
+            // invalidate may have installed between this call and
+            // entering the sync block, so we don't need to drain here.
+            revalidate();
             return;
         }
-        passivated = false;
-        firstRun = true;
 
-        if (usages.isEmpty()
-                || usages.stream().anyMatch(UsageTracker.Usage::hasChanges)) {
-            // Something changed while passivated, do a full revalidation
-            usages.clear();
-            revalidate();
-        } else {
-            // Nothing changed, just re-register listeners. A change
-            // listener may still fire immediately if a change sneaks in
-            // between the hasChanges check and the onNextChange call,
-            // in which case firstRun is already set to true above.
-            // Ensure effect runs only once even if the same signal is
-            // registered multiple times
-            boolean[] changeHandled = { false };
-            for (UsageTracker.Usage usage : usages) {
-                registrations.add(usage
-                        .onNextChange(createChangeListener(changeHandled)));
+        // Fast-path: re-register listeners on the existing usages without
+        // running the action. onNextChange acquires the SignalTree lock,
+        // so it must run without the Effect monitor held to avoid ABBA
+        // deadlock with a concurrent signal writer driving invalidate.
+        // A listener may fire immediately if a change sneaks in between
+        // the hasChanges check and the onNextChange call; firstRun stays
+        // true so the eventual revalidation behaves as an initial run.
+        boolean[] changeHandled = { false };
+        List<Registration> newRegistrations = new ArrayList<>();
+        for (UsageTracker.Usage usage : snapshot) {
+            newRegistrations.add(
+                    usage.onNextChange(createChangeListener(changeHandled)));
+        }
+
+        boolean discardNewRegistrations = false;
+        synchronized (this) {
+            if (action == null || passivated || generation != myGeneration) {
+                // Either disposed/passivated concurrently, or a newer attempt
+                // (an invalidate or revalidate on another thread) superseded
+                // this one. Drop the observers we just installed to avoid
+                // duplicate or stale observers on the signal tree.
+                discardNewRegistrations = true;
+            } else {
+                registrations.addAll(newRegistrations);
+                if (!invalidateScheduled.get()) {
+                    // No invalidation was scheduled, so no change was
+                    // detected during re-registration. Reset firstRun
+                    // for normal tracking. If an invalidation was
+                    // scheduled, firstRun stays true and will be reset
+                    // by the eventual revalidation.
+                    firstRun = false;
+                }
             }
-            if (!invalidateScheduled.get()) {
-                // No invalidation was scheduled, so no change was
-                // detected during re-registration. Reset firstRun for
-                // normal tracking. If an invalidation was scheduled,
-                // firstRun stays true and will be reset by the
-                // eventual revalidation.
-                firstRun = false;
-            }
+        }
+        if (discardNewRegistrations) {
+            newRegistrations.forEach(Registration::remove);
+        }
+    }
+
+    /**
+     * Runs the given action in a read-triggered update context. This is used
+     * when a cached signal updates itself during a read operation. It ensures
+     * that:
+     * <ul>
+     * <li>The reading effect won't trigger false infinite loop detection when
+     * notified of the cache update</li>
+     * <li>Any effects that run inside the action will still have proper loop
+     * detection against each other</li>
+     * </ul>
+     *
+     * @param action
+     *            the action to run, not {@code null}
+     */
+    static void runInReadTriggeredUpdateContext(Runnable action) {
+        LinkedList<Effect> stashed = activeEffects.get();
+        activeEffects.set(new LinkedList<>());
+        try {
+            action.run();
+        } finally {
+            activeEffects.set(stashed);
         }
     }
 
@@ -350,10 +462,17 @@ public class Effect implements Serializable {
      * Disposes this effect by unregistering all current dependencies and
      * preventing the action from running again.
      */
-    public synchronized void dispose() {
-        clearRegistrations();
-        usages.clear();
-        action = null;
+    public void dispose() {
+        // Same ABBA-avoidance as passivate(): drain under the monitor,
+        // remove outside it. Concurrent invalidate runs that observe
+        // action == null will short-circuit in revalidate.
+        List<Registration> toRemove;
+        synchronized (this) {
+            action = null;
+            usages.clear();
+            toRemove = drainRegistrations();
+        }
+        toRemove.forEach(Registration::remove);
     }
 
 }

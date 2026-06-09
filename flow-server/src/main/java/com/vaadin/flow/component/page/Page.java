@@ -37,6 +37,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UrlUtil;
@@ -351,6 +352,8 @@ public class Page implements Serializable {
      * attached)
      * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
      * additional wrapping)
+     * <li>{@link JsFunction} (manifested as a callable JavaScript function with
+     * its captured parameters pre-bound)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do

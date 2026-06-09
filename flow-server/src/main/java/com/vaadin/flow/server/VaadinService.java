@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -83,6 +84,8 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.RpcInvocationEvent;
+import com.vaadin.flow.server.communication.RpcInvocationListener;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -159,6 +162,8 @@ public abstract class VaadinService implements Serializable {
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
     private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
+    private final List<RpcInvocationListener> rpcInvocationListeners = new CopyOnWriteArrayList<>();
+    private final List<SessionLockListener> sessionLockListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
@@ -814,6 +819,166 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Adds a listener that gets notified around the handling of individual
+     * client-to-server RPC invocations, enabling per-invocation observation
+     * (for example to emit a tracing span per DOM event or
+     * {@code @ClientCallable} call).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}; see
+     * {@link RpcInvocationListener} for the callback contract.
+     *
+     * @param listener
+     *            the RPC invocation listener
+     * @return a handle that can be used for removing the listener
+     * @see RpcInvocationListener
+     */
+    public Registration addRpcInvocationListener(
+            RpcInvocationListener listener) {
+        return Registration.addAndRemove(rpcInvocationListeners, listener);
+    }
+
+    /**
+     * Tells whether any {@link RpcInvocationListener} is registered, so callers
+     * can skip building per-invocation events when nobody is observing.
+     *
+     * @return {@code true} if at least one listener is registered
+     */
+    public boolean hasRpcInvocationListeners() {
+        return !rpcInvocationListeners.isEmpty();
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation is about
+     * to start. For internal use by the RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     */
+    public void fireRpcInvocationStarted(RpcInvocationEvent event) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationStarted(event);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationStarted", e);
+            }
+        }
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation threw.
+     * For internal use by the RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     * @param error
+     *            the throwable raised by the invocation handler
+     */
+    public void fireRpcInvocationFailed(RpcInvocationEvent event,
+            Throwable error) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationFailed(event, error);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationFailed", e);
+            }
+        }
+    }
+
+    /**
+     * Notifies registered listeners that handling of an RPC invocation has
+     * finished, whether normally or via an exception. For internal use by the
+     * RPC handling machinery.
+     *
+     * @param event
+     *            the invocation event
+     */
+    public void fireRpcInvocationEnded(RpcInvocationEvent event) {
+        for (RpcInvocationListener listener : rpcInvocationListeners) {
+            try {
+                listener.invocationEnded(event);
+            } catch (RuntimeException e) {
+                getLogger().error(
+                        "Error in RpcInvocationListener.invocationEnded", e);
+            }
+        }
+    }
+
+    /**
+     * Adds a listener that gets notified when a session lock for this service
+     * is acquired and released, enabling observation of session-lock contention
+     * (for example to publish lock wait and hold-time metrics).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}. Listeners
+     * are notified for the outermost lock acquisition only; see
+     * {@link SessionLockListener} for the callback contract.
+     *
+     * @param listener
+     *            the session lock listener
+     * @return a handle that can be used for removing the listener
+     * @see SessionLockListener
+     */
+    public Registration addSessionLockListener(SessionLockListener listener) {
+        return Registration.addAndRemove(sessionLockListeners, listener);
+    }
+
+    boolean hasSessionLockListeners() {
+        return !sessionLockListeners.isEmpty();
+    }
+
+    void fireSessionLockRequested() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        for (SessionLockListener listener : sessionLockListeners) {
+            try {
+                listener.lockRequested(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockRequested",
+                        e);
+            }
+        }
+    }
+
+    void fireSessionLockAcquired() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        for (SessionLockListener listener : sessionLockListeners) {
+            try {
+                listener.lockAcquired(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockAcquired",
+                        e);
+            }
+        }
+    }
+
+    void fireSessionLockReleased() {
+        if (sessionLockListeners.isEmpty()) {
+            return;
+        }
+        SessionLockEvent event = new SessionLockEvent(this);
+        // Released is fired in reverse registration order so that listeners
+        // are nested: a listener's lockReleased runs before the lockReleased
+        // of the listeners that were notified before it on lockAcquired.
+        ListIterator<SessionLockListener> listeners = sessionLockListeners
+                .listIterator(sessionLockListeners.size());
+        while (listeners.hasPrevious()) {
+            SessionLockListener listener = listeners.previous();
+            try {
+                listener.lockReleased(event);
+            } catch (RuntimeException e) {
+                getLogger().error("Error in SessionLockListener.lockReleased",
+                        e);
+            }
+        }
+    }
+
+    /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
      *
@@ -1027,7 +1192,7 @@ public abstract class VaadinService implements Serializable {
             synchronized (VaadinService.class) {
                 lock = getSessionLock(wrappedSession);
                 if (lock == null) {
-                    lock = new ReentrantLock();
+                    lock = new InstrumentedReentrantLock(this);
                     setSessionLock(wrappedSession, lock);
                 }
             }
@@ -2337,6 +2502,9 @@ public abstract class VaadinService implements Serializable {
                 if (!pendingAccess.isCancelled()) {
                     CurrentInstance.clearAll();
                     CurrentInstance.setCurrent(session);
+                    // Clear session-scoped transaction so each task gets fresh
+                    // reads from shared signals instead of stale cached values
+                    session.clearSessionScopedTransaction();
                     pendingAccess.run();
 
                     try {

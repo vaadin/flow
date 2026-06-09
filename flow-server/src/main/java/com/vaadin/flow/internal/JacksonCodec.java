@@ -28,6 +28,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
@@ -43,6 +44,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <li>{@link JsonNode} and all its sub types
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
+ * <li>{@link JsFunction} (encoded as a JS function literal that closes over its
+ * captured parameters on the client)
  * </ul>
  *
  * <p>
@@ -76,6 +79,8 @@ public class JacksonCodec {
             return encodeWithoutTypeInfo(value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
+        } else if (value instanceof JsFunction) {
+            return encodeJsFunction((JsFunction) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             // Native JSON types - no wrapping needed
             return encodeWithoutTypeInfo(value);
@@ -95,6 +100,25 @@ public class JacksonCodec {
         channelArray.add(value.getStateNodeId());
         channelArray.add(value.getChannelId());
         obj.set("@v-return", channelArray);
+        return obj;
+    }
+
+    private static JsonNode encodeJsFunction(JsFunction value) {
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        ObjectNode obj = mapper.createObjectNode();
+        ObjectNode payload = mapper.createObjectNode();
+        payload.put("body", value.getBody());
+        ArrayNode captures = mapper.createArrayNode();
+        for (Object capture : value.getCaptures()) {
+            captures.add(encodeWithTypeInfo(capture));
+        }
+        payload.set("captures", captures);
+        ArrayNode args = mapper.createArrayNode();
+        for (String name : value.getArgumentNames()) {
+            args.add(name);
+        }
+        payload.set("args", args);
+        obj.set("@v-fn", payload);
         return obj;
     }
 

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>test-spring-boot-multimodule-reload-time</artifactId>
-    <version>25.2-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>test-spring-boot-multimodule-reload-time-ui</artifactId>
   <packaging>jar</packaging>
@@ -33,26 +33,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-ordered-layout-flow</artifactId>
-      <version>${component.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-button-flow</artifactId>
-      <version>${component.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-text-field-flow</artifactId>
-      <version>${component.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-app-layout-flow</artifactId>
-      <version>${component.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
