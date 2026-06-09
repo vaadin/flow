@@ -177,6 +177,23 @@ class PageScreenOrientationTest {
 
         assertEquals("SecurityError", captured.get().name());
         assertEquals("Must be in fullscreen", captured.get().message());
+        assertEquals(ScreenOrientationLockErrorCode.SECURITY,
+                captured.get().errorCode(),
+                "The raw DOMException name must map to a typed error code so "
+                        + "callers can switch instead of string-comparing");
+    }
+
+    @Test
+    void lockErrorCode_fromName() {
+        assertEquals(ScreenOrientationLockErrorCode.NOT_SUPPORTED,
+                ScreenOrientationLockErrorCode.fromName("NotSupportedError"));
+        assertEquals(ScreenOrientationLockErrorCode.SECURITY,
+                ScreenOrientationLockErrorCode.fromName("SecurityError"));
+        assertEquals(ScreenOrientationLockErrorCode.ABORT,
+                ScreenOrientationLockErrorCode.fromName("AbortError"));
+        assertEquals(ScreenOrientationLockErrorCode.UNKNOWN,
+                ScreenOrientationLockErrorCode.fromName("SomeFutureError"),
+                "Unrecognised names must fall back to UNKNOWN, not throw");
     }
 
     @Test

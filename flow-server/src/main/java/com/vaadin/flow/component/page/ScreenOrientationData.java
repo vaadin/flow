@@ -25,8 +25,6 @@ import java.io.Serializable;
  *            the screen orientation type
  * @param angle
  *            the screen orientation angle in degrees
- *
- * @author Vaadin Ltd
  */
 public record ScreenOrientationData(ScreenOrientation type,
         int angle) implements Serializable {

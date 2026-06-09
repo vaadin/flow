@@ -671,18 +671,10 @@ public class Page implements Serializable {
     }
 
     private void setScreenOrientation(ScreenOrientationDetail detail) {
-        if (detail == null || detail.type() == null
-                || detail.type().isEmpty()) {
+        if (detail == null) {
             return;
         }
-        try {
-            screenOrientationSignal.set(new ScreenOrientationData(
-                    ScreenOrientation.fromClientValue(detail.type()),
-                    detail.angle()));
-        } catch (IllegalArgumentException e) {
-            LOGGER.debug("Unknown screen orientation value from client: {}",
-                    detail.type());
-        }
+        setScreenOrientation(detail.type(), String.valueOf(detail.angle()));
     }
 
     /**
