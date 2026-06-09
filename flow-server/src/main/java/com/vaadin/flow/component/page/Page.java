@@ -560,6 +560,11 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe; see {@link #openUnsafe(String)}
+     *             and the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
      */
     public void open(String url) {
         open(url, "_blank");
@@ -598,12 +603,16 @@ public class Page implements Serializable {
      * @param windowName
      *            the name of the window.
      * @throws IllegalArgumentException
-     *             if the URL uses a scheme that is not considered safe; see
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe; see
      *             {@link #openUnsafe(String, String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
      */
     public void open(String url, String windowName) {
+        if (url == null) {
+            throw new IllegalArgumentException("URL must not be null");
+        }
         if (!UrlUtil.isSafeUrl(url)) {
             throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
                     "URL", url, "openUnsafe(String, String)"));

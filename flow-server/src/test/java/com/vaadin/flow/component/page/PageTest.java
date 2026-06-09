@@ -367,6 +367,22 @@ class PageTest {
     }
 
     @Test
+    void open_nullUrl_throwsWithUsefulMessage() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Null URL should not reach the client");
+            }
+        };
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.open(null, "_blank"));
+        assertEquals("URL must not be null", ex.getMessage());
+    }
+
+    @Test
     void openUnsafe_unsafeScheme_opensWithoutValidation() {
         AtomicReference<String> capture = new AtomicReference<>();
         List<Object> params = new ArrayList<>();
