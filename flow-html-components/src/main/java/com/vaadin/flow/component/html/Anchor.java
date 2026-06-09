@@ -72,6 +72,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param text
      *            the text content to set
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, String text) {
         setHref(href);
@@ -98,6 +103,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param textSignal
      *            the signal to bind, not {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      * @since 25.1
      */
     public Anchor(String href, Signal<String> textSignal) {
@@ -119,6 +129,11 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      * @param target
      *            the target window, tab or frame
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, String text, AnchorTarget target) {
         setHref(href);
@@ -250,6 +265,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param components
      *            the components to add
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, Component... components) {
         setHref(href);
