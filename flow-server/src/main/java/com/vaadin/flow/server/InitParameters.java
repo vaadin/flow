@@ -317,9 +317,8 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration name for the comma-separated list of URL schemes that are
-     * considered safe in URLs set on components such as
-     * {@link com.vaadin.flow.component.html.Anchor},
-     * {@link com.vaadin.flow.component.html.IFrame} and in
+     * considered safe in URLs set on components such as {@code Anchor},
+     * {@code IFrame} and in
      * {@link com.vaadin.flow.component.page.Page#open(String, String)}.
      * <p>
      * When not set, a built-in default set of safe schemes is used (for example
