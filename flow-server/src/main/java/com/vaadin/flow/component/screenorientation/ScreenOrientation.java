@@ -18,11 +18,12 @@ package com.vaadin.flow.component.screenorientation;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.Signal;
@@ -51,6 +52,8 @@ import com.vaadin.flow.signals.Signal;
  */
 public final class ScreenOrientation implements Serializable {
 
+    private static final String CHANGE_EVENT = "vaadin-screen-orientation-change";
+
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ScreenOrientation.class);
 
@@ -78,7 +81,7 @@ public final class ScreenOrientation implements Serializable {
      *             if there is no current UI
      */
     public static Signal<ScreenOrientationData> orientationSignal() {
-        return support(currentUi()).orientationSignal();
+        return orientationSignal(UI.getCurrentOrThrow());
     }
 
     /**
@@ -92,7 +95,8 @@ public final class ScreenOrientation implements Serializable {
      */
     public static Signal<ScreenOrientationData> orientationSignal(UI ui) {
         Objects.requireNonNull(ui, "ui must not be null");
-        return support(ui).orientationSignal();
+        ensureWired(ui);
+        return ui.getInternals().getScreenOrientationSignalReadOnly();
     }
 
     /**
@@ -155,7 +159,22 @@ public final class ScreenOrientation implements Serializable {
                     "Cannot lock to ScreenOrientationType."
                             + orientation.name());
         }
-        support(currentUi()).lock(orientation, onSuccess, onError);
+        UI.getCurrentOrThrow().getElement()
+                .executeJs(
+                        "return window.Vaadin.Flow.screenOrientation.lock($0)",
+                        orientation.getClientValue())
+                .then(LockResult.class, result -> {
+                    if (result.success()) {
+                        onSuccess.run();
+                    } else {
+                        onError.accept(new ScreenOrientationLockError(
+                                result.name() == null ? "UnknownError"
+                                        : result.name(),
+                                result.message() == null ? ""
+                                        : result.message()));
+                    }
+                }, bridgeError -> onError.accept(new ScreenOrientationLockError(
+                        "BridgeError", bridgeError)));
     }
 
     /**
@@ -170,7 +189,8 @@ public final class ScreenOrientation implements Serializable {
      *             if there is no current UI
      */
     public static void unlock() {
-        support(currentUi()).unlock();
+        UI.getCurrentOrThrow().getElement()
+                .executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
     }
 
     /**
@@ -193,13 +213,17 @@ public final class ScreenOrientation implements Serializable {
     public static void unlock(SerializableRunnable onComplete) {
         Objects.requireNonNull(onComplete,
                 "onComplete callback cannot be null");
-        support(currentUi()).unlock(onComplete);
+        UI.getCurrentOrThrow().getElement()
+                .executeJs("window.Vaadin.Flow.screenOrientation.unlock()")
+                .then(ignored -> onComplete.run());
     }
 
     /**
      * Sets the screen orientation of the given UI from raw client-side values
      * (e.g. from the initial bootstrap parameters). A {@code null} or empty
-     * type leaves the current value untouched.
+     * type leaves the current value untouched; the client reports
+     * {@code "unsupported"} when the browser does not implement the Screen
+     * Orientation API, which maps to {@link ScreenOrientationType#UNSUPPORTED}.
      * <p>
      * Called from the bootstrap path in {@code ExtendedClientDetails} that
      * seeds the signal before any user code observes it. Not intended for
@@ -212,27 +236,62 @@ public final class ScreenOrientation implements Serializable {
      * @param angle
      *            the raw orientation angle from the client, or {@code null}
      */
-    public static void setStateFromClient(UI ui, String type, String angle) {
+    public static void setStateFromClient(UI ui, @Nullable String type,
+            @Nullable String angle) {
         Objects.requireNonNull(ui, "ui must not be null");
-        support(ui).setStateFromClient(type, angle);
+        ensureWired(ui);
+        int angleValue;
+        try {
+            angleValue = angle == null ? 0 : Integer.parseInt(angle);
+        } catch (NumberFormatException e) {
+            LOGGER.debug("Unparseable screen orientation angle from client: {}",
+                    angle);
+            return;
+        }
+        apply(ui, type, angleValue);
     }
 
-    private static UI currentUi() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "ScreenOrientation API requires a current UI — UI.getCurrent() is null");
+    /**
+     * Installs, once per UI, the DOM listener that bridges
+     * {@code vaadin-screen-orientation-change} events into the signal held on
+     * {@link UIInternals}. Guarded by a flag so repeated facade calls do not
+     * attach duplicate listeners.
+     */
+    private static void ensureWired(UI ui) {
+        UIInternals internals = ui.getInternals();
+        if (internals.isScreenOrientationListenerInstalled()) {
+            return;
         }
-        return ui;
+        internals.markScreenOrientationListenerInstalled();
+        ui.getElement().addEventListener(CHANGE_EVENT,
+                e -> apply(ui, e.getEventDetail(ScreenOrientationDetail.class)))
+                .addEventDetail().allowInert();
     }
 
-    private static ScreenOrientationSupport support(UI ui) {
-        ScreenOrientationSupport support = ComponentUtil.getData(ui,
-                ScreenOrientationSupport.class);
-        if (support == null) {
-            support = new ScreenOrientationSupport(ui);
-            ComponentUtil.setData(ui, ScreenOrientationSupport.class, support);
+    private static void apply(UI ui, @Nullable ScreenOrientationDetail detail) {
+        if (detail != null) {
+            apply(ui, detail.type(), detail.angle());
         }
-        return support;
+    }
+
+    private static void apply(UI ui, @Nullable String type, int angle) {
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+        try {
+            ui.getInternals().setScreenOrientation(new ScreenOrientationData(
+                    ScreenOrientationType.fromClientValue(type), angle));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown screen orientation type from client: {}",
+                    type);
+        }
+    }
+
+    private record ScreenOrientationDetail(@Nullable String type,
+            int angle) implements Serializable {
+    }
+
+    private record LockResult(boolean success, @Nullable String name,
+            @Nullable String message) implements Serializable {
     }
 }

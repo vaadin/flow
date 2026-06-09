@@ -52,6 +52,8 @@ import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -267,6 +269,14 @@ public class UIInternals implements Serializable {
             .asReadonly();
 
     private boolean wakeLockListenerInstalled;
+
+    private final ValueSignal<ScreenOrientationData> screenOrientationSignal = new ValueSignal<>(
+            new ScreenOrientationData(ScreenOrientationType.UNKNOWN, 0));
+
+    private final Signal<ScreenOrientationData> screenOrientationReadOnly = screenOrientationSignal
+            .asReadonly();
+
+    private boolean screenOrientationListenerInstalled;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1608,6 +1618,49 @@ public class UIInternals implements Serializable {
      */
     public void markWakeLockListenerInstalled() {
         this.wakeLockListenerInstalled = true;
+    }
+
+    /**
+     * Returns the read-only view of the screen orientation signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#orientationSignal()}.
+     *
+     * @return the read-only screen orientation signal
+     */
+    public Signal<ScreenOrientationData> getScreenOrientationSignalReadOnly() {
+        return screenOrientationReadOnly;
+    }
+
+    /**
+     * Updates the screen orientation signal. For framework use only.
+     *
+     * @param orientation
+     *            the new orientation state
+     */
+    public void setScreenOrientation(ScreenOrientationData orientation) {
+        this.screenOrientationSignal.set(orientation);
+    }
+
+    /**
+     * Returns whether the per-UI DOM listener that bridges
+     * {@code vaadin-screen-orientation-change} events into
+     * {@link #setScreenOrientation(ScreenOrientationData)} has already been
+     * installed. For framework use only.
+     *
+     * @return {@code true} if the listener has been installed
+     */
+    public boolean isScreenOrientationListenerInstalled() {
+        return screenOrientationListenerInstalled;
+    }
+
+    /**
+     * Marks the per-UI screen orientation DOM listener as installed so
+     * subsequent
+     * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation}
+     * calls do not install a duplicate. For framework use only.
+     */
+    public void markScreenOrientationListenerInstalled() {
+        this.screenOrientationListenerInstalled = true;
     }
 
     /**
