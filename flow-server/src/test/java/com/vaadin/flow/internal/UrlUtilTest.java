@@ -20,8 +20,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 
@@ -265,6 +269,42 @@ class UrlUtilTest {
     void isSafeUrl_wildcard_allowsAnyScheme() {
         assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)",
                 Set.of(UrlUtil.ALL_SCHEMES_SAFE)));
+    }
+
+    @Test
+    void isSafeUrl_configuredSchemes_replaceDefaults() {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(
+                config.getStringProperty(InitParameters.URL_SAFE_SCHEMES, null))
+                .thenReturn("custom, https");
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
+            assertTrue(UrlUtil.isSafeUrl("custom:foo"));
+            assertFalse(UrlUtil.isSafeUrl("mailto:a@b.com"));
+            assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)"));
+        }
+    }
+
+    @Test
+    void isSafeUrl_configuredWildcard_allowsAnyScheme() {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(
+                config.getStringProperty(InitParameters.URL_SAFE_SCHEMES, null))
+                .thenReturn("*");
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
+            assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)"));
+        }
     }
 
     @Test
