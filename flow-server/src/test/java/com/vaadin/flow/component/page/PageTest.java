@@ -418,6 +418,28 @@ class PageTest {
     }
 
     @Test
+    void openUnsafe_twoArg_opensWithoutValidation() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.openUnsafe("javascript:alert(1)", "_blank");
+
+        assertTrue(capture.get().contains("window.open"),
+                "Should call window.open");
+        assertEquals("javascript:alert(1)", params.get(0));
+        assertEquals("_blank", params.get(1));
+    }
+
+    @Test
     void setColorScheme_setsStyleProperty() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         AtomicReference<Object[]> capturedParams = new AtomicReference<>();
