@@ -52,6 +52,7 @@ import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -256,6 +257,20 @@ public class UIInternals implements Serializable {
     private GeolocationClient geolocationClient;
 
     private Registration geolocationClientAvailabilityRegistration;
+
+    private final ValueSignal<Boolean> wakeLockActiveSignal = new ValueSignal<>(
+            Boolean.FALSE);
+
+    private final Signal<Boolean> wakeLockActiveReadOnly = wakeLockActiveSignal
+            .asReadonly();
+
+    private final ValueSignal<WakeLockAvailability> wakeLockAvailabilitySignal = new ValueSignal<>(
+            WakeLockAvailability.UNKNOWN);
+
+    private final Signal<WakeLockAvailability> wakeLockAvailabilityReadOnly = wakeLockAvailabilitySignal
+            .asReadonly();
+
+    private boolean wakeLockListenerInstalled;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1557,6 +1572,69 @@ public class UIInternals implements Serializable {
         setGeolocationAvailability(client.currentAvailability());
         geolocationClientAvailabilityRegistration = client
                 .subscribeAvailability(this::setGeolocationAvailability);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock active signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#activeSignal()}.
+     *
+     * @return the read-only active signal
+     */
+    public Signal<Boolean> getWakeLockActiveSignalReadOnly() {
+        return wakeLockActiveReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock active signal. For framework use only.
+     *
+     * @param active
+     *            the new active state
+     */
+    public void setWakeLockActive(boolean active) {
+        this.wakeLockActiveSignal.set(active);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock availability signal for this
+     * UI. Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#availabilitySignal()}.
+     *
+     * @return the read-only availability signal
+     */
+    public Signal<WakeLockAvailability> getWakeLockAvailabilitySignalReadOnly() {
+        return wakeLockAvailabilityReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     */
+    public void setWakeLockAvailability(WakeLockAvailability availability) {
+        this.wakeLockAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns whether the per-UI DOM listener that bridges
+     * {@code vaadin-wake-lock-change} events into
+     * {@link #setWakeLockActive(boolean)} has already been installed. For
+     * framework use only.
+     *
+     * @return {@code true} if the listener has been installed
+     */
+    public boolean isWakeLockListenerInstalled() {
+        return wakeLockListenerInstalled;
+    }
+
+    /**
+     * Marks the per-UI wake-lock DOM listener as installed so subsequent
+     * {@link com.vaadin.flow.component.wakelock.WakeLock} calls do not install
+     * a duplicate. For framework use only.
+     */
+    public void markWakeLockListenerInstalled() {
+        this.wakeLockListenerInstalled = true;
     }
 
     /**

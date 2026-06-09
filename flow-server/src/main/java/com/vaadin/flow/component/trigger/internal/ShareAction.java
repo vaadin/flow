@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
@@ -123,33 +127,35 @@ public class ShareAction extends PromiseAction<Void> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        // navigator.share({title:<t>, text:<x>, url:<u>}) with only the slots
-        // that were set; the API itself rejects a call where all three fields
-        // are absent, but validate() above already prevents that on the server.
-        out.append("navigator.share({");
-        boolean needComma = false;
-        if (titleInput != null) {
-            out.append("title:");
-            titleInput.appendExpression(builder, out);
-            needComma = true;
+    protected JsFunction toPromiseJs(Trigger trigger) {
+        // navigator.share({title:$0(event), ...}) with only the slots that were
+        // set; each slot's value is produced on the client by invoking the
+        // input's JsFunction with the trigger event. validate() already ensures
+        // at least one slot is present, so the object is never empty (the Web
+        // Share API rejects a call with no payload fields).
+        StringBuilder expression = new StringBuilder(
+                "return navigator.share({");
+        List<JsFunction> args = new ArrayList<>();
+        appendSlot(expression, args, "title", titleInput, trigger);
+        appendSlot(expression, args, "text", textInput, trigger);
+        appendSlot(expression, args, "url", urlInput, trigger);
+        expression.append("})");
+        return JsFunction
+                .of(expression.toString(), args.toArray(new JsFunction[0]))
+                .withArguments("event");
+    }
+
+    private static void appendSlot(StringBuilder expression,
+            List<JsFunction> args, String key,
+            Action.@Nullable Input<String> input, Trigger trigger) {
+        if (input == null) {
+            return;
         }
-        if (textInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append("text:");
-            textInput.appendExpression(builder, out);
-            needComma = true;
+        if (!args.isEmpty()) {
+            expression.append(',');
         }
-        if (urlInput != null) {
-            if (needComma) {
-                out.append(',');
-            }
-            out.append("url:");
-            urlInput.appendExpression(builder, out);
-        }
-        out.append("})");
+        expression.append(key).append(":$").append(args.size())
+                .append("(event)");
+        args.add(input.toJs(trigger));
     }
 }

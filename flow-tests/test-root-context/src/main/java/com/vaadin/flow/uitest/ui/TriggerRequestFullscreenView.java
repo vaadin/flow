@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.fullscreen.Fullscreen;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * Wires a {@link ClickTrigger} on a button to a {@link RequestFullscreenAction}
- * that requests fullscreen for a target {@link Div}. The action's success/error
+ * Wires {@code Fullscreen.onClick(button).enter(panel, ...)} so a click on the
+ * button asks for fullscreen on the target {@link Div}. The success/error
  * consumers write the outcome into a status div so the IT can assert both
  * paths. The IT replaces {@code Element.prototype.requestFullscreen} with a
  * recording shim so the assertions don't depend on browser fullscreen
@@ -45,9 +44,8 @@ public class TriggerRequestFullscreenView extends AbstractDivView {
 
         add(panel, goButton, status);
 
-        RequestFullscreenAction goFs = new RequestFullscreenAction(panel,
-                () -> status.setText("ok"), err -> status
+        Fullscreen.onClick(goButton).enter(panel, () -> status.setText("ok"),
+                err -> status
                         .setText("err:" + err.name() + ":" + err.message()));
-        new ClickTrigger(goButton).triggers(goFs);
     }
 }

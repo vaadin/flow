@@ -24,14 +24,15 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -42,7 +43,7 @@ class PromiseActionTest {
     private static final String PROMISE_EXPR = "Promise.resolve(42)";
 
     @Test
-    void fireAndForget_handlerJsIsJustThePromise_noServerCallback() {
+    void fireAndForget_actionFnIsJustThePromise_noServerCallback() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -51,15 +52,17 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        assertEquals(PROMISE_EXPR + ";", handler.getBody(),
-                "fire-and-forget overload skips the round-trip");
-        assertFalse(captureContainsReturnChannel(handler),
+        // Fire-and-forget mode collapses to the subclass' inner JsFunction
+        // (no observer wrapping, no return channel) — installed directly as
+        // the DOM listener.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("return " + PROMISE_EXPR, action.getBody());
+        assertFalse(captureContainsReturnChannel(action),
                 "fire-and-forget overload captures no return channel");
     }
 
     @Test
-    void withCallbacks_handlerJsCallsObserverWithPromiseAndChannel() {
+    void withCallbacks_actionFnWrapsInnerWithObserverAndChannel() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -71,18 +74,21 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        JsFunction handler = handlerOf(singleInstallFn(ui));
-        // Single function call: observer($promiseExpr, $channel).
-        // $0 = the static OBSERVE_PROMISE JsFunction, $1 = the return channel.
-        assertEquals("$0(" + PROMISE_EXPR + ", $1);", handler.getBody());
+        // Action body: observer(inner(event), channel) — $0 is OBSERVE_PROMISE,
+        // $1 is the inner JsFunction returning the promise, $2 is the return
+        // channel.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
 
-        List<@Nullable Object> captures = handler.getCaptures();
-        assertEquals(2, captures.size(),
-                "expected observer + channel captures");
+        List<@Nullable Object> captures = action.getCaptures();
+        assertEquals(3, captures.size(),
+                "expected observer + inner + channel captures");
         assertTrue(captures.get(0) instanceof JsFunction,
                 "first capture should be the observer JsFunction");
-        assertTrue(captures.get(1) instanceof ReturnChannelRegistration,
-                "second capture should be the return channel");
+        assertTrue(captures.get(1) instanceof JsFunction,
+                "second capture should be the inner promise JsFunction");
+        assertTrue(captures.get(2) instanceof ReturnChannelRegistration,
+                "third capture should be the return channel");
     }
 
     @Test
@@ -163,43 +169,13 @@ class PromiseActionTest {
         assertEquals("blocked by permission policy", failed.get(0).message());
     }
 
-    private static boolean captureContainsReturnChannel(JsFunction handler) {
-        return handler.getCaptures().stream()
+    private static boolean captureContainsReturnChannel(JsFunction fn) {
+        return fn.getCaptures().stream()
                 .anyMatch(o -> o instanceof ReturnChannelRegistration);
     }
 
-    private static ReturnChannelRegistration singleReturnChannel(UI ui) {
-        List<ReturnChannelRegistration> channels = handlerOf(
-                singleInstallFn(ui)).getCaptures().stream()
-                .filter(o -> o instanceof ReturnChannelRegistration)
-                .map(o -> (ReturnChannelRegistration) o).toList();
-        assertEquals(1, channels.size(),
-                "Expected exactly one captured return channel");
-        return channels.get(0);
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
-    }
-
     /**
-     * Minimal PromiseAction&lt;String&gt; that emits a constant promise
+     * Minimal {@code PromiseAction<String>} that emits a constant promise
      * expression.
      */
     private static final class StubPromiseAction extends PromiseAction<String> {
@@ -213,9 +189,8 @@ class PromiseActionTest {
         }
 
         @Override
-        protected void appendPromiseExpression(JsBuilder builder,
-                StringBuilder out) {
-            out.append(PROMISE_EXPR);
+        protected JsFunction toPromiseJs(Trigger trigger) {
+            return JsFunction.of("return " + PROMISE_EXPR);
         }
     }
 }

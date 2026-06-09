@@ -18,22 +18,27 @@ package com.vaadin.flow.component.trigger.internal;
 import com.vaadin.flow.component.Component;
 
 /**
- * Fires on the host component's {@code click} DOM event and exposes the click
- * coordinates and modifier-key state as {@link Action.Input}s for downstream
- * actions.
+ * Fires on the host component's {@code click} DOM event. The event's
+ * coordinates and modifier-key state are available as static
+ * {@link Action.Input} sources on {@link MouseEventTrigger.EventData} (also
+ * reachable as {@code ClickTrigger.EventData} through inheritance).
  * <p>
- * Example:
+ * Example — on click, mirror the screen coordinates of the click into two input
+ * fields' {@code value} properties:
  *
  * <pre>{@code
  * ClickTrigger click = new ClickTrigger(button);
- * click.triggers(new SetPropertyAction<>(xField, "value", click.screenX()),
- *         new SetPropertyAction<>(yField, "value", click.screenY()));
+ * click.triggers(
+ *         new SetPropertyAction<>(xField, "value",
+ *                 ClickTrigger.EventData.screenX),
+ *         new SetPropertyAction<>(yField, "value",
+ *                 ClickTrigger.EventData.screenY));
  * }</pre>
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class ClickTrigger extends DomEventTrigger {
+public class ClickTrigger extends MouseEventTrigger {
 
     /**
      * Creates a click trigger on the given host component's root element.
@@ -43,45 +48,5 @@ public class ClickTrigger extends DomEventTrigger {
      */
     public ClickTrigger(Component host) {
         super(host, "click");
-    }
-
-    /** {@code event.screenX} — X coordinate relative to the screen. */
-    public Action.Input<Integer> screenX() {
-        return property("screenX");
-    }
-
-    /** {@code event.screenY} — Y coordinate relative to the screen. */
-    public Action.Input<Integer> screenY() {
-        return property("screenY");
-    }
-
-    /** {@code event.clientX} — X coordinate relative to the viewport. */
-    public Action.Input<Integer> clientX() {
-        return property("clientX");
-    }
-
-    /** {@code event.clientY} — Y coordinate relative to the viewport. */
-    public Action.Input<Integer> clientY() {
-        return property("clientY");
-    }
-
-    /** {@code event.shiftKey} — whether shift was held during the click. */
-    public Action.Input<Boolean> shiftKey() {
-        return property("shiftKey");
-    }
-
-    /** {@code event.ctrlKey} — whether ctrl was held during the click. */
-    public Action.Input<Boolean> ctrlKey() {
-        return property("ctrlKey");
-    }
-
-    /** {@code event.altKey} — whether alt was held during the click. */
-    public Action.Input<Boolean> altKey() {
-        return property("altKey");
-    }
-
-    /** {@code event.metaKey} — whether meta was held during the click. */
-    public Action.Input<Boolean> metaKey() {
-        return property("metaKey");
     }
 }

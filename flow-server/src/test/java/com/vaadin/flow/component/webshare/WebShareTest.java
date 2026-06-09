@@ -60,9 +60,11 @@ class WebShareTest {
 
         WebShare.onClick(button).share(ShareContent.create().title("Hi"));
 
-        String install = installBody(ui);
-        assertTrue(install.contains("\"click\""),
-                "click trigger install JS: " + install);
+        // The event name is a capture of the install function, not inlined into
+        // the body.
+        JsFunction install = installFn(ui);
+        assertTrue(install.getCaptures().contains("click"),
+                "click trigger install captures: " + install.getCaptures());
     }
 
     @Test
@@ -74,11 +76,19 @@ class WebShareTest {
         WebShare.onClick(button).share(ShareContent.create().title("Hi")
                 .text("World").url("https://vaadin.com"));
 
-        String body = handlerBody(ui);
-        assertTrue(body.contains("navigator.share"), body);
-        assertTrue(body.contains("title:\"Hi\""), body);
-        assertTrue(body.contains("text:\"World\""), body);
-        assertTrue(body.contains("url:\"https://vaadin.com\""), body);
+        // Each slot value is produced by invoking its input JsFunction with the
+        // event; the literals are captured inside those nested functions.
+        JsFunction handler = handlerFn(ui);
+        assertEquals(
+                "return navigator.share({title:$0(event),text:$1(event),url:$2(event)})",
+                handler.getBody());
+        assertEquals("Hi", ((JsFunction) handler.getCaptures().get(0))
+                .getCaptures().get(0));
+        assertEquals("World", ((JsFunction) handler.getCaptures().get(1))
+                .getCaptures().get(0));
+        assertEquals("https://vaadin.com",
+                ((JsFunction) handler.getCaptures().get(2)).getCaptures()
+                        .get(0));
     }
 
     @Test
@@ -90,8 +100,15 @@ class WebShareTest {
 
         WebShare.onClick(button).share(ShareContent.create().title(field));
 
-        String body = handlerBody(ui);
-        assertTrue(body.contains("title:$0[\"value\"]"), body);
+        // The title slot reads the field's "value" property on the client; the
+        // PropertyInput renders as its own JsFunction (return $0[$1]) with the
+        // property name captured at $1.
+        JsFunction handler = handlerFn(ui);
+        assertEquals("return navigator.share({title:$0(event)})",
+                handler.getBody());
+        JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
+        assertEquals("return $0[$1]", titleInput.getBody());
+        assertEquals("value", titleInput.getCaptures().get(1));
     }
 
     @Test
@@ -121,15 +138,11 @@ class WebShareTest {
                 WebShare.supportSignal(ui).peek());
     }
 
-    private static String installBody(UI ui) {
-        return installFn(ui).getBody();
-    }
-
-    private static String handlerBody(UI ui) {
+    private static JsFunction handlerFn(UI ui) {
         Object handler = installFn(ui).getCaptures().get(0);
         assertTrue(handler instanceof JsFunction,
                 "install $0 is the handler JsFunction");
-        return ((JsFunction) handler).getBody();
+        return (JsFunction) handler;
     }
 
     private static JsFunction installFn(UI ui) {

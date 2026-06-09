@@ -15,24 +15,21 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShareActionTest {
 
     @Test
-    void fireAndForget_handlerCallsNavigatorShareWithAllSlots() {
+    void fireAndForget_allSlots_emitsNavigatorShareWithEachInputFunction() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -43,9 +40,20 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
+        // Each slot value is produced on the client by invoking its input
+        // JsFunction with the event; the literal values are captured, not
+        // stringified into the body.
+        JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "navigator.share({title:\"Hi\",text:\"World\",url:\"https://vaadin.com\"});",
-                handlerOf(singleInstallFn(ui)).getBody());
+                "return navigator.share({title:$0(event),text:$1(event),url:$2(event)})",
+                action.getBody());
+        assertEquals("Hi", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+        assertEquals("World", ((JsFunction) action.getCaptures().get(1))
+                .getCaptures().get(0));
+        assertEquals("https://vaadin.com",
+                ((JsFunction) action.getCaptures().get(2)).getCaptures()
+                        .get(0));
     }
 
     @Test
@@ -59,12 +67,16 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("navigator.share({url:\"https://vaadin.com\"});",
-                handlerOf(singleInstallFn(ui)).getBody());
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("return navigator.share({url:$0(event)})",
+                action.getBody());
+        assertEquals("https://vaadin.com",
+                ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                        .get(0));
     }
 
     @Test
-    void withCallbacks_handlerCallsObserverWithNavigatorSharePromise() {
+    void withCallbacks_wrapsInnerNavigatorSharePromiseWithObserver() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -76,35 +88,20 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // $0 = OBSERVE_PROMISE JsFunction, $1 = return channel; the
-        // .then/.catch glue lives inside $0, not in the action's expression.
-        assertEquals("$0(navigator.share({title:\"Hi\"}), $1);",
-                handlerOf(singleInstallFn(ui)).getBody());
+        // With outcome handling the action wraps the inner promise function
+        // with OBSERVE_PROMISE + the return channel; the inner $1 still calls
+        // navigator.share.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0($1(event), $2)", action.getBody());
+
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return navigator.share({title:$0(event)})",
+                inner.getBody());
     }
 
     @Test
     void allInputsNull_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ShareAction(null, null, null));
-    }
-
-    private static JsFunction singleInstallFn(UI ui) {
-        List<PendingJavaScriptInvocation> pending = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        return installFn(pending.get(0).getInvocation());
-    }
-
-    private static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
-    }
-
-    private static JsFunction handlerOf(JsFunction installFn) {
-        Object o = installFn.getCaptures().get(0);
-        assertTrue(o instanceof JsFunction,
-                "Expected install $0 to be the handler JsFunction");
-        return (JsFunction) o;
     }
 }

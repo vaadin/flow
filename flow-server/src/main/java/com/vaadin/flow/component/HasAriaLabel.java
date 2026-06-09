@@ -109,6 +109,35 @@ public interface HasAriaLabel extends HasElement {
     }
 
     /**
+     * Set the aria-labelledby of the component to reference the given label
+     * component. If {@code labelComponent} does not have an id, one is
+     * generated automatically.
+     * <p>
+     * The id is resolved lazily before the next client response after this
+     * component is attached, so the label component's id can be set after
+     * calling this method. If no id is set by then, one will be generated.
+     * <p>
+     * The label component <b>must</b> be in the same DOM scope as this
+     * component, otherwise screen readers may fail to announce the label
+     * content properly.
+     * <p>
+     * This method should not be used if {@link #setAriaLabel(String)} is also
+     * used. If both attributes are present, aria-labelledby will take
+     * precedence over aria-label.
+     *
+     * @param labelComponent
+     *            the component to use as the label, not {@code null}
+     */
+    default void setAriaLabelledBy(Component labelComponent) {
+        if (labelComponent == null) {
+            throw new IllegalArgumentException(
+                    "The provided component cannot be null");
+        }
+        ComponentUtil.resolveOrGenerateIdLater(getElement(), labelComponent,
+                "arialabelledby-", this::setAriaLabelledBy);
+    }
+
+    /**
      * Gets the aria-labelledby of the component
      *
      * @return an optional aria-labelledby of the component if no

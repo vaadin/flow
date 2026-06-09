@@ -20,13 +20,27 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
 /**
- * Asks the browser to fullscreen the target component's root element via
- * {@code Element.requestFullscreen()} when the bound trigger fires.
+ * Asks the browser to enter fullscreen when the bound trigger fires.
+ * <p>
+ * Two modes:
+ * <ul>
+ * <li><b>Page</b> — calls {@code window.Vaadin.Flow.fullscreen
+ * .requestPageFullscreen()} which fullscreens {@code document.documentElement}.
+ * Themes and overlay components keep working.</li>
+ * <li><b>Component</b> — calls {@code window.Vaadin.Flow.fullscreen
+ * .requestComponentFullscreen(element, wrapper)} which moves the target into
+ * the Vaadin wrapper element, hides the rest of the view, and fullscreens
+ * {@code document.documentElement}. The component is restored to its original
+ * position when fullscreen exits (programmatically, via Escape, or a
+ * superseding request).</li>
+ * </ul>
  * <p>
  * The Fullscreen API requires transient user activation (a click, key press, …)
  * — calling {@code requestFullscreen} from a server push or constructor is
@@ -34,22 +48,13 @@ import com.vaadin.flow.function.SerializableRunnable;
  * during such a gesture, typically a {@link ClickTrigger}, so the call happens
  * synchronously inside the handler and inherits the gesture.
  * <p>
- * This action is intentionally low-level: it calls {@code requestFullscreen}
- * directly on the target's root element. That doesn't interact well with Vaadin
- * theming or overlay components, which expect the fullscreen element to be
- * {@code document.documentElement}. A higher-level
- * {@code Component.requestFullscreen()} facade — see PR vaadin/flow#24326 —
- * handles the wrapping needed for full Vaadin compatibility; this action is the
- * trigger-framework primitive it builds on (or a direct option when the Vaadin
- * wrapping isn't needed).
- * <p>
- * Outcome handling extends {@link PromiseAction}: use the target-only
- * constructor for fire-and-forget, or the overload taking
- * {@code onSuccess}/{@code onError} consumers. The promise resolves with
- * {@code undefined} so {@code onSuccess} is a {@link SerializableRunnable} with
- * no value, but {@code onError} receives a {@link PromiseAction.Error} record
- * with the browser's error name and message — the spec-documented rejection is
- * {@code NotAllowedError} (no gesture / permissions policy).
+ * Outcome handling extends {@link PromiseAction}: use the fire-and-forget
+ * constructors, or the overloads taking {@code onSuccess}/{@code onError}
+ * consumers. The promise resolves with {@code undefined} so {@code onSuccess}
+ * is a {@link SerializableRunnable} with no value, but {@code onError} receives
+ * a {@link PromiseAction.Error} record with the browser's error name and
+ * message — the spec-documented rejection is {@code NotAllowedError} (no
+ * gesture / permissions policy).
  *
  * <pre>{@code
  * RequestFullscreenAction goFs = new RequestFullscreenAction(panel,
@@ -62,45 +67,92 @@ import com.vaadin.flow.function.SerializableRunnable;
  */
 public class RequestFullscreenAction extends PromiseAction<Void> {
 
-    private final Element target;
+    private final @Nullable Element target;
+    private final @Nullable Element wrapper;
 
     /**
-     * Creates a fire-and-forget fullscreen action: the rendered JS just calls
-     * {@code requestFullscreen()} and the server never sees the outcome.
-     *
-     * @param target
-     *            the component whose root element to fullscreen, not
-     *            {@code null}
+     * Creates a fire-and-forget page-level fullscreen action. The rendered JS
+     * calls {@code requestPageFullscreen()} and the server never sees the
+     * outcome.
      */
-    public RequestFullscreenAction(Component target) {
+    public RequestFullscreenAction() {
         super();
-        this.target = Objects.requireNonNull(target, "target must not be null")
-                .getElement();
+        this.target = null;
+        this.wrapper = null;
     }
 
     /**
-     * Creates a fullscreen action whose outcome is reported back to the server.
+     * Creates a page-level fullscreen action whose outcome is reported back to
+     * the server.
      *
-     * @param target
-     *            the component whose root element to fullscreen, not
-     *            {@code null}
      * @param onSuccess
-     *            invoked on the UI thread after the client reports
-     *            {@code requestFullscreen} resolved, not {@code null}
+     *            invoked on the UI thread after the client reports the request
+     *            resolved, not {@code null}
      * @param onError
      *            invoked on the UI thread with the browser's error after the
-     *            client reports {@code requestFullscreen} rejected, not
-     *            {@code null}
+     *            client reports the request rejected, not {@code null}
+     */
+    public RequestFullscreenAction(SerializableRunnable onSuccess,
+            SerializableConsumer<Error> onError) {
+        super(Void.class, runnableAsConsumer(onSuccess), onError);
+        this.target = null;
+        this.wrapper = null;
+    }
+
+    /**
+     * Creates a fire-and-forget component-level fullscreen action. The
+     * component is moved into the UI's wrapper element so themes and overlay
+     * components keep working.
+     *
+     * @param target
+     *            the component to fullscreen, not {@code null}; must be
+     *            attached to a UI
+     */
+    public RequestFullscreenAction(Component target) {
+        super();
+        Objects.requireNonNull(target, "target must not be null");
+        warnIfNotVisible(target, "Fullscreen.enter()");
+        this.target = target.getElement();
+        this.wrapper = resolveWrapper(target);
+    }
+
+    /**
+     * Creates a component-level fullscreen action whose outcome is reported
+     * back to the server.
+     *
+     * @param target
+     *            the component to fullscreen, not {@code null}; must be
+     *            attached to a UI
+     * @param onSuccess
+     *            invoked on the UI thread after the client reports the request
+     *            resolved, not {@code null}
+     * @param onError
+     *            invoked on the UI thread with the browser's error after the
+     *            client reports the request rejected, not {@code null}
      */
     public RequestFullscreenAction(Component target,
             SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
-        // The promise resolves with undefined — value is always null — so the
-        // runnable shape is the natural fit; one-line adapter wires it to the
-        // generic Consumer<@Nullable Void> the base class expects.
         super(Void.class, runnableAsConsumer(onSuccess), onError);
-        this.target = Objects.requireNonNull(target, "target must not be null")
-                .getElement();
+        Objects.requireNonNull(target, "target must not be null");
+        warnIfNotVisible(target, "Fullscreen.enter()");
+        this.target = target.getElement();
+        this.wrapper = resolveWrapper(target);
+    }
+
+    private static Element resolveWrapper(Component target) {
+        UI ui = target.getUI().orElseThrow(() -> new IllegalStateException(
+                "Component must be attached to a UI to fullscreen it"));
+        Element wrapper = ui.getInternals().getWrapperElement();
+        if (wrapper == null) {
+            // Real applications create the wrapper during UI init
+            // (UI.doInit). The only place this is null in practice is a unit
+            // test bypassing init — surface that clearly so the test can call
+            // ui.getInternals().createWrapperElement() during setup.
+            throw new IllegalStateException(
+                    "UI wrapper element is not available — UI init has not run yet");
+        }
+        return wrapper;
     }
 
     private static SerializableConsumer<@Nullable Void> runnableAsConsumer(
@@ -110,8 +162,15 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     }
 
     @Override
-    protected void appendPromiseExpression(JsBuilder builder,
-            StringBuilder out) {
-        out.append(builder.reference(target)).append(".requestFullscreen()");
+    protected JsFunction toPromiseJs(Trigger trigger) {
+        if (target == null) {
+            return JsFunction.of(
+                    "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
+        }
+        // wrapper is non-null when target is non-null — resolveWrapper
+        // throws otherwise. $0 = target element, $1 = the UI wrapper element.
+        return JsFunction.of(
+                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
+                target, Objects.requireNonNull(wrapper));
     }
 }

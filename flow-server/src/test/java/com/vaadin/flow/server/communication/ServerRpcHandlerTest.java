@@ -20,6 +20,7 @@ import java.io.StringReader;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -294,6 +295,29 @@ class ServerRpcHandlerTest {
 
         assertThrows(DauEnforcementException.class,
                 () -> handler.handleRpc(ui, reader, request));
+    }
+
+    @Test
+    void handleRpc_firesRpcInvocationListener_withTypeNameAndNode()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
+        ui = new UI();
+        ui.getInternals().setSession(session);
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        // Ended is always fired (in a finally) so observers can close spans.
+        Mockito.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
+        RpcInvocationEvent event = captor.getValue();
+        assertEquals("event", event.getType());
+        assertEquals("click", event.getName());
+        assertEquals(1, event.getNodeId());
     }
 
     private void enableDau() {
