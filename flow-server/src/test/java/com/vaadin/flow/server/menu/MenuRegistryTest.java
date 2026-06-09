@@ -177,6 +177,12 @@ class MenuRegistryTest {
     }
 
     @Test
+    void getTitle_generatorReceivesAnnotationValue() {
+        assertEquals("resolved:orders.title",
+                MenuRegistry.getTitle(KeyedTitleRoute.class));
+    }
+
+    @Test
     void getMenuItemsContainsExpectedClientPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -642,6 +648,19 @@ class MenuRegistryTest {
         public GeneratedTitleRoute() {
             instantiated = true;
         }
+    }
+
+    public static class ValueEchoTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "resolved:" + context.value();
+        }
+    }
+
+    @Tag("div")
+    @Route("keyed")
+    @PageTitle(value = "orders.title", generator = ValueEchoTitleGenerator.class)
+    public static class KeyedTitleRoute extends Component {
     }
 
     @Tag("div")

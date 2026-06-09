@@ -1134,9 +1134,11 @@ public abstract class AbstractNavigationStateRenderer
             Component routeTarget, String route, RouteParameters parameters) {
         Instantiator instantiator = navigationEvent.getUI().getSession()
                 .getService().getInstantiator();
+        QueryParameters queryParameters = navigationEvent.getLocation()
+                .getQueryParameters();
         Supplier<String> lookForTitleInTarget = () -> resolveTitleFromTarget(
                 instantiator, instantiator.getApplicationClass(routeTarget),
-                parameters);
+                parameters, queryParameters);
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1151,7 +1153,8 @@ public abstract class AbstractNavigationStateRenderer
 
     @SuppressWarnings("unchecked")
     private static String resolveTitleFromTarget(Instantiator instantiator,
-            Class<?> routeTarget, RouteParameters parameters) {
+            Class<?> routeTarget, RouteParameters parameters,
+            QueryParameters queryParameters) {
         PageTitle annotation = routeTarget.getAnnotation(PageTitle.class);
         if (annotation == null) {
             return "";
@@ -1160,7 +1163,7 @@ public abstract class AbstractNavigationStateRenderer
             return instantiator.getOrCreate(annotation.generator())
                     .generatePageTitle(new PageTitleContext(
                             (Class<? extends Component>) routeTarget,
-                            parameters));
+                            parameters, queryParameters, annotation.value()));
         }
         return annotation.value();
     }

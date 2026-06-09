@@ -49,6 +49,7 @@ import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PageTitleContext;
 import com.vaadin.flow.router.PageTitleGenerator;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
@@ -288,8 +289,8 @@ public class MenuRegistry {
         }
         if (!PageTitleGenerator.class.equals(annotation.generator())) {
             return instantiateGenerator(annotation.generator())
-                    .generatePageTitle(
-                            new PageTitleContext(target, parameters));
+                    .generatePageTitle(new PageTitleContext(target, parameters,
+                            QueryParameters.empty(), annotation.value()));
         }
         return annotation.value();
     }

@@ -42,7 +42,10 @@ public @interface PageTitle {
      * Empty string will clear any previous page title. In that case the browser
      * will decide what to show as the title, most likely the url.
      * <p>
-     * Ignored when a {@link #generator()} is set.
+     * When a {@link #generator()} is set, this value is not used as the title
+     * directly but is handed to the generator through
+     * {@link PageTitleContext#value()}, so a generic generator can use it as a
+     * key (for example an i18n message key) to resolve the title.
      * <p>
      * You may dynamically update the title for an already shown view by
      * implementing the {@link HasDynamicTitle#getPageTitle()} method.
@@ -56,9 +59,11 @@ public @interface PageTitle {
      * without requiring an instance of the navigation target.
      * <p>
      * When set to a generator other than the default {@link PageTitleGenerator}
-     * marker, the generator is used to resolve the title and {@link #value()}
-     * is ignored. This allows the title to be computed from the route
-     * parameters even for routes that are not instantiated, such as the entries
+     * marker, the generator is used to resolve the title. The {@link #value()}
+     * is then handed to the generator through {@link PageTitleContext} rather
+     * than used directly, so a single application-wide generator can resolve
+     * many routes from their declared value. This allows the title to be
+     * computed even for routes that are not instantiated, such as the entries
      * of a breadcrumb trail.
      *
      * @return the generator type, or {@link PageTitleGenerator} itself when no

@@ -23,10 +23,13 @@ import com.vaadin.flow.component.Component;
  * The context handed to a {@link PageTitleGenerator} when resolving a
  * navigation target title without an instance.
  * <p>
- * It exposes the navigation target class and the {@link RouteParameters} the
- * target would be navigated to with, which is everything an instance-free title
- * resolver needs to compute a meaningful title (for example to look up a domain
- * object by an id contained in the parameters).
+ * It exposes the navigation target class, the {@link RouteParameters} and
+ * {@link QueryParameters} the target would be navigated to with, and the
+ * {@link PageTitle#value()} declared on the route. That is everything an
+ * instance-free title resolver needs to compute a meaningful title, either by
+ * inspecting the parameters (for example to look up a domain object by an id)
+ * or by treating {@link #value()} as a key to resolve (for example an i18n key
+ * resolved by a single application-wide generator).
  *
  * @param navigationTarget
  *            the navigation target class the title is resolved for
@@ -34,8 +37,15 @@ import com.vaadin.flow.component.Component;
  *            the route parameters the navigation target is resolved with;
  *            {@link RouteParameters#empty()} when no parameters are available
  *            (for example when resolving menu titles)
+ * @param queryParameters
+ *            the query parameters the navigation target is resolved with;
+ *            {@link QueryParameters#empty()} when not available
+ * @param value
+ *            the {@link PageTitle#value()} declared on the route, or an empty
+ *            string when none is declared
  * @author Vaadin Ltd
  */
 public record PageTitleContext(Class<? extends Component> navigationTarget,
-        RouteParameters routeParameters) implements Serializable {
+        RouteParameters routeParameters, QueryParameters queryParameters,
+        String value) implements Serializable {
 }
