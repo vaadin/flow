@@ -108,6 +108,6 @@ public final class WebShare implements Serializable {
      */
     public static Signal<WebShareSupport> supportSignal(UI ui) {
         Objects.requireNonNull(ui, "ui must not be null");
-        return ui.getInternals().getWebShareSupportSignal().asReadonly();
+        return ui.getInternals().getWebShareSupportSignalReadOnly();
     }
 }

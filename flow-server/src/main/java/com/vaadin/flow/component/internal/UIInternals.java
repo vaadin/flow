@@ -254,6 +254,9 @@ public class UIInternals implements Serializable {
     private final ValueSignal<WebShareSupport> webShareSupportSignal = new ValueSignal<>(
             WebShareSupport.UNKNOWN);
 
+    private final Signal<WebShareSupport> webShareSupportReadOnly = webShareSupportSignal
+            .asReadonly();
+
     private GeolocationClient geolocationClient;
 
     private Registration geolocationClientAvailabilityRegistration;
@@ -1515,16 +1518,16 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Returns the reactive signal holding the Web Share API support state for
-     * this UI. Starts as {@link WebShareSupport#UNKNOWN} before the first
-     * client bootstrap report, then transitions to the value the browser
+     * Returns the read-only reactive signal holding the Web Share API support
+     * state for this UI. Starts as {@link WebShareSupport#UNKNOWN} before the
+     * first client bootstrap report, then transitions to the value the browser
      * reports. Application code reads it via
      * {@link com.vaadin.flow.component.webshare.WebShare#supportSignal()}.
      *
      * @return the support signal
      */
-    public ValueSignal<WebShareSupport> getWebShareSupportSignal() {
-        return webShareSupportSignal;
+    public Signal<WebShareSupport> getWebShareSupportSignalReadOnly() {
+        return webShareSupportReadOnly;
     }
 
     /**
