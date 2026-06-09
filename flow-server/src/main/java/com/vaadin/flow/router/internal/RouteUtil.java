@@ -39,6 +39,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -49,6 +50,11 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentContext;
+import com.vaadin.flow.router.RouteParentReference;
+import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
@@ -740,6 +746,92 @@ public class RouteUtil {
                 .filter(HasDynamicTitle.class::isInstance)
                 .map(element -> ((HasDynamicTitle) element).getPageTitle())
                 .filter(Objects::nonNull).findFirst();
+    }
+
+    /**
+     * Resolves the logical parent of the given navigation target as declared by
+     * a {@link RouteParent} annotation, without instantiating the route or its
+     * parent.
+     * <p>
+     * A {@link RouteParent#resolver()} takes precedence over a static
+     * {@link RouteParent#value()}. A static parent is resolved with the same
+     * route parameters as the given target.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the logical parent for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the logical parent reference, or an empty {@link Optional} if the
+     *         target declares no logical parent
+     */
+    public static Optional<RouteParentReference> getRouteParent(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        Objects.requireNonNull(navigationTarget,
+                "navigationTarget must not be null");
+        Objects.requireNonNull(parameters, "parameters must not be null");
+        RouteParent annotation = navigationTarget
+                .getAnnotation(RouteParent.class);
+        if (annotation == null) {
+            return Optional.empty();
+        }
+        if (!RouteParentResolver.class.equals(annotation.resolver())) {
+            return instantiateResolver(annotation.resolver()).resolveParent(
+                    new RouteParentContext(navigationTarget, parameters));
+        }
+        if (!Component.class.equals(annotation.value())) {
+            return Optional.of(
+                    new RouteParentReference(annotation.value(), parameters));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Builds the logical breadcrumb trail for the given navigation target by
+     * climbing the {@link RouteParent} hierarchy, without instantiating any of
+     * the routes.
+     * <p>
+     * The returned list is ordered from the hierarchy root to the given
+     * navigation target, with the target itself as the last element. Each entry
+     * carries the route parameters it should be resolved with, so the title of
+     * every entry can be resolved with
+     * {@link MenuRegistry#getTitle(Class, RouteParameters)} (which honors
+     * {@code PageTitleGenerator}). A guard stops the walk if the hierarchy
+     * contains a cycle.
+     *
+     * @param navigationTarget
+     *            the navigation target to build the trail for, not {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the breadcrumb trail ordered from root to the navigation target,
+     *         never empty
+     */
+    public static List<RouteParentReference> getBreadcrumbTrail(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        List<RouteParentReference> trail = new ArrayList<>();
+        Set<Class<? extends Component>> visited = new HashSet<>();
+        RouteParentReference current = new RouteParentReference(
+                navigationTarget, parameters);
+        while (current != null && visited.add(current.navigationTarget())) {
+            trail.add(current);
+            current = getRouteParent(current.navigationTarget(),
+                    current.routeParameters()).orElse(null);
+        }
+        Collections.reverse(trail);
+        return trail;
+    }
+
+    private static RouteParentResolver instantiateResolver(
+            Class<? extends RouteParentResolver> resolverType) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service != null) {
+            return service.getInstantiator().getOrCreate(resolverType);
+        }
+        return ReflectTools.createInstance(resolverType);
     }
 
     /**

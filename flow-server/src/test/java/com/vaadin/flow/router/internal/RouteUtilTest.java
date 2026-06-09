@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.hamcrest.MatcherAssert;
@@ -37,10 +38,18 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentContext;
+import com.vaadin.flow.router.RouteParentReference;
+import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -1125,6 +1134,115 @@ class RouteUtilTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void breadcrumbTrail_resolvesParentsAndTitlesWithoutInstance() {
+        OrgView.instantiated = false;
+        ProjectView.instantiated = false;
+
+        RouteParameters parameters = new RouteParameters(
+                Map.of("orgId", "acme", "projectId", "42"));
+
+        List<RouteParentReference> trail = RouteUtil
+                .getBreadcrumbTrail(ProjectView.class, parameters);
+
+        // ordered from root to current target
+        assertEquals(List.of(OrgView.class, ProjectView.class), trail.stream()
+                .map(RouteParentReference::navigationTarget).toList());
+
+        // the org parameter is carried over to the parent reference
+        assertEquals("acme",
+                trail.get(0).getRouteParameters().get("orgId").orElseThrow());
+
+        // titles compose with PageTitleGenerator, also without an instance
+        List<String> titles = trail.stream()
+                .map(reference -> MenuRegistry.getTitle(
+                        reference.navigationTarget(),
+                        reference.routeParameters()))
+                .toList();
+        assertEquals(List.of("Org acme", "Project 42"), titles);
+
+        assertFalse(OrgView.instantiated,
+                "Breadcrumb resolution must not instantiate the route");
+        assertFalse(ProjectView.instantiated,
+                "Breadcrumb resolution must not instantiate the route");
+    }
+
+    @Test
+    void getRouteParent_staticValue_carriesParameters() {
+        RouteParameters parameters = new RouteParameters("orgId", "acme");
+
+        RouteParentReference parent = RouteUtil
+                .getRouteParent(SettingsView.class, parameters).orElseThrow();
+
+        assertEquals(OrgView.class, parent.navigationTarget());
+        assertEquals("acme",
+                parent.getRouteParameters().get("orgId").orElseThrow());
+    }
+
+    @Test
+    void getRouteParent_noAnnotation_isEmpty() {
+        assertFalse(
+                RouteUtil.getRouteParent(OrgView.class, RouteParameters.empty())
+                        .isPresent());
+    }
+
+    public static class OrgTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Org "
+                    + context.getRouteParameters().get("orgId").orElse("");
+        }
+    }
+
+    public static class ProjectTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Project "
+                    + context.getRouteParameters().get("projectId").orElse("");
+        }
+    }
+
+    public static class OrgParentResolver implements RouteParentResolver {
+        @Override
+        public Optional<RouteParentReference> resolveParent(
+                RouteParentContext context) {
+            RouteParameters parentParameters = new RouteParameters("orgId",
+                    context.getRouteParameters().get("orgId").orElseThrow());
+            return Optional.of(
+                    new RouteParentReference(OrgView.class, parentParameters));
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId")
+    @PageTitle(generator = OrgTitleGenerator.class)
+    public static class OrgView extends Component {
+        static boolean instantiated = false;
+
+        public OrgView() {
+            instantiated = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/projects/:projectId")
+    @PageTitle(generator = ProjectTitleGenerator.class)
+    @RouteParent(resolver = OrgParentResolver.class)
+    public static class ProjectView extends Component {
+        static boolean instantiated = false;
+
+        public ProjectView() {
+            instantiated = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/settings")
+    @PageTitle("Settings")
+    @RouteParent(OrgView.class)
+    public static class SettingsView extends Component {
     }
 
     private static class MockRouteTarget extends RouteTarget {
