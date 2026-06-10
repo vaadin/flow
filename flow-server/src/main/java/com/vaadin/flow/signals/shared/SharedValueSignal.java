@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.shared;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -45,7 +46,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  */
 public class SharedValueSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<T> {
-    private final Class<T> valueType;
+    private final Class<@NonNull T> valueType;
 
     /**
      * Creates a new value signal with the given initial value. The type of the
@@ -58,7 +59,7 @@ public class SharedValueSignal<T extends @Nullable Object>
     @SuppressWarnings("unchecked")
     public SharedValueSignal(T initialValue) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                (Class<T>) initialValue.getClass());
+                (Class<@NonNull T>) initialValue.getClass());
         set(initialValue);
     }
 
@@ -69,7 +70,7 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    public SharedValueSignal(Class<T> valueType) {
+    public SharedValueSignal(Class<@NonNull T> valueType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 Objects.requireNonNull(valueType));
     }
@@ -91,7 +92,7 @@ public class SharedValueSignal<T extends @Nullable Object>
      *            the value type, not <code>null</code>
      */
     protected SharedValueSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> valueType) {
+            CommandValidator validator, Class<@NonNull T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }
