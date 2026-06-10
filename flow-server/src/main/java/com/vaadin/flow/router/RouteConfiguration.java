@@ -91,6 +91,22 @@ public class RouteConfiguration implements Serializable {
         return new RouteConfiguration(registry);
     }
 
+    /**
+     * Gets the {@link RouteRegistry} this configuration operates on.
+     * <p>
+     * This is a convenient way to obtain the registry of a given scope for APIs
+     * that accept a {@link RouteRegistry}, for example
+     * {@code RouteConfiguration.forSessionScope().getRegistry()} or
+     * {@code RouteConfiguration.forApplicationScope().getRegistry()}, without
+     * having to resolve the registry directly.
+     *
+     * @return the route registry this configuration operates on, not
+     *         {@code null}
+     */
+    public RouteRegistry getRegistry() {
+        return handledRegistry;
+    }
+
     /* Static getters for getting information on registered routes */
 
     /**

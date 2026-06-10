@@ -51,6 +51,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -105,6 +106,12 @@ class RouteConfigurationTest {
         } finally {
             session.unlock();
         }
+    }
+
+    @Test
+    void getRegistry_returnsTheBackingRegistry() {
+        assertSame(registry,
+                RouteConfiguration.forRegistry(registry).getRegistry());
     }
 
     @Test
