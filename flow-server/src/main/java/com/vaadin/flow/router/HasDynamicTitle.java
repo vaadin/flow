@@ -18,10 +18,18 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Allows to resolve navigation target title dynamically at runtime.
+ * Allows to resolve navigation target title dynamically at runtime, based on
+ * the live state of the navigation target instance.
  * <p>
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
  * and have a {@link PageTitle} annotation.
+ * <p>
+ * Since this is resolved from the navigation target instance, it can only
+ * produce a title for a route that is actually shown. To resolve a title
+ * <em>without</em> an instance &mdash; for example for routes that are not
+ * shown, such as the entries of a breadcrumb trail or a menu &mdash; use the
+ * instance-free counterpart {@link DynamicPageTitle} together with a
+ * {@link PageTitleGenerator}.
  *
  * @author Vaadin Ltd
  * @since 1.0.
