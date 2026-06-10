@@ -42,13 +42,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.DevBundleUtils;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.MenuData;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PageTitleContext;
 import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -56,6 +54,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.ParameterInfo;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -284,40 +283,13 @@ public class MenuRegistry {
      */
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {
-        PageTitle pageTitle = target.getAnnotation(PageTitle.class);
-        String value = pageTitle != null ? pageTitle.value() : "";
-        DynamicPageTitle dynamic = target.getAnnotation(DynamicPageTitle.class);
-
-        // 1. per-route generator
-        if (dynamic != null) {
-            return instantiateGenerator(dynamic.value())
-                    .generatePageTitle(new PageTitleContext(target, parameters,
-                            QueryParameters.empty(), value));
-        }
-        // 2. application-wide default generator
-        PageTitleGenerator generator = getDefaultPageTitleGenerator();
-        if (generator != null) {
-            return generator.generatePageTitle(new PageTitleContext(target,
-                    parameters, QueryParameters.empty(), value));
-        }
-        // 3. static value, or class simple name when not annotated
-        return pageTitle != null ? value : target.getSimpleName();
-    }
-
-    private static PageTitleGenerator instantiateGenerator(
-            Class<? extends PageTitleGenerator> generatorType) {
         VaadinService service = VaadinService.getCurrent();
-        if (service != null) {
-            return service.getInstantiator().getOrCreate(generatorType);
-        }
-        return ReflectTools.createInstance(generatorType);
-    }
-
-    private static PageTitleGenerator getDefaultPageTitleGenerator() {
-        VaadinService service = VaadinService.getCurrent();
-        return service != null
-                ? service.getInstantiator().getPageTitleGenerator()
+        Instantiator instantiator = service != null ? service.getInstantiator()
                 : null;
+        return RouteUtil
+                .resolvePageTitle(instantiator, target, parameters,
+                        QueryParameters.empty())
+                .orElseGet(target::getSimpleName);
     }
 
     /**

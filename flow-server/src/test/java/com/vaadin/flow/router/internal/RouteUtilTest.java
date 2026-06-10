@@ -1307,7 +1307,7 @@ class RouteUtilTest {
 
     @Test
     void getRouteParent_resolverReturningEmpty_marksRoot() {
-        // RootResolver returns empty -> OrderDetailView is its own root
+        // RootResolver returns empty -> RootResolvedView is its own root
         assertFalse(RouteUtil.getRouteParent(null, RootResolvedView.class,
                 RouteParameters.empty()).isPresent());
     }

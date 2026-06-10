@@ -51,7 +51,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
@@ -62,9 +61,6 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PageTitleContext;
-import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -1137,9 +1133,13 @@ public abstract class AbstractNavigationStateRenderer
                 .getService().getInstantiator();
         QueryParameters queryParameters = navigationEvent.getLocation()
                 .getQueryParameters();
-        Supplier<String> lookForTitleInTarget = () -> resolveTitleFromTarget(
-                instantiator, instantiator.getApplicationClass(routeTarget),
-                parameters, queryParameters);
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> targetClass = (Class<? extends Component>) instantiator
+                .getApplicationClass(routeTarget);
+        Supplier<String> lookForTitleInTarget = () -> RouteUtil
+                .resolvePageTitle(instantiator, targetClass, parameters,
+                        queryParameters)
+                .orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1150,33 +1150,6 @@ public abstract class AbstractNavigationStateRenderer
                         .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static String resolveTitleFromTarget(Instantiator instantiator,
-            Class<?> routeTarget, RouteParameters parameters,
-            QueryParameters queryParameters) {
-        PageTitle pageTitle = routeTarget.getAnnotation(PageTitle.class);
-        String value = pageTitle != null ? pageTitle.value() : "";
-        DynamicPageTitle dynamic = routeTarget
-                .getAnnotation(DynamicPageTitle.class);
-
-        // 1. per-route generator
-        if (dynamic != null) {
-            return instantiator.getOrCreate(dynamic.value())
-                    .generatePageTitle(new PageTitleContext(
-                            (Class<? extends Component>) routeTarget,
-                            parameters, queryParameters, value));
-        }
-        // 2. application-wide default generator
-        PageTitleGenerator generator = instantiator.getPageTitleGenerator();
-        if (generator != null) {
-            return generator.generatePageTitle(new PageTitleContext(
-                    (Class<? extends Component>) routeTarget, parameters,
-                    queryParameters, value));
-        }
-        // 3. static value (empty when not annotated)
-        return value;
     }
 
     private static boolean isPreserveOnRefreshTarget(
