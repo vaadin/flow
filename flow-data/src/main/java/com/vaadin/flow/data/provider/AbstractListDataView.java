@@ -210,7 +210,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         final ListDataProvider<T> dataProvider = getDataProvider();
         if (!contains(item)) {
             dataProvider.getItems().add(item);
-            dataProvider.refreshAll();
+            dataProvider.notifyItemAdded(item);
         }
         return this;
     }
@@ -269,8 +269,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> removeItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        removeItemIfPresent(item, dataProvider);
-        dataProvider.refreshAll();
+        if (removeItemIfPresent(item, dataProvider)) {
+            dataProvider.notifyItemRemoved(item);
+        } else {
+            dataProvider.refreshAll();
+        }
         return this;
     }
 
@@ -315,8 +318,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
     }
 
-    private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
-        dataProvider.getItems().removeIf(nextItem -> equals(item, nextItem));
+    private boolean removeItemIfPresent(T item,
+            ListDataProvider<T> dataProvider) {
+        return dataProvider.getItems()
+                .removeIf(nextItem -> equals(item, nextItem));
     }
 
     private void addItemOnTarget(T item, T target,
@@ -348,7 +353,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         removeItemIfPresent(item, dataProvider);
         itemList.add(insertItemsIndexProvider
                 .apply(getItemIndex(target, itemList.stream())), item);
-        dataProvider.refreshAll();
+        dataProvider.notifyItemAdded(item);
     }
 
     private void addItemCollectionOnTarget(Collection<T> items, T target,
