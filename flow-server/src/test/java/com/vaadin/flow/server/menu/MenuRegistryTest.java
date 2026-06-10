@@ -48,6 +48,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PageTitleContext;
@@ -666,7 +667,7 @@ class MenuRegistryTest {
 
     @Tag("div")
     @Route("product/:productId")
-    @PageTitle(generator = ProductTitleGenerator.class)
+    @DynamicPageTitle(ProductTitleGenerator.class)
     public static class GeneratedTitleRoute extends Component {
         static boolean instantiated = false;
 
@@ -684,7 +685,8 @@ class MenuRegistryTest {
 
     @Tag("div")
     @Route("keyed")
-    @PageTitle(value = "orders.title", generator = ValueEchoTitleGenerator.class)
+    @PageTitle("orders.title")
+    @DynamicPageTitle(ValueEchoTitleGenerator.class)
     public static class KeyedTitleRoute extends Component {
     }
 

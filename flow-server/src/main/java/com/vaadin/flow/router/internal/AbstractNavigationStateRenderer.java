@@ -51,6 +51,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
@@ -1155,13 +1156,14 @@ public abstract class AbstractNavigationStateRenderer
     private static String resolveTitleFromTarget(Instantiator instantiator,
             Class<?> routeTarget, RouteParameters parameters,
             QueryParameters queryParameters) {
-        PageTitle annotation = routeTarget.getAnnotation(PageTitle.class);
-        String value = annotation != null ? annotation.value() : "";
+        PageTitle pageTitle = routeTarget.getAnnotation(PageTitle.class);
+        String value = pageTitle != null ? pageTitle.value() : "";
+        DynamicPageTitle dynamic = routeTarget
+                .getAnnotation(DynamicPageTitle.class);
 
         // 1. per-route generator
-        if (annotation != null
-                && !PageTitleGenerator.class.equals(annotation.generator())) {
-            return instantiator.getOrCreate(annotation.generator())
+        if (dynamic != null) {
+            return instantiator.getOrCreate(dynamic.value())
                     .generatePageTitle(new PageTitleContext(
                             (Class<? extends Component>) routeTarget,
                             parameters, queryParameters, value));

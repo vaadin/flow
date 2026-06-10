@@ -624,7 +624,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("generated-title/:productId")
-    @PageTitle(generator = ProductTitleGenerator.class)
+    @DynamicPageTitle(ProductTitleGenerator.class)
     @Tag(Tag.DIV)
     public static class NavigationTargetWithGeneratedTitle extends Component {
     }
@@ -638,7 +638,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("query-title")
-    @PageTitle(generator = QueryTitleGenerator.class)
+    @DynamicPageTitle(QueryTitleGenerator.class)
     @Tag(Tag.DIV)
     public static class NavigationTargetWithQueryTitle extends Component {
     }

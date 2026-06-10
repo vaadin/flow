@@ -223,8 +223,8 @@ public interface Instantiator extends Serializable {
      * been defined.
      * <p>
      * Used to resolve route titles without a per-route
-     * {@link com.vaadin.flow.router.PageTitle#generator()}, for example a
-     * single generator that turns the declared
+     * {@link com.vaadin.flow.router.DynamicPageTitle}, for example a single
+     * generator that turns the declared
      * {@link com.vaadin.flow.router.PageTitle} value into a translated title
      * for every route.
      *

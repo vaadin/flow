@@ -45,6 +45,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PageTitleContext;
@@ -254,9 +255,9 @@ public class MenuRegistry {
     /**
      * Get page title for route or simple name if no PageTitle is set.
      * <p>
-     * Resolves a {@link PageTitle#generator()} with empty route parameters when
-     * one is configured. Use {@link #getTitle(Class, RouteParameters)} to pass
-     * the actual route parameters to the generator.
+     * Resolves a {@link DynamicPageTitle} generator with empty route parameters
+     * when one is configured. Use {@link #getTitle(Class, RouteParameters)} to
+     * pass the actual route parameters to the generator.
      *
      * @param target
      *            route class to get title for
@@ -269,7 +270,7 @@ public class MenuRegistry {
     /**
      * Get page title for route or simple name if no PageTitle is set.
      * <p>
-     * When the route declares a {@link PageTitle#generator()}, the generator is
+     * When the route declares a {@link DynamicPageTitle}, its generator is
      * resolved with the given route parameters without instantiating the route
      * class. This allows resolving titles for routes that are not currently
      * shown, such as the entries of a breadcrumb trail.
@@ -283,13 +284,13 @@ public class MenuRegistry {
      */
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {
-        PageTitle annotation = target.getAnnotation(PageTitle.class);
-        String value = annotation != null ? annotation.value() : "";
+        PageTitle pageTitle = target.getAnnotation(PageTitle.class);
+        String value = pageTitle != null ? pageTitle.value() : "";
+        DynamicPageTitle dynamic = target.getAnnotation(DynamicPageTitle.class);
 
         // 1. per-route generator
-        if (annotation != null
-                && !PageTitleGenerator.class.equals(annotation.generator())) {
-            return instantiateGenerator(annotation.generator())
+        if (dynamic != null) {
+            return instantiateGenerator(dynamic.value())
                     .generatePageTitle(new PageTitleContext(target, parameters,
                             QueryParameters.empty(), value));
         }
@@ -300,7 +301,7 @@ public class MenuRegistry {
                     parameters, QueryParameters.empty(), value));
         }
         // 3. static value, or class simple name when not annotated
-        return annotation != null ? value : target.getSimpleName();
+        return pageTitle != null ? value : target.getSimpleName();
     }
 
     private static PageTitleGenerator instantiateGenerator(

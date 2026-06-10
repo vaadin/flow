@@ -30,11 +30,11 @@ import java.io.Serializable;
  * breadcrumbs, menus or other navigation aids that render the titles of a whole
  * trail of routes.
  * <p>
- * A generator is referenced from a route through {@link PageTitle#generator()}:
+ * A generator is referenced from a route through {@link DynamicPageTitle}:
  *
  * <pre>
  * &#64;Route("products/:productId")
- * &#64;PageTitle(generator = ProductTitleGenerator.class)
+ * &#64;DynamicPageTitle(ProductTitleGenerator.class)
  * public class ProductView extends Div {
  *     // ...
  * }

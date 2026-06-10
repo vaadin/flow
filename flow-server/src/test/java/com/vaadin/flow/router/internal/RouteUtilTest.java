@@ -37,6 +37,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PageTitleContext;
@@ -1364,7 +1365,7 @@ class RouteUtilTest {
 
     @Tag(Tag.DIV)
     @Route("orgs/:orgId")
-    @PageTitle(generator = OrgTitleGenerator.class)
+    @DynamicPageTitle(OrgTitleGenerator.class)
     public static class OrgView extends Component {
         static boolean instantiated = false;
 
@@ -1375,7 +1376,7 @@ class RouteUtilTest {
 
     @Tag(Tag.DIV)
     @Route("orgs/:orgId/projects/:projectId")
-    @PageTitle(generator = ProjectTitleGenerator.class)
+    @DynamicPageTitle(ProjectTitleGenerator.class)
     @RouteParent(resolver = OrgParentResolver.class)
     public static class ProjectView extends Component {
         static boolean instantiated = false;
