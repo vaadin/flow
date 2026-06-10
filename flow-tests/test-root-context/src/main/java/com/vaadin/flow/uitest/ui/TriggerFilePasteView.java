@@ -25,28 +25,26 @@ import com.vaadin.flow.component.clipboard.PasteFile;
 import com.vaadin.flow.component.clipboard.PasteFileHandler;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 
 /**
  * Registers a {@link Clipboard#onFilePaste} listener using a
- * {@link PasteFileHandler#session() session} so the IT can verify all three
- * phases &mdash; {@code onStart} per paste, {@code onFile} per file (rendered
- * as text in a {@link Div}, parsed HTML through {@link Html}, or
- * {@code image/*} via {@link Image} with a data URL), and {@code onComplete}
- * when the paste's declared files have all arrived.
+ * {@link PasteFileHandler#batch() batch} so the IT can verify all three phases
+ * &mdash; {@code onStart} per paste, {@code onFile} per file (rendered as text
+ * in a {@link Div}, parsed HTML through {@link Html}, or {@code image/*} via
+ * {@link Image} with a data URL), and {@code onComplete} when the paste's
+ * declared files have all arrived.
  * <p>
  * Files accumulate across pastes &mdash; each paste runs its own independent
- * session, so two pastes in sequence (or even overlapping) both finish on their
+ * batch, so two pastes in sequence (or even overlapping) both finish on their
  * own timelines. {@code #file-count} tracks total files delivered;
- * {@code #completed-count} tracks how many sessions have hit
- * {@code onComplete}.
+ * {@code #completed-count} tracks how many batches have hit {@code onComplete}.
  * <p>
- * Push is required because each upload runs on a separate HTTP request &mdash;
- * the UI updates from the session callbacks would otherwise sit in the queue
- * until the next paste-triggered roundtrip.
+ * Note that there is no {@code @Push} on this view: each upload runs on a
+ * separate HTTP request, but {@code onFilePaste} dispatches a round trip once a
+ * paste's uploads have finished, which flushes the queued UI updates from the
+ * batch callbacks to the client.
  */
-@Push
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerFilePasteView")
 public class TriggerFilePasteView extends Div {
 
@@ -76,7 +74,7 @@ public class TriggerFilePasteView extends Div {
         AtomicInteger completedSessions = new AtomicInteger();
 
         Clipboard.onFilePaste(target,
-                PasteFileHandler.session().onStart(start -> {
+                PasteFileHandler.batch().onStart(start -> {
                     // Visible only via the test app — included so a developer
                     // running the view by hand sees the session boundary.
                     Div banner = new Div();

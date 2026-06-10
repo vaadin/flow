@@ -376,7 +376,7 @@ class ClipboardTest {
     }
 
     @Test
-    void onFilePaste_registersUploadAttributeAndPasteListenerWithUploadFilter() {
+    void onFilePaste_registersUploadAttributeAndJsInitializer() {
         UI ui = uiWithRealSession();
         TestButton target = new TestButton();
         ui.getElement().appendChild(target.getElement());
@@ -385,8 +385,8 @@ class ClipboardTest {
         }));
 
         // The handler is stored as a stream-resource-backed attribute named
-        // "_vaadin-paste-upload-*". The exact suffix comes from a static
-        // AtomicLong, so don't pin it — find the attribute by prefix.
+        // "_vaadin-paste-upload-<uuid>". The UUID suffix is per-registration,
+        // so don't pin it — find the attribute by prefix.
         String uploadAttribute = target.getElement().getAttributeNames()
                 .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
                 .orElse(null);
@@ -398,24 +398,22 @@ class ClipboardTest {
                 "upload URL should point at the dynamic resource handler, got "
                         + url);
 
-        // The paste listener carries a single filter expression: a call into
-        // the TS helper window.Vaadin.Flow.clipboard.uploadPastedFiles. The
-        // helper does the actual XHRs client-side; here we just verify the
-        // Java→TS wiring carries the per-registration attribute name.
-        String filter = target.getElement().getNode()
-                .getFeature(ElementListenerMap.class).getExpressions("paste")
-                .stream().filter(e -> e.contains("uploadPastedFiles"))
-                .findFirst().orElse(null);
-        assertNotNull(filter,
-                "expected file-paste filter expression on paste listener");
-        assertTrue(filter.contains("'" + uploadAttribute + "'"),
-                "filter should pass the per-registration upload attribute");
-        assertTrue(filter.contains("event") && filter.contains("element"),
-                "filter should hand the helper both event and element");
+        // The paste handling is installed via addJsInitializer: a native paste
+        // listener that delegates to the TS helper
+        // window.Vaadin.Flow.clipboard.uploadPastedFiles, capturing the
+        // per-registration attribute name so the helper can read the upload
+        // URL client-side.
+        JsFunction install = installFn(ui);
+        assertTrue(install.getBody().contains("uploadPastedFiles"),
+                "initializer should call the clipboard upload helper");
+        assertTrue(install.getBody().contains("addEventListener('paste'"),
+                "initializer should attach a native paste listener");
+        assertTrue(install.getCaptures().contains(uploadAttribute),
+                "initializer should capture the per-registration upload attribute");
     }
 
     @Test
-    void onFilePaste_remove_clearsAttributeAndListener() {
+    void onFilePaste_remove_clearsAttributeAndDisposesListener() {
         UI ui = uiWithRealSession();
         TestButton target = new TestButton();
         ui.getElement().appendChild(target.getElement());
@@ -427,16 +425,26 @@ class ClipboardTest {
         String uploadAttribute = target.getElement().getAttributeNames()
                 .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
                 .orElseThrow();
+        // Flush the install first so the registration has actually emitted its
+        // initializer; removal then emits the matching dispose.
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
 
         registration.remove();
 
         assertFalse(target.getElement().hasAttribute(uploadAttribute),
                 "remove() should drop the upload URL attribute");
+
+        // remove() tears down the native paste listener through the
+        // addJsInitializer dispose hook.
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> afterRemove = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
         assertTrue(
-                target.getElement().getNode()
-                        .getFeature(ElementListenerMap.class)
-                        .getExpressions("paste").isEmpty(),
-                "remove() should drop the paste filter expression");
+                afterRemove.stream()
+                        .anyMatch(p -> p.getInvocation().getExpression()
+                                .contains("disposeInitializer")),
+                "remove() should dispose the JS paste initializer");
     }
 
     /**

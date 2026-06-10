@@ -135,8 +135,9 @@ public class TriggerFilePasteIT extends ChromeBrowserTest {
 
     @Test
     public void pasteWithoutFiles_uploadHandlerNotInvoked() {
-        // A plain text paste must not fire the file-paste filter's upload
-        // code: the in-memory callback would bump the counter past zero.
+        // A plain text paste carries no files, so the paste-upload helper
+        // returns early without POSTing: the per-file callback never runs and
+        // the counter stays at zero.
         open();
         ((JavascriptExecutor) getDriver()).executeScript("""
                 const el = document.getElementById('target');

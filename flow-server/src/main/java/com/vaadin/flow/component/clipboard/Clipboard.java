@@ -17,7 +17,7 @@ package com.vaadin.flow.component.clipboard;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 import tools.jackson.databind.JsonNode;
 
@@ -66,9 +66,9 @@ import com.vaadin.flow.shared.Registration;
  * and the handler's own per-file callback (in-memory, file, temp file) is what
  * the application implements. For paste-aware orchestration, pair with
  * {@link PasteFileHandler}:
- * {@link PasteFileHandler#inMemory(SerializableConsumer) inMemory} for a
- * per-file callback that flags the first file of each paste, or
- * {@link PasteFileHandler#session() session()} for a three-step listener
+ * {@link PasteFileHandler#perFile(SerializableConsumer) perFile} for a per-file
+ * callback that flags the first file of each paste, or
+ * {@link PasteFileHandler#batch() batch()} for a three-step listener
  * ({@code onStart}/{@code onFile}/{@code onComplete}) that knows when the whole
  * paste has finished delivering. Use a raw {@code UploadHandler} when neither
  * shape fits. {@code onFilePaste} is independent of {@code onPaste}; the same
@@ -94,11 +94,13 @@ public final class Clipboard implements Serializable {
     private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
             + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
 
-    // Counter for the per-registration attribute name. Each onFilePaste call
-    // attaches its UploadHandler under a distinct attribute on the host
-    // element so multiple file-paste listeners on the same element resolve
-    // to independent upload URLs.
-    private static final AtomicLong FILE_PASTE_COUNTER = new AtomicLong();
+    // DOM event the client paste-upload helper dispatches once every upload of
+    // a paste has settled. A server-side listener for it (registered in
+    // registerFilePaste) does nothing but force a Flow round trip, which
+    // flushes the UI changes the per-file UploadHandler queued via UI.access —
+    // so onFilePaste updates reach the client without @Push. Must stay in sync
+    // with the literal dispatched in flow-client/Clipboard.ts.
+    private static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
 
     /**
      * Request header set by the client-side paste-upload helper on every fetch
@@ -111,15 +113,15 @@ public final class Clipboard implements Serializable {
      * <p>
      * Raw {@link UploadHandler} implementations may read this header directly
      * via {@code event.getRequest().getHeader(PASTE_ID_HEADER)};
-     * {@link PasteFileHandler#inMemory(SerializableConsumer)} reads it for the
+     * {@link PasteFileHandler#perFile(SerializableConsumer)} reads it for the
      * caller and exposes it as {@link PasteFile#pasteId() PasteFile.pasteId()}.
      */
     public static final String PASTE_ID_HEADER = "X-Paste-Id";
 
     /**
      * Request header set alongside {@link #PASTE_ID_HEADER} carrying the total
-     * number of files in the originating paste. The session-style handler built
-     * by {@link PasteFileHandler#session()} uses it to fire
+     * number of files in the originating paste. The batch handler built by
+     * {@link PasteFileHandler#batch()} uses it to fire
      * {@link com.vaadin.flow.function.SerializableConsumer onComplete} once the
      * server has observed all files of a paste &mdash; without it the server
      * has no way to tell mid-paste arrival from "all done".
@@ -320,34 +322,43 @@ public final class Clipboard implements Serializable {
     private static Registration registerFilePaste(Component host,
             UploadHandler handler) {
         Element element = host.getElement();
-        // setAttribute(name, ElementRequestHandler) registers the handler as
-        // a stream resource and stores its URL as the attribute value. The
-        // counter scopes the slot per-registration so multiple file-paste
-        // listeners on the same element resolve to independent URLs.
-        String attributeName = "_vaadin-paste-upload-"
-                + FILE_PASTE_COUNTER.incrementAndGet();
+        // setAttribute(name, ElementRequestHandler) registers the handler as a
+        // stream resource and stores its URL as the attribute value. A fresh
+        // UUID scopes the slot per-registration (the same approach as
+        // StreamResource) so multiple file-paste listeners on the same element
+        // resolve to independent upload URLs.
+        String attributeName = "_vaadin-paste-upload-" + UUID.randomUUID();
         element.setAttribute(attributeName, handler);
 
-        // The filter expression calls into the TS helper
+        // Attach a native paste listener in the browser via the TS helper
         // window.Vaadin.Flow.clipboard.uploadPastedFiles (defined in
-        // flow-client/Clipboard.ts, registered at bootstrap), passing the
-        // event, host element, and per-registration attribute name from which
-        // the helper reads the upload URL. The helper does the XHR-per-file
-        // work and always returns false: there is no server-side paste event
-        // for this API — completion is delivered per file via the
-        // UploadHandler callback as each XHR finishes.
-        String filterExpr = "window.Vaadin.Flow.clipboard.uploadPastedFiles(event,element,'"
-                + attributeName + "')";
+        // flow-client/Clipboard.ts, registered at bootstrap). On each paste the
+        // helper reads the upload URL from the per-registration attribute and
+        // POSTs one upload per file. addJsInitializer re-runs the install on a
+        // real re-attach and invokes the returned cleanup (removeEventListener)
+        // when the registration is removed or the client DOM node is discarded.
+        Registration jsRegistration = element.addJsInitializer("""
+                const upload = (event) => window.Vaadin.Flow.clipboard
+                        .uploadPastedFiles(event, this, $0);
+                this.addEventListener('paste', upload);
+                return () => this.removeEventListener('paste', upload);""",
+                attributeName);
 
-        DomListenerRegistration registration = element.addEventListener("paste",
-                domEvent -> {
-                    // Never called: the filter always returns false, so no
-                    // server event is dispatched. The listener exists solely
-                    // to anchor the JS filter expression on the element.
+        // Once the helper has finished POSTing a paste's files it dispatches
+        // FILE_PASTE_FINISHED_EVENT on the element. This listener does nothing
+        // on its own — its sole purpose is to make the browser perform a Flow
+        // round trip, which flushes the UI changes the UploadHandler queued via
+        // UI.access while handling each upload. Without it those changes would
+        // sit on the server until the next round trip, which is why the API
+        // would otherwise need @Push.
+        DomListenerRegistration finishedRegistration = element
+                .addEventListener(FILE_PASTE_FINISHED_EVENT, domEvent -> {
+                    // intentionally empty; see comment above
                 });
-        registration.setFilter(filterExpr);
+
         return () -> {
-            registration.remove();
+            jsRegistration.remove();
+            finishedRegistration.remove();
             element.removeAttribute(attributeName);
         };
     }

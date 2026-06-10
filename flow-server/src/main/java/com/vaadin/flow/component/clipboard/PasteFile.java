@@ -23,9 +23,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 
 /**
  * A single file delivered to a {@link Clipboard#onFilePaste} listener through
- * {@link PasteFileHandler#inMemory(SerializableConsumer)
- * PasteFileHandler.inMemory} or the {@code onFile} step of a
- * {@link PasteFileHandler#session() session}. Carries the file's bytes plus the
+ * {@link PasteFileHandler#perFile(SerializableConsumer)
+ * PasteFileHandler.perFile} or the {@code onFile} step of a
+ * {@link PasteFileHandler#batch() batch}. Carries the file's bytes plus the
  * metadata needed to render it ({@link #fileName()}, {@link #contentType()},
  * {@link #size()}) and the correlation needed to group it with the rest of the
  * paste it came from ({@link #pasteId()}, {@link #newPaste()},

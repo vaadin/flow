@@ -18,14 +18,14 @@ package com.vaadin.flow.component.clipboard;
 import java.io.Serializable;
 
 /**
- * Fired by the {@code onStart} step of a {@link PasteFileHandler#session()}
- * once per paste, immediately before the paste's first {@link PasteFile} is
+ * Fired by the {@code onStart} step of a {@link PasteFileHandler#batch()} once
+ * per paste, immediately before the paste's first {@link PasteFile} is
  * delivered. Carries the paste correlation token and the total file count the
  * browser declared (so a UI can show "0 / N" before any file has arrived).
  * <p>
- * The handler keeps a high-water mark of observed paste ids; an {@code onStart}
- * fires only for the latest paste seen, so late uploads from an older paste do
- * not regenerate a start event.
+ * Each paste id gets its own batch, so {@code onStart} fires exactly once per
+ * paste; late uploads from an earlier paste keep arriving against that paste's
+ * already-started batch and do not regenerate a start event.
  *
  * @param pasteId
  *            the paste sequence number; matches the {@link PasteFile#pasteId()}

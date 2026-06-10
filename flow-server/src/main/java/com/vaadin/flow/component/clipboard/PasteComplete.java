@@ -18,17 +18,36 @@ package com.vaadin.flow.component.clipboard;
 import java.io.Serializable;
 
 /**
- * Fired by the {@code onComplete} step of a {@link PasteFileHandler#session()}
+ * Fired by the {@code onComplete} step of a {@link PasteFileHandler#batch()}
  * once all expected files of a paste have been delivered to the {@code onFile}
  * step.
  * <p>
  * "Expected" comes from the browser's {@link Clipboard#PASTE_FILE_COUNT_HEADER}
  * value; uploads that fail in transit (network errors, rejected uploads) never
  * arrive at the server and therefore do not count, so a paste with a lost
- * upload never fires {@code onComplete}. Sessions for different pastes are
+ * upload never fires {@code onComplete}. Batches for different pastes are
  * independent: a paste continues delivering files (and eventually fires
- * {@code onComplete}) even when a newer paste's session has already started
+ * {@code onComplete}) even when a newer paste's batch has already started
  * &mdash; the two complete on their own timelines.
+ * <p>
+ * {@code onComplete} reflects only the files this batch successfully received;
+ * it is not a server-side error channel. To observe per-file outcomes &mdash;
+ * including server-side processing failures &mdash; pass a custom
+ * {@link com.vaadin.flow.server.streams.UploadHandler UploadHandler} (or a
+ * {@link com.vaadin.flow.server.streams.TransferProgressListener
+ * TransferProgressListener}) to
+ * {@link Clipboard#onFilePaste(com.vaadin.flow.component.Component, com.vaadin.flow.server.streams.UploadHandler)
+ * onFilePaste} and react to each upload there, e.g.:
+ *
+ * <pre>{@code
+ * UploadHandler.inMemory((metadata, bytes) -> {
+ *     // handle the bytes
+ * }).whenComplete(success -> {
+ *     if (!success) {
+ *         // handle the server-side error
+ *     }
+ * });
+ * }</pre>
  *
  * @param pasteId
  *            the paste sequence number that just finished delivering

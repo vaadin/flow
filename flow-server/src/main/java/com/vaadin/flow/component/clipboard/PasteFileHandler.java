@@ -33,19 +33,19 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * Clipboard.onFilePaste}:
  *
  * <ul>
- * <li>{@link #inMemory(SerializableConsumer)} &mdash; a single per-file
- * callback that receives every file as a {@link PasteFile}, with
+ * <li>{@link #perFile(SerializableConsumer)} &mdash; a single per-file callback
+ * that receives every file as a {@link PasteFile}, with
  * {@link PasteFile#newPaste()} flagging the first file of each paste.</li>
- * <li>{@link #session()} &mdash; a three-step session listener: {@code onStart}
+ * <li>{@link #batch()} &mdash; a three-step batch listener: {@code onStart}
  * fires once per paste with the declared file count, {@code onFile} fires per
  * file, and {@code onComplete} fires once after the last file has been
  * delivered.</li>
  * </ul>
  *
- * Each paste runs in its own session: pastes that overlap in transit (the tail
- * of an older paste's uploads arriving after a newer paste has started) still
- * run through their own {@code onStart} / {@code onFile} / {@code onComplete}
- * lifecycle. Sessions live in memory until they receive all the files the
+ * Each paste runs as its own batch: pastes that overlap in transit (the tail of
+ * an older paste's uploads arriving after a newer paste has started) still run
+ * through their own {@code onStart} / {@code onFile} / {@code onComplete}
+ * lifecycle. A batch lives in memory until it receives all the files the
  * browser declared in {@link Clipboard#PASTE_FILE_COUNT_HEADER}; a paste whose
  * upload fails mid-flight stays open indefinitely (rare in practice, since
  * uploads are small, but worth knowing if an application keeps a process alive
@@ -74,31 +74,31 @@ public final class PasteFileHandler implements Serializable {
      *         {@link Clipboard#onFilePaste(com.vaadin.flow.component.Component, UploadHandler)
      *         Clipboard.onFilePaste}
      */
-    public static UploadHandler inMemory(
+    public static UploadHandler perFile(
             SerializableConsumer<PasteFile> consumer) {
         Objects.requireNonNull(consumer, "consumer must not be null");
-        return session().onFile(consumer).build();
+        return batch().onFile(consumer).build();
     }
 
     /**
-     * Starts a session-style handler builder that emits {@code onStart} once
-     * per paste before any file, {@code onFile} per file, and
-     * {@code onComplete} once the paste's declared file count has been
-     * delivered. Any callback may be omitted.
+     * Starts a batch handler builder that emits {@code onStart} once per paste
+     * before any file, {@code onFile} per file, and {@code onComplete} once the
+     * paste's declared file count has been delivered. Any callback may be
+     * omitted.
      *
-     * @return a fresh, unconfigured session builder
+     * @return a fresh, unconfigured batch builder
      */
-    public static SessionBuilder session() {
-        return new SessionBuilder();
+    public static BatchBuilder batch() {
+        return new BatchBuilder();
     }
 
     /**
-     * Fluent builder for the session-style paste handler. See
-     * {@link PasteFileHandler#session()} for the listener semantics. Successive
+     * Fluent builder for the batch paste handler. See
+     * {@link PasteFileHandler#batch()} for the listener semantics. Successive
      * calls to the same {@code onX} method overwrite earlier registrations;
      * omitted steps default to no-ops.
      */
-    public static final class SessionBuilder implements Serializable {
+    public static final class BatchBuilder implements Serializable {
 
         private SerializableConsumer<PasteStart> onStart = start -> {
         };
@@ -107,7 +107,7 @@ public final class PasteFileHandler implements Serializable {
         private SerializableConsumer<PasteComplete> onComplete = end -> {
         };
 
-        private SessionBuilder() {
+        private BatchBuilder() {
         }
 
         /**
@@ -119,8 +119,7 @@ public final class PasteFileHandler implements Serializable {
          *            reset to a no-op
          * @return this builder
          */
-        public SessionBuilder onStart(
-                SerializableConsumer<PasteStart> handler) {
+        public BatchBuilder onStart(SerializableConsumer<PasteStart> handler) {
             this.onStart = handler != null ? handler : start -> {
             };
             return this;
@@ -135,7 +134,7 @@ public final class PasteFileHandler implements Serializable {
          *            reset to a no-op
          * @return this builder
          */
-        public SessionBuilder onFile(SerializableConsumer<PasteFile> handler) {
+        public BatchBuilder onFile(SerializableConsumer<PasteFile> handler) {
             this.onFile = handler != null ? handler : file -> {
             };
             return this;
@@ -151,7 +150,7 @@ public final class PasteFileHandler implements Serializable {
          *            reset to a no-op
          * @return this builder
          */
-        public SessionBuilder onComplete(
+        public BatchBuilder onComplete(
                 SerializableConsumer<PasteComplete> handler) {
             this.onComplete = handler != null ? handler : end -> {
             };
@@ -160,18 +159,18 @@ public final class PasteFileHandler implements Serializable {
 
         /**
          * Returns an {@link UploadHandler} that orchestrates the configured
-         * session steps. The returned handler is independent of this builder;
+         * batch steps. The returned handler is independent of this builder;
          * further mutations to the builder do not affect it.
          */
         public UploadHandler build() {
-            // Per-handler session map keyed by paste id. All access happens
+            // Per-handler batch map keyed by paste id. All access happens
             // inside event.getUI().access, which runs on the UI thread, so
             // a plain HashMap is enough — no extra synchronisation needed.
-            // Each paste id gets its own SessionState that lives until the
+            // Each paste id gets its own BatchState that lives until the
             // paste delivers all its declared files (PASTE_FILE_COUNT_HEADER).
             // Pastes do not interfere with each other: a slow tail upload
-            // from an earlier paste still resolves through its own session.
-            Map<Long, SessionState> sessions = new HashMap<>();
+            // from an earlier paste still resolves through its own batch.
+            Map<Long, BatchState> batches = new HashMap<>();
             SerializableConsumer<PasteStart> startHandler = onStart;
             SerializableConsumer<PasteFile> fileHandler = onFile;
             SerializableConsumer<PasteComplete> completeHandler = onComplete;
@@ -187,15 +186,15 @@ public final class PasteFileHandler implements Serializable {
                 }
 
                 event.getUI().access(() -> {
-                    SessionState existing = sessions.get(pasteId);
-                    SessionState state;
+                    BatchState existing = batches.get(pasteId);
+                    BatchState state;
                     boolean newPaste;
                     if (existing != null) {
                         state = existing;
                         newPaste = false;
                     } else {
-                        state = new SessionState(totalFiles);
-                        sessions.put(pasteId, state);
+                        state = new BatchState(totalFiles);
+                        batches.put(pasteId, state);
                         newPaste = true;
                         startHandler
                                 .accept(new PasteStart(pasteId, totalFiles));
@@ -209,7 +208,7 @@ public final class PasteFileHandler implements Serializable {
                     if (state.expected > 0
                             && state.received >= state.expected) {
                         int received = state.received;
-                        sessions.remove(pasteId);
+                        batches.remove(pasteId);
                         completeHandler
                                 .accept(new PasteComplete(pasteId, received));
                     }
@@ -218,12 +217,12 @@ public final class PasteFileHandler implements Serializable {
         }
     }
 
-    private static final class SessionState implements Serializable {
+    private static final class BatchState implements Serializable {
 
         final int expected;
         int received;
 
-        SessionState(int expected) {
+        BatchState(int expected) {
             this.expected = expected;
         }
     }

@@ -41,11 +41,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PasteFileHandlerTest {
 
     @Test
-    void session_singlePaste_emitsStartThenFilesThenComplete()
+    void batch_singlePaste_emitsStartThenFilesThenComplete()
             throws IOException {
         Fixture fixture = new Fixture();
         List<String> calls = new ArrayList<>();
-        UploadHandler handler = PasteFileHandler.session()
+        UploadHandler handler = PasteFileHandler.batch()
                 .onStart(s -> calls
                         .add("start:" + s.pasteId() + "/" + s.totalFiles()))
                 .onFile(f -> calls.add("file:" + f.pasteId() + "/"
@@ -64,7 +64,7 @@ class PasteFileHandlerTest {
     }
 
     @Test
-    void session_overlappingPastes_eachLifecycleStaysOrdered()
+    void batch_overlappingPastes_eachLifecycleStaysOrdered()
             throws IOException {
         // Two pastes (2 files each) interleave on the wire:
         // paste 1 file A, paste 2 file X, paste 1 file B, paste 2 file Y.
@@ -73,7 +73,7 @@ class PasteFileHandlerTest {
         // of the *order between* events is allowed.
         Fixture fixture = new Fixture();
         List<String> calls = new ArrayList<>();
-        UploadHandler handler = PasteFileHandler.session()
+        UploadHandler handler = PasteFileHandler.batch()
                 .onStart(s -> calls.add("start:" + s.pasteId()))
                 .onFile(f -> calls.add("file:" + f.pasteId() + "/"
                         + new String(f.bytes(), StandardCharsets.UTF_8)))
@@ -95,15 +95,15 @@ class PasteFileHandlerTest {
     }
 
     @Test
-    void session_newPasteFlag_trueOnlyForFirstFileOfEachPaste()
+    void perFile_newPasteFlag_trueOnlyForFirstFileOfEachPaste()
             throws IOException {
-        // PasteFile.newPaste() is the inMemory variant's session boundary
+        // PasteFile.newPaste() is the perFile variant's paste boundary
         // signal — assert it for three files: first of paste 1 (true),
         // second of paste 1 (false), first of paste 2 (true).
         Fixture fixture = new Fixture();
         List<Boolean> flags = new ArrayList<>();
         UploadHandler handler = PasteFileHandler
-                .inMemory(file -> flags.add(file.newPaste()));
+                .perFile(file -> flags.add(file.newPaste()));
 
         fixture.fire(handler, 1, 2, "A");
         fixture.fire(handler, 1, 2, "B");
