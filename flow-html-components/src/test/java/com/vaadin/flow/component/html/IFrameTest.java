@@ -131,4 +131,10 @@ class IFrameTest extends ComponentTest {
         iframe.setUnsafeSrc("javascript:alert(1)");
         assertEquals("javascript:alert(1)", iframe.getSrc());
     }
+
+    @Test
+    void constructor_unsafeSrc_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new IFrame("javascript:alert(1)"));
+    }
 }

@@ -28,6 +28,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -442,6 +443,32 @@ class AnchorTest extends ComponentTest {
         anchor.setUnsafeHref("javascript:alert(1)");
         assertEquals("javascript:alert(1)",
                 anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    void constructor_stringHrefStringText_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click"));
+    }
+
+    @Test
+    void constructor_stringHrefSignalText_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)",
+                        new ValueSignal<>("Click")));
+    }
+
+    @Test
+    void constructor_stringHrefStringTextTarget_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click",
+                        AnchorTarget.BLANK));
+    }
+
+    @Test
+    void constructor_stringHrefComponents_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)"));
     }
 
     private void mockUI() {
