@@ -18,13 +18,9 @@ package com.vaadin.flow.component.clipboard;
 import java.io.Serializable;
 import java.util.Objects;
 
-import tools.jackson.databind.JsonNode;
-
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
@@ -58,23 +54,6 @@ import com.vaadin.flow.shared.Registration;
  */
 public final class Clipboard implements Serializable {
 
-    // The same string is used both as the JS expression evaluated client-side
-    // and as the lookup key in DomEvent#getEventData() server-side. Any drift
-    // between the two would silently produce a null value, so the expressions
-    // are kept in a single constant each. `?.` guards against synthetic events
-    // without a DataTransfer; `|| null` collapses the empty string (the
-    // browser's value for an absent MIME type) and the optional-chain
-    // short-circuit into JSON null.
-    private static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
-    private static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
-
-    // Walks event.composedPath() so the check sees through open shadow DOMs
-    // (e.g. a Vaadin web component's internal <input>). Matches input,
-    // textarea, or anything with isContentEditable; the filter passes only
-    // when none of those are in the path.
-    private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
-            + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
-
     private Clipboard() {
         // utility class
     }
@@ -103,7 +82,9 @@ public final class Clipboard implements Serializable {
      * gesture targeting {@code component} (or any descendant, since
      * {@code paste} bubbles) with a {@link PasteEvent} carrying the
      * {@code text/plain} and {@code text/html} representations of the pasted
-     * content.
+     * content. For UI-wide scope, pass the {@link com.vaadin.flow.component.UI
+     * UI} as the component; the UI's root element is {@code <body>} so it
+     * receives every paste event that bubbles up from anywhere on the page.
      *
      * <p>
      * The browser only fires {@code paste} when the target element is focused
@@ -113,18 +94,21 @@ public final class Clipboard implements Serializable {
      * caveats.
      *
      * <p>
-     * Example:
+     * Example: a drop zone the user pastes a license key into.
      *
      * <pre>{@code
-     * Div pasteTarget = new Div();
-     * pasteTarget.getElement().setAttribute("tabindex", "0");
-     * add(pasteTarget);
+     * Div dropZone = new Div("Drop a key file or paste your license key");
+     * dropZone.addClassName("license-drop-zone");
+     * dropZone.getElement().setAttribute("tabindex", "0");
+     * add(dropZone);
      *
-     * Clipboard.onPaste(pasteTarget, event -> {
-     *     if (event.hasHtml()) {
-     *         renderHtml(event.getHtml());
-     *     } else if (event.hasText()) {
-     *         renderText(event.getText());
+     * Clipboard.onPaste(dropZone, event -> {
+     *     String key = event.getText();
+     *     if (key == null || key.isBlank()) {
+     *         dropZone.setText("Paste did not contain a license key");
+     *     } else {
+     *         activateLicense(key.strip());
+     *         dropZone.setText("License key applied");
      *     }
      * });
      * }</pre>
@@ -175,39 +159,6 @@ public final class Clipboard implements Serializable {
         Objects.requireNonNull(component, "component must not be null");
         Objects.requireNonNull(options, "options must not be null");
         Objects.requireNonNull(listener, "listener must not be null");
-        return register(component, options, listener);
-    }
-
-    private static Registration register(Component host, PasteOptions options,
-            SerializableConsumer<PasteEvent> listener) {
-        DomListenerRegistration registration = host.getElement()
-                .addEventListener("paste", domEvent -> {
-                    JsonNode data = domEvent.getEventData();
-                    // mapEventTargetElement() does the DOM ancestor walk in
-                    // the browser to find the closest Flow-tracked element to
-                    // event.target. That gives DOM-truth (not state-tree
-                    // order, which can diverge from DOM for virtual children,
-                    // slotted content, etc.).
-                    Element targetElement = domEvent.getEventTarget()
-                            .orElse(null);
-                    // The JS `|| null` already collapses "" and missing MIME
-                    // types to JSON null; asStringOpt() then yields empty for
-                    // those, so callers see null (not "").
-                    listener.accept(new PasteEvent(host,
-                            data.optional(PASTE_TEXT_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            data.optional(PASTE_HTML_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            targetElement));
-                });
-        registration.addEventData(PASTE_TEXT_EXPR);
-        registration.addEventData(PASTE_HTML_EXPR);
-        registration.mapEventTargetElement();
-        if (!options.includeInputFieldPastes()) {
-            registration.setFilter(PASTE_FILTER_SKIP_EDITABLE);
-        }
-        return registration::remove;
+        return PasteEventDispatcher.register(component, options, listener);
     }
 }

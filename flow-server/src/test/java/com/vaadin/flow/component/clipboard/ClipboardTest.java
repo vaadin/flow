@@ -216,11 +216,11 @@ class ClipboardTest {
         AtomicReference<PasteEvent> received = new AtomicReference<>();
         Clipboard.onPaste(target, received::set);
 
-        // Must match the JS expressions in Clipboard.onPaste byte-for-byte —
-        // DomListenerRegistration uses the expression string as the JSON key
+        // Must match the JS expressions in PasteEventDispatcher byte-for-byte
+        // — DomListenerRegistration uses the expression string as the JSON key
         // under which the evaluated result appears in DomEvent#getEventData().
-        String textExpr = "event.clipboardData?.getData('text/plain') || null";
-        String htmlExpr = "event.clipboardData?.getData('text/html') || null";
+        String textExpr = "window.Vaadin.Flow.clipboard.pasteEventText(event)";
+        String htmlExpr = "window.Vaadin.Flow.clipboard.pasteEventHtml(event)";
         ObjectNode data = JacksonUtils.createObjectNode();
         data.put(textExpr, "plain");
         data.put(htmlExpr, "<b>html</b>");
@@ -257,7 +257,7 @@ class ClipboardTest {
         Clipboard.onPaste(ui, PasteOptions.includingInputFields(),
                 received::set);
 
-        String textExpr = "event.clipboardData?.getData('text/plain') || null";
+        String textExpr = "window.Vaadin.Flow.clipboard.pasteEventText(event)";
         ObjectNode data = JacksonUtils.createObjectNode();
         data.put(textExpr, "from-bg");
 

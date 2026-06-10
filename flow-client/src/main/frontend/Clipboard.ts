@@ -135,12 +135,52 @@ async function writeClipboardPayload(
   return text !== null ? text : html;
 }
 
+/**
+ * Returns the {@code text/plain} representation of a {@code paste} event, or
+ * {@code null} if the clipboard has no plain-text content. {@code ?.} guards
+ * against synthetic events without a DataTransfer; {@code || null} collapses
+ * the empty string (the browser's value for an absent MIME type) and the
+ * optional-chain short-circuit into a single null.
+ */
+function pasteEventText(event: ClipboardEvent): string | null {
+  return event.clipboardData?.getData('text/plain') || null;
+}
+
+/**
+ * Returns the {@code text/html} representation of a {@code paste} event, or
+ * {@code null} if the clipboard has no HTML content. Null/empty handling as
+ * in {@link pasteEventText}.
+ */
+function pasteEventHtml(event: ClipboardEvent): string | null {
+  return event.clipboardData?.getData('text/html') || null;
+}
+
+/**
+ * Tells whether the {@code paste} event targets an editable element: an
+ * {@code <input>}, a {@code <textarea>}, or anything with
+ * {@code isContentEditable}. Walks {@code event.composedPath()} so the check
+ * sees through open shadow DOMs (e.g. a Vaadin web component's internal
+ * {@code <input>}).
+ */
+function pasteEventTargetsEditable(event: ClipboardEvent): boolean {
+  return event.composedPath().some((target) => {
+    const element = target as HTMLElement;
+    return (
+      !!element.tagName &&
+      (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.isContentEditable === true)
+    );
+  });
+}
+
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
 $wnd.Vaadin.Flow.clipboard = {
   readPayload: readClipboardPayload,
-  writePayload: writeClipboardPayload
+  writePayload: writeClipboardPayload,
+  pasteEventText,
+  pasteEventHtml,
+  pasteEventTargetsEditable
 };
 
 // Empty export to ensure TypeScript emits this as an ES module,
