@@ -67,7 +67,6 @@ import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Utility class with methods for route handling.
@@ -751,6 +750,28 @@ public class RouteUtil {
     }
 
     /**
+     * Resolves the logical parent of the given navigation target using the
+     * application route registry, without instantiating the route or its
+     * parent.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the logical parent for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the logical parent reference, or an empty {@link Optional} if the
+     *         target has no logical parent
+     * @see #getRouteParent(RouteRegistry, Class, RouteParameters)
+     */
+    public static Optional<RouteParentReference> getRouteParent(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        return getRouteParent(getDefaultRegistry(), navigationTarget,
+                parameters);
+    }
+
+    /**
      * Resolves the logical parent of the given navigation target, without
      * instantiating the route or its parent.
      * <p>
@@ -764,6 +785,10 @@ public class RouteUtil {
      * registered route serving the nearest ancestor path.</li>
      * </ol>
      *
+     * @param registry
+     *            the route registry used to resolve URL-derived parents and
+     *            parameter templates, may be {@code null} to resolve only
+     *            annotation-based parents
      * @param navigationTarget
      *            the navigation target to resolve the logical parent for, not
      *            {@code null}
@@ -774,7 +799,7 @@ public class RouteUtil {
      *         target has no logical parent
      */
     public static Optional<RouteParentReference> getRouteParent(
-            Class<? extends Component> navigationTarget,
+            RouteRegistry registry, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget must not be null");
@@ -788,11 +813,11 @@ public class RouteUtil {
             }
             if (!Component.class.equals(annotation.value())) {
                 return Optional.of(new RouteParentReference(annotation.value(),
-                        narrowParametersToTemplate(annotation.value(),
+                        narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
         }
-        return getUrlBasedRouteParent(navigationTarget, parameters);
+        return getUrlBasedRouteParent(registry, navigationTarget, parameters);
     }
 
     /**
@@ -808,12 +833,12 @@ public class RouteUtil {
      * unchanged.
      */
     private static RouteParameters narrowParametersToTemplate(
-            Class<? extends Component> target, RouteParameters parameters) {
-        if (parameters.getParameterNames().isEmpty()
-                || VaadinService.getCurrent() == null) {
+            RouteRegistry registry, Class<? extends Component> target,
+            RouteParameters parameters) {
+        if (parameters.getParameterNames().isEmpty() || registry == null) {
             return parameters;
         }
-        Optional<String> template = RouteConfiguration.forApplicationScope()
+        Optional<String> template = RouteConfiguration.forRegistry(registry)
                 .getTemplate(target);
         if (template.isEmpty()) {
             return parameters;
@@ -835,20 +860,18 @@ public class RouteUtil {
      * the path until a registered route serving an ancestor path is found.
      */
     private static Optional<RouteParentReference> getUrlBasedRouteParent(
-            Class<? extends Component> navigationTarget,
+            RouteRegistry registry, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        if (VaadinService.getCurrent() == null) {
+        if (registry == null) {
             return Optional.empty();
         }
         String url;
         try {
-            url = RouteConfiguration.forApplicationScope()
+            url = RouteConfiguration.forRegistry(registry)
                     .getUrl(navigationTarget, parameters);
         } catch (RuntimeException targetNotRegistered) {
             return Optional.empty();
         }
-        RouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(VaadinService.getCurrent().getContext());
         List<String> segments = new ArrayList<>(PathUtil.getSegmentsList(url));
         while (!segments.isEmpty()) {
             segments.remove(segments.size() - 1);
@@ -867,10 +890,31 @@ public class RouteUtil {
     }
 
     /**
+     * Resolves the logical route hierarchy of the given navigation target using
+     * the application route registry.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the hierarchy for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the chain of the target and its logical ancestors, ordered from
+     *         root to the navigation target, never empty
+     * @see #getRouteHierarchy(RouteRegistry, Class, RouteParameters)
+     */
+    public static List<RouteParentReference> getRouteHierarchy(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        return getRouteHierarchy(getDefaultRegistry(), navigationTarget,
+                parameters);
+    }
+
+    /**
      * Resolves the logical route hierarchy of the given navigation target by
      * repeatedly resolving the route parent (see
-     * {@link #getRouteParent(Class, RouteParameters)}), without instantiating
-     * any of the routes.
+     * {@link #getRouteParent(RouteRegistry, Class, RouteParameters)}), without
+     * instantiating any of the routes.
      * <p>
      * The returned list is the chain of the target and all its logical
      * ancestors, ordered from the hierarchy root to the given navigation target
@@ -881,6 +925,10 @@ public class RouteUtil {
      * hierarchical menu is built from. A guard stops the walk if the hierarchy
      * contains a cycle.
      *
+     * @param registry
+     *            the route registry used to resolve URL-derived parents and
+     *            parameter templates, may be {@code null} to resolve only
+     *            annotation-based parents
      * @param navigationTarget
      *            the navigation target to resolve the hierarchy for, not
      *            {@code null}
@@ -891,7 +939,7 @@ public class RouteUtil {
      *         root to the navigation target, never empty
      */
     public static List<RouteParentReference> getRouteHierarchy(
-            Class<? extends Component> navigationTarget,
+            RouteRegistry registry, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         List<RouteParentReference> hierarchy = new ArrayList<>();
         Set<Class<? extends Component>> visited = new HashSet<>();
@@ -899,11 +947,16 @@ public class RouteUtil {
                 navigationTarget, parameters);
         while (current != null && visited.add(current.navigationTarget())) {
             hierarchy.add(current);
-            current = getRouteParent(current.navigationTarget(),
+            current = getRouteParent(registry, current.navigationTarget(),
                     current.routeParameters()).orElse(null);
         }
         Collections.reverse(hierarchy);
         return hierarchy;
+    }
+
+    private static RouteRegistry getDefaultRegistry() {
+        VaadinService service = VaadinService.getCurrent();
+        return service == null ? null : service.getRouter().getRegistry();
     }
 
     private static RouteParentResolver instantiateResolver(
