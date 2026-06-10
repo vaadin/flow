@@ -26,6 +26,7 @@ import org.jsoup.helper.DataUtil;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
+import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Safelist;
 
 import com.vaadin.flow.dom.Element;
@@ -146,7 +147,7 @@ public class Html extends Component {
         try {
             String outerHtml = UTF_8
                     .decode(DataUtil.readToByteBuffer(stream, 0)).toString();
-            setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
+            setOuterHtml(sanitize(outerHtml, safelist), false);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read HTML from stream",
                     e);
@@ -203,7 +204,7 @@ public class Html extends Component {
         }
         Objects.requireNonNull(safelist, "Safelist cannot be null");
 
-        setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
+        setOuterHtml(sanitize(outerHtml, safelist), false);
     }
 
     /**
@@ -268,7 +269,7 @@ public class Html extends Component {
         }
         // Initialize from the sanitized current signal value (sets the root
         // element and attrs)
-        setOuterHtml(Jsoup.clean(outerHtml, safelist), false);
+        setOuterHtml(sanitize(outerHtml, safelist), false);
         // Bind further updates, sanitizing each value (root tag cannot change)
         bindHtmlContent(htmlSignal, safelist);
     }
@@ -287,15 +288,7 @@ public class Html extends Component {
      *            the HTML to wrap
      */
     public void setHtmlContent(String html) {
-        // Disallow manual setting while a binding exists
-        getElement().getNode()
-                .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
-                        throw new BindingActiveException(
-                                "setHtmlContent is not allowed while a binding for HTML content exists.");
-                    }
-                });
+        ensureNoHtmlContentBinding();
         setOuterHtml(html, true);
     }
 
@@ -322,7 +315,15 @@ public class Html extends Component {
      */
     public void setHtmlContent(String html, Safelist safelist) {
         Objects.requireNonNull(safelist, "Safelist cannot be null");
-        // Disallow manual setting while a binding exists
+        ensureNoHtmlContentBinding();
+        setOuterHtml(sanitize(html, safelist), true);
+    }
+
+    /**
+     * Throws if a Signal is bound to the HTML content, as manual setting is not
+     * allowed while a binding exists.
+     */
+    private void ensureNoHtmlContentBinding() {
         getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
@@ -331,7 +332,18 @@ public class Html extends Component {
                                 "setHtmlContent is not allowed while a binding for HTML content exists.");
                     }
                 });
-        setOuterHtml(Jsoup.clean(html, safelist), true);
+    }
+
+    /**
+     * Removes any element or attribute not permitted by the given safelist,
+     * without pretty-printing the result so that whitespace inside the fragment
+     * is preserved as-is.
+     */
+    private static String sanitize(String html, Safelist safelist) {
+        Document dirty = Jsoup.parseBodyFragment(html);
+        Document clean = new Cleaner(safelist).clean(dirty);
+        clean.outputSettings().prettyPrint(false);
+        return clean.body().html();
     }
 
     private void setOuterHtml(String outerHtml, boolean update) {
@@ -475,7 +487,7 @@ public class Html extends Component {
         SignalBinding<String> binding = ElementEffect.bind(getElement(),
                 htmlSignal,
                 (element, value) -> setOuterHtml(
-                        value == null ? value : Jsoup.clean(value, safelist),
+                        value == null ? value : sanitize(value, safelist),
                         true));
         feature.setBinding(SignalBindingFeature.HTML_CONTENT, htmlSignal);
         return binding;
