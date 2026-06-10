@@ -186,6 +186,15 @@ class HTMLTest {
     }
 
     @Test
+    void stringWithSafelist_whitespacePreserved() {
+        Html html = new Html(
+                "    <div><pre> text </pre> <b>bold</b>    <b>b2</b>  </div>  ",
+                Safelist.basic().addTags("div"));
+        assertEquals("<pre> text </pre> <b>bold</b>    <b>b2</b>  ",
+                html.getInnerHtml());
+    }
+
+    @Test
     void stringWithSafelist_rootStrippedBySafelist_throws() {
         // none() permits no tags, so the only root element is removed and the
         // remaining text leaves no top-level element
