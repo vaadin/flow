@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.clipboard.ClipboardPayload;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 
