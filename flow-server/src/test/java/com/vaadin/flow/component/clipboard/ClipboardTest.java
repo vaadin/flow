@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.component.clipboard;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickNotifier;
@@ -26,10 +31,16 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -194,6 +205,168 @@ class ClipboardTest {
         // TestButton's root is <test-button>, not <img>.
         assertThrows(IllegalArgumentException.class,
                 () -> Clipboard.onClick(button).writeImage(button));
+    }
+
+    @Test
+    void onPaste_dispatchesPasteEventWithTextAndHtml() {
+        UI ui = new MockUI();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        AtomicReference<PasteEvent> received = new AtomicReference<>();
+        Clipboard.onPaste(target, received::set);
+
+        // Must match the JS expressions in Clipboard.onPaste byte-for-byte —
+        // DomListenerRegistration uses the expression string as the JSON key
+        // under which the evaluated result appears in DomEvent#getEventData().
+        String textExpr = "event.clipboardData?.getData('text/plain') || null";
+        String htmlExpr = "event.clipboardData?.getData('text/html') || null";
+        ObjectNode data = JacksonUtils.createObjectNode();
+        data.put(textExpr, "plain");
+        data.put(htmlExpr, "<b>html</b>");
+
+        target.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(target.getElement(), "paste", data));
+
+        PasteEvent event = received.get();
+        assertNotNull(event);
+        assertSame(target, event.getSource());
+        assertEquals("plain", event.getText());
+        assertEquals("<b>html</b>", event.getHtml());
+        assertTrue(event.hasText());
+        assertTrue(event.hasHtml());
+        // No target mapping in the fabricated event data, so the resolver
+        // returns null. The IT verifies real target resolution end-to-end.
+        assertNull(event.getTargetElement());
+    }
+
+    @Test
+    void onPaste_options_attachesToHostElement_withoutCurrentUI() {
+        // The Component-accepting onPaste must not rely on UI.getCurrent(),
+        // so callers from a background thread can pass the UI (or any
+        // component) directly. MockUI's constructor sets UI.setCurrent as a
+        // side effect; clear it so the test only exercises the explicit
+        // component path. PasteOptions.includingInputFields() skips the
+        // editable-target filter, so the fabricated event doesn't need to
+        // carry the filter key — the filter behaviour is covered end-to-end
+        // by TriggerPasteIT.
+        UI ui = new MockUI();
+        UI.setCurrent(null);
+
+        AtomicReference<PasteEvent> received = new AtomicReference<>();
+        Clipboard.onPaste(ui, PasteOptions.includingInputFields(),
+                received::set);
+
+        String textExpr = "event.clipboardData?.getData('text/plain') || null";
+        ObjectNode data = JacksonUtils.createObjectNode();
+        data.put(textExpr, "from-bg");
+
+        ui.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(ui.getElement(), "paste", data));
+
+        PasteEvent event = received.get();
+        assertNotNull(event);
+        assertSame(ui, event.getSource());
+        assertEquals("from-bg", event.getText());
+    }
+
+    @Test
+    void read_emitsReadFromClipboardAction() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        ui.getElement().appendChild(button.getElement());
+
+        Clipboard.onClick(button).read(p -> {
+        }, err -> {
+        });
+
+        // Observed PromiseAction wraps the inner call; the inner JsFunction
+        // delegates to the TS readPayload helper.
+        JsFunction action = actionFn(ui);
+        JsFunction inner = (JsFunction) action.getCaptures().get(1);
+        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
+                inner.getBody());
+    }
+
+    @Test
+    void readText_adaptsPayloadConsumerToTextField() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        ui.getElement().appendChild(button.getElement());
+
+        List<@Nullable String> received = new ArrayList<>();
+        Clipboard.onClick(button).readText(received::add, err -> {
+        });
+
+        // Capture the channel once before the install JS gets drained, then
+        // exercise both the payload-present and the null-payload paths.
+        ReturnChannelRegistration channel = returnChannel(ui);
+
+        invokeSuccess(channel, "hello", "<b>hello</b>");
+        assertEquals(List.of("hello"), received);
+
+        received.clear();
+        invokeSuccessNull(channel);
+        assertEquals(1, received.size());
+        assertNull(received.get(0));
+    }
+
+    @Test
+    void readHtml_adaptsPayloadConsumerToHtmlField() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        ui.getElement().appendChild(button.getElement());
+
+        List<@Nullable String> received = new ArrayList<>();
+        Clipboard.onClick(button).readHtml(received::add, err -> {
+        });
+
+        ReturnChannelRegistration channel = returnChannel(ui);
+
+        invokeSuccess(channel, "hello", "<b>hello</b>");
+        assertEquals(List.of("<b>hello</b>"), received);
+
+        received.clear();
+        invokeSuccessNull(channel);
+        assertEquals(1, received.size());
+        assertNull(received.get(0));
+    }
+
+    private static void invokeSuccess(ReturnChannelRegistration channel,
+            String text, String html) {
+        ObjectNode payload = JacksonUtils.createObjectNode();
+        payload.put("text", text);
+        payload.put("html", html);
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        outcome.set("value", payload);
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        channel.invoke(args);
+    }
+
+    private static void invokeSuccessNull(ReturnChannelRegistration channel) {
+        ObjectNode outcome = JacksonUtils.createObjectNode();
+        outcome.put("ok", true);
+        outcome.set("value", JacksonUtils.nullNode());
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        channel.invoke(args);
+    }
+
+    /**
+     * The action's captures include the single return-channel registration (the
+     * third arg of the observed wrapper). Pull it out so the test can
+     * synthesise an outcome and verify the user-supplied consumer. Drains the
+     * pending JS invocations as a side effect — call once per test.
+     */
+    private static ReturnChannelRegistration returnChannel(UI ui) {
+        List<ReturnChannelRegistration> channels = actionFn(ui).getCaptures()
+                .stream().filter(o -> o instanceof ReturnChannelRegistration)
+                .map(o -> (ReturnChannelRegistration) o).toList();
+        assertEquals(1, channels.size(),
+                "Expected exactly one captured return channel");
+        return channels.get(0);
     }
 
     /**
