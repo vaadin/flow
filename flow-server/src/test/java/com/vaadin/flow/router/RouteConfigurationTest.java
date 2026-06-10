@@ -51,7 +51,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -109,9 +108,40 @@ class RouteConfigurationTest {
     }
 
     @Test
-    void getRegistry_returnsTheBackingRegistry() {
-        assertSame(registry,
-                RouteConfiguration.forRegistry(registry).getRegistry());
+    void getRouteHierarchy_resolvesParentChainFromConfiguration() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(OrdersView.class);
+            routeConfiguration.setAnnotatedRoute(OrderView.class);
+        });
+
+        List<RouteParentReference> hierarchy = routeConfiguration
+                .getRouteHierarchy(OrderView.class,
+                        new RouteParameters("orderId", "1001"));
+
+        assertEquals(List.of(OrdersView.class, OrderView.class), hierarchy
+                .stream().map(RouteParentReference::navigationTarget).toList());
+        // static parent declares no parameters, so orderId is narrowed away
+        assertTrue(hierarchy.get(0).routeParameters().getParameterNames()
+                .isEmpty());
+    }
+
+    @Test
+    void getRouteParent_resolvesStaticParentFromConfiguration() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(OrdersView.class);
+            routeConfiguration.setAnnotatedRoute(OrderView.class);
+        });
+
+        RouteParentReference parent = routeConfiguration
+                .getRouteParent(OrderView.class,
+                        new RouteParameters("orderId", "1001"))
+                .orElseThrow();
+
+        assertEquals(OrdersView.class, parent.navigationTarget());
     }
 
     @Test
@@ -558,6 +588,17 @@ class RouteConfigurationTest {
     @Tag("div")
     @Route("home")
     private static class MyRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("orders")
+    private static class OrdersView extends Component {
+    }
+
+    @Tag("div")
+    @Route("orders/:orderId")
+    @RouteParent(OrdersView.class)
+    private static class OrderView extends Component {
     }
 
     @Tag("div")

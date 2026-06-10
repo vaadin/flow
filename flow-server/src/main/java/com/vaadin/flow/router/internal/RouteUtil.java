@@ -750,28 +750,6 @@ public class RouteUtil {
     }
 
     /**
-     * Resolves the logical parent of the given navigation target using the
-     * application route registry, without instantiating the route or its
-     * parent.
-     *
-     * @param navigationTarget
-     *            the navigation target to resolve the logical parent for, not
-     *            {@code null}
-     * @param parameters
-     *            the route parameters the navigation target is resolved with,
-     *            not {@code null}
-     * @return the logical parent reference, or an empty {@link Optional} if the
-     *         target has no logical parent
-     * @see #getRouteParent(RouteRegistry, Class, RouteParameters)
-     */
-    public static Optional<RouteParentReference> getRouteParent(
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        return getRouteParent(getDefaultRegistry(), navigationTarget,
-                parameters);
-    }
-
-    /**
      * Resolves the logical parent of the given navigation target, without
      * instantiating the route or its parent.
      * <p>
@@ -890,27 +868,6 @@ public class RouteUtil {
     }
 
     /**
-     * Resolves the logical route hierarchy of the given navigation target using
-     * the application route registry.
-     *
-     * @param navigationTarget
-     *            the navigation target to resolve the hierarchy for, not
-     *            {@code null}
-     * @param parameters
-     *            the route parameters the navigation target is resolved with,
-     *            not {@code null}
-     * @return the chain of the target and its logical ancestors, ordered from
-     *         root to the navigation target, never empty
-     * @see #getRouteHierarchy(RouteRegistry, Class, RouteParameters)
-     */
-    public static List<RouteParentReference> getRouteHierarchy(
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        return getRouteHierarchy(getDefaultRegistry(), navigationTarget,
-                parameters);
-    }
-
-    /**
      * Resolves the logical route hierarchy of the given navigation target by
      * repeatedly resolving the route parent (see
      * {@link #getRouteParent(RouteRegistry, Class, RouteParameters)}), without
@@ -952,11 +909,6 @@ public class RouteUtil {
         }
         Collections.reverse(hierarchy);
         return hierarchy;
-    }
-
-    private static RouteRegistry getDefaultRegistry() {
-        VaadinService service = VaadinService.getCurrent();
-        return service == null ? null : service.getRouter().getRegistry();
     }
 
     private static RouteParentResolver instantiateResolver(

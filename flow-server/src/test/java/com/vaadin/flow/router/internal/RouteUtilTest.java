@@ -1146,8 +1146,8 @@ class RouteUtilTest {
         RouteParameters parameters = new RouteParameters(
                 Map.of("orgId", "acme", "projectId", "42"));
 
-        List<RouteParentReference> hierarchy = RouteUtil
-                .getRouteHierarchy(ProjectView.class, parameters);
+        List<RouteParentReference> hierarchy = RouteUtil.getRouteHierarchy(null,
+                ProjectView.class, parameters);
 
         // ordered from root to current target
         assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
@@ -1176,7 +1176,8 @@ class RouteUtilTest {
         RouteParameters parameters = new RouteParameters("orgId", "acme");
 
         RouteParentReference parent = RouteUtil
-                .getRouteParent(SettingsView.class, parameters).orElseThrow();
+                .getRouteParent(null, SettingsView.class, parameters)
+                .orElseThrow();
 
         assertEquals(OrgView.class, parent.navigationTarget());
         assertEquals("acme",
@@ -1185,9 +1186,9 @@ class RouteUtilTest {
 
     @Test
     void getRouteParent_noAnnotationNoRegistry_isEmpty() {
-        assertFalse(
-                RouteUtil.getRouteParent(OrgView.class, RouteParameters.empty())
-                        .isPresent());
+        assertFalse(RouteUtil
+                .getRouteParent(null, OrgView.class, RouteParameters.empty())
+                .isPresent());
     }
 
     @Test
@@ -1307,9 +1308,8 @@ class RouteUtilTest {
     @Test
     void getRouteParent_resolverReturningEmpty_marksRoot() {
         // RootResolver returns empty -> OrderDetailView is its own root
-        assertFalse(RouteUtil
-                .getRouteParent(RootResolvedView.class, RouteParameters.empty())
-                .isPresent());
+        assertFalse(RouteUtil.getRouteParent(null, RootResolvedView.class,
+                RouteParameters.empty()).isPresent());
     }
 
     @SafeVarargs
