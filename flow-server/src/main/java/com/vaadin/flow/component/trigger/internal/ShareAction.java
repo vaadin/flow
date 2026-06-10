@@ -140,8 +140,7 @@ public class ShareAction extends PromiseAction<Void> {
         appendSlot(expression, args, "text", textInput, trigger);
         appendSlot(expression, args, "url", urlInput, trigger);
         expression.append("})");
-        return JsFunction
-                .of(expression.toString(), args.toArray(new JsFunction[0]))
+        return JsFunction.of(expression.toString(), args.toArray())
                 .withArguments("event");
     }
 
