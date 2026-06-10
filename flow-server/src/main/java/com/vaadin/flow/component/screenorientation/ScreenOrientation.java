@@ -120,7 +120,7 @@ public final class ScreenOrientation implements Serializable {
     public static void lock(ScreenOrientationType orientation) {
         lock(orientation, () -> {
         }, error -> LOGGER.debug("Screen orientation lock failed: {} ({})",
-                error.message(), error.name()));
+                error.debugInfo(), error.errorCode()));
     }
 
     /**
@@ -132,8 +132,8 @@ public final class ScreenOrientation implements Serializable {
      * <p>
      * The browser dispatches exactly one of the two callbacks on the UI thread.
      * A lock typically requires fullscreen and a device that physically rotates
-     * — see {@link ScreenOrientationLockError} for the {@code DOMException}
-     * names you can expect on failure.
+     * — see {@link ScreenOrientationLockErrorCode} for the failure reasons you
+     * can expect.
      *
      * @param orientation
      *            the orientation to lock to, not {@code null} and not
@@ -168,13 +168,14 @@ public final class ScreenOrientation implements Serializable {
                         onSuccess.run();
                     } else {
                         onError.accept(new ScreenOrientationLockError(
-                                result.name() == null ? "UnknownError"
-                                        : result.name(),
+                                result.code() == null
+                                        ? ScreenOrientationLockErrorCode.UNKNOWN
+                                        : result.code(),
                                 result.message() == null ? ""
                                         : result.message()));
                     }
                 }, bridgeError -> onError.accept(new ScreenOrientationLockError(
-                        "BridgeError", bridgeError)));
+                        ScreenOrientationLockErrorCode.UNKNOWN, bridgeError)));
     }
 
     /**
@@ -189,8 +190,8 @@ public final class ScreenOrientation implements Serializable {
      *             if there is no current UI
      */
     public static void unlock() {
-        UI.getCurrentOrThrow().getElement()
-                .executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
+        unlock(() -> {
+        });
     }
 
     /**
@@ -291,7 +292,8 @@ public final class ScreenOrientation implements Serializable {
             int angle) implements Serializable {
     }
 
-    private record LockResult(boolean success, @Nullable String name,
+    private record LockResult(boolean success,
+            @Nullable ScreenOrientationLockErrorCode code,
             @Nullable String message) implements Serializable {
     }
 }

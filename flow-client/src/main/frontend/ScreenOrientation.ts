@@ -61,10 +61,28 @@ if (screen.orientation) {
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
+// Constant names of the server-side ScreenOrientationLockErrorCode enum; the
+// server deserializes the code field directly into that enum, so the raw
+// DOMException name never crosses the wire.
+type VaadinScreenOrientationLockErrorCode = 'NOT_SUPPORTED' | 'SECURITY' | 'ABORT' | 'UNKNOWN';
+
 interface VaadinScreenOrientationLockResult {
   success: boolean;
-  name?: string;
+  code?: VaadinScreenOrientationLockErrorCode;
   message?: string;
+}
+
+function lockErrorCode(domExceptionName: string | undefined): VaadinScreenOrientationLockErrorCode {
+  switch (domExceptionName) {
+    case 'NotSupportedError':
+      return 'NOT_SUPPORTED';
+    case 'SecurityError':
+      return 'SECURITY';
+    case 'AbortError':
+      return 'ABORT';
+    default:
+      return 'UNKNOWN';
+  }
 }
 
 $wnd.Vaadin.Flow.screenOrientation = {
@@ -76,18 +94,24 @@ $wnd.Vaadin.Flow.screenOrientation = {
     if (!screen.orientation || typeof screen.orientation.lock !== 'function') {
       return Promise.resolve({
         success: false,
-        name: 'NotSupportedError',
+        code: 'NOT_SUPPORTED',
         message: 'Screen Orientation API is not supported in this browser.'
       });
     }
     return screen.orientation
       .lock(type as OrientationLockType)
       .then(() => ({ success: true }))
-      .catch((e: DOMException) => ({
-        success: false,
-        name: e.name ?? 'UnknownError',
-        message: e.message ?? ''
-      }));
+      .catch((e: DOMException) => {
+        const code = lockErrorCode(e.name);
+        const message = e.message ?? '';
+        return {
+          success: false,
+          code,
+          // The DOMException name is dropped once mapped to a typed code;
+          // keep it in the message for diagnostics when no code matches.
+          message: code === 'UNKNOWN' && e.name ? `${e.name}: ${message}` : message
+        };
+      });
   },
   unlock(): void {
     screen.orientation?.unlock();

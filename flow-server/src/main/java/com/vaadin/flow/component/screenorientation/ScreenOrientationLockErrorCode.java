@@ -18,81 +18,36 @@ package com.vaadin.flow.component.screenorientation;
 /**
  * Typed reasons why a screen-orientation lock request can fail.
  * <p>
- * Returned by {@link ScreenOrientationLockError#errorCode()}. Prefer this enum
- * over comparing the raw {@code DOMException} name string — an exhaustive
- * {@code switch} catches missing branches at compile time.
- * <p>
- * Each constant holds the {@code DOMException} name the browser uses for that
- * failure. Applications rarely need {@link #domExceptionName()} directly; it is
- * exposed for logging and for round-tripping with
- * {@link ScreenOrientationLockError#name()}.
+ * Returned by {@link ScreenOrientationLockError#errorCode()}. The client maps
+ * the browser failure to one of these constants before reporting it to the
+ * server, so application code can branch with an exhaustive {@code switch}
+ * instead of inspecting browser-specific error strings.
  */
 public enum ScreenOrientationLockErrorCode {
     /**
      * The browser does not implement the Screen Orientation API, or does not
      * allow locking on this device (for example a desktop that has no physical
-     * orientation to lock to). Corresponds to a {@code NotSupportedError}
-     * {@code DOMException}.
+     * orientation to lock to).
      */
-    NOT_SUPPORTED("NotSupportedError"),
+    NOT_SUPPORTED,
 
     /**
      * The document is not in fullscreen, which most browsers require before
-     * honoring a lock request. Corresponds to a {@code SecurityError}
-     * {@code DOMException}.
+     * honoring a lock request.
      */
-    SECURITY("SecurityError"),
+    SECURITY,
 
     /**
      * A newer lock or unlock call superseded this request before the browser
-     * resolved it. Corresponds to an {@code AbortError} {@code DOMException}.
+     * resolved it.
      */
-    ABORT("AbortError"),
+    ABORT,
 
     /**
      * The browser rejected the request for a reason that does not match a more
      * specific code, or the executeJs round-trip itself failed.
-     * {@link ScreenOrientationLockError#name()} still holds the raw
-     * {@code DOMException} name and
-     * {@link ScreenOrientationLockError#message()} the underlying message for
-     * diagnostics.
+     * {@link ScreenOrientationLockError#debugInfo()} holds the underlying
+     * browser message for diagnostics.
      */
-    UNKNOWN("");
-
-    private final String domExceptionName;
-
-    ScreenOrientationLockErrorCode(String domExceptionName) {
-        this.domExceptionName = domExceptionName;
-    }
-
-    /**
-     * Returns the {@code DOMException} name associated with this code, or the
-     * empty string for {@link #UNKNOWN}. Mainly useful for logging or
-     * interoperating with {@link ScreenOrientationLockError#name()}.
-     *
-     * @return the {@code DOMException} name, or {@code ""} for {@link #UNKNOWN}
-     */
-    public String domExceptionName() {
-        return domExceptionName;
-    }
-
-    /**
-     * Looks up the enum constant for a raw {@code DOMException} name, returning
-     * {@link #UNKNOWN} if the name is not one this version of Flow recognises.
-     * This is how {@link ScreenOrientationLockError#errorCode()} behaves — it
-     * maps known names to constants and surfaces unknown ones as
-     * {@link #UNKNOWN} rather than throwing.
-     *
-     * @param name
-     *            the {@code DOMException} name from the browser
-     * @return the matching constant, or {@link #UNKNOWN} if unrecognised
-     */
-    public static ScreenOrientationLockErrorCode fromName(String name) {
-        for (ScreenOrientationLockErrorCode code : values()) {
-            if (code != UNKNOWN && code.domExceptionName.equals(name)) {
-                return code;
-            }
-        }
-        return UNKNOWN;
-    }
+    UNKNOWN;
 }

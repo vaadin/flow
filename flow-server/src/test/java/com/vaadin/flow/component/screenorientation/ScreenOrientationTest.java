@@ -160,7 +160,7 @@ class ScreenOrientationTest {
         AtomicBoolean success = new AtomicBoolean();
         ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY,
                 () -> success.set(true),
-                error -> fail("onError should not fire: " + error.message()));
+                error -> fail("onError should not fire: " + error.debugInfo()));
 
         ObjectNode result = JacksonUtils.createObjectNode();
         result.put("success", true);
@@ -178,29 +178,31 @@ class ScreenOrientationTest {
 
         ObjectNode result = JacksonUtils.createObjectNode();
         result.put("success", false);
-        result.put("name", "SecurityError");
+        result.put("code", "SECURITY");
         result.put("message", "Must be in fullscreen");
         resolveLockPromise(ui, result);
 
-        assertEquals("SecurityError", captured.get().name());
-        assertEquals("Must be in fullscreen", captured.get().message());
         assertEquals(ScreenOrientationLockErrorCode.SECURITY,
                 captured.get().errorCode(),
-                "The raw DOMException name must map to a typed error code so "
-                        + "callers can switch instead of string-comparing");
+                "The typed code sent by the client must deserialize into the "
+                        + "error code enum");
+        assertEquals("Must be in fullscreen", captured.get().debugInfo());
     }
 
     @Test
-    void lockErrorCode_fromName() {
-        assertEquals(ScreenOrientationLockErrorCode.NOT_SUPPORTED,
-                ScreenOrientationLockErrorCode.fromName("NotSupportedError"));
-        assertEquals(ScreenOrientationLockErrorCode.SECURITY,
-                ScreenOrientationLockErrorCode.fromName("SecurityError"));
-        assertEquals(ScreenOrientationLockErrorCode.ABORT,
-                ScreenOrientationLockErrorCode.fromName("AbortError"));
+    void lock_errorWithoutCodeFallsBackToUnknown() {
+        AtomicReference<ScreenOrientationLockError> captured = new AtomicReference<>();
+        ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY,
+                () -> fail("onSuccess should not fire"), captured::set);
+
+        ObjectNode result = JacksonUtils.createObjectNode();
+        result.put("success", false);
+        resolveLockPromise(ui, result);
+
         assertEquals(ScreenOrientationLockErrorCode.UNKNOWN,
-                ScreenOrientationLockErrorCode.fromName("SomeFutureError"),
-                "Unrecognised names must fall back to UNKNOWN, not throw");
+                captured.get().errorCode(),
+                "A missing code must surface as UNKNOWN, not null");
+        assertEquals("", captured.get().debugInfo());
     }
 
     @Test
