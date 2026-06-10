@@ -6,6 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 import './Clipboard';
 import { currentFullscreenState } from './Fullscreen';
+import './Download';
 import './ElementResize';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
