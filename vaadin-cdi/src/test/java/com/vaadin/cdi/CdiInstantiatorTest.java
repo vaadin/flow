@@ -42,6 +42,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.MenuAccessControl;
@@ -127,6 +129,15 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         }
     }
 
+    @VaadinServiceEnabled
+    public static class TestPageTitleGenerator implements PageTitleGenerator {
+
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return null;
+        }
+    }
+
     @Singleton
     public static class ServiceInitObserver {
 
@@ -186,6 +197,15 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         Assertions.assertNotNull(menuAccessControl);
         Assertions.assertInstanceOf(TestMenuAccessControl.class,
                 menuAccessControl);
+    }
+
+    @Test
+    public void getPageTitleGenerator_beanEnabled_instanceReturned() {
+        PageTitleGenerator pageTitleGenerator = instantiator
+                .getPageTitleGenerator();
+        Assertions.assertNotNull(pageTitleGenerator);
+        Assertions.assertInstanceOf(TestPageTitleGenerator.class,
+                pageTitleGenerator);
     }
 
     @Test

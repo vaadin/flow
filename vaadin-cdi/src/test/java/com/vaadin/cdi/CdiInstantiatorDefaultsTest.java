@@ -31,6 +31,7 @@ import com.vaadin.cdi.annotation.VaadinServiceScoped;
 import com.vaadin.cdi.context.ServiceUnderTestContext;
 import com.vaadin.cdi.context.VaadinServiceScopedContext;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
 import com.vaadin.flow.server.auth.MenuAccessControl;
@@ -75,5 +76,14 @@ public class CdiInstantiatorDefaultsTest {
         Assertions.assertNotNull(menuAccessControl);
         Assertions.assertInstanceOf(DefaultMenuAccessControl.class,
                 menuAccessControl);
+    }
+
+    @Test
+    public void getPageTitleGenerator_beanNotProvided_fallsBackToDelegate() {
+        // No bean and no "pageTitle.generator" init parameter is configured,
+        // so the delegate's default (null) is returned.
+        PageTitleGenerator pageTitleGenerator = instantiator
+                .getPageTitleGenerator();
+        Assertions.assertNull(pageTitleGenerator);
     }
 }
