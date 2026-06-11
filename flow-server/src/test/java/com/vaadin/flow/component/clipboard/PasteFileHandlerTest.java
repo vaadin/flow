@@ -64,13 +64,12 @@ class PasteFileHandlerTest {
     }
 
     @Test
-    void batch_overlappingPastes_eachLifecycleStaysOrdered()
-            throws IOException {
+    void batch_overlappingPastes_newerSupersedesOlder() throws IOException {
         // Two pastes (2 files each) interleave on the wire:
         // paste 1 file A, paste 2 file X, paste 1 file B, paste 2 file Y.
-        // The framework must keep each paste's own sequence
-        // (start → file → file → complete) intact; cross-paste interleaving
-        // of the *order between* events is allowed.
+        // Starting paste 2 supersedes the still-unfinished paste 1, so paste
+        // 1's late file B is dropped and paste 1 never completes; only the
+        // newest paste is delivered.
         Fixture fixture = new Fixture();
         List<String> calls = new ArrayList<>();
         UploadHandler handler = PasteFileHandler.batch()
@@ -84,14 +83,11 @@ class PasteFileHandlerTest {
         fixture.fire(handler, 1, 2, "B");
         fixture.fire(handler, 2, 2, "Y");
 
-        // Per-paste lifecycle is preserved: paste 1 = start, A, B, complete;
-        // paste 2 = start, X, Y, complete. Across pastes, paste 2 starts and
-        // even completes before paste 1's last file lands, which is exactly
-        // the "no cancellation" promise: paste 1 still finishes cleanly.
-        assertEquals(
-                Arrays.asList("start:1", "file:1/A", "start:2", "file:2/X",
-                        "file:1/B", "complete:1", "file:2/Y", "complete:2"),
-                calls);
+        // paste 1 starts and delivers A, then paste 2 supersedes it: B (a late
+        // upload of the superseded paste) is dropped, paste 1 has no complete,
+        // and only paste 2 runs start → X → Y → complete.
+        assertEquals(Arrays.asList("start:1", "file:1/A", "start:2", "file:2/X",
+                "file:2/Y", "complete:2"), calls);
     }
 
     @Test

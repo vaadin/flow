@@ -20,7 +20,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.streams.UploadHandler;
 
@@ -42,19 +45,29 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * delivered.</li>
  * </ul>
  *
- * Each paste runs as its own batch: pastes that overlap in transit (the tail of
- * an older paste's uploads arriving after a newer paste has started) still run
- * through their own {@code onStart} / {@code onFile} / {@code onComplete}
- * lifecycle. A batch lives in memory until it receives all the files the
- * browser declared in {@link Clipboard#PASTE_FILE_COUNT_HEADER}; a paste whose
- * upload fails mid-flight stays open indefinitely (rare in practice, since
- * uploads are small, but worth knowing if an application keeps a process alive
- * for months).
- * <p>
- * Application code that wants "show the latest paste only" semantics tracks the
- * highest paste id seen and filters in its own callbacks &mdash; the handler
- * does not drop any files on the application's behalf, so a slow tail upload
- * from an earlier paste still arrives at the listener.
+ * The latest paste wins: pastes are tracked per owning component, and starting
+ * a newer paste supersedes any older one that has not finished yet. A late
+ * upload belonging to a superseded paste is dropped rather than reopening a
+ * finished or abandoned batch, so a paste whose declared file count never
+ * arrives (a stalled upload, or a missing/garbage
+ * {@link Clipboard#PASTE_FILE_COUNT_HEADER}) cannot accumulate &mdash; the next
+ * paste evicts it, and in any case the state lives and dies with the component.
+ * The trade-off is that two pastes overlapping in transit no longer complete on
+ * independent timelines; in practice pastes are small and serial, so the newer
+ * one superseding the older is the desired behaviour.
+ *
+ * <h2>Resource notes</h2>
+ *
+ * <ul>
+ * <li>{@link #perFile(SerializableConsumer)} and the {@code onFile} step of
+ * {@link #batch()} read each uploaded file <em>fully into memory</em> as a
+ * {@code byte[]} before invoking the callback. A very large paste is therefore
+ * held entirely in heap; cap it with the request/file size limits on a custom
+ * {@link UploadHandler}, or read the stream yourself, when that matters.</li>
+ * <li>{@link PasteFile#fileName()} is the browser-supplied name and is not
+ * sanitized. Treat it as untrusted &mdash; never use it directly as a
+ * filesystem path without sanitizing it first.</li>
+ * </ul>
  */
 public final class PasteFileHandler implements Serializable {
 
@@ -163,14 +176,14 @@ public final class PasteFileHandler implements Serializable {
          * further mutations to the builder do not affect it.
          */
         public UploadHandler build() {
-            // Per-handler batch map keyed by paste id. All access happens
-            // inside event.getUI().access, which runs on the UI thread, so
-            // a plain HashMap is enough — no extra synchronisation needed.
-            // Each paste id gets its own BatchState that lives until the
-            // paste delivers all its declared files (PASTE_FILE_COUNT_HEADER).
-            // Pastes do not interfere with each other: a slow tail upload
-            // from an earlier paste still resolves through its own batch.
-            Map<Long, BatchState> batches = new HashMap<>();
+            // The batch state is stored on the owning component (Clipboard
+            // #onFilePaste always registers against one) rather than in this
+            // handler, so a handler instance shared across components or UIs
+            // cannot accumulate state: the batches live and die with the
+            // component. The key is unique per build() so several handlers on
+            // the same component stay independent.
+            String batchesKey = PasteFileHandler.class.getName() + "$batches$"
+                    + UUID.randomUUID();
             SerializableConsumer<PasteStart> startHandler = onStart;
             SerializableConsumer<PasteFile> fileHandler = onFile;
             SerializableConsumer<PasteComplete> completeHandler = onComplete;
@@ -179,6 +192,7 @@ public final class PasteFileHandler implements Serializable {
                         .getHeader(Clipboard.PASTE_ID_HEADER));
                 int totalFiles = parseFileCount(event.getRequest()
                         .getHeader(Clipboard.PASTE_FILE_COUNT_HEADER));
+                Component owner = event.getOwningComponent();
 
                 byte[] data;
                 try (InputStream in = event.getInputStream()) {
@@ -186,35 +200,82 @@ public final class PasteFileHandler implements Serializable {
                 }
 
                 event.getUI().access(() -> {
-                    BatchState existing = batches.get(pasteId);
-                    BatchState state;
+                    // All access runs on the UI thread holding the session
+                    // lock, and the state is scoped to this component, so a
+                    // plain map needs no extra synchronisation.
+                    ComponentBatches state = componentBatches(owner,
+                            batchesKey);
+
+                    // A paste id below the high-water mark is a late upload
+                    // from
+                    // a paste a newer one already superseded; drop it so it
+                    // cannot resurrect a finished batch.
+                    if (pasteId < state.maxPasteId) {
+                        return;
+                    }
+                    if (pasteId > state.maxPasteId) {
+                        state.maxPasteId = pasteId;
+                        // A newer paste drops older, still-unfinished batches
+                        // so
+                        // a malformed or never-completing one (e.g. a missing
+                        // or
+                        // bogus X-Paste-File-Count that leaves expected == 0)
+                        // cannot pile up.
+                        state.batches.keySet().removeIf(id -> id < pasteId);
+                    }
+
+                    BatchState batch = state.batches.get(pasteId);
                     boolean newPaste;
-                    if (existing != null) {
-                        state = existing;
+                    if (batch != null) {
                         newPaste = false;
                     } else {
-                        state = new BatchState(totalFiles);
-                        batches.put(pasteId, state);
+                        batch = new BatchState(totalFiles);
+                        state.batches.put(pasteId, batch);
                         newPaste = true;
                         startHandler
                                 .accept(new PasteStart(pasteId, totalFiles));
                     }
 
                     fileHandler.accept(new PasteFile(pasteId, newPaste,
-                            state.expected, event.getFileName(),
+                            batch.expected, event.getFileName(),
                             event.getContentType(), event.getFileSize(), data));
-                    state.received++;
+                    batch.received++;
 
-                    if (state.expected > 0
-                            && state.received >= state.expected) {
-                        int received = state.received;
-                        batches.remove(pasteId);
+                    if (batch.expected > 0
+                            && batch.received >= batch.expected) {
+                        int received = batch.received;
+                        state.batches.remove(pasteId);
                         completeHandler
                                 .accept(new PasteComplete(pasteId, received));
                     }
                 });
             };
         }
+    }
+
+    private static ComponentBatches componentBatches(Component owner,
+            String key) {
+        if (owner == null) {
+            // Unreachable through Clipboard.onFilePaste, which always registers
+            // against a component; guard so misuse fails loudly instead of
+            // silently leaking state in a handler-owned map.
+            throw new IllegalStateException(
+                    "PasteFileHandler requires an owning component; "
+                            + "use Clipboard.onFilePaste to register it");
+        }
+        ComponentBatches state = (ComponentBatches) ComponentUtil.getData(owner,
+                key);
+        if (state == null) {
+            state = new ComponentBatches();
+            ComponentUtil.setData(owner, key, state);
+        }
+        return state;
+    }
+
+    private static final class ComponentBatches implements Serializable {
+
+        final Map<Long, BatchState> batches = new HashMap<>();
+        long maxPasteId;
     }
 
     private static final class BatchState implements Serializable {

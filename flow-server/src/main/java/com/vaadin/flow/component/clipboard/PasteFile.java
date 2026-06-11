@@ -35,10 +35,13 @@ import com.vaadin.flow.function.SerializableConsumer;
  * the client paste-upload helper (see {@link Clipboard#PASTE_ID_HEADER}). All
  * files originating from the same paste gesture share one id; subsequent pastes
  * carry strictly larger ids. {@link #newPaste()} is {@code true} on the first
- * file of each paste to reach the listener. Every file the browser uploads is
- * delivered &mdash; pastes do not cancel each other even when their uploads
- * interleave in transit, so application code wanting a "show the latest paste
- * only" UI tracks the highest paste id seen and filters in its own callback.
+ * file of each paste to reach the listener. Starting a newer paste supersedes
+ * an older one that has not finished, and a late file from a superseded paste
+ * is dropped, so the listener only ever sees files of the most recent paste.
+ * <p>
+ * {@link #fileName()} is supplied by the browser and is <em>not</em> sanitized;
+ * treat it as untrusted and never use it directly as a filesystem path without
+ * sanitizing it first.
  *
  * @param pasteId
  *            the paste sequence number this file belongs to
