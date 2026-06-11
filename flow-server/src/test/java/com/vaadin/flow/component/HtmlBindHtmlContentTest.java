@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import org.jsoup.safety.Safelist;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
@@ -22,6 +23,7 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -174,5 +176,99 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // state unchanged
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
+    }
+
+    @Test
+    void signalConstructorWithSafelist_initialAndUpdatesSanitized() {
+        Safelist safelist = new Safelist().addTags("div");
+        ValueSignal<String> signal = new ValueSignal<>(
+                "<div onclick='evil()'>v1<script>x()</script></div>");
+        Html html = new Html(signal, safelist);
+        UI.getCurrent().add(html);
+
+        // initial value sanitized
+        assertEquals("div", html.getElement().getTag());
+        assertNull(html.getElement().getAttribute("onclick"));
+        assertEquals("v1", html.getInnerHtml());
+
+        // updates are sanitized too
+        signal.set("<div onmouseover='evil()'>v2<script>y()</script></div>");
+        assertNull(html.getElement().getAttribute("onmouseover"));
+        assertEquals("v2", html.getInnerHtml());
+    }
+
+    @Test
+    void signalConstructorWithSafelist_nullSafelist_throws() {
+        assertThrows(NullPointerException.class,
+                () -> new Html(new ValueSignal<>("<div>x</div>"),
+                        (Safelist) null));
+    }
+
+    @Test
+    void bindHtmlContentWithSafelist_updatesSanitized() {
+        Safelist safelist = new Safelist().addTags("div");
+        Html html = new Html("<div>init</div>");
+        UI.getCurrent().add(html);
+
+        ValueSignal<String> signal = new ValueSignal<>(
+                "<div onclick='evil()'>bound<script>x()</script></div>");
+        html.bindHtmlContent(signal, safelist);
+
+        assertNull(html.getElement().getAttribute("onclick"));
+        assertEquals("bound", html.getInnerHtml());
+
+        signal.set("<div onmouseover='evil()'>changed</div>");
+        assertNull(html.getElement().getAttribute("onmouseover"));
+        assertEquals("changed", html.getInnerHtml());
+    }
+
+    @Test
+    void bindHtmlContentWithSafelist_nullSafelist_throws() {
+        Html html = new Html("<div>init</div>");
+        UI.getCurrent().add(html);
+        assertThrows(NullPointerException.class,
+                () -> html.bindHtmlContent(new ValueSignal<>("<div>x</div>"),
+                        (Safelist) null));
+    }
+
+    @Test
+    void bindHtmlContentWithSafelist_withNullValue_recordsErrorAndDoesNotChange() {
+        Safelist safelist = new Safelist().addTags("div");
+        Html html = new Html("<div>init</div>");
+        UI.getCurrent().add(html);
+        ValueSignal<String> signal = new ValueSignal<>("<div>after</div>");
+        html.bindHtmlContent(signal, safelist);
+
+        // A null value must not reach Jsoup.clean; it follows the same path as
+        // the non-sanitizing binding, recording an NPE without changing state
+        signal.set(null);
+
+        assertEquals("after", html.getInnerHtml());
+        assertEquals(1, events.size());
+        assertEquals(NullPointerException.class,
+                events.getFirst().getThrowable().getClass());
+        events.clear();
+    }
+
+    @Test
+    void bindHtmlContentWithSafelist_valueBecomesInvalidAfterClean_recordsErrorAndDoesNotChange() {
+        Safelist safelist = new Safelist().addTags("div");
+        Html html = new Html("<div>init</div>");
+        UI.getCurrent().add(html);
+        ValueSignal<String> signal = new ValueSignal<>("<div>ok</div>");
+        html.bindHtmlContent(signal, safelist);
+
+        assertEquals("ok", html.getInnerHtml());
+
+        // The safelist strips <script> entirely, so the cleaned value has no
+        // top-level element. Applying it throws inside the effect; the error is
+        // captured and the previous content is kept.
+        signal.set("<script>evil()</script>");
+
+        assertEquals("ok", html.getInnerHtml());
+        assertEquals(1, events.size());
+        assertEquals(IllegalArgumentException.class,
+                events.getFirst().getThrowable().getClass());
+        events.clear();
     }
 }
