@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>vaadin-cdi-parent</artifactId>
-  <version>16.0-SNAPSHOT</version>
+  <version>16.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>vaadin-cdi-parent</name>
@@ -48,7 +48,7 @@
     <maven.javadoc.version>3.11.2</maven.javadoc.version>
     <driver.binary.downloader.maven.plugin.version>1.0.18</driver.binary.downloader.maven.plugin.version>
 
-    <vaadin.flow.version>25.0-SNAPSHOT</vaadin.flow.version>
+    <vaadin.flow.version>25.2-SNAPSHOT</vaadin.flow.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <slf4j.version>2.0.17</slf4j.version>
     <weld.version>6.0.3.Final</weld.version>
