@@ -134,6 +134,26 @@ public interface DeploymentConfiguration
     }
 
     /**
+     * Gets the value of the {@code X-Frame-Options} HTTP response header that
+     * is sent with the application page. The header lets the browser opt in to
+     * protection against clickjacking by restricting whether the page may be
+     * rendered inside a frame.
+     * <p>
+     * The value can be configured with the
+     * {@link InitParameters#SERVLET_PARAMETER_FRAME_OPTIONS} init parameter and
+     * defaults to {@code SAMEORIGIN}. An empty value disables sending the
+     * header, which is useful for applications that are meant to be embedded in
+     * a frame.
+     *
+     * @return the {@code X-Frame-Options} value to use, or an empty string if
+     *         the header should not be sent
+     */
+    default String getFrameOptions() {
+        return getStringProperty(InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,
+                "SAMEORIGIN").trim();
+    }
+
+    /**
      * Gets the properties configured for the deployment, e.g. as init
      * parameters to the servlet.
      *
