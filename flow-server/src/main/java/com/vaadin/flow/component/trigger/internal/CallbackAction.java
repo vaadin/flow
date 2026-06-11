@@ -19,11 +19,13 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
@@ -59,16 +61,21 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * instance can be wired to triggers hosted on different elements without
  * leaking registrations across them.
  * <p>
+ * A value-less variant — constructed with just a {@link SerializableRunnable} —
+ * forwards no value: the trigger firing is the whole signal. It renders
+ * {@code $0()} and runs the callback when invoked. Useful for triggers that
+ * carry no payload, such as {@link TimeoutTrigger}.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
- *            the type the JSON value is decoded to and the callback receives
+ *            the type the JSON value is decoded to and the callback receives;
+ *            unused by the value-less variant
  */
 public class CallbackAction<T> extends Action {
 
-    private final Class<T> valueType;
-    private final SerializableConsumer<T> callback;
-    private final Action.Input<? extends T> source;
+    private final Action.@Nullable Input<? extends T> source;
+    private final SerializableConsumer<ArrayNode> dispatch;
     private final Map<StateNode, ReturnChannelRegistration> channelByNode = new IdentityHashMap<>();
 
     /**
@@ -88,41 +95,57 @@ public class CallbackAction<T> extends Action {
      */
     public CallbackAction(Class<T> valueType, SerializableConsumer<T> callback,
             Action.Input<? extends T> source) {
-        this.valueType = Objects.requireNonNull(valueType,
-                "valueType must not be null");
-        this.callback = Objects.requireNonNull(callback,
-                "callback must not be null");
+        Objects.requireNonNull(valueType, "valueType must not be null");
+        Objects.requireNonNull(callback, "callback must not be null");
         this.source = Objects.requireNonNull(source, "source must not be null");
+        this.dispatch = args -> {
+            JsonNode raw = args.get(0);
+            // The source input is expected to evaluate to a defined value at
+            // fire time; a JSON null on the wire (or a missing argument) almost
+            // certainly indicates a misuse — for example, mapping an action's
+            // input from a property that doesn't exist on the target.
+            if (raw == null || raw.isNull()) {
+                throw new IllegalStateException(
+                        "CallbackAction received a null value from the client;"
+                                + " the source input must produce a non-null"
+                                + " value");
+            }
+            callback.accept(JacksonUtils.readValue(raw, valueType));
+        };
+    }
+
+    /**
+     * Creates a value-less action that runs {@code callback} on the UI thread
+     * when the trigger fires, forwarding no value from the client.
+     *
+     * @param callback
+     *            invoked on the UI thread when the trigger fires, not
+     *            {@code null}
+     */
+    public CallbackAction(SerializableRunnable callback) {
+        Objects.requireNonNull(callback, "callback must not be null");
+        this.source = null;
+        this.dispatch = args -> callback.run();
     }
 
     @Override
     protected final JsFunction toJs(Trigger trigger) {
+        ReturnChannelRegistration channel = channelFor(
+                trigger.getHost().getNode());
+        if (source == null) {
+            // Value-less: there is nothing to forward, so the channel is called
+            // with no arguments.
+            return JsFunction.of("$0();", channel);
+        }
         // $0 = the return channel; $1 = the source input's JsFunction.
         // Invoking the source with `event` produces its value, which is
         // forwarded straight into the channel call.
-        return JsFunction.of("$0($1(event));",
-                channelFor(trigger.getHost().getNode()), source.toJs(trigger))
+        return JsFunction.of("$0($1(event));", channel, source.toJs(trigger))
                 .withArguments("event");
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
-        return channelByNode.computeIfAbsent(hostNode,
-                node -> node.getFeature(ReturnChannelMap.class)
-                        .registerChannel(this::dispatch));
-    }
-
-    private void dispatch(ArrayNode args) {
-        JsonNode raw = args.get(0);
-        // The source input is expected to evaluate to a defined value at fire
-        // time; a JSON null on the wire (or a missing argument) almost
-        // certainly indicates a misuse — for example, mapping an action's
-        // input from a property that doesn't exist on the target.
-        if (raw == null || raw.isNull()) {
-            throw new IllegalStateException(
-                    "CallbackAction received a null value from the client;"
-                            + " the source input must produce a non-null"
-                            + " value");
-        }
-        callback.accept(JacksonUtils.readValue(raw, valueType));
+        return channelByNode.computeIfAbsent(hostNode, node -> node
+                .getFeature(ReturnChannelMap.class).registerChannel(dispatch));
     }
 }
