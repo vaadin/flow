@@ -76,8 +76,10 @@ class HtmlComponentSmokeTest {
         testValues.put(IFrame.SandboxType[].class,
                 new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
                         IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(String[].class, new String[] { "a", "b" });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
+        testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -247,9 +249,22 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
-        // NativeTable delegates caption text to the nested <caption> element
-        if (method.getDeclaringClass() == NativeTable.class
+        // NativeTable / Table delegates caption text to the nested <caption>
+        // element
+        if ((method.getDeclaringClass() == NativeTable.class
+                || method.getDeclaringClass() == Table.class)
                 && method.getName().startsWith("setCaptionText")) {
+            return true;
+        }
+
+        // TableCell.setHeaders has multiple overloads (String..., String list,
+        // TableHeaderCell...). The String[] variant is exercised normally to
+        // cover the bean property; the others have non-matching getter types
+        // or no matching getter and are covered by focused unit tests.
+        if (method.getDeclaringClass() == TableCell.class && (method.getName()
+                .equals("setHeadersByCells")
+                || (method.getName().equals("setHeaders")
+                        && method.getParameterTypes()[0] != String[].class))) {
             return true;
         }
 
@@ -415,7 +430,8 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        return HtmlComponent.class.isAssignableFrom(cls);
+        return HtmlComponent.class.isAssignableFrom(cls)
+                && !Modifier.isAbstract(cls.getModifiers());
     }
 
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(

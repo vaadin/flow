@@ -27,7 +27,9 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;td&gt;</code> element.
  *
  * @since 24.4
+ * @deprecated since 25.2; use {@link TableDataCell} instead.
  */
+@Deprecated
 @Tag(Tag.TD)
 public class NativeTableCell extends HtmlContainer
         implements ClickNotifier<NativeTableCell> {

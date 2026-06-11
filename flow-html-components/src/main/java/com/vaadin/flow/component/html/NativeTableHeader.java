@@ -24,7 +24,9 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;thead&gt;</code> element.
  *
  * @since 24.4
+ * @deprecated since 25.2; use {@link TableHead} instead.
  */
+@Deprecated
 @Tag(Tag.THEAD)
 public class NativeTableHeader extends HtmlContainer
         implements NativeTableRowContainer, ClickNotifier<NativeTableHeader> {

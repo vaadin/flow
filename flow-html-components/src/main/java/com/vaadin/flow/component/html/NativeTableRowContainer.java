@@ -26,7 +26,11 @@ import com.vaadin.flow.component.HasOrderedComponents;
  * A container of <code>&lt;tr&gt;</code> elements.
  *
  * @since 24.4
+ * @deprecated since 25.2; use {@link TableRowContainer} (and the corresponding
+ *             {@link TableHead}, {@link TableBody}, and {@link TableFoot}
+ *             components) instead.
  */
+@Deprecated
 interface NativeTableRowContainer extends HasOrderedComponents {
 
     /**
