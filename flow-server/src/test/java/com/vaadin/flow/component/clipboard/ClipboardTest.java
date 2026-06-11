@@ -36,9 +36,15 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -367,6 +373,91 @@ class ClipboardTest {
         assertEquals(1, channels.size(),
                 "Expected exactly one captured return channel");
         return channels.get(0);
+    }
+
+    @Test
+    void onFilePaste_registersUploadAttributeAndJsInitializer() {
+        UI ui = uiWithRealSession();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        Clipboard.onFilePaste(target, UploadHandler.inMemory((m, b) -> {
+        }));
+
+        // The handler is stored as a stream-resource-backed attribute named
+        // "_vaadin-paste-upload-<uuid>". The UUID suffix is per-registration,
+        // so don't pin it — find the attribute by prefix.
+        String uploadAttribute = target.getElement().getAttributeNames()
+                .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
+                .orElse(null);
+        assertNotNull(uploadAttribute,
+                "expected upload URL attribute on host element");
+        String url = target.getElement().getAttribute(uploadAttribute);
+        assertNotNull(url, "upload attribute resolved to a URL");
+        assertTrue(url.contains("VAADIN/dynamic/resource"),
+                "upload URL should point at the dynamic resource handler, got "
+                        + url);
+
+        // The paste handling is installed via addJsInitializer: a native paste
+        // listener that delegates to the TS helper
+        // window.Vaadin.Flow.clipboard.uploadPastedFiles, capturing the
+        // per-registration attribute name so the helper can read the upload
+        // URL client-side.
+        JsFunction install = installFn(ui);
+        assertTrue(install.getBody().contains("uploadPastedFiles"),
+                "initializer should call the clipboard upload helper");
+        assertTrue(install.getBody().contains("addEventListener('paste'"),
+                "initializer should attach a native paste listener");
+        assertTrue(install.getCaptures().contains(uploadAttribute),
+                "initializer should capture the per-registration upload attribute");
+    }
+
+    @Test
+    void onFilePaste_remove_clearsAttributeAndDisposesListener() {
+        UI ui = uiWithRealSession();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        Registration registration = Clipboard.onFilePaste(target,
+                UploadHandler.inMemory((m, b) -> {
+                }));
+
+        String uploadAttribute = target.getElement().getAttributeNames()
+                .filter(n -> n.startsWith("_vaadin-paste-upload-")).findFirst()
+                .orElseThrow();
+        // Flush the install first so the registration has actually emitted its
+        // initializer; removal then emits the matching dispose.
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+
+        assertFalse(target.getElement().hasAttribute(uploadAttribute),
+                "remove() should drop the upload URL attribute");
+
+        // remove() tears down the native paste listener through the
+        // addJsInitializer dispose hook.
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> afterRemove = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertTrue(
+                afterRemove.stream()
+                        .anyMatch(p -> p.getInvocation().getExpression()
+                                .contains("disposeInitializer")),
+                "remove() should dispose the JS paste initializer");
+    }
+
+    /**
+     * Builds a MockUI backed by a real VaadinSession so that
+     * {@link com.vaadin.flow.dom.Element#setAttribute(String, com.vaadin.flow.server.streams.ElementRequestHandler)}
+     * can register against the session's stream resource registry. The default
+     * MockUI uses a Mockito-mocked session whose registry is null.
+     */
+    private static UI uiWithRealSession() {
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        VaadinSession.setCurrent(session);
+        return new MockUI(session);
     }
 
     /**
