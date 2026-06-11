@@ -310,7 +310,8 @@ public class UrlUtil {
 
     /**
      * Checks whether the scheme of the given URL is part of the given set of
-     * safe schemes. See {@link #isSafeUrl(String)} for the validation rules.
+     * safe schemes. See {@link #isSafeUrl(String)} for the validation rules. A
+     * {@code null} URL is considered unsafe.
      *
      * @param url
      *            the URL to check, may be {@code null}
