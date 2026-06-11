@@ -61,7 +61,6 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -254,7 +253,7 @@ public abstract class AbstractNavigationStateRenderer
         // After navigation event
         handleAfterNavigationEvents(ui, parameters);
 
-        updatePageTitle(event, componentInstance, route);
+        updatePageTitle(event, componentInstance, route, parameters);
 
         return statusCode;
     }
@@ -1129,12 +1128,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget, String route) {
+            Component routeTarget, String route, RouteParameters parameters) {
         Instantiator instantiator = navigationEvent.getUI().getSession()
                 .getService().getInstantiator();
-        Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
-                instantiator.getApplicationClass(routeTarget))
-                .map(PageTitle::value).orElse("");
+        QueryParameters queryParameters = navigationEvent.getLocation()
+                .getQueryParameters();
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> targetClass = (Class<? extends Component>) instantiator
+                .getApplicationClass(routeTarget);
+        Supplier<String> lookForTitleInTarget = () -> RouteUtil
+                .resolvePageTitle(instantiator, targetClass, parameters,
+                        queryParameters)
+                .orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1145,11 +1150,6 @@ public abstract class AbstractNavigationStateRenderer
                         .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
-    }
-
-    private static Optional<PageTitle> lookForTitleInTarget(
-            Class<?> routeTarget) {
-        return Optional.ofNullable(routeTarget.getAnnotation(PageTitle.class));
     }
 
     private static boolean isPreserveOnRefreshTarget(

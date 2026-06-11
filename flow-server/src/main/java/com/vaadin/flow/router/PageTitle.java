@@ -22,6 +22,13 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the page title for a navigation target.
+ * <p>
+ * This defines a static title. For a title that needs to be computed without
+ * creating an instance of the navigation target (for example for the routes of
+ * a breadcrumb trail or a menu), annotate the route with
+ * {@link DynamicPageTitle} instead; the {@link #value()} declared here is then
+ * available to the generator as a key. For a title that depends on the live
+ * state of an already shown view, implement {@link HasDynamicTitle}.
  *
  * @since 1.0
  */
@@ -35,8 +42,13 @@ public @interface PageTitle {
      * Empty string will clear any previous page title. In that case the browser
      * will decide what to show as the title, most likely the url.
      * <p>
-     * You may dynamically update the title for a view by implementing the
-     * {@link HasDynamicTitle#getPageTitle()} method.
+     * When the route is also annotated with {@link DynamicPageTitle}, this
+     * value is handed to the generator through {@link PageTitleContext#value()}
+     * rather than used as the title directly, so a generic generator can use it
+     * as a key (for example an i18n message key) to resolve the title.
+     * <p>
+     * You may dynamically update the title for an already shown view by
+     * implementing the {@link HasDynamicTitle#getPageTitle()} method.
      *
      * @return a page title string
      */
