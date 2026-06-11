@@ -103,6 +103,12 @@ class PageTest {
                 return new PendingJavaScriptResult() {
 
                     @Override
+                    public PendingJavaScriptResult withParameter(String name,
+                            Object value) {
+                        return this;
+                    }
+
+                    @Override
                     public boolean cancelExecution() {
                         return false;
                     }
@@ -163,6 +169,12 @@ class PageTest {
                         "Expected javascript for fetching location is wrong.");
 
                 return new PendingJavaScriptResult() {
+
+                    @Override
+                    public PendingJavaScriptResult withParameter(String name,
+                            Object value) {
+                        return this;
+                    }
 
                     @Override
                     public boolean cancelExecution() {

@@ -16,10 +16,14 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
@@ -55,15 +59,20 @@ import com.vaadin.flow.internal.JacksonCodec;
  */
 public final class JsFunction implements Serializable {
 
+    private static final Pattern PARAMETER_NAME_PATTERN = Pattern
+            .compile("[A-Za-z_][A-Za-z_0-9]*");
+
     private final String body;
     private final List<@Nullable Object> captures;
     private final List<String> argumentNames;
+    private final Set<String> namedParameters;
 
     private JsFunction(String body, List<@Nullable Object> captures,
-            List<String> argumentNames) {
+            List<String> argumentNames, Set<String> namedParameters) {
         this.body = body;
         this.captures = captures;
         this.argumentNames = argumentNames;
+        this.namedParameters = namedParameters;
     }
 
     /**
@@ -94,7 +103,7 @@ public final class JsFunction implements Serializable {
         }
         return new JsFunction(body,
                 Collections.unmodifiableList(Arrays.asList(copy)),
-                Collections.emptyList());
+                Collections.emptyList(), Collections.emptySet());
     }
 
     /**
@@ -122,7 +131,57 @@ public final class JsFunction implements Serializable {
             throw new IllegalStateException(
                     "withArguments has already been called on this JsFunction");
         }
-        return new JsFunction(body, captures, List.of(argumentNames));
+        return new JsFunction(body, captures, List.of(argumentNames),
+                namedParameters);
+    }
+
+    /**
+     * Returns a copy of this function with an additional captured value bound
+     * to the given name. The materialised function makes the value available in
+     * the body as a variable with the given name &mdash; e.g.
+     * {@code JsFunction.of("doSomething(foo)").withParameter("foo", value)}
+     * reads the value as {@code foo} instead of {@code $0}.
+     * <p>
+     * Internally the value is appended to the captures and the body is wrapped
+     * with a {@code let} declaration that aliases the captured slot to the
+     * given name. This is purely additive: positional captures from
+     * {@link #of(String, Object...)} keep their {@code $N} indices, and runtime
+     * arguments from {@link #withArguments(String...)} keep their names.
+     *
+     * @param name
+     *            the JavaScript identifier to bind the value to in the body;
+     *            must match {@code [A-Za-z_][A-Za-z_0-9]*} and not collide with
+     *            an already declared named parameter
+     * @param value
+     *            the value to capture; supports the same types as the captures
+     *            of {@link #of(String, Object...)}
+     * @return a new {@code JsFunction} with the additional named parameter
+     * @throws IllegalArgumentException
+     *             if the name is invalid, has already been used, or the value
+     *             has an unsupported type
+     */
+    public JsFunction withParameter(String name, @Nullable Object value) {
+        if (name == null) {
+            throw new IllegalArgumentException("Parameter name cannot be null");
+        }
+        if (!PARAMETER_NAME_PATTERN.matcher(name).matches()) {
+            throw new IllegalArgumentException("Parameter name '" + name
+                    + "' is not a valid JavaScript identifier");
+        }
+        if (namedParameters.contains(name)) {
+            throw new IllegalArgumentException(
+                    "Parameter '" + name + "' has already been added");
+        }
+
+        int captureIndex = captures.size();
+        List<@Nullable Object> newCaptures = new ArrayList<>(captures);
+        newCaptures.add(value);
+        Set<String> newNames = new HashSet<>(namedParameters);
+        newNames.add(name);
+        String newBody = "let " + name + "=$" + captureIndex + ";" + body;
+        return new JsFunction(newBody,
+                Collections.unmodifiableList(newCaptures), argumentNames,
+                Collections.unmodifiableSet(newNames));
     }
 
     /**

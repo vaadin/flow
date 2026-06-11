@@ -1810,7 +1810,8 @@ public class Element extends Node<Element> {
      * @param parameters
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
-     *         the expression
+     *         the expression and to add named parameters via
+     *         {@link PendingJavaScriptResult#withParameter(String, Object)}
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -1892,7 +1893,7 @@ public class Element extends Node<Element> {
                 parameters == null ? new Object[0] : parameters);
     }
 
-    private PendingJavaScriptResult scheduleJavaScriptInvocation(
+    private PendingJavaScriptInvocation scheduleJavaScriptInvocation(
             String expression, Object[] parameters) {
         StateNode node = getNode();
 

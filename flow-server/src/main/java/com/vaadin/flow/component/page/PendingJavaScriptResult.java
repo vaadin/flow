@@ -18,10 +18,12 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.server.VaadinSession;
@@ -80,6 +82,46 @@ public interface PendingJavaScriptResult extends Serializable {
      *         <code>false</code> if it's still pending
      */
     boolean isSentToBrowser();
+
+    /**
+     * Adds a named parameter that the JavaScript expression can reference
+     * directly by name. The value is made available in the expression as a
+     * variable with the chosen name, so the expression can read
+     * {@code doSomething(foo)} instead of {@code doSomething($0)}.
+     * <p>
+     * Positional parameters passed to
+     * {@link Element#executeJs(String, Object...) executeJs} and named
+     * parameters added here can be combined freely. The value is converted to
+     * JavaScript using the same rules as the positional parameters.
+     * <p>
+     * Example:
+     *
+     * <pre>
+     * element.executeJs("doSomething(foo)").withParameter("foo", "Some value");
+     * </pre>
+     * <p>
+     * Parameters can only be added before the execution has been sent to the
+     * browser.
+     *
+     * @param name
+     *            the name to expose the value as in the JavaScript expression;
+     *            must be a valid JavaScript identifier and must not start with
+     *            {@code $}
+     * @param value
+     *            the value to pass; supports the same types as the positional
+     *            parameters of {@link Element#executeJs(String, Object...)}
+     * @return this pending result, for chaining
+     * @throws IllegalArgumentException
+     *             if the name is not a valid identifier, has already been
+     *             registered, or the value has an unsupported type
+     * @throws IllegalStateException
+     *             if the execution has already been sent to the browser
+     */
+    default PendingJavaScriptResult withParameter(String name,
+            @Nullable Object value) {
+        throw new UnsupportedOperationException(
+                "Named parameters are not supported by this implementation");
+    }
 
     /**
      * Adds a typed handler that will be run for a successful execution and a

@@ -489,6 +489,12 @@ class AuthenticationContextTest {
                             SerializableConsumer<String> errorHandler) {
                         resultHandler.accept(null);
                     }
+
+                    @Override
+                    public PendingJavaScriptResult withParameter(String name,
+                            Object value) {
+                        return this;
+                    }
                 });
         try {
             CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());

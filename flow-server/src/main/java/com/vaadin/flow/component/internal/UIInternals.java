@@ -121,7 +121,7 @@ public class UIInternals implements Serializable {
      * been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
-        private final String expression;
+        private String expression;
         private final List<Object> parameters = new ArrayList<>();
 
         /**
@@ -164,6 +164,23 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * Appends a parameter to the invocation and prepends a {@code let}
+         * declaration to the expression so the value is available as a variable
+         * with the given name in the JavaScript scope.
+         *
+         * @param name
+         *            the JavaScript variable name to bind the value to
+         * @param value
+         *            the value to pass; must be a type supported by
+         *            {@link JacksonCodec#encodeWithTypeInfo(Object)}
+         */
+        public void addNamedParameter(String name, Object value) {
+            int index = parameters.size();
+            parameters.add(value);
+            expression = "let " + name + "=$" + index + ";" + expression;
         }
     }
 
