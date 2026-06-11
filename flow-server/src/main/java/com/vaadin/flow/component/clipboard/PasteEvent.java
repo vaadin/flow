@@ -50,7 +50,10 @@ import com.vaadin.flow.dom.Element;
  * Files and binary clipboard items (pasted screenshots, files dragged from the
  * OS file picker, anything that arrives as {@code event.clipboardData.files} or
  * a {@code DataTransferItem} of kind {@code "file"}) are not delivered by this
- * event. File-paste support is tracked separately.
+ * event. Register file pastes through
+ * {@link Clipboard#onFilePaste(Component, com.vaadin.flow.server.streams.UploadHandler)
+ * Clipboard.onFilePaste} instead; the same paste gesture fires both listeners
+ * when both are registered.
  *
  * <h2>Browser caveats</h2>
  *
