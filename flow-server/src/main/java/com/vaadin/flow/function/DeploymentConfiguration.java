@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -252,6 +253,21 @@ public interface DeploymentConfiguration
                         POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
                 .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the set of URL schemes considered safe in URLs set on components
+     * such as {@code Anchor}, {@code IFrame} and in
+     * {@link com.vaadin.flow.component.page.Page#open(String, String)}.
+     * <p>
+     * Concrete implementations read this from the
+     * {@link InitParameters#URL_SAFE_SCHEMES} property; the default returns
+     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}.
+     *
+     * @return the set of safe URL schemes, never {@code null}
+     */
+    default Set<String> getUrlSafeSchemes() {
+        return Constants.DEFAULT_URL_SAFE_SCHEMES;
     }
 
     /**
