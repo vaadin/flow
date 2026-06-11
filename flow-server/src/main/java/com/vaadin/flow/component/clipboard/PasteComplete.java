@@ -25,10 +25,10 @@ import java.io.Serializable;
  * "Expected" comes from the browser's {@link Clipboard#PASTE_FILE_COUNT_HEADER}
  * value; uploads that fail in transit (network errors, rejected uploads) never
  * arrive at the server and therefore do not count, so a paste with a lost
- * upload never fires {@code onComplete}. Starting a newer paste supersedes an
- * older one that has not finished: the superseded paste is abandoned (its
- * {@code onComplete} never fires) and any late upload of it is dropped, so a
- * stalled or malformed batch cannot linger.
+ * upload never fires {@code onComplete}. Batches for different pastes are
+ * independent: a paste keeps delivering files (and eventually fires
+ * {@code onComplete}) even when a newer paste's batch has already started
+ * &mdash; the two complete on their own timelines.
  * <p>
  * {@code onComplete} reflects only the files this batch successfully received;
  * it is not a server-side error channel. To observe per-file outcomes &mdash;

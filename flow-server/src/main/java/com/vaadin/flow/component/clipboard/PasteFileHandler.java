@@ -17,7 +17,8 @@ package com.vaadin.flow.component.clipboard;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,16 +46,23 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * delivered.</li>
  * </ul>
  *
- * The latest paste wins: pastes are tracked per owning component, and starting
- * a newer paste supersedes any older one that has not finished yet. A late
- * upload belonging to a superseded paste is dropped rather than reopening a
- * finished or abandoned batch, so a paste whose declared file count never
- * arrives (a stalled upload, or a missing/garbage
- * {@link Clipboard#PASTE_FILE_COUNT_HEADER}) cannot accumulate &mdash; the next
- * paste evicts it, and in any case the state lives and dies with the component.
- * The trade-off is that two pastes overlapping in transit no longer complete on
- * independent timelines; in practice pastes are small and serial, so the newer
- * one superseding the older is the desired behaviour.
+ * Each paste runs as its own batch and completes on its own timeline: pastes
+ * that overlap in transit (the tail of an older paste's uploads arriving after
+ * a newer paste has started) still run through their own {@code onStart} /
+ * {@code onFile} / {@code onComplete} lifecycle, and no file is dropped on the
+ * application's behalf. Batch state is tracked per owning component, so it is
+ * released when the component is detached or the session ends rather than
+ * living in the handler &mdash; a handler instance shared across components or
+ * UIs cannot accumulate state. As a further bound, only a limited number of
+ * unfinished pastes are tracked per component at once: if a paste's declared
+ * {@link Clipboard#PASTE_FILE_COUNT_HEADER} count never fully arrives (a
+ * stalled upload, or a missing/garbage header), the oldest such batch is
+ * dropped once that many are open. The limit is far above any real overlap, so
+ * it only ever trims abandoned or malformed batches.
+ * <p>
+ * Application code that wants "show the latest paste only" semantics tracks the
+ * highest paste id seen and filters in its own callbacks &mdash; the handler
+ * does not drop any files of a live paste on the application's behalf.
  *
  * <h2>Resource notes</h2>
  *
@@ -70,6 +78,12 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * </ul>
  */
 public final class PasteFileHandler implements Serializable {
+
+    // Upper bound on the number of unfinished pastes tracked per component at
+    // once. Real overlap is a handful of pastes, so this only bounds memory
+    // against abandoned or malformed batches; once this many are open, starting
+    // another drops the oldest still-unfinished one.
+    private static final int MAX_TRACKED_BATCHES = 16;
 
     private PasteFileHandler() {
         // factory
@@ -203,34 +217,30 @@ public final class PasteFileHandler implements Serializable {
                     // All access runs on the UI thread holding the session
                     // lock, and the state is scoped to this component, so a
                     // plain map needs no extra synchronisation.
-                    ComponentBatches state = componentBatches(owner,
+                    Map<Long, BatchState> batches = componentBatches(owner,
                             batchesKey);
 
-                    // A paste id below the high-water mark is a late upload
-                    // from
-                    // a paste a newer one already superseded; drop it so it
-                    // cannot resurrect a finished batch.
-                    if (pasteId < state.maxPasteId) {
-                        return;
-                    }
-                    if (pasteId > state.maxPasteId) {
-                        state.maxPasteId = pasteId;
-                        // A newer paste drops older, still-unfinished batches
-                        // so
-                        // a malformed or never-completing one (e.g. a missing
-                        // or
-                        // bogus X-Paste-File-Count that leaves expected == 0)
-                        // cannot pile up.
-                        state.batches.keySet().removeIf(id -> id < pasteId);
-                    }
-
-                    BatchState batch = state.batches.get(pasteId);
+                    BatchState batch = batches.get(pasteId);
                     boolean newPaste;
                     if (batch != null) {
                         newPaste = false;
                     } else {
                         batch = new BatchState(totalFiles);
-                        state.batches.put(pasteId, batch);
+                        // Bound the number of unfinished pastes tracked at once
+                        // so batches whose declared X-Paste-File-Count never
+                        // fully arrives (a stalled upload, or a missing/garbage
+                        // header that leaves expected == 0) cannot pile up.
+                        // Genuine overlap is a handful of pastes, well under
+                        // the
+                        // cap, so this only ever trims abandoned batches and
+                        // does not affect pastes completing on their own
+                        // timelines.
+                        if (batches.size() >= MAX_TRACKED_BATCHES) {
+                            Iterator<Long> oldest = batches.keySet().iterator();
+                            oldest.next();
+                            oldest.remove();
+                        }
+                        batches.put(pasteId, batch);
                         newPaste = true;
                         startHandler
                                 .accept(new PasteStart(pasteId, totalFiles));
@@ -244,7 +254,7 @@ public final class PasteFileHandler implements Serializable {
                     if (batch.expected > 0
                             && batch.received >= batch.expected) {
                         int received = batch.received;
-                        state.batches.remove(pasteId);
+                        batches.remove(pasteId);
                         completeHandler
                                 .accept(new PasteComplete(pasteId, received));
                     }
@@ -253,7 +263,8 @@ public final class PasteFileHandler implements Serializable {
         }
     }
 
-    private static ComponentBatches componentBatches(Component owner,
+    @SuppressWarnings("unchecked")
+    private static Map<Long, BatchState> componentBatches(Component owner,
             String key) {
         if (owner == null) {
             // Unreachable through Clipboard.onFilePaste, which always registers
@@ -263,19 +274,14 @@ public final class PasteFileHandler implements Serializable {
                     "PasteFileHandler requires an owning component; "
                             + "use Clipboard.onFilePaste to register it");
         }
-        ComponentBatches state = (ComponentBatches) ComponentUtil.getData(owner,
-                key);
-        if (state == null) {
-            state = new ComponentBatches();
-            ComponentUtil.setData(owner, key, state);
+        Map<Long, BatchState> batches = (Map<Long, BatchState>) ComponentUtil
+                .getData(owner, key);
+        if (batches == null) {
+            // Insertion-ordered so the cap can evict the oldest open batch.
+            batches = new LinkedHashMap<>();
+            ComponentUtil.setData(owner, key, batches);
         }
-        return state;
-    }
-
-    private static final class ComponentBatches implements Serializable {
-
-        final Map<Long, BatchState> batches = new HashMap<>();
-        long maxPasteId;
+        return batches;
     }
 
     private static final class BatchState implements Serializable {

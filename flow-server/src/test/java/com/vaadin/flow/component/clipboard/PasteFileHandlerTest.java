@@ -64,12 +64,13 @@ class PasteFileHandlerTest {
     }
 
     @Test
-    void batch_overlappingPastes_newerSupersedesOlder() throws IOException {
+    void batch_overlappingPastes_eachLifecycleStaysOrdered()
+            throws IOException {
         // Two pastes (2 files each) interleave on the wire:
         // paste 1 file A, paste 2 file X, paste 1 file B, paste 2 file Y.
-        // Starting paste 2 supersedes the still-unfinished paste 1, so paste
-        // 1's late file B is dropped and paste 1 never completes; only the
-        // newest paste is delivered.
+        // The framework must keep each paste's own sequence
+        // (start → file → file → complete) intact; cross-paste interleaving
+        // of the *order between* events is allowed.
         Fixture fixture = new Fixture();
         List<String> calls = new ArrayList<>();
         UploadHandler handler = PasteFileHandler.batch()
@@ -83,11 +84,40 @@ class PasteFileHandlerTest {
         fixture.fire(handler, 1, 2, "B");
         fixture.fire(handler, 2, 2, "Y");
 
-        // paste 1 starts and delivers A, then paste 2 supersedes it: B (a late
-        // upload of the superseded paste) is dropped, paste 1 has no complete,
-        // and only paste 2 runs start → X → Y → complete.
-        assertEquals(Arrays.asList("start:1", "file:1/A", "start:2", "file:2/X",
-                "file:2/Y", "complete:2"), calls);
+        // Per-paste lifecycle is preserved: paste 1 = start, A, B, complete;
+        // paste 2 = start, X, Y, complete. Across pastes, paste 2 starts
+        // before paste 1's last file lands, and both still finish cleanly on
+        // their own timelines.
+        assertEquals(
+                Arrays.asList("start:1", "file:1/A", "start:2", "file:2/X",
+                        "file:1/B", "complete:1", "file:2/Y", "complete:2"),
+                calls);
+    }
+
+    @Test
+    void batch_floodOfNeverCompletingPastes_evictsOldestToBoundMemory()
+            throws IOException {
+        // Each paste declares 2 files but only ever delivers 1, so none
+        // complete. After enough distinct paste ids the oldest still-open
+        // batch is evicted to bound memory; its later tail then looks like a
+        // brand-new paste (onStart fires again for it).
+        Fixture fixture = new Fixture();
+        List<Long> started = new ArrayList<>();
+        UploadHandler handler = PasteFileHandler.batch()
+                .onStart(s -> started.add(s.pasteId())).build();
+
+        int flood = 100;
+        for (int id = 1; id <= flood; id++) {
+            fixture.fire(handler, id, 2, "first");
+        }
+        // One onStart per distinct paste id.
+        assertEquals(flood, started.size());
+
+        // Paste 1 was evicted long ago, so its second file is treated as a
+        // fresh paste rather than completing the original batch.
+        fixture.fire(handler, 1, 2, "second");
+        assertEquals(flood + 1, started.size());
+        assertEquals(Long.valueOf(1), started.get(started.size() - 1));
     }
 
     @Test

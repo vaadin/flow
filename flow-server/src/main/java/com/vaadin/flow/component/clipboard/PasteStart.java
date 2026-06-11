@@ -23,9 +23,9 @@ import java.io.Serializable;
  * delivered. Carries the paste correlation token and the total file count the
  * browser declared (so a UI can show "0 / N" before any file has arrived).
  * <p>
- * {@code onStart} fires exactly once per paste. Starting a newer paste
- * supersedes an older unfinished one, and any late upload of a superseded paste
- * is dropped, so a start event is never regenerated for an old paste.
+ * {@code onStart} fires exactly once per paste. Pastes are tracked
+ * independently, so a late upload from an earlier paste arrives against that
+ * paste's already-started batch and does not regenerate a start event.
  *
  * @param pasteId
  *            the paste sequence number; matches the {@link PasteFile#pasteId()}
