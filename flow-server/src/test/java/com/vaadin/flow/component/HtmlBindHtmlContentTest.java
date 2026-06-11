@@ -19,6 +19,7 @@ import org.jsoup.safety.Safelist;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -137,16 +138,16 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
-        // sending null will cause NPE in setHtmlContent inside effect function;
-        // state should not change, and an error should be captured by
-        // SignalsUnitTest error handler
+        // sending null is rejected with an IllegalArgumentException inside the
+        // effect function; state should not change, and an error should be
+        // captured by the SignalsUnitTest error handler
         signal.set(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
         // one error captured
         assertEquals(1, events.size());
-        assertEquals(NullPointerException.class,
+        assertEquals(IllegalArgumentException.class,
                 events.getFirst().getThrowable().getClass());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
@@ -180,10 +181,9 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
     @Test
     void signalConstructorWithSafelist_initialAndUpdatesSanitized() {
-        Safelist safelist = new Safelist().addTags("div");
         ValueSignal<String> signal = new ValueSignal<>(
                 "<div onclick='evil()'>v1<script>x()</script></div>");
-        Html html = new Html(signal, safelist);
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
         UI.getCurrent().add(html);
 
         // initial value sanitized
@@ -198,65 +198,34 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    void signalConstructorWithSafelist_nullSafelist_throws() {
+    void signalConstructorWithSafelist_nullSupplier_throws() {
         assertThrows(NullPointerException.class,
                 () -> new Html(new ValueSignal<>("<div>x</div>"),
-                        (Safelist) null));
+                        (SerializableSupplier<Safelist>) null));
     }
 
     @Test
-    void bindHtmlContentWithSafelist_updatesSanitized() {
-        Safelist safelist = new Safelist().addTags("div");
-        Html html = new Html("<div>init</div>");
-        UI.getCurrent().add(html);
-
-        ValueSignal<String> signal = new ValueSignal<>(
-                "<div onclick='evil()'>bound<script>x()</script></div>");
-        html.bindHtmlContent(signal, safelist);
-
-        assertNull(html.getElement().getAttribute("onclick"));
-        assertEquals("bound", html.getInnerHtml());
-
-        signal.set("<div onmouseover='evil()'>changed</div>");
-        assertNull(html.getElement().getAttribute("onmouseover"));
-        assertEquals("changed", html.getInnerHtml());
-    }
-
-    @Test
-    void bindHtmlContentWithSafelist_nullSafelist_throws() {
-        Html html = new Html("<div>init</div>");
-        UI.getCurrent().add(html);
-        assertThrows(NullPointerException.class,
-                () -> html.bindHtmlContent(new ValueSignal<>("<div>x</div>"),
-                        (Safelist) null));
-    }
-
-    @Test
-    void bindHtmlContentWithSafelist_withNullValue_recordsErrorAndDoesNotChange() {
-        Safelist safelist = new Safelist().addTags("div");
-        Html html = new Html("<div>init</div>");
-        UI.getCurrent().add(html);
+    void bindWithSafelist_withNullValue_recordsErrorAndDoesNotChange() {
         ValueSignal<String> signal = new ValueSignal<>("<div>after</div>");
-        html.bindHtmlContent(signal, safelist);
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
+        UI.getCurrent().add(html);
 
-        // A null value must not reach Jsoup.clean; it follows the same path as
-        // the non-sanitizing binding, recording an NPE without changing state
+        // A null value is rejected with a clear IllegalArgumentException
+        // instead of reaching Jsoup; state does not change.
         signal.set(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals(1, events.size());
-        assertEquals(NullPointerException.class,
+        assertEquals(IllegalArgumentException.class,
                 events.getFirst().getThrowable().getClass());
         events.clear();
     }
 
     @Test
-    void bindHtmlContentWithSafelist_valueBecomesInvalidAfterClean_recordsErrorAndDoesNotChange() {
-        Safelist safelist = new Safelist().addTags("div");
-        Html html = new Html("<div>init</div>");
-        UI.getCurrent().add(html);
+    void bindWithSafelist_valueBecomesInvalidAfterClean_recordsErrorAndDoesNotChange() {
         ValueSignal<String> signal = new ValueSignal<>("<div>ok</div>");
-        html.bindHtmlContent(signal, safelist);
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
+        UI.getCurrent().add(html);
 
         assertEquals("ok", html.getInnerHtml());
 

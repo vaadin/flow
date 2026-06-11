@@ -16,13 +16,17 @@
 package com.vaadin.flow.component;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.jsoup.safety.Safelist;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -174,10 +178,11 @@ class HTMLTest {
 
     @Test
     void stringWithSafelist_disallowedContentRemoved() {
-        Safelist safelist = new Safelist().addTags("span", "b")
-                .addAttributes("span", "title");
-        Html html = new Html("<span title='ok' onclick='evil()'>hi<b>there</b>"
-                + "<script>steal()</script></span>", safelist);
+        Html html = new Html(
+                "<span title='ok' onclick='evil()'>hi<b>there</b>"
+                        + "<script>steal()</script></span>",
+                () -> new Safelist().addTags("span", "b").addAttributes("span",
+                        "title"));
 
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertEquals("ok", html.getElement().getAttribute("title"));
@@ -189,7 +194,7 @@ class HTMLTest {
     void stringWithSafelist_whitespacePreserved() {
         Html html = new Html(
                 "    <div><pre> text </pre> <b>bold</b>    <b>b2</b>  </div>  ",
-                Safelist.basic().addTags("div"));
+                () -> Safelist.basic().addTags("div"));
         assertEquals("<pre> text </pre> <b>bold</b>    <b>b2</b>  ",
                 html.getInnerHtml());
     }
@@ -199,22 +204,23 @@ class HTMLTest {
         // none() permits no tags, so the only root element is removed and the
         // remaining text leaves no top-level element
         assertThrows(IllegalArgumentException.class,
-                () -> new Html("<span>hello</span>", Safelist.none()));
+                () -> new Html("<span>hello</span>", Safelist::none));
     }
 
     @Test
-    void stringWithSafelist_nullSafelist_throws() {
+    void stringWithSafelist_nullSupplier_throws() {
         assertThrows(NullPointerException.class,
-                () -> new Html("<span>hi</span>", (Safelist) null));
+                () -> new Html("<span>hi</span>",
+                        (SerializableSupplier<Safelist>) null));
     }
 
     @Test
     void streamWithSafelist_disallowedContentRemoved() {
-        Safelist safelist = new Safelist().addTags("div");
-        Html html = new Html(new ByteArrayInputStream(
-                "<div onclick='evil()'><script>x()</script>text</div>"
-                        .getBytes(StandardCharsets.UTF_8)),
-                safelist);
+        Html html = new Html(
+                new ByteArrayInputStream(
+                        "<div onclick='evil()'><script>x()</script>text</div>"
+                                .getBytes(StandardCharsets.UTF_8)),
+                () -> new Safelist().addTags("div"));
 
         assertEquals("div", html.getElement().getTag());
         assertNull(html.getElement().getAttribute("onclick"));
@@ -222,22 +228,23 @@ class HTMLTest {
     }
 
     @Test
-    void streamWithSafelist_nullSafelist_throws() {
+    void streamWithSafelist_nullSupplier_throws() {
         assertThrows(NullPointerException.class,
                 () -> new Html(
                         new ByteArrayInputStream(
                                 "<div></div>".getBytes(StandardCharsets.UTF_8)),
-                        (Safelist) null));
+                        (SerializableSupplier<Safelist>) null));
     }
 
     @Test
-    void setHtmlContentWithSafelist_disallowedContentRemoved() {
-        Safelist safelist = new Safelist().addTags("span");
-        Html html = new Html("<span>initial</span>");
+    void constructorSafelist_appliedToLaterSetHtmlContent() {
+        // the safelist provided at construction also sanitizes content set
+        // afterwards through setHtmlContent
+        Html html = new Html("<span>initial</span>",
+                () -> new Safelist().addTags("span"));
 
         html.setHtmlContent(
-                "<span onclick='evil()'>clean<script>x()</script></span>",
-                safelist);
+                "<span onclick='evil()'>clean<script>x()</script></span>");
 
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertNull(html.getElement().getAttribute("onclick"));
@@ -245,10 +252,41 @@ class HTMLTest {
     }
 
     @Test
-    void setHtmlContentWithSafelist_nullSafelist_throws() {
-        Html html = new Html("<span>initial</span>");
+    void constructorSafelist_supplierReturnsNull_throws() {
+        // the supplier is resolved immediately, so a null-returning supplier is
+        // rejected at construction rather than on first sanitization
         assertThrows(NullPointerException.class,
-                () -> html.setHtmlContent("<span>x</span>", (Safelist) null));
+                () -> new Html("<span>x</span>", () -> null));
+    }
+
+    @Test
+    void safelistConfiguredHtml_survivesSerialization() throws Exception {
+        // The jsoup Safelist is not serializable; storing a
+        // SerializableSupplier<Safelist> keeps the component serializable and
+        // the sanitization working after a session round-trip.
+        Html html = new Html("<div>init</div>",
+                () -> new Safelist().addTags("div"));
+
+        Html copy = serializeAndDeserialize(html);
+
+        // the supplier survived and the transient safelist is rebuilt on
+        // demand, so disallowed content is still removed
+        copy.setHtmlContent(
+                "<div onclick='evil()'>clean<script>x()</script></div>");
+        assertNull(copy.getElement().getAttribute("onclick"));
+        assertEquals("clean", copy.getInnerHtml());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T serializeAndDeserialize(T instance) throws Exception {
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+            out.writeObject(instance);
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bs.toByteArray()))) {
+            return (T) in.readObject();
+        }
     }
 
 }
