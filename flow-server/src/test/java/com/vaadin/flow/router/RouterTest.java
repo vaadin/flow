@@ -615,6 +615,34 @@ public class RouterTest extends RoutingTestBase {
     public static class ChildWithoutTitle2 extends Component {
     }
 
+    public static class ProductTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Product "
+                    + context.routeParameters().get("productId").orElse("");
+        }
+    }
+
+    @Route("generated-title/:productId")
+    @DynamicPageTitle(ProductTitleGenerator.class)
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithGeneratedTitle extends Component {
+    }
+
+    public static class QueryTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return context.queryParameters().getSingleParameter("lang")
+                    .orElse("none");
+        }
+    }
+
+    @Route("query-title")
+    @DynamicPageTitle(QueryTitleGenerator.class)
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithQueryTitle extends Component {
+    }
+
     @Route("navigation-target-with-dynamic-title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithDynamicTitle extends Component
@@ -1920,6 +1948,28 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         assertEquals(DYNAMIC_TITLE, ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_generator_with_route_parameters()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NavigationTargetWithGeneratedTitle.class);
+
+        router.navigate(ui, new Location("generated-title/42"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEquals("Product 42", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_generator_with_query_parameters()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NavigationTargetWithQueryTitle.class);
+
+        router.navigate(ui, new Location("query-title?lang=fi"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEquals("fi", ui.getInternals().getTitle());
     }
 
     @Test
