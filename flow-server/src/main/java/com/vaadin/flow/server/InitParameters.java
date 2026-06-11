@@ -53,6 +53,15 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_SERVLET_MAPPING = "pushServletMapping";
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
+    /**
+     * Configuration parameter name for the value of the {@code X-Frame-Options}
+     * HTTP response header sent with the application page. The header lets the
+     * browser opt in to protection against clickjacking. Common values are
+     * {@code SAMEORIGIN} (the default) and {@code DENY}. Set the parameter to
+     * an empty value to disable sending the header, e.g. for applications that
+     * are meant to be embedded in a frame.
+     */
+    public static final String SERVLET_PARAMETER_FRAME_OPTIONS = "frameOptions";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
