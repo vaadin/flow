@@ -68,12 +68,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * that builds a new safelist inline:
  *
  * <pre>{@code
- * // Method reference to one of the standard jsoup factories:
- * new Html(untrustedHtml, Safelist::basic);
+ * // Method reference to a standard jsoup factory; relaxed() permits common
+ * // block elements such as <div>:
+ * new Html(untrustedHtml, Safelist::relaxed);
  *
- * // Lambda that builds a fresh safelist inline (captures nothing):
- * new Html(untrustedHtml,
- *         () -> Safelist.basic().addTags("figure", "figcaption"));
+ * // Lambda that builds a fresh safelist inline (captures nothing); basic()
+ * // does not permit <div>, so it is added explicitly:
+ * new Html(untrustedHtml, () -> Safelist.basic().addTags("div"));
  *
  * // A reusable supplier kept in a static field:
  * static final SerializableSupplier<Safelist> SAFELIST = () -> Safelist
@@ -98,7 +99,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * The safelist must permit the fragment's single root element; otherwise the
  * root is stripped and the resulting fragment no longer has exactly one root
- * element.
+ * element. Note that {@link Safelist#basic()} does not permit {@code <div>}, so
+ * a {@code <div>}-rooted fragment requires e.g.
+ * {@code Safelist.basic().addTags("div")} or {@link Safelist#relaxed()}.
  * <p>
  * This component does not expand the HTML fragment into a server side DOM tree
  * so you cannot traverse or modify the HTML on the server. The root element can
