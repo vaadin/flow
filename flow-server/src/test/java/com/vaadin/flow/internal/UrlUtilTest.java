@@ -24,7 +24,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -214,70 +214,72 @@ class UrlUtilTest {
     @Test
     void isSafeUrl_safeScheme_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("https://vaadin.com",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_unsafeScheme_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
         assertFalse(UrlUtil.isSafeUrl("data:text/html,<script>",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_schemeMatchIsCaseInsensitive_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("JavaScript:alert(1)",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_relativeUrl_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("/path/to/view",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
-        assertTrue(UrlUtil.isSafeUrl("foo", UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
+        assertTrue(
+                UrlUtil.isSafeUrl("foo", Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_relativeUrlWithSpecialCharacters_returnsTrue() {
         // A strict URI parser would reject this, but it is a valid relative URL
         assertTrue(UrlUtil.isSafeUrl("/search?q=a b&x=[1]",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
         // A colon in the path must not be mistaken for a scheme separator
         assertTrue(UrlUtil.isSafeUrl("/path:with:colon",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_emptyOrBlank_returnsTrue() {
-        assertTrue(UrlUtil.isSafeUrl("", UrlUtil.DEFAULT_SAFE_SCHEMES));
-        assertTrue(UrlUtil.isSafeUrl("   ", UrlUtil.DEFAULT_SAFE_SCHEMES));
+        assertTrue(UrlUtil.isSafeUrl("", Constants.DEFAULT_URL_SAFE_SCHEMES));
+        assertTrue(
+                UrlUtil.isSafeUrl("   ", Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_null_returnsFalse() {
-        assertFalse(UrlUtil.isSafeUrl(null, UrlUtil.DEFAULT_SAFE_SCHEMES));
+        assertFalse(
+                UrlUtil.isSafeUrl(null, Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_controlCharacterObfuscation_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("java\tscript:alert(1)",
-                UrlUtil.DEFAULT_SAFE_SCHEMES));
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_wildcard_allowsAnyScheme() {
         assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)",
-                Set.of(UrlUtil.ALL_SCHEMES_SAFE)));
+                Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)));
     }
 
     @Test
     void isSafeUrl_configuredSchemes_replaceDefaults() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(
-                config.getStringProperty(InitParameters.URL_SAFE_SCHEMES, null))
-                .thenReturn("custom, https");
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(Set.of("custom", "https"));
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
 
@@ -294,9 +296,8 @@ class UrlUtilTest {
     void isSafeUrl_configuredWildcard_allowsAnyScheme() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(
-                config.getStringProperty(InitParameters.URL_SAFE_SCHEMES, null))
-                .thenReturn("*");
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD));
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
 
@@ -305,19 +306,5 @@ class UrlUtilTest {
             mock.when(VaadinService::getCurrent).thenReturn(service);
             assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)"));
         }
-    }
-
-    @Test
-    void parseSafeSchemes_nullOrBlank_returnsDefault() {
-        assertEquals(UrlUtil.DEFAULT_SAFE_SCHEMES,
-                UrlUtil.parseSafeSchemes(null));
-        assertEquals(UrlUtil.DEFAULT_SAFE_SCHEMES,
-                UrlUtil.parseSafeSchemes("   "));
-    }
-
-    @Test
-    void parseSafeSchemes_commaSeparated_isTrimmedAndLowerCased() {
-        assertEquals(Set.of("https", "myapp"),
-                UrlUtil.parseSafeSchemes(" HTTPS , MyApp "));
     }
 }

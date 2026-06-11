@@ -20,12 +20,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 
@@ -245,44 +246,26 @@ public class UrlUtil {
     }
 
     /**
-     * The URL schemes that are considered safe by default when no custom set is
-     * configured through the {@link InitParameters#URL_SAFE_SCHEMES} property.
-     * <p>
-     * Script-capable schemes such as {@code javascript} and {@code data} are
-     * intentionally excluded as they can be used to execute scripts in the
-     * browser when used as a link or frame target.
-     */
-    public static final Set<String> DEFAULT_SAFE_SCHEMES = Set.of("http",
-            "https", "mailto", "tel", "ftp");
-
-    /**
-     * Special {@link InitParameters#URL_SAFE_SCHEMES} entry that marks every
-     * scheme as safe, disabling scheme validation. Mixing this entry with other
-     * schemes still disables validation.
-     */
-    public static final String ALL_SCHEMES_SAFE = "*";
-
-    /**
      * Checks whether the scheme of the given URL is considered safe by the
      * current deployment configuration.
      * <p>
-     * The set of safe schemes is read from the
-     * {@link InitParameters#URL_SAFE_SCHEMES} configuration property, falling
-     * back to {@link #DEFAULT_SAFE_SCHEMES} when the property is not set or
-     * when no {@link VaadinService} is available. Relative URLs (without a
-     * scheme) are always considered safe, whereas URLs containing control
-     * characters are rejected as they can be used to obfuscate the scheme.
-     * <p>
-     * When called from a thread without a current {@link VaadinService}, the
-     * configured safe schemes are not read and {@link #DEFAULT_SAFE_SCHEMES} is
-     * used instead.
+     * The set of safe schemes is read from the current {@link VaadinService}'s
+     * {@link DeploymentConfiguration#getUrlSafeSchemes()}, falling back to
+     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
+     * is available. Relative URLs (without a scheme) are always considered
+     * safe, whereas URLs containing control characters are rejected as they can
+     * be used to obfuscate the scheme.
      *
      * @param url
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
      */
     public static boolean isSafeUrl(String url) {
-        return isSafeUrl(url, getConfiguredSafeSchemes());
+        VaadinService service = VaadinService.getCurrent();
+        Set<String> safeSchemes = service == null
+                ? Constants.DEFAULT_URL_SAFE_SCHEMES
+                : service.getDeploymentConfiguration().getUrlSafeSchemes();
+        return isSafeUrl(url, safeSchemes);
     }
 
     /**
@@ -319,7 +302,8 @@ public class UrlUtil {
      *            the URL to check, may be {@code null}
      * @param safeSchemes
      *            the set of safe lower-case schemes, or a set containing
-     *            {@link #ALL_SCHEMES_SAFE} to treat any scheme as safe
+     *            {@link Constants#URL_SAFE_SCHEMES_WILDCARD} to treat any
+     *            scheme as safe
      * @return {@code true} if the URL is safe, {@code false} otherwise
      */
     static boolean isSafeUrl(String url, Set<String> safeSchemes) {
@@ -328,7 +312,7 @@ public class UrlUtil {
         }
         // A wildcard entry treats every scheme as safe, keeping the behaviour
         // fully backwards compatible for applications that opt out.
-        if (safeSchemes.contains(ALL_SCHEMES_SAFE)) {
+        if (safeSchemes.contains(Constants.URL_SAFE_SCHEMES_WILDCARD)) {
             return true;
         }
         String trimmed = url.trim();
@@ -383,28 +367,5 @@ public class UrlUtil {
 
     private static boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-    }
-
-    private static Set<String> getConfiguredSafeSchemes() {
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return DEFAULT_SAFE_SCHEMES;
-        }
-        return parseSafeSchemes(service.getDeploymentConfiguration()
-                .getStringProperty(InitParameters.URL_SAFE_SCHEMES, null));
-    }
-
-    static Set<String> parseSafeSchemes(String configured) {
-        if (configured == null || configured.isBlank()) {
-            return DEFAULT_SAFE_SCHEMES;
-        }
-        Set<String> schemes = new HashSet<>();
-        for (String scheme : configured.split(",")) {
-            String trimmed = scheme.trim();
-            if (!trimmed.isEmpty()) {
-                schemes.add(trimmed.toLowerCase(Locale.ROOT));
-            }
-        }
-        return schemes.isEmpty() ? DEFAULT_SAFE_SCHEMES : schemes;
     }
 }
