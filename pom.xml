@@ -85,14 +85,14 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.1.0-RC1</spring.boot.version>
+    <spring.boot.version>4.1.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
     <slf4j.version>2.0.18</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.4</jackson.version>
-    <jaxb.version>4.0.8</jaxb.version>
+    <jaxb.version>4.0.9</jaxb.version>
     <guava.version>33.6.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <junit.jupiter.version>6.1.0</junit.jupiter.version>
@@ -128,7 +128,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.2.3</bnd.version>
+    <bnd.version>7.3.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -587,7 +587,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.6.0.6792</version>
+          <version>5.7.0.6970</version>
         </plugin>
       </plugins>
     </pluginManagement>

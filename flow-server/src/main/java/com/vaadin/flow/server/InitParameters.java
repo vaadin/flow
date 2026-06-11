@@ -186,6 +186,11 @@ public class InitParameters implements Serializable {
     public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
     /**
+     * Application-wide default {@code PageTitleGenerator} property.
+     */
+    public static final String PAGE_TITLE_GENERATOR = "pageTitle.generator";
+
+    /**
      * Configuration name for the parameter that determines if Flow should
      * automatically register servlets needed for the application to work.
      */
