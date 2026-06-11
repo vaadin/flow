@@ -178,7 +178,7 @@ function uploadPastedFiles(event: ClipboardEvent, element: Element, urlAttribute
   // when the paste has been fully delivered (one fetch per file means the
   // server only observes arrivals, not the total).
   const fileCount = String(files.length);
-  const uploads: Promise<unknown>[] = [];
+  const uploads: Array<Promise<unknown>> = [];
   for (const file of files) {
     const headers: Record<string, string> = {
       'X-Filename': encodeURIComponent(file.name),
