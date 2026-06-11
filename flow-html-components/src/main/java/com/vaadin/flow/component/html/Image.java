@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasAriaLabel;
-import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
@@ -38,7 +38,7 @@ import com.vaadin.flow.server.streams.DownloadResponse;
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer
+public class Image extends HtmlComponent
         implements ClickNotifier<Image>, HasAriaLabel {
 
     private static final String ALT_ATTRIBUTE = "alt";
