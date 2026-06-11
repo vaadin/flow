@@ -358,6 +358,12 @@ public class ServerRpcHandler implements Serializable {
             throw new InvalidUIDLSecurityKeyException();
         }
 
+        handleRpc(ui, message, request, rpcRequest);
+    }
+
+    protected void handleRpc(UI ui, String message, VaadinRequest request,
+            RpcRequest rpcRequest) throws MessageIdSyncException {
+
         String hashMessage = message;
         if (hashMessage.length() > 64 * 1024) {
             hashMessage = message.substring(0, 64 * 1024);
@@ -453,6 +459,10 @@ public class ServerRpcHandler implements Serializable {
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
         }
+        handleUnloadBeaconRequest(ui, rpcRequest);
+    }
+
+    protected void handleUnloadBeaconRequest(UI ui, RpcRequest rpcRequest) {
         if (rpcRequest.isUnloadBeaconRequest()) {
             if (isPreserveOnRefreshTarget(ui)) {
                 getLogger().debug(
