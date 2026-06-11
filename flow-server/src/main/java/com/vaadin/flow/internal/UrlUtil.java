@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -254,7 +257,7 @@ public class UrlUtil {
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
      * is available. Relative URLs (without a scheme) are always considered
      * safe, whereas URLs containing control characters are rejected as they can
-     * be used to obfuscate the scheme.
+     * be used to obfuscate the scheme. A {@code null} URL is considered unsafe.
      *
      * @param url
      *            the URL to check, may be {@code null}
@@ -262,9 +265,20 @@ public class UrlUtil {
      */
     public static boolean isSafeUrl(String url) {
         VaadinService service = VaadinService.getCurrent();
-        Set<String> safeSchemes = service == null
-                ? Constants.DEFAULT_URL_SAFE_SCHEMES
-                : service.getDeploymentConfiguration().getUrlSafeSchemes();
+        Set<String> safeSchemes;
+        if (service == null) {
+            if (getLogger().isDebugEnabled()) {
+                getLogger()
+                        .debug("No VaadinService available on current thread; "
+                                + "falling back to default safe URL schemes. "
+                                + "Any custom {} configuration will not apply "
+                                + "here.", InitParameters.URL_SAFE_SCHEMES);
+            }
+            safeSchemes = Constants.DEFAULT_URL_SAFE_SCHEMES;
+        } else {
+            safeSchemes = service.getDeploymentConfiguration()
+                    .getUrlSafeSchemes();
+        }
         return isSafeUrl(url, safeSchemes);
     }
 
@@ -367,5 +381,9 @@ public class UrlUtil {
 
     private static boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(UrlUtil.class);
     }
 }
