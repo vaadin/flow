@@ -706,7 +706,7 @@ public class UI extends Component
     }
 
     /**
-     * Runs a task on the server once the given delay has elapsed.
+     * Runs a task on the server once the given delay has elapsed in the browser.
      * <p>
      * The delay is measured by the browser: a one-shot timer is armed on the
      * client when the response of the current request is sent, and the task is
