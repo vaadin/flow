@@ -101,4 +101,26 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      *            {@code true} to apply default theming, {@code false} for not
      */
     void setApplyDefaultTheme(boolean applyDefaultTheme);
+
+    /**
+     * Returns whether the loading indicator has disabled the builtin Popover
+     * API functionality.
+     *
+     * @return {@code true} to disable using Popover API, {@code false} for not
+     */
+    boolean isPopoverOptOut();
+
+    /**
+     * Configures whether the loading indicator should not use built-in Popover
+     * API functionality.
+     * <p>
+     * When set to true, the loading indicator will not rely on Popover API
+     * components for showing itself, allowing more flexible custom positioning
+     * and styling.
+     *
+     * @param popoverOptOut
+     *            {@code true} to disable Popover API usage, {@code false} to
+     *            enable it
+     */
+    void setPopoverOptOut(boolean popoverOptOut);
 }

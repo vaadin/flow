@@ -34,6 +34,9 @@ class LoadingIndicatorConfigurationMapTest
         assertEquals(
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT,
                 map.isApplyDefaultTheme());
+        assertEquals(
+                LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY_DEFAULT,
+                map.isPopoverOptOut());
     }
 
     @Test
@@ -59,5 +62,11 @@ class LoadingIndicatorConfigurationMapTest
         testBoolean(map,
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
                 map::setApplyDefaultTheme, map::isApplyDefaultTheme);
+    }
+
+    @Test
+    void setGetPopoverOptOut() {
+        testBoolean(map, LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY,
+                map::setPopoverOptOut, map::isPopoverOptOut);
     }
 }

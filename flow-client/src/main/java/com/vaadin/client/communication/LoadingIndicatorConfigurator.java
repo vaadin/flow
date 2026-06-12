@@ -64,6 +64,12 @@ public class LoadingIndicatorConfigurator {
         defaultThemeProperty.addChangeListener(event -> setApplyDefaultTheme(
                 event.getSource().getValueOrDefault(
                         LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+
+        MapProperty popoverOptOutProperty = configMap.getProperty(
+                LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY);
+        popoverOptOutProperty.addChangeListener(
+                event -> setPopoverOptOut(event.getSource().getValueOrDefault(
+                        LoadingIndicatorConfigurationMap.POPOVER_OPT_OUT_KEY_DEFAULT)));
     }
 
     /**
@@ -100,5 +106,9 @@ public class LoadingIndicatorConfigurator {
 
     private static void setApplyDefaultTheme(boolean apply) {
         ConnectionIndicator.setProperty("applyDefaultTheme", apply);
+    }
+
+    private static void setPopoverOptOut(boolean popoverOptOut) {
+        ConnectionIndicator.setProperty("popoverOptOut", popoverOptOut);
     }
 }

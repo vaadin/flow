@@ -36,6 +36,8 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
     public static final int THIRD_DELAY_DEFAULT = 5000;
     public static final String DEFAULT_THEME_APPLIED_KEY = "theme";
     public static final boolean DEFAULT_THEME_APPLIED_DEFAULT = true;
+    public static final String POPOVER_OPT_OUT_KEY = "popoverOptOut";
+    public static final boolean POPOVER_OPT_OUT_KEY_DEFAULT = false;
 
     /**
      * Creates a new map for the given node.
@@ -86,5 +88,15 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
     @Override
     public void setApplyDefaultTheme(boolean applyDefaultTheme) {
         put(DEFAULT_THEME_APPLIED_KEY, applyDefaultTheme);
+    }
+
+    @Override
+    public boolean isPopoverOptOut() {
+        return getOrDefault(POPOVER_OPT_OUT_KEY, POPOVER_OPT_OUT_KEY_DEFAULT);
+    }
+
+    @Override
+    public void setPopoverOptOut(boolean popoverOptOut) {
+        put(POPOVER_OPT_OUT_KEY, popoverOptOut);
     }
 }
