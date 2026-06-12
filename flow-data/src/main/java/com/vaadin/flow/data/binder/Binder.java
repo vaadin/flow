@@ -4361,6 +4361,8 @@ public class Binder<BEAN> implements Serializable {
      * @param applyBindingsToHiddenFields
      *            {@literal true} to make all bindings apply to hidden fields,
      *            {@literal false} to skip hidden fields (the default)
+     *
+     * @since 25.1.4
      */
     public void setApplyBindingsToHiddenFields(
             boolean applyBindingsToHiddenFields) {
@@ -4373,6 +4375,8 @@ public class Binder<BEAN> implements Serializable {
      *
      * @return {@literal true} if bindings are applied to hidden fields,
      *         {@literal false} if hidden fields are skipped (the default)
+     *
+     * @since 25.1.4
      */
     public boolean isApplyBindingsToHiddenFields() {
         return applyBindingsToHiddenFields;
