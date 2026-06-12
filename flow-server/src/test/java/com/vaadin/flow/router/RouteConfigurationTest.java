@@ -156,8 +156,7 @@ class RouteConfigurationTest {
         List<String> titles = routeConfiguration
                 .getRouteHierarchy(OrderView.class,
                         new RouteParameters("orderId", "1001"))
-                .stream().map(route -> routeConfiguration.getPageTitle(route)
-                        .orElseThrow())
+                .stream().map(route -> route.getPageTitle().orElseThrow())
                 .toList();
 
         assertEquals(List.of("Orders", "Order 1001"), titles);
@@ -165,23 +164,17 @@ class RouteConfigurationTest {
 
     @Test
     void getPageTitle_queryParametersPassedToGenerator() {
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(getRegistry(session));
-
-        Optional<String> title = routeConfiguration.getPageTitle(
-                QueryEchoView.class, RouteParameters.empty(),
-                QueryParameters.of("name", "Smith"));
+        Optional<String> title = new RouteParentReference(QueryEchoView.class,
+                RouteParameters.empty())
+                .getPageTitle(QueryParameters.of("name", "Smith"));
 
         assertEquals(Optional.of("Hello Smith"), title);
     }
 
     @Test
     void getPageTitle_noTitleDeclared_returnsEmpty() {
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(getRegistry(session));
-
-        Optional<String> title = routeConfiguration.getPageTitle(MyRoute.class,
-                RouteParameters.empty(), QueryParameters.empty());
+        Optional<String> title = new RouteParentReference(MyRoute.class,
+                RouteParameters.empty()).getPageTitle();
 
         assertEquals(Optional.empty(), title);
     }

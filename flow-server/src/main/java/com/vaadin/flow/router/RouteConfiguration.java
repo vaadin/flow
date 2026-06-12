@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
@@ -142,63 +141,6 @@ public class RouteConfiguration implements Serializable {
             RouteParameters parameters) {
         return RouteUtil.getRouteHierarchy(handledRegistry, navigationTarget,
                 parameters);
-    }
-
-    /**
-     * Resolves the page title of the given navigation target without creating
-     * an instance of it.
-     * <p>
-     * The title is resolved in this order:
-     * <ol>
-     * <li>the per-route {@link DynamicPageTitle} generator;</li>
-     * <li>the application-wide default {@link PageTitleGenerator};</li>
-     * <li>the static {@link PageTitle#value()}.</li>
-     * </ol>
-     * Since the navigation target is not instantiated,
-     * {@link HasDynamicTitle#getPageTitle()} is not consulted; the title of an
-     * instantiated, currently shown route may therefore differ from the result
-     * of this method.
-     *
-     * @param navigationTarget
-     *            the navigation target to resolve the title for, not
-     *            {@code null}
-     * @param routeParameters
-     *            the route parameters the target is resolved with, not
-     *            {@code null}
-     * @param queryParameters
-     *            the query parameters the target is resolved with, not
-     *            {@code null}
-     * @return the resolved title, or an empty {@link Optional} if the target
-     *         declares no title and no default generator is available
-     */
-    public Optional<String> getPageTitle(
-            Class<? extends Component> navigationTarget,
-            RouteParameters routeParameters, QueryParameters queryParameters) {
-        VaadinService service = VaadinService.getCurrent();
-        Instantiator instantiator = service != null ? service.getInstantiator()
-                : null;
-        return RouteUtil.resolvePageTitle(instantiator, navigationTarget,
-                routeParameters, queryParameters);
-    }
-
-    /**
-     * Resolves the page title of the given route reference without creating an
-     * instance of its navigation target, applying the resolution rules of
-     * {@link #getPageTitle(Class, RouteParameters, QueryParameters)} with empty
-     * query parameters.
-     * <p>
-     * This is a convenience for resolving the titles of the entries returned by
-     * {@link #getRouteHierarchy(Class, RouteParameters)}, for example to build
-     * a breadcrumb trail.
-     *
-     * @param route
-     *            the route reference to resolve the title for, not {@code null}
-     * @return the resolved title, or an empty {@link Optional} if the target
-     *         declares no title and no default generator is available
-     */
-    public Optional<String> getPageTitle(RouteParentReference route) {
-        return getPageTitle(route.navigationTarget(), route.routeParameters(),
-                QueryParameters.empty());
     }
 
     /* Static getters for getting information on registered routes */
