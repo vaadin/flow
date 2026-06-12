@@ -56,6 +56,7 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
@@ -468,6 +469,62 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_nestsByRouteParent_notUrlPrefix() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeReports.class, TreeSales.class,
+                TreeSettings.class, TreeBilling.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Single conceptual root: Dashboard at "/".
+        assertEquals(1, tree.size());
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals("/", dashboard.route());
+
+        // Dashboard's children in @Menu order: Reports then Settings.
+        assertEquals(List.of("/reports", "/settings"),
+                routesOf(dashboard.children()));
+
+        // Reports -> Sales.
+        AvailableViewInfo reports = dashboard.children().get(0);
+        assertEquals(List.of("/reports/sales"), routesOf(reports.children()));
+
+        // The showcase: Billing lives at /billing but @RouteParent nests it
+        // under Settings - URL-prefix walking would have made it a root.
+        AvailableViewInfo settings = dashboard.children().get(1);
+        assertEquals(List.of("/billing"), routesOf(settings.children()));
+    }
+
+    @Test
+    void getMenuEntriesTree_exposesNestedEntries() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeSettings.class,
+                TreeBilling.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<MenuEntry> tree = MenuConfiguration.getMenuEntriesTree();
+
+        assertEquals(1, tree.size());
+        MenuEntry dashboard = tree.get(0);
+        assertEquals("Dashboard", dashboard.title());
+        assertEquals("/", dashboard.path());
+
+        MenuEntry settings = dashboard.children().get(0);
+        assertEquals("/settings", settings.path());
+
+        MenuEntry billing = settings.children().get(0);
+        assertEquals("Billing", billing.title());
+        assertEquals("/billing", billing.path());
+    }
+
+    private static List<String> routesOf(List<AvailableViewInfo> infos) {
+        return infos.stream().map(AvailableViewInfo::route).toList();
+    }
+
+    @Test
     void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
@@ -724,6 +781,41 @@ class MenuRegistryTest {
     @Route("param/varargs/:param*")
     @Menu
     public static class MyVarargsParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("")
+    @Menu(title = "Dashboard", order = 1)
+    public static class TreeDashboard extends Component {
+    }
+
+    @Tag("div")
+    @Route("reports")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Reports", order = 2)
+    public static class TreeReports extends Component {
+    }
+
+    @Tag("div")
+    @Route("reports/sales")
+    @RouteParent(TreeReports.class)
+    @Menu(title = "Sales")
+    public static class TreeSales extends Component {
+    }
+
+    @Tag("div")
+    @Route("settings")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Settings", order = 3)
+    public static class TreeSettings extends Component {
+    }
+
+    // URL /billing is NOT under /settings, but @RouteParent nests it there.
+    @Tag("div")
+    @Route("billing")
+    @RouteParent(TreeSettings.class)
+    @Menu(title = "Billing")
+    public static class TreeBilling extends Component {
     }
 
     @Tag("div")

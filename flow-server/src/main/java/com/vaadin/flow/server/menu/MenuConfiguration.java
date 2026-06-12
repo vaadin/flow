@@ -69,6 +69,42 @@ public final class MenuConfiguration {
     }
 
     /**
+     * Collect the menu entries as a hierarchy for menu population, nested
+     * according to the route hierarchy.
+     * <p>
+     * The same views as {@link #getMenuEntries()} are returned, but as a tree:
+     * server views are nested according to
+     * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
+     * walking as fallback), and client views according to their file-system
+     * route nesting. Only root entries are returned; the descendants are
+     * reachable via {@link MenuEntry#children()}.
+     *
+     * @return ordered list of root {@link MenuEntry} instances with nested
+     *         children
+     */
+    public static List<MenuEntry> getMenuEntriesTree() {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
+        return MenuRegistry.collectMenuItemsTree().stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
+    }
+
+    /**
+     * Collect the menu entries as a hierarchy for menu population, nested
+     * according to the route hierarchy.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered list of root {@link MenuEntry} instances with nested
+     *         children
+     * @see #getMenuEntriesTree()
+     */
+    public static List<MenuEntry> getMenuEntriesTree(Locale locale) {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
+        return MenuRegistry.collectMenuItemsTree(locale).stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
+    }
+
+    /**
      * Retrieves the page header of the currently shown view. Can be used in
      * Flow main layouts to render a page header.
      * <p>
@@ -183,5 +219,14 @@ public final class MenuConfiguration {
                                 : viewInfo.title()),
                 viewInfo.menu().order(), viewInfo.menu().icon(),
                 viewInfo.menu().menuClass());
+    }
+
+    private static MenuEntry createMenuTreeEntry(AvailableViewInfo viewInfo) {
+        MenuEntry entry = createMenuEntry(viewInfo);
+        List<MenuEntry> children = viewInfo.children() == null ? List.of()
+                : viewInfo.children().stream()
+                        .map(MenuConfiguration::createMenuTreeEntry).toList();
+        return new MenuEntry(entry.path(), entry.title(), entry.order(),
+                entry.icon(), entry.menuClass(), children);
     }
 }
