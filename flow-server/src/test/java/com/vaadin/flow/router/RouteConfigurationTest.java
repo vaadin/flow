@@ -145,6 +145,48 @@ class RouteConfigurationTest {
     }
 
     @Test
+    void getPageTitle_resolvesStaticAndDynamicTitlesForHierarchy() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(OrdersView.class);
+            routeConfiguration.setAnnotatedRoute(OrderView.class);
+        });
+
+        List<String> titles = routeConfiguration
+                .getRouteHierarchy(OrderView.class,
+                        new RouteParameters("orderId", "1001"))
+                .stream().map(route -> routeConfiguration.getPageTitle(route)
+                        .orElseThrow())
+                .toList();
+
+        assertEquals(List.of("Orders", "Order 1001"), titles);
+    }
+
+    @Test
+    void getPageTitle_queryParametersPassedToGenerator() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        Optional<String> title = routeConfiguration.getPageTitle(
+                QueryEchoView.class, RouteParameters.empty(),
+                QueryParameters.of("name", "Smith"));
+
+        assertEquals(Optional.of("Hello Smith"), title);
+    }
+
+    @Test
+    void getPageTitle_noTitleDeclared_returnsEmpty() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        Optional<String> title = routeConfiguration.getPageTitle(MyRoute.class,
+                RouteParameters.empty(), QueryParameters.empty());
+
+        assertEquals(Optional.empty(), title);
+    }
+
+    @Test
     void routeConfigurationUpdateLock_configurationIsUpdatedOnlyAfterUnlock() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
@@ -592,13 +634,37 @@ class RouteConfigurationTest {
 
     @Tag("div")
     @Route("orders")
+    @PageTitle("Orders")
     private static class OrdersView extends Component {
     }
 
     @Tag("div")
     @Route("orders/:orderId")
     @RouteParent(OrdersView.class)
+    @DynamicPageTitle(OrderTitleGenerator.class)
     private static class OrderView extends Component {
+    }
+
+    public static class OrderTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Order "
+                    + context.routeParameters().get("orderId").orElseThrow();
+        }
+    }
+
+    @Tag("div")
+    @Route("hello")
+    @DynamicPageTitle(QueryEchoTitleGenerator.class)
+    private static class QueryEchoView extends Component {
+    }
+
+    public static class QueryEchoTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Hello " + context.queryParameters()
+                    .getSingleParameter("name").orElseThrow();
+        }
     }
 
     @Tag("div")
