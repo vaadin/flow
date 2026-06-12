@@ -12,43 +12,11 @@
   <description>${project.name}</description>
 
   <properties>
-    <gwt.module>com.vaadin.ClientEngine</gwt.module>
-    <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
-    <gwt.module.style>OBF</gwt.module.style>
-    <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
     <skipTsTests>${skipTests}</skipTsTests>
-    <org.eclipse.equinox.common.version>3.19.100</org.eclipse.equinox.common.version>
-    <org.eclipse.core.runtime.version>3.31.100</org.eclipse.core.runtime.version>
-    <maven.compiler.release>8</maven.compiler.release>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <testListener/>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.google.gwt</groupId>
-        <artifactId>gwt</artifactId>
-        <version>${gwt.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.platform</groupId>
-        <artifactId>org.eclipse.equinox.common</artifactId>
-        <version>${org.eclipse.equinox.common.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.platform</groupId>
-        <artifactId>org.eclipse.core.runtime</artifactId>
-        <version>${org.eclipse.core.runtime.version}</version>
-        <scope>test</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
 
     <!-- Project dependencies -->
@@ -96,58 +64,6 @@
       <version>1.22.0</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-user</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-dev</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-elemental</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.service.prefs</artifactId>
-      <version>1.1.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.equinox.preferences</artifactId>
-      <version>3.12.100</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.resources</artifactId>
-      <version>3.21.0</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Force Java8 compatible package -->
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.jobs</artifactId>
-      <version>3.15.400</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.contenttype</artifactId>
-      <version>3.9.800</version>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.core</artifactId>
@@ -205,15 +121,12 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.5.0</version>
         <configuration>
-          <!-- Exclude all source files and classes so only the
-                        compile result ends up in the JAR -->
+          <!-- The jar is content-only: TS-built ES modules under META-INF
+               that flow-server consumes when bundling the client engine. -->
           <includes>
-            <include>com/vaadin/flow/client/osgi/*</include>
             <include>META-INF/**</include>
-            <include>OSGI-INF/**</include>
           </includes>
           <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
             <index>false</index>
             <manifest>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -226,9 +139,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven.surefire.plugin.version}</version>
         <configuration>
-          <excludes>
-            <exclude>**/Gwt*.java</exclude>
-          </excludes>
           <enableAssertions>true</enableAssertions>
         </configuration>
       </plugin>
@@ -243,96 +153,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-
-      <!-- GWT Maven Plugin -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>gwt-maven-plugin</artifactId>
-        <version>${gwt.version}</version>
-        <configuration>
-          <!-- Assertions should be disabled once we introduce
-                        a separate production build -->
-          <enableAssertions>true</enableAssertions>
-          <failOnError>true</failOnError>
-          <gwtSdkFirstInClasspath/>
-          <persistentunitcache>false</persistentunitcache>
-          <webappDirectory>${gwt.module.output}</webappDirectory>
-          <launcherDir>${gwt.module.output}</launcherDir>
-          <compileReport>true</compileReport>
-          <bindAddress>${gwt.sdm.bindAddress}</bindAddress>
-          <modules>
-            <module>${gwt.module}</module>
-          </modules>
-          <webMode>true</webMode>
-          <style>${gwt.module.style}</style>
-          <htmlunit>FF38</htmlunit>
-          <testTimeOut>300</testTimeOut>
-          <extraJvmArgs>-Xmx512m -Dvaadin.frontend.hotdeploy=false</extraJvmArgs>
-          <includes>${gwt.test.pattern}</includes>
-        </configuration>
-
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>generateAsync</goal>
-            </goals>
-            <phase>compile</phase>
-          </execution>
-          <execution>
-            <id>gwt-test</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>test</phase>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Include separate source dir for GWT tests -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <dependencies>
-          <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench-core</artifactId>
-            <version>${testbench.version}</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>add-gwt-test-sources-as-test-sources</id>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <phase>generate-test-sources</phase>
-            <configuration>
-              <sources>
-                <source>src/test-gwt/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <configuration>
-          <java>
-            <excludes>
-              <exclude>src/main/java/com/vaadin/client/gwt/**</exclude>
-            </excludes>
-          </java>
-          <typescript>
-            <excludes>
-              <exclude>src/main/java/com/vaadin/client/gwt</exclude>
-              <exclude>src/main/resources/com/vaadin/flow/linker/ClientEngineSingleScriptTemplate.js</exclude>
-              <exclude>src/main/frontend/FlowClient.js</exclude>
-            </excludes>
-          </typescript>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -399,17 +219,10 @@
   </build>
   <profiles>
     <profile>
-      <id>sdm</id>
-      <properties>
-        <gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
-      </properties>
-    </profile>
-    <profile>
       <id>slow-tests</id>
       <properties>
-        <!-- There are no slowTests in this module, we disable surefire, gwt and Ts -->
+        <!-- There are no slow tests in this module: skip surefire and TS tests. -->
         <groups>none</groups>
-        <gwt.test.pattern>none</gwt.test.pattern>
         <skipTsTests>true</skipTsTests>
       </properties>
     </profile>

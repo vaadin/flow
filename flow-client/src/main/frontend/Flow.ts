@@ -346,8 +346,7 @@ export class Flow {
       }
 
       // Load flow-client module
-      const clientMod = await import('./FlowClient');
-      await this.flowInitClient(clientMod);
+      await this.flowInitClient();
 
       // hide flow progress indicator
       this.loadingFinished();
@@ -401,10 +400,11 @@ export class Flow {
     document.body.append(scriptAppId);
   }
 
-  // After the flow-client javascript module has been loaded, this initializes flow UI
-  // in the browser.
-  private async flowInitClient(clientMod: any): Promise<void> {
-    clientMod.init();
+  // Boots the flow-client engine and waits until all running applications
+  // have finished initial processing.
+  private async flowInitClient(): Promise<void> {
+    const { Bootstrapper } = await import('./internal/client/bootstrap/Bootstrapper');
+    Bootstrapper.initModule();
     // client init is async, we need to loop until initialized
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {

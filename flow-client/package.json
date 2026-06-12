@@ -10,9 +10,7 @@
   },
   "scripts": {
     "lint": "eslint",
-    "client": "node scripts/client.js",
-    "webpack": "webpack --config=webpack.tests.config.js",
-    "build": "npm run client && tsc",
+    "build": "tsc && node scripts/copy-frontend.js",
     "compile": "npm run build && npm run lint",
     "install-deps": "node node_modules/esbuild/install.js && playwright install",
     "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
