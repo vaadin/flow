@@ -132,13 +132,30 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C $ARGS"
+          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
           LOG=mvn-unit-tests-${{matrix.current}}.out
           $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Package coverage reports
+        # Some modules (see moduleSplits in computeMatrix.js) run their tests
+        # split over several matrix jobs, each producing a partial
+        # target/site/jacoco/jacoco.xml for the same module. Rename the
+        # reports with the matrix index so the Sonar job can extract all
+        # archives without them overwriting each other; Sonar merges the
+        # partial reports.
+        run: |
+          find . -path '*/target/site/jacoco/jacoco.xml' | while read -r f; do
+            mv "$f" "${f%/jacoco.xml}/jacoco-unit-${{matrix.current}}.xml"
+          done
+          find . -path '*/target/site/jacoco/jacoco-unit-*.xml' \
+            | tar -czf coverage-unit-${{matrix.current}}.tgz -T -
+      - uses: actions/upload-artifact@v5
+        with:
+          name: coverage-unit-${{ matrix.current }}
+          path: coverage-unit-*.tgz
       - name: Convert Javadoc errors to JUnit XML
         if: ${{ failure() }}
         run: |
@@ -260,6 +277,80 @@ jobs:
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
+  sonar-analysis:
+    name: Sonar Analysis
+    # Runs after the unit tests so the analysis can reuse their JaCoCo
+    # coverage reports instead of running the tests a second time.
+    needs: unit-tests
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.7
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The saved workspace was built as 999.99-SNAPSHOT; the poms must
+        # match it for the restored target directories and .m2 artifacts
+        # to be picked up.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@v5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@v5
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        # Reuse the classes compiled by the build job instead of recompiling.
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Download coverage reports
+        uses: actions/download-artifact@v5
+        with:
+          pattern: coverage-unit-*
+          merge-multiple: true
+      - name: Extract coverage reports
+        run: |
+          for i in coverage-unit-*.tgz; do tar xzf "$i"; done
+      - name: Run Sonar analysis
+        # flow-gradle-plugin is excluded because the build job does not
+        # compile it, so the workspace has no classes for it.
+        run: |
+          mvn sonar:sonar \
+            -ntp -B -e -V \
+            -pl '!flow-plugins/flow-gradle-plugin' \
+            -Dsonar.projectKey=vaadin_flow \
+            -Dsonar.organization=vaadin \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/*.xml \
+            -Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
+            -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
+            -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}
   test-results:
     permissions:
       actions: write
@@ -290,10 +381,6 @@ jobs:
         with:
           junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@v5
-        with:
-          name: |
-            saved-workspace
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
@@ -302,6 +389,20 @@ jobs:
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
+  cleanup-artifacts:
+    permissions:
+      actions: write
+    # The saved-workspace artifact can only be deleted once every job that
+    # restores it has run: deleting it in test-results could race with the
+    # Sonar analysis, which starts as soon as the unit tests finish.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
+    needs: [test-results, sonar-analysis]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            saved-workspace
   auto-merge:
     needs: api-diff-labeling
     if: github.event_name == 'pull_request' && github.base_ref != 'main'
