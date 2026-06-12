@@ -47,8 +47,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
      */
     @Deprecated(
         "use frontendOutputDirectory instead",
@@ -58,8 +58,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
      */
     public abstract val frontendOutputDirectory: Property<File>
 
@@ -435,12 +435,14 @@ public class PluginEffectiveConfiguration(
         extension.frontendOutputDirectory.convention(
             extension.webpackOutputDirectory
                 .convention(
-                    sourceSetName.map {
-                        File(
-                            project.getBuildResourcesDir(it),
-                            Constants.VAADIN_WEBAPP_RESOURCES
-                        )
-                    }
+                    project.layout.buildDirectory
+                        .dir("vaadin-build-frontend")
+                        .map {
+                            File(
+                                it.asFile,
+                                Constants.VAADIN_WEBAPP_RESOURCES
+                            )
+                        }
                 )
         )
 
