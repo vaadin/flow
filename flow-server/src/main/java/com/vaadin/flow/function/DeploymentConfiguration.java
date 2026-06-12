@@ -148,6 +148,7 @@ public interface DeploymentConfiguration
      *
      * @return the {@code X-Frame-Options} value to use, or an empty string if
      *         the header should not be sent
+     * @since 25.2
      */
     default String getFrameOptions() {
         return getStringProperty(InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,

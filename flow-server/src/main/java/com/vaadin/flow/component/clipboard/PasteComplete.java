@@ -54,6 +54,7 @@ import java.io.Serializable;
  * @param receivedFiles
  *            the number of files actually delivered for this paste; equals the
  *            {@link PasteStart#totalFiles()} value the paste started with
+ * @since 25.2
  */
 public record PasteComplete(long pasteId,
         int receivedFiles) implements Serializable {
