@@ -1,6 +1,8 @@
-@import '@vaadin/vaadin-lumo-styles/utility.css';
 html,
 :host {
-  --lumo-primary-text-color: #008000;
   color: rgba(0, 0, 0, 1); /* black */
+}
+
+.text-primary {
+  color: rgba(0, 128, 0, 1); /* green */
 }
