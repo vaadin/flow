@@ -132,13 +132,30 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C $ARGS"
+          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
           LOG=mvn-unit-tests-${{matrix.current}}.out
           $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Package coverage reports
+        # Some modules (see moduleSplits in computeMatrix.js) run their tests
+        # split over several matrix jobs, each producing a partial
+        # target/site/jacoco/jacoco.xml for the same module. Rename the
+        # reports with the matrix index so the Sonar job can extract all
+        # archives without them overwriting each other; Sonar merges the
+        # partial reports.
+        run: |
+          find . -path '*/target/site/jacoco/jacoco.xml' | while read -r f; do
+            mv "$f" "${f%/jacoco.xml}/jacoco-unit-${{matrix.current}}.xml"
+          done
+          find . -path '*/target/site/jacoco/jacoco-unit-*.xml' \
+            | tar -czf coverage-unit-${{matrix.current}}.tgz -T -
+      - uses: actions/upload-artifact@v5
+        with:
+          name: coverage-unit-${{ matrix.current }}
+          path: coverage-unit-*.tgz
       - name: Convert Javadoc errors to JUnit XML
         if: ${{ failure() }}
         run: |
@@ -262,6 +279,8 @@ jobs:
           path: tests-report-*.tgz
   sonar-analysis:
     name: Sonar Analysis
+    # Runs after the unit tests so the analysis can reuse their JaCoCo
+    # coverage reports instead of running the tests a second time.
     needs: unit-tests
     if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
@@ -310,6 +329,14 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Download coverage reports
+        uses: actions/download-artifact@v5
+        with:
+          pattern: coverage-unit-*
+          merge-multiple: true
+      - name: Extract coverage reports
+        run: |
+          for i in coverage-unit-*.tgz; do tar xzf "$i"; done
       - name: Run Sonar analysis
         # flow-gradle-plugin is excluded because the build job does not
         # compile it, so the workspace has no classes for it.
@@ -320,6 +347,7 @@ jobs:
             -Dsonar.projectKey=vaadin_flow \
             -Dsonar.organization=vaadin \
             -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/*.xml \
             -Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
             -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
             -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}
