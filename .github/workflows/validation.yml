@@ -264,6 +264,69 @@ jobs:
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
+  sonar-analysis:
+    name: Sonar Analysis
+    needs: unit-tests
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: 3.8.7
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The saved workspace was built as 999.99-SNAPSHOT; the poms must
+        # match it for the restored target directories and .m2 artifacts
+        # to be picked up.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        # Reuse the classes compiled by the build job instead of recompiling.
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Run Sonar analysis
+        # flow-gradle-plugin is excluded because the build job does not
+        # compile it, so the workspace has no classes for it.
+        run: |
+          mvn sonar:sonar \
+            -ntp -B -e -V \
+            -pl '!flow-plugins/flow-gradle-plugin' \
+            -Dsonar.projectKey=vaadin_flow \
+            -Dsonar.organization=vaadin \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
+            -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
+            -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}
   test-results:
     permissions:
       actions: write
@@ -294,10 +357,6 @@ jobs:
         with:
           junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
-        with:
-          name: |
-            saved-workspace
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
@@ -306,6 +365,20 @@ jobs:
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
+  cleanup-artifacts:
+    permissions:
+      actions: write
+    # The saved-workspace artifact can only be deleted once every job that
+    # restores it has run: deleting it in test-results could race with the
+    # Sonar analysis, which starts as soon as the unit tests finish.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
+    needs: [test-results, sonar-analysis]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: |
+            saved-workspace
   auto-merge:
     needs: api-diff-labeling
     if: github.event_name == 'pull_request' && github.base_ref != 'main'
