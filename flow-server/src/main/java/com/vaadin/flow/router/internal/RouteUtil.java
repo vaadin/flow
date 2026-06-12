@@ -747,6 +747,7 @@ public class RouteUtil {
      * @return dynamic page title found in the routes chain, or empty optional
      *         if no implementor of {@link HasDynamicTitle} was found
      */
+    @SuppressWarnings("deprecation")
     public static Optional<String> getDynamicTitle(UI ui) {
         return Objects.requireNonNull(ui).getInternals()
                 .getActiveRouterTargetsChain().stream()
