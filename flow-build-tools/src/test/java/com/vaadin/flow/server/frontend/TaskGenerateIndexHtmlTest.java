@@ -38,14 +38,17 @@ class TaskGenerateIndexHtmlTest {
     File temporaryFolder;
 
     private File frontendFolder;
+    private File generatedFolder;
     private TaskGenerateIndexHtml taskGenerateIndexHtml;
 
     @BeforeEach
     void setUp() throws IOException {
         frontendFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
+        generatedFolder = new File(frontendFolder, "generated");
         Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendFolder);
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(generatedFolder);
         taskGenerateIndexHtml = new TaskGenerateIndexHtml(options);
     }
 
@@ -60,28 +63,41 @@ class TaskGenerateIndexHtmlTest {
     }
 
     @Test
-    void should_notOverwriteIndexHtml_IndexHtmlExists() throws Exception {
-        File indexhtml = new File(frontendFolder, "index.html");
-        Files.createFile(indexhtml.toPath());
-        taskGenerateIndexHtml.execute();
-        assertFalse(taskGenerateIndexHtml.shouldGenerate(),
-                "Should not generate index.html while it exists in the frontend folder");
-        assertEquals("",
-                IOUtils.toString(indexhtml.toURI(), StandardCharsets.UTF_8));
+    void should_generateIntoFrontendGeneratedFolder() {
+        assertEquals(new File(generatedFolder, INDEX_HTML),
+                taskGenerateIndexHtml.getGeneratedFile(),
+                "Default index.html should be generated into the frontend generated folder, not the user-visible frontend folder");
     }
 
     @Test
-    void should_generateIndexHtml_IndexHtmlNotExist() throws Exception {
+    void should_notGenerate_whenUserIndexHtmlExists() throws Exception {
+        File userIndexHtml = new File(frontendFolder, INDEX_HTML);
+        Files.createFile(userIndexHtml.toPath());
+
+        assertFalse(taskGenerateIndexHtml.shouldGenerate(),
+                "Should not generate default index.html when the user has their own in the frontend folder");
+
+        taskGenerateIndexHtml.execute();
+
+        assertFalse(taskGenerateIndexHtml.getGeneratedFile().exists(),
+                "The generated index.html should not be written when the user has provided their own");
+        assertEquals("",
+                IOUtils.toString(userIndexHtml.toURI(), StandardCharsets.UTF_8),
+                "The user-provided index.html must not be overwritten");
+    }
+
+    @Test
+    void should_generateIndexHtml_whenNoUserIndexHtml() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(INDEX_HTML),
                 StandardCharsets.UTF_8);
         assertTrue(taskGenerateIndexHtml.shouldGenerate(),
-                "Should generate index.html when it doesn't exists in the frontend folder");
+                "Should generate index.html when the user has none in the frontend folder");
 
         taskGenerateIndexHtml.execute();
 
         assertTrue(taskGenerateIndexHtml.getGeneratedFile().exists(),
-                "The generated file should exists");
+                "The generated file should exist");
 
         assertEquals(defaultContent,
                 IOUtils.toString(

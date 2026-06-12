@@ -24,7 +24,10 @@ import com.vaadin.flow.internal.StringUtil;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 
 /**
- * Generate <code>index.html</code> if it is missing in frontend folder.
+ * Generate the default <code>index.html</code> into the frontend
+ * <code>generated/</code> folder so the file is not committed to source
+ * control. A user-provided <code>index.html</code> placed directly in the
+ * frontend folder overrides it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -32,7 +35,8 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
  */
 public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
-    private File indexHtml;
+    private final File userIndexHtml;
+    private final File generatedIndexHtml;
 
     /**
      * Create a task to generate <code>index.html</code> if necessary.
@@ -41,7 +45,9 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
      *            the task options
      */
     TaskGenerateIndexHtml(Options options) {
-        indexHtml = new File(options.getFrontendDirectory(), INDEX_HTML);
+        userIndexHtml = new File(options.getFrontendDirectory(), INDEX_HTML);
+        generatedIndexHtml = new File(options.getFrontendGeneratedFolder(),
+                INDEX_HTML);
     }
 
     @Override
@@ -54,11 +60,13 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return indexHtml;
+        return generatedIndexHtml;
     }
 
     @Override
     protected boolean shouldGenerate() {
-        return !indexHtml.exists();
+        // Skip writing the default into the generated folder when the user
+        // has provided their own index.html in the frontend folder.
+        return !userIndexHtml.exists();
     }
 }
