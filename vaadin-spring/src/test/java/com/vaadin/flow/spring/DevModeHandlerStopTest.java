@@ -42,7 +42,8 @@ class DevModeHandlerStopTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(Config.class,
-                    SpringBootAutoConfiguration.class));
+                    SpringBootAutoConfiguration.class,
+                    VaadinApplicationConfiguration.class));
 
     @Test
     void devModeStartupListener_contextDestroyAfterSpringContextClosed_shouldNotThrow() {
