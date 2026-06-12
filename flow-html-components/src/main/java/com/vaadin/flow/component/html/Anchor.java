@@ -26,7 +26,9 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
@@ -70,6 +72,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param text
      *            the text content to set
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, String text) {
         setHref(href);
@@ -96,6 +103,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param textSignal
      *            the signal to bind, not {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      * @since 25.1
      */
     public Anchor(String href, Signal<String> textSignal) {
@@ -117,6 +129,11 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      * @param target
      *            the target window, tab or frame
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, String text, AnchorTarget target) {
         setHref(href);
@@ -248,6 +265,11 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param components
      *            the components to add
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe;
+     *             see {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, Component... components) {
         setHref(href);
@@ -268,8 +290,40 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the href to set
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setHref(String href) {
+        if (href == null) {
+            throw new IllegalArgumentException("Href must not be null");
+        }
+        if (!UrlUtil.isSafeUrl(href)) {
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "href", href, "setUnsafeHref(String)"));
+        }
+        this.href = href;
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to without validating its scheme.
+     * <p>
+     * Unlike {@link #setHref(String)}, this method does not reject URLs based
+     * on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it
+     * only for URLs that are fully under your control and known to be safe,
+     * such as a hard-coded {@code javascript:} or {@code data:} URL. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #setHref(String)
+     *
+     * @param href
+     *            the href to set
+     */
+    public void setUnsafeHref(String href) {
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }

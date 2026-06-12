@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Constants used by the server side framework.
@@ -430,6 +431,24 @@ public final class Constants implements Serializable {
      * maximum number of files allowed per multipart stream upload requests.
      */
     public static final long DEFAULT_FILE_COUNT_MAX = 10000;
+
+    /**
+     * Default set of URL schemes considered safe when no custom set is
+     * configured through {@link InitParameters#URL_SAFE_SCHEMES}.
+     * <p>
+     * Script-capable schemes such as {@code javascript} and {@code data} are
+     * intentionally excluded as they can be used to execute scripts in the
+     * browser when used as a link or frame target.
+     */
+    public static final Set<String> DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
+            "https", "mailto", "tel", "ftp");
+
+    /**
+     * Special {@link InitParameters#URL_SAFE_SCHEMES} entry that marks every
+     * scheme as safe, disabling scheme validation. Mixing this entry with other
+     * schemes still disables validation.
+     */
+    public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
 
     private Constants() {
         // prevent instantiation constants class only

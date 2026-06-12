@@ -351,6 +351,95 @@ class PageTest {
     }
 
     @Test
+    void open_unsafeScheme_throws() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class,
+                () -> page.open("javascript:alert(1)"));
+        assertThrows(IllegalArgumentException.class,
+                () -> page.open("javascript:alert(1)", "_blank"));
+    }
+
+    @Test
+    void setLocation_unsafeScheme_throws() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class,
+                () -> page.setLocation("javascript:alert(1)"));
+    }
+
+    @Test
+    void open_nullUrl_throwsWithUsefulMessage() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Null URL should not reach the client");
+            }
+        };
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.open(null, "_blank"));
+        assertEquals("URL must not be null", ex.getMessage());
+    }
+
+    @Test
+    void openUnsafe_unsafeScheme_opensWithoutValidation() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.openUnsafe("javascript:alert(1)");
+
+        assertTrue(capture.get().contains("window.open"),
+                "Should call window.open");
+        assertEquals("javascript:alert(1)", params.get(0));
+    }
+
+    @Test
+    void openUnsafe_twoArg_opensWithoutValidation() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.openUnsafe("javascript:alert(1)", "_blank");
+
+        assertTrue(capture.get().contains("window.open"),
+                "Should call window.open");
+        assertEquals("javascript:alert(1)", params.get(0));
+        assertEquals("_blank", params.get(1));
+    }
+
+    @Test
     void setColorScheme_setsStyleProperty() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         AtomicReference<Object[]> capturedParams = new AtomicReference<>();
