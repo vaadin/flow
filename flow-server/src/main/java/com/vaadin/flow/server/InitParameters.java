@@ -329,4 +329,20 @@ public class InitParameters implements Serializable {
      */
     public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";
 
+    /**
+     * Configuration name for the comma-separated list of URL schemes that are
+     * considered safe in URLs set on components such as {@code Anchor},
+     * {@code IFrame} and in
+     * {@link com.vaadin.flow.component.page.Page#open(String, String)}.
+     * <p>
+     * When not set, a built-in default set of safe schemes is used (for example
+     * {@code http}, {@code https}, {@code mailto}, {@code tel} and
+     * {@code ftp}), which excludes script-capable schemes such as
+     * {@code javascript} and {@code data}. Any entry equal to {@code *} marks
+     * every scheme as safe, disabling scheme validation. URLs whose scheme is
+     * not safe can still be set through the dedicated {@code setUnsafe*}
+     * methods.
+     */
+    public static final String URL_SAFE_SCHEMES = "com.vaadin.safeUrlSchemes";
+
 }

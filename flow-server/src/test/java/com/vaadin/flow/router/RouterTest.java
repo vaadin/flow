@@ -58,6 +58,7 @@ import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
@@ -1877,6 +1878,8 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getUrlSafeSchemes())
+                .thenReturn(Constants.DEFAULT_URL_SAFE_SCHEMES);
     }
 
     @AfterEach

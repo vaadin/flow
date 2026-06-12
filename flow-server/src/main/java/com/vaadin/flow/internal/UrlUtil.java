@@ -20,8 +20,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Internal utility class for URL handling.
@@ -236,5 +246,145 @@ public class UrlUtil {
             return ".";
         }
         return ret.substring(0, ret.length() - 1);
+    }
+
+    /**
+     * Checks whether the scheme of the given URL is considered safe by the
+     * current deployment configuration.
+     * <p>
+     * The set of safe schemes is read from the current {@link VaadinService}'s
+     * {@link DeploymentConfiguration#getUrlSafeSchemes()}, falling back to
+     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
+     * is available. Relative URLs (without a scheme) are always considered
+     * safe, whereas URLs containing control characters are rejected as they can
+     * be used to obfuscate the scheme. A {@code null} URL is considered unsafe.
+     *
+     * @param url
+     *            the URL to check, may be {@code null}
+     * @return {@code true} if the URL is safe, {@code false} otherwise
+     */
+    public static boolean isSafeUrl(String url) {
+        VaadinService service = VaadinService.getCurrent();
+        Set<String> safeSchemes;
+        if (service == null) {
+            if (getLogger().isDebugEnabled()) {
+                getLogger()
+                        .debug("No VaadinService available on current thread; "
+                                + "falling back to default safe URL schemes. "
+                                + "Any custom {} configuration will not apply "
+                                + "here.", InitParameters.URL_SAFE_SCHEMES);
+            }
+            safeSchemes = Constants.DEFAULT_URL_SAFE_SCHEMES;
+        } else {
+            safeSchemes = service.getDeploymentConfiguration()
+                    .getUrlSafeSchemes();
+        }
+        return isSafeUrl(url, safeSchemes);
+    }
+
+    /**
+     * Builds the message for the {@link IllegalArgumentException} that a
+     * validating URL setter throws when given a URL whose scheme is not
+     * considered safe. The message points to both the
+     * {@link InitParameters#URL_SAFE_SCHEMES} configuration property and the
+     * setter that bypasses validation.
+     *
+     * @param type
+     *            the kind of URL being set, for example {@code "href"},
+     *            {@code "src"} or {@code "path"}
+     * @param url
+     *            the rejected URL
+     * @param unsafeMethod
+     *            the signature of the method that bypasses validation, for
+     *            example {@code "setUnsafeHref(String)"}
+     * @return the exception message
+     */
+    public static String getUnsafeUrlMessage(String type, String url,
+            String unsafeMethod) {
+        return String.format(
+                "The %s \"%s\" uses a scheme that is not considered safe. "
+                        + "Configure the safe schemes with the \"%s\" property, "
+                        + "or use %s if this URL is intentional and trusted.",
+                type, url, InitParameters.URL_SAFE_SCHEMES, unsafeMethod);
+    }
+
+    /**
+     * Checks whether the scheme of the given URL is part of the given set of
+     * safe schemes. See {@link #isSafeUrl(String)} for the validation rules. A
+     * {@code null} URL is considered unsafe.
+     *
+     * @param url
+     *            the URL to check, may be {@code null}
+     * @param safeSchemes
+     *            the set of safe lower-case schemes, or a set containing
+     *            {@link Constants#URL_SAFE_SCHEMES_WILDCARD} to treat any
+     *            scheme as safe
+     * @return {@code true} if the URL is safe, {@code false} otherwise
+     */
+    static boolean isSafeUrl(String url, Set<String> safeSchemes) {
+        if (url == null) {
+            return false;
+        }
+        // A wildcard entry treats every scheme as safe, keeping the behaviour
+        // fully backwards compatible for applications that opt out.
+        if (safeSchemes.contains(Constants.URL_SAFE_SCHEMES_WILDCARD)) {
+            return true;
+        }
+        String trimmed = url.trim();
+        if (trimmed.isEmpty()) {
+            return true;
+        }
+        // Reject control characters which browsers may strip, allowing a
+        // different URL to be acted upon than the one validated here (for
+        // example "java\tscript:alert(1)").
+        for (int i = 0; i < trimmed.length(); i++) {
+            if (Character.isISOControl(trimmed.charAt(i))) {
+                return false;
+            }
+        }
+        String scheme = extractScheme(trimmed);
+        if (scheme == null) {
+            // Relative URLs have no scheme and cannot trigger scheme-based
+            // script execution.
+            return true;
+        }
+        return safeSchemes.contains(scheme.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Extracts the scheme from the given URL, or returns {@code null} if the
+     * URL is relative (has no scheme). The scheme is determined according to
+     * RFC 3986: a letter followed by any number of letters, digits,
+     * {@code '+'}, {@code '-'} or {@code '.'}, terminated by a {@code ':'} that
+     * occurs before any {@code '/'}, {@code '?'} or {@code '#'}.
+     * <p>
+     * The scheme is extracted without parsing the whole URL so that valid
+     * relative URLs containing characters that a strict URI parser would reject
+     * (such as spaces) are not falsely flagged.
+     */
+    private static String extractScheme(String url) {
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (c == ':') {
+                return i == 0 ? null : url.substring(0, i);
+            }
+            boolean validSchemeChar = (i == 0) ? isAlpha(c)
+                    : (isAlpha(c) || (c >= '0' && c <= '9') || c == '+'
+                            || c == '-' || c == '.');
+            if (!validSchemeChar) {
+                // The ':' (if any) belongs to the path or query, so there is no
+                // scheme and the URL is relative.
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(UrlUtil.class);
     }
 }
