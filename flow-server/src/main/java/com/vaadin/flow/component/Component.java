@@ -463,6 +463,8 @@ public abstract class Component
      * @param testId
      *            the test id to set, or <code>null</code> to remove any
      *            previously set test id
+     *
+     * @since 25.1
      */
     public void setTestId(String testId) {
         if (testId == null) {
@@ -479,6 +481,8 @@ public abstract class Component
      * @see #setTestId(String)
      *
      * @return the test id, or {@code null} if no test id has been set
+     *
+     * @since 25.1
      */
     public String getTestId() {
         return getElement().getAttribute("data-testid");

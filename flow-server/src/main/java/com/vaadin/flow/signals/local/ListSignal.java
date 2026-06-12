@@ -97,6 +97,8 @@ public class ListSignal<T extends @Nullable Object>
      * for both the structure of the list and the values of all child signals.
      * 
      * @return a stream of signal values, not <code>null</code>
+     *
+     * @since 25.1
      */
     public Stream<T> getValues() {
         return get().stream().map(Signal::get);
@@ -107,6 +109,8 @@ public class ListSignal<T extends @Nullable Object>
      * dependencies.
      * 
      * @return a stream of signal values, not <code>null</code>
+     *
+     * @since 25.1
      */
     public Stream<T> peekValues() {
         return peek().stream().map(Signal::peek);

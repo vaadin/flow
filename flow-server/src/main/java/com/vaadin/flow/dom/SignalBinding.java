@@ -41,6 +41,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *
  * @param <T>
  *            the type of the bound signal value
+ * @since 25.1
  */
 public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
