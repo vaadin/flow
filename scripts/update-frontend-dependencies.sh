@@ -17,7 +17,7 @@ currentBranch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$currentBranch" = "main" ]; then
   updateTarget="latest"
 else
-  updateTarget="patch"
+  updateTarget="minor"
 fi
 
 echo "Current branch: $currentBranch"
