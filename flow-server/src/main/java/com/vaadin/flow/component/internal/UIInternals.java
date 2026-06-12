@@ -53,6 +53,7 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
+import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -249,6 +250,12 @@ public class UIInternals implements Serializable {
 
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
+
+    private final ValueSignal<WebShareSupport> webShareSupportSignal = new ValueSignal<>(
+            WebShareSupport.UNKNOWN);
+
+    private final Signal<WebShareSupport> webShareSupportReadOnly = webShareSupportSignal
+            .asReadonly();
 
     private GeolocationClient geolocationClient;
 
@@ -1508,6 +1515,29 @@ public class UIInternals implements Serializable {
     public void setGeolocationAvailability(
             GeolocationAvailability availability) {
         this.geolocationAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns the read-only reactive signal holding the Web Share API support
+     * state for this UI. Starts as {@link WebShareSupport#UNKNOWN} before the
+     * first client bootstrap report, then transitions to the value the browser
+     * reports. Application code reads it via
+     * {@link com.vaadin.flow.component.webshare.WebShare#supportSignal()}.
+     *
+     * @return the support signal
+     */
+    public Signal<WebShareSupport> getWebShareSupportSignalReadOnly() {
+        return webShareSupportReadOnly;
+    }
+
+    /**
+     * Updates the Web Share support signal. For framework use only.
+     *
+     * @param support
+     *            the new support state
+     */
+    public void setWebShareSupport(WebShareSupport support) {
+        this.webShareSupportSignal.set(support);
     }
 
     /**
