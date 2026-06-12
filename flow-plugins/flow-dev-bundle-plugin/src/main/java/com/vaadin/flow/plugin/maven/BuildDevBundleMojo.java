@@ -183,6 +183,15 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
+    /**
+     * Npm packages to exclude from running post install scripts.
+     * <p>
+     * Used to skip built-in entries (e.g. {@code esbuild}) when their
+     * postinstall step is known to fail or is not needed.
+     */
+    @Parameter(property = "npm.excludePostinstallPackages", defaultValue = "")
+    private List<String> excludePostinstallPackages;
+
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
     private boolean reactEnable;
 
@@ -201,6 +210,17 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
+     * where a compromised version is briefly available on the registry.
+     * Defaults to {@code 1} day; set to {@code 0} to disable. Requires pnpm
+     * &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "1")
+    private int minimumFrontendPackageAgeDays;
 
     /**
      * The folder where the META-INF/resources files are copied. Used for
@@ -506,6 +526,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public List<String> excludePostinstallPackages() {
+        return excludePostinstallPackages;
+    }
+
+    @Override
     public boolean isFrontendHotdeploy() {
         return false;
     }
@@ -550,6 +575,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public int minimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     @Override

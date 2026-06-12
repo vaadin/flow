@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -24,15 +24,15 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @PageTitle("Timeout")
 @Route(value = "timeout", layout = MainView.class)
 @AnonymousAllowed
-public class TimeoutView extends VerticalLayout {
+public class TimeoutView extends Div {
 
     public TimeoutView() {
         add(new Paragraph("You should only get here on proper Timeout"));
 
-        setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        getStyle().set("text-align", "center");
+        getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("justify-content", "center").set("align-items", "center")
+                .set("width", "100%").set("height", "100%")
+                .set("text-align", "center");
     }
 
 }

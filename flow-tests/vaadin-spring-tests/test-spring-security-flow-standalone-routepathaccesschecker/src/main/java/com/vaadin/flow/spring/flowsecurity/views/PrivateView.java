@@ -25,16 +25,13 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -47,7 +44,7 @@ import com.vaadin.flow.spring.flowsecurity.service.BankService;
 @Route(value = "private", layout = MainView.class)
 @RouteAlias(value = "privateAndForbiddenForAll")
 @PageTitle("Private View")
-public class PrivateView extends VerticalLayout {
+public class PrivateView extends Div {
 
     private BankService bankService;
     private Span balanceSpan = new Span();
@@ -61,15 +58,17 @@ public class PrivateView extends VerticalLayout {
         this.utils = utils;
         this.executor = new DelegatingSecurityContextExecutor(executor);
 
+        getStyle().set("display", "flex").set("flex-direction", "column");
+
         updateBalanceText();
         balanceSpan.setId("balanceText");
         add(balanceSpan);
-        add(new Button("Apply for a loan", this::applyForLoan));
-        add(new Button("Apply for a huge loan",
+        add(new NativeButton("Apply for a loan", this::applyForLoan));
+        add(new NativeButton("Apply for a huge loan",
                 this::applyForHugeLoanUsingExecutor));
 
-        Button globalRefresh = new Button("Send global refresh event",
-                e -> Broadcaster.sendMessage());
+        NativeButton globalRefresh = new NativeButton(
+                "Send global refresh event", e -> Broadcaster.sendMessage());
         globalRefresh.setId("sendRefresh");
         add(globalRefresh);
 
@@ -116,15 +115,15 @@ public class PrivateView extends VerticalLayout {
                 "Hello %s, your bank account balance is $%s.", name, balance));
     }
 
-    private void applyForLoan(ClickEvent<Button> e) {
+    private void applyForLoan(ClickEvent<NativeButton> e) {
         bankService.applyForLoan();
         updateBalanceText();
     }
 
-    private void applyForHugeLoanUsingExecutor(ClickEvent<Button> e) {
-        Dialog waitDialog = new Dialog();
-        waitDialog.add(new Text("Processing loan application..."));
-        waitDialog.open();
+    private void applyForHugeLoanUsingExecutor(ClickEvent<NativeButton> e) {
+        Div waitDialog = createModal("Processing loan application...");
+        waitDialog.setId("waitDialog");
+        add(waitDialog);
         UI ui = getUI().get();
         Runnable runnable = new Runnable() {
             @Override
@@ -133,17 +132,32 @@ public class PrivateView extends VerticalLayout {
                     bankService.applyForHugeLoan();
                 } catch (Exception e) {
                     getUI().get().access(() -> {
-                        Notification
-                                .show("Application failed: " + e.getMessage());
+                        Div notification = new Div(
+                                "Application failed: " + e.getMessage());
+                        notification.addClassName("notification");
+                        add(notification);
                     });
 
                 }
                 ui.access(() -> {
                     updateBalanceText();
-                    waitDialog.close();
+                    remove(waitDialog);
                 });
             }
         };
         executor.execute(runnable);
+    }
+
+    private static Div createModal(String text) {
+        Div backdrop = new Div();
+        backdrop.getStyle().set("position", "fixed").set("inset", "0")
+                .set("background", "rgba(0, 0, 0, 0.4)").set("display", "flex")
+                .set("align-items", "center").set("justify-content", "center")
+                .set("z-index", "1000");
+        Div panel = new Div(new Span(text));
+        panel.getStyle().set("background", "white").set("padding", "1rem")
+                .set("border-radius", "0.5rem");
+        backdrop.add(panel);
+        return backdrop;
     }
 }

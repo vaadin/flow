@@ -1,7 +1,7 @@
 name: Sonar PR Analysis
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
   merge_group:
@@ -25,7 +25,7 @@ env:
 
 jobs:
   sonar-analysis:
-    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     name: Sonar Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 120

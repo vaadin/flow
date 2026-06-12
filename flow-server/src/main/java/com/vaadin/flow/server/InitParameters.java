@@ -53,6 +53,15 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_SERVLET_MAPPING = "pushServletMapping";
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
+    /**
+     * Configuration parameter name for the value of the {@code X-Frame-Options}
+     * HTTP response header sent with the application page. The header lets the
+     * browser opt in to protection against clickjacking. Common values are
+     * {@code SAMEORIGIN} (the default) and {@code DENY}. Set the parameter to
+     * an empty value to disable sending the header, e.g. for applications that
+     * are meant to be embedded in a frame.
+     */
+    public static final String SERVLET_PARAMETER_FRAME_OPTIONS = "frameOptions";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
@@ -186,6 +195,11 @@ public class InitParameters implements Serializable {
     public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
     /**
+     * Application-wide default {@code PageTitleGenerator} property.
+     */
+    public static final String PAGE_TITLE_GENERATOR = "pageTitle.generator";
+
+    /**
      * Configuration name for the parameter that determines if Flow should
      * automatically register servlets needed for the application to work.
      */
@@ -233,6 +247,13 @@ public class InitParameters implements Serializable {
      *
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
+
+    /**
+     * Packages to exclude from running postinstall scripts. Used to skip
+     * built-in entries (e.g. {@code esbuild}) when their postinstall step is
+     * known to fail or is not needed.
+     */
+    public static final String EXCLUDE_POSTINSTALL_PACKAGES = "npm.excludePostinstallPackages";
 
     /**
      * Configuration name for enabling development using the frontend
@@ -300,5 +321,28 @@ public class InitParameters implements Serializable {
      * tests). When enabled, dev server related warnings are suppressed.
      */
     public static final String BROWSERLESS = "browserless";
+
+    /**
+     * Configuration name for the minimum age (in days) a frontend (npm) package
+     * version must have before npm, pnpm or bun is allowed to install it.
+     * Defaults to {@code 1} day; set to {@code 0} to disable.
+     */
+    public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";
+
+    /**
+     * Configuration name for the comma-separated list of URL schemes that are
+     * considered safe in URLs set on components such as {@code Anchor},
+     * {@code IFrame} and in
+     * {@link com.vaadin.flow.component.page.Page#open(String, String)}.
+     * <p>
+     * When not set, a built-in default set of safe schemes is used (for example
+     * {@code http}, {@code https}, {@code mailto}, {@code tel} and
+     * {@code ftp}), which excludes script-capable schemes such as
+     * {@code javascript} and {@code data}. Any entry equal to {@code *} marks
+     * every scheme as safe, disabling scheme validation. URLs whose scheme is
+     * not safe can still be set through the dedicated {@code setUnsafe*}
+     * methods.
+     */
+    public static final String URL_SAFE_SCHEMES = "com.vaadin.safeUrlSchemes";
 
 }

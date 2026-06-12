@@ -236,6 +236,13 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val postinstallPackages: ListProperty<String>
 
+    /**
+     * Defines the npm packages to exclude from running postinstall scripts.
+     * Used to skip built-in entries (e.g. `esbuild`) when their postinstall
+     * step is known to fail or is not needed.
+     */
+    public abstract val excludePostinstallPackages: ListProperty<String>
+
     public val classpathFilter: ClasspathFilter = ClasspathFilter()
 
     /**
@@ -342,6 +349,15 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * {@code false}.
      */
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
+
+    /**
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain
+     * attacks where a compromised version is briefly available on the
+     * registry. Defaults to {@code 1} day; set to {@code 0} to disable.
+     * Requires pnpm >= 10.16.0 or bun >= 1.3.0 when those tools are used.
+     */
+    public abstract val minimumFrontendPackageAgeDays: Property<Int>
 
     /**
      * Allows building a version of the application with a commercial banner
@@ -559,6 +575,10 @@ public class PluginEffectiveConfiguration(
         extension.postinstallPackages
             .convention(listOf())
 
+    public val excludePostinstallPackages: ListProperty<String> =
+        extension.excludePostinstallPackages
+            .convention(listOf())
+
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
     public val processResourcesTaskName: Property<String> =
@@ -645,6 +665,12 @@ public class PluginEffectiveConfiguration(
             FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
         )
 
+    public val minimumFrontendPackageAgeDays: Provider<Int> =
+        project.getStringProperty(
+            "vaadin.${InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}"
+        ).map(String::toInt)
+            .orElse(extension.minimumFrontendPackageAgeDays.convention(1))
+
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
@@ -729,6 +755,7 @@ public class PluginEffectiveConfiguration(
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
+            "excludePostinstallPackages=${excludePostinstallPackages.get()}, " +
             "sourceSetName=${sourceSetName.get()}, " +
             "dependencyScope=${dependencyScope.get()}, " +
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +

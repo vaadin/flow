@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +39,8 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.trigger.internal.CallbackAction;
+import com.vaadin.flow.component.trigger.internal.TimeoutTrigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -700,6 +703,56 @@ public class UI extends Component
     public int getPollInterval() {
         return getNode().getFeature(PollConfigurationMap.class)
                 .getPollInterval();
+    }
+
+    /**
+     * Runs a task on the server once the given delay has elapsed in the
+     * browser.
+     * <p>
+     * The delay is measured by the browser: a one-shot timer is armed on the
+     * client when the response of the current request is sent, and the task is
+     * run on the server when the client makes a round trip back as the timer
+     * elapses. The task runs in the same way as any other event handler, with
+     * the session locked. This makes it possible to defer a single piece of
+     * server-side work for a short while without enabling
+     * {@link PushConfiguration push} just for that purpose.
+     * <p>
+     * The returned {@link Registration} can be used to cancel the task by
+     * clearing the client timer, so a task cancelled before its delay elapses
+     * does not run. A cancellation that races an already-elapsed timer (the
+     * round trip is in flight) may still run once.
+     * <p>
+     * Because the timer lives in the browser, the task is not run if the page
+     * is reloaded, navigated away from or closed before the delay elapses.
+     * <p>
+     * This method must be called while holding the session lock, i.e. from a
+     * regular request such as an event listener or from inside
+     * {@link #access(Command)}. The same applies to
+     * {@link Registration#remove()} on the returned registration.
+     *
+     * @param delay
+     *            the delay after which the task should be run, not
+     *            <code>null</code> and not negative
+     * @param task
+     *            the task to run on the server, not <code>null</code>; must be
+     *            serializable if the session is serialized
+     * @return a registration for cancelling the task before it runs, not
+     *         <code>null</code>
+     */
+    public Registration triggerAfter(Duration delay,
+            SerializableRunnable task) {
+        Objects.requireNonNull(delay, "Delay cannot be null");
+        Objects.requireNonNull(task, "Task cannot be null");
+        if (delay.isNegative()) {
+            throw new IllegalArgumentException("Delay cannot be negative");
+        }
+
+        TimeoutTrigger trigger = new TimeoutTrigger(this, delay);
+        trigger.triggers(new CallbackAction<>(task));
+
+        // Removing the trigger clears the client timer, so a task cancelled
+        // before its delay elapses never runs.
+        return trigger::remove;
     }
 
     /**

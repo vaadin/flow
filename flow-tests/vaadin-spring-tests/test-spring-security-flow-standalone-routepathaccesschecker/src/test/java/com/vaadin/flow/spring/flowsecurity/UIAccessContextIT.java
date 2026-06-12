@@ -19,8 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.testbench.HasElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -46,14 +45,14 @@ public class UIAccessContextIT extends AbstractIT {
                     .id("balanceText");
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
 
-            ButtonElement sendRefresh = $(ButtonElement.class)
+            NativeButtonElement sendRefresh = $(NativeButtonElement.class)
                     .id("sendRefresh");
             sendRefresh.click();
             Assert.assertEquals(expectedUserBalance, balance.getText());
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
 
-            ButtonElement adminSendRefresh = adminContext.$(ButtonElement.class)
-                    .id("sendRefresh");
+            NativeButtonElement adminSendRefresh = adminContext
+                    .$(NativeButtonElement.class).id("sendRefresh");
             adminSendRefresh.click();
             Assert.assertEquals(expectedUserBalance, balance.getText());
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
@@ -64,11 +63,7 @@ public class UIAccessContextIT extends AbstractIT {
 
     private void loginAdmin(HasElementQuery adminContext) {
         waitForClientRouter();
-        LoginOverlayElement form = adminContext.$(LoginOverlayElement.class)
-                .first();
-        form.getUsernameField().setValue("emma");
-        form.getPasswordField().setValue("emma");
-        form.submit();
+        submitLogin(adminContext, "emma", "emma");
     }
 
 }

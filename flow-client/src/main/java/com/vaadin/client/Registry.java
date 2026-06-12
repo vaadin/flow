@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
+import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.Poller;
@@ -317,6 +318,15 @@ public class Registry {
      */
     public Poller getPoller() {
         return get(Poller.class);
+    }
+
+    /**
+     * Gets the {@link LoadingIndicatorStateHandler} singleton.
+     *
+     * @return the {@link LoadingIndicatorStateHandler} singleton instance
+     */
+    public LoadingIndicatorStateHandler getLoadingIndicatorStateHandler() {
+        return get(LoadingIndicatorStateHandler.class);
     }
 
     /**

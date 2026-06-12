@@ -9,6 +9,7 @@ import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.RequestResponseTracker;
@@ -34,6 +35,7 @@ public class GwtDomApiTest extends ClientEngineTestBase {
                 set(ServerRpcQueue.class, new ServerRpcQueue(this));
                 set(DependencyLoader.class, new DependencyLoader(this));
                 set(ResourceLoader.class, new ResourceLoader(this, false));
+                set(LoadingIndicatorStateHandler.class, new LoadingIndicatorStateHandler(this));
             }
 
         };

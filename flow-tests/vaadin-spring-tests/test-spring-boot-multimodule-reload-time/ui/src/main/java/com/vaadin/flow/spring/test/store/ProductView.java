@@ -21,7 +21,6 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -31,14 +30,14 @@ import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 
 @Route(value = "product", layout = CatalogLayout.class, registerAtStartup = false)
 @RouteAlias(value = "prod", layout = CatalogLayout.class)
-public class ProductView extends VerticalLayout
-        implements HasUrlParameter<Integer> {
+public class ProductView extends Div implements HasUrlParameter<Integer> {
 
-    private Div productDetails;
+    private final Div productDetails;
 
     public ProductView() {
+        getStyle().set("display", "flex").set("flex-direction", "column");
         productDetails = new Div();
-        productDetails.setWidthFull();
+        productDetails.getStyle().set("width", "100%");
         add(new H2("Product Details"));
         add(productDetails);
     }

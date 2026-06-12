@@ -64,13 +64,13 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.15.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.16.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "11.12.1";
+    public static final String DEFAULT_NPM_VERSION = "11.13.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.0.8";
+    public static final String DEFAULT_PNPM_VERSION = "11.6.0";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -118,13 +118,24 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
 
-    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 7;
-    private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
+    // npm 11.10.0 is the first version that supports --min-release-age.
+    // Older versions fall back to --before (a Date.parse-able string) which
+    // achieves the same supply-chain mitigation with day-level precision.
+    static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE = new FrontendVersion(
+            11, 10, 0);
+
+    // pnpm 10.16.0 is the first version that supports the
+    // minimumReleaseAge setting used to delay installation of newly
+    // published packages as a supply-chain mitigation.
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 10;
+    private static final int SUPPORTED_PNPM_MINOR_VERSION = 16;
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+    // Bun 1.3.0 is the first version that supports --minimum-release-age
+    // for the same supply-chain mitigation.
     private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
-            1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
+            1, 3, 0);
 
     private enum BuildTool {
         NPM("npm", "npm-cli.js"),
@@ -515,6 +526,35 @@ public class FrontendTools {
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("npm", npmVersionCommand);
+    }
+
+    /**
+     * Returns whether the given npm command resolves to a version that supports
+     * the {@code --min-release-age} install flag (see
+     * {@link #MIN_NPM_VERSION_FOR_RELEASE_AGE}). Used when building the
+     * {@code npm install} command for the minimum-package-age check (see
+     * {@link Options#withMinimumFrontendPackageAgeDays(int)}) to decide between
+     * {@code --min-release-age} and the {@code --before=<date>} fallback
+     * supported by older npm versions.
+     *
+     * @param npmCommand
+     *            the npm command to invoke for {@code --version}
+     * @return {@code true} if the installed npm is new enough; {@code false} if
+     *         it is older or its version cannot be determined
+     */
+    public boolean npmSupportsMinReleaseAge(List<String> npmCommand) {
+        List<String> versionCmd = new ArrayList<>(npmCommand);
+        versionCmd.add("--version"); // NOSONAR
+        try {
+            FrontendVersion actual = FrontendUtils.getVersion("npm",
+                    versionCmd);
+            return actual.isEqualOrNewer(MIN_NPM_VERSION_FOR_RELEASE_AGE);
+        } catch (UnknownVersionException e) {
+            getLogger().debug(
+                    "Could not determine npm version; falling back to --before for the minimum frontend package age check",
+                    e);
+            return false;
+        }
     }
 
     /**

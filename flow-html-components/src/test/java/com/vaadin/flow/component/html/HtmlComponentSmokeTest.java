@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
@@ -216,6 +217,12 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == HasAriaLabel.class
+                && method.getName().equals("setAriaLabelledBy")
+                && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
         // Anchor.setTarget(AnchorTargetValue) -
         // https://github.com/vaadin/flow/issues/8346
         if (method.getDeclaringClass() == Anchor.class
@@ -256,6 +263,11 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().equals("setUnsafeSrc")) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == HtmlObject.class
                 && method.getName().startsWith("setData")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
@@ -265,6 +277,11 @@ class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == Anchor.class
                 && method.getName().startsWith("setHref")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setUnsafeHref")) {
             return true;
         }
 

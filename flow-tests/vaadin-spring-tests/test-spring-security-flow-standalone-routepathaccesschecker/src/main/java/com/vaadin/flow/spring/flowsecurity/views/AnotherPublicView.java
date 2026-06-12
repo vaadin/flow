@@ -16,9 +16,9 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -28,15 +28,14 @@ import com.vaadin.flow.router.RouteAlias;
 @Route(value = "another", layout = MainView.class)
 @RouteAlias("hey/:name/welcome/:wild*")
 @PageTitle("Another Public View")
-public class AnotherPublicView extends FlexLayout
-        implements BeforeEnterObserver {
+public class AnotherPublicView extends Div implements BeforeEnterObserver {
 
     private final Span name;
     private final Span wild;
 
     public AnotherPublicView() {
-        setFlexDirection(FlexDirection.COLUMN);
-        setHeightFull();
+        getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("height", "100%");
 
         H1 header = new H1("Another public view for testing");
         header.setId("header");

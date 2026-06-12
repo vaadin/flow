@@ -26,6 +26,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -196,6 +197,10 @@ public class Image extends HtmlContainer
 
     /**
      * Sets the image URL.
+     * <p>
+     * Unlike {@link Anchor#setHref(String)} and {@link IFrame#setSrc(String)},
+     * image URLs are not validated against the
+     * {@value InitParameters#URL_SAFE_SCHEMES} configuration.
      *
      * @param src
      *            the image URL
@@ -225,6 +230,12 @@ public class Image extends HtmlContainer
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      *
+     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
+     * that the image is still served when the component, or one of its
+     * ancestors, is disabled. The browser fetches the image as part of
+     * rendering rather than as a user action, so blocking the request on the
+     * disabled state would leave the icon broken.
+     *
      * @param downloadHandler
      *            the download handler resource, not null
      */
@@ -234,7 +245,7 @@ public class Image extends HtmlContainer
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler);
+        getElement().setAttribute("src", downloadHandler.allowDisabled());
     }
 
     /**

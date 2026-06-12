@@ -24,7 +24,9 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -131,6 +133,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            Source URL
+     * @throws IllegalArgumentException
+     *             if {@code src} uses a scheme that is not considered safe; see
+     *             {@link #setUnsafeSrc(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public IFrame(String src) {
         setSrc(src);
@@ -160,8 +167,36 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            Source URL.
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe; see
+     *             {@link #setUnsafeSrc(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setSrc(String src) {
+        if (src != null && !UrlUtil.isSafeUrl(src)) {
+            throw new IllegalArgumentException(UrlUtil
+                    .getUnsafeUrlMessage("src", src, "setUnsafeSrc(String)"));
+        }
+        set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the source of the iframe without validating its scheme.
+     * <p>
+     * Unlike {@link #setSrc(String)}, this method does not reject URLs based on
+     * the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it only
+     * for URLs that are fully under your control and known to be safe, such as
+     * a hard-coded {@code javascript:} or {@code data:} URL. Passing untrusted
+     * input here can expose the application to cross-site scripting (XSS)
+     * attacks.
+     *
+     * @see #setSrc(String)
+     *
+     * @param src
+     *            Source URL.
+     */
+    public void setUnsafeSrc(String src) {
         set(srcDescriptor, src);
     }
 
@@ -189,6 +224,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      *
+     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
+     * that the iframe content is still served when the component, or one of its
+     * ancestors, is disabled. The browser fetches the content as part of
+     * rendering rather than as a user action, so blocking the request on the
+     * disabled state would leave the iframe empty.
+     *
      * @see #setSrc(String)
      *
      * @param downloadHandler
@@ -200,7 +241,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler);
+        getElement().setAttribute("src", downloadHandler.allowDisabled());
     }
 
     /**
