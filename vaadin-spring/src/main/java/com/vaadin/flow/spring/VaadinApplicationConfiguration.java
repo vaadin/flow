@@ -43,7 +43,7 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  * @since
  *
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class VaadinApplicationConfiguration {
 
     /**
