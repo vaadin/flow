@@ -49,7 +49,8 @@ import com.vaadin.flow.component.HasElement;
  *            first navigation completes.
  * @param navigationTarget
  *            the class of the leaf route target. {@code null} before the first
- *            navigation completes.
+ *            navigation completes. Use {@link #isNavigationPending()} to check
+ *            for this state.
  */
 public record RouterState(Location location, RouteParameters routeParameters,
         List<HasElement> activeChain,
@@ -71,5 +72,15 @@ public record RouterState(Location location, RouteParameters routeParameters,
     public Optional<HasElement> currentView() {
         return activeChain.isEmpty() ? Optional.empty()
                 : Optional.of(activeChain.get(0));
+    }
+
+    /**
+     * Returns whether the first navigation is still pending.
+     *
+     * @return {@code true} before the first navigation completes, otherwise
+     *         {@code false}
+     */
+    public boolean isNavigationPending() {
+        return navigationTarget == null;
     }
 }
