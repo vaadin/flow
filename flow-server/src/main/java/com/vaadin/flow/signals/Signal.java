@@ -264,6 +264,8 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * @param innerSignal
      *            the inner signal, not <code>null</code>
      * @return the cached signal not <code>null</code>
+     *
+     * @since 25.1
      */
     static <T extends @Nullable Object> Signal<T> cached(
             Signal<T> innerSignal) {
