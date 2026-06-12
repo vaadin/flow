@@ -29,6 +29,7 @@ import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.I18NUtil;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.InvalidMenuAccessControlException;
@@ -167,6 +168,31 @@ public class DefaultInstantiator implements Instantiator {
         } catch (ClassNotFoundException e) {
             throw new InvalidMenuAccessControlException(
                     "Failed to load given provider class '" + property
+                            + "' as it was not found by the class loader.",
+                    e);
+        }
+    }
+
+    @Override
+    public PageTitleGenerator getPageTitleGenerator() {
+        String property = getInitProperty(InitParameters.PAGE_TITLE_GENERATOR);
+        if (property == null) {
+            return null;
+        }
+        try {
+            Class<?> generatorClass = getClassLoader().loadClass(property);
+            if (PageTitleGenerator.class.isAssignableFrom(generatorClass)) {
+                return ReflectTools.createInstance(
+                        (Class<? extends PageTitleGenerator>) generatorClass);
+            }
+            throw new IllegalStateException(String.format(
+                    "Page title generator class property '%s' is set to '%s' but it's not a %s implementation",
+                    InitParameters.PAGE_TITLE_GENERATOR, property,
+                    PageTitleGenerator.class.getSimpleName()));
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(
+                    "Failed to load given page title generator class '"
+                            + property
                             + "' as it was not found by the class loader.",
                     e);
         }

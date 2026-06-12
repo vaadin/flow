@@ -3,16 +3,21 @@
 scriptDir=$(dirname $0)
 depsFolder=$scriptDir/../flow-server/src/main/resources/com/vaadin/flow/server/frontend/dependencies
 
+ncuVersion=22.2.3
+# Skip versions younger than this. Must be at least the minimum frontend
+# package age that Flow enforces on npm install (Options default: 1 day),
+# or the created PR fails its first build because npm refuses to install
+# the too-new package.
+cooldown=1
+
 # Get current git branch
 currentBranch=$(git rev-parse --abbrev-ref HEAD)
 
 # Determine update strategy based on branch
 if [ "$currentBranch" = "main" ]; then
   updateTarget="latest"
-  commitMessage="chore: Bump frontend dependencies to latest versions"
 else
-  updateTarget="patch"
-  commitMessage="chore: Bump frontend dependencies (patch releases only)"
+  updateTarget="minor"
 fi
 
 echo "Current branch: $currentBranch"
@@ -21,7 +26,7 @@ echo "Update strategy: $updateTarget"
 for a in "$depsFolder"/*
 do
   pushd $a
-  npx npm-check-updates@18.1.1 -u -t "$updateTarget"
+  npx npm-check-updates@$ncuVersion -u -t "$updateTarget" --cooldown $cooldown
   popd
 done
 
@@ -36,7 +41,7 @@ do
   folderName=$(basename "$a")
 
   # Run npm-check-updates with --no-deprecated to find deprecated packages
-  deprecatedOutput=$(npx npm-check-updates@18.1.1 --no-deprecated 2>&1)
+  deprecatedOutput=$(npx npm-check-updates@$ncuVersion --no-deprecated --cooldown $cooldown 2>&1)
 
   # Check if there are any deprecated packages (output will contain package names if found)
   if echo "$deprecatedOutput" | grep -q "deprecated"; then
@@ -57,8 +62,3 @@ if [ "$deprecationFound" = true ]; then
   echo "Please review and update these packages manually."
   exit 1
 fi
-
-git add "$depsFolder"
-git commit -m "$commitMessage"
-
-

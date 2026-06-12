@@ -1,0 +1,51 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.router;
+
+import java.io.Serializable;
+
+import com.vaadin.flow.component.Component;
+
+/**
+ * The context handed to a {@link PageTitleGenerator} when resolving a
+ * navigation target title without an instance.
+ * <p>
+ * It exposes the navigation target class, the {@link RouteParameters} and
+ * {@link QueryParameters} the target would be navigated to with, and the
+ * {@link PageTitle#value()} declared on the route. That is everything an
+ * instance-free title resolver needs to compute a meaningful title, either by
+ * inspecting the parameters (for example to look up a domain object by an id)
+ * or by treating {@link #value()} as a key to resolve (for example an i18n key
+ * resolved by a single application-wide generator).
+ *
+ * @param navigationTarget
+ *            the navigation target class the title is resolved for
+ * @param routeParameters
+ *            the route parameters the navigation target is resolved with;
+ *            {@link RouteParameters#empty()} when no parameters are available
+ *            (for example when resolving menu titles)
+ * @param queryParameters
+ *            the query parameters the navigation target is resolved with;
+ *            {@link QueryParameters#empty()} when not available
+ * @param value
+ *            the {@link PageTitle#value()} declared on the route, or an empty
+ *            string when none is declared
+ * @author Vaadin Ltd
+ */
+public record PageTitleContext(Class<? extends Component> navigationTarget,
+        RouteParameters routeParameters, QueryParameters queryParameters,
+        String value) implements Serializable {
+}
