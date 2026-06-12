@@ -29,6 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.fullscreen.Fullscreen;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
+import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -447,8 +448,9 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Parses browser details from the given JSON and updates the UI from them:
      * stores the resulting {@link ExtendedClientDetails} on the UI's internals
-     * and seeds the page-visibility, geolocation-availability and
-     * wake-lock-availability signals from the same payload.
+     * and seeds the page-visibility, geolocation-availability,
+     * wake-lock-availability and web-share-support signals from the same
+     * payload.
      * <p>
      * For internal use only.
      *
@@ -519,6 +521,12 @@ public class ExtendedClientDetails implements Serializable {
             } catch (IllegalArgumentException e) {
                 // unknown value; leave the current availability alone
             }
+        }
+        String ws = getStringElseNull.apply("v-ws");
+        if (ws != null) {
+            ui.getInternals().setWebShareSupport(
+                    Boolean.parseBoolean(ws) ? WebShareSupport.SUPPORTED
+                            : WebShareSupport.UNSUPPORTED);
         }
         return details;
     }
