@@ -38,6 +38,7 @@ import com.vaadin.flow.signals.EffectContext;
  *
  * @param <T>
  *            the type of the bound signal value
+ * @since 25.1
  */
 public class BindingContext<T extends @Nullable Object> extends EffectContext {
 
