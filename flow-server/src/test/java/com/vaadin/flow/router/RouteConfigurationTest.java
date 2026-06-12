@@ -116,12 +116,11 @@ class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(OrderView.class);
         });
 
-        List<RouteParentReference> hierarchy = routeConfiguration
-                .getRouteHierarchy(OrderView.class,
-                        new RouteParameters("orderId", "1001"));
+        List<RouteReference> hierarchy = routeConfiguration.getRouteHierarchy(
+                OrderView.class, new RouteParameters("orderId", "1001"));
 
         assertEquals(List.of(OrdersView.class, OrderView.class), hierarchy
-                .stream().map(RouteParentReference::navigationTarget).toList());
+                .stream().map(RouteReference::navigationTarget).toList());
         // static parent declares no parameters, so orderId is narrowed away
         assertTrue(hierarchy.get(0).routeParameters().getParameterNames()
                 .isEmpty());
@@ -136,7 +135,7 @@ class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(OrderView.class);
         });
 
-        RouteParentReference parent = routeConfiguration
+        RouteReference parent = routeConfiguration
                 .getRouteParent(OrderView.class,
                         new RouteParameters("orderId", "1001"))
                 .orElseThrow();
@@ -164,7 +163,7 @@ class RouteConfigurationTest {
 
     @Test
     void getPageTitle_queryParametersPassedToGenerator() {
-        Optional<String> title = new RouteParentReference(QueryEchoView.class,
+        Optional<String> title = new RouteReference(QueryEchoView.class,
                 RouteParameters.empty())
                 .getPageTitle(QueryParameters.of("name", "Smith"));
 
@@ -173,7 +172,7 @@ class RouteConfigurationTest {
 
     @Test
     void getPageTitle_noTitleDeclared_returnsEmpty() {
-        Optional<String> title = new RouteParentReference(MyRoute.class,
+        Optional<String> title = new RouteReference(MyRoute.class,
                 RouteParameters.empty()).getPageTitle();
 
         assertEquals(Optional.empty(), title);
