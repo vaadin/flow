@@ -219,6 +219,7 @@ public class ListSignal<T extends @Nullable Object>
      * @param values
      *            the values to insert, not <code>null</code>
      * @return an unmodifiable list of signals for the inserted entries
+     * @since 25.2
      */
     public List<ValueSignal<T>> insertAllLast(Collection<? extends T> values) {
         Objects.requireNonNull(values, "Values must not be null");
@@ -245,6 +246,7 @@ public class ListSignal<T extends @Nullable Object>
      * @param values
      *            the values to insert, not <code>null</code>
      * @return an unmodifiable list of signals for the inserted entries
+     * @since 25.2
      */
     public List<ValueSignal<T>> insertAllFirst(Collection<? extends T> values) {
         return insertAllAt(0, values);
@@ -270,6 +272,7 @@ public class ListSignal<T extends @Nullable Object>
      * @return an unmodifiable list of signals for the inserted entries
      * @throws IndexOutOfBoundsException
      *             if index is negative or greater than size()
+     * @since 25.2
      */
     public List<ValueSignal<T>> insertAllAt(int index,
             Collection<? extends T> values) {

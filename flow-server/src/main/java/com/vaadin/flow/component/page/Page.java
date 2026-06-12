@@ -528,6 +528,7 @@ public class Page implements Serializable {
      * </ul>
      *
      * @return the read-only visibility signal
+     * @since 25.2
      */
     public Signal<PageVisibility> pageVisibilitySignal() {
         return pageVisibilityReadOnly;
