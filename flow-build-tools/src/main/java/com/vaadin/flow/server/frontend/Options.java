@@ -218,6 +218,8 @@ public class Options implements Serializable {
      *            the application configuration to be applied
      * @return the updated {@code Options} instance with the specified
      *         application configuration
+     *
+     * @since 25.2
      */
     public Options withApplicationConfiguration(
             ApplicationConfiguration applicationConfiguration) {
@@ -1244,6 +1246,8 @@ public class Options implements Serializable {
      * @param defaultValue
      *            the value to return if the property is not set
      * @return the property value, or empty if configuration is unavailable
+     *
+     * @since 25.2
      */
     public Optional<String> getApplicationStringProperty(String name,
             String defaultValue) {
@@ -1263,6 +1267,8 @@ public class Options implements Serializable {
      * @param defaultValue
      *            the value to return if the property is not set
      * @return the property value, or empty if configuration is unavailable
+     *
+     * @since 25.2
      */
     public Optional<Boolean> getApplicationBooleanProperty(String name,
             boolean defaultValue) {

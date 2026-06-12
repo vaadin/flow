@@ -50,6 +50,7 @@ import com.vaadin.flow.component.HasElement;
  * @param navigationTarget
  *            the class of the leaf route target. {@code null} before the first
  *            navigation completes.
+ * @since 25.2
  */
 public record RouterState(Location location, RouteParameters routeParameters,
         List<HasElement> activeChain,

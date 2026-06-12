@@ -200,6 +200,7 @@ public class Html extends Component {
      *             if reading the stream fails
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(InputStream stream,
             SerializableSupplier<Safelist> safelistSupplier) {
@@ -260,6 +261,7 @@ public class Html extends Component {
      *            not <code>null</code>
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(String outerHtml,
             SerializableSupplier<Safelist> safelistSupplier) {
@@ -320,6 +322,7 @@ public class Html extends Component {
      *             empty, or doesn't have exactly one root element
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(Signal<String> htmlSignal,
             SerializableSupplier<Safelist> safelistSupplier) {

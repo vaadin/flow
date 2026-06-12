@@ -63,6 +63,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *            the size of the uploaded body in bytes
  * @param bytes
  *            the uploaded body
+ * @since 25.2
  */
 public record PasteFile(long pasteId, boolean newPaste, int totalFiles,
         String fileName, @Nullable String contentType, long size,
