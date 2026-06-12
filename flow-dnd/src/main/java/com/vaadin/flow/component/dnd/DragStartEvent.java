@@ -92,6 +92,7 @@ public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
      * positioning dropped items.
      *
      * @return the x coordinate relative to the drag source element
+     * @since 25.2
      */
     public int getOffsetX() {
         return offsetX;
@@ -105,6 +106,7 @@ public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
      * positioning dropped items.
      *
      * @return the y coordinate relative to the drag source element
+     * @since 25.2
      */
     public int getOffsetY() {
         return offsetY;

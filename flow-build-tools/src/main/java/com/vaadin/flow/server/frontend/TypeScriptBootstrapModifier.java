@@ -50,6 +50,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            the input typescript split into lines
      * @param options
      *            options used by the build
+     * @since 25.2
      */
     default void modify(List<String> bootstrapTypeScript, Options options) {
         modify(bootstrapTypeScript, options,

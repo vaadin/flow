@@ -27,6 +27,7 @@ import java.util.Objects;
  * @param message
  *            human-readable detail suitable for diagnostics; never {@code null}
  *            but may be empty
+ * @since 25.2
  */
 public record WakeLockError(WakeLockErrorCode code,
         String message) implements Serializable {

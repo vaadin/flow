@@ -43,6 +43,7 @@ import java.lang.annotation.Target;
  * example as an i18n message key) rather than used as the title directly.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
