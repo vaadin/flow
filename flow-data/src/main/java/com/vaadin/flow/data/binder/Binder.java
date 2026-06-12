@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -352,13 +353,15 @@ public class Binder<BEAN> implements Serializable {
         /**
          * Gets predicate for testing {@link #isApplied()}. By default,
          * non-visible components are ignored during validation and bean
-         * writing.
+         * writing. A component is considered non-visible if it or any of its
+         * ancestors has been hidden via {@code setVisible(false)} — see
+         * {@link ComponentUtil#isEffectivelyVisible(Component)}.
          *
          * @return predicate for testing {@link #isApplied()}
          */
         default SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
             return binding -> !(binding.getField() instanceof Component c)
-                    || c.isVisible();
+                    || ComponentUtil.isEffectivelyVisible(c);
         }
 
         /**
@@ -4347,10 +4350,12 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Sets whether all bindings of this Binder should be applied to fields that
      * are not currently visible. By default, bindings whose field is a
-     * {@link Component} with {@link Component#isVisible()} returning
-     * {@literal false} are skipped during validation and when writing values to
-     * the bean. Enabling this setting restores the pre-Vaadin 25 behavior where
-     * hidden fields are validated and written just like visible ones.
+     * {@link Component} that is not effectively visible (the component itself
+     * or any of its ancestors has been hidden via {@code setVisible(false)} —
+     * see {@link ComponentUtil#isEffectivelyVisible(Component)}) are skipped
+     * during validation and when writing values to the bean. Enabling this
+     * setting restores the pre-Vaadin 25 behavior where hidden fields are
+     * validated and written just like visible ones.
      * <p>
      * This is a Binder-level fallback: any binding that has its own predicate
      * set via {@link Binding#setIsAppliedPredicate(SerializablePredicate)}
