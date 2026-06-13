@@ -10,6 +10,7 @@ import './Download';
 import './ElementResize';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
 import './WakeLock';
 import { isShareSupported } from './WebShare';
 
@@ -552,6 +553,11 @@ export class Flow {
     params['v-pv'] = currentVisibility();
     /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
     params['v-fs'] = currentFullscreenState();
+
+    /* Screen orientation — initial state of screen.orientation, empty
+       when the Screen Orientation API is unavailable. */
+    params['v-so'] = currentScreenOrientationType();
+    params['v-soa'] = currentScreenOrientationAngle();
 
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
