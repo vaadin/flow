@@ -1197,7 +1197,7 @@ public class UIInternals implements Serializable {
 
         List<String> jsDeps = new ArrayList<>();
         jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
@@ -1246,7 +1246,8 @@ public class UIInternals implements Serializable {
 
     private boolean isRuntimeJavaScript(JavaScript js) {
         return js.type() == JavaScript.Type.MODULE
-                || UrlUtil.isExternal(js.value());
+                || FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value());
     }
 
     /**

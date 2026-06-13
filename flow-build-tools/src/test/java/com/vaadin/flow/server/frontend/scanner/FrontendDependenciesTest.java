@@ -100,13 +100,24 @@ class FrontendDependenciesTest {
     }
 
     @Test
-    void javaScriptWithTypeModule_excludedFromBundleImports() {
+    void javaScriptWithRuntimePrefixOrTypeModule_excludedFromBundleImports() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(RuntimeJavaScriptComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
         DepsTests.assertImports(dependencies.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void jsModuleWithRuntimeUrl_excludedFromBundleImports() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "./bundled-module.js");
     }
 
     @Test

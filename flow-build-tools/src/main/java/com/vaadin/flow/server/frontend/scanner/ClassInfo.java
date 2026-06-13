@@ -31,6 +31,13 @@ public class ClassInfo {
     final LinkedHashSet<String> modulesDevelopmentOnly = new LinkedHashSet<>();
     final LinkedHashSet<String> scripts = new LinkedHashSet<>();
     final LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
+    /**
+     * {@code @JsModule} values with a runtime URL prefix ({@code context://},
+     * {@code base://}, {@code http(s)://}, {@code //}, {@code /}). These are
+     * filtered out of the bundle and emit a build-time deprecation warning
+     * recommending migration to {@code @JavaScript}.
+     */
+    final LinkedHashSet<String> deprecatedRuntimeModules = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
     String route = "";
     String layout;

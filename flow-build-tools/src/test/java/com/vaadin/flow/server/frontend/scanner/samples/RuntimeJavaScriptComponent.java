@@ -17,10 +17,17 @@ package com.vaadin.flow.server.frontend.scanner.samples;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 
 @Route("runtime-js")
 @JavaScript("bundled.js")
+@JavaScript("context://runtime.js")
+@JavaScript("/absolute.js")
+@JavaScript("base://servlet-relative.js")
 @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
+@JsModule("./bundled-module.js")
+@JsModule("https://cdn.example.com/external-module.js")
+@JsModule("context://runtime-module.js")
 public class RuntimeJavaScriptComponent extends Component {
 }
