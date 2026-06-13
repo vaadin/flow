@@ -271,7 +271,42 @@ public class Page implements Serializable {
      *            details
      */
     public void addJavaScript(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JAVASCRIPT, url, loadMode));
+        addJavaScript(url, loadMode, JavaScript.Type.SCRIPT);
+    }
+
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. You can prefix the URL with {@code context://} to make it
+     * relative to the context path or use an absolute URL to refer to files
+     * outside the frontend directory.
+     * <p>
+     * The {@code type} parameter selects the kind of {@code <script>} tag the
+     * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
+     * {@code <script>} element (the default of {@link #addJavaScript(String)});
+     * {@link JavaScript.Type#MODULE} renders a {@code <script type="module">}
+     * element, which is the recommended way to load runtime ES modules
+     * (replaces the deprecated {@link #addJsModule(String)}).
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JavaScript @JavaScript} annotation.
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param type
+     *            the kind of {@code <script>} tag to render; {@code null} is
+     *            treated as {@link JavaScript.Type#SCRIPT}
+     */
+    public void addJavaScript(String url, LoadMode loadMode,
+            JavaScript.Type type) {
+        Type dependencyType = type == JavaScript.Type.MODULE ? Type.JS_MODULE
+                : Type.JAVASCRIPT;
+        addDependency(new Dependency(dependencyType, url, loadMode));
     }
 
     /**
@@ -284,7 +319,11 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @deprecated use {@link #addJavaScript(String, LoadMode, JavaScript.Type)}
+     *             with {@link JavaScript.Type#MODULE} instead. The new overload
+     *             also accepts a {@link LoadMode}.
      */
+    @Deprecated
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
             addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
