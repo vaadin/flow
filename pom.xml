@@ -73,6 +73,11 @@
     <sonar.java.source>21</sonar.java.source>
     <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
     <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
+    <!-- The SonarCloud project has a server-side coverage exclusion of
+         **/*.*, which drops all imported JaCoCo coverage. Override it
+         with an empty value here so analysis-side settings win and the
+         coverage actually shows up. -->
+    <sonar.coverage.exclusions/>
 
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <failOnMissingWebXml>false</failOnMissingWebXml>
