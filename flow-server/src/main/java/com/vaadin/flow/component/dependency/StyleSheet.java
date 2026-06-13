@@ -27,13 +27,25 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Loads style sheets into the browser according to a given loading mode. Style
- * sheet URLs can be either a file served by the application itself, i.e. in
- * public static resource locations like
- * {@code src/main/resources/META-INF/resources/}, or an external URL.
+ * Loads a style sheet into the browser at runtime as a
+ * {@code <link rel="stylesheet">} element. The referenced file is served as a
+ * static resource by the servlet container; it is not bundled. Use
+ * {@link CssImport} when the CSS file should be processed as a bundle source by
+ * Vite at build time.
  * <p>
- * Can define style sheet dependencies for a {@link Component} class or
- * globally.
+ * Source locations:
+ * <ul>
+ * <li>Application projects: {@code src/main/resources/META-INF/resources/}. In
+ * Spring Boot projects {@code src/main/resources/public/} or
+ * {@code src/main/resources/static/} are also served.</li>
+ * <li>Add-on JARs: {@code META-INF/resources/}. Files placed there are served
+ * automatically by the servlet container when the JAR is on the classpath.</li>
+ * </ul>
+ * <p>
+ * URL resolution is identical whether the annotation is placed on an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, a route
+ * component, or any other {@link Component}. See {@link #value()} for the
+ * resolution rules.
  * <p>
  * When this annotation is placed on the
  * {@link com.vaadin.flow.component.page.AppShellConfigurator}, the referenced
@@ -45,7 +57,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * stylesheets. To be put on a class implementing
  * {@link com.vaadin.flow.component.page.AppShellConfigurator} in this case.
  * Example of usage:
- * 
+ *
  * <pre>
  *     // theme selection
  *     &#64;StyleSheet(Aura.STYLESHEET) // or Lumo.STYLESHEET
@@ -68,10 +80,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * For adding multiple style sheets, you can use this annotation multiple times.
  * It is guaranteed that dependencies will be loaded only once.
  * <p>
- * Absolute URLs are used as-is; values prefixed with {@code context://} are
- * resolved using context path (e.g. {@code context://styles.css} becomes
- * {@code /my-app/styles.css}) for context path {@code /my-app}.
- * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
@@ -79,6 +87,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ *
+ * @see CssImport
+ * @see JavaScript
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -90,10 +101,23 @@ public @interface StyleSheet {
      * Style sheet file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * URL resolution rules, in order:
+     * <ul>
+     * <li>{@code http://...}, {@code https://...}, {@code //...} — used
+     * unchanged.</li>
+     * <li>{@code context://foo.css} — resolved against the servlet context root
+     * (independent of the Vaadin servlet mapping).</li>
+     * <li>{@code base://foo.css} — resolved against the page's {@code <base>}
+     * URI, i.e. the Vaadin servlet mapping path. Use this as an explicit opt-in
+     * for servlet-mapping-relative loading.</li>
+     * <li>{@code /foo.css} — used unchanged as an absolute server path.</li>
+     * <li>{@code ./foo.css} — leading {@code ./} is stripped, then treated as
+     * context-root relative.</li>
+     * <li>{@code foo.css}, {@code styles/foo.css} — context-root relative, i.e.
+     * equivalent to {@code context://foo.css}.</li>
+     * <li>Values containing {@code ..} (path traversal) are rejected with a
+     * warning.</li>
+     * </ul>
      *
      * @return a style sheet file URL
      */
