@@ -1,0 +1,74 @@
+name: Update Frontend Dependencies
+
+on:
+  schedule:
+    # Runs at 04:00 UTC every Monday
+    - cron: '0 4 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [main, '25.2', '25.1', '25.0', '24.10', '24.9']
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+          # Custom token so the created PR triggers CI and can push to the repo
+          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run dependency update script
+        run: |
+          chmod +x scripts/update-frontend-dependencies.sh
+          ./scripts/update-frontend-dependencies.sh
+
+      - name: Determine update strategy description
+        run: |
+          if [ "${{ matrix.branch }}" = "main" ]; then
+            echo "UPDATE_DESC=All new versions (major, minor, patch)" >> $GITHUB_ENV
+          else
+            echo "UPDATE_DESC=Patch releases only" >> $GITHUB_ENV
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+          branch: update-frontend-dependencies-${{ matrix.branch }}
+          base: ${{ matrix.branch }}
+          commit-message: |
+            chore: Update frontend dependencies (${{ matrix.branch }})
+            ${{ env.DEPRECATION_WARNING }}
+          title: "chore: Update frontend dependencies (${{ matrix.branch }})"
+          body: |
+            ## Automated Frontend Dependency Updates
+
+            This PR contains automated updates to frontend dependencies.
+
+            ### Update Strategy
+            - Target Branch: ${{ matrix.branch }}
+            - Updates: ${{ env.UPDATE_DESC }}
+
+            ### Changes
+            The dependencies have been updated using `npm-check-updates`.
+
+            ---
+            *This PR was automatically created by the update-frontend-dependencies workflow.*
+          labels: |
+            dependencies
+            automated
+          assignees: |
+            ${{ github.repository_owner }}

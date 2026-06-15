@@ -25,6 +25,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -215,5 +216,23 @@ public interface Instantiator extends Serializable {
      */
     default MenuAccessControl getMenuAccessControl() {
         return getOrCreate(MenuAccessControl.class);
+    }
+
+    /**
+     * Gets the application-wide default {@link PageTitleGenerator}, if one has
+     * been defined.
+     * <p>
+     * Used to resolve route titles without a per-route
+     * {@link com.vaadin.flow.router.DynamicPageTitle}, for example a single
+     * generator that turns the declared
+     * {@link com.vaadin.flow.router.PageTitle} value into a translated title
+     * for every route.
+     *
+     * @return the default page title generator, or {@code null} if none has
+     *         been defined
+     * @since 25.2
+     */
+    default PageTitleGenerator getPageTitleGenerator() {
+        return null;
     }
 }

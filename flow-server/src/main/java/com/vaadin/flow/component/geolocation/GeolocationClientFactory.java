@@ -35,6 +35,8 @@ import com.vaadin.flow.di.Lookup;
  * access is unreliable (split-classloader topologies such as Quarkus).
  * Application code does not reference this interface directly. May be renamed
  * or removed in a future release.
+ *
+ * @since 25.2
  */
 @NullMarked
 public interface GeolocationClientFactory extends Serializable {

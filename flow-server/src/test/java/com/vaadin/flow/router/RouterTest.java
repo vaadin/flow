@@ -58,6 +58,7 @@ import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
@@ -613,6 +614,34 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "child2", layout = ParentWithDynamicTitle.class)
     @Tag(Tag.DIV)
     public static class ChildWithoutTitle2 extends Component {
+    }
+
+    public static class ProductTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Product "
+                    + context.routeParameters().get("productId").orElse("");
+        }
+    }
+
+    @Route("generated-title/:productId")
+    @DynamicPageTitle(ProductTitleGenerator.class)
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithGeneratedTitle extends Component {
+    }
+
+    public static class QueryTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return context.queryParameters().getSingleParameter("lang")
+                    .orElse("none");
+        }
+    }
+
+    @Route("query-title")
+    @DynamicPageTitle(QueryTitleGenerator.class)
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithQueryTitle extends Component {
     }
 
     @Route("navigation-target-with-dynamic-title")
@@ -1849,6 +1878,8 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getUrlSafeSchemes())
+                .thenReturn(Constants.DEFAULT_URL_SAFE_SCHEMES);
     }
 
     @AfterEach
@@ -1920,6 +1951,28 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         assertEquals(DYNAMIC_TITLE, ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_generator_with_route_parameters()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NavigationTargetWithGeneratedTitle.class);
+
+        router.navigate(ui, new Location("generated-title/42"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEquals("Product 42", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_generator_with_query_parameters()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NavigationTargetWithQueryTitle.class);
+
+        router.navigate(ui, new Location("query-title?lang=fi"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEquals("fi", ui.getInternals().getTitle());
     }
 
     @Test
