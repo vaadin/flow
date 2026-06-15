@@ -420,7 +420,8 @@ public class Anchor extends HtmlContainer
     public String getHref() {
         if (href instanceof String) {
             // let the method return the actual href string even if disabled
-            return (String) href;
+            String hrefString = (String) href;
+            return hrefString;
         } else if (href instanceof AbstractStreamResource) {
             return StreamResourceRegistry.getURI((AbstractStreamResource) href)
                     .toString();
