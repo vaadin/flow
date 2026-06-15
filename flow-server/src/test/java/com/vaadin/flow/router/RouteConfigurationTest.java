@@ -116,12 +116,11 @@ class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(OrderView.class);
         });
 
-        List<RouteParentReference> hierarchy = routeConfiguration
-                .getRouteHierarchy(OrderView.class,
-                        new RouteParameters("orderId", "1001"));
+        List<RouteReference> hierarchy = routeConfiguration.getRouteHierarchy(
+                OrderView.class, new RouteParameters("orderId", "1001"));
 
         assertEquals(List.of(OrdersView.class, OrderView.class), hierarchy
-                .stream().map(RouteParentReference::navigationTarget).toList());
+                .stream().map(RouteReference::navigationTarget).toList());
         // static parent declares no parameters, so orderId is narrowed away
         assertTrue(hierarchy.get(0).routeParameters().getParameterNames()
                 .isEmpty());
@@ -136,7 +135,7 @@ class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(OrderView.class);
         });
 
-        RouteParentReference parent = routeConfiguration
+        RouteReference parent = routeConfiguration
                 .getRouteParent(OrderView.class,
                         new RouteParameters("orderId", "1001"))
                 .orElseThrow();

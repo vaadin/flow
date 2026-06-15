@@ -110,7 +110,7 @@ public class RouteConfiguration implements Serializable {
      *         target has no logical parent
      * @since 25.2
      */
-    public Optional<RouteParentReference> getRouteParent(
+    public Optional<RouteReference> getRouteParent(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         return RouteUtil.getRouteParent(handledRegistry, navigationTarget,
@@ -138,7 +138,7 @@ public class RouteConfiguration implements Serializable {
      *         root to the navigation target, never empty
      * @since 25.2
      */
-    public List<RouteParentReference> getRouteHierarchy(
+    public List<RouteReference> getRouteHierarchy(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         return RouteUtil.getRouteHierarchy(handledRegistry, navigationTarget,
