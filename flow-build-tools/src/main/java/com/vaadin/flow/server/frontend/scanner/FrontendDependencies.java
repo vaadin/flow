@@ -208,6 +208,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     private void warnAboutDeprecatedJavaScriptUses() {
         Set<String> warnedJavaScriptKeys = new LinkedHashSet<>();
+        Set<String> warnedJsModuleKeys = new LinkedHashSet<>();
         for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
             String className = entry.getKey();
             ClassInfo classInfo = entry.getValue();
@@ -228,6 +229,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                             "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
                                     + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
                             className, value);
+                }
+            }
+            for (String value : classInfo.deprecatedRuntimeModules) {
+                if (warnedJsModuleKeys.add(className + ':' + value)) {
+                    log().warn(
+                            "@JsModule on {} with value \"{}\" is a runtime URL. "
+                                    + "@JsModule is for build-time bundle sources only; "
+                                    + "use @JavaScript(value=\"{}\", type=Type.MODULE) for a runtime <script type=\"module\"> tag.",
+                            className, value, value);
                 }
             }
         }
