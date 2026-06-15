@@ -21,6 +21,9 @@ import com.vaadin.flow.router.Route;
 
 @Route("runtime-js")
 @JavaScript("bundled.js")
+@JavaScript("context://runtime.js")
+@JavaScript("/absolute.js")
+@JavaScript("base://servlet-relative.js")
 @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
 public class RuntimeJavaScriptComponent extends Component {
 }
