@@ -78,6 +78,13 @@
          with an empty value here so analysis-side settings win and the
          coverage actually shows up. -->
     <sonar.coverage.exclusions/>
+    <!-- The SonarCloud instance also sets sonar.inclusions=*.java, which
+         only matches top-level files and leaves the sources under
+         src/main/java/<package> unindexed. With no source files indexed
+         the JaCoCo importer cannot map coverage to them ("File X not
+         found in project sources"). Override with an empty value so all
+         sources are indexed and coverage can be attributed. -->
+    <sonar.inclusions/>
 
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <failOnMissingWebXml>false</failOnMissingWebXml>
