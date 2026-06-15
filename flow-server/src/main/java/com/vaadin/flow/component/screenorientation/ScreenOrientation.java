@@ -68,7 +68,8 @@ public final class ScreenOrientation implements Serializable {
      * value before bootstrap is {@link ScreenOrientationType#UNKNOWN}. Once a
      * real value has arrived, the signal never returns to {@code UNKNOWN}.
      * <p>
-     * Subscribe with {@code Signal.effect(owner, ...)} to react to changes;
+     * Bind it to a component to keep the UI in sync, e.g.
+     * {@code hint.bindVisible(orientationSignal().map(data -> data.type().isPortrait()))};
      * call {@code orientationSignal().peek()} for a snapshot outside a reactive
      * context, and {@code .get()} inside one.
      *
