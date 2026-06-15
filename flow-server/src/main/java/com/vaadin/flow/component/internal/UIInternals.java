@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -52,6 +53,8 @@ import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
@@ -274,6 +277,16 @@ public class UIInternals implements Serializable {
             .asReadonly();
 
     private boolean wakeLockListenerInstalled;
+
+    private static final String SCREEN_ORIENTATION_CHANGE_EVENT = "vaadin-screen-orientation-change";
+
+    private final ValueSignal<ScreenOrientationData> screenOrientationSignal = new ValueSignal<>(
+            new ScreenOrientationData(ScreenOrientationType.UNKNOWN, 0));
+
+    private final Signal<ScreenOrientationData> screenOrientationReadOnly = screenOrientationSignal
+            .asReadonly();
+
+    private boolean screenOrientationListenerInstalled;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -1638,6 +1651,85 @@ public class UIInternals implements Serializable {
      */
     public void markWakeLockListenerInstalled() {
         this.wakeLockListenerInstalled = true;
+    }
+
+    /**
+     * Returns the read-only view of the screen orientation signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#orientationSignal()}.
+     *
+     * @return the read-only screen orientation signal
+     */
+    public Signal<ScreenOrientationData> getScreenOrientationSignalReadOnly() {
+        return screenOrientationReadOnly;
+    }
+
+    /**
+     * Installs, once per UI, the DOM listener that bridges
+     * {@code vaadin-screen-orientation-change} events into the screen
+     * orientation signal. Guarded by a flag so repeated calls do not attach
+     * duplicate listeners. For framework use only.
+     */
+    public void ensureScreenOrientationWired() {
+        if (screenOrientationListenerInstalled) {
+            return;
+        }
+        screenOrientationListenerInstalled = true;
+        ui.getElement().addEventListener(SCREEN_ORIENTATION_CHANGE_EVENT,
+                e -> applyScreenOrientation(
+                        e.getEventDetail(ScreenOrientationDetail.class)))
+                .addEventDetail().allowInert();
+    }
+
+    /**
+     * Seeds the screen orientation signal from raw client-side values (e.g.
+     * from the initial bootstrap parameters) and ensures the change listener is
+     * installed. A {@code null} or empty type leaves the current value
+     * untouched; an unparseable angle is treated as {@code 0} so a valid type
+     * is still applied. For framework use only.
+     *
+     * @param type
+     *            the raw orientation type from the client, or {@code null}
+     * @param angle
+     *            the raw orientation angle from the client, or {@code null}
+     */
+    public void setScreenOrientationFromClient(@Nullable String type,
+            @Nullable String angle) {
+        ensureScreenOrientationWired();
+        int angleValue;
+        try {
+            angleValue = angle == null ? 0 : Integer.parseInt(angle);
+        } catch (NumberFormatException e) {
+            getLogger().debug(
+                    "Unparseable screen orientation angle from client: {}",
+                    angle);
+            angleValue = 0;
+        }
+        applyScreenOrientation(type, angleValue);
+    }
+
+    private void applyScreenOrientation(
+            @Nullable ScreenOrientationDetail detail) {
+        if (detail != null) {
+            applyScreenOrientation(detail.type(), detail.angle());
+        }
+    }
+
+    private void applyScreenOrientation(@Nullable String type, int angle) {
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+        try {
+            screenOrientationSignal.set(new ScreenOrientationData(
+                    ScreenOrientationType.fromClientValue(type), angle));
+        } catch (IllegalArgumentException e) {
+            getLogger().debug("Unknown screen orientation type from client: {}",
+                    type);
+        }
+    }
+
+    private record ScreenOrientationDetail(@Nullable String type,
+            int angle) implements Serializable {
     }
 
     /**
