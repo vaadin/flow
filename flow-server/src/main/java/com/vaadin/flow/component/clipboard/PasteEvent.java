@@ -73,6 +73,8 @@ import com.vaadin.flow.dom.Element;
  * </ul>
  *
  * The listener runs on the UI thread.
+ *
+ * @since 25.2
  */
 public final class PasteEvent implements Serializable {
 

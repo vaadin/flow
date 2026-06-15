@@ -38,6 +38,7 @@ import com.vaadin.flow.component.Component;
  * breadcrumb trail.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -70,6 +70,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @param ui
      *            the UI associated with the event, or <code>null</code> if not
      *            available
+     * @since 25.2
      */
     public ComponentEvent(T source, boolean fromClient, UI ui) {
         super(source);
@@ -114,6 +115,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @throws IllegalStateException
      *             if the source component is not currently attached to a UI and
      *             no UI was provided at construction time
+     * @since 25.2
      */
     public UI getUI() {
         if (ui != null) {

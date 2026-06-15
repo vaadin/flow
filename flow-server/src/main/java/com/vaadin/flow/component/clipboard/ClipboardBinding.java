@@ -66,6 +66,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  *         text -> Notification.show("Pasted " + text),
  *         err -> Notification.show("Failed: " + err.message()));
  * }</pre>
+ *
+ * @since 25.2
  */
 public final class ClipboardBinding implements Serializable {
 

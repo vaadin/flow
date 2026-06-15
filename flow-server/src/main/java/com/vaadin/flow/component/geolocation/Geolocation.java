@@ -89,6 +89,8 @@ import com.vaadin.flow.signals.Signal;
  *     }
  * });
  * </pre>
+ *
+ * @since 25.2
  */
 public final class Geolocation implements Serializable {
 

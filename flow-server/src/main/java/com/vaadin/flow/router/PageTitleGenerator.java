@@ -54,6 +54,7 @@ import java.io.Serializable;
  * navigation target itself.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 @FunctionalInterface
 public interface PageTitleGenerator extends Serializable {

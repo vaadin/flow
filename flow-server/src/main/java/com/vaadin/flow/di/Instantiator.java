@@ -230,6 +230,7 @@ public interface Instantiator extends Serializable {
      *
      * @return the default page title generator, or {@code null} if none has
      *         been defined
+     * @since 25.2
      */
     default PageTitleGenerator getPageTitleGenerator() {
         return null;

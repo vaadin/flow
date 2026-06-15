@@ -44,6 +44,7 @@ import com.vaadin.flow.component.Component;
  *            the {@link PageTitle#value()} declared on the route, or an empty
  *            string when none is declared
  * @author Vaadin Ltd
+ * @since 25.2
  */
 public record PageTitleContext(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters, QueryParameters queryParameters,

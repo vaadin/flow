@@ -49,6 +49,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * while fullscreen is active. The component is restored to its original
  * position when fullscreen exits, whether via {@link Fullscreen#exit()}, the
  * user pressing Escape, or a later request superseding this one.
+ *
+ * @since 25.2
  */
 public final class FullscreenBinding implements Serializable {
 

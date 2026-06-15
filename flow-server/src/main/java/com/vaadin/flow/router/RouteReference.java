@@ -20,9 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.component.Component;
 
 /**
- * A reference to a route in a logical navigation hierarchy, consisting of the
- * navigation target class and the {@link RouteParameters} it should be resolved
- * with.
+ * A reference to a route, consisting of the navigation target class and the
+ * {@link RouteParameters} it should be resolved with. It identifies a route
+ * regardless of whether the route has a logical parent.
  * <p>
  * It is returned by a {@link RouteParentResolver} to describe a logical parent
  * and is the element type of a resolved breadcrumb trail. The parameters are
@@ -36,7 +36,8 @@ import com.vaadin.flow.component.Component;
  * @param routeParameters
  *            the route parameters to resolve the navigation target with
  * @author Vaadin Ltd
+ * @since 25.2
  */
-public record RouteParentReference(Class<? extends Component> navigationTarget,
+public record RouteReference(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {
 }
