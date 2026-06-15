@@ -529,7 +529,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
         ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
-        ScreenOrientation.setStateFromClient(ui,
+        ui.getInternals().setScreenOrientationFromClient(
                 getStringElseNull.apply("v-so"),
                 getStringElseNull.apply("v-soa"));
         Fullscreen.setStateFromClient(ui, getStringElseNull.apply("v-fs"));

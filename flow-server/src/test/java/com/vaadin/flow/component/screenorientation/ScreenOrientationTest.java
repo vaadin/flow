@@ -115,7 +115,8 @@ class ScreenOrientationTest {
 
     @Test
     void setStateFromClient_fromBootstrapSeedsSignal() {
-        ScreenOrientation.setStateFromClient(ui, "landscape-secondary", "270");
+        ui.getInternals().setScreenOrientationFromClient("landscape-secondary",
+                "270");
 
         ScreenOrientationData data = ScreenOrientation.orientationSignal()
                 .peek();
@@ -125,7 +126,7 @@ class ScreenOrientationTest {
 
     @Test
     void setStateFromClient_emptyTypeIsIgnored() {
-        ScreenOrientation.setStateFromClient(ui, "", "0");
+        ui.getInternals().setScreenOrientationFromClient("", "0");
         assertEquals(ScreenOrientationType.UNKNOWN,
                 ScreenOrientation.orientationSignal().peek().type(),
                 "Empty type from a browser without the Screen Orientation API "
@@ -134,7 +135,8 @@ class ScreenOrientationTest {
 
     @Test
     void setStateFromClient_unparseableAngleStillAppliesType() {
-        ScreenOrientation.setStateFromClient(ui, "landscape-primary", "abc");
+        ui.getInternals().setScreenOrientationFromClient("landscape-primary",
+                "abc");
 
         ScreenOrientationData data = ScreenOrientation.orientationSignal()
                 .peek();
@@ -273,7 +275,7 @@ class ScreenOrientationTest {
 
     @Test
     void setStateFromClient_unsupportedFromBootstrap() {
-        ScreenOrientation.setStateFromClient(ui, "unsupported", "0");
+        ui.getInternals().setScreenOrientationFromClient("unsupported", "0");
         assertEquals(ScreenOrientationType.UNSUPPORTED,
                 ScreenOrientation.orientationSignal().peek().type(),
                 "Client-side 'unsupported' must be observable distinctly "
@@ -288,11 +290,12 @@ class ScreenOrientationTest {
                 "Before bootstrap (UNKNOWN) the feature-detect must be "
                         + "false so callers don't expose unusable UI");
 
-        ScreenOrientation.setStateFromClient(ui, "unsupported", "0");
+        ui.getInternals().setScreenOrientationFromClient("unsupported", "0");
         assertFalse(details.isScreenOrientationSupported(),
                 "UNSUPPORTED bootstrap value must yield false");
 
-        ScreenOrientation.setStateFromClient(ui, "landscape-primary", "90");
+        ui.getInternals().setScreenOrientationFromClient("landscape-primary",
+                "90");
         assertTrue(details.isScreenOrientationSupported(),
                 "A real orientation from the bootstrap means the API is "
                         + "available");
