@@ -114,6 +114,10 @@ public final class ScreenOrientation implements Serializable {
      *            the orientation to lock to, not {@code null} and not
      *            {@link ScreenOrientationType#UNKNOWN} or
      *            {@link ScreenOrientationType#UNSUPPORTED}
+     * @throws IllegalArgumentException
+     *             if {@code orientation} is
+     *             {@link ScreenOrientationType#UNKNOWN} or
+     *             {@link ScreenOrientationType#UNSUPPORTED}
      * @throws IllegalStateException
      *             if there is no current UI
      */
@@ -144,6 +148,10 @@ public final class ScreenOrientation implements Serializable {
      * @param onError
      *            invoked when the browser rejects the request, or when the
      *            Screen Orientation API is not available; not {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code orientation} is
+     *             {@link ScreenOrientationType#UNKNOWN} or
+     *             {@link ScreenOrientationType#UNSUPPORTED}
      * @throws IllegalStateException
      *             if there is no current UI
      */
@@ -225,6 +233,8 @@ public final class ScreenOrientation implements Serializable {
      * type leaves the current value untouched; the client reports
      * {@code "unsupported"} when the browser does not implement the Screen
      * Orientation API, which maps to {@link ScreenOrientationType#UNSUPPORTED}.
+     * An unparseable angle is treated as {@code 0} so a valid type is still
+     * applied.
      * <p>
      * Called from the bootstrap path in {@code ExtendedClientDetails} that
      * seeds the signal before any user code observes it. Not intended for
@@ -247,7 +257,7 @@ public final class ScreenOrientation implements Serializable {
         } catch (NumberFormatException e) {
             LOGGER.debug("Unparseable screen orientation angle from client: {}",
                     angle);
-            return;
+            angleValue = 0;
         }
         apply(ui, type, angleValue);
     }

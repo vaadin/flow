@@ -43,8 +43,8 @@ export function currentScreenOrientationAngle(): number {
   return screen.orientation?.angle ?? 0;
 }
 
-// Dispatch on document.body so the server-side Page facade (listening on the
-// UI element, which is body) can update its signal.
+// Dispatch on document.body so the server-side ScreenOrientation facade
+// (listening on the UI element, which is body) can update its signal.
 function dispatch(detail: VaadinScreenOrientationDetail): void {
   document.body.dispatchEvent(new CustomEvent('vaadin-screen-orientation-change', { detail }));
 }

@@ -133,6 +133,18 @@ class ScreenOrientationTest {
     }
 
     @Test
+    void setStateFromClient_unparseableAngleStillAppliesType() {
+        ScreenOrientation.setStateFromClient(ui, "landscape-primary", "abc");
+
+        ScreenOrientationData data = ScreenOrientation.orientationSignal()
+                .peek();
+        assertEquals(ScreenOrientationType.LANDSCAPE_PRIMARY, data.type(),
+                "A valid type must still be applied when the angle is "
+                        + "unparseable");
+        assertEquals(0, data.angle(), "An unparseable angle falls back to 0");
+    }
+
+    @Test
     void lock_executesCorrectJs() {
         ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY);
 
