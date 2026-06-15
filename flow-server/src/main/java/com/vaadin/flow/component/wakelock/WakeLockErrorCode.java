@@ -19,6 +19,8 @@ package com.vaadin.flow.component.wakelock;
  * Reason a
  * {@link WakeLock#request(com.vaadin.flow.function.SerializableConsumer)
  * WakeLock.request(onError)} call failed.
+ *
+ * @since 25.2
  */
 public enum WakeLockErrorCode {
     /**

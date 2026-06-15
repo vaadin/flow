@@ -108,6 +108,7 @@ public class RouteConfiguration implements Serializable {
      *            not {@code null}
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         target has no logical parent
+     * @since 25.2
      */
     public Optional<RouteReference> getRouteParent(
             Class<? extends Component> navigationTarget,
@@ -135,6 +136,7 @@ public class RouteConfiguration implements Serializable {
      *            not {@code null}
      * @return the chain of the target and its logical ancestors, ordered from
      *         root to the navigation target, never empty
+     * @since 25.2
      */
     public List<RouteReference> getRouteHierarchy(
             Class<? extends Component> navigationTarget,

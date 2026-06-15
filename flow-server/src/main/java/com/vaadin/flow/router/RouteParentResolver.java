@@ -59,6 +59,7 @@ import java.util.Optional;
  * route itself.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 @FunctionalInterface
 public interface RouteParentResolver extends Serializable {

@@ -861,6 +861,7 @@ public class ComponentUtil {
      *            the parent component from which to get the child components
      * @return the child components of the given parent component, including
      *         virtual children
+     * @since 25.2
      */
     public static Stream<Component> getAllChildren(Component parent) {
         if (parent instanceof Composite) {
@@ -890,6 +891,7 @@ public class ComponentUtil {
      * @param parent
      *            the parent component to start the traversal from
      * @return a stream of all descendant components in pre-order
+     * @since 25.2
      */
     public static Stream<Component> streamDescendants(Component parent) {
         Builder<Component> descendants = Stream.builder();

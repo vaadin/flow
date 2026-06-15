@@ -49,7 +49,9 @@ jobs:
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
           branch: update-frontend-dependencies-${{ matrix.branch }}
           base: ${{ matrix.branch }}
-          commit-message: "chore: Update frontend dependencies (${{ matrix.branch }})"
+          commit-message: |
+            chore: Update frontend dependencies (${{ matrix.branch }})
+            ${{ env.DEPRECATION_WARNING }}
           title: "chore: Update frontend dependencies (${{ matrix.branch }})"
           body: |
             ## Automated Frontend Dependency Updates

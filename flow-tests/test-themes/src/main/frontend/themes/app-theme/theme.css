@@ -3,16 +3,6 @@
   background: green;
 }
 
-/* This is the same rule that Lumo utilities define */
-.bg-contrast-60 {
-  color: white;
-  background-color: green;
-}
-
-.bg-contrast {
-  color: white;
-}
-
 .container {
   display: flex;
   align-items: stretch;

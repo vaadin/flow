@@ -34,6 +34,7 @@ import com.vaadin.flow.component.Component;
  *            the route parameters the navigation target is resolved with;
  *            {@link RouteParameters#empty()} when no parameters are available
  * @author Vaadin Ltd
+ * @since 25.2
  */
 public record RouteParentContext(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {

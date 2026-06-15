@@ -36,6 +36,7 @@ import com.vaadin.flow.component.Component;
  * @param routeParameters
  *            the route parameters to resolve the navigation target with
  * @author Vaadin Ltd
+ * @since 25.2
  */
 public record RouteReference(Class<? extends Component> navigationTarget,
         RouteParameters routeParameters) implements Serializable {
