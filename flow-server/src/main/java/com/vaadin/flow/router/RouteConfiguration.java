@@ -91,6 +91,60 @@ public class RouteConfiguration implements Serializable {
         return new RouteConfiguration(registry);
     }
 
+    /**
+     * Resolves the logical parent of the given navigation target in this
+     * configuration's registry, without instantiating the route or its parent.
+     * <p>
+     * The parent is resolved from a {@link RouteParent} annotation (its dynamic
+     * {@link RouteParent#resolver()} or static {@link RouteParent#value()}),
+     * or, when none is declared, derived from the route URL by walking up to
+     * the registered route serving the nearest ancestor path.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the logical parent for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the logical parent reference, or an empty {@link Optional} if the
+     *         target has no logical parent
+     * @since 25.2
+     */
+    public Optional<RouteParentReference> getRouteParent(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        return RouteUtil.getRouteParent(handledRegistry, navigationTarget,
+                parameters);
+    }
+
+    /**
+     * Resolves the logical route hierarchy of the given navigation target in
+     * this configuration's registry, without instantiating any of the routes.
+     * <p>
+     * The returned list is the chain of the target and all its logical
+     * ancestors (resolved through
+     * {@link #getRouteParent(Class, RouteParameters)}), ordered from the
+     * hierarchy root to the given navigation target, which is the last element.
+     * Each entry carries the route parameters it should be resolved with, so it
+     * can be used to build a breadcrumb trail or a hierarchical menu.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the hierarchy for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the chain of the target and its logical ancestors, ordered from
+     *         root to the navigation target, never empty
+     * @since 25.2
+     */
+    public List<RouteParentReference> getRouteHierarchy(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        return RouteUtil.getRouteHierarchy(handledRegistry, navigationTarget,
+                parameters);
+    }
+
     /* Static getters for getting information on registered routes */
 
     /**

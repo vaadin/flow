@@ -83,6 +83,7 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -193,6 +194,46 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         assertTrue(indexHtml.contains("<html lang"),
                 "Response should have a language attribute");
+    }
+
+    @Test
+    public void serveIndexHtml_setsXFrameOptionsHeaderToSameOriginByDefault()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response).setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+
+    @Test
+    public void serveIndexHtml_customFrameOptions_setsConfiguredValue()
+            throws IOException {
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_FRAME_OPTIONS, "DENY");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response).setHeader("X-Frame-Options", "DENY");
+    }
+
+    @Test
+    public void serveIndexHtml_emptyFrameOptions_doesNotSetHeader()
+            throws IOException {
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_FRAME_OPTIONS, "");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
+    public void serveIndexHtml_frameOptionsAlreadyPresent_doesNotOverride()
+            throws IOException {
+        Mockito.when(response.containsHeader("X-Frame-Options"))
+                .thenReturn(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
     }
 
     @Test

@@ -26,6 +26,7 @@ package com.vaadin.flow.component.fullscreen;
  *
  * @see Fullscreen#stateSignal()
  * @see Fullscreen#exit()
+ * @since 25.2
  */
 public enum FullscreenState {
 

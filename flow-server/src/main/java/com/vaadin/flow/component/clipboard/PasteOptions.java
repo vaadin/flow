@@ -37,6 +37,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *            regardless of focus; this is also the default when no options are
  *            passed to
  *            {@link Clipboard#onPaste(Component, SerializableConsumer)}.
+ * @since 25.2
  */
 public record PasteOptions(
         boolean includeInputFieldPastes) implements Serializable {
