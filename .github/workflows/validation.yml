@@ -286,10 +286,18 @@ jobs:
       - name: extract downloaded files
         run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results
+        id: publish-test-results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
+      - name: Add summary to test results comment
+        if: ${{ github.event_name == 'pull_request' && steps.publish-test-results.outputs.json != '' && env._PR_NUMBER != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ env._PR_NUMBER }}
+          TEST_RESULTS_JSON: ${{ steps.publish-test-results.outputs.json }}
+        run: node ./scripts/wrapTestResultsComment.js
       - uses: geekyeggo/delete-artifact@v5
         with:
           name: |
