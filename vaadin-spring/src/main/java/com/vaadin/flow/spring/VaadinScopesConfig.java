@@ -16,8 +16,8 @@
 package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.spring.scopes.VaadinRouteScope;
 import com.vaadin.flow.spring.scopes.VaadinSessionScope;
@@ -29,7 +29,7 @@ import com.vaadin.flow.spring.scopes.VaadinUIScope;
  * @author Vaadin Ltd
  *
  */
-@Configuration
+@AutoConfiguration
 public class VaadinScopesConfig {
 
     /**
