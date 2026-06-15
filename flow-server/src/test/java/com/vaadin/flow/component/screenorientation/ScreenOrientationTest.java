@@ -193,14 +193,14 @@ class ScreenOrientationTest {
         ObjectNode result = JacksonUtils.createObjectNode();
         result.put("success", false);
         result.put("code", "SECURITY");
-        result.put("message", "Must be in fullscreen");
+        result.put("message", "Document is hidden");
         resolveLockPromise(ui, result);
 
         assertEquals(ScreenOrientationLockErrorCode.SECURITY,
                 captured.get().errorCode(),
                 "The typed code sent by the client must deserialize into the "
                         + "error code enum");
-        assertEquals("Must be in fullscreen", captured.get().debugInfo());
+        assertEquals("Document is hidden", captured.get().debugInfo());
     }
 
     @Test

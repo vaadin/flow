@@ -32,8 +32,12 @@ public enum ScreenOrientationLockErrorCode {
     NOT_SUPPORTED,
 
     /**
-     * The document is not in fullscreen, which most browsers require before
-     * honoring a lock request.
+     * A security requirement blocked the request: the document is hidden, or
+     * orientation locking is forbidden by permissions policy or a sandboxed
+     * {@code <iframe>} that omits the {@code allow-orientation-lock} keyword.
+     * Note this is distinct from the common fullscreen requirement — a lock
+     * attempted outside fullscreen typically fails with {@link #NOT_SUPPORTED}
+     * rather than this code.
      */
     SECURITY,
 
