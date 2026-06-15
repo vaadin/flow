@@ -39,10 +39,9 @@ import com.vaadin.flow.signals.Signal;
  * browsers require fullscreen first); release it again with {@link #unlock}.
  *
  * <pre>{@code
- * Signal.effect(this, () -> {
- *     ScreenOrientationData data = ScreenOrientation.orientationSignal().get();
- *     setVisible(data.type().isPortrait());
- * });
+ * Div portraitHint = new Div("Rotate your device to landscape");
+ * portraitHint.bindVisible(ScreenOrientation.orientationSignal()
+ *         .map(data -> data.type().isPortrait()));
  *
  * ScreenOrientation.lock(ScreenOrientationType.LANDSCAPE_PRIMARY);
  * }</pre>
