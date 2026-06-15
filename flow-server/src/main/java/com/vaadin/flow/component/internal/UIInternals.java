@@ -69,7 +69,6 @@ import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -1212,9 +1211,11 @@ public class UIInternals implements Serializable {
         jsDeps.addAll(dependencies.getJavaScripts().stream()
                 .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
                 .collect(Collectors.toList()));
-        jsDeps.addAll(dependencies.getJsModules().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
-                .collect(Collectors.toList()));
+        jsDeps.addAll(
+                dependencies.getJsModules().stream().map(dep -> dep.value())
+                        .filter(src -> !FrontendDependencyUrlResolver
+                                .isRuntimeDependencyUrl(src))
+                        .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
@@ -1252,9 +1253,17 @@ public class UIInternals implements Serializable {
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
         dependency.getJsModules().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
-                        JavaScript.Type.MODULE));
+                .filter(js -> FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value()))
+                .forEach(js -> {
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveToContextRoot(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, LoadMode.EAGER,
+                            JavaScript.Type.MODULE);
+                });
     }
 
     private boolean isRuntimeJavaScript(JavaScript js) {
