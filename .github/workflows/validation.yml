@@ -32,8 +32,10 @@ jobs:
       - run: echo "Concurrency Group = ${_HEAD_REF:-$_REF_NAME}"
       - name: Check secrets
         if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          [ -z "${{secrets.TB_LICENSE}}" ] \
+          [ -z "$TB_LICENSE" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v5
@@ -122,8 +124,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Unit Test
@@ -216,8 +219,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
