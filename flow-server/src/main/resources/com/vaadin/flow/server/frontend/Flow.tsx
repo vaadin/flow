@@ -369,14 +369,11 @@ function Flow() {
             const { domNode, children } = event.detail;
             const key = Math.random().toString(36).slice(2);
 
-            // Register the removal listener synchronously while handling the
-            // add event. The portal renders asynchronously, so attaching this
-            // listener from an effect inside FlowPortal would miss a
-            // 'flow-portal-remove' event dispatched before the portal has been
-            // committed. This happens when a dialog moves the element right
-            // after attaching it (disconnect/reconnect in the same task),
-            // which would otherwise leave an orphaned duplicate portal behind
-            // and render the React component twice.
+            // Register the removal listener synchronously, not from an effect
+            // inside FlowPortal: the portal renders asynchronously, so a
+            // 'flow-portal-remove' dispatched before the portal is committed
+            // (e.g. when a dialog moves the element right after attaching it)
+            // would be missed, leaving a duplicate portal and a double render.
             domNode.addEventListener(
                 'flow-portal-remove',
                 (removeEvent: Event) => {
