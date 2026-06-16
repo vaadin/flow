@@ -21,7 +21,7 @@
     "react-router": "7.15.1"
   },
   "devDependencies": {
-    "@babel/core": "7.29.0",
+    "@babel/core": "7.29.6",
     "@babel/plugin-transform-react-jsx-development": "7.27.1",
     "@babel/preset-react": "7.28.5",
     "@babel/types": "7.29.0",
@@ -52,7 +52,7 @@
       "react-router": "7.15.1"
     },
     "devDependencies": {
-      "@babel/core": "7.29.0",
+      "@babel/core": "7.29.6",
       "@babel/plugin-transform-react-jsx-development": "7.27.1",
       "@babel/preset-react": "7.28.5",
       "@babel/types": "7.29.0",
