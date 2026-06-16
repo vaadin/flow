@@ -26,6 +26,7 @@ import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Multi-format payload for {@link ClipboardBinding#write}. Any combination of
@@ -46,6 +47,13 @@ public final class ClipboardContent implements Serializable {
     private Action.@Nullable Input<String> textInput;
     private Action.@Nullable Input<String> htmlInput;
     private Action.@Nullable Input<?> imageInput;
+
+    // Server-side views of the slot values, mirroring what the client would
+    // read when the trigger fires; consumed by ClipboardWrite for browserless
+    // inspection. Null until the corresponding slot is set.
+    private @Nullable SerializableSupplier<@Nullable String> textValue;
+    private @Nullable SerializableSupplier<@Nullable String> htmlValue;
+    private boolean hasImage;
 
     private ClipboardContent() {
     }
@@ -69,6 +77,7 @@ public final class ClipboardContent implements Serializable {
     public ClipboardContent text(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
         this.textInput = new LiteralInput<>(literal);
+        this.textValue = () -> literal;
         return this;
     }
 
@@ -88,6 +97,7 @@ public final class ClipboardContent implements Serializable {
             C source) {
         Objects.requireNonNull(source, "source must not be null");
         this.textInput = new PropertyInput<>(source, "value", String.class);
+        this.textValue = source::getValue;
         return this;
     }
 
@@ -101,6 +111,7 @@ public final class ClipboardContent implements Serializable {
     public ClipboardContent html(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
         this.htmlInput = new LiteralInput<>(literal);
+        this.htmlValue = () -> literal;
         return this;
     }
 
@@ -123,6 +134,7 @@ public final class ClipboardContent implements Serializable {
     public ClipboardContent image(Component source) {
         Objects.requireNonNull(source, "source must not be null");
         this.imageInput = new ImageBlobInput(source);
+        this.hasImage = true;
         return this;
     }
 
@@ -136,5 +148,19 @@ public final class ClipboardContent implements Serializable {
 
     Action.@Nullable Input<?> getImageInput() {
         return imageInput;
+    }
+
+    @Nullable
+    SerializableSupplier<@Nullable String> getTextValue() {
+        return textValue;
+    }
+
+    @Nullable
+    SerializableSupplier<@Nullable String> getHtmlValue() {
+        return htmlValue;
+    }
+
+    boolean hasImage() {
+        return hasImage;
     }
 }

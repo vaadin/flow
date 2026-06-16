@@ -46,6 +46,7 @@ import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.clipboard.ClipboardClient;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
@@ -263,6 +264,8 @@ public class UIInternals implements Serializable {
     private GeolocationClient geolocationClient;
 
     private Registration geolocationClientAvailabilityRegistration;
+
+    private ClipboardClient clipboardClient;
 
     private final ValueSignal<Boolean> wakeLockActiveSignal = new ValueSignal<>(
             Boolean.FALSE);
@@ -1588,6 +1591,35 @@ public class UIInternals implements Serializable {
         setGeolocationAvailability(client.currentAvailability());
         geolocationClientAvailabilityRegistration = client
                 .subscribeAvailability(this::setGeolocationAvailability);
+    }
+
+    /**
+     * Returns the clipboard client currently bound to this UI, or {@code null}
+     * if none has been installed yet. Framework-internal: application code
+     * resolves the client through the static
+     * {@link com.vaadin.flow.component.clipboard.Clipboard} API, which lazily
+     * installs a default client on first use.
+     *
+     * @return the installed clipboard client, or {@code null}
+     */
+    public ClipboardClient getClipboardClient() {
+        return clipboardClient;
+    }
+
+    /**
+     * Installs the given clipboard client on this UI, replacing any previous
+     * one. The previous client, if any, is closed. Framework-internal entry
+     * point used by the default {@code Clipboard} bootstrap and by external
+     * test drivers that substitute a browserless client.
+     *
+     * @param client
+     *            the client to install, never {@code null}
+     */
+    public void setClipboardClient(ClipboardClient client) {
+        if (clipboardClient != null) {
+            clipboardClient.close();
+        }
+        clipboardClient = client;
     }
 
     /**
