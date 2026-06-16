@@ -603,9 +603,14 @@ class StagedTransactionTest extends SignalTestBase {
         Transaction.runInTransaction(() -> {
             TestUtil.readTransactionRootValue(a1);
 
-            assertThrows(IllegalStateException.class, () -> {
-                TestUtil.readTransactionRootValue(a2);
-            });
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class, () -> {
+                        TestUtil.readTransactionRootValue(a2);
+                    });
+            assertTrue(String.valueOf(exception.getMessage()).contains(
+                    "can only update shared signals that belong together"),
+                    "Message should explain the shared signal restriction: "
+                            + exception.getMessage());
         });
     }
 
@@ -618,18 +623,28 @@ class StagedTransactionTest extends SignalTestBase {
         Transaction.runInTransaction(() -> {
             TestUtil.readTransactionRootValue(a1);
 
-            assertThrows(IllegalStateException.class, () -> {
-                TestUtil.readTransactionRootValue(d1);
-            });
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class, () -> {
+                        TestUtil.readTransactionRootValue(d1);
+                    });
+            assertTrue(String.valueOf(exception.getMessage()).contains(
+                    "shared signal cannot be updated in the same transaction"),
+                    "Message should explain the shared signal restriction: "
+                            + exception.getMessage());
         });
 
         // Sync first
         Transaction.runInTransaction(() -> {
             TestUtil.readTransactionRootValue(d1);
 
-            assertThrows(IllegalStateException.class, () -> {
-                TestUtil.readTransactionRootValue(a1);
-            });
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class, () -> {
+                        TestUtil.readTransactionRootValue(a1);
+                    });
+            assertTrue(String.valueOf(exception.getMessage()).contains(
+                    "can only update shared signals that belong together"),
+                    "Message should explain the shared signal restriction: "
+                            + exception.getMessage());
         });
     }
 
