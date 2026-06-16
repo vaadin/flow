@@ -10,17 +10,17 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "7.3.5",
-    "@vitejs/plugin-react": "5.1.4",
+    "@vitejs/plugin-react": "5.2.0",
     "@preact/signals-react-transform": "0.8.1",
     "@rollup/plugin-replace": "6.0.3",
-    "@rollup/pluginutils": "5.3.0",
-    "@babel/preset-react": "7.28.5",
-    "@babel/types": "7.28.6",
+    "@rollup/pluginutils": "5.4.0",
+    "@babel/preset-react": "7.29.7",
+    "@babel/types": "7.29.7",
     "rollup-plugin-visualizer": "7.0.1",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.12.0",
+    "vite-plugin-checker": "0.14.1",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
-    "@types/node": "25.5.2"
+    "@types/node": "25.9.3"
   }
 }
