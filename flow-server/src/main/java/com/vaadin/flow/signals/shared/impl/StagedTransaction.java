@@ -313,12 +313,16 @@ public class StagedTransaction extends Transaction {
         if (treeType == SignalTree.Type.ASYNCHRONOUS) {
             if (!openTreeTypes().allMatch(SignalTree.Type.COMPUTED::equals)) {
                 throw new IllegalStateException(
-                        "A single transaction cannot update multiple separate shared signals. "
-                                + "Each shared signal confirms its changes independently, so updates "
-                                + "to different shared signals cannot be committed together as one "
-                                + "atomic transaction. Update each shared signal in its own transaction, "
-                                + "or keep the related values within a single shared signal (for example "
-                                + "as entries of a shared map or list) so that they can be updated together.");
+                        "A single transaction can only update shared signals that belong together, "
+                                + "i.e. signals derived from a common root shared signal (such as "
+                                + "entries of the same shared map or list). Independently created "
+                                + "shared signals cannot be updated in the same transaction because "
+                                + "they are treated as separate units of ownership that, in a clustered "
+                                + "setup, may even live on different cluster nodes, and their updates "
+                                + "therefore cannot be committed together atomically. To update these "
+                                + "values together, store them in the same shared signal, or use "
+                                + "separate transactions and accept that observers may see one update "
+                                + "before the other.");
             }
         } else if (treeType == SignalTree.Type.SYNCHRONOUS) {
             if (openTreeTypes()
