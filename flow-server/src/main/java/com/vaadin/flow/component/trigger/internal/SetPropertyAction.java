@@ -61,7 +61,7 @@ public class SetPropertyAction<T> extends Action {
      */
     private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
         @Override
-        protected JsFunction toJs(Trigger trigger) {
+        public JsFunction toJs(Trigger trigger) {
             return JsFunction.of("return null");
         }
     };
