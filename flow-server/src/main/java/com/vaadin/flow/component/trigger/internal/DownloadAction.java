@@ -205,7 +205,7 @@ public class DownloadAction extends Action {
         }
 
         @Override
-        protected JsFunction toJs(Trigger trigger) {
+        public JsFunction toJs(Trigger trigger) {
             // Register-and-resolve in one step: the URI is stable per
             // (handler, host) pair, so multiple toJs() calls for the same
             // host reuse the same resource.
