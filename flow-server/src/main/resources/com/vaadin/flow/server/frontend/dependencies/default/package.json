@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "glob": "13.0.6",
-    "typescript": "5.9.3",
+    "typescript": "5.8.3",
     "strip-css-comments": "5.0.0"
   }
 }
