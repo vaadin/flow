@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Platform implements Serializable {
     static final String HILLA_POM_PROPERTIES = "META-INF/maven/com.vaadin/hilla/pom.properties";
+    static final String VAADIN_CORE_POM_PROPERTIES = "META-INF/maven/com.vaadin/vaadin-core-internal/pom.properties";
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Platform.class);
     /**
@@ -55,15 +56,17 @@ public class Platform implements Serializable {
         // immutable and thread-safe.
         if (vaadinVersion == null) {
             try (final InputStream vaadinPomProperties = Thread.currentThread()
-                    .getContextClassLoader().getResourceAsStream(
-                            "META-INF/maven/com.vaadin/vaadin-core/pom.properties")) {
+                    .getContextClassLoader()
+                    .getResourceAsStream(VAADIN_CORE_POM_PROPERTIES)) {
                 if (vaadinPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(vaadinPomProperties);
                     vaadinVersion = properties.getProperty("version", "");
                 } else {
-                    LOGGER.info("Unable to determine Vaadin version. "
-                            + "No META-INF/maven/com.vaadin/vaadin-core/pom.properties found");
+                    LOGGER.info(
+                            "Unable to determine Vaadin version. "
+                                    + "No {} found",
+                            VAADIN_CORE_POM_PROPERTIES);
                     vaadinVersion = "";
                 }
             } catch (Exception e) {
