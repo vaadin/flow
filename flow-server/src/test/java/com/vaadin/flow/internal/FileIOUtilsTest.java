@@ -17,8 +17,11 @@ package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.open.OSUtils;
 
@@ -55,5 +58,48 @@ class FileIOUtilsTest {
     void tempFilesAreTempFiles() {
         assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
         assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
+    }
+
+    @Test
+    void writeIfChanged_writesContentAndLeavesNoTempFiles(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "generated.ts");
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "first"));
+        assertEquals("first", Files.readString(file.toPath()));
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "second"));
+        assertEquals("second", Files.readString(file.toPath()));
+
+        // The atomic write must not leave temporary files behind, otherwise a
+        // file system watcher would keep reacting to spurious files.
+        try (var entries = Files.list(dir.toPath())) {
+            assertEquals(1, entries.count());
+        }
+    }
+
+    @Test
+    void writeIfChanged_unchangedContentDoesNotRewrite(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "generated.ts");
+        assertTrue(FileIOUtils.writeIfChanged(file, "content"));
+
+        Path path = file.toPath();
+        Object key = Files
+                .readAttributes(path,
+                        java.nio.file.attribute.BasicFileAttributes.class)
+                .fileKey();
+        long lastModified = Files.getLastModifiedTime(path).toMillis();
+
+        // Writing identical content must report "not written" and leave the
+        // file untouched so that Vite does not recompile needlessly.
+        assertFalse(FileIOUtils.writeIfChanged(file, "content"));
+        assertEquals(lastModified, Files.getLastModifiedTime(path).toMillis());
+        if (key != null) {
+            assertEquals(key,
+                    Files.readAttributes(path,
+                            java.nio.file.attribute.BasicFileAttributes.class)
+                            .fileKey());
+        }
     }
 }
