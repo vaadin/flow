@@ -286,7 +286,7 @@ jobs:
     # Runs after the unit tests so the analysis can reuse their JaCoCo
     # coverage reports instead of running the tests a second time.
     needs: unit-tests
-    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork }}
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
     runs-on: ubuntu-24.04
     env:
@@ -344,7 +344,17 @@ jobs:
       - name: Run Sonar analysis
         # flow-gradle-plugin is excluded because the build job does not
         # compile it, so the workspace has no classes for it.
+        #
+        # Pull requests are analyzed in pull-request mode; pushes to a
+        # tracked branch (e.g. 25.2, 24.10) are analyzed as that branch.
         run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            SCOPE="-Dsonar.branch.name=${{ github.ref_name }}"
+          else
+            SCOPE="-Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
+              -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
+              -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}"
+          fi
           mvn sonar:sonar \
             -ntp -B -e -V \
             -pl '!flow-plugins/flow-gradle-plugin' \
@@ -352,9 +362,7 @@ jobs:
             -Dsonar.organization=vaadin \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/*.xml \
-            -Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
-            -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
-            -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}
+            $SCOPE
   test-results:
     permissions:
       actions: write
