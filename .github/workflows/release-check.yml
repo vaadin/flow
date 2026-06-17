@@ -4,9 +4,6 @@ name: Maintained Branch Release Check
 # feat:/fix: changes and keeps one GitHub issue per branch listing the patch
 # release to do, so each release can be tracked and assigned individually.
 on:
-  schedule:
-    # Mondays at 06:00 UTC
-    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
