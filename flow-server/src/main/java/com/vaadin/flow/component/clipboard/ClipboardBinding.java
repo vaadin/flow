@@ -23,10 +23,12 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.ReadFromClipboardAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
@@ -37,13 +39,19 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 /**
  * Fluent surface returned from {@link Clipboard#onClick}. Each {@code write*}
  * action attaches one {@link WriteToClipboardAction} to the underlying
- * {@link Trigger}.
+ * {@link Trigger}; each {@code read*} action attaches one
+ * {@link ReadFromClipboardAction}.
  * <p>
- * Actions come in two flavours: fire-and-forget (one argument) and observed
- * (with {@code onCopied}/{@code onError} callbacks). {@code onCopied} receives
- * the string that was copied; {@code onError} receives the browser's error.
- * Both consumers are required in the observed form — pass {@code s -> {}} or
- * {@code err -> {}} to opt out of one.
+ * Write actions come in two flavours: fire-and-forget (one argument) and
+ * observed (with {@code onCopied}/{@code onError} callbacks). {@code onCopied}
+ * receives the string that was copied; {@code onError} receives the browser's
+ * error. Both consumers are required in the observed form — pass
+ * {@code s -> {}} or {@code err -> {}} to opt out of one.
+ * <p>
+ * Read actions always take both an {@code onPayload} consumer (receiving the
+ * clipboard contents or {@code null} if empty) and an {@code onError} consumer
+ * (receiving the browser's error, typically {@code "NotAllowedError"} when the
+ * user denied the {@code clipboard-read} permission).
  *
  * <pre>{@code
  * Button copy = new Button("Copy");
@@ -52,7 +60,14 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Clipboard.onClick(copy).writeText(textField,
  *         copied -> Notification.show("Copied " + copied),
  *         err -> Notification.show("Failed: " + err.message()));
+ *
+ * Button paste = new Button("Paste");
+ * Clipboard.onClick(paste).readText(
+ *         text -> Notification.show("Pasted " + text),
+ *         err -> Notification.show("Failed: " + err.message()));
  * }</pre>
+ *
+ * @since 25.2
  */
 public final class ClipboardBinding implements Serializable {
 
@@ -312,7 +327,72 @@ public final class ClipboardBinding implements Serializable {
                 onError));
     }
 
-    private void bind(WriteToClipboardAction action) {
+    /**
+     * Reads the user's clipboard via {@code navigator.clipboard.read()} when
+     * the underlying trigger fires and delivers the contents to
+     * {@code onPayload}, or routes any failure to {@code onError}.
+     * <p>
+     * The Clipboard API requires the call to happen inside a short-lived user
+     * gesture AND the user to grant the {@code clipboard-read} permission;
+     * binding to a click trigger satisfies the gesture, but the browser may
+     * still reject the read with {@code "NotAllowedError"} when the permission
+     * is denied.
+     *
+     * @param onPayload
+     *            UI-thread callback receiving the clipboard contents, or
+     *            {@code null} if the clipboard was empty; not {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, not
+     *            {@code null}
+     */
+    public void read(SerializableConsumer<@Nullable ClipboardPayload> onPayload,
+            SerializableConsumer<Error> onError) {
+        Objects.requireNonNull(onPayload, "onPayload must not be null");
+        Objects.requireNonNull(onError, "onError must not be null");
+        bind(new ReadFromClipboardAction(onPayload, onError));
+    }
+
+    /**
+     * Like {@link #read} but delivers only the {@code text/plain} field of the
+     * clipboard payload to {@code onText}. {@code onText} receives {@code null}
+     * if the clipboard was empty or had no {@code text/plain} representation.
+     *
+     * @param onText
+     *            UI-thread callback receiving the {@code text/plain} value, or
+     *            {@code null}; not {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, not
+     *            {@code null}
+     */
+    public void readText(SerializableConsumer<@Nullable String> onText,
+            SerializableConsumer<Error> onError) {
+        Objects.requireNonNull(onText, "onText must not be null");
+        Objects.requireNonNull(onError, "onError must not be null");
+        bind(new ReadFromClipboardAction(
+                p -> onText.accept(p == null ? null : p.text()), onError));
+    }
+
+    /**
+     * Like {@link #read} but delivers only the {@code text/html} field of the
+     * clipboard payload to {@code onHtml}. {@code onHtml} receives {@code null}
+     * if the clipboard was empty or had no {@code text/html} representation.
+     *
+     * @param onHtml
+     *            UI-thread callback receiving the {@code text/html} value, or
+     *            {@code null}; not {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, not
+     *            {@code null}
+     */
+    public void readHtml(SerializableConsumer<@Nullable String> onHtml,
+            SerializableConsumer<Error> onError) {
+        Objects.requireNonNull(onHtml, "onHtml must not be null");
+        Objects.requireNonNull(onError, "onError must not be null");
+        bind(new ReadFromClipboardAction(
+                p -> onHtml.accept(p == null ? null : p.html()), onError));
+    }
+
+    private void bind(Action action) {
         trigger.triggers(action);
     }
 }

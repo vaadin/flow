@@ -46,9 +46,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.ColorScheme;
@@ -80,6 +83,7 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -193,6 +197,46 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void serveIndexHtml_setsXFrameOptionsHeaderToSameOriginByDefault()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response).setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+
+    @Test
+    public void serveIndexHtml_customFrameOptions_setsConfiguredValue()
+            throws IOException {
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_FRAME_OPTIONS, "DENY");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response).setHeader("X-Frame-Options", "DENY");
+    }
+
+    @Test
+    public void serveIndexHtml_emptyFrameOptions_doesNotSetHeader()
+            throws IOException {
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_FRAME_OPTIONS, "");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
+    public void serveIndexHtml_frameOptionsAlreadyPresent_doesNotOverride()
+            throws IOException {
+        Mockito.when(response.containsHeader("X-Frame-Options"))
+                .thenReturn(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
     public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -213,14 +257,39 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_featureFlagsSetter_isPresent()
+    public void serveIndexHtml_noFeatureFlagsEnabled_updaterScriptOmitted()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        assertFalse(indexHtml.contains("window.Vaadin.featureFlagsUpdaters"),
+                "Response should not have a Feature Flags updater script "
+                        + "when no feature flags are enabled");
+    }
+
+    @Test
+    public void serveIndexHtml_featureFlagEnabled_updaterScriptPresent()
+            throws IOException {
+        Feature enabledFeature = new Feature("Example feature",
+                "exampleFeature", "", false, null);
+        enabledFeature.setEnabled(true);
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.getFeatures())
+                .thenReturn(List.of(enabledFeature));
+        try (MockedStatic<FeatureFlags> featureFlagsMock = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            featureFlagsMock.when(() -> FeatureFlags.get(Mockito.any()))
+                    .thenReturn(featureFlags);
+            indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                    createVaadinRequest("/"), response);
+        }
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         assertTrue(indexHtml.contains(
                 "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
-                "Response should have Feature Flags updater function");
+                "Response should have a Feature Flags updater script when a "
+                        + "feature flag is enabled");
+        assertTrue(indexHtml.contains("activator(\"exampleFeature\");"),
+                "Updater script should activate the enabled feature flag");
     }
 
     @Test

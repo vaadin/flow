@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -49,8 +51,13 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentContext;
+import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
@@ -740,6 +747,177 @@ public class RouteUtil {
                 .filter(HasDynamicTitle.class::isInstance)
                 .map(element -> ((HasDynamicTitle) element).getPageTitle())
                 .filter(Objects::nonNull).findFirst();
+    }
+
+    /**
+     * Resolves the logical parent of the given navigation target, without
+     * instantiating the route or its parent.
+     * <p>
+     * The parent is resolved in this order:
+     * <ol>
+     * <li>if the target has a {@link RouteParent} annotation, its dynamic
+     * {@link RouteParent#resolver()} or static {@link RouteParent#value()} is
+     * used (the resolver takes precedence; a static parent inherits the target
+     * route parameters narrowed to the parent's own template);</li>
+     * <li>otherwise the parent is derived from the route URL by walking up the
+     * registered route serving the nearest ancestor path.</li>
+     * </ol>
+     *
+     * @param registry
+     *            the route registry used to resolve URL-derived parents and
+     *            parameter templates, may be {@code null} to resolve only
+     *            annotation-based parents
+     * @param navigationTarget
+     *            the navigation target to resolve the logical parent for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the logical parent reference, or an empty {@link Optional} if the
+     *         target has no logical parent
+     */
+    public static Optional<RouteReference> getRouteParent(
+            RouteRegistry registry, Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        Objects.requireNonNull(navigationTarget,
+                "navigationTarget must not be null");
+        Objects.requireNonNull(parameters, "parameters must not be null");
+        RouteParent annotation = navigationTarget
+                .getAnnotation(RouteParent.class);
+        if (annotation != null) {
+            if (!RouteParentResolver.class.equals(annotation.resolver())) {
+                return instantiateResolver(annotation.resolver()).resolveParent(
+                        new RouteParentContext(navigationTarget, parameters));
+            }
+            if (!Component.class.equals(annotation.value())) {
+                return Optional.of(new RouteReference(annotation.value(),
+                        narrowParametersToTemplate(registry, annotation.value(),
+                                parameters)));
+            }
+        }
+        return getUrlBasedRouteParent(registry, navigationTarget, parameters);
+    }
+
+    /**
+     * Narrows the given route parameters down to only the names the target's
+     * own route template declares.
+     * <p>
+     * A static {@link RouteParent} parent is resolved with the child's
+     * parameters, but the parent route typically declares fewer (or no)
+     * parameters. Forwarding the full set would make building a link to the
+     * parent fail, so the parameters are filtered to the parent template here,
+     * matching what the URL-derived resolution already does. When the template
+     * cannot be resolved (no registry available), the parameters are returned
+     * unchanged.
+     */
+    private static RouteParameters narrowParametersToTemplate(
+            RouteRegistry registry, Class<? extends Component> target,
+            RouteParameters parameters) {
+        if (parameters.getParameterNames().isEmpty() || registry == null) {
+            return parameters;
+        }
+        Optional<String> template = RouteConfiguration.forRegistry(registry)
+                .getTemplate(target);
+        if (template.isEmpty()) {
+            return parameters;
+        }
+        Map<String, String> subset = new LinkedHashMap<>();
+        for (String segment : PathUtil.getSegmentsList(template.get())) {
+            if (RouteFormat.isParameter(segment)) {
+                String name = new ParameterInfo(segment).getName();
+                parameters.get(name)
+                        .ifPresent(value -> subset.put(name, value));
+            }
+        }
+        return subset.isEmpty() ? RouteParameters.empty()
+                : new RouteParameters(subset);
+    }
+
+    /**
+     * Derives the logical parent of a route from the route URL by walking up
+     * the path until a registered route serving an ancestor path is found.
+     */
+    private static Optional<RouteReference> getUrlBasedRouteParent(
+            RouteRegistry registry, Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        if (registry == null) {
+            return Optional.empty();
+        }
+        String url;
+        try {
+            url = RouteConfiguration.forRegistry(registry)
+                    .getUrl(navigationTarget, parameters);
+        } catch (RuntimeException targetNotRegistered) {
+            return Optional.empty();
+        }
+        List<String> segments = new ArrayList<>(PathUtil.getSegmentsList(url));
+        while (!segments.isEmpty()) {
+            segments.remove(segments.size() - 1);
+            NavigationRouteTarget parent = registry
+                    .getNavigationRouteTarget(PathUtil.getPath(segments));
+            if (parent.hasTarget()) {
+                Class<? extends Component> parentTarget = parent
+                        .getRouteTarget().getTarget();
+                if (!parentTarget.equals(navigationTarget)) {
+                    return Optional.of(new RouteReference(parentTarget,
+                            parent.getRouteParameters()));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Resolves the logical route hierarchy of the given navigation target by
+     * repeatedly resolving the route parent (see
+     * {@link #getRouteParent(RouteRegistry, Class, RouteParameters)}), without
+     * instantiating any of the routes.
+     * <p>
+     * The returned list is the chain of the target and all its logical
+     * ancestors, ordered from the hierarchy root to the given navigation target
+     * (the target itself is the last element). Each entry carries the route
+     * parameters it should be resolved with, so the title of every entry can be
+     * resolved with {@link MenuRegistry#getTitle(Class, RouteParameters)}
+     * (which honors {@code PageTitleGenerator}). This is what a breadcrumb or a
+     * hierarchical menu is built from. A guard stops the walk if the hierarchy
+     * contains a cycle.
+     *
+     * @param registry
+     *            the route registry used to resolve URL-derived parents and
+     *            parameter templates, may be {@code null} to resolve only
+     *            annotation-based parents
+     * @param navigationTarget
+     *            the navigation target to resolve the hierarchy for, not
+     *            {@code null}
+     * @param parameters
+     *            the route parameters the navigation target is resolved with,
+     *            not {@code null}
+     * @return the chain of the target and its logical ancestors, ordered from
+     *         root to the navigation target, never empty
+     */
+    public static List<RouteReference> getRouteHierarchy(RouteRegistry registry,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        List<RouteReference> hierarchy = new ArrayList<>();
+        Set<Class<? extends Component>> visited = new HashSet<>();
+        RouteReference current = new RouteReference(navigationTarget,
+                parameters);
+        while (current != null && visited.add(current.navigationTarget())) {
+            hierarchy.add(current);
+            current = getRouteParent(registry, current.navigationTarget(),
+                    current.routeParameters()).orElse(null);
+        }
+        Collections.reverse(hierarchy);
+        return hierarchy;
+    }
+
+    private static RouteParentResolver instantiateResolver(
+            Class<? extends RouteParentResolver> resolverType) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service != null) {
+            return service.getInstantiator().getOrCreate(resolverType);
+        }
+        return ReflectTools.createInstance(resolverType);
     }
 
     /**

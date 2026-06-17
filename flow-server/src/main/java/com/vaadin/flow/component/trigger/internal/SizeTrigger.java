@@ -99,7 +99,7 @@ public class SizeTrigger extends Trigger {
          */
         public static final Action.Input<Size> size = new Action.Input<>() {
             @Override
-            protected JsFunction toJs(Trigger trigger) {
+            public JsFunction toJs(Trigger trigger) {
                 if (!(trigger instanceof SizeTrigger)) {
                     throw new IllegalArgumentException("Input is scoped to "
                             + SizeTrigger.class.getSimpleName()

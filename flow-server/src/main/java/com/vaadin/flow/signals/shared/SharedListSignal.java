@@ -155,7 +155,7 @@ public class SharedListSignal<T extends @Nullable Object>
         }
     }
 
-    private final Class<T> elementType;
+    private final Class<@NonNull T> elementType;
 
     /**
      * Creates a new list signal with the given element type. The signal does
@@ -164,7 +164,7 @@ public class SharedListSignal<T extends @Nullable Object>
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public SharedListSignal(Class<T> elementType) {
+    public SharedListSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -186,7 +186,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the element type, not <code>null</code>
      */
     protected SharedListSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+            CommandValidator validator, Class<@NonNull T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -206,6 +206,8 @@ public class SharedListSignal<T extends @Nullable Object>
      * for both the structure of the list and the values of all child signals.
      * 
      * @return a stream of signal values, not <code>null</code>
+     *
+     * @since 25.1
      */
     public Stream<T> getValues() {
         return get().stream().map(Signal::get);
@@ -216,6 +218,8 @@ public class SharedListSignal<T extends @Nullable Object>
      * dependencies.
      * 
      * @return a stream of signal values, not <code>null</code>
+     *
+     * @since 25.1
      */
     public Stream<T> peekValues() {
         return peek().stream().map(Signal::peek);
@@ -315,6 +319,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllLast(
             Collection<? extends T> values) {
@@ -332,6 +337,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllFirst(
             Collection<? extends T> values) {
@@ -356,6 +362,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllAt(
             Collection<? extends T> values, ListPosition at) {

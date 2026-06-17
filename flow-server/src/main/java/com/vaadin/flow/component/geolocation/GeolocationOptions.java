@@ -67,6 +67,7 @@ import org.jspecify.annotations.Nullable;
  *            hardware again. {@code 0} means "never use a cached reading";
  *            {@code null} also means {@code 0}. Larger values save battery and
  *            return faster at the cost of freshness
+ * @since 25.2
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
