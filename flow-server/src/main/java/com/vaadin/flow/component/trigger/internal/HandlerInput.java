@@ -29,25 +29,39 @@ import com.vaadin.flow.dom.JsFunction;
  * variable would not be in scope). Class-based scoping lets a single input
  * instance be exposed as a {@code public static final} field (see
  * {@link MouseEventTrigger.EventData}) and reused across every instance of the
- * owning class and its subclasses.
+ * owning class and its subclasses. Custom trigger families expose their event
+ * state the same way: declare a {@code HandlerInput} per property instead of
+ * subclassing {@link Action.Input} by hand.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced
  */
-final class HandlerInput<T> extends Action.Input<T> {
+public final class HandlerInput<T> extends Action.Input<T> {
 
     private final String propertyName;
     private final Class<? extends Trigger> ownerClass;
 
-    HandlerInput(String propertyName, Class<? extends Trigger> ownerClass) {
+    /**
+     * Creates an input that yields {@code event[propertyName]} at fire time,
+     * valid in the handler of any trigger that is an instance of
+     * {@code ownerClass}.
+     *
+     * @param propertyName
+     *            the event property name, not {@code null}
+     * @param ownerClass
+     *            the trigger class the expression is valid for, not
+     *            {@code null}
+     */
+    public HandlerInput(String propertyName,
+            Class<? extends Trigger> ownerClass) {
         this.propertyName = Objects.requireNonNull(propertyName);
         this.ownerClass = Objects.requireNonNull(ownerClass);
     }
 
     @Override
-    protected JsFunction toJs(Trigger trigger) {
+    public JsFunction toJs(Trigger trigger) {
         if (!ownerClass.isInstance(trigger)) {
             throw new IllegalArgumentException("Input is scoped to "
                     + ownerClass.getSimpleName() + " and cannot be used in a "
