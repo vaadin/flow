@@ -1143,32 +1143,37 @@ class RouteUtilTest {
         OrgView.instantiated = false;
         ProjectView.instantiated = false;
 
-        RouteParameters parameters = new RouteParameters(
-                Map.of("orgId", "acme", "projectId", "42"));
+        VaadinService.setCurrent(new MockVaadinServletService());
+        try {
+            RouteParameters parameters = new RouteParameters(
+                    Map.of("orgId", "acme", "projectId", "42"));
 
-        List<RouteReference> hierarchy = RouteUtil.getRouteHierarchy(null,
-                ProjectView.class, parameters);
+            List<RouteReference> hierarchy = RouteUtil.getRouteHierarchy(null,
+                    ProjectView.class, parameters);
 
-        // ordered from root to current target
-        assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
-                .stream().map(RouteReference::navigationTarget).toList());
+            // ordered from root to current target
+            assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
+                    .stream().map(RouteReference::navigationTarget).toList());
 
-        // the org parameter is carried over to the parent reference
-        assertEquals("acme",
-                hierarchy.get(0).routeParameters().get("orgId").orElseThrow());
+            // the org parameter is carried over to the parent reference
+            assertEquals("acme", hierarchy.get(0).routeParameters().get("orgId")
+                    .orElseThrow());
 
-        // titles compose with PageTitleGenerator, also without an instance
-        List<String> titles = hierarchy.stream()
-                .map(reference -> MenuRegistry.getTitle(
-                        reference.navigationTarget(),
-                        reference.routeParameters()))
-                .toList();
-        assertEquals(List.of("Org acme", "Project 42"), titles);
+            // titles compose with PageTitleGenerator, also without an instance
+            List<String> titles = hierarchy.stream()
+                    .map(reference -> MenuRegistry.getTitle(
+                            reference.navigationTarget(),
+                            reference.routeParameters()))
+                    .toList();
+            assertEquals(List.of("Org acme", "Project 42"), titles);
 
-        assertFalse(OrgView.instantiated,
-                "Hierarchy resolution must not instantiate the route");
-        assertFalse(ProjectView.instantiated,
-                "Hierarchy resolution must not instantiate the route");
+            assertFalse(OrgView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+            assertFalse(ProjectView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+        } finally {
+            VaadinService.setCurrent(null);
+        }
     }
 
     @Test
