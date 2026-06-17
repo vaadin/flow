@@ -17,11 +17,15 @@ package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.open.OSUtils;
 
@@ -30,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 class FileIOUtilsTest {
 
@@ -100,6 +106,31 @@ class FileIOUtilsTest {
                     Files.readAttributes(path,
                             java.nio.file.attribute.BasicFileAttributes.class)
                             .fileKey());
+        }
+    }
+
+    @Test
+    void writeIfChanged_fallsBackToNonAtomicMoveWhenAtomicUnsupported(
+            @TempDir File dir) throws Exception {
+        File file = new File(dir, "generated.ts");
+
+        // Simulate a file system that does not support atomic moves. The write
+        // must still succeed via the non-atomic fallback while every other file
+        // operation runs for real.
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.move(any(), eq(file.toPath()),
+                    eq(StandardCopyOption.ATOMIC_MOVE),
+                    eq(StandardCopyOption.REPLACE_EXISTING)))
+                    .thenThrow(new AtomicMoveNotSupportedException(null, null,
+                            "atomic move not supported"));
+
+            assertTrue(FileIOUtils.writeIfChanged(file, "fallback"));
+        }
+
+        assertEquals("fallback", Files.readString(file.toPath()));
+        try (var entries = Files.list(dir.toPath())) {
+            assertEquals(1, entries.count());
         }
     }
 }
