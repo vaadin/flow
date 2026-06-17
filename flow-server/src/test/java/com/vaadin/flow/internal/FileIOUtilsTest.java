@@ -17,8 +17,15 @@ package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.open.OSUtils;
 
@@ -27,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 class FileIOUtilsTest {
 
@@ -55,5 +64,73 @@ class FileIOUtilsTest {
     void tempFilesAreTempFiles() {
         assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
         assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
+    }
+
+    @Test
+    void writeIfChanged_writesContentAndLeavesNoTempFiles(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "generated.ts");
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "first"));
+        assertEquals("first", Files.readString(file.toPath()));
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "second"));
+        assertEquals("second", Files.readString(file.toPath()));
+
+        // The atomic write must not leave temporary files behind, otherwise a
+        // file system watcher would keep reacting to spurious files.
+        try (var entries = Files.list(dir.toPath())) {
+            assertEquals(1, entries.count());
+        }
+    }
+
+    @Test
+    void writeIfChanged_unchangedContentDoesNotRewrite(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "generated.ts");
+        assertTrue(FileIOUtils.writeIfChanged(file, "content"));
+
+        Path path = file.toPath();
+        Object key = Files
+                .readAttributes(path,
+                        java.nio.file.attribute.BasicFileAttributes.class)
+                .fileKey();
+        long lastModified = Files.getLastModifiedTime(path).toMillis();
+
+        // Writing identical content must report "not written" and leave the
+        // file untouched so that Vite does not recompile needlessly.
+        assertFalse(FileIOUtils.writeIfChanged(file, "content"));
+        assertEquals(lastModified, Files.getLastModifiedTime(path).toMillis());
+        if (key != null) {
+            assertEquals(key,
+                    Files.readAttributes(path,
+                            java.nio.file.attribute.BasicFileAttributes.class)
+                            .fileKey());
+        }
+    }
+
+    @Test
+    void writeIfChanged_fallsBackToNonAtomicMoveWhenAtomicUnsupported(
+            @TempDir File dir) throws Exception {
+        File file = new File(dir, "generated.ts");
+
+        // Simulate a file system that does not support atomic moves. The write
+        // must still succeed via the non-atomic fallback while every other file
+        // operation runs for real.
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.move(any(), eq(file.toPath()),
+                    eq(StandardCopyOption.ATOMIC_MOVE),
+                    eq(StandardCopyOption.REPLACE_EXISTING)))
+                    .thenThrow(new AtomicMoveNotSupportedException(null, null,
+                            "atomic move not supported"));
+
+            assertTrue(FileIOUtils.writeIfChanged(file, "fallback"));
+        }
+
+        assertEquals("fallback", Files.readString(file.toPath()));
+        try (var entries = Files.list(dir.toPath())) {
+            assertEquals(1, entries.count());
+        }
     }
 }
