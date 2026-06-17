@@ -103,10 +103,10 @@ public class TaskGenerateReactFiles
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
-    private static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
+    static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
     private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
-    private static final String LAYOUTS_JSON = "layouts.json";
+    static final String LAYOUTS_JSON = "layouts.json";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
     static final String JSX_TRANSFORM_INDEX = "jsx-dev-transform/index.ts";
