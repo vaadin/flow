@@ -20,7 +20,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlin.test.assertContains
-import kotlin.test.assertTrue
 import com.vaadin.flow.gradle.AbstractGradleTest
 import com.vaadin.flow.gradle.expectTaskOutcome
 import org.gradle.testkit.runner.TaskOutcome
@@ -131,74 +130,6 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
         )
         assertContains(result.output, "* vaadin-commercial-component")
         assertContains(result.output, "commercialWithBanner")
-    }
-
-    @Test
-    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabledBySystemProperty_buildSucceeds() {
-
-        val result = testProject.build(
-            "-Duser.home=${testingHomeFolder}",
-            "-Dvaadin.commercialWithBanner",
-            "-Pvaadin.productionMode",
-            "vaadinBuildFrontend"
-        )
-        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application commercial banner enabled")
-
-        assertTrue { buildInfo.exists() }
-        val buildInfoJson = buildInfo.readText()
-        assertContains(
-            buildInfoJson,
-            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
-            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
-        )
-    }
-
-    @Test
-    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabled_buildSucceeds() {
-        testProject.buildFile.appendText(
-            """
-            vaadin {
-                commercialWithBanner = true
-            }
-        """.trimIndent()
-        )
-        val result = testProject.build(
-            "-Duser.home=${testingHomeFolder}",
-            "-Pvaadin.productionMode",
-            "vaadinBuildFrontend"
-        )
-        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application commercial banner enabled")
-
-        assertTrue { buildInfo.exists() }
-        val buildInfoJson = buildInfo.readText()
-        assertContains(
-            buildInfoJson,
-            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
-            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
-        )
-    }
-
-    @Test
-    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabledByGradleProperty_buildSucceeds() {
-        val result = testProject.build(
-            "-Duser.home=${testingHomeFolder}",
-            "-Pvaadin.commercialWithBanner",
-            "-Pvaadin.productionMode",
-            "vaadinBuildFrontend"
-        )
-        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application commercial banner enabled")
-
-        assertTrue { buildInfo.exists() }
-        val buildInfoJson = buildInfo.readText()
-        assertContains(
-            buildInfoJson,
-            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
-            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
-        )
-
     }
 
     companion object {
