@@ -41,6 +41,8 @@ import com.vaadin.flow.signals.Signal;
  *
  * To leave fullscreen, call {@link #exit()}; to observe the current state,
  * subscribe to {@link #stateSignal()}. Neither needs a user gesture.
+ *
+ * @since 25.2
  */
 public final class Fullscreen implements Serializable {
 

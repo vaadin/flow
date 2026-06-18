@@ -74,6 +74,8 @@ import com.vaadin.flow.shared.Registration;
  * shape fits. {@code onFilePaste} is independent of {@code onPaste}; the same
  * paste gesture can deliver text/html via {@code onPaste} and files via
  * {@code onFilePaste} when both are registered.
+ *
+ * @since 25.2
  */
 public final class Clipboard implements Serializable {
 

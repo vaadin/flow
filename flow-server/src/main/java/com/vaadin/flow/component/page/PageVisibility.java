@@ -25,6 +25,7 @@ package com.vaadin.flow.component.page;
  * from the client.
  *
  * @see Page#pageVisibilitySignal()
+ * @since 25.2
  */
 public enum PageVisibility {
 

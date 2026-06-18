@@ -738,6 +738,7 @@ public class UI extends Component
      *            serializable if the session is serialized
      * @return a registration for cancelling the task before it runs, not
      *         <code>null</code>
+     * @since 25.2
      */
     public Registration triggerAfter(Duration delay,
             SerializableRunnable task) {
@@ -918,6 +919,7 @@ public class UI extends Component
      *
      * @return a read-only signal holding the current router state, never
      *         {@code null}
+     * @since 25.2
      */
     public Signal<RouterState> routerStateSignal() {
         return internals.getRouterStateSignal();

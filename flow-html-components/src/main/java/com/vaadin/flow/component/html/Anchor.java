@@ -322,6 +322,7 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the href to set
+     * @since 25.2
      */
     public void setUnsafeHref(String href) {
         if (href == null) {

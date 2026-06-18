@@ -40,13 +40,13 @@ import java.util.Optional;
  *
  * public class OrgParentResolver implements RouteParentResolver {
  *     &#64;Override
- *     public Optional&lt;RouteParentReference&gt; resolveParent(
+ *     public Optional&lt;RouteReference&gt; resolveParent(
  *             RouteParentContext context) {
  *         // carry over only the parameters the parent route needs
  *         RouteParameters parentParameters = new RouteParameters("orgId",
  *                 context.routeParameters().get("orgId").orElseThrow());
- *         return Optional.of(
- *                 new RouteParentReference(OrgView.class, parentParameters));
+ *         return Optional
+ *                 .of(new RouteReference(OrgView.class, parentParameters));
  *     }
  * }
  * </pre>
@@ -59,6 +59,7 @@ import java.util.Optional;
  * route itself.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 @FunctionalInterface
 public interface RouteParentResolver extends Serializable {
@@ -77,5 +78,5 @@ public interface RouteParentResolver extends Serializable {
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         route has no logical parent (it is a hierarchy root)
      */
-    Optional<RouteParentReference> resolveParent(RouteParentContext context);
+    Optional<RouteReference> resolveParent(RouteParentContext context);
 }

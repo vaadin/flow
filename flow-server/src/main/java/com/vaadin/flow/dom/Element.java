@@ -1884,6 +1884,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
+     * @since 25.2
      */
     public Registration addJsInitializer(String expression,
             Object... parameters) {

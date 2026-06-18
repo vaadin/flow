@@ -49,9 +49,9 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.RouteParentContext;
-import com.vaadin.flow.router.RouteParentReference;
 import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -1143,39 +1143,44 @@ class RouteUtilTest {
         OrgView.instantiated = false;
         ProjectView.instantiated = false;
 
-        RouteParameters parameters = new RouteParameters(
-                Map.of("orgId", "acme", "projectId", "42"));
+        VaadinService.setCurrent(new MockVaadinServletService());
+        try {
+            RouteParameters parameters = new RouteParameters(
+                    Map.of("orgId", "acme", "projectId", "42"));
 
-        List<RouteParentReference> hierarchy = RouteUtil.getRouteHierarchy(null,
-                ProjectView.class, parameters);
+            List<RouteReference> hierarchy = RouteUtil.getRouteHierarchy(null,
+                    ProjectView.class, parameters);
 
-        // ordered from root to current target
-        assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
-                .stream().map(RouteParentReference::navigationTarget).toList());
+            // ordered from root to current target
+            assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
+                    .stream().map(RouteReference::navigationTarget).toList());
 
-        // the org parameter is carried over to the parent reference
-        assertEquals("acme",
-                hierarchy.get(0).routeParameters().get("orgId").orElseThrow());
+            // the org parameter is carried over to the parent reference
+            assertEquals("acme", hierarchy.get(0).routeParameters().get("orgId")
+                    .orElseThrow());
 
-        // titles compose with PageTitleGenerator, also without an instance
-        List<String> titles = hierarchy.stream()
-                .map(reference -> MenuRegistry.getTitle(
-                        reference.navigationTarget(),
-                        reference.routeParameters()))
-                .toList();
-        assertEquals(List.of("Org acme", "Project 42"), titles);
+            // titles compose with PageTitleGenerator, also without an instance
+            List<String> titles = hierarchy.stream()
+                    .map(reference -> MenuRegistry.getTitle(
+                            reference.navigationTarget(),
+                            reference.routeParameters()))
+                    .toList();
+            assertEquals(List.of("Org acme", "Project 42"), titles);
 
-        assertFalse(OrgView.instantiated,
-                "Hierarchy resolution must not instantiate the route");
-        assertFalse(ProjectView.instantiated,
-                "Hierarchy resolution must not instantiate the route");
+            assertFalse(OrgView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+            assertFalse(ProjectView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+        } finally {
+            VaadinService.setCurrent(null);
+        }
     }
 
     @Test
     void getRouteParent_staticValue_carriesParameters() {
         RouteParameters parameters = new RouteParameters("orgId", "acme");
 
-        RouteParentReference parent = RouteUtil
+        RouteReference parent = RouteUtil
                 .getRouteParent(null, SettingsView.class, parameters)
                 .orElseThrow();
 
@@ -1194,7 +1199,7 @@ class RouteUtilTest {
     @Test
     void getRouteParent_staticParentWithFewerParameters_narrowsParameters() {
         withRegistry(registry -> {
-            RouteParentReference parent = RouteUtil
+            RouteReference parent = RouteUtil
                     .getRouteParent(registry, OrderDetailView.class,
                             new RouteParameters("orderId", "1001"))
                     .orElseThrow();
@@ -1213,7 +1218,7 @@ class RouteUtilTest {
         withRegistry(registry -> {
             // orgs/:orgId/members has no @RouteParent, so the parent is the
             // route serving the nearest ancestor path orgs/:orgId
-            RouteParentReference parent = RouteUtil.getRouteParent(registry,
+            RouteReference parent = RouteUtil.getRouteParent(registry,
                     MembersView.class, new RouteParameters("orgId", "acme"))
                     .orElseThrow();
 
@@ -1332,8 +1337,8 @@ class RouteUtilTest {
     }
 
     private static List<Class<? extends Component>> targets(
-            List<RouteParentReference> hierarchy) {
-        return hierarchy.stream().map(RouteParentReference::navigationTarget)
+            List<RouteReference> hierarchy) {
+        return hierarchy.stream().map(RouteReference::navigationTarget)
                 .toList();
     }
 
@@ -1354,12 +1359,12 @@ class RouteUtilTest {
 
     public static class OrgParentResolver implements RouteParentResolver {
         @Override
-        public Optional<RouteParentReference> resolveParent(
+        public Optional<RouteReference> resolveParent(
                 RouteParentContext context) {
             RouteParameters parentParameters = new RouteParameters("orgId",
                     context.routeParameters().get("orgId").orElseThrow());
-            return Optional.of(
-                    new RouteParentReference(OrgView.class, parentParameters));
+            return Optional
+                    .of(new RouteReference(OrgView.class, parentParameters));
         }
     }
 
@@ -1452,7 +1457,7 @@ class RouteUtilTest {
 
     public static class RootResolver implements RouteParentResolver {
         @Override
-        public Optional<RouteParentReference> resolveParent(
+        public Optional<RouteReference> resolveParent(
                 RouteParentContext context) {
             return Optional.empty();
         }
