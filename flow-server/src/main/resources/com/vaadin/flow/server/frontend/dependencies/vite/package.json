@@ -21,7 +21,7 @@
     "@rolldown/plugin-babel": "0.2.3",
     "rollup-plugin-visualizer": "7.0.1",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.14.3",
+    "vite-plugin-checker": "0.14.4",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
     "@types/node": "25.9.3"
