@@ -570,7 +570,14 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(getProjectFrontendDir(config), path);
+        File frontendDir = getProjectFrontendDir(config);
+        File file = new File(frontendDir, path);
+        if (!file.exists()) {
+            // Fall back to the frontend generated/ folder, where the default
+            // index.html and other Flow-generated client files live when the
+            // user has not provided their own.
+            file = new File(getFrontendGeneratedFolder(frontendDir), path);
+        }
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
