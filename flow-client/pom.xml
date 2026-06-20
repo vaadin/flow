@@ -255,6 +255,10 @@
                         a separate production build -->
           <enableAssertions>true</enableAssertions>
           <failOnError>true</failOnError>
+          <!-- Export classes annotated with @JsType to the JS namespace so the
+               TypeScript migration can call into the GWT bundle. See
+               MIGRATION_STRATEGY.md. -->
+          <generateJsInteropExports>true</generateJsInteropExports>
           <gwtSdkFirstInClasspath/>
           <persistentunitcache>false</persistentunitcache>
           <webappDirectory>${gwt.module.output}</webappDirectory>
