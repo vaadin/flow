@@ -34,6 +34,44 @@ export interface JsInteropProbe {
   echo(value: string): string;
 }
 
+/**
+ * Mirrors the getters exported from `com.vaadin.client.ApplicationConfiguration`
+ * — the translated application configuration read from the DOM at startup.
+ */
+export interface ApplicationConfiguration {
+  getApplicationId(): string;
+  getUIId(): number;
+  isProductionMode(): boolean;
+  isRequestTiming(): boolean;
+  getServletVersion(): string;
+  getExportedWebComponents(): string[];
+}
+
+/**
+ * Mirrors the client-API methods exported from
+ * `com.vaadin.client.ApplicationConnection` — the operations published on
+ * `window.Vaadin.Flow.clients[appId]`.
+ */
+export interface ApplicationConnection {
+  isActive(): boolean;
+  getByNodeId(nodeId: number): Node | null;
+  getNodeId(element: Element): number;
+  addDomBindingListener(nodeId: number, callback: () => void): void;
+  poll(): void;
+  resolveUri(uri: string): string;
+  sendEventMessage(nodeId: number, eventType: string, eventData: object | null): void;
+  getUIId(): number;
+  connectWebComponent(eventData: object): void;
+  debug(): object;
+  start(initialUidl: object | null): void;
+}
+
+// Note: ApplicationConnection's constructor is intentionally not exported
+// (@JsIgnore on the Java side) — exporting a member whose body builds the
+// engine pulls a GWT.create rebind into the JsInterop export pass, which the
+// GWT compiler cannot resolve. The instance is therefore created on the GWT
+// side; TypeScript only consumes the exported methods above.
+
 interface FlowInternalExports {
   JsInteropProbe: JsInteropProbe;
 }
