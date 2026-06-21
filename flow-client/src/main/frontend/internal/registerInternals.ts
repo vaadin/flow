@@ -16,7 +16,22 @@
 
 import { publishClient } from './publishClient';
 import { getElementById, getElementByName, hasTag } from './ElementUtil';
-import { getAbsoluteUrl, isAbsoluteUrl, redirect } from './WidgetUtil';
+import {
+  createJsonObject,
+  createJsonObjectWithoutPrototype,
+  deleteJsProperty,
+  equalsInJS,
+  getAbsoluteUrl,
+  getJsProperty,
+  getKeys,
+  hasJsProperty,
+  hasOwnJsProperty,
+  isAbsoluteUrl,
+  isTrueish,
+  isUndefined,
+  redirect,
+  setJsProperty
+} from './WidgetUtil';
 
 /**
  * Publishes the TypeScript implementations that the GWT engine calls into, under
@@ -31,5 +46,20 @@ export function registerInternals(): void {
 
   internal.publishClient = publishClient;
   internal.ElementUtil = { hasTag, getElementById, getElementByName };
-  internal.WidgetUtil = { redirect, getAbsoluteUrl, isAbsoluteUrl };
+  internal.WidgetUtil = {
+    redirect,
+    getAbsoluteUrl,
+    isAbsoluteUrl,
+    getJsProperty,
+    setJsProperty,
+    hasOwnJsProperty,
+    hasJsProperty,
+    isUndefined,
+    deleteJsProperty,
+    isTrueish,
+    getKeys,
+    createJsonObject,
+    createJsonObjectWithoutPrototype,
+    equalsInJS
+  };
 }

@@ -1,5 +1,19 @@
 import { expect } from '@open-wc/testing';
-import { getAbsoluteUrl, isAbsoluteUrl } from '../../main/frontend/internal/WidgetUtil';
+import {
+  createJsonObject,
+  createJsonObjectWithoutPrototype,
+  deleteJsProperty,
+  equalsInJS,
+  getAbsoluteUrl,
+  getJsProperty,
+  getKeys,
+  hasJsProperty,
+  hasOwnJsProperty,
+  isAbsoluteUrl,
+  isTrueish,
+  isUndefined,
+  setJsProperty
+} from '../../main/frontend/internal/WidgetUtil';
 
 describe('WidgetUtil', () => {
   it('isAbsoluteUrl recognizes absolute URLs', () => {
@@ -20,5 +34,54 @@ describe('WidgetUtil', () => {
     const resolved = getAbsoluteUrl('foo');
     expect(isAbsoluteUrl(resolved)).to.be.true;
     expect(resolved.endsWith('/foo')).to.be.true;
+  });
+
+  it('get/set/deleteJsProperty round-trip a property', () => {
+    const obj: Record<string, unknown> = {};
+    setJsProperty(obj, 'x', 42);
+    expect(getJsProperty(obj, 'x')).to.equal(42);
+    expect(hasOwnJsProperty(obj, 'x')).to.be.true;
+    deleteJsProperty(obj, 'x');
+    expect(getJsProperty(obj, 'x')).to.equal(undefined);
+    expect(hasOwnJsProperty(obj, 'x')).to.be.false;
+  });
+
+  it('hasOwnJsProperty ignores inherited properties, hasJsProperty does not', () => {
+    const obj: Record<string, unknown> = Object.create({ inherited: 1 });
+    obj.own = 2;
+    expect(hasOwnJsProperty(obj, 'own')).to.be.true;
+    expect(hasOwnJsProperty(obj, 'inherited')).to.be.false;
+    expect(hasJsProperty(obj, 'inherited')).to.be.true;
+    expect(hasJsProperty(obj, 'missing')).to.be.false;
+  });
+
+  it('isUndefined distinguishes undefined from null', () => {
+    expect(isUndefined(undefined)).to.be.true;
+    expect(isUndefined(null)).to.be.false;
+    expect(isUndefined(0)).to.be.false;
+  });
+
+  it('isTrueish follows JavaScript truthiness', () => {
+    expect(isTrueish(1)).to.be.true;
+    expect(isTrueish('x')).to.be.true;
+    expect(isTrueish(0)).to.be.false;
+    expect(isTrueish('')).to.be.false;
+    expect(isTrueish(null)).to.be.false;
+  });
+
+  it('getKeys returns own enumerable keys', () => {
+    expect(getKeys({ a: 1, b: 2 })).to.eql(['a', 'b']);
+  });
+
+  it('equalsInJS uses loose equality', () => {
+    expect(equalsInJS(0, '')).to.be.true;
+    expect(equalsInJS('1', 1)).to.be.true;
+    expect(equalsInJS(null, undefined)).to.be.true;
+    expect(equalsInJS(1, 2)).to.be.false;
+  });
+
+  it('createJsonObject has a prototype, createJsonObjectWithoutPrototype does not', () => {
+    expect(Object.getPrototypeOf(createJsonObject())).to.equal(Object.prototype);
+    expect(Object.getPrototypeOf(createJsonObjectWithoutPrototype())).to.equal(null);
   });
 });

@@ -183,7 +183,7 @@ public class WidgetUtil {
     public static native void setJsProperty(Object object, String name,
             Object value)
     /*-{
-        object[name] = value;
+        $wnd.Vaadin.Flow.internal.WidgetUtil.setJsProperty(object, name, value);
     }-*/;
 
     /**
@@ -197,7 +197,7 @@ public class WidgetUtil {
      */
     public static native Object getJsProperty(Object object, String name)
     /*-{
-        return object[name];
+        return $wnd.Vaadin.Flow.internal.WidgetUtil.getJsProperty(object, name);
     }-*/;
 
     /**
@@ -216,7 +216,7 @@ public class WidgetUtil {
      */
     public static native boolean hasOwnJsProperty(Object object, String name)
     /*-{
-      return Object.prototype.hasOwnProperty.call(object, name);
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.hasOwnJsProperty(object, name);
     }-*/;
 
     /**
@@ -234,7 +234,7 @@ public class WidgetUtil {
      */
     public static native boolean hasJsProperty(Object object, String name)
     /*-{
-      return name in object;
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.hasJsProperty(object, name);
     }-*/;
 
     /**
@@ -248,7 +248,7 @@ public class WidgetUtil {
      */
     public static native boolean isUndefined(Object property)
     /*-{
-      return property === undefined;
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.isUndefined(property);
     }-*/;
 
     /**
@@ -261,7 +261,7 @@ public class WidgetUtil {
      */
     public static native void deleteJsProperty(Object object, String name)
     /*-{
-      delete object[name];
+      $wnd.Vaadin.Flow.internal.WidgetUtil.deleteJsProperty(object, name);
     }-*/;
 
     /**
@@ -274,7 +274,7 @@ public class WidgetUtil {
      */
     public static native JsonObject createJsonObjectWithoutPrototype()
     /*-{
-      return $wnd.Object.create(null);
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.createJsonObjectWithoutPrototype();
     }-*/;
 
     /**
@@ -284,7 +284,7 @@ public class WidgetUtil {
      */
     public static native JsonObject createJsonObject()
     /*-{
-      return {};
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.createJsonObject();
     }-*/;
 
     /**
@@ -298,7 +298,7 @@ public class WidgetUtil {
      */
     public static native boolean isTrueish(Object value)
     /*-{
-        return !!value;
+        return $wnd.Vaadin.Flow.internal.WidgetUtil.isTrueish(value);
     }-*/;
 
     /**
@@ -311,7 +311,7 @@ public class WidgetUtil {
      */
     public static native String[] getKeys(Object value)
     /*-{
-      return Object.keys(value);
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.getKeys(value);
     }-*/;
 
     /**
@@ -367,7 +367,7 @@ public class WidgetUtil {
      */
     public static native boolean equalsInJS(Object obj1, Object obj2)
     /*-{
-      return obj1==obj2;
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.equalsInJS(obj1, obj2);
     }-*/;
 
 }
