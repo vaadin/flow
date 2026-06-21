@@ -16,6 +16,7 @@
 
 import { publishClient } from './publishClient';
 import { getElementById, getElementByName, hasTag } from './ElementUtil';
+import { isLitElement, whenRendered } from './LitUtils';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -48,6 +49,7 @@ export function registerInternals(): void {
 
   internal.publishClient = publishClient;
   internal.ElementUtil = { hasTag, getElementById, getElementByName };
+  internal.LitUtils = { isLitElement, whenRendered };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
