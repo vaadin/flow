@@ -22,14 +22,16 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.vaadin.client.flow.dom.DomApi;
 
-import elemental.client.Browser;
 import elemental.dom.Element;
-import elemental.html.AnchorElement;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
  * Utility methods which are related to client side code only.
+ * <p>
+ * Some methods have been migrated to TypeScript (see {@code WidgetUtil.ts}
+ * registered on {@code window.Vaadin.Flow.internal.WidgetUtil}) and delegate to
+ * it.
  *
  * @since 1.0
  */
@@ -51,11 +53,7 @@ public class WidgetUtil {
      */
     public static native void redirect(String url)
     /*-{
-        if (url) {
-                $wnd.location = url;
-        } else {
-                $wnd.location.reload(false);
-        }
+        $wnd.Vaadin.Flow.internal.WidgetUtil.redirect(url);
     }-*/;
 
     /**
@@ -66,12 +64,10 @@ public class WidgetUtil {
      *            a string with the relative URL to resolve
      * @return the corresponding absolute URL as a string
      */
-    public static String getAbsoluteUrl(String url) {
-        AnchorElement a = (AnchorElement) Browser.getDocument()
-                .createElement("a");
-        a.setHref(url);
-        return a.getHref();
-    }
+    public static native String getAbsoluteUrl(String url)
+    /*-{
+        return $wnd.Vaadin.Flow.internal.WidgetUtil.getAbsoluteUrl(url);
+    }-*/;
 
     /**
      * Detects if an URL is absolute.
@@ -86,7 +82,7 @@ public class WidgetUtil {
      */
     public static native boolean isAbsoluteUrl(String url)
     /*-{
-        return !!url.match(/^(?:[a-zA-Z]+:)?\/\//);
+        return $wnd.Vaadin.Flow.internal.WidgetUtil.isAbsoluteUrl(url);
     }-*/;
 
     /**
