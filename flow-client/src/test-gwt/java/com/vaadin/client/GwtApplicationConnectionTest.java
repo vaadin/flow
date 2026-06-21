@@ -85,6 +85,16 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
                             return mockCfg[key];
                         }
                     }
+                },
+                internal : {
+                    publishClient : function(ac, config) {
+                        var appId = config.getApplicationId().replace(/-\d+$/, '');
+                        $wnd.Vaadin.Flow.clients[appId] = {
+                            isActive : function() {
+                                return ac.isActive();
+                            }
+                        };
+                    }
                 }
             },
         };
