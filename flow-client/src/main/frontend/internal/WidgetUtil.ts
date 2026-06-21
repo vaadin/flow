@@ -48,3 +48,73 @@ export function getAbsoluteUrl(url: string): string {
 export function isAbsoluteUrl(url: string): boolean {
   return /^(?:[a-zA-Z]+:)?\/\//.test(url);
 }
+
+/** Retrieves the value of a JavaScript property. */
+export function getJsProperty(object: Record<string, unknown>, name: string): unknown {
+  return object[name];
+}
+
+/** Assigns a value as a JavaScript property of an object. */
+export function setJsProperty(object: Record<string, unknown>, name: string, value: unknown): void {
+  object[name] = value;
+}
+
+/**
+ * Checks whether the object itself has a JavaScript property with the given
+ * name. Inherited properties are not taken into account.
+ */
+export function hasOwnJsProperty(object: object, name: string): boolean {
+  return Object.prototype.hasOwnProperty.call(object, name);
+}
+
+/**
+ * Checks whether the object has or inherits a JavaScript property with the
+ * given name.
+ */
+export function hasJsProperty(object: object, name: string): boolean {
+  return name in object;
+}
+
+/** Checks whether the value is explicitly undefined (null returns false). */
+export function isUndefined(value: unknown): boolean {
+  return value === undefined;
+}
+
+/** Removes a JavaScript property from an object. */
+export function deleteJsProperty(object: Record<string, unknown>, name: string): void {
+  // Dynamic delete is intentional: this helper removes an arbitrary property.
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete object[name];
+}
+
+/** Gets the boolean value of the given value based on JavaScript semantics. */
+export function isTrueish(value: unknown): boolean {
+  return !!value;
+}
+
+/** Gets all own enumerable JavaScript property names (Object.keys) of the object. */
+export function getKeys(value: object): string[] {
+  return Object.keys(value);
+}
+
+/** Creates a new object with the default JavaScript prototype. */
+export function createJsonObject(): object {
+  return {};
+}
+
+/**
+ * Creates a new object without any JavaScript prototype. Relevant only for
+ * objects displayed through the browser console.
+ */
+export function createJsonObjectWithoutPrototype(): object {
+  return Object.create(null) as object;
+}
+
+/**
+ * Checks whether the values are equal as JavaScript values, using JS `==`. This
+ * ignores types, so e.g. an empty string equals 0.
+ */
+export function equalsInJS(obj1: unknown, obj2: unknown): boolean {
+  // Loose equality is intentional here; that is the contract of this helper.
+  return obj1 == obj2;
+}
