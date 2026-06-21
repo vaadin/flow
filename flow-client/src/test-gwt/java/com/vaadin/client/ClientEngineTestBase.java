@@ -1,6 +1,9 @@
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.TextResource;
 
 /**
  * Base class for all unit tests that run as JavaScript compiled by GWT. The
@@ -45,7 +48,31 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
     @Override
     protected void gwtSetUp() throws Exception {
         installPolyfills();
+        registerInternals();
         super.gwtSetUp();
+    }
+
+    /**
+     * Registers the TypeScript implementations that the GWT engine calls into
+     * ({@code window.Vaadin.Flow.internal.*}). In production these are
+     * registered by the engine's {@code init()}; GwtTests do not run
+     * {@code init()}, so the same implementations (bundled by esbuild from
+     * {@code registerInternals.ts}) are eval'd here instead.
+     */
+    private static void registerInternals() {
+        evalInHostWindow(TestInternals.INSTANCE.script().getText());
+    }
+
+    private static native void evalInHostWindow(String script)
+    /*-{
+        $wnd.eval(script);
+    }-*/;
+
+    interface TestInternals extends ClientBundle {
+        TestInternals INSTANCE = GWT.create(TestInternals.class);
+
+        @Source("gwtTestInternals.js")
+        TextResource script();
     }
 
     @Override

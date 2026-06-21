@@ -13,6 +13,7 @@
     "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
+    "build-gwt-test-internals": "esbuild src/test/frontend/gwtTestInternals.ts --bundle --format=iife --outfile=target/gwt-test-internals/gwtTestInternals.js && tsc -p tsconfig.gwt-test.json",
     "compile": "npm run build && npm run lint",
     "install-deps": "node node_modules/esbuild/install.js && playwright install",
     "test": "npm run install-deps && web-test-runner --node-resolve --playwright",

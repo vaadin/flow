@@ -384,6 +384,24 @@
             </configuration>
           </execution>
           <execution>
+            <!-- Bundle the TypeScript implementations the GWT engine calls into
+                 (ES5, for HtmlUnit) so GwtTests can register them; embedded via
+                 a ClientBundle and eval'd by ClientEngineTestBase. Runs before
+                 the GWT test goal (test phase). -->
+            <id>build-gwt-test-internals</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-test-classes</phase>
+            <configuration>
+              <executable>npm</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>build-gwt-test-internals</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
             <id>run-tests</id>
             <goals>
               <goal>exec</goal>
