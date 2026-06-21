@@ -15,24 +15,16 @@
  */
 
 /**
- * Typed access to the Java classes that the GWT-compiled flow-client bundle
+ * Typed contracts for the Java classes that the GWT-compiled flow-client bundle
  * exports to JavaScript through JsInterop.
  *
  * Exported classes are published under `window.Vaadin.Flow.internal.<Name>` and
  * only exist after the bundle's `init()` (see `FlowClient.js`) has run. As the
  * client engine is migrated from Java to TypeScript (see
  * `MIGRATION_STRATEGY.md`), the new TypeScript calls *into* these exports — the
- * boundary is always TypeScript → GWT, never the reverse.
- *
- * Each exported class gets a typed interface and an accessor here so callers
- * never reach into `window` untyped. `JsInteropProbe` is the initial smoke-test
- * entry and is removed once the first real class has been migrated.
+ * boundary is always TypeScript → GWT, never the reverse. These interfaces type
+ * the exported instances so callers never reach into `window` untyped.
  */
-
-/** Mirrors `com.vaadin.client.JsInteropProbe`. */
-export interface JsInteropProbe {
-  echo(value: string): string;
-}
 
 /**
  * Mirrors the getters exported from `com.vaadin.client.ApplicationConfiguration`
@@ -51,6 +43,12 @@ export interface ApplicationConfiguration {
  * Mirrors the client-API methods exported from
  * `com.vaadin.client.ApplicationConnection` — the operations published on
  * `window.Vaadin.Flow.clients[appId]`.
+ *
+ * Note: the constructor is intentionally not exported (`@JsIgnore` on the Java
+ * side) — exporting a member whose body builds the engine pulls a `GWT.create`
+ * rebind into the JsInterop export pass, which the GWT compiler cannot resolve.
+ * The instance is therefore created on the GWT side; TypeScript only consumes
+ * the exported methods below.
  */
 export interface ApplicationConnection {
   isActive(): boolean;
@@ -68,34 +66,4 @@ export interface ApplicationConnection {
   getElementStyleProperties(nodeId: number): object;
   getProfilingData(): unknown[];
   start(initialUidl: object | null): void;
-}
-
-// Note: ApplicationConnection's constructor is intentionally not exported
-// (@JsIgnore on the Java side) — exporting a member whose body builds the
-// engine pulls a GWT.create rebind into the JsInterop export pass, which the
-// GWT compiler cannot resolve. The instance is therefore created on the GWT
-// side; TypeScript only consumes the exported methods above.
-
-interface FlowInternalExports {
-  JsInteropProbe: JsInteropProbe;
-}
-
-function flowInternalExports(): FlowInternalExports {
-  const internal = (
-    window as unknown as {
-      Vaadin?: { Flow?: { internal?: FlowInternalExports } };
-    }
-  ).Vaadin?.Flow?.internal;
-  if (!internal) {
-    throw new Error(
-      'flow-client JsInterop exports are not available. The FlowClient.js ' +
-        'bundle init() must run before accessing window.Vaadin.Flow.internal.*'
-    );
-  }
-  return internal;
-}
-
-/** Returns the exported `com.vaadin.client.JsInteropProbe`. */
-export function jsInteropProbe(): JsInteropProbe {
-  return flowInternalExports().JsInteropProbe;
 }
