@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
@@ -578,7 +580,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
                     && pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key)) {
+                            platformPinnedDependencies, key, true)) {
                 added++;
             }
             // make sure platform pinned dependency is not cleared
@@ -658,6 +660,13 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     protected static boolean pinPlatformDependency(JsonNode packageJson,
             JsonNode platformPinnedVersions, String pkg) {
+        return pinPlatformDependency(packageJson, platformPinnedVersions, pkg,
+                false);
+    }
+
+    protected static boolean pinPlatformDependency(JsonNode packageJson,
+            JsonNode platformPinnedVersions, String pkg,
+            boolean warnOnRangeMismatch) {
         final FrontendVersion platformPinnedVersion = FrontendUtils
                 .getPackageVersionFromJson(platformPinnedVersions, pkg,
                         "vaadin_dependencies.json");
@@ -696,6 +705,10 @@ public class TaskUpdatePackages extends NodeUpdater {
         if ((vaadinDepsVersion != null && packageJsonVersion != null)
                 && !vaadinDepsVersion.equals(packageJsonVersion)) {
             // The user has overridden the version, use that
+            if (warnOnRangeMismatch) {
+                warnIfOverrideInDifferentRange(pkg, platformPinnedVersion,
+                        packageJsonVersion);
+            }
             return false;
         }
 
@@ -707,6 +720,48 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
         return true;
+    }
+
+    /**
+     * Warns when a user override in {@code package.json} pins a
+     * platform-managed package to a different minor or major version than the
+     * one expected by the current Vaadin version.
+     * <p>
+     * Overriding a package to another maintenance (patch) release of the same
+     * minor is a supported way of picking up a fix early. Overriding to a
+     * different minor or major version is usually a mistake, as the rest of the
+     * platform is built and tested against the expected version, and the
+     * mismatch can lead to runtime errors or broken generated frontend files.
+     *
+     * @param pkg
+     *            the name of the overridden package
+     * @param expectedVersion
+     *            the version expected by the current Vaadin version
+     * @param overrideVersion
+     *            the version the user has set in {@code package.json}
+     */
+    private static void warnIfOverrideInDifferentRange(String pkg,
+            FrontendVersion expectedVersion, FrontendVersion overrideVersion) {
+        if (expectedVersion.getMajorVersion() != overrideVersion
+                .getMajorVersion()
+                || expectedVersion.getMinorVersion() != overrideVersion
+                        .getMinorVersion()) {
+            getLogger().warn(
+                    """
+                            The package '{}' is overridden in package.json to version '{}', \
+                            which is from a different minor/major version than the version '{}' \
+                            expected by Vaadin. Overriding to another maintenance release is \
+                            supported, but using a different minor or major version is usually a \
+                            mistake and may cause runtime errors or a blank page. Remove the \
+                            override from the 'dependencies' block in package.json unless it is \
+                            intentional.""",
+                    pkg, overrideVersion.getFullVersion(),
+                    expectedVersion.getFullVersion());
+        }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(TaskUpdatePackages.class);
     }
 
     /**

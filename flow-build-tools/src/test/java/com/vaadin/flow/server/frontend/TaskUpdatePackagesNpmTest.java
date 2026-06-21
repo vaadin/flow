@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,6 +277,75 @@ class TaskUpdatePackagesNpmTest {
         overrides = getOrCreatePackageJson().get(OVERRIDES);
 
         assertEquals("$@vaadin/aura", overrides.get("@vaadin/aura").asString());
+    }
+
+    @Test
+    void pinPlatformDependency_overrideToDifferentMinor_warningLogged() {
+        // vaadin section has the framework version, top-level dependencies has
+        // a user override to a different minor than the expected platform
+        // version
+        ObjectNode packageJson = packageJsonWithOverride(VAADIN_DIALOG,
+                "25.1.0", "25.2.5");
+        ObjectNode platformPinnedVersions = JacksonUtils.createObjectNode();
+        platformPinnedVersions.put(VAADIN_DIALOG, "25.1.3");
+
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(TaskUpdatePackages.class))
+                    .thenReturn(logger);
+
+            boolean pinned = TaskUpdatePackages.pinPlatformDependency(
+                    packageJson, platformPinnedVersions, VAADIN_DIALOG, true);
+
+            assertFalse(pinned, "User override should be left untouched");
+            Mockito.verify(logger, Mockito.times(1)).warn(Mockito.anyString(),
+                    Mockito.eq(VAADIN_DIALOG), Mockito.eq("25.2.5"),
+                    Mockito.eq("25.1.3"));
+        }
+    }
+
+    @Test
+    void pinPlatformDependency_overrideToDifferentMaintenanceRelease_noWarning() {
+        // override only differs from the expected version in the maintenance
+        // (patch) part, which is supported and should not warn
+        ObjectNode packageJson = packageJsonWithOverride(VAADIN_DIALOG,
+                "25.1.0", "25.1.7");
+        ObjectNode platformPinnedVersions = JacksonUtils.createObjectNode();
+        platformPinnedVersions.put(VAADIN_DIALOG, "25.1.3");
+
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(TaskUpdatePackages.class))
+                    .thenReturn(logger);
+
+            boolean pinned = TaskUpdatePackages.pinPlatformDependency(
+                    packageJson, platformPinnedVersions, VAADIN_DIALOG, true);
+
+            assertFalse(pinned, "User override should be left untouched");
+            Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                    Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+
+    private static ObjectNode packageJsonWithOverride(String pkg,
+            String vaadinVersion, String overrideVersion) {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(pkg, overrideVersion);
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        ObjectNode vaadinDependencies = JacksonUtils.createObjectNode();
+        vaadinDependencies.put(pkg, vaadinVersion);
+        vaadin.set(DEPENDENCIES, vaadinDependencies);
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+
+        return packageJson;
     }
 
     @Test
