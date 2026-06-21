@@ -160,13 +160,7 @@ public class WidgetUtil {
     // JsJsonValue.toJson with indentation set to 4
     private static native String toPrettyJsonJsni(JsonValue value)
     /*-{
-      // skip hashCode field
-      return $wnd.JSON.stringify(value, function(keyName, value) {
-        if (keyName == "$H") {
-          return undefined; // skip hashCode property
-        }
-        return value;
-      }, 4);
+      return $wnd.Vaadin.Flow.internal.WidgetUtil.toPrettyJson(value);
     }-*/;
 
     /**
@@ -323,15 +317,10 @@ public class WidgetUtil {
      *            JsonObject to stringify
      * @return json string of given object
      */
-    public static native String stringify(JsonObject payload) /*-{
-                                                              return JSON.stringify(payload, function(key, value) {
-                                                              if(value instanceof Node){
-                                                              throw "Message JsonObject contained a dom node reference which " +
-                                                              "should not be sent to the server and can cause a cyclic dependecy.";
-                                                              }
-                                                              return value;
-                                                              });
-                                                              }-*/;
+    public static native String stringify(JsonObject payload)
+    /*-{
+        return $wnd.Vaadin.Flow.internal.WidgetUtil.stringify(payload);
+    }-*/;
 
     /**
      * Checks whether the objects are equal either as Java objects (considering

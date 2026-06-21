@@ -12,7 +12,9 @@ import {
   isAbsoluteUrl,
   isTrueish,
   isUndefined,
-  setJsProperty
+  setJsProperty,
+  stringify,
+  toPrettyJson
 } from '../../main/frontend/internal/WidgetUtil';
 
 describe('WidgetUtil', () => {
@@ -83,5 +85,20 @@ describe('WidgetUtil', () => {
   it('createJsonObject has a prototype, createJsonObjectWithoutPrototype does not', () => {
     expect(Object.getPrototypeOf(createJsonObject())).to.equal(Object.prototype);
     expect(Object.getPrototypeOf(createJsonObjectWithoutPrototype())).to.equal(null);
+  });
+
+  it('toPrettyJson indents and skips the $H hashCode field', () => {
+    const pretty = toPrettyJson({ a: 1, $H: 99 });
+    expect(pretty).to.contain('\n');
+    expect(pretty).to.not.contain('$H');
+    expect(JSON.parse(pretty)).to.eql({ a: 1 });
+  });
+
+  it('stringify serializes a plain object', () => {
+    expect(stringify({ a: 1, b: 'x' })).to.equal('{"a":1,"b":"x"}');
+  });
+
+  it('stringify throws when the object contains a DOM node', () => {
+    expect(() => stringify({ node: document.createElement('div') })).to.throw();
   });
 });

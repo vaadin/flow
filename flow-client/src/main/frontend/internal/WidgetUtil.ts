@@ -118,3 +118,26 @@ export function equalsInJS(obj1: unknown, obj2: unknown): boolean {
   // Loose equality is intentional here; that is the contract of this helper.
   return obj1 == obj2;
 }
+
+/**
+ * Converts a value to an indented JSON string, skipping the GWT hashCode field
+ * ($H) that may be present on objects.
+ */
+export function toPrettyJson(value: unknown): string {
+  return JSON.stringify(value, (key, val) => (key === '$H' ? undefined : val), 4);
+}
+
+/**
+ * Serializes a JSON object, throwing if it contains a DOM node reference: such
+ * references must not be sent to the server and can cause cyclic dependencies.
+ */
+export function stringify(payload: object): string {
+  return JSON.stringify(payload, (_key, value) => {
+    if (value instanceof Node) {
+      throw new Error(
+        'Message JsonObject contained a dom node reference which should not be sent to the server and can cause a cyclic dependecy.'
+      );
+    }
+    return value;
+  });
+}
