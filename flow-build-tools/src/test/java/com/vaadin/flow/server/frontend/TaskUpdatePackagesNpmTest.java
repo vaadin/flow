@@ -15,6 +15,22 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,12 +51,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
-import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -49,21 +63,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 @Isolated
 class TaskUpdatePackagesNpmTest {
@@ -276,6 +278,75 @@ class TaskUpdatePackagesNpmTest {
         overrides = getOrCreatePackageJson().get(OVERRIDES);
 
         assertEquals("$@vaadin/aura", overrides.get("@vaadin/aura").asString());
+    }
+
+    @Test
+    void pinPlatformDependency_overrideToDifferentMinor_warningLogged() {
+        // vaadin section has the framework version, top-level dependencies has
+        // a user override to a different minor than the expected platform
+        // version
+        ObjectNode packageJson = packageJsonWithOverride(VAADIN_DIALOG,
+                "25.1.0", "25.2.5");
+        ObjectNode platformPinnedVersions = JacksonUtils.createObjectNode();
+        platformPinnedVersions.put(VAADIN_DIALOG, "25.1.3");
+
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(TaskUpdatePackages.class))
+                    .thenReturn(logger);
+
+            boolean pinned = TaskUpdatePackages.pinPlatformDependency(
+                    packageJson, platformPinnedVersions, VAADIN_DIALOG, true);
+
+            assertFalse(pinned, "User override should be left untouched");
+            Mockito.verify(logger, Mockito.times(1)).warn(Mockito.anyString(),
+                    Mockito.eq(VAADIN_DIALOG), Mockito.eq("25.2.5"),
+                    Mockito.eq("25.1.3"));
+        }
+    }
+
+    @Test
+    void pinPlatformDependency_overrideToDifferentMaintenanceRelease_noWarning() {
+        // override only differs from the expected version in the maintenance
+        // (patch) part, which is supported and should not warn
+        ObjectNode packageJson = packageJsonWithOverride(VAADIN_DIALOG,
+                "25.1.0", "25.1.7");
+        ObjectNode platformPinnedVersions = JacksonUtils.createObjectNode();
+        platformPinnedVersions.put(VAADIN_DIALOG, "25.1.3");
+
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(TaskUpdatePackages.class))
+                    .thenReturn(logger);
+
+            boolean pinned = TaskUpdatePackages.pinPlatformDependency(
+                    packageJson, platformPinnedVersions, VAADIN_DIALOG, true);
+
+            assertFalse(pinned, "User override should be left untouched");
+            Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                    Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+
+    private static ObjectNode packageJsonWithOverride(String pkg,
+            String vaadinVersion, String overrideVersion) {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(pkg, overrideVersion);
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        ObjectNode vaadinDependencies = JacksonUtils.createObjectNode();
+        vaadinDependencies.put(pkg, vaadinVersion);
+        vaadin.set(DEPENDENCIES, vaadinDependencies);
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+
+        return packageJson;
     }
 
     @Test
