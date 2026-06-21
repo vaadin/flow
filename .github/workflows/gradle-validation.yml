@@ -1,0 +1,120 @@
+name: Flow Gradle Validation
+on:
+  push:
+    branches: ['25.2', '25.1', '25.0', '24.10', '24.9']
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are validated too, not only those targeting main.
+    # PRs against a maintenance branch run that branch's own copy of this file.
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  # The merge queue reuses the same branch name (gh-readonly-queue/<base>/pr-<n>-<base sha>)
+  # for every merge group built from the same PR and base commit, so the group has to be keyed
+  # on the merge group's own head sha. Otherwise re-running an obsolete merge queue validation
+  # cancels the run validating the current merge group, which ejects the PR from the queue.
+  group: ${{ github.workflow }}-${{ github.event.merge_group.head_sha || github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _EVENT_NAME: ${{ github.event_name }}
+  # PRs use github.base_ref, pushes use github.ref_name
+  JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+jobs:
+  # Single job that ALWAYS runs so the check always reports a status (it can be
+  # marked as a required check). The expensive build steps are gated on whether
+  # the Gradle plugin or anything it builds on actually changed, so unrelated
+  # PRs pass immediately without doing any work.
+  gradle-tests:
+    timeout-minutes: 120
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+      # GH-native change detection. For pull_request events, use the path
+      # filter; for push / merge_group / manual runs, always build.
+      # The paths cover the plugin itself plus every module whose classes the
+      # plugin sources import: flow-plugin-base, flow-server, flow-build-tools
+      # and flow-polymer2lit. A change in any of them can break the Gradle
+      # plugin without touching the plugin itself.
+      - name: Detect Gradle plugin changes
+        if: github.event_name == 'pull_request'
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            gradle:
+              - 'flow-plugins/**'
+              - 'flow-server/src/main/**'
+              - 'flow-build-tools/src/main/**'
+              - 'flow-polymer2lit/src/main/**'
+              - 'pom.xml'
+              - '.github/workflows/gradle-validation.yml'
+      - name: Decide whether to run
+        id: decide
+        env:
+          _FILTER_RESULT: ${{ steps.filter.outputs.gradle }}
+        run: |
+          run=true
+          if [ "$_EVENT_NAME" = "pull_request" ] && [ "$_FILTER_RESULT" != "true" ]; then
+            echo "No changes affecting the Gradle plugin, skipping."
+            run=false
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: steps.decide.outputs.run == 'true'
+        with:
+          node-version: '24.19.0'
+      - name: Set up JDK
+        if: steps.decide.outputs.run == 'true'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: steps.decide.outputs.run == 'true'
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: steps.decide.outputs.run == 'true'
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - name: Set flow version to temporary snapshot
+        if: steps.decide.outputs.run == 'true'
+        run: |
+          mvn versions:set -DnewVersion=1111.5.0-SNAPSHOT -B -ntp
+      # Build and install Flow so the Gradle plugin can resolve flow-plugin-base
+      # from the local repository. The Gradle plugin itself is built by Gradle,
+      # so exclude it from the Maven reactor.
+      - name: Build and Install Flow
+        if: steps.decide.outputs.run == 'true'
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -U -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 1C -q || eval $cmd
+      - name: Run Gradle build and functionalTests
+        if: steps.decide.outputs.run == 'true'
+        working-directory: flow-plugins/flow-gradle-plugin
+        run: |
+          ./gradlew build --stacktrace --no-daemon -Pvaadin.require.home.node=true
+      - name: Package test reports
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        run: |
+          find flow-plugins/flow-gradle-plugin -path '*/build/reports/tests/*' -o -name 'pom.xml' \
+            | tar -czf gradle-tests-report.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        with:
+          name: gradle-tests-report
+          path: gradle-tests-report.tgz
+          if-no-files-found: ignore
