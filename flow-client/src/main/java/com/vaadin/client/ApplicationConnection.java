@@ -15,6 +15,10 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
@@ -33,14 +37,21 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.json.JsonObject;
 
 /**
  * Main class for an application / UI.
  * <p>
  * Initializes the registry and starts the application.
+ * <p>
+ * The methods that make up the client-side API published on
+ * {@code window.Vaadin.Flow.clients[appId]} are exported to JavaScript via
+ * {@link JsType}, so the publication of that object can be migrated to
+ * TypeScript. See {@code MIGRATION_STRATEGY.md}.
  *
  * @since 1.0
  */
+@JsType(namespace = "Vaadin.Flow.internal", name = "ApplicationConnection")
 public class ApplicationConnection {
 
     private final Registry registry;
@@ -51,6 +62,7 @@ public class ApplicationConnection {
      * @param applicationConfiguration
      *            the configuration object for the application
      */
+    @JsIgnore
     public ApplicationConnection(
             ApplicationConfiguration applicationConfiguration) {
 
@@ -134,10 +146,76 @@ public class ApplicationConnection {
      *
      * @return true if the client has some work to be done, false otherwise
      */
-    private boolean isActive() {
+    public boolean isActive() {
         return !registry.getMessageHandler().isInitialUidlHandled()
                 || registry.getRequestResponseTracker().hasActiveRequest()
                 || isExecutingDeferredCommands();
+    }
+
+    /**
+     * Triggers a server poll.
+     */
+    public void poll() {
+        registry.getPoller().poll();
+    }
+
+    /**
+     * Resolves a Vaadin URI (e.g. one using the {@code context://} or
+     * {@code base://} protocol) to an absolute URL.
+     *
+     * @param uri
+     *            the URI to resolve
+     * @return the resolved URI
+     */
+    public String resolveUri(String uri) {
+        return registry.getURIResolver().resolveVaadinUri(uri);
+    }
+
+    /**
+     * Sends an event message to the server.
+     *
+     * @param nodeId
+     *            the id of the node firing the event
+     * @param eventType
+     *            the type of the event
+     * @param eventData
+     *            the event data, or {@code null} if there is no data
+     */
+    public void sendEventMessage(int nodeId, String eventType,
+            JsonObject eventData) {
+        registry.getServerConnector().sendEventMessage(nodeId, eventType,
+                eventData);
+    }
+
+    /**
+     * Gets the id of the UI this application connection is connected to.
+     *
+     * @return the UI id
+     */
+    public int getUIId() {
+        return registry.getApplicationConfiguration().getUIId();
+    }
+
+    /**
+     * Connects the web component described by the given event data with the
+     * server.
+     *
+     * @param eventData
+     *            the event data describing the web component to connect
+     */
+    public void connectWebComponent(JsonObject eventData) {
+        int nodeId = registry.getStateTree().getRootNode().getId();
+        registry.getServerConnector().sendEventMessage(nodeId,
+                "connect-web-component", eventData);
+    }
+
+    /**
+     * Returns a JSON description of the root node's state tree, for debugging.
+     *
+     * @return the debug JSON of the root node
+     */
+    public JsonObject debug() {
+        return registry.getStateTree().getRootNode().getDebugJson();
     }
 
     /**
@@ -170,23 +248,17 @@ public class ApplicationConnection {
             return ap.@ApplicationConnection::getNodeId(*)(element);
         });
         client.getUIId = $entry(function() {
-            var appConfiguration = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getApplicationConfiguration()();
-            return appConfiguration.@ApplicationConfiguration::getUIId(*)();
+            return ap.@com.vaadin.client.ApplicationConnection::getUIId()();
         });
         client.addDomBindingListener = $entry(function(nodeId, callback) {
             ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
         });
         client.productionMode = productionMode;
         client.poll = $entry(function() {
-                var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
-                poller.@com.vaadin.client.communication.Poller::poll()();
+            ap.@com.vaadin.client.ApplicationConnection::poll()();
         });
         client.connectWebComponent = $entry(function(eventData) {
-            // Connects the web component described by eventData with the server
-            var registry = ap.@ApplicationConnection::registry;
-            var sc = registry.@com.vaadin.client.Registry::getServerConnector()();
-            var nodeId = registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::id;
-            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId, 'connect-web-component', eventData);
+            ap.@com.vaadin.client.ApplicationConnection::connectWebComponent(*)(eventData);
         });
         if (requestTiming) {
            client.getProfilingData = $entry(function() {
@@ -205,19 +277,25 @@ public class ApplicationConnection {
         });
         }
         client.resolveUri = $entry(function(uriToResolve) {
-            var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
-            return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
+            return ap.@com.vaadin.client.ApplicationConnection::resolveUri(*)(uriToResolve);
         });
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
-            var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
-            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
+            ap.@com.vaadin.client.ApplicationConnection::sendEventMessage(*)(nodeId, eventType, eventData);
         });
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 
-    private Node getDomElementByNodeId(int id) {
+    /**
+     * Gets the DOM element bound to the state node with the given id.
+     *
+     * @param id
+     *            the node id
+     * @return the bound DOM element, or {@code null} if none
+     */
+    @JsMethod(name = "getByNodeId")
+    public Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
 
@@ -268,13 +346,30 @@ public class ApplicationConnection {
         return styles;
     }
 
-    private int getNodeId(Element element) {
+    /**
+     * Gets the id of the state node bound to the given DOM element.
+     *
+     * @param element
+     *            the DOM element
+     * @return the node id, or {@code -1} if the element is not bound
+     */
+    public int getNodeId(Element element) {
         StateNode node = registry.getStateTree()
                 .getStateNodeForDomNode(DomApi.wrap(element));
         return node == null ? -1 : node.getId();
     }
 
-    private void addDomSetListener(int nodeId, JavaScriptObject callback) {
+    /**
+     * Registers a callback to be invoked when the DOM node for the state node
+     * with the given id is set.
+     *
+     * @param nodeId
+     *            the node id to observe
+     * @param callback
+     *            the callback to invoke
+     */
+    @JsMethod(name = "addDomBindingListener")
+    public void addDomSetListener(int nodeId, JavaScriptObject callback) {
         registry.getStateTree().getNode(nodeId).addDomNodeSetListener(node -> {
             if (nodeId == node.getId()) {
                 NativeFunction function = NativeFunction.create("callback",
@@ -304,8 +399,7 @@ public class ApplicationConnection {
             return { "flow": servletVersion};
         });
         client.debug = $entry(function() {
-            var registry = ap.@ApplicationConnection::registry;
-            return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
+            return ap.@com.vaadin.client.ApplicationConnection::debug()();
         });
         client.getNodeInfo = $entry(function(nodeId) {
             return {
