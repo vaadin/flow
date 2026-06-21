@@ -63,6 +63,10 @@ export interface ApplicationConnection {
   getUIId(): number;
   connectWebComponent(eventData: object): void;
   debug(): object;
+  getJavaClass(nodeId: number): string | null;
+  isHiddenByServer(nodeId: number): boolean;
+  getElementStyleProperties(nodeId: number): object;
+  getProfilingData(): unknown[];
   start(initialUidl: object | null): void;
 }
 
