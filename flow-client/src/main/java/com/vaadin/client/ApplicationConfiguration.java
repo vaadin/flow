@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
@@ -22,10 +24,15 @@ import com.vaadin.client.bootstrap.ErrorMessage;
  * <p>
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
+ * <p>
+ * Exported to JavaScript via {@link JsType} so that the TypeScript code taking
+ * over application startup can read the configuration. See
+ * {@code MIGRATION_STRATEGY.md}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(namespace = "Vaadin.Flow.internal", name = "ApplicationConfiguration")
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
