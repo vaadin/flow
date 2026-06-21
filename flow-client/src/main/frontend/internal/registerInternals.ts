@@ -30,7 +30,9 @@ import {
   isTrueish,
   isUndefined,
   redirect,
-  setJsProperty
+  setJsProperty,
+  stringify,
+  toPrettyJson
 } from './WidgetUtil';
 
 /**
@@ -60,6 +62,8 @@ export function registerInternals(): void {
     getKeys,
     createJsonObject,
     createJsonObjectWithoutPrototype,
-    equalsInJS
+    equalsInJS,
+    toPrettyJson,
+    stringify
   };
 }
