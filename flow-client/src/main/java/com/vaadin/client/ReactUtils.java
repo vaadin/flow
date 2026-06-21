@@ -42,11 +42,8 @@ public final class ReactUtils {
     public static native void addReadyCallback(Element element, String name,
             Runnable runnable)
     /*-{
-            if(element.addReadyCallback){
-                element.addReadyCallback(name,
-                    $entry(runnable.@java.lang.Runnable::run(*).bind(runnable))
-                );
-            }
+            $wnd.Vaadin.Flow.internal.ReactUtils.addReadyCallback(element, name,
+                $entry(runnable.@java.lang.Runnable::run(*).bind(runnable)));
     }-*/;
 
     /**
