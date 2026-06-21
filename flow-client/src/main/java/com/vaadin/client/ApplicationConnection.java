@@ -219,6 +219,29 @@ public class ApplicationConnection {
     }
 
     /**
+     * Returns profiling data for the last request: last and total processing
+     * time, optional server timing info and the bootstrap time.
+     *
+     * @return the profiling data array
+     */
+    @JsMethod
+    public native JsArray<Object> getProfilingData()
+    /*-{
+        var smh = this.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
+        var pd = [
+            smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
+            smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
+        ];
+        if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
+            pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
+        } else {
+            pd = pd.concat(-1, -1);
+        }
+        pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
+        return pd;
+    }-*/;
+
+    /**
      * Methods published to JavaScript.
      *
      * @param applicationId
@@ -261,20 +284,9 @@ public class ApplicationConnection {
             ap.@com.vaadin.client.ApplicationConnection::connectWebComponent(*)(eventData);
         });
         if (requestTiming) {
-           client.getProfilingData = $entry(function() {
-            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
-            var pd = [
-                smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
-                    smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
-                ];
-            if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
-                pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
-            } else {
-                pd = pd.concat(-1, -1);
-            }
-            pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
-            return pd;
-        });
+            client.getProfilingData = $entry(function() {
+                return ap.@com.vaadin.client.ApplicationConnection::getProfilingData()();
+            });
         }
         client.resolveUri = $entry(function(uriToResolve) {
             return ap.@com.vaadin.client.ApplicationConnection::resolveUri(*)(uriToResolve);
@@ -301,7 +313,16 @@ public class ApplicationConnection {
 
     }
 
-    private String getJavaClass(int id) {
+    /**
+     * Gets the server-side Java class name of the component bound to the state
+     * node with the given id.
+     *
+     * @param id
+     *            the node id
+     * @return the Java class name, or {@code null} if unknown
+     */
+    @JsMethod
+    public String getJavaClass(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null
                 : node.getMap(NodeFeatures.ELEMENT_DATA)
@@ -309,7 +330,16 @@ public class ApplicationConnection {
                         .getValueOrDefault(null);
     }
 
-    private boolean isHiddenByServer(int id) {
+    /**
+     * Checks whether the element bound to the state node with the given id has
+     * been hidden by the server.
+     *
+     * @param id
+     *            the node id
+     * @return {@code true} if hidden by the server
+     */
+    @JsMethod
+    public boolean isHiddenByServer(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         boolean visible = node == null ? true
                 : node.getMap(NodeFeatures.ELEMENT_DATA)
@@ -328,7 +358,16 @@ public class ApplicationConnection {
         }-*/;
     }
 
-    private JavaScriptObject getElementStyleProperties(int id) {
+    /**
+     * Gets the style properties set on the element bound to the state node with
+     * the given id, as a map-like JavaScript object.
+     *
+     * @param id
+     *            the node id
+     * @return the style properties
+     */
+    @JsMethod
+    public JavaScriptObject getElementStyleProperties(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         Styles styles = JavaScriptObject.createObject().cast();
         if (node != null) {
