@@ -19,6 +19,7 @@ import { getElementById, getElementByName, hasTag } from './ElementUtil';
 import { isLitElement, whenRendered } from './LitUtils';
 import { addReadyCallback } from './ReactUtils';
 import * as ConnectionIndicator from './ConnectionIndicator';
+import { checkForTouchDevice, getBrowserString, isIos } from './BrowserInfo';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -54,6 +55,7 @@ export function registerInternals(): void {
   internal.LitUtils = { isLitElement, whenRendered };
   internal.ReactUtils = { addReadyCallback };
   internal.ConnectionIndicator = { ...ConnectionIndicator };
+  internal.BrowserInfo = { getBrowserString, checkForTouchDevice, isIos };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
