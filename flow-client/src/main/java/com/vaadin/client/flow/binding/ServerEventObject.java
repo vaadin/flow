@@ -80,27 +80,8 @@ public final class ServerEventObject extends JavaScriptObject {
 
     private native void initPromiseHandler()
     /*-{
-        var name = @ServerEventObject::PROMISE_CALLBACK_NAME
-        // Use defineProperty to make it non-enumerable
-        Object.defineProperty(this, name, {
-            value: function(promiseId, success, value) {
-                var promise = this[name].promises[promiseId];
-    
-                // undefined if client-side node was recreated after execution was scheduled
-                if (promise !== undefined) {
-                    delete this[name].promises[promiseId];
-    
-                    if (success) {
-                        // Resolve
-                        promise[0](value);
-                    } else {
-                        // Reject
-                        promise[1](Error("Something went wrong. Check server-side logs for more information."));
-                    }
-                }
-            }
-        });
-        this[name].promises = [];
+        $wnd.Vaadin.Flow.internal.ServerEventObject.initPromiseHandler(this,
+            @ServerEventObject::PROMISE_CALLBACK_NAME);
     }-*/;
 
     /**
@@ -236,14 +217,7 @@ public final class ServerEventObject extends JavaScriptObject {
     private native JsonObject getPolymerPropertyObject(Node node,
             String propertyName)
     /*-{
-        if (typeof(node.get) === 'function') {
-            var polymerProperty = node.get(propertyName);
-            if (typeof(polymerProperty) === 'object'
-                && typeof(polymerProperty["nodeId"]) !== 'undefined') {
-                return { nodeId: polymerProperty["nodeId"] };
-            }
-        }
-        return null;
+        return $wnd.Vaadin.Flow.internal.ServerEventObject.getPolymerPropertyObject(node, propertyName);
     }-*/;
 
     /**
@@ -254,7 +228,7 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     public native void removeMethod(String methodName)
     /*-{
-       delete this[methodName];
+       $wnd.Vaadin.Flow.internal.ServerEventObject.removeMethod(this, methodName);
     }-*/;
 
     /**
@@ -264,7 +238,7 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     public native JsArray<String> getMethods()
     /*-{
-       return Object.keys(this);
+       return $wnd.Vaadin.Flow.internal.ServerEventObject.getMethods(this);
     }-*/;
 
     /**
@@ -319,12 +293,8 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     public native void rejectPromises()
     /*-{
-        var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
-        if (promises !== undefined ) {
-            promises.forEach(function (item) {
-                item[1](Error("Client is resynchronizing"));
-            });
-        }
+        $wnd.Vaadin.Flow.internal.ServerEventObject.rejectPromises(this,
+            @ServerEventObject::PROMISE_CALLBACK_NAME);
     }-*/;
 
 }

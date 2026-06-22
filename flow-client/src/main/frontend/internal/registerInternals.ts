@@ -59,6 +59,13 @@ import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './St
 import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import {
+  getMethods,
+  getPolymerPropertyObject,
+  initPromiseHandler,
+  rejectPromises,
+  removeMethod
+} from './ServerEventObject';
+import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
   deleteJsProperty,
@@ -132,6 +139,13 @@ export function registerInternals(): void {
   internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
+  internal.ServerEventObject = {
+    initPromiseHandler,
+    removeMethod,
+    getMethods,
+    rejectPromises,
+    getPolymerPropertyObject
+  };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
