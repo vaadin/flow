@@ -740,17 +740,17 @@ public class AtmospherePushConnection implements PushConnection {
 
     private native void doPush(JavaScriptObject socket, String message)
     /*-{
-       socket.push(message);
+       $wnd.Vaadin.Flow.internal.AtmospherePushConnection.doPush(socket, message);
     }-*/;
 
     private static native void doDisconnect(String url)
     /*-{
-       $wnd.vaadinPush.atmosphere.unsubscribeUrl(url);
+       $wnd.Vaadin.Flow.internal.AtmospherePushConnection.doDisconnect(url);
     }-*/;
 
     private static native boolean isAtmosphereLoaded()
     /*-{
-        return $wnd.vaadinPush && $wnd.vaadinPush.atmosphere;
+        return $wnd.Vaadin.Flow.internal.AtmospherePushConnection.isAtmosphereLoaded();
     }-*/;
 
     private void runWhenAtmosphereLoaded(final Command command) {
