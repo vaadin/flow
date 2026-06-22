@@ -752,9 +752,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                             which is from a different minor/major version than the version '{}' \
                             expected by Vaadin. Overriding to another maintenance release is \
                             supported, but using a different minor or major version is usually a \
-                            mistake and may cause runtime errors or a blank page. Remove the \
-                            override from the 'dependencies' block in package.json unless it is \
-                            intentional.""",
+                            mistake and may cause runtime errors or a blank page. Unless the \
+                            override is intentional, remove it from the 'dependencies' block in \
+                            package.json or run 'mvn vaadin:clean-frontend' to reset the \
+                            frontend to a clean state.""",
                     pkg, overrideVersion.getFullVersion(),
                     expectedVersion.getFullVersion());
         }
