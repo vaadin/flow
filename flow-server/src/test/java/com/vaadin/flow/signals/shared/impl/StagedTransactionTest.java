@@ -628,7 +628,7 @@ class StagedTransactionTest extends SignalTestBase {
                         TestUtil.readTransactionRootValue(d1);
                     });
             assertTrue(String.valueOf(exception.getMessage()).contains(
-                    "shared signal cannot be updated in the same transaction"),
+                    "shared signal cannot be read or updated in the same transaction"),
                     "Message should explain the shared signal restriction: "
                             + exception.getMessage());
         });

@@ -323,8 +323,8 @@ public class StagedTransaction extends Transaction {
             if (openTreeTypes()
                     .anyMatch(SignalTree.Type.ASYNCHRONOUS::equals)) {
                 throw new IllegalStateException(
-                        "A shared signal cannot be updated in the same transaction as this signal. "
-                                + "Update the shared signal in its own transaction.");
+                        "A shared signal cannot be read or updated in the same transaction as this synchronous signal. "
+                                + "Use a separate transaction for the shared signal.");
             }
         }
     }
