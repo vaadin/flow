@@ -608,7 +608,7 @@ class StagedTransactionTest extends SignalTestBase {
                         TestUtil.readTransactionRootValue(a2);
                     });
             assertTrue(String.valueOf(exception.getMessage()).contains(
-                    "Cannot update multiple independent shared signals"),
+                    "Cannot read or update multiple independent shared signals"),
                     "Message should explain the shared signal restriction: "
                             + exception.getMessage());
         });
@@ -642,7 +642,7 @@ class StagedTransactionTest extends SignalTestBase {
                         TestUtil.readTransactionRootValue(a1);
                     });
             assertTrue(String.valueOf(exception.getMessage()).contains(
-                    "Cannot update multiple independent shared signals"),
+                    "Cannot read or update multiple independent shared signals"),
                     "Message should explain the shared signal restriction: "
                             + exception.getMessage());
         });
