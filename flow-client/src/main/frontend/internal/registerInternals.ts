@@ -32,6 +32,13 @@ import {
   supportsHtmlWhenReady
 } from './ResourceLoader';
 import {
+  calculateBootstrapTime,
+  callAfterServerUpdates,
+  getFetchStartTime,
+  parseJSONResponse,
+  removeStylesheetByIdFromDom
+} from './MessageHandler';
+import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
   deleteJsProperty,
@@ -77,6 +84,13 @@ export function registerInternals(): void {
     addOnloadHandler,
     getStyleSheetLength,
     runPromiseExpression
+  };
+  internal.MessageHandler = {
+    removeStylesheetByIdFromDom,
+    callAfterServerUpdates,
+    calculateBootstrapTime,
+    parseJSONResponse,
+    getFetchStartTime
   };
   internal.WidgetUtil = {
     redirect,
