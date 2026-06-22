@@ -23,6 +23,7 @@ import { checkForTouchDevice, getBrowserString, isIos } from './BrowserInfo';
 import { resendRequest } from './XhrConnection';
 import { isPropertyDefined } from './ExecuteJavaScriptElementUtils';
 import { getShadowRootElement, recreateNodes, showPopover } from './SystemErrorHandler';
+import { applyCaptures, createReturnChannelCallback } from './ClientJsonCodec';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -62,6 +63,7 @@ export function registerInternals(): void {
   internal.XhrConnection = { resendRequest };
   internal.ExecuteJavaScriptElementUtils = { isPropertyDefined };
   internal.SystemErrorHandler = { recreateNodes, showPopover, getShadowRootElement };
+  internal.ClientJsonCodec = { createReturnChannelCallback, applyCaptures };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
