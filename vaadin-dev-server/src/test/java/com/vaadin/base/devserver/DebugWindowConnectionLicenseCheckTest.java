@@ -272,13 +272,15 @@ class DebugWindowConnectionLicenseCheckTest {
 
     private DebugWindowMessage doDownloadKey(boolean success,
             AtomicReference<Runnable> callbackHolder) {
-        return sendAndReceive(downloadCommand(300),
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        command.putPOJO("data", TEST_PRODUCT);
+        return sendAndReceive(command,
                 licenseChecker -> licenseChecker.when(() -> LicenseChecker
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class), any(),
-                                Mockito.anyInt()))
+                                any(LicenseChecker.Callback.class)))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);

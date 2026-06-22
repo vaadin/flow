@@ -379,14 +379,20 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 product);
 
         // The browser is opened so the user can sign in and download the
-        // license; the timeout (in seconds) sets how long the checker waits
-        // for that to complete. The dev tools client decides the value, using
-        // a longer timeout than the license-checker default because first-time
-        // users may still need to register an account.
-        int timeout = data.get("timeout").intValue();
-        LicenseChecker.checkLicenseAsync(product.getName(),
-                product.getVersion(), BuildType.DEVELOPMENT, callback,
-                DebugWindowConnection::openSystemBrowser, timeout);
+        // license; the timeout (in seconds) sets how long the checker waits for
+        // that to complete. The dev tools client may supply a custom timeout
+        // for flows where the user needs more time; otherwise the license
+        // checker's own default applies.
+        JsonNode timeoutNode = data.get("timeout");
+        if (timeoutNode != null && timeoutNode.isIntegralNumber()) {
+            LicenseChecker.checkLicenseAsync(product.getName(),
+                    product.getVersion(), BuildType.DEVELOPMENT, callback,
+                    DebugWindowConnection::openSystemBrowser,
+                    timeoutNode.intValue());
+        } else {
+            LicenseChecker.checkLicenseAsync(product.getName(),
+                    product.getVersion(), BuildType.DEVELOPMENT, callback);
+        }
         send(resource, "license-download-started", product);
     }
 

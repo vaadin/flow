@@ -1,13 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import {
-  defaultLicenseDownloadTimeout,
-  DownloadLicenseOptions,
-  handleLicenseMessage,
-  licenseCheckOk,
-  licenseInit,
-  Product
-} from './License';
+import { DownloadLicenseOptions, handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
@@ -869,8 +862,7 @@ export class VaadinDevTools extends LitElement {
 
   downloadLicense(productInfo: Product, options?: DownloadLicenseOptions) {
     if (this.frontendConnection) {
-      const timeout = options?.timeout ?? defaultLicenseDownloadTimeout;
-      this.frontendConnection.send('downloadLicense', { ...productInfo, timeout });
+      this.frontendConnection.send('downloadLicense', { ...productInfo, ...options });
     } else {
       updateLicenseDownloadStatus('failed', this.bodyShadowRoot);
     }
