@@ -383,6 +383,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         // that to complete. The dev tools client may supply a custom timeout
         // for flows where the user needs more time; otherwise the license
         // checker's own default applies.
+        //
+        // The two calls and the explicit openSystemBrowser handler are only
+        // needed because LicenseChecker has no checkLicenseAsync overload that
+        // takes just a timeout: every timeout-bearing overload also requires a
+        // url handler, and the checker's own default handler is not accessible
+        // here. Once such an overload exists this can collapse into a single
+        // call without opening the browser from this class.
         JsonNode timeoutNode = data.get("timeout");
         if (timeoutNode != null && timeoutNode.isIntegralNumber()) {
             LicenseChecker.checkLicenseAsync(product.getName(),
