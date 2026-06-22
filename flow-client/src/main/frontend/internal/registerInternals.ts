@@ -57,6 +57,7 @@ import { doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './Atmospher
 import { getContextExecutionObject } from './ExecuteJavaScriptProcessor';
 import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './StorageUtil';
 import { sendBeacon } from './MessageSender';
+import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -130,6 +131,7 @@ export function registerInternals(): void {
   internal.ExecuteJavaScriptProcessor = { getContextExecutionObject };
   internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
   internal.MessageSender = { sendBeacon };
+  internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
