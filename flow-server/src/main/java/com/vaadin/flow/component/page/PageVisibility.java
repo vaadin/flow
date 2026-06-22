@@ -16,13 +16,25 @@
 package com.vaadin.flow.component.page;
 
 /**
- * Represents the visibility state of a browser page.
+ * The visibility state of the browser page, as reported by
+ * {@link Page#pageVisibilitySignal()}.
  * <p>
- * Uses the browser's Page Visibility API ({@code document.hidden}) combined
- * with {@code document.hasFocus()} to distinguish between three observable
- * states — fully visible and focused, visible but not focused, and hidden —
- * plus an {@link #UNKNOWN} sentinel used before the first value has arrived
- * from the client.
+ * Distinguishes three observable states — the page is visible and focused
+ * ({@link #VISIBLE}), visible but not focused ({@link #VISIBLE_NOT_FOCUSED}),
+ * and hidden ({@link #HIDDEN}) — plus an {@link #UNKNOWN} sentinel used before
+ * the browser has reported its first value. Use it to pause work the user
+ * cannot see, such as polling or animations:
+ *
+ * <pre>{@code
+ * Page page = UI.getCurrent().getPage();
+ * Signal.effect(this, () -> {
+ *     if (page.pageVisibilitySignal().get() == PageVisibility.HIDDEN) {
+ *         pausePolling();
+ *     } else {
+ *         resumePolling();
+ *     }
+ * });
+ * }</pre>
  *
  * @see Page#pageVisibilitySignal()
  * @since 25.2
@@ -30,37 +42,30 @@ package com.vaadin.flow.component.page;
 public enum PageVisibility {
 
     /**
-     * No value has been reported by the browser yet. Used only as the initial
-     * value of the signal before the first client handshake delivers the real
-     * one. In normal request handling the signal is seeded before any user code
-     * (UI initialization, {@code UIInitListener}, component attach) runs, so
-     * this value is essentially never observed in practice; once a real value
-     * has arrived, the signal never returns to {@code UNKNOWN}.
+     * The browser has not reported a value yet. This is only the signal's
+     * initial value before the first client round-trip completes; in practice a
+     * real value is in place before any application code runs, and the signal
+     * never returns to {@code UNKNOWN} once it has a real value. Treat it as
+     * "not known yet" if you ever observe it.
      */
     UNKNOWN,
 
     /**
-     * The page is visible and focused.
-     * <p>
-     * In the browser, this means {@code !document.hidden} and
-     * {@code document.hasFocus()} is {@code true}.
+     * The page is visible and currently has focus — the user is looking at this
+     * tab and it is the active window.
      */
     VISIBLE,
 
     /**
-     * The page is visible but not focused, e.g. behind another window.
-     * <p>
-     * In the browser, this means {@code !document.hidden} and
-     * {@code document.hasFocus()} is {@code false}.
+     * The page is visible but does not have focus, for example when it sits
+     * behind another window or the user is interacting with a different
+     * application.
      */
     VISIBLE_NOT_FOCUSED,
 
     /**
-     * The page is not visible, e.g. the browser tab is in the background or the
-     * window is minimized.
-     * <p>
-     * In the browser, this is indicated by {@code document.hidden} being
-     * {@code true}.
+     * The page is not visible, for example when its browser tab is in the
+     * background or the window is minimized.
      */
     HIDDEN
 }

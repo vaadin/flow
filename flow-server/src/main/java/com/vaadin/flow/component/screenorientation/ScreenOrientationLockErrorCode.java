@@ -48,10 +48,9 @@ public enum ScreenOrientationLockErrorCode {
     ABORT,
 
     /**
-     * The browser rejected the request for a reason that does not match a more
-     * specific code, or the executeJs round-trip itself failed.
-     * {@link ScreenOrientationLockError#debugInfo()} holds the underlying
-     * browser message for diagnostics.
+     * The request failed for a reason that does not match a more specific code.
+     * See {@link ScreenOrientationLockError#debugInfo()} for the underlying
+     * browser message.
      */
     UNKNOWN;
 }
