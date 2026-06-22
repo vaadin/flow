@@ -19,13 +19,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Fluent surface returned from {@link Fullscreen#onClick}. Each {@code enter}
@@ -100,7 +98,10 @@ public final class FullscreenBinding implements Serializable {
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        bindWhenAttached(component,
+        // Defer wiring until the target attaches so RequestFullscreenAction can
+        // resolve the UI's wrapper element and see the target's install-time
+        // visibility; the trigger counts as armed straight away.
+        trigger.triggers(component,
                 () -> new RequestFullscreenAction(component));
     }
 
@@ -119,19 +120,8 @@ public final class FullscreenBinding implements Serializable {
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        bindWhenAttached(component, () -> new RequestFullscreenAction(component,
+        trigger.triggers(component, () -> new RequestFullscreenAction(component,
                 onSuccess, onError));
-    }
-
-    private void bindWhenAttached(Component component,
-            SerializableSupplier<Action> action) {
-        // Defer wiring until attach so the action's wrapper-element lookup
-        // (target.getUI().getInternals().getWrapperElement()) has a UI to
-        // resolve against, and so that RequestFullscreenAction's visibility
-        // check sees the same visibility state as the install JS would. The
-        // trigger counts as armed straight away, so the deferral is not flagged
-        // as a forgotten action.
-        trigger.triggers(component, action);
     }
 
     private void bind(RequestFullscreenAction action) {
