@@ -161,10 +161,10 @@ public class ClientJsonCodec {
     private static native NativeFunction createReturnChannelCallback(int nodeId,
             int channelId, ServerConnector serverConnector)
     /*-{
-        return $entry(function() {
-          var args = Array.prototype.slice.call(arguments);
-          serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
-        });
+        return $wnd.Vaadin.Flow.internal.ClientJsonCodec.createReturnChannelCallback(
+            $entry(function(args) {
+                serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
+            }));
     }-*/;
 
     private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,
@@ -224,16 +224,7 @@ public class ClientJsonCodec {
     private static native Object applyCaptures(NativeFunction fn,
             JsArray<Object> captures)
     /*-{
-        return function() {
-            var args = new Array(captures.length + arguments.length);
-            for (var i = 0; i < captures.length; i++) {
-                args[i] = captures[i];
-            }
-            for (var j = 0; j < arguments.length; j++) {
-                args[captures.length + j] = arguments[j];
-            }
-            return fn.apply(this, args);
-        };
+        return $wnd.Vaadin.Flow.internal.ClientJsonCodec.applyCaptures(fn, captures);
     }-*/;
 
     /**
