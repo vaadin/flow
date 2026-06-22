@@ -61,12 +61,6 @@ import com.vaadin.pro.licensechecker.Product;
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 
-    /**
-     * Default time, in seconds, the license checker waits for the user to sign
-     * in and download a license when triggered from the dev tools.
-     */
-    private static final int DEFAULT_LICENSE_DOWNLOAD_TIMEOUT_SECONDS = 300;
-
     private final ClassLoader classLoader;
     private VaadinContext context;
 
@@ -385,14 +379,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 product);
 
         // The browser is opened so the user can sign in and download the
-        // license; the timeout sets how long the checker waits for that to
-        // complete. A generous default is used because the license-checker
-        // default is too short for first-time users who still need to register
-        // an account, and it can be overridden by the client when needed.
-        JsonNode timeoutNode = data.get("timeout");
-        int timeout = timeoutNode != null && timeoutNode.isIntegralNumber()
-                ? timeoutNode.intValue()
-                : DEFAULT_LICENSE_DOWNLOAD_TIMEOUT_SECONDS;
+        // license; the timeout (in seconds) sets how long the checker waits
+        // for that to complete. The dev tools client decides the value, using
+        // a longer timeout than the license-checker default because first-time
+        // users may still need to register an account.
+        int timeout = data.get("timeout").intValue();
         LicenseChecker.checkLicenseAsync(product.getName(),
                 product.getVersion(), BuildType.DEVELOPMENT, callback,
                 DebugWindowConnection::openSystemBrowser, timeout);

@@ -3,14 +3,20 @@ import { preTrialStartFailed, showPreTrialSplashScreen, updateLicenseDownloadSta
 
 const noLicenseFallbackTimeout = 1000;
 
+// How long, in seconds, the license checker waits for the user to sign in and
+// download the license before giving up. Longer than the license-checker
+// default of 60 seconds because first-time users may still need to register an
+// account.
+export const defaultLicenseDownloadTimeout = 300;
+
 export interface Product {
   name: string;
   version: string;
 }
 
 export interface DownloadLicenseOptions {
-  // How long, in seconds, the license checker waits for the user to sign in
-  // and download the license before giving up.
+  // Overrides how long, in seconds, the license checker waits for the user to
+  // sign in and download the license before giving up.
   timeout?: number;
 }
 

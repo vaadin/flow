@@ -185,15 +185,21 @@ class DebugWindowConnectionLicenseCheckTest {
     }
 
     @Test
-    void downloadLicenseKey_noTimeout_usesGenerousDefault() {
-        AtomicInteger usedTimeout = downloadKeyAndCaptureTimeout(null);
-        // Longer than the license-checker default of 60 seconds.
-        assertEquals(300, usedTimeout.get());
-    }
+    void downloadLicenseKey_timeoutFromClient_passedToChecker() {
+        AtomicInteger usedTimeout = new AtomicInteger();
+        DebugWindowMessage message = sendAndReceive(downloadCommand(600),
+                licenseChecker -> licenseChecker.when(() -> LicenseChecker
+                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class), any(),
+                                Mockito.anyInt()))
+                        .then(i -> {
+                            usedTimeout.set(i.getArgument(5, Integer.class));
+                            return null;
+                        }));
 
-    @Test
-    void downloadLicenseKey_timeoutProvided_overridesDefault() {
-        AtomicInteger usedTimeout = downloadKeyAndCaptureTimeout(600);
+        assertEquals("license-download-started", message.getCommand());
         assertEquals(600, usedTimeout.get());
     }
 
@@ -201,11 +207,8 @@ class DebugWindowConnectionLicenseCheckTest {
     @SuppressWarnings("unchecked")
     void downloadLicenseKey_urlHandlerOpensSystemBrowser() {
         AtomicReference<Consumer<String>> urlHandlerHolder = new AtomicReference<>();
-        ObjectNode command = OBJECT_MAPPER.createObjectNode();
-        command.put("command", "downloadLicense");
-        command.putPOJO("data", TEST_PRODUCT);
 
-        sendAndReceive(command,
+        sendAndReceive(downloadCommand(300),
                 licenseChecker -> licenseChecker.when(() -> LicenseChecker
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
@@ -225,31 +228,14 @@ class DebugWindowConnectionLicenseCheckTest {
         }
     }
 
-    private AtomicInteger downloadKeyAndCaptureTimeout(Integer timeout) {
-        AtomicInteger usedTimeout = new AtomicInteger();
+    private static ObjectNode downloadCommand(int timeout) {
         ObjectNode command = OBJECT_MAPPER.createObjectNode();
         command.put("command", "downloadLicense");
         ObjectNode data = command.putObject("data");
         data.put("name", TEST_PRODUCT.getName());
         data.put("version", TEST_PRODUCT.getVersion());
-        if (timeout != null) {
-            data.put("timeout", timeout);
-        }
-
-        DebugWindowMessage message = sendAndReceive(command,
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
-                                eq(TEST_PRODUCT.getVersion()),
-                                eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class), any(),
-                                Mockito.anyInt()))
-                        .then(i -> {
-                            usedTimeout.set(i.getArgument(5, Integer.class));
-                            return null;
-                        }));
-
-        assertEquals("license-download-started", message.getCommand());
-        return usedTimeout;
+        data.put("timeout", timeout);
+        return command;
     }
 
     private enum LicenseCheckResult {
@@ -286,10 +272,7 @@ class DebugWindowConnectionLicenseCheckTest {
 
     private DebugWindowMessage doDownloadKey(boolean success,
             AtomicReference<Runnable> callbackHolder) {
-        ObjectNode command = OBJECT_MAPPER.createObjectNode();
-        command.put("command", "downloadLicense");
-        command.putPOJO("data", TEST_PRODUCT);
-        return sendAndReceive(command,
+        return sendAndReceive(downloadCommand(300),
                 licenseChecker -> licenseChecker.when(() -> LicenseChecker
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
