@@ -155,7 +155,7 @@ public class SharedListSignal<T extends @Nullable Object>
         }
     }
 
-    private final Class<T> elementType;
+    private final Class<@NonNull T> elementType;
 
     /**
      * Creates a new list signal with the given element type. The signal does
@@ -164,7 +164,7 @@ public class SharedListSignal<T extends @Nullable Object>
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public SharedListSignal(Class<T> elementType) {
+    public SharedListSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -186,7 +186,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the element type, not <code>null</code>
      */
     protected SharedListSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+            CommandValidator validator, Class<@NonNull T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
