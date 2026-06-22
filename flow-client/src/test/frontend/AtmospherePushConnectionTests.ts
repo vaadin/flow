@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import {
+  createConfig,
   doConnect,
   doDisconnect,
   doPush,
@@ -89,5 +90,13 @@ describe('AtmospherePushConnection', () => {
     // The sync-id header is a supplier read on every request.
     const headers = config.headers as Record<string, () => unknown>;
     expect(headers['X-Vaadin-LastSeenServerSyncId']()).to.equal(42);
+  });
+
+  it('createConfig builds the default config with the given message delimiter', () => {
+    const config = createConfig('|'.charCodeAt(0));
+    expect(config.transport).to.equal('websocket');
+    expect(config.fallbackTransport).to.equal('long-polling');
+    expect(config.trackMessageLength).to.be.true;
+    expect(config.messageDelimiter).to.equal('|');
   });
 });
