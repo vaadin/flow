@@ -32,7 +32,7 @@ public class StorageUtil {
      */
     public static native String getLocalItem(String key)
     /*-{
-        return window.localStorage.getItem(key);
+        return $wnd.Vaadin.Flow.internal.StorageUtil.getLocalItem(key);
     }-*/;
 
     /**
@@ -45,7 +45,7 @@ public class StorageUtil {
      */
     public static native void setLocalItem(String key, String value)
     /*-{
-        window.localStorage.setItem(key, value);
+        $wnd.Vaadin.Flow.internal.StorageUtil.setLocalItem(key, value);
     }-*/;
 
     /**
@@ -57,7 +57,7 @@ public class StorageUtil {
      */
     public static native String getSessionItem(String key)
     /*-{
-        return window.sessionStorage.getItem(key);
+        return $wnd.Vaadin.Flow.internal.StorageUtil.getSessionItem(key);
     }-*/;
 
     /**
@@ -70,6 +70,6 @@ public class StorageUtil {
      */
     public static native void setSessionItem(String key, String value)
     /*-{
-        window.sessionStorage.setItem(key, value);
+        $wnd.Vaadin.Flow.internal.StorageUtil.setSessionItem(key, value);
     }-*/;
 }
