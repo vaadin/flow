@@ -14,10 +14,18 @@
  * the License.
  */
 
-// DOM/Polymer probes migrated from PolymerUtils.java, registered on
-// window.Vaadin.Flow.internal.PolymerUtils by registerInternals; the Java
-// methods delegate here. The StateNode-coupled model-data methods stay in Java
-// for now. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// DOM/Polymer probes and model-data writers migrated from PolymerUtils.java,
+// registered on window.Vaadin.Flow.internal.PolymerUtils by registerInternals;
+// the Java methods delegate here. The StateNode-coupled model-tree building
+// (createModelTree and the change handlers) stays in Java. Also bundled to ES5
+// for the HtmlUnit used by GwtTests.
+
+// A node exposing the Polymer model-data API (set/get/splice).
+interface PolymerModelNode {
+  set(path: string, value: unknown): void;
+  get?(path: string): unknown;
+  splice(...args: unknown[]): unknown;
+}
 
 /** Whether the element is a Polymer 2 or Polymer 3 element. */
 export function isPolymerElement(htmlNode: Element): boolean {
@@ -76,4 +84,41 @@ export function getElementInShadowRootById(shadowRoot: ShadowRoot, id: string): 
 /** Runs the callback once a custom element with the given tag name is defined. */
 export function invokeWhenDefined(tagName: string, callback: () => void): void {
   void window.customElements.whenDefined(tagName).then(callback);
+}
+
+/** Sets a single list element via the Polymer set method (path + "." + index). */
+export function setListValueByIndex(htmlNode: Element, path: string, listIndex: number, newValue: unknown): void {
+  (htmlNode as unknown as PolymerModelNode).set(`${path}.${listIndex}`, newValue);
+}
+
+/**
+ * Calls the Polymer splice method via apply so that itemsToAdd is spread into
+ * separate arguments rather than passed as a single array.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- positional JSNI delegation mirrors the Java signature
+export function splice(
+  htmlNode: Element,
+  path: string,
+  startIndex: number,
+  deleteCount: number,
+  itemsToAdd: unknown[]
+): void {
+  const node = htmlNode as unknown as PolymerModelNode;
+  node.splice.apply(node, ([path, startIndex, deleteCount] as unknown[]).concat(itemsToAdd));
+}
+
+/** Stores the StateNode id under the 'nodeId' key of the Polymer model object at path. */
+export function storeNodeId(domNode: Node, id: number, path: string): void {
+  const node = domNode as unknown as PolymerModelNode;
+  if (typeof node.get !== 'undefined') {
+    const polymerProperty = node.get!(path) as Record<string, unknown> | null;
+    if (typeof polymerProperty === 'object' && polymerProperty !== null && polymerProperty.nodeId === undefined) {
+      polymerProperty.nodeId = id;
+    }
+  }
+}
+
+/** Sets a property on an element via the Polymer set method. */
+export function setProperty(element: Element, path: string, value: unknown): void {
+  (element as unknown as PolymerModelNode).set(path, value);
 }

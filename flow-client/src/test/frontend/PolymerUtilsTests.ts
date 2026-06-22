@@ -8,7 +8,11 @@ import {
   isPolymerElement,
   isReady,
   mayBePolymerElement,
-  searchForElementInShadowRoot
+  searchForElementInShadowRoot,
+  setListValueByIndex,
+  setProperty,
+  splice,
+  storeNodeId
 } from '../../main/frontend/internal/PolymerUtils';
 
 describe('PolymerUtils', () => {
@@ -71,5 +75,45 @@ describe('PolymerUtils', () => {
     await new Promise<void>((resolve) => {
       invokeWhenDefined(tag, resolve);
     });
+  });
+
+  it('setListValueByIndex sets path + index via the Polymer set method', () => {
+    const calls: Array<[string, unknown]> = [];
+    const node = { set: (path: string, value: unknown) => calls.push([path, value]) } as unknown as Element;
+    setListValueByIndex(node, 'items', 2, 'v');
+    expect(calls).to.deep.equal([['items.2', 'v']]);
+  });
+
+  it('splice spreads itemsToAdd into separate splice arguments', () => {
+    let received: unknown[] = [];
+    const node = {
+      splice(...args: unknown[]) {
+        received = args;
+      }
+    } as unknown as Element;
+    splice(node, 'items', 1, 2, ['a', 'b']);
+    expect(received).to.deep.equal(['items', 1, 2, 'a', 'b']);
+  });
+
+  it('storeNodeId writes nodeId only into a model object missing it', () => {
+    const model: Record<string, unknown> = {};
+    const node = { get: () => model } as unknown as Node;
+    storeNodeId(node, 7, 'path');
+    expect(model.nodeId).to.equal(7);
+
+    const existing: Record<string, unknown> = { nodeId: 99 };
+    const node2 = { get: () => existing } as unknown as Node;
+    storeNodeId(node2, 7, 'path');
+    expect(existing.nodeId).to.equal(99);
+
+    // A node without a get method is left untouched (no throw).
+    storeNodeId({} as unknown as Node, 7, 'path');
+  });
+
+  it('setProperty sets the property via the Polymer set method', () => {
+    const calls: Array<[string, unknown]> = [];
+    const el = { set: (path: string, value: unknown) => calls.push([path, value]) } as unknown as Element;
+    setProperty(el, 'a.b', 42);
+    expect(calls).to.deep.equal([['a.b', 42]]);
   });
 });

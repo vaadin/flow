@@ -73,7 +73,7 @@ public final class PolymerUtils {
     public static native void setListValueByIndex(Element htmlNode, String path,
             int listIndex, JsonValue newValue)
     /*-{
-        htmlNode.set(path + "." + listIndex, newValue);
+        $wnd.Vaadin.Flow.internal.PolymerUtils.setListValueByIndex(htmlNode, path, listIndex, newValue);
     }-*/;
 
     /**
@@ -100,7 +100,7 @@ public final class PolymerUtils {
     public static native void splice(Element htmlNode, String path,
             int startIndex, int deleteCount, JsonArray itemsToAdd)
     /*-{
-        htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(itemsToAdd));
+        $wnd.Vaadin.Flow.internal.PolymerUtils.splice(htmlNode, path, startIndex, deleteCount, itemsToAdd);
     }-*/;
 
     /**
@@ -115,13 +115,7 @@ public final class PolymerUtils {
      */
     public static native void storeNodeId(Node domNode, int id, String path)
     /*-{
-        if (typeof(domNode.get) !== 'undefined') {
-            var polymerProperty = domNode.get(path);
-            if (typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined) {
-                polymerProperty["nodeId"] = id;
-            }
-        }
+        $wnd.Vaadin.Flow.internal.PolymerUtils.storeNodeId(domNode, id, path);
     }-*/;
 
     /**
@@ -641,7 +635,7 @@ public final class PolymerUtils {
     public static native void setProperty(Element element, String path,
             Object value)
     /*-{
-         element.set(path, value);
+         $wnd.Vaadin.Flow.internal.PolymerUtils.setProperty(element, path, value);
      }-*/;
 
     /**
