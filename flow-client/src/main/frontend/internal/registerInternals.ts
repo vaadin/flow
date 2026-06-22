@@ -53,7 +53,7 @@ import {
   splice,
   storeNodeId
 } from './PolymerUtils';
-import { doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
+import { createConfig, doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import { getContextExecutionObject } from './ExecuteJavaScriptProcessor';
 import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './StorageUtil';
 import { sendBeacon } from './MessageSender';
@@ -127,7 +127,7 @@ export function registerInternals(): void {
     storeNodeId,
     setProperty
   };
-  internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect, doConnect };
+  internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect, doConnect, createConfig };
   internal.ExecuteJavaScriptProcessor = { getContextExecutionObject };
   internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
   internal.MessageSender = { sendBeacon };

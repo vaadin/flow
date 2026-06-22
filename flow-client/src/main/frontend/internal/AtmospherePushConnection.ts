@@ -50,6 +50,30 @@ export function isAtmosphereLoaded(): boolean {
   return !!atmosphere();
 }
 
+/**
+ * Builds the default Atmosphere configuration. The message delimiter character
+ * code is supplied from the Java PushConstants.MESSAGE_DELIMITER constant so
+ * that it stays the single source of truth.
+ */
+export function createConfig(messageDelimiter: number): Record<string, unknown> {
+  return {
+    transport: 'websocket',
+    maxStreamingLength: 1000000,
+    fallbackTransport: 'long-polling',
+    contentType: 'application/json; charset=UTF-8',
+    reconnectInterval: 5000,
+    withCredentials: true,
+    maxWebsocketErrorRetries: 12,
+    timeout: -1,
+    maxReconnectOnClose: 10000000,
+    trackMessageLength: true,
+    enableProtocol: true,
+    handleOnlineOffline: false,
+    executeCallbackBeforeReconnect: true,
+    messageDelimiter: String.fromCharCode(messageDelimiter)
+  };
+}
+
 /** Pushes a message over the given Atmosphere socket. */
 export function doPush(socket: unknown, message: string): void {
   (socket as { push: (message: string) => void }).push(message);

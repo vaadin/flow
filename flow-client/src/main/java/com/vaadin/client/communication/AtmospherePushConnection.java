@@ -681,22 +681,8 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected final native AtmosphereConfiguration createConfig()
     /*-{
-        return {
-            transport: 'websocket',
-            maxStreamingLength: 1000000,
-            fallbackTransport: 'long-polling',
-            contentType: 'application/json; charset=UTF-8',
-            reconnectInterval: 5000,
-            withCredentials: true,
-            maxWebsocketErrorRetries: 12,
-            timeout: -1,
-            maxReconnectOnClose: 10000000,
-            trackMessageLength: true,
-            enableProtocol: true,
-            handleOnlineOffline: false,
-            executeCallbackBeforeReconnect: true,
-            messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
-        };
+        return $wnd.Vaadin.Flow.internal.AtmospherePushConnection.createConfig(
+            @com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER);
     }-*/;
 
     private final native JavaScriptObject doConnect(String uri,
