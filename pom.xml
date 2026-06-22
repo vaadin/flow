@@ -88,7 +88,7 @@
     <spring.boot.version>4.1.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
-    <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
+    <hibernate.validator.version>9.1.1.Final</hibernate.validator.version>
     <slf4j.version>2.0.18</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.4</jackson.version>
@@ -100,7 +100,7 @@
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
     <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
-    <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
+    <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
     <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
