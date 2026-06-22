@@ -36,6 +36,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.open.Open;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.Capabilities;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -194,6 +195,34 @@ class DebugWindowConnectionLicenseCheckTest {
     void downloadLicenseKey_timeoutProvided_overridesDefault() {
         AtomicInteger usedTimeout = downloadKeyAndCaptureTimeout(600);
         assertEquals(600, usedTimeout.get());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void downloadLicenseKey_urlHandlerOpensSystemBrowser() {
+        AtomicReference<Consumer<String>> urlHandlerHolder = new AtomicReference<>();
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        command.putPOJO("data", TEST_PRODUCT);
+
+        sendAndReceive(command,
+                licenseChecker -> licenseChecker.when(() -> LicenseChecker
+                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class), any(),
+                                Mockito.anyInt()))
+                        .then(i -> {
+                            urlHandlerHolder
+                                    .set(i.getArgument(4, Consumer.class));
+                            return null;
+                        }));
+
+        String url = "https://vaadin.com/pro/validate-license";
+        try (MockedStatic<Open> open = Mockito.mockStatic(Open.class)) {
+            urlHandlerHolder.get().accept(url);
+            open.verify(() -> Open.open(url));
+        }
     }
 
     private AtomicInteger downloadKeyAndCaptureTimeout(Integer timeout) {
