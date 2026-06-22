@@ -1,5 +1,6 @@
 {
   "private": true,
+  "name": "no-name",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
@@ -16,21 +17,21 @@
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
     "copy-to-clipboard": "^3.3.1",
     "lit": "3.3.3",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "react-router": "7.15.1"
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-router": "7.17.0"
   },
   "devDependencies": {
-    "@babel/core": "7.29.0",
-    "@babel/plugin-transform-react-jsx-development": "7.27.1",
-    "@babel/preset-react": "7.28.5",
-    "@babel/types": "7.29.0",
+    "@babel/core": "7.29.7",
+    "@babel/plugin-transform-react-jsx-development": "7.29.7",
+    "@babel/preset-react": "7.29.7",
+    "@babel/types": "7.29.7",
     "@preact/signals-react-transform": "0.8.1",
     "@rolldown/plugin-babel": "0.2.3",
     "@rollup/plugin-replace": "6.0.3",
-    "@rollup/pluginutils": "5.3.0",
-    "@types/node": "25.9.1",
-    "@types/react": "19.2.15",
+    "@rollup/pluginutils": "5.4.0",
+    "@types/node": "25.9.3",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
     "magic-string": "0.30.21",
@@ -39,29 +40,29 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "6.0.3",
-    "vite": "8.0.14",
-    "vite-plugin-checker": "0.13.0"
+    "vite": "8.0.16",
+    "vite-plugin-checker": "0.14.1"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.22",
       "lit": "3.3.3",
-      "react": "19.2.6",
-      "react-dom": "19.2.6",
-      "react-router": "7.15.1"
+      "react": "19.2.7",
+      "react-dom": "19.2.7",
+      "react-router": "7.17.0"
     },
     "devDependencies": {
-      "@babel/core": "7.29.0",
-      "@babel/plugin-transform-react-jsx-development": "7.27.1",
-      "@babel/preset-react": "7.28.5",
-      "@babel/types": "7.29.0",
+      "@babel/core": "7.29.7",
+      "@babel/plugin-transform-react-jsx-development": "7.29.7",
+      "@babel/preset-react": "7.29.7",
+      "@babel/types": "7.29.7",
       "@preact/signals-react-transform": "0.8.1",
       "@rolldown/plugin-babel": "0.2.3",
       "@rollup/plugin-replace": "6.0.3",
-      "@rollup/pluginutils": "5.3.0",
-      "@types/node": "25.9.1",
-      "@types/react": "19.2.15",
+      "@rollup/pluginutils": "5.4.0",
+      "@types/node": "25.9.3",
+      "@types/react": "19.2.17",
       "@types/react-dom": "19.2.3",
       "@vitejs/plugin-react": "6.0.2",
       "magic-string": "0.30.21",
@@ -70,10 +71,10 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "6.0.3",
-      "vite": "8.0.14",
-      "vite-plugin-checker": "0.13.0"
+      "vite": "8.0.16",
+      "vite-plugin-checker": "0.14.1"
     },
-    "hash": "8327859d8510ad6a16456239ce5905db6b1622684b644b5748078763d46e0232",
+    "hash": "29c171828258f518025ad858a690af1abb2d4389a081cbdd68dc7ab7b89bc0e6",
     "overrides": {
       "@polymer/polymer": "$@polymer/polymer",
       "@vaadin/common-frontend": "$@vaadin/common-frontend",
@@ -86,16 +87,11 @@
   },
   "pnpm": {
     "overrides": {
-      "@vaadin/testscope-all": "$@vaadin/testscope-all",
-      "@vaadin/testscope-button": "$@vaadin/testscope-button",
-      "@vaadin/bundles": "$@vaadin/bundles",
-      "copy-to-clipboard": "$copy-to-clipboard",
-      "@vaadin/test-package-outside-npm": "$@vaadin/test-package-outside-npm",
-      "@vaadin/test-package2-outside-npm": "$@vaadin/test-package2-outside-npm",
-      "@polymer/polymer": "$@polymer/polymer",
       "@vaadin/common-frontend": "$@vaadin/common-frontend",
-      "lit": "$lit",
       "react-dom": "$react-dom",
+      "lit": "$lit",
+      "@vaadin/text-field": "$@vaadin/text-field",
+      "@polymer/polymer": "$@polymer/polymer",
       "react": "$react",
       "react-router": "$react-router"
     }
