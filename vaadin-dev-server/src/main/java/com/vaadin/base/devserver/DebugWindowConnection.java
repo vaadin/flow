@@ -61,6 +61,12 @@ import com.vaadin.pro.licensechecker.Product;
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 
+    /**
+     * Default time, in seconds, the license checker waits for the user to sign
+     * in and download a license when triggered from the dev tools.
+     */
+    private static final int DEFAULT_LICENSE_DOWNLOAD_TIMEOUT_SECONDS = 300;
+
     private final ClassLoader classLoader;
     private VaadinContext context;
 
@@ -378,20 +384,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
         LicenseDownloadCallback callback = new LicenseDownloadCallback(resource,
                 product);
 
+        // The browser is opened so the user can sign in and download the
+        // license; the timeout sets how long the checker waits for that to
+        // complete. A generous default is used because the license-checker
+        // default is too short for first-time users who still need to register
+        // an account, and it can be overridden by the client when needed.
         JsonNode timeoutNode = data.get("timeout");
-        if (timeoutNode != null && timeoutNode.isIntegralNumber()) {
-            // The browser is opened so the user can sign in and download the
-            // license; the timeout sets how long the checker waits for that to
-            // complete. The default is too short for first-time users who still
-            // need to register an account.
-            LicenseChecker.checkLicenseAsync(product.getName(),
-                    product.getVersion(), BuildType.DEVELOPMENT, callback,
-                    DebugWindowConnection::openSystemBrowser,
-                    timeoutNode.intValue());
-        } else {
-            LicenseChecker.checkLicenseAsync(product.getName(),
-                    product.getVersion(), BuildType.DEVELOPMENT, callback);
-        }
+        int timeout = timeoutNode != null && timeoutNode.isIntegralNumber()
+                ? timeoutNode.intValue()
+                : DEFAULT_LICENSE_DOWNLOAD_TIMEOUT_SECONDS;
+        LicenseChecker.checkLicenseAsync(product.getName(),
+                product.getVersion(), BuildType.DEVELOPMENT, callback,
+                DebugWindowConnection::openSystemBrowser, timeout);
         send(resource, "license-download-started", product);
     }
 

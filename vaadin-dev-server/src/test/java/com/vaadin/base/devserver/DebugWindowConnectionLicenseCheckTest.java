@@ -184,15 +184,28 @@ class DebugWindowConnectionLicenseCheckTest {
     }
 
     @Test
-    void downloadLicenseKey_withTimeout_passesTimeoutToChecker() {
-        AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
+    void downloadLicenseKey_noTimeout_usesGenerousDefault() {
+        AtomicInteger usedTimeout = downloadKeyAndCaptureTimeout(null);
+        // Longer than the license-checker default of 60 seconds.
+        assertEquals(300, usedTimeout.get());
+    }
+
+    @Test
+    void downloadLicenseKey_timeoutProvided_overridesDefault() {
+        AtomicInteger usedTimeout = downloadKeyAndCaptureTimeout(600);
+        assertEquals(600, usedTimeout.get());
+    }
+
+    private AtomicInteger downloadKeyAndCaptureTimeout(Integer timeout) {
         AtomicInteger usedTimeout = new AtomicInteger();
         ObjectNode command = OBJECT_MAPPER.createObjectNode();
         command.put("command", "downloadLicense");
         ObjectNode data = command.putObject("data");
         data.put("name", TEST_PRODUCT.getName());
         data.put("version", TEST_PRODUCT.getVersion());
-        data.put("timeout", 300);
+        if (timeout != null) {
+            data.put("timeout", timeout);
+        }
 
         DebugWindowMessage message = sendAndReceive(command,
                 licenseChecker -> licenseChecker.when(() -> LicenseChecker
@@ -203,17 +216,11 @@ class DebugWindowConnectionLicenseCheckTest {
                                 Mockito.anyInt()))
                         .then(i -> {
                             usedTimeout.set(i.getArgument(5, Integer.class));
-                            LicenseChecker.Callback callback = i.getArgument(3,
-                                    LicenseChecker.Callback.class);
-                            callbackHolder.set(callback::ok);
                             return null;
                         }));
 
         assertEquals("license-download-started", message.getCommand());
-        assertEquals(300, usedTimeout.get());
-        callbackHolder.get().run();
-        assertEquals("license-download-completed",
-                receiver.messages.get(0).getCommand());
+        return usedTimeout;
     }
 
     private enum LicenseCheckResult {
@@ -258,7 +265,8 @@ class DebugWindowConnectionLicenseCheckTest {
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class)))
+                                any(LicenseChecker.Callback.class), any(),
+                                Mockito.anyInt()))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);
