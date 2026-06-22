@@ -821,7 +821,8 @@ class BundleValidationTest {
         bundleImports
                 .add("@Frontend/generated/jar-resources/dndConnector-es6.js");
         bundleImports.add("@polymer/paper-input/paper-input.js");
-        bundleImports.add("@vaadin/common-frontend/ConnectionIndicator.js");
+        bundleImports.add(
+                "@Frontend/generated/jar-resources/ConnectionIndicator.js");
 
         setupFrontendUtilsMock(stats);
 

@@ -483,7 +483,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             addInternalEntryPoint(errorParameters);
         }
 
-        // UI should always be collected as it contains 'ConnectionIndicator.js'
+        // The UI class is always collected so that frontend dependencies
+        // declared on it via annotations (@JsModule, @CssImport, ...) are
+        // included in the bundle even when no other entry point references it.
         addInternalEntryPoint(UI.class);
 
         if (generateEmbeddableWebComponents) {

@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -112,7 +111,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @since 1.0
  */
-@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
