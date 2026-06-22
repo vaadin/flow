@@ -25,6 +25,13 @@ import { isPropertyDefined } from './ExecuteJavaScriptElementUtils';
 import { getShadowRootElement, recreateNodes, showPopover } from './SystemErrorHandler';
 import { applyCaptures, createReturnChannelCallback } from './ClientJsonCodec';
 import {
+  addHtmlImportsReadyHandler,
+  addOnloadHandler,
+  getStyleSheetLength,
+  runPromiseExpression,
+  supportsHtmlWhenReady
+} from './ResourceLoader';
+import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
   deleteJsProperty,
@@ -64,6 +71,13 @@ export function registerInternals(): void {
   internal.ExecuteJavaScriptElementUtils = { isPropertyDefined };
   internal.SystemErrorHandler = { recreateNodes, showPopover, getShadowRootElement };
   internal.ClientJsonCodec = { createReturnChannelCallback, applyCaptures };
+  internal.ResourceLoader = {
+    supportsHtmlWhenReady,
+    addHtmlImportsReadyHandler,
+    addOnloadHandler,
+    getStyleSheetLength,
+    runPromiseExpression
+  };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
