@@ -1354,7 +1354,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_pwaOfflineEnabled_overridesTrackedInVaadinSection()
+    void npmIsInUse_pwaOfflineEnabled_overridesNotTrackedInVaadinSection()
             throws IOException {
         createBasicVaadinVersionsJson();
         final TaskUpdatePackages task = createTaskWithPwa(
@@ -1362,15 +1362,14 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
 
         ObjectNode pkgJson = getOrCreatePackageJson();
-        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
-        JsonNode vaadin = pkgJson.get(VAADIN_DEP_KEY);
-        assertTrue(vaadin.has(OVERRIDES),
-                "vaadin.overrides section should exist");
-        JsonNode vaadinOverrides = vaadin.get(OVERRIDES);
+        // The workbox override is added to the main overrides section
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be present");
 
-        // Verify workbox-build is tracked in vaadin.overrides
-        assertTrue(vaadinOverrides.has("workbox-build"),
-                "workbox-build should be tracked in vaadin.overrides");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
     }
 
     @Test
