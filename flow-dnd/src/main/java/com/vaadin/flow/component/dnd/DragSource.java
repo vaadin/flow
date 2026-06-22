@@ -356,7 +356,8 @@ public interface DragSource<T extends Component> extends HasElement {
      *            the y-offset of the drag image
      */
     default void setDragImage(Component dragImage, int offsetX, int offsetY) {
-        if (dragImage != null && !dragImage.isVisible()) {
+        if (dragImage != null
+                && !ComponentUtil.isEffectivelyVisible(dragImage)) {
             throw new IllegalStateException(
                     "Drag image element is not visible and will not show.\nMake element visible to use as drag image!");
         }
