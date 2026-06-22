@@ -19,11 +19,13 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Fluent surface returned from {@link Fullscreen#onClick}. Each {@code enter}
@@ -98,8 +100,8 @@ public final class FullscreenBinding implements Serializable {
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component,
-                () -> bind(new RequestFullscreenAction(component)));
+        triggersWhenAttached(component,
+                () -> new RequestFullscreenAction(component));
     }
 
     /**
@@ -117,18 +119,20 @@ public final class FullscreenBinding implements Serializable {
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component, () -> bind(
-                new RequestFullscreenAction(component, onSuccess, onError)));
+        triggersWhenAttached(component,
+                () -> new RequestFullscreenAction(component, onSuccess,
+                        onError));
     }
 
-    private static void whenAttached(Component component, Runnable task) {
+    private void triggersWhenAttached(Component component,
+            SerializableSupplier<Action> action) {
         // Defer wiring until attach so the action's wrapper-element lookup
         // (target.getUI().getInternals().getWrapperElement()) has a UI to
         // resolve against, and so that RequestFullscreenAction's visibility
-        // check sees the same visibility state as the install JS would.
-        // runWhenAttached fires immediately if already attached and is
-        // one-shot otherwise.
-        component.getElement().getNode().runWhenAttached(ui -> task.run());
+        // check sees the same visibility state as the install JS would. The
+        // trigger counts as armed straight away, so the deferral is not flagged
+        // as a forgotten action.
+        trigger.triggersWhenAttached(component, action);
     }
 
     private void bind(RequestFullscreenAction action) {
