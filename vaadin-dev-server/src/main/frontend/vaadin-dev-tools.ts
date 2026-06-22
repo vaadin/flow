@@ -860,9 +860,9 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  downloadLicense(productInfo: Product) {
+  downloadLicense(productInfo: Product, timeout?: number) {
     if (this.frontendConnection) {
-      this.frontendConnection.send('downloadLicense', productInfo);
+      this.frontendConnection.send('downloadLicense', { ...productInfo, timeout });
     } else {
       updateLicenseDownloadStatus('failed', this.bodyShadowRoot);
     }

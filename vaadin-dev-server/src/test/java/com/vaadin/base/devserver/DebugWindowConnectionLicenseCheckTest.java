@@ -17,6 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -180,6 +181,39 @@ class DebugWindowConnectionLicenseCheckTest {
                 receiver.messages.get(0).getCommand());
         assertEquals(TEST_PRODUCT.toString(),
                 receiver.messages.get(0).getData().toString());
+    }
+
+    @Test
+    void downloadLicenseKey_withTimeout_passesTimeoutToChecker() {
+        AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
+        AtomicInteger usedTimeout = new AtomicInteger();
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        ObjectNode data = command.putObject("data");
+        data.put("name", TEST_PRODUCT.getName());
+        data.put("version", TEST_PRODUCT.getVersion());
+        data.put("timeout", 300);
+
+        DebugWindowMessage message = sendAndReceive(command,
+                licenseChecker -> licenseChecker.when(() -> LicenseChecker
+                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class), any(),
+                                Mockito.anyInt()))
+                        .then(i -> {
+                            usedTimeout.set(i.getArgument(5, Integer.class));
+                            LicenseChecker.Callback callback = i.getArgument(3,
+                                    LicenseChecker.Callback.class);
+                            callbackHolder.set(callback::ok);
+                            return null;
+                        }));
+
+        assertEquals("license-download-started", message.getCommand());
+        assertEquals(300, usedTimeout.get());
+        callbackHolder.get().run();
+        assertEquals("license-download-completed",
+                receiver.messages.get(0).getCommand());
     }
 
     private enum LicenseCheckResult {

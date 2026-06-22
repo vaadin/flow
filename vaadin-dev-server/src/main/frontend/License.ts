@@ -189,10 +189,10 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
 export const startPreTrial = () => {
   (window as any).Vaadin.devTools.startPreTrial();
 };
-export const tryAcquireLicense = () => {
+export const tryAcquireLicense = (timeout?: number) => {
   const products = Object.values(productMissingLicense);
   if (products.length > 0) {
-    (window as any).Vaadin.devTools.downloadLicense(products[0].product);
+    (window as any).Vaadin.devTools.downloadLicense(products[0].product, timeout);
   }
 };
 

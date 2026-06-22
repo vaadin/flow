@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
+import com.vaadin.open.Open;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.Capabilities;
 import com.vaadin.pro.licensechecker.Capability;
@@ -374,11 +375,31 @@ public class DebugWindowConnection implements BrowserLiveReload {
         String name = data.get("name").asString();
         String version = data.get("version").asString();
         Product product = new Product(name, version);
+        LicenseDownloadCallback callback = new LicenseDownloadCallback(resource,
+                product);
 
-        LicenseChecker.checkLicenseAsync(product.getName(),
-                product.getVersion(), BuildType.DEVELOPMENT,
-                new LicenseDownloadCallback(resource, product));
+        JsonNode timeoutNode = data.get("timeout");
+        if (timeoutNode != null && timeoutNode.isIntegralNumber()) {
+            // The browser is opened so the user can sign in and download the
+            // license; the timeout sets how long the checker waits for that to
+            // complete. The default is too short for first-time users who still
+            // need to register an account.
+            LicenseChecker.checkLicenseAsync(product.getName(),
+                    product.getVersion(), BuildType.DEVELOPMENT, callback,
+                    DebugWindowConnection::openSystemBrowser,
+                    timeoutNode.intValue());
+        } else {
+            LicenseChecker.checkLicenseAsync(product.getName(),
+                    product.getVersion(), BuildType.DEVELOPMENT, callback);
+        }
         send(resource, "license-download-started", product);
+    }
+
+    private static void openSystemBrowser(String url) {
+        getLogger().info(
+                "Opening system browser to validate license. If the browser is not opened, please open {} manually",
+                url);
+        Open.open(url);
     }
 
     private void handlePreTrialStart(AtmosphereResource resource,
