@@ -41,8 +41,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * a click should write to or read from the clipboard. The {@code write*}
  * methods copy a value (literal text, a field's value, HTML, or an image) to
  * the clipboard; the {@code read*} methods read the clipboard contents back.
- * The action runs in the browser at click time, while the user gesture that
- * clipboard access requires is still valid.
+ * The action runs in the browser at click time, while the user gesture required
+ * for clipboard access is still valid.
  * <p>
  * Write actions come in two flavours: fire-and-forget (one argument) and
  * observed (with {@code onCopied}/{@code onError} callbacks). {@code onCopied}

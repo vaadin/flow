@@ -28,7 +28,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  * Fluent surface returned from {@link WebShare#onClick}, used to declare what a
  * click should hand to the browser's native share sheet. Call {@link #share}
  * with the title, text, and/or URL to share. The share runs in the browser at
- * click time, while the user gesture that the Web Share API requires is still
+ * click time, while the user gesture required by the Web Share API is still
  * valid.
  * <p>
  * Actions come in two flavours: fire-and-forget (one argument) and observed

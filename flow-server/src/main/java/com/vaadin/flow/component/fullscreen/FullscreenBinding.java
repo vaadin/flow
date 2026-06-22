@@ -29,8 +29,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * Fluent surface returned from {@link Fullscreen#onClick}, used to declare what
  * a click should make fullscreen. Call {@link #enter()} for the whole page or
  * {@link #enter(Component)} for a single component. The request runs in the
- * browser at click time, while the user gesture that the Fullscreen API
- * requires is still valid.
+ * browser at click time, while the user gesture required by the Fullscreen API
+ * is still valid.
  * <p>
  * Actions come in two flavours: fire-and-forget (no callbacks) and observed
  * (with {@code onSuccess}/{@code onError} callbacks). {@code onError} receives
