@@ -236,12 +236,7 @@ public class SystemErrorHandler {
 
     private native void recreateNodes(String elementName)
     /*-{
-        var elements = document.getElementsByTagName(elementName);
-        for (var i = 0 ; i < elements.length ; ++i) {
-            var elem = elements[i];
-            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
-            elem.parentNode.replaceChild(elem.cloneNode(false), elem);
-        }
+        $wnd.Vaadin.Flow.internal.SystemErrorHandler.recreateNodes(elementName);
     }-*/;
 
     /**
@@ -318,15 +313,10 @@ public class SystemErrorHandler {
         return systemErrorContainer;
     }
 
-    // @formatter:off
-    private native void showPopover(Element el) 
+    private native void showPopover(Element el)
     /*-{
-        var fn = el && el.showPopover;
-        if (typeof fn === "function") {
-            fn.call(el);
-        }
+        $wnd.Vaadin.Flow.internal.SystemErrorHandler.showPopover(el);
     }-*/;
-    // @formatter:on
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {
@@ -348,7 +338,7 @@ public class SystemErrorHandler {
 
     private native Element getShadowRootElement(Element host)
     /*-{
-        return host.shadowRoot;
+        return $wnd.Vaadin.Flow.internal.SystemErrorHandler.getShadowRootElement(host);
     }-*/;
 
 }
