@@ -39,6 +39,14 @@ import {
   removeStylesheetByIdFromDom
 } from './MessageHandler';
 import {
+  getDomElementById,
+  getDomRoot,
+  isInShadowRoot,
+  isPolymerElement,
+  isReady,
+  mayBePolymerElement
+} from './PolymerUtils';
+import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
   deleteJsProperty,
@@ -91,6 +99,14 @@ export function registerInternals(): void {
     calculateBootstrapTime,
     parseJSONResponse,
     getFetchStartTime
+  };
+  internal.PolymerUtils = {
+    isPolymerElement,
+    mayBePolymerElement,
+    isInShadowRoot,
+    isReady,
+    getDomRoot,
+    getDomElementById
   };
   internal.WidgetUtil = {
     redirect,
