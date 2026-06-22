@@ -56,6 +56,7 @@ import {
 import { doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import { getContextExecutionObject } from './ExecuteJavaScriptProcessor';
 import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './StorageUtil';
+import { sendBeacon } from './MessageSender';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -128,6 +129,7 @@ export function registerInternals(): void {
   internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect, doConnect };
   internal.ExecuteJavaScriptProcessor = { getContextExecutionObject };
   internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
+  internal.MessageSender = { sendBeacon };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
