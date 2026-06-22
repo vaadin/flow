@@ -99,6 +99,14 @@ const productChecking: Record<string, boolean> = {};
 const productMissingLicense: Record<string, ProductAndMessage> = {};
 const productCheckOk: Record<string, boolean> = {};
 
+// Set once a license check reports that no local license key is present. This
+// is a machine-global condition: without a local pro/subscription key no
+// commercial product can be licensed, so every product would fail the check the
+// same way. Remembering it lets us replace all components immediately and skip
+// the redundant per-product server round-trips. The stored value provides the
+// "start a trial / retrieve your license" message reused for every component.
+let noLocalLicenseKey: ProductAndMessage | undefined;
+
 const key = (product: Product): string => {
   return `${product.name}_${product.version}`;
 };
@@ -112,6 +120,13 @@ const checkLicenseIfNeeded = (cvdlElement: Element) => {
   const tagName = cvdlElement.tagName.toLowerCase();
   productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
   productTagNames[cvdlName].push(tagName);
+
+  if (noLocalLicenseKey) {
+    // A missing local license key affects every commercial product, so show the
+    // fallback right away instead of sending another doomed license check.
+    setTimeout(() => showNoLicenseFallback(cvdlElement, noLocalLicenseKey!), noLicenseFallbackTimeout);
+    return;
+  }
 
   const failedLicenseCheck = productMissingLicense[key(product)];
   if (failedLicenseCheck) {
@@ -158,16 +173,19 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
   const productName = data.product.name;
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
   productMissingLicense[key(data.product)] = data;
+  // No local license key means no commercial product can be licensed, so the
+  // same generic message applies to every component on the page.
+  noLocalLicenseKey = data;
   // eslint-disable-next-line no-console
   console.error('No license found when checking', productName);
 
-  const tags = productTagNames[productName];
-  if (tags?.length > 0) {
+  // Replace all registered commercial components, not just this product's, since
+  // they all fail for the same reason. Any component created later is handled by
+  // the noLocalLicenseKey short-circuit in checkLicenseIfNeeded.
+  const tags = Object.values(productTagNames).flat();
+  if (tags.length > 0) {
     findAll(document, tags).forEach((element) => {
-      setTimeout(
-        () => showNoLicenseFallback(element, productMissingLicense[key(data.product)]),
-        noLicenseFallbackTimeout
-      );
+      setTimeout(() => showNoLicenseFallback(element, data), noLicenseFallbackTimeout);
     });
   }
 };
