@@ -21,6 +21,7 @@ import { addReadyCallback } from './ReactUtils';
 import * as ConnectionIndicator from './ConnectionIndicator';
 import { checkForTouchDevice, getBrowserString, isIos } from './BrowserInfo';
 import { resendRequest } from './XhrConnection';
+import { isPropertyDefined } from './ExecuteJavaScriptElementUtils';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -58,6 +59,7 @@ export function registerInternals(): void {
   internal.ConnectionIndicator = { ...ConnectionIndicator };
   internal.BrowserInfo = { getBrowserString, checkForTouchDevice, isIos };
   internal.XhrConnection = { resendRequest };
+  internal.ExecuteJavaScriptElementUtils = { isPropertyDefined };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
