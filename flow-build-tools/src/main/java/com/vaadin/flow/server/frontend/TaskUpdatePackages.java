@@ -30,8 +30,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
@@ -89,6 +87,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> scannedApplicationDevDependencies = frontDeps
                     .getDevPackages();
             ObjectNode packageJson = getPackageJson();
+            warnOnVersionRangeMismatch(packageJson);
+
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
@@ -580,7 +580,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
                     && pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key, true)) {
+                            platformPinnedDependencies, key)) {
                 added++;
             }
             // make sure platform pinned dependency is not cleared
@@ -660,13 +660,6 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     protected static boolean pinPlatformDependency(JsonNode packageJson,
             JsonNode platformPinnedVersions, String pkg) {
-        return pinPlatformDependency(packageJson, platformPinnedVersions, pkg,
-                false);
-    }
-
-    protected static boolean pinPlatformDependency(JsonNode packageJson,
-            JsonNode platformPinnedVersions, String pkg,
-            boolean warnOnRangeMismatch) {
         final FrontendVersion platformPinnedVersion = FrontendUtils
                 .getPackageVersionFromJson(platformPinnedVersions, pkg,
                         "vaadin_dependencies.json");
@@ -705,10 +698,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         if ((vaadinDepsVersion != null && packageJsonVersion != null)
                 && !vaadinDepsVersion.equals(packageJsonVersion)) {
             // The user has overridden the version, use that
-            if (warnOnRangeMismatch) {
-                warnIfOverrideInDifferentRange(pkg, platformPinnedVersion,
-                        packageJsonVersion);
-            }
             return false;
         }
 
@@ -723,46 +712,132 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Warns when a user override in {@code package.json} pins a
-     * platform-managed package to a different minor or major version than the
-     * one expected by the current Vaadin version.
+     * Warns about platform-managed packages that the project has pinned in
+     * {@code package.json} to a version from a different minor or major range
+     * than the one expected by the current Vaadin version.
      * <p>
-     * Overriding a package to another maintenance (patch) release of the same
-     * minor is a supported way of picking up a fix early. Overriding to a
-     * different minor or major version is usually a mistake, as the rest of the
-     * platform is built and tested against the expected version, and the
-     * mismatch can lead to runtime errors or broken generated frontend files.
+     * This is checked on the package.json as it is read, before the version
+     * locking updates it, so that pins that the build would simply overwrite
+     * are not reported. Only values that differ from the ones Vaadin manages
+     * (kept in the {@code vaadin} section) are considered, as those are the
+     * explicit opt-outs that the build leaves untouched. Pinning a package to
+     * another maintenance (patch) release of the same minor is a supported way
+     * of picking up a fix early, but pinning it to a different minor or major
+     * version is usually a mistake, since the rest of the platform is built and
+     * tested against the expected version. Such mismatches can lead to runtime
+     * errors or broken generated frontend files (a blank page).
      *
-     * @param pkg
-     *            the name of the overridden package
-     * @param expectedVersion
-     *            the version expected by the current Vaadin version
-     * @param overrideVersion
-     *            the version the user has set in {@code package.json}
+     * @param packageJson
+     *            the package.json as read, before version locking
+     * @throws IOException
+     *             if the platform versions cannot be read
      */
-    private static void warnIfOverrideInDifferentRange(String pkg,
-            FrontendVersion expectedVersion, FrontendVersion overrideVersion) {
-        if (expectedVersion.getMajorVersion() != overrideVersion
-                .getMajorVersion()
-                || expectedVersion.getMinorVersion() != overrideVersion
-                        .getMinorVersion()) {
-            getLogger().warn(
+    void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
+        final ObjectNode expectedVersions = getFullPlatformDependencies();
+        final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
+
+        // Collect mismatches into a single warning to avoid flooding the log
+        // when a whole platform worth of packages has drifted.
+        final List<String> mismatches = new ArrayList<>();
+        collectRangeMismatches(sectionToMap(packageJson.get(DEPENDENCIES)),
+                sectionToMap(vaadin == null ? null : vaadin.get(DEPENDENCIES)),
+                expectedVersions, DEPENDENCIES, mismatches);
+        collectRangeMismatches(sectionToMap(packageJson.get(DEV_DEPENDENCIES)),
+                sectionToMap(
+                        vaadin == null ? null : vaadin.get(DEV_DEPENDENCIES)),
+                expectedVersions, DEV_DEPENDENCIES, mismatches);
+        collectRangeMismatches(projectOverrides(packageJson),
+                flatOverrides(vaadin == null ? null : vaadin.get(OVERRIDES)),
+                expectedVersions, OVERRIDES, mismatches);
+
+        if (!mismatches.isEmpty()) {
+            log().warn(
                     """
-                            The package '{}' is overridden in package.json to version '{}', \
-                            which is from a different minor/major version than the version '{}' \
-                            expected by Vaadin. Overriding to another maintenance release is \
-                            supported, but using a different minor or major version is usually a \
-                            mistake and may cause runtime errors or a blank page. Unless the \
-                            override is intentional, remove it from the 'dependencies' block in \
-                            package.json or run 'mvn vaadin:clean-frontend' to reset the \
+                            The following packages are pinned in package.json to a different \
+                            minor/major version than the version expected by the current Vaadin \
+                            version. Overriding to another maintenance release is supported, but \
+                            using a different minor or major version is usually a mistake and may \
+                            cause runtime errors or a blank page:
+                            {}
+                            Unless these versions are intentional, remove the entries from \
+                            package.json and run 'mvn vaadin:clean-frontend' to reset the \
                             frontend to a clean state.""",
-                    pkg, overrideVersion.getFullVersion(),
-                    expectedVersion.getFullVersion());
+                    String.join("\n", mismatches));
         }
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(TaskUpdatePackages.class);
+    private void collectRangeMismatches(Map<String, String> projectSection,
+            Map<String, String> vaadinSection, ObjectNode expectedVersions,
+            String location, List<String> mismatches) {
+        for (Map.Entry<String, String> entry : projectSection.entrySet()) {
+            final String pkg = entry.getKey();
+            final FrontendVersion expected = parseVersion(
+                    expectedVersions.has(pkg)
+                            ? expectedVersions.get(pkg).asString()
+                            : null);
+            if (expected == null) {
+                continue;
+            }
+            // Skip values managed by Vaadin: the build updates those itself, so
+            // any range difference is transient and not a user mistake.
+            if (entry.getValue().equals(vaadinSection.get(pkg))) {
+                continue;
+            }
+            final FrontendVersion pinned = parseVersion(entry.getValue());
+            if (pinned != null && isDifferentRange(expected, pinned)) {
+                mismatches.add(String.format("  - %s: %s (in %s), expected %s",
+                        pkg, pinned.getFullVersion(), location,
+                        expected.getFullVersion()));
+            }
+        }
+    }
+
+    private FrontendVersion parseVersion(String version) {
+        if (version == null || version.startsWith("$")) {
+            return null;
+        }
+        try {
+            return new FrontendVersion(version);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private boolean isDifferentRange(FrontendVersion expected,
+            FrontendVersion actual) {
+        return expected.getMajorVersion() != actual.getMajorVersion()
+                || expected.getMinorVersion() != actual.getMinorVersion();
+    }
+
+    private Map<String, String> sectionToMap(JsonNode section) {
+        if (section == null) {
+            return Map.of();
+        }
+        final Map<String, String> map = new HashMap<>();
+        for (String key : JacksonUtils.getKeys(section)) {
+            map.put(key, section.get(key).asString());
+        }
+        return map;
+    }
+
+    private Map<String, String> flatOverrides(JsonNode overrides) {
+        if (overrides == null) {
+            return Map.of();
+        }
+        return flattenOverrides((ObjectNode) overrides);
+    }
+
+    /**
+     * Returns the project's overrides as a flat map, reading from the
+     * {@code pnpm.overrides} section when pnpm is enabled and from the
+     * top-level {@code overrides} section otherwise.
+     */
+    private Map<String, String> projectOverrides(ObjectNode packageJson) {
+        if (enablePnpm && packageJson.has(PNPM)
+                && packageJson.get(PNPM).has(OVERRIDES)) {
+            return flatOverrides(packageJson.get(PNPM).get(OVERRIDES));
+        }
+        return flatOverrides(packageJson.get(OVERRIDES));
     }
 
     /**
