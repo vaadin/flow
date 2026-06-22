@@ -378,10 +378,7 @@ public final class PolymerUtils {
      */
     public static native boolean isPolymerElement(Element htmlNode)
     /*-{
-        var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
-        var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-    
-        return (isP2Element || isP3Element);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isPolymerElement(htmlNode);
     }-*/;
 
     /**
@@ -401,7 +398,7 @@ public final class PolymerUtils {
     @Deprecated
     public static native boolean mayBePolymerElement(Element htmlNode)
     /*-{
-        return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.mayBePolymerElement(htmlNode);
     }-*/;
 
     /**
@@ -464,7 +461,7 @@ public final class PolymerUtils {
     public static native Element getDomElementById(Node shadowRootParent,
             String id)
     /*-{
-        return shadowRootParent.$[id];
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getDomElementById(shadowRootParent, id);
     }-*/;
 
     /**
@@ -478,7 +475,7 @@ public final class PolymerUtils {
      */
     public static native boolean isReady(Node shadowRootParent)
     /*-{
-        return typeof(shadowRootParent.$) != "undefined";
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isReady(shadowRootParent);
     }-*/;
 
     /**
@@ -536,7 +533,7 @@ public final class PolymerUtils {
      */
     public static native Element getDomRoot(Node templateElement)
     /*-{
-        return templateElement.root;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getDomRoot(templateElement);
     }-*/;
 
     /**
@@ -657,11 +654,6 @@ public final class PolymerUtils {
      */
     public static native boolean isInShadowRoot(Element element)
     /*-{
-        while (element.parentNode && (element = element.parentNode)) {
-            if (element.toString() === '[object ShadowRoot]') {
-                return true;
-            }
-        }
-        return false;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isInShadowRoot(element);
      }-*/;
 }
