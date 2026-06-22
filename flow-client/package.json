@@ -28,23 +28,23 @@
   ],
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",
-    "@types/chai": "^5.0.1",
-    "@types/mocha": "^10.0.7",
-    "@types/sinon": "^17.0.3",
-    "@web/dev-server-esbuild": "^1.0.4",
-    "@web/test-runner": "^0.19.0",
-    "@web/test-runner-playwright": "^0.11.0",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/sinon": "^21.0.1",
+    "@web/dev-server-esbuild": "^1.0.5",
+    "@web/test-runner": "^0.20.2",
+    "@web/test-runner-playwright": "^0.11.1",
     "eslint": "9.39.4",
     "eslint-config-vaadin": "1.0.0-beta.6",
-    "eslint-plugin-prettier": "^5.5.5",
-    "globals": "^16.5.0",
-    "mock-xmlhttprequest": "^8.4.0",
-    "prettier": "^3.7.4",
-    "sinon": "^19.0.2",
-    "typescript": "^6.0.2"
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.6.0",
+    "mock-xmlhttprequest": "^8.4.1",
+    "prettier": "^3.8.4",
+    "sinon": "^22.0.0",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "@vaadin/common-frontend": "0.0.22",
-    "lit": "3.2.1"
+    "lit": "3.3.3"
   }
 }
