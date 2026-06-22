@@ -47,7 +47,11 @@ import {
   isPolymerElement,
   isReady,
   mayBePolymerElement,
-  searchForElementInShadowRoot
+  searchForElementInShadowRoot,
+  setListValueByIndex,
+  setProperty,
+  splice,
+  storeNodeId
 } from './PolymerUtils';
 import { doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import {
@@ -113,7 +117,11 @@ export function registerInternals(): void {
     getDomElementById,
     searchForElementInShadowRoot,
     getElementInShadowRootById,
-    invokeWhenDefined
+    invokeWhenDefined,
+    setListValueByIndex,
+    splice,
+    storeNodeId,
+    setProperty
   };
   internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect };
   internal.WidgetUtil = {
