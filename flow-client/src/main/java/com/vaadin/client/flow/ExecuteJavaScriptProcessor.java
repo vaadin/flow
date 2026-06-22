@@ -201,34 +201,35 @@ public class ExecuteJavaScriptProcessor {
     private native JsonObject getContextExecutionObject(
             JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
     /*-{
-          var object = {};
-          object.getNode = $entry(function (element) {
-              var node = nodeParameters.get(element);
-              if (node == null) {
-                  throw new ReferenceError("There is no a StateNode for the given argument.");
-              }
-              return node;
-          });
-          object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
-          object.registry = this.@ExecuteJavaScriptProcessor::registry;
-          object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
-          });
-          object.populateModelProperties = $entry(function(element, properties) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
-          });
-          object.registerUpdatableModelProperties = $entry(function(element, properties) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
-          });
-          object.stopApplication = $entry(function() {
-              stopApplication.@java.lang.Runnable::run(*)();
-          });
-          object.registerInitializer = $entry(function(node, id, cleanup) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerInitializer(*)(node, id, cleanup);
-          });
-          object.disposeInitializer = $entry(function(node, id) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::disposeInitializer(*)(node, id);
-          });
-          return object;
+          var callbacks = {
+              getNode: $entry(function (element) {
+                  var node = nodeParameters.get(element);
+                  if (node == null) {
+                      throw new ReferenceError("There is no a StateNode for the given argument.");
+                  }
+                  return node;
+              }),
+              attachExistingElement: $entry(function(node, previousSibling, tagName, id) {
+                  @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(node, previousSibling, tagName, id);
+              }),
+              populateModelProperties: $entry(function(node, properties) {
+                  @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(node, properties);
+              }),
+              registerUpdatableModelProperties: $entry(function(node, properties) {
+                  @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(node, properties);
+              }),
+              stopApplication: $entry(function() {
+                  stopApplication.@java.lang.Runnable::run(*)();
+              }),
+              registerInitializer: $entry(function(node, id, cleanup) {
+                  @com.vaadin.client.ExecuteJavaScriptElementUtils::registerInitializer(*)(node, id, cleanup);
+              }),
+              disposeInitializer: $entry(function(node, id) {
+                  @com.vaadin.client.ExecuteJavaScriptElementUtils::disposeInitializer(*)(node, id);
+              })
+          };
+          return $wnd.Vaadin.Flow.internal.ExecuteJavaScriptProcessor.getContextExecutionObject(
+              this.@ExecuteJavaScriptProcessor::getAppId()(),
+              this.@ExecuteJavaScriptProcessor::registry, callbacks);
     }-*/;
 }
