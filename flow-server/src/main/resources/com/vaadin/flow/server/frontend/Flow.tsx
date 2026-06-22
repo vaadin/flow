@@ -603,7 +603,8 @@ function Flow() {
                 }
                 return container.onBeforeEnter?.call(
                     container,
-                    { pathname: location.pathname, search: location.search },
+                  // Always add base to path as it is cleaned in getFlowRoutePath and will break a route starting with basename
+                    { pathname: basename + location.pathname, search: location.search },
                     {
                         prevent,
                         redirect,

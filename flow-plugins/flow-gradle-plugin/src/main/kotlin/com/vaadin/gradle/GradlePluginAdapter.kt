@@ -112,6 +112,16 @@ internal class GradlePluginAdapter private constructor(
         return _classFinder
     }
 
+    fun closeClassFinder() {
+        if (::_classFinder.isInitialized && _classFinder is AutoCloseable) {
+            try {
+                (_classFinder as AutoCloseable).close()
+            } catch (e: Exception) {
+                logger.debug("Error closing ClassFinder", e)
+            }
+        }
+    }
+
     private fun createClassFinderClasspath(
         project: Project,
         dependencyConfiguration: Configuration?

@@ -447,8 +447,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return Reflector.of(mavenProject, null, null).getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
+        try (Reflector reflector = Reflector.of(mavenProject, null, null)) {
+            return reflector.getResource(
+                    "com/vaadin/hilla/EndpointController.class") != null;
+        }
     }
 
     /**

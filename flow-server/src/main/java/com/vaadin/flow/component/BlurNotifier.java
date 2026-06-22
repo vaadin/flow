@@ -72,9 +72,28 @@ public interface BlurNotifier<T extends Component> extends Serializable {
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
+        public BlurEvent(C source, boolean fromClient) {
+            super(source, fromClient);
+        }
+
+        /**
+         * BlurEvent constructor with event data for tracking whether the blur
+         * originated from a client-side interaction.
+         *
+         * @param source
+         *            the source component
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise
+         * @param eventFromClient
+         *            value read from
+         *            {@code event.target._nextBlurIsFromClient}, overrides
+         *            {@code fromClient} when non-null
+         * @see ComponentEvent
+         */
         public BlurEvent(C source, boolean fromClient,
                 @EventData("event.target._nextBlurIsFromClient") Boolean eventFromClient) {
-            super(source,
+            this(source,
                     eventFromClient != null ? eventFromClient : fromClient);
         }
     }

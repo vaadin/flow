@@ -24,6 +24,7 @@ import java.io.StringReader;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -55,7 +56,7 @@ public class AtmospherePushConnection
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
-    private volatile boolean disconnecting;
+    private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -190,8 +191,9 @@ public class AtmospherePushConnection
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        if (disconnecting || !isConnected()) {
-            if (disconnecting) {
+        boolean isDisconnecting = disconnecting.get();
+        if (isDisconnecting || !isConnected()) {
+            if (isDisconnecting) {
                 getLogger().debug(
                         "Disconnection in progress, ignoring push request");
             }
@@ -202,6 +204,20 @@ public class AtmospherePushConnection
             }
         } else {
             synchronized (lock) {
+                // A concurrent disconnect() may have cleared the
+                // resource and transitioned state to DISCONNECTED while
+                // this thread was waiting to enter the monitor. In that
+                // case treat the push as if disconnecting had been
+                // observed above: defer it and skip sendMessage, which
+                // would otherwise NPE on the null resource.
+                if (!isConnected()) {
+                    if (async && state != State.RESPONSE_PENDING) {
+                        state = State.PUSH_PENDING;
+                    } else {
+                        state = State.RESPONSE_PENDING;
+                    }
+                    return;
+                }
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
@@ -324,22 +340,26 @@ public class AtmospherePushConnection
         // to skip the operation. This also prevents potential deadlocks if the
         // container acquires locks during operations on HTTP session, as
         // closing the AtmosphereResource may cause HTTP session access
-        if (disconnecting) {
+        // Atomically claim the right to disconnect. Only one thread can
+        // pass this gate - eliminates the TOCTOU (time-of-check-time-of-use)
+        // race that existed when the volatile boolean was checked outside
+        // synchronized(lock) but set inside it.
+        if (!disconnecting.compareAndSet(false, true)) {
             getLogger().debug(
                     "Disconnection already in progress, ignoring request");
             return;
         }
 
-        synchronized (lock) {
-            if (!isConnected() || resource == null) {
-                // Already disconnected. Should not happen but if it does,
-                // we don't want to cause NPEs
-                getLogger().debug(
-                        "Disconnection already happened, ignoring request");
-                return;
-            }
-            try {
-                disconnecting = true;
+        AtmosphereResource resourceToClose;
+        try {
+            synchronized (lock) {
+                if (!isConnected() || resource == null) {
+                    // Already disconnected. Should not happen but if it does,
+                    // we don't want to cause NPEs
+                    getLogger().debug(
+                            "Disconnection already happened, ignoring request");
+                    return;
+                }
                 if (resource.isResumed()) {
                     // This can happen for long polling because of
                     // http://dev.vaadin.com/ticket/16919
@@ -368,15 +388,27 @@ public class AtmospherePushConnection
                     }
                     outgoingMessage = null;
                 }
+                // Capture the resource and transition this connection to
+                // the disconnected state BEFORE releasing the monitor, so
+                // concurrent push() callers observe an already-closed
+                // connection and skip sendMessage. The actual
+                // resource.close() call is performed outside of
+                // synchronized(lock) below, to avoid a lock-ordering
+                // deadlock between this monitor and the HTTP session
+                // lock that the servlet container may acquire while
+                // closing the AtmosphereResource.
+                resourceToClose = resource;
+                connectionLost();
+            }
+            if (resourceToClose != null) {
                 try {
-                    resource.close();
+                    resourceToClose.close();
                 } catch (IOException e) {
                     getLogger().info("Error when closing push connection", e);
                 }
-                connectionLost();
-            } finally {
-                disconnecting = false;
             }
+        } finally {
+            disconnecting.set(false);
         }
     }
 
@@ -434,7 +466,7 @@ public class AtmospherePushConnection
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
-        disconnecting = false;
+        disconnecting = new AtomicBoolean(false);
         lock = new Object();
     }
 

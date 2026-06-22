@@ -28,8 +28,7 @@ import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
-import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
-
+//#serviceWorkerPluginImport#
 import { createRequire } from 'module';
 
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -612,6 +611,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
         allow: allowedFrontendFolders
       }
     },
+    esbuild: {
+        legalComments: 'inline',
+    },
     build: {
       minify: productionMode,
       outDir: buildOutputFolder,
@@ -670,9 +672,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && serviceWorkerPlugin({
-        srcPath: settings.clientServiceWorkerSource,
-      }),
+      //#serviceWorkerPlugin#
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),

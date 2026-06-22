@@ -79,58 +79,62 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinBuildFrontend() {
-        val config = adapter.get().config
-        logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        // sanity check
-        val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+        try {
+            val config = adapter.get().config
+            logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
+            // sanity check
+            val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
+            check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
-        val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
-            .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
-            .withFrontendGeneratedFolder(config.generatedTsFolder.get())
-        val cleanTask = TaskCleanFrontendFiles(options)
+            val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
+                .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
+                .withFrontendGeneratedFolder(config.generatedTsFolder.get())
+            val cleanTask = TaskCleanFrontendFiles(options)
 
-        val reactEnabled: Boolean = adapter.get().isReactEnabled()
-                && FrontendUtils.isReactRouterRequired(
-            BuildFrontendUtil.getFrontendDirectory(adapter.get())
-        )
-        val featureFlags: FeatureFlags = FeatureFlags(
-            adapter.get().createLookup(adapter.get().getClassFinder())
-        )
-        if (adapter.get().javaResourceFolder() != null) {
-            featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
-        }
-        val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
-            .createScanner(
-                !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
-                adapter.get().generateEmbeddableWebComponents(), featureFlags,
-                reactEnabled
+            val reactEnabled: Boolean = adapter.get().isReactEnabled()
+                    && FrontendUtils.isReactRouterRequired(
+                BuildFrontendUtil.getFrontendDirectory(adapter.get())
             )
-
-        BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
-
-        if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
-                (adapter.get().servletResourceOutputDirectory())) {
-            BuildFrontendUtil.runFrontendBuild(adapter.get())
-            if (cleanFrontendFiles()) {
-                cleanTask.execute()
+            val featureFlags: FeatureFlags = FeatureFlags(
+                adapter.get().createLookup(adapter.get().getClassFinder())
+            )
+            if (adapter.get().javaResourceFolder() != null) {
+                featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
             }
-        }
-        LicenseChecker.setStrictOffline(true)
-        val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
-            Pair(
-                BuildFrontendUtil.validateLicenses(
-                    adapter.get(),
-                    frontendDependencies
-                ), false
-            )
-        } catch (e: MissingLicenseKeyException) {
-            logger.info(e.message)
-            Pair(true, true)
-        }
+            val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
+                .createScanner(
+                    !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
+                    adapter.get().generateEmbeddableWebComponents(), featureFlags,
+                    reactEnabled
+                )
 
-        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
-        )
+            BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
+
+            if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
+                    (adapter.get().servletResourceOutputDirectory())) {
+                BuildFrontendUtil.runFrontendBuild(adapter.get())
+                if (cleanFrontendFiles()) {
+                    cleanTask.execute()
+                }
+            }
+            LicenseChecker.setStrictOffline(true)
+            val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
+                Pair(
+                    BuildFrontendUtil.validateLicenses(
+                        adapter.get(),
+                        frontendDependencies
+                    ), false
+                )
+            } catch (e: MissingLicenseKeyException) {
+                logger.info(e.message)
+                Pair(true, true)
+            }
+
+            BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
+            )
+        } finally {
+            adapter.get().closeClassFinder()
+        }
     }
 
 
