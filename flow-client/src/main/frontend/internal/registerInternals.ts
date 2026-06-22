@@ -55,6 +55,7 @@ import {
 } from './PolymerUtils';
 import { doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import { getContextExecutionObject } from './ExecuteJavaScriptProcessor';
+import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './StorageUtil';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -126,6 +127,7 @@ export function registerInternals(): void {
   };
   internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect, doConnect };
   internal.ExecuteJavaScriptProcessor = { getContextExecutionObject };
+  internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
