@@ -23,6 +23,8 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -41,6 +43,14 @@ import com.vaadin.flow.shared.Registration;
  * may reach the server arbitrarily later than the gesture itself, after one or
  * more event-loop turns.
  * <p>
+ * A trigger only does something once it is armed with an action: every trigger
+ * is expected to have an action committed to it — via
+ * {@link #triggers(Action...)} or its deferred
+ * {@link #triggers(Component, SerializableSupplier)} overload — during the same
+ * server visit that creates it. A trigger left unarmed is treated as a
+ * programming error and reported with an {@link IllegalStateException} when the
+ * client response is built.
+ * <p>
  * Each {@link Action} passed to {@link #triggers(Action...)} produces one
  * {@link Element#addJsInitializer addJsInitializer} registration on the host
  * element via {@link #install(JsFunction)} — so a call with N actions yields N
@@ -56,6 +66,13 @@ public abstract class Trigger implements Serializable {
     private final Element host;
     private final List<Registration> registrations = new ArrayList<>();
 
+    // Whether an action has been committed to this trigger, whether wired
+    // straight away by triggers(Action...) or scheduled by the deferred
+    // triggers(Component, SerializableSupplier) overload. The unarmed-trigger
+    // check reads this rather than the registration list so a legitimately
+    // deferred wiring is not mistaken for a forgotten one.
+    private boolean armed;
+
     /**
      * Creates a new trigger bound to the given host component's root element.
      *
@@ -65,6 +82,44 @@ public abstract class Trigger implements Serializable {
      */
     protected Trigger(Component host) {
         this.host = Objects.requireNonNull(host).getElement();
+        verifyArmedBeforeClientResponse();
+    }
+
+    /**
+     * Schedules a check, run once the host is attached and just before the
+     * client response is built, that fails if no action was committed to this
+     * trigger via {@link #triggers(Action...)} or its deferred
+     * {@link #triggers(Component, SerializableSupplier)} overload.
+     * <p>
+     * A trigger with no action does nothing on the client, so an unarmed
+     * trigger is almost always a bug — typically a fluent binding whose
+     * terminal action call was forgotten (for example
+     * {@code Clipboard.onClick(button)} with no following
+     * {@code writeText(…)}). The check is deferred to
+     * {@code beforeClientResponse} rather than run from the constructor because
+     * the action is committed in a separate call right after construction;
+     * deferring lets that call happen first. The check looks at whether an
+     * action was <em>committed</em>, not whether it has been wired yet, so the
+     * deferred {@code triggers} overload — which records the action now but
+     * wires it only once a target component attaches, possibly in a later round
+     * trip — passes from the moment it is called.
+     */
+    private void verifyArmedBeforeClientResponse() {
+        StateNode node = host.getNode();
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(node, context -> {
+                    if (!armed) {
+                        throw new IllegalStateException("A "
+                                + getClass().getSimpleName()
+                                + " was created but no action was assigned to "
+                                + "it, so it does nothing. Assign at least one "
+                                + "action to the trigger when you create it — "
+                                + "for example "
+                                + "Clipboard.onClick(button).writeText(field) "
+                                + "rather than Clipboard.onClick(button) on its "
+                                + "own.");
+                    }
+                }));
     }
 
     /**
@@ -90,11 +145,43 @@ public abstract class Trigger implements Serializable {
             throw new IllegalArgumentException(
                     "At least one action is required");
         }
+        armed = true;
         for (Action action : actions) {
             Objects.requireNonNull(action, "Action must not be null");
             registrations.add(Objects.requireNonNull(install(action.toJs(this)),
                     "install must return a Registration"));
         }
+    }
+
+    /**
+     * Deferred variant of {@link #triggers(Action...)}: builds the action via
+     * {@code action} and wires it once {@code attachTarget} is attached to a UI
+     * — immediately if it already is. Use this overload when the action can
+     * only be built after some component is attached (for example because the
+     * action needs the UI's wrapper element, or wants to inspect the target's
+     * visibility as it will be at install time), so the {@link Action} cannot
+     * be constructed up front and handed to {@link #triggers(Action...)}.
+     * <p>
+     * The trigger counts as armed from the moment this method is called, so the
+     * unarmed-trigger check is satisfied straight away even though the actual
+     * wiring waits for the attach — exactly what distinguishes a legitimately
+     * deferred binding from a forgotten one.
+     *
+     * @param attachTarget
+     *            the component whose attach gates the wiring, not {@code null}
+     * @param action
+     *            supplies the action to wire once {@code attachTarget} is
+     *            attached, not {@code null}
+     */
+    public final void triggers(Component attachTarget,
+            SerializableSupplier<Action> action) {
+        Objects.requireNonNull(attachTarget, "attachTarget must not be null");
+        Objects.requireNonNull(action, "action must not be null");
+        // Record intent now so the deferred wiring is not flagged as forgotten;
+        // the actual triggers(...) call (which also sets armed) runs at attach.
+        armed = true;
+        attachTarget.getElement().getNode()
+                .runWhenAttached(ui -> triggers(action.get()));
     }
 
     /**

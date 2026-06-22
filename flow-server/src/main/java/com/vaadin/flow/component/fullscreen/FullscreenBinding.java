@@ -100,8 +100,11 @@ public final class FullscreenBinding implements Serializable {
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component,
-                () -> bind(new RequestFullscreenAction(component)));
+        // Defer wiring until the target attaches so RequestFullscreenAction can
+        // resolve the UI's wrapper element and see the target's install-time
+        // visibility; the trigger counts as armed straight away.
+        trigger.triggers(component,
+                () -> new RequestFullscreenAction(component));
     }
 
     /**
@@ -119,18 +122,8 @@ public final class FullscreenBinding implements Serializable {
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component, () -> bind(
-                new RequestFullscreenAction(component, onSuccess, onError)));
-    }
-
-    private static void whenAttached(Component component, Runnable task) {
-        // Defer wiring until attach so the action's wrapper-element lookup
-        // (target.getUI().getInternals().getWrapperElement()) has a UI to
-        // resolve against, and so that RequestFullscreenAction's visibility
-        // check sees the same visibility state as the install JS would.
-        // runWhenAttached fires immediately if already attached and is
-        // one-shot otherwise.
-        component.getElement().getNode().runWhenAttached(ui -> task.run());
+        trigger.triggers(component, () -> new RequestFullscreenAction(component,
+                onSuccess, onError));
     }
 
     private void bind(RequestFullscreenAction action) {
