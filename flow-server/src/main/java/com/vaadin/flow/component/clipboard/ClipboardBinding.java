@@ -37,10 +37,12 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
- * Fluent surface returned from {@link Clipboard#onClick}. Each {@code write*}
- * action attaches one {@link WriteToClipboardAction} to the underlying
- * {@link Trigger}; each {@code read*} action attaches one
- * {@link ReadFromClipboardAction}.
+ * Fluent surface returned from {@link Clipboard#onClick}, used to declare what
+ * a click should write to or read from the clipboard. The {@code write*}
+ * methods copy a value (literal text, a field's value, HTML, or an image) to
+ * the clipboard; the {@code read*} methods read the clipboard contents back.
+ * The action runs in the browser at click time, while the user gesture that
+ * clipboard access requires is still valid.
  * <p>
  * Write actions come in two flavours: fire-and-forget (one argument) and
  * observed (with {@code onCopied}/{@code onError} callbacks). {@code onCopied}
