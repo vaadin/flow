@@ -82,11 +82,10 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (Browser.CHROME == getRunLocallyBrowser()) {
             driver = new ChromeDriver(chromeOptions);
         } else {
-            // Temporary workaround for dev tools websocket connection errors
-            // in the CI environment.
-            log.warn(
-                    "Forcing Chrome 143.0 for tests using Selenium dev tools to avoid websocket connection issues in CI");
-            chromeOptions.setBrowserVersion("143.0");
+            // Starting from Chrome 144, CDP is not enabled by default and must
+            // be enabled explicitly with --remote-debugging-port option.
+            // This only affects CI builds, not local runs of GH actions
+            chromeOptions.addArguments("--remote-debugging-port=9222");
             URL remoteURL = new URL(getHubURL());
             driver = new RemoteWebDriver(remoteURL, chromeOptions);
             setDevToolsRuntimeCapabilities((RemoteWebDriver) driver, remoteURL);

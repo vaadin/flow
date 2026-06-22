@@ -19,6 +19,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -194,10 +196,165 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         }
     }
 
+    @Test
+    public void hopByHopRequestHeadersAreNotForwardedToDevServer()
+            throws Exception {
+        handler = new DummyRunner();
+        waitForDevServer();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(Mockito.mock(ServletOutputStream.class));
+
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/test.js");
+        Mockito.when(request.getRequestURI()).thenReturn("/VAADIN/test.js");
+
+        // Simulate browser headers including hop-by-hop
+        List<String> headerNames = List.of("Connection", "Keep-Alive", "Accept",
+                "Host", "Accept-Encoding");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(headerNames));
+        Mockito.when(request.getHeader("Connection")).thenReturn("keep-alive");
+        Mockito.when(request.getHeader("Keep-Alive")).thenReturn("timeout=5");
+        Mockito.when(request.getHeader("Accept")).thenReturn("*/*");
+        Mockito.when(request.getHeader("Host")).thenReturn("localhost:8080");
+        Mockito.when(request.getHeader("Accept-Encoding")).thenReturn("gzip");
+
+        HttpURLConnection connection = Mockito.mock(HttpURLConnection.class);
+        Mockito.when(connection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_OK);
+        Mockito.when(connection.getHeaderFields()).thenReturn(Map.of());
+        Mockito.when(connection.getInputStream())
+                .thenReturn(new ByteArrayInputStream(new byte[0]));
+
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .thenReturn(connection);
+
+        devServer.serveDevModeRequest(request, response);
+
+        // Hop-by-hop headers must not be forwarded
+        Mockito.verify(connection, Mockito.never()).setRequestProperty(
+                Mockito.eq("Connection"), Mockito.eq("keep-alive"));
+        Mockito.verify(connection, Mockito.never()).setRequestProperty(
+                Mockito.eq("Keep-Alive"), Mockito.anyString());
+
+        // Connection must be set to close since it's not reused
+        Mockito.verify(connection).setRequestProperty("Connection", "close");
+
+        // Non-hop-by-hop headers must be forwarded
+        Mockito.verify(connection).setRequestProperty("Accept", "*/*");
+        Mockito.verify(connection).setRequestProperty("Host", "localhost:8080");
+        Mockito.verify(connection).setRequestProperty("Accept-Encoding",
+                "gzip");
+    }
+
+    @Test
+    public void hopByHopAndContentLengthResponseHeadersAreNotForwardedToBrowser()
+            throws Exception {
+        handler = new DummyRunner();
+        waitForDevServer();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        ServletOutputStream outputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/test.js");
+        Mockito.when(request.getRequestURI()).thenReturn("/VAADIN/test.js");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        // Dev server response with hop-by-hop headers, Content-Length, and
+        // a legitimate end-to-end header
+        Map<String, List<String>> responseHeaders = new LinkedHashMap<>();
+        responseHeaders.put(null, List.of("HTTP/1.1 200 OK"));
+        responseHeaders.put("Content-Type", List.of("application/javascript"));
+        responseHeaders.put("Content-Length", List.of("42"));
+        responseHeaders.put("Connection", List.of("keep-alive"));
+        responseHeaders.put("Keep-Alive", List.of("timeout=5"));
+        responseHeaders.put("Transfer-Encoding", List.of("chunked"));
+
+        HttpURLConnection connection = Mockito.mock(HttpURLConnection.class);
+        Mockito.when(connection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_OK);
+        Mockito.when(connection.getHeaderFields()).thenReturn(responseHeaders);
+        Mockito.when(connection.getInputStream())
+                .thenReturn(new ByteArrayInputStream(new byte[0]));
+
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .thenReturn(connection);
+
+        devServer.serveDevModeRequest(request, response);
+
+        // Only end-to-end headers should be forwarded
+        Mockito.verify(response).setHeader("Content-Type",
+                "application/javascript");
+
+        // Hop-by-hop headers must not be forwarded (RFC 9110 Section 7.6.1)
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("Connection"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never())
+                .addHeader(Mockito.eq("Connection"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("Keep-Alive"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never())
+                .addHeader(Mockito.eq("Keep-Alive"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never()).setHeader(
+                Mockito.eq("Transfer-Encoding"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never()).addHeader(
+                Mockito.eq("Transfer-Encoding"), Mockito.anyString());
+
+        // Content-Length must not be forwarded (RFC 9110 Section 8.6:
+        // may not match actual bytes after HttpURLConnection decoding)
+        Mockito.verify(response, Mockito.never())
+                .setHeader(Mockito.eq("Content-Length"), Mockito.anyString());
+        Mockito.verify(response, Mockito.never())
+                .addHeader(Mockito.eq("Content-Length"), Mockito.anyString());
+    }
+
+    @Test
+    public void outputStreamNotClosedAfterSendError() throws Exception {
+        handler = new DummyRunner();
+        waitForDevServer();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        ServletOutputStream outputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/test.js");
+        Mockito.when(request.getRequestURI()).thenReturn("/VAADIN/test.js");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        HttpURLConnection connection = Mockito.mock(HttpURLConnection.class);
+        Mockito.when(connection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        Mockito.when(connection.getHeaderFields()).thenReturn(Map.of());
+
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .thenReturn(connection);
+
+        devServer.serveDevModeRequest(request, response);
+
+        // sendError() commits the response; closing the output stream
+        // after that can throw in some servlet containers
+        Mockito.verify(response)
+                .sendError(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        Mockito.verify(outputStream, Mockito.never()).close();
+    }
+
     private void assertOnDevProcessEnvironment(
             Class<? extends InetAddress> loopbackAddressType,
             Consumer<Map<String, String>> op) {
         final DevServerWatchDog watchDog = new DevServerWatchDog();
+        watchDog.start();
         final InetAddress loopbackAddress = findLocalhostAddress(
                 loopbackAddressType);
         try {

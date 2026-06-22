@@ -39,7 +39,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -226,6 +225,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String content = FileUtils.readFileToString(npmRcFile,
                 StandardCharsets.UTF_8);
         Assert.assertTrue(content.contains("shamefully-hoist"));
+        Assert.assertTrue(content.contains("node-linker=hoisted"));
     }
 
     @Test
@@ -455,8 +455,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private NodeUpdater createNodeUpdater(String versionsContent) {
         options.withBuildDirectory(TARGET);
 
-        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        return new NodeUpdater(options) {
 
             @Override
             public void execute() {

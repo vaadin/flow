@@ -87,7 +87,15 @@ public final class PublicStyleSheetBundler {
         }
         String normalized = normalizeUrl(url);
         for (File root : sourceRoots) {
-            File entry = new File(root, normalized);
+            String relativePath = normalized;
+            if (relativePath.startsWith("frontend/")
+                    && isCopiedJarResourcesRoot(root)) {
+                // Addon resources under META-INF/resources/frontend/ are
+                // copied to jar-resources with the frontend/ prefix stripped
+                // by TaskCopyFrontendFiles, so look up without it
+                relativePath = relativePath.substring("frontend/".length());
+            }
+            File entry = new File(root, relativePath);
             if (entry.exists() && entry.isFile()) {
                 try {
                     String bundled = CssBundler.inlineImportsForPublicResources(
@@ -102,6 +110,11 @@ public final class PublicStyleSheetBundler {
             }
         }
         return Optional.empty();
+    }
+
+    private static boolean isCopiedJarResourcesRoot(File root) {
+        String path = FrontendUtils.getUnixPath(root.toPath());
+        return path.endsWith("generated/jar-resources");
     }
 
     /**

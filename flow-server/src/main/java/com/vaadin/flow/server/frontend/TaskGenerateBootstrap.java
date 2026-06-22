@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
@@ -46,13 +45,10 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     static final String DEV_TOOLS_IMPORT = String.format(
             "import '%svaadin-dev-tools.js';%n",
             FrontendUtils.JAR_RESOURCES_IMPORT + "vaadin-dev-tools/");
-    private final FrontendDependenciesScanner frontDeps;
     private final Options options;
     private List<TypeScriptBootstrapModifier> modifiers;
 
-    TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            Options options) {
-        this.frontDeps = frontDeps;
+    TaskGenerateBootstrap(Options options) {
         this.options = options;
         this.modifiers = new ArrayList<>();
         for (Class<? extends TypeScriptBootstrapModifier> modifierClass : options
@@ -83,7 +79,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines, options, frontDeps);
+            modifier.modify(lines, options);
         }
         lines.add(0,
                 String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
@@ -99,7 +95,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        return frontDeps != null;
+        return options.getFrontendDependenciesScanner() != null;
     }
 
     private String getIndexTsEntryPath() {
@@ -117,7 +113,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         lines.add("import './app-shell-imports.js';");
-        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
+        ThemeDefinition themeDef = options.getFrontendDependenciesScanner()
+                .getThemeDefinition();
         if (themeDef != null && !"".equals(themeDef.getName())) {
             lines.add("import './theme-" + themeDef.getName()
                     + ".global.generated.js';");

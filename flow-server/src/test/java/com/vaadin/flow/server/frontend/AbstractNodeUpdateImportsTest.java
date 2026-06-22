@@ -78,8 +78,9 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true)
-                .withBundleBuild(true);
-        updater = new TaskUpdateImports(getScanner(classFinder), options) {
+                .withBundleBuild(true)
+                .withFrontendDependenciesScanner(getScanner(classFinder));
+        updater = new TaskUpdateImports(options) {
             @Override
             Logger log() {
                 return logger;
