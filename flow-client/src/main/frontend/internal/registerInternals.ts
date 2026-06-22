@@ -53,7 +53,7 @@ import {
   splice,
   storeNodeId
 } from './PolymerUtils';
-import { doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
+import { doConnect, doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -123,7 +123,7 @@ export function registerInternals(): void {
     storeNodeId,
     setProperty
   };
-  internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect };
+  internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect, doConnect };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
