@@ -810,20 +810,24 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Warns about platform-managed packages that the project has pinned in
-     * {@code package.json} to a version from a different minor or major range
-     * than the one expected by the current Vaadin version.
+     * Warns about platform-managed packages that the project has pinned in the
+     * {@code dependencies} or {@code devDependencies} of {@code package.json}
+     * to a version from a different minor or major range than the one expected
+     * by the current Vaadin version.
      * <p>
      * This is checked on the package.json as it is read, before the version
-     * locking updates it, so that pins that the build would simply overwrite
-     * are not reported. Only values that differ from the ones Vaadin manages
-     * (kept in the {@code vaadin} section) are considered, as those are the
-     * explicit opt-outs that the build leaves untouched. Pinning a package to
-     * another maintenance (patch) release of the same minor is a supported way
-     * of picking up a fix early, but pinning it to a different minor or major
-     * version is usually a mistake, since the rest of the platform is built and
-     * tested against the expected version. Such mismatches can lead to runtime
-     * errors or broken generated frontend files (a blank page).
+     * locking updates it, so that pins the build would simply overwrite are not
+     * reported. Only values that differ from the ones Vaadin manages (kept in
+     * the {@code vaadin} section) are considered, as those are the explicit
+     * opt-outs that the build leaves untouched. Entries in the
+     * {@code overrides} section are intentionally not reported here, as those
+     * are reconciled with the platform versions by the override management.
+     * Pinning a package to another maintenance (patch) release of the same
+     * minor is a supported way of picking up a fix early, but pinning it to a
+     * different minor or major version is usually a mistake, since the rest of
+     * the platform is built and tested against the expected version. Such
+     * mismatches can lead to runtime errors or broken generated frontend files
+     * (a blank page).
      *
      * @param packageJson
      *            the package.json as read, before version locking
@@ -844,16 +848,13 @@ public class TaskUpdatePackages extends NodeUpdater {
                 sectionToMap(
                         vaadin == null ? null : vaadin.get(DEV_DEPENDENCIES)),
                 expectedVersions, DEV_DEPENDENCIES, mismatches);
-        collectRangeMismatches(projectOverrides(packageJson),
-                flatOverrides(vaadin == null ? null : vaadin.get(OVERRIDES)),
-                expectedVersions, OVERRIDES, mismatches);
 
         if (!mismatches.isEmpty()) {
             log().warn(
                     """
                             The following packages are pinned in package.json to a different \
                             minor/major version than the version expected by the current Vaadin \
-                            version. Overriding to another maintenance release is supported, but \
+                            version. Pinning to another maintenance release is supported, but \
                             using a different minor or major version is usually a mistake and may \
                             cause runtime errors or a blank page:
                             {}
@@ -916,26 +917,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             map.put(key, section.get(key).asString());
         }
         return map;
-    }
-
-    private Map<String, String> flatOverrides(JsonNode overrides) {
-        if (overrides == null) {
-            return Map.of();
-        }
-        return flattenOverrides((ObjectNode) overrides);
-    }
-
-    /**
-     * Returns the project's overrides as a flat map, reading from the
-     * {@code pnpm.overrides} section when pnpm is enabled and from the
-     * top-level {@code overrides} section otherwise.
-     */
-    private Map<String, String> projectOverrides(ObjectNode packageJson) {
-        if (enablePnpm && packageJson.has(PNPM)
-                && packageJson.get(PNPM).has(OVERRIDES)) {
-            return flatOverrides(packageJson.get(PNPM).get(OVERRIDES));
-        }
-        return flatOverrides(packageJson.get(OVERRIDES));
     }
 
     /**

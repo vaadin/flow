@@ -280,55 +280,15 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void warnOnVersionRangeMismatch_overrideToDifferentMinor_warningLogged()
+    void execute_dependencyPinnedToDifferentMinor_warningLogged()
             throws IOException {
-        // platform expects 25.3.x for dialog, but the overrides section locks
-        // it to a different minor (25.1.0)
-        createVaadinVersionsJson("25.3.0", PLATFORM_ELEMENT_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
-
-        ObjectNode packageJson = JacksonUtils.createObjectNode();
-        ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put(VAADIN_DIALOG, "25.1.0");
-        packageJson.set(OVERRIDES, overrides);
-
-        Logger logger = Mockito.mock(Logger.class);
-        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
-
-        Mockito.verify(logger, Mockito.times(1)).warn(Mockito.anyString(),
-                Mockito.contains(VAADIN_DIALOG));
-    }
-
-    @Test
-    void warnOnVersionRangeMismatch_overrideToDifferentMaintenanceRelease_noWarning()
-            throws IOException {
-        // override only differs from the expected version in the maintenance
-        // (patch) part, which is supported and should not warn
-        createVaadinVersionsJson("25.1.4", PLATFORM_ELEMENT_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
-
-        ObjectNode packageJson = JacksonUtils.createObjectNode();
-        ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put(VAADIN_DIALOG, "25.1.0");
-        packageJson.set(OVERRIDES, overrides);
-
-        Logger logger = Mockito.mock(Logger.class);
-        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
-
-        Mockito.verifyNoInteractions(logger);
-    }
-
-    @Test
-    void execute_overridesDriftedToOlderMinor_warningLogged()
-            throws IOException {
-        // Reproduces #24702: the overrides section keeps a transitive component
-        // pinned to an older minor (25.1.0) than the platform now expects
-        // (25.3.0-SNAPSHOT). Such a stale override is a user opt-out that the
-        // version locking leaves in place, so the build should warn about it.
-        // A SNAPSHOT platform version is used to match the reported scenario.
+        // The project pins dialog in 'dependencies' to an older minor (25.1.0)
+        // than the platform expects (25.3.0-SNAPSHOT). The version locking
+        // respects this user pin, so the build should warn about it. A SNAPSHOT
+        // platform version is used to match the scenario in #24702.
         createVaadinVersionsJson("25.3.0-SNAPSHOT",
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
-        writeDriftedPackageJson("25.1.0");
+        writePinnedDependencyPackageJson("25.1.0");
 
         Logger logger = Mockito.mock(Logger.class);
         createTaskWithLogger(logger, Collections.emptyMap()).execute();
@@ -338,45 +298,69 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void execute_overridesDriftedWithinSameMinor_noWarning()
+    void warnOnVersionRangeMismatch_dependencyPinnedToMaintenanceRelease_noWarning()
             throws IOException {
-        // A drift that stays within the same minor (25.3.0 expected, 25.3.1
-        // pinned) is a supported maintenance override and should not warn.
-        createVaadinVersionsJson("25.3.0", PLATFORM_ELEMENT_MIXIN_VERSION,
+        // The pin differs from the expected version only in the maintenance
+        // (patch) part, which is supported and should not warn.
+        createVaadinVersionsJson("25.1.4", PLATFORM_ELEMENT_MIXIN_VERSION,
                 PLATFORM_OVERLAY_VERSION);
-        writeDriftedPackageJson("25.3.1");
 
         Logger logger = Mockito.mock(Logger.class);
-        createTaskWithLogger(logger, Collections.emptyMap()).execute();
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson("25.1.0", "25.1.4"));
 
-        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
-                Mockito.contains(VAADIN_DIALOG));
+        Mockito.verifyNoInteractions(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_dependencyManagedByVaadin_noWarning()
+            throws IOException {
+        // The dependency matches the Vaadin-managed version, so it is not a
+        // user
+        // opt-out: the build updates it itself and no warning should be
+        // emitted,
+        // even though it is currently from an older minor than expected.
+        createVaadinVersionsJson("25.3.0", PLATFORM_ELEMENT_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson("25.1.4", "25.1.4"));
+
+        Mockito.verifyNoInteractions(logger);
     }
 
     /**
-     * Writes a package.json where {@link #VAADIN_DIALOG} is a transitive
-     * component locked in the overrides section to {@code overrideVersion},
-     * while the Vaadin-managed sections still reference 25.1.4 (simulating a
-     * project upgraded from 25.1).
+     * Builds a package.json where {@link #VAADIN_DIALOG} is declared in
+     * {@code dependencies} at {@code dependencyVersion} while the
+     * Vaadin-managed {@code vaadin.dependencies} section references
+     * {@code vaadinVersion}.
      */
-    private void writeDriftedPackageJson(String overrideVersion)
-            throws IOException {
+    private ObjectNode dependencyPackageJson(String dependencyVersion,
+            String vaadinVersion) {
         ObjectNode packageJson = JacksonUtils.createObjectNode();
-        packageJson.set(DEPENDENCIES, JacksonUtils.createObjectNode());
-        packageJson.set(DEV_DEPENDENCIES, JacksonUtils.createObjectNode());
-
-        ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put(VAADIN_DIALOG, overrideVersion);
-        packageJson.set(OVERRIDES, overrides);
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(VAADIN_DIALOG, dependencyVersion);
+        packageJson.set(DEPENDENCIES, dependencies);
 
         ObjectNode vaadin = JacksonUtils.createObjectNode();
-        vaadin.set(DEPENDENCIES, JacksonUtils.createObjectNode());
-        vaadin.set(DEV_DEPENDENCIES, JacksonUtils.createObjectNode());
-        ObjectNode vaadinOverrides = JacksonUtils.createObjectNode();
-        vaadinOverrides.put(VAADIN_DIALOG, "25.1.4");
-        vaadin.set(OVERRIDES, vaadinOverrides);
+        ObjectNode vaadinDependencies = JacksonUtils.createObjectNode();
+        vaadinDependencies.put(VAADIN_DIALOG, vaadinVersion);
+        vaadin.set(DEPENDENCIES, vaadinDependencies);
         packageJson.set(VAADIN_DEP_KEY, vaadin);
+        return packageJson;
+    }
 
+    /**
+     * Writes a package.json where {@link #VAADIN_DIALOG} is pinned in
+     * {@code dependencies} to {@code dependencyVersion}, while the
+     * Vaadin-managed section still references 25.1.4 (simulating a project
+     * upgraded from 25.1 with a user pin).
+     */
+    private void writePinnedDependencyPackageJson(String dependencyVersion)
+            throws IOException {
+        ObjectNode packageJson = dependencyPackageJson(dependencyVersion,
+                "25.1.4");
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
     }
