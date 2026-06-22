@@ -8,6 +8,12 @@ export interface Product {
   version: string;
 }
 
+export interface DownloadLicenseOptions {
+  // How long, in seconds, the license checker waits for the user to sign in
+  // and download the license before giving up.
+  timeout?: number;
+}
+
 export interface PreTrial {
   trialName?: String;
   trialState: String;
@@ -189,10 +195,10 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
 export const startPreTrial = () => {
   (window as any).Vaadin.devTools.startPreTrial();
 };
-export const tryAcquireLicense = (timeout?: number) => {
+export const tryAcquireLicense = (options?: DownloadLicenseOptions) => {
   const products = Object.values(productMissingLicense);
   if (products.length > 0) {
-    (window as any).Vaadin.devTools.downloadLicense(products[0].product, timeout);
+    (window as any).Vaadin.devTools.downloadLicense(products[0].product, options);
   }
 };
 
