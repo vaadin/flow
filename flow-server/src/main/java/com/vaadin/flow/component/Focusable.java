@@ -139,27 +139,27 @@ public interface Focusable<T extends Component>
         if (json == null) {
             // No options, call focus() without arguments
             element.executeJs("""
-                    setTimeout(function(){
+                    setTimeout(() => {
                         try {
-                           $0._nextFocusIsFromClient = false;
-                           $0.focus();
+                           this._nextFocusIsFromClient = false;
+                           this.focus();
                         } finally {
-                           $0._nextFocusIsFromClient = true;
+                           this._nextFocusIsFromClient = true;
                         }
-                    },0)
-                    """, element);
+                    }, 0)
+                    """);
         } else {
             // Call focus with options object passed as parameter
             element.executeJs("""
-                    setTimeout(function(){
+                    setTimeout(() => {
                         try {
-                           $0._nextFocusIsFromClient = false;
-                           $0.focus($1);
+                           this._nextFocusIsFromClient = false;
+                           this.focus($0);
                         } finally {
-                           $0._nextFocusIsFromClient = true;
+                           this._nextFocusIsFromClient = true;
                         }
-                    },0)
-                    """, element, json);
+                    }, 0)
+                    """, json);
         }
     }
 
@@ -190,15 +190,15 @@ public interface Focusable<T extends Component>
      */
     default void blur() {
         getElement().executeJs("""
-                setTimeout(function(){
+                setTimeout(() => {
                     try {
-                        $0._nextBlurIsFromClient = false;
-                        $0.blur();
+                        this._nextBlurIsFromClient = false;
+                        this.blur();
                     } finally {
-                       $0._nextBlurIsFromClient = true;
+                       this._nextBlurIsFromClient = true;
                     }
-                },0)
-                """, getElement());
+                }, 0)
+                """);
     }
 
     /**
