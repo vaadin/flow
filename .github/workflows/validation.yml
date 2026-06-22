@@ -348,12 +348,12 @@ jobs:
         # Pull requests are analyzed in pull-request mode; pushes to a
         # tracked branch (e.g. 25.2, 24.10) are analyzed as that branch.
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            SCOPE="-Dsonar.branch.name=${{ github.ref_name }}"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            SCOPE="-Dsonar.branch.name=$GITHUB_REF_NAME"
           else
-            SCOPE="-Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
-              -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
-              -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}"
+            SCOPE="-Dsonar.pullrequest.key=$_PR_NUMBER \
+              -Dsonar.pullrequest.base=$_BASE_REF \
+              -Dsonar.pullrequest.branch=$_HEAD_REF"
           fi
           mvn sonar:sonar \
             -ntp -B -e -V \
