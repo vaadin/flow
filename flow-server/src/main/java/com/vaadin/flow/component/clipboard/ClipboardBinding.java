@@ -23,14 +23,8 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
-import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
-import com.vaadin.flow.component.trigger.internal.PropertyInput;
-import com.vaadin.flow.component.trigger.internal.ReadFromClipboardAction;
-import com.vaadin.flow.component.trigger.internal.Trigger;
-import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -38,9 +32,11 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Fluent surface returned from {@link Clipboard#onClick}. Each {@code write*}
- * action attaches one {@link WriteToClipboardAction} to the underlying
- * {@link Trigger}; each {@code read*} action attaches one
- * {@link ReadFromClipboardAction}.
+ * action binds one clipboard write to the trigger component; each {@code read*}
+ * action binds one clipboard read. The binding is a thin facade that resolves
+ * the UI's {@link ClipboardClient} on each call and delegates to
+ * {@link ClipboardClient#registerWrite registerWrite} /
+ * {@link ClipboardClient#registerRead registerRead}.
  * <p>
  * Write actions come in two flavours: fire-and-forget (one argument) and
  * observed (with {@code onCopied}/{@code onError} callbacks). {@code onCopied}
@@ -71,9 +67,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 public final class ClipboardBinding implements Serializable {
 
-    private final Trigger trigger;
+    private final Component trigger;
 
-    ClipboardBinding(Trigger trigger) {
+    ClipboardBinding(Component trigger) {
         this.trigger = Objects.requireNonNull(trigger);
     }
 
@@ -86,7 +82,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeText(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null));
+        write(ClipboardWrite.ofText(literal), null, null);
     }
 
     /**
@@ -106,8 +102,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(new LiteralInput<>(literal), null,
-                onCopied, onError));
+        write(ClipboardWrite.ofText(literal), onCopied, onError);
     }
 
     /**
@@ -126,8 +121,7 @@ public final class ClipboardBinding implements Serializable {
     public <C extends Component & HasValue<?, String>> void writeText(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null));
+        write(ClipboardWrite.ofText(source), null, null);
     }
 
     /**
@@ -150,9 +144,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null,
-                onCopied, onError));
+        write(ClipboardWrite.ofText(source), onCopied, onError);
     }
 
     /**
@@ -164,7 +156,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeHtml(String literal) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal)));
+        write(ClipboardWrite.ofHtml(literal), null, null);
     }
 
     /**
@@ -183,8 +175,7 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(literal, "literal must not be null");
-        bind(new WriteToClipboardAction(null, new LiteralInput<>(literal),
-                onCopied, onError));
+        write(ClipboardWrite.ofHtml(literal), onCopied, onError);
     }
 
     /**
@@ -206,7 +197,7 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeImage(Component source) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(new ImageBlobInput(source)));
+        write(ClipboardWrite.ofImage(new ImageBlobInput(source)), null, null);
     }
 
     /**
@@ -229,8 +220,8 @@ public final class ClipboardBinding implements Serializable {
     public void writeImage(Component source, SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(new ImageBlobInput(source), onCopied,
-                onError));
+        write(ClipboardWrite.ofImage(new ImageBlobInput(source)),
+                runnableAsConsumer(onCopied), onError);
     }
 
     /**
@@ -252,8 +243,8 @@ public final class ClipboardBinding implements Serializable {
      */
     public void writeImage(DownloadHandler handler) {
         Objects.requireNonNull(handler, "handler must not be null");
-        bind(new WriteToClipboardAction(
-                new ImageBlobInput(attachHiddenImg(handler))));
+        write(ClipboardWrite.ofImage(
+                new ImageBlobInput(attachHiddenImg(handler))), null, null);
     }
 
     /**
@@ -276,16 +267,16 @@ public final class ClipboardBinding implements Serializable {
             SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(handler, "handler must not be null");
-        bind(new WriteToClipboardAction(
-                new ImageBlobInput(attachHiddenImg(handler)), onCopied,
-                onError));
+        write(ClipboardWrite
+                .ofImage(new ImageBlobInput(attachHiddenImg(handler))),
+                runnableAsConsumer(onCopied), onError);
     }
 
     private Element attachHiddenImg(DownloadHandler handler) {
         Element img = new Element(Tag.IMG);
         img.getStyle().set("display", "none");
         img.setAttribute("src", handler.allowDisabled());
-        trigger.getHost().appendChild(img);
+        trigger.getElement().appendChild(img);
         return img;
     }
 
@@ -300,8 +291,8 @@ public final class ClipboardBinding implements Serializable {
      */
     public void write(ClipboardContent content) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput(), content.getImageInput()));
+        validateContent(content);
+        write(ClipboardWrite.ofContent(content), null, null);
     }
 
     /**
@@ -322,9 +313,8 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(content, "content must not be null");
-        bind(new WriteToClipboardAction(content.getTextInput(),
-                content.getHtmlInput(), content.getImageInput(), onCopied,
-                onError));
+        validateContent(content);
+        write(ClipboardWrite.ofContent(content), onCopied, onError);
     }
 
     /**
@@ -349,7 +339,8 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(onPayload, "onPayload must not be null");
         Objects.requireNonNull(onError, "onError must not be null");
-        bind(new ReadFromClipboardAction(onPayload, onError));
+        Clipboard.client(trigger).registerRead(trigger, ClipboardReadKind.READ,
+                onPayload, onError);
     }
 
     /**
@@ -368,8 +359,9 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(onText, "onText must not be null");
         Objects.requireNonNull(onError, "onError must not be null");
-        bind(new ReadFromClipboardAction(
-                p -> onText.accept(p == null ? null : p.text()), onError));
+        Clipboard.client(trigger).registerRead(trigger,
+                ClipboardReadKind.READ_TEXT,
+                p -> onText.accept(p == null ? null : p.text()), onError);
     }
 
     /**
@@ -388,11 +380,29 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(onHtml, "onHtml must not be null");
         Objects.requireNonNull(onError, "onError must not be null");
-        bind(new ReadFromClipboardAction(
-                p -> onHtml.accept(p == null ? null : p.html()), onError));
+        Clipboard.client(trigger).registerRead(trigger,
+                ClipboardReadKind.READ_HTML,
+                p -> onHtml.accept(p == null ? null : p.html()), onError);
     }
 
-    private void bind(Action action) {
-        trigger.triggers(action);
+    private void write(ClipboardWrite content,
+            @Nullable SerializableConsumer<@Nullable String> onCopied,
+            @Nullable SerializableConsumer<Error> onError) {
+        Clipboard.client(trigger).registerWrite(trigger, content, onCopied,
+                onError);
+    }
+
+    private static void validateContent(ClipboardContent content) {
+        if (content.getTextInput() == null && content.getHtmlInput() == null
+                && content.getImageInput() == null) {
+            throw new IllegalArgumentException(
+                    "ClipboardContent must have at least one slot set");
+        }
+    }
+
+    private static SerializableConsumer<@Nullable String> runnableAsConsumer(
+            SerializableRunnable onCopied) {
+        Objects.requireNonNull(onCopied, "onCopied must not be null");
+        return ignored -> onCopied.run();
     }
 }

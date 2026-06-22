@@ -17,16 +17,16 @@ package com.vaadin.flow.component.clipboard;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.UUID;
 
-import tools.jackson.databind.JsonNode;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.Registration;
 
@@ -79,31 +79,6 @@ import com.vaadin.flow.shared.Registration;
  */
 public final class Clipboard implements Serializable {
 
-    // The same string is used both as the JS expression evaluated client-side
-    // and as the lookup key in DomEvent#getEventData() server-side. Any drift
-    // between the two would silently produce a null value, so the expressions
-    // are kept in a single constant each. `?.` guards against synthetic events
-    // without a DataTransfer; `|| null` collapses the empty string (the
-    // browser's value for an absent MIME type) and the optional-chain
-    // short-circuit into JSON null.
-    private static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
-    private static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
-
-    // Walks event.composedPath() so the check sees through open shadow DOMs
-    // (e.g. a Vaadin web component's internal <input>). Matches input,
-    // textarea, or anything with isContentEditable; the filter passes only
-    // when none of those are in the path.
-    private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
-            + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
-
-    // DOM event the client paste-upload helper dispatches once every upload of
-    // a paste has settled. A server-side listener for it (registered in
-    // registerFilePaste) does nothing but force a Flow round trip, which
-    // flushes the UI changes the per-file UploadHandler queued via UI.access —
-    // so onFilePaste updates reach the client without @Push. Must stay in sync
-    // with the literal dispatched in flow-client/Clipboard.ts.
-    private static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
-
     /**
      * Request header set by the client-side paste-upload helper on every fetch
      * POST that originates from a paste gesture. The value is a monotonically
@@ -149,7 +124,7 @@ public final class Clipboard implements Serializable {
     public static <T extends Component & ClickNotifier<?>> ClipboardBinding onClick(
             T component) {
         Objects.requireNonNull(component, "component must not be null");
-        return new ClipboardBinding(new ClickTrigger(component));
+        return new ClipboardBinding(component);
     }
 
     /**
@@ -230,7 +205,7 @@ public final class Clipboard implements Serializable {
         Objects.requireNonNull(component, "component must not be null");
         Objects.requireNonNull(options, "options must not be null");
         Objects.requireNonNull(listener, "listener must not be null");
-        return register(component, options, listener);
+        return client(component).registerPaste(component, options, listener);
     }
 
     /**
@@ -285,83 +260,56 @@ public final class Clipboard implements Serializable {
             UploadHandler handler) {
         Objects.requireNonNull(component, "component must not be null");
         Objects.requireNonNull(handler, "handler must not be null");
-        return registerFilePaste(component, handler);
+        return client(component).registerFilePaste(component, handler);
     }
 
-    private static Registration register(Component host, PasteOptions options,
-            SerializableConsumer<PasteEvent> listener) {
-        DomListenerRegistration registration = host.getElement()
-                .addEventListener("paste", domEvent -> {
-                    JsonNode data = domEvent.getEventData();
-                    // mapEventTargetElement() does the DOM ancestor walk in
-                    // the browser to find the closest Flow-tracked element to
-                    // event.target. That gives DOM-truth (not state-tree
-                    // order, which can diverge from DOM for virtual children,
-                    // slotted content, etc.).
-                    Element targetElement = domEvent.getEventTarget()
-                            .orElse(null);
-                    // The JS `|| null` already collapses "" and missing MIME
-                    // types to JSON null; asStringOpt() then yields empty for
-                    // those, so callers see null (not "").
-                    listener.accept(new PasteEvent(host,
-                            data.optional(PASTE_TEXT_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            data.optional(PASTE_HTML_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            targetElement));
-                });
-        registration.addEventData(PASTE_TEXT_EXPR);
-        registration.addEventData(PASTE_HTML_EXPR);
-        registration.mapEventTargetElement();
-        if (!options.includeInputFieldPastes()) {
-            registration.setFilter(PASTE_FILTER_SKIP_EDITABLE);
+    /**
+     * Resolves the {@link ClipboardClient} for the UI the given component
+     * belongs to, installing the default browser-backed client (or a
+     * {@link ClipboardClientFactory}-produced one) on first use. The UI is
+     * taken from the component, falling back to {@link UI#getCurrent()} for
+     * components that are not yet attached.
+     */
+    static ClipboardClient client(Component component) {
+        UI ui = component.getUI().orElseGet(UI::getCurrent);
+        if (ui == null) {
+            throw new IllegalStateException(
+                    "Cannot resolve a UI for the clipboard operation: the "
+                            + "component is not attached and there is no current "
+                            + "UI. Call this from the UI thread, or attach the "
+                            + "component first.");
         }
-        return registration::remove;
+        return client(ui);
     }
 
-    private static Registration registerFilePaste(Component host,
-            UploadHandler handler) {
-        Element element = host.getElement();
-        // setAttribute(name, ElementRequestHandler) registers the handler as a
-        // stream resource and stores its URL as the attribute value. A fresh
-        // UUID scopes the slot per-registration (the same approach as
-        // StreamResource) so multiple file-paste listeners on the same element
-        // resolve to independent upload URLs.
-        String attributeName = "_vaadin-paste-upload-" + UUID.randomUUID();
-        element.setAttribute(attributeName, handler);
+    static ClipboardClient client(UI ui) {
+        ClipboardClient existing = ui.getInternals().getClipboardClient();
+        if (existing != null) {
+            return existing;
+        }
+        ClipboardClientFactory factory = lookupFactory(ui);
+        ClipboardClient client = factory != null ? factory.create(ui)
+                : new BrowserClipboardClient(ui);
+        ui.getInternals().setClipboardClient(client);
+        return client;
+    }
 
-        // Attach a native paste listener in the browser via the TS helper
-        // window.Vaadin.Flow.clipboard.uploadPastedFiles (defined in
-        // flow-client/Clipboard.ts, registered at bootstrap). On each paste the
-        // helper reads the upload URL from the per-registration attribute and
-        // POSTs one upload per file. addJsInitializer re-runs the install on a
-        // real re-attach and invokes the returned cleanup (removeEventListener)
-        // when the registration is removed or the client DOM node is discarded.
-        Registration jsRegistration = element.addJsInitializer("""
-                const upload = (event) => window.Vaadin.Flow.clipboard
-                        .uploadPastedFiles(event, this, $0);
-                this.addEventListener('paste', upload);
-                return () => this.removeEventListener('paste', upload);""",
-                attributeName);
-
-        // Once the helper has finished POSTing a paste's files it dispatches
-        // FILE_PASTE_FINISHED_EVENT on the element. This listener does nothing
-        // on its own — its sole purpose is to make the browser perform a Flow
-        // round trip, which flushes the UI changes the UploadHandler queued via
-        // UI.access while handling each upload. Without it those changes would
-        // sit on the server until the next round trip, which is why the API
-        // would otherwise need @Push.
-        DomListenerRegistration finishedRegistration = element
-                .addEventListener(FILE_PASTE_FINISHED_EVENT, domEvent -> {
-                    // intentionally empty; see comment above
-                });
-
-        return () -> {
-            jsRegistration.remove();
-            finishedRegistration.remove();
-            element.removeAttribute(attributeName);
-        };
+    private static @Nullable ClipboardClientFactory lookupFactory(UI ui) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null && ui.getSession() != null) {
+            service = ui.getSession().getService();
+        }
+        if (service == null) {
+            return null;
+        }
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup == null) {
+            return null;
+        }
+        return lookup.lookup(ClipboardClientFactory.class);
     }
 }
