@@ -49,6 +49,7 @@ import {
   mayBePolymerElement,
   searchForElementInShadowRoot
 } from './PolymerUtils';
+import { doDisconnect, doPush, isAtmosphereLoaded } from './AtmospherePushConnection';
 import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
@@ -114,6 +115,7 @@ export function registerInternals(): void {
     getElementInShadowRootById,
     invokeWhenDefined
   };
+  internal.AtmospherePushConnection = { isAtmosphereLoaded, doPush, doDisconnect };
   internal.WidgetUtil = {
     redirect,
     getAbsoluteUrl,
