@@ -188,7 +188,7 @@ class TriggerTest {
         // the
         // trigger counts as armed immediately — so the check must not fire even
         // though no action has been installed yet.
-        new DomEventTrigger(button, "click").triggersWhenAttached(target,
+        new DomEventTrigger(button, "click").triggers(target,
                 () -> new SetPropertyAction<>(target, "value", "x"));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

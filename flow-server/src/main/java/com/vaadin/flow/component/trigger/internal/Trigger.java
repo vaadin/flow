@@ -45,9 +45,9 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * A trigger only does something once it is armed with an action: every trigger
  * is expected to have an action committed to it — via
- * {@link #triggers(Action...)} or
- * {@link #triggersWhenAttached(Component, SerializableSupplier)} — during the
- * same server visit that creates it. A trigger left unarmed is treated as a
+ * {@link #triggers(Action...)} or its deferred
+ * {@link #triggers(Component, SerializableSupplier)} overload — during the same
+ * server visit that creates it. A trigger left unarmed is treated as a
  * programming error and reported with an {@link IllegalStateException} when the
  * client response is built.
  * <p>
@@ -67,9 +67,10 @@ public abstract class Trigger implements Serializable {
     private final List<Registration> registrations = new ArrayList<>();
 
     // Whether an action has been committed to this trigger, whether wired
-    // straight away by triggers(...) or scheduled by triggersWhenAttached(...).
-    // The unarmed-trigger check reads this rather than the registration list so
-    // a legitimately deferred wiring is not mistaken for a forgotten one.
+    // straight away by triggers(Action...) or scheduled by the deferred
+    // triggers(Component, SerializableSupplier) overload. The unarmed-trigger
+    // check reads this rather than the registration list so a legitimately
+    // deferred wiring is not mistaken for a forgotten one.
     private boolean armed;
 
     /**
@@ -87,8 +88,8 @@ public abstract class Trigger implements Serializable {
     /**
      * Schedules a check, run once the host is attached and just before the
      * client response is built, that fails if no action was committed to this
-     * trigger via {@link #triggers(Action...)} or
-     * {@link #triggersWhenAttached(Component, SerializableSupplier)}.
+     * trigger via {@link #triggers(Action...)} or its deferred
+     * {@link #triggers(Component, SerializableSupplier)} overload.
      * <p>
      * A trigger with no action does nothing on the client, so an unarmed
      * trigger is almost always a bug — typically a fluent binding whose
@@ -98,10 +99,10 @@ public abstract class Trigger implements Serializable {
      * {@code beforeClientResponse} rather than run from the constructor because
      * the action is committed in a separate call right after construction;
      * deferring lets that call happen first. The check looks at whether an
-     * action was <em>committed</em>, not whether it has been wired yet, so
-     * {@code triggersWhenAttached} — which records the action now but wires it
-     * only once a target component attaches, possibly in a later round trip —
-     * passes from the moment it is called.
+     * action was <em>committed</em>, not whether it has been wired yet, so the
+     * deferred {@code triggers} overload — which records the action now but
+     * wires it only once a target component attaches, possibly in a later round
+     * trip — passes from the moment it is called.
      */
     private void verifyArmedBeforeClientResponse() {
         StateNode node = host.getNode();
@@ -153,12 +154,13 @@ public abstract class Trigger implements Serializable {
     }
 
     /**
-     * Wires the action produced by {@code action} to this trigger once
-     * {@code attachTarget} is attached to a UI — immediately if it already is.
-     * Use this instead of {@link #triggers(Action...)} when the action can only
-     * be built after some component is attached (for example because the action
-     * needs the UI's wrapper element, or wants to inspect the target's
-     * visibility as it will be at install time).
+     * Deferred variant of {@link #triggers(Action...)}: builds the action via
+     * {@code action} and wires it once {@code attachTarget} is attached to a UI
+     * — immediately if it already is. Use this overload when the action can
+     * only be built after some component is attached (for example because the
+     * action needs the UI's wrapper element, or wants to inspect the target's
+     * visibility as it will be at install time), so the {@link Action} cannot
+     * be constructed up front and handed to {@link #triggers(Action...)}.
      * <p>
      * The trigger counts as armed from the moment this method is called, so the
      * unarmed-trigger check is satisfied straight away even though the actual
@@ -171,7 +173,7 @@ public abstract class Trigger implements Serializable {
      *            supplies the action to wire once {@code attachTarget} is
      *            attached, not {@code null}
      */
-    public final void triggersWhenAttached(Component attachTarget,
+    public final void triggers(Component attachTarget,
             SerializableSupplier<Action> action) {
         Objects.requireNonNull(attachTarget, "attachTarget must not be null");
         Objects.requireNonNull(action, "action must not be null");

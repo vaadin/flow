@@ -100,7 +100,7 @@ public final class FullscreenBinding implements Serializable {
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        triggersWhenAttached(component,
+        bindWhenAttached(component,
                 () -> new RequestFullscreenAction(component));
     }
 
@@ -119,12 +119,11 @@ public final class FullscreenBinding implements Serializable {
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        triggersWhenAttached(component,
-                () -> new RequestFullscreenAction(component, onSuccess,
-                        onError));
+        bindWhenAttached(component, () -> new RequestFullscreenAction(component,
+                onSuccess, onError));
     }
 
-    private void triggersWhenAttached(Component component,
+    private void bindWhenAttached(Component component,
             SerializableSupplier<Action> action) {
         // Defer wiring until attach so the action's wrapper-element lookup
         // (target.getUI().getInternals().getWrapperElement()) has a UI to
@@ -132,7 +131,7 @@ public final class FullscreenBinding implements Serializable {
         // check sees the same visibility state as the install JS would. The
         // trigger counts as armed straight away, so the deferral is not flagged
         // as a forgotten action.
-        trigger.triggersWhenAttached(component, action);
+        trigger.triggers(component, action);
     }
 
     private void bind(RequestFullscreenAction action) {
