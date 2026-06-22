@@ -41,10 +41,13 @@ import {
 import {
   getDomElementById,
   getDomRoot,
+  getElementInShadowRootById,
+  invokeWhenDefined,
   isInShadowRoot,
   isPolymerElement,
   isReady,
-  mayBePolymerElement
+  mayBePolymerElement,
+  searchForElementInShadowRoot
 } from './PolymerUtils';
 import {
   createJsonObject,
@@ -106,7 +109,10 @@ export function registerInternals(): void {
     isInShadowRoot,
     isReady,
     getDomRoot,
-    getDomElementById
+    getDomElementById,
+    searchForElementInShadowRoot,
+    getElementInShadowRootById,
+    invokeWhenDefined
   };
   internal.WidgetUtil = {
     redirect,

@@ -419,7 +419,7 @@ public final class PolymerUtils {
     public static native Node searchForElementInShadowRoot(
             ShadowRoot shadowRoot, String cssQuery)
     /*-{
-        return shadowRoot.querySelector(cssQuery);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.searchForElementInShadowRoot(shadowRoot, cssQuery);
     }-*/;
 
     /**
@@ -440,7 +440,7 @@ public final class PolymerUtils {
     public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
             String id)
     /*-{
-        return shadowRoot.getElementById(id);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getElementInShadowRootById(shadowRoot, id);
     }-*/;
 
     /**
@@ -548,10 +548,9 @@ public final class PolymerUtils {
     public static native void invokeWhenDefined(String tagName,
             Runnable runnable)
     /*-{
-        $wnd.customElements.whenDefined(tagName).then(
-            function () {
-                runnable.@java.lang.Runnable::run(*)();
-            });
+        $wnd.Vaadin.Flow.internal.PolymerUtils.invokeWhenDefined(tagName, function () {
+            runnable.@java.lang.Runnable::run(*)();
+        });
     }-*/;
 
     /**

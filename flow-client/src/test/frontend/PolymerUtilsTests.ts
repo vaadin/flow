@@ -2,10 +2,13 @@ import { expect } from '@open-wc/testing';
 import {
   getDomElementById,
   getDomRoot,
+  getElementInShadowRootById,
+  invokeWhenDefined,
   isInShadowRoot,
   isPolymerElement,
   isReady,
-  mayBePolymerElement
+  mayBePolymerElement,
+  searchForElementInShadowRoot
 } from '../../main/frontend/internal/PolymerUtils';
 
 describe('PolymerUtils', () => {
@@ -48,5 +51,25 @@ describe('PolymerUtils', () => {
     const el = document.createElement('span');
     expect(getDomElementById({ $: { foo: el } } as unknown as Node, 'foo')).to.equal(el);
     expect(getDomElementById({ $: {} } as unknown as Node, 'missing')).to.equal(null);
+  });
+
+  it('searchForElementInShadowRoot and getElementInShadowRootById query the shadow root', () => {
+    const host = document.createElement('div');
+    const root = host.attachShadow({ mode: 'open' });
+    const child = document.createElement('span');
+    child.id = 'inner';
+    child.className = 'marker';
+    root.appendChild(child);
+    expect(searchForElementInShadowRoot(root, '.marker')).to.equal(child);
+    expect(getElementInShadowRootById(root, 'inner')).to.equal(child);
+    expect(searchForElementInShadowRoot(root, '.nope')).to.equal(null);
+  });
+
+  it('invokeWhenDefined runs the callback once the element is defined', async () => {
+    const tag = 'x-when-defined-test';
+    customElements.define(tag, class extends HTMLElement {});
+    await new Promise<void>((resolve) => {
+      invokeWhenDefined(tag, resolve);
+    });
   });
 });

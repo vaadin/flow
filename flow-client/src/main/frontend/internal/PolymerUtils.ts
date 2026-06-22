@@ -62,3 +62,18 @@ export function getDomRoot(templateElement: Node): Element | null {
 export function getDomElementById(shadowRootParent: Node, id: string): Element | null {
   return (shadowRootParent as unknown as { $: Record<string, Element> }).$[id] ?? null;
 }
+
+/** Finds the first element matching the CSS query inside the shadow root. */
+export function searchForElementInShadowRoot(shadowRoot: ShadowRoot, cssQuery: string): Node | null {
+  return shadowRoot.querySelector(cssQuery);
+}
+
+/** Finds the element with the given id inside the shadow root. */
+export function getElementInShadowRootById(shadowRoot: ShadowRoot, id: string): Node | null {
+  return shadowRoot.getElementById(id);
+}
+
+/** Runs the callback once a custom element with the given tag name is defined. */
+export function invokeWhenDefined(tagName: string, callback: () => void): void {
+  void window.customElements.whenDefined(tagName).then(callback);
+}
