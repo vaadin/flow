@@ -16,7 +16,6 @@
 package com.vaadin.client;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
@@ -31,7 +30,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
-import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.KeyboardEvent;
@@ -266,56 +264,13 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message, String details,
-            String querySelector) {
-        Document document = Browser.getDocument();
-        Element systemErrorContainer = document.createDivElement();
-        // Set the popover attribute for native popovers.
-        systemErrorContainer.setAttribute("popover", "manual");
-        systemErrorContainer.setClassName("v-system-error");
-
-        if (caption != null) {
-            Element captionDiv = document.createDivElement();
-            captionDiv.setClassName("caption");
-            captionDiv.setTextContent(caption);
-            systemErrorContainer.appendChild(captionDiv);
-            Console.error(caption);
-        }
-        if (message != null) {
-            Element messageDiv = document.createDivElement();
-            messageDiv.setClassName("message");
-            messageDiv.setTextContent(message);
-            systemErrorContainer.appendChild(messageDiv);
-            Console.error(message);
-        }
-        if (details != null) {
-            Element detailsDiv = document.createDivElement();
-            detailsDiv.setClassName("details");
-            detailsDiv.setTextContent(details);
-            systemErrorContainer.appendChild(detailsDiv);
-            Console.error(details);
-        }
-        if (querySelector != null) {
-            Element baseElement = document.querySelector(querySelector);
-            // if querySelector does not match an element on the page, the
-            // error will not be displayed
-            if (baseElement != null) {
-                // if the baseElement has a shadow root, add the warning to
-                // the shadow - otherwise add it to the baseElement
-                findShadowRoot(baseElement).orElse(baseElement)
-                        .appendChild(systemErrorContainer);
-            }
-        } else {
-            document.getBody().appendChild(systemErrorContainer);
-        }
-        showPopover(systemErrorContainer);
-
-        return systemErrorContainer;
-    }
-
-    private native void showPopover(Element el)
+    private native Element handleError(String caption, String message,
+            String details, String querySelector)
     /*-{
-        $wnd.Vaadin.Flow.internal.SystemErrorHandler.showPopover(el);
+        return $wnd.Vaadin.Flow.internal.SystemErrorHandler.handleError(caption,
+            message, details, querySelector, function(text) {
+                @com.vaadin.client.Console::error(Ljava/lang/Object;)(text);
+            });
     }-*/;
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
@@ -328,17 +283,8 @@ public class SystemErrorHandler {
         return e;
     }
 
-    private Optional<Element> findShadowRoot(Element host) {
-        return Optional.ofNullable(getShadowRootElement(host));
-    }
-
     private boolean isWebComponentMode() {
         return registry.getApplicationConfiguration().isWebComponentMode();
     }
-
-    private native Element getShadowRootElement(Element host)
-    /*-{
-        return $wnd.Vaadin.Flow.internal.SystemErrorHandler.getShadowRootElement(host);
-    }-*/;
 
 }

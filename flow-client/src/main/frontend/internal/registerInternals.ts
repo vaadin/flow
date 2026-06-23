@@ -22,7 +22,7 @@ import * as ConnectionIndicator from './ConnectionIndicator';
 import { checkForTouchDevice, getBrowserString, isIos } from './BrowserInfo';
 import { resendRequest } from './XhrConnection';
 import { isPropertyDefined } from './ExecuteJavaScriptElementUtils';
-import { getShadowRootElement, recreateNodes, showPopover } from './SystemErrorHandler';
+import { getShadowRootElement, handleError, recreateNodes, showPopover } from './SystemErrorHandler';
 import { applyCaptures, createReturnChannelCallback } from './ClientJsonCodec';
 import {
   addHtmlImportsReadyHandler,
@@ -103,7 +103,7 @@ export function registerInternals(): void {
   internal.BrowserInfo = { getBrowserString, checkForTouchDevice, isIos };
   internal.XhrConnection = { resendRequest };
   internal.ExecuteJavaScriptElementUtils = { isPropertyDefined };
-  internal.SystemErrorHandler = { recreateNodes, showPopover, getShadowRootElement };
+  internal.SystemErrorHandler = { recreateNodes, showPopover, getShadowRootElement, handleError };
   internal.ClientJsonCodec = { createReturnChannelCallback, applyCaptures };
   internal.ResourceLoader = {
     supportsHtmlWhenReady,

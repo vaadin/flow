@@ -1,7 +1,52 @@
 import { expect } from '@open-wc/testing';
-import { getShadowRootElement, recreateNodes, showPopover } from '../../main/frontend/internal/SystemErrorHandler';
+import {
+  getShadowRootElement,
+  handleError,
+  recreateNodes,
+  showPopover
+} from '../../main/frontend/internal/SystemErrorHandler';
 
 describe('SystemErrorHandler', () => {
+  describe('handleError', () => {
+    const created: Element[] = [];
+    const noop = (): void => {};
+    afterEach(() => {
+      created.forEach((el) => el.remove());
+      created.length = 0;
+    });
+
+    it('builds a v-system-error container with a div per provided part and logs each', () => {
+      const logged: string[] = [];
+      const container = handleError('Cap', 'Msg', 'Det', null, (t) => logged.push(t));
+      created.push(container);
+
+      expect(container.className).to.equal('v-system-error');
+      expect(container.getAttribute('popover')).to.equal('manual');
+      expect(container.parentNode).to.equal(document.body);
+      expect(Array.from(container.children).map((c) => c.className)).to.deep.equal(['caption', 'message', 'details']);
+      expect(Array.from(container.children).map((c) => c.textContent)).to.deep.equal(['Cap', 'Msg', 'Det']);
+      expect(logged).to.deep.equal(['Cap', 'Msg', 'Det']);
+    });
+
+    it('omits parts that are null', () => {
+      const logged: string[] = [];
+      const container = handleError('only caption', null, null, null, (t) => logged.push(t));
+      created.push(container);
+      expect(Array.from(container.children).map((c) => c.className)).to.deep.equal(['caption']);
+      expect(logged).to.deep.equal(['only caption']);
+    });
+
+    it('appends to the element matched by the querySelector', () => {
+      const host = document.createElement('div');
+      host.id = 'sys-err-host';
+      document.body.appendChild(host);
+      created.push(host);
+
+      const container = handleError('c', null, null, '#sys-err-host', noop);
+      expect(container.parentNode).to.equal(host);
+    });
+  });
+
   it('recreateNodes replaces matching elements with a shallow clone', () => {
     const el = document.createElement('x-recreate-test');
     (el as unknown as { $server: Record<string, unknown> }).$server = {};
