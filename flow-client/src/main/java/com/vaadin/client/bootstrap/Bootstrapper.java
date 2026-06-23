@@ -206,15 +206,14 @@ public class Bootstrapper implements EntryPoint {
 
     private static native void deferStartApplication(String applicationId)
     /*-{
-        var callback = function() {
+        $wnd.Vaadin.Flow.internal.Bootstrapper.deferStartApplication($entry(function() {
             @Bootstrapper::doStartApplication(*)(applicationId);
-        };
-        $wnd.addEventListener('WebComponentsReady', $entry(callback));
+        }));
     }-*/;
 
     private static native boolean startApplicationImmediately()
     /*-{
-        return !$wnd.WebComponents || $wnd.WebComponents.ready;
+        return $wnd.Vaadin.Flow.internal.Bootstrapper.startApplicationImmediately();
     }-*/;
 
     /**
@@ -227,8 +226,8 @@ public class Bootstrapper implements EntryPoint {
      */
     public static native void registerCallback(String widgetsetName)
     /*-{
-        var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
-        $wnd.Vaadin.Flow.registerWidgetset(widgetsetName, callbackHandler);
+        $wnd.Vaadin.Flow.internal.Bootstrapper.registerCallback(widgetsetName,
+            $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;)));
     }-*/;
 
 }
