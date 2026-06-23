@@ -20,10 +20,10 @@ import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
-import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -72,12 +72,15 @@ public class SystemErrorHandler {
      * @param details
      *            message details or null if there are no details
      * @param message
-     *            an ErrorMessage describing the error
+     *            a native object describing the error, with caption, message
+     *            and url fields
      */
     protected void handleUnrecoverableError(String details,
-            ErrorMessage message) {
-        handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl(), null);
+            JavaScriptObject message) {
+        handleUnrecoverableError(
+                (String) WidgetUtil.getJsProperty(message, "caption"),
+                (String) WidgetUtil.getJsProperty(message, "message"), details,
+                (String) WidgetUtil.getJsProperty(message, "url"), null);
     }
 
     /**
