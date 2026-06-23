@@ -2,7 +2,7 @@ Bundle-SymbolicName: ${project.groupId}.flow.test-root-context
 Bundle-Name: Vaadin Flow Root Context Server Tests
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: !com.vaadin.flow.dom.impl*, com.vaadin.flow.uitest.servlet*, *
 Export-Package: com.vaadin.flow.uitest*;-noimport:=true
 Vaadin-OSGi-Extender: true

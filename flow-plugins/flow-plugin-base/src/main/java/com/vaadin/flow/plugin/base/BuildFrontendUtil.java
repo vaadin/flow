@@ -45,6 +45,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
@@ -491,6 +492,8 @@ public class BuildFrontendUtil {
             Map<String, String> environment, String... params)
             throws TimeoutException {
 
+        validateLicense();
+
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
         if (!buildExecutable.isFile()) {
@@ -536,6 +539,11 @@ public class BuildFrontendUtil {
                     String.format("Failed to run %s due to an error", toolName),
                     e);
         }
+    }
+
+    private static void validateLicense() {
+        LicenseChecker.checkLicense("flow", Version.getFullVersion(),
+                BuildType.PRODUCTION);
     }
 
     /**
