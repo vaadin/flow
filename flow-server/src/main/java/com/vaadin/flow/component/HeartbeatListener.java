@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * Listener for listening to the heartbeat of the application.
  *
- * @since 2.0
+ * @since 23.0
  */
 @FunctionalInterface
 public interface HeartbeatListener extends Serializable {

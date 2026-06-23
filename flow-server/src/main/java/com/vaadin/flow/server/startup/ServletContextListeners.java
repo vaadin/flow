@@ -27,7 +27,7 @@ import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.0
+ * @since 1.1
  */
 @WebListener
 public class ServletContextListeners implements ServletContextListener {

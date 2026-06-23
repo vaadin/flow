@@ -63,7 +63,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * <li>Service worker
  * </ul>
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaRegistry implements Serializable {
 

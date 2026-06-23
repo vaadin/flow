@@ -38,7 +38,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @param <T>
  *            the result type of the future
- * @since 2.1.4
+ * @since 2.2
  */
 public class DeadlockDetectingCompletableFuture<T>
         extends CompletableFuture<T> {

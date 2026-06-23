@@ -30,7 +30,7 @@ import java.util.UUID;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.1.4
+ * @since 2.2
  */
 public final class StringUtil {
 

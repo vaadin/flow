@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -44,7 +44,7 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 2.0
  * @deprecated Use {@code LitTemplateDataAnalyzer} for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
  *             you to use {@code LitTemplate} instead. Read more details from
@@ -75,7 +75,6 @@ public class TemplateDataAnalyzer {
      * Three argument consumer.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      *
      */
     @FunctionalInterface
