@@ -196,7 +196,7 @@ public class Bootstrapper implements EntryPoint {
      */
     private static native JsoConfiguration getJsoConfiguration(String appId)
     /*-{
-        return $wnd.Vaadin.Flow.getApp(appId);
+        return $wnd.Vaadin.Flow.internal.Bootstrapper.getJsoConfiguration(appId);
      }-*/;
 
     private static native boolean vaadinBootstrapLoaded()
