@@ -60,6 +60,15 @@ import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import { isLocalStorageFlagEnabled } from './Console';
 import {
+  getAtmosphereVersion,
+  getConfigBoolean,
+  getConfigError,
+  getConfigString,
+  getConfigStringArray,
+  getConfigValueMap,
+  getVaadinVersion
+} from './JsoConfiguration';
+import {
   getMethods,
   getPolymerPropertyObject,
   initPromiseHandler,
@@ -141,6 +150,15 @@ export function registerInternals(): void {
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.Console = { isLocalStorageFlagEnabled };
+  internal.JsoConfiguration = {
+    getConfigString,
+    getConfigValueMap,
+    getConfigStringArray,
+    getConfigBoolean,
+    getConfigError,
+    getVaadinVersion,
+    getAtmosphereVersion
+  };
   internal.ServerEventObject = {
     initPromiseHandler,
     removeMethod,
