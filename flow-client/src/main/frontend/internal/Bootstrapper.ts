@@ -31,6 +31,10 @@ interface FlowWidgetsetRegistrar {
   Vaadin: { Flow: { registerWidgetset: (widgetsetName: string, callback: (applicationId: string) => void) => void } };
 }
 
+interface FlowAppLookup {
+  Vaadin: { Flow: { getApp: (appId: string) => unknown } };
+}
+
 /**
  * Whether the application can be started immediately, i.e. there is no
  * WebComponents polyfill still loading.
@@ -55,4 +59,12 @@ export function deferStartApplication(callback: () => void): void {
  */
 export function registerCallback(widgetsetName: string, callback: (applicationId: string) => void): void {
   (window as unknown as FlowWidgetsetRegistrar).Vaadin.Flow.registerWidgetset(widgetsetName, callback);
+}
+
+/**
+ * The bootstrap configuration object for the application with the given id, as
+ * stored by the bootstrap JavaScript.
+ */
+export function getJsoConfiguration(appId: string): unknown {
+  return (window as unknown as FlowAppLookup).Vaadin.Flow.getApp(appId);
 }
