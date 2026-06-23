@@ -31,8 +31,6 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.Capabilities;
-import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
@@ -46,11 +44,15 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
  * modes depending on the availability of Vaadin dev tools.
  * <p>
  * With Vaadin dev tools enabled, if the license check fails because of missing
- * license keys, handling is delegated to the Vaadin Dev Server so it can, for
- * example, display the pre-trial splash screen. However, if dev tools are
- * disabled, the License Checker will open the vaadin.com "Validate license"
- * page in a browser window to let the user log in or register and then try to
- * download a valid license.
+ * license keys, handling is delegated to the Vaadin Dev Server so it can prompt
+ * the user to activate a license. However, if dev tools are disabled, the
+ * License Checker will open the vaadin.com "Validate license" page in a browser
+ * window to let the user log in or register and then try to download a valid
+ * license.
+ * <p>
+ * Pre-trial licensing is intentionally disabled: the {@code PRE_TRIAL}
+ * capability is not requested, so neither a new trial can be started nor an
+ * existing ongoing trial is honored.
  * <p>
  * Subclasses are expected to provide the product name and version required for
  * the license validation by invoking the constructor of this class and to
@@ -80,14 +82,15 @@ public abstract class BaseLicenseCheckerServiceInitListener
         var service = event.getSource();
         var configuration = service.getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
-            // Using a null BuildType to allow trial licensing builds,
-            // The variable is defined to avoid method signature ambiguity
+            // Using a null BuildType for a development-mode license check.
+            // The variable is defined to avoid method signature ambiguity.
+            // Pre-trial is intentionally not requested (no PRE_TRIAL
+            // capability), so trials are never started nor honored.
             BuildType buildType = null;
 
             if (configuration.isDevToolsEnabled()) {
                 // If dev tools are enabled, do a check and then delegate
-                // handling of a missing key to dev tools to show the splash
-                // screen
+                // handling of a missing key to dev tools.
                 // Any other license error results in an immediate failure
                 try {
                     LicenseChecker.checkLicense(productName, productVersion,
@@ -96,7 +99,7 @@ public abstract class BaseLicenseCheckerServiceInitListener
                                 // license keys are detected
                                 throw new MissingLicenseKeyException(
                                         "No license key present");
-                            }, 0, Capabilities.of(Capability.PRE_TRIAL));
+                            }, 0);
                 } catch (MissingLicenseKeyException ex) {
                     LOGGER.debug(
                             "Missing license key for {} {} will be handled by Vaadin Dev Server",
@@ -109,7 +112,7 @@ public abstract class BaseLicenseCheckerServiceInitListener
                 // Fallback to online validation waiting for license key
                 // download
                 LicenseChecker.checkLicense(productName, productVersion,
-                        Capabilities.of(Capability.PRE_TRIAL), buildType);
+                        buildType);
             }
         }
     }

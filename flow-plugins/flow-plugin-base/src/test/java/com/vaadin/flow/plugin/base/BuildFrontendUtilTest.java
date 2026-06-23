@@ -43,6 +43,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -809,9 +810,12 @@ public class BuildFrontendUtilTest {
                 frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
                 .thenReturn(viteJs.toPath());
 
-        IllegalStateException ex = Assert.assertThrows(
-                IllegalStateException.class,
-                () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+        IllegalStateException ex;
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            ex = Assert.assertThrows(IllegalStateException.class,
+                    () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+        }
 
         String message = ex.getMessage();
         Assert.assertTrue("missing exit code in: " + message,
@@ -824,6 +828,23 @@ public class BuildFrontendUtilTest {
                 message.contains("with environment"));
         // No zt-exec exception should be chained as cause.
         Assert.assertNull(ex.getCause());
+    }
+
+    @Test
+    public void runVite_validatesProductionLicense() {
+        FrontendTools frontendTools = Mockito.mock(FrontendTools.class);
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            try {
+                BuildFrontendUtil.runVite(adapter, frontendTools);
+            } catch (RuntimeException expected) {
+                // The build is expected to fail because the Vite executable is
+                // not available in this test setup. The license is validated
+                // before the build is run, which is what this test verifies.
+            }
+            licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                    Version.getFullVersion(), BuildType.PRODUCTION));
+        }
     }
 
     private static String statsJsonWithCommercialComponents() {

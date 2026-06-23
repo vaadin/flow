@@ -48,6 +48,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
@@ -546,6 +547,8 @@ public class BuildFrontendUtil {
             String binaryName, Map<String, String> environment,
             String... params) {
 
+        validateLicense();
+
         File buildExecutable;
         try {
             buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
@@ -642,6 +645,11 @@ public class BuildFrontendUtil {
                 }
             }
         }
+    }
+
+    private static void validateLicense() {
+        LicenseChecker.checkLicense("flow", Version.getFullVersion(),
+                BuildType.PRODUCTION);
     }
 
     /**

@@ -329,7 +329,10 @@ internal class GradlePluginAdapter private constructor(
         config.frontendIgnoreVersionChecks.get()
 
     override fun isCommercialBannerEnabled(): Boolean {
-        return config.commercialWithBanner.get()
+        // The commercial banner is permanently disabled since this Vaadin
+        // version always requires a license. The commercialWithBanner
+        // configuration is kept for backwards compatibility but has no effect.
+        return false
     }
 
 }

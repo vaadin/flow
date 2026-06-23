@@ -37,6 +37,9 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -63,6 +66,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class VaadinServlet extends HttpServlet {
 
     public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
+
+    private static final String PROJECT_NAME = "flow";
 
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
@@ -130,6 +135,8 @@ public class VaadinServlet extends HttpServlet {
 
             try {
                 servletService = createServletService();
+                verifyLicense(servletService.getDeploymentConfiguration()
+                        .isProductionMode());
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -145,6 +152,25 @@ public class VaadinServlet extends HttpServlet {
             servletInitialized();
         } finally {
             CurrentInstance.clearAll();
+        }
+    }
+
+    private void verifyLicense(boolean productionMode) {
+        String frameworkVersion = Version.getFullVersion();
+        if (productionMode) {
+            try {
+                LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                        BuildType.PRODUCTION, null);
+            } catch (LicenseException e) {
+                getLogger().error(
+                        "This Vaadin version requires an extended maintenance subscription."
+                                + "Provide either a server key or an online license checking key,"
+                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        e);
+            }
+        } else {
+            LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                    BuildType.DEVELOPMENT);
         }
     }
 
@@ -658,5 +684,4 @@ public class VaadinServlet extends HttpServlet {
     public static String getFrontendMapping() {
         return frontendMapping;
     }
-
 }

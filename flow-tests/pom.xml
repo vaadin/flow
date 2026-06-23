@@ -340,7 +340,6 @@
                 <module>test-react-adapter/pom-production.xml</module>
                 <module>test-legacy-frontend</module>
                 <module>test-client-queue</module>
-                <module>test-commercial-banner</module>
             </modules>
         </profile>
         <profile>
