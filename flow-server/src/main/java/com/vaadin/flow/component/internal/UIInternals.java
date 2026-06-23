@@ -69,7 +69,6 @@ import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -97,6 +96,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -1209,11 +1209,13 @@ public class UIInternals implements Serializable {
 
         List<String> jsDeps = new ArrayList<>();
         jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
                 .collect(Collectors.toList()));
-        jsDeps.addAll(dependencies.getJsModules().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
-                .collect(Collectors.toList()));
+        jsDeps.addAll(
+                dependencies.getJsModules().stream().map(dep -> dep.value())
+                        .filter(src -> !FrontendDependencyUrlResolver
+                                .isRuntimeDependencyUrl(src))
+                        .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
@@ -1241,12 +1243,33 @@ public class UIInternals implements Serializable {
 
     private void addExternalDependencies(DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveToContextRoot(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                .filter(js -> FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value()))
+                .forEach(js -> {
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveToContextRoot(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, LoadMode.EAGER,
+                            JavaScript.Type.MODULE);
+                });
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value());
     }
 
     /**
