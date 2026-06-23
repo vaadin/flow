@@ -61,6 +61,7 @@ import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import { isLocalStorageFlagEnabled } from './Console';
 import {
   clearEventsList,
+  logGwtEvent,
   ensureLogger,
   ensureNoLogger,
   getGwtStatsEvents,
@@ -166,6 +167,7 @@ export function registerInternals(): void {
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.Console = { isLocalStorageFlagEnabled };
   internal.Profiler = {
+    logGwtEvent,
     getPerformanceTiming,
     getGwtStatsEvents,
     clearEventsList,

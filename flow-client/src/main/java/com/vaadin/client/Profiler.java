@@ -388,15 +388,11 @@ public class Profiler {
 
     private static final native void logGwtEvent(String name, String type)
     /*-{
-        $wnd.__gwtStatsEvent({
-            evtGroup: @com.vaadin.client.Profiler::EVT_GROUP,
-            moduleName: @com.google.gwt.core.client.GWT::getModuleName()(),
-            millis: (new Date).getTime(),
-            sessionId: undefined,
-            subSystem: name,
-            type: type,
-            relativeMillis: @com.vaadin.client.Profiler::getRelativeTimeMillis()()
-        });
+        $wnd.Vaadin.Flow.internal.Profiler.logGwtEvent(
+            @com.vaadin.client.Profiler::EVT_GROUP,
+            @com.google.gwt.core.client.GWT::getModuleName()(),
+            name, type,
+            @com.vaadin.client.Profiler::getRelativeTimeMillis()());
     }-*/;
 
     /**

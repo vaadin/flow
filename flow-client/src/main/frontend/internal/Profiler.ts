@@ -30,6 +30,31 @@ interface GwtStats {
   __gwtStatsEvent?: (event?: unknown) => boolean;
 }
 
+/**
+ * Reports a profiler event to the __gwtStatsEvent logger. The evtGroup,
+ * moduleName and relativeMillis are computed on the Java side (EVT_GROUP
+ * constant, GWT.getModuleName(), Profiler.getRelativeTimeMillis()) and passed
+ * in; name/type identify the event.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- positional JSNI delegation mirrors the Java-computed values
+export function logGwtEvent(
+  evtGroup: string,
+  moduleName: string,
+  name: string,
+  type: string,
+  relativeMillis: number
+): void {
+  (window as unknown as GwtStats).__gwtStatsEvent?.({
+    evtGroup,
+    moduleName,
+    millis: new Date().getTime(),
+    sessionId: undefined,
+    subSystem: name,
+    type,
+    relativeMillis
+  });
+}
+
 /** The named window.performance.timing value, or 0 if unavailable. */
 export function getPerformanceTiming(name: string): number {
   const timing = (window as unknown as PerformanceTiming).performance?.timing;
