@@ -77,9 +77,13 @@ public class TaskWriteGeneratedFilesList implements FallibleCommand {
             // Failing to write the manifest must not break the build; the worst
             // case is that a later cleanup deletes dev-server generated files,
             // which a subsequent generation run regenerates.
-            LOGGER.warn("Cannot write generated files manifest {}", manifest);
-            LOGGER.debug("Cannot write generated files manifest {}", manifest,
-                    ex);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.warn("Cannot write generated files manifest {}",
+                        manifest, ex);
+            } else {
+                LOGGER.warn("Cannot write generated files manifest {}",
+                        manifest);
+            }
         }
     }
 

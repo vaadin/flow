@@ -28,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.tests.util.MockOptions;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,7 +83,7 @@ class TaskWriteGeneratedFilesListTest {
                 options);
         task.setGeneratedFileSupport(null);
 
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(task::execute);
+        assertDoesNotThrow(task::execute);
         assertTrue(
                 !new File(generatedFolder,
                         FrontendUtils.GENERATED_FILES_LIST_NAME).exists(),
