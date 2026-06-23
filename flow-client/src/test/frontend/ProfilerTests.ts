@@ -6,6 +6,7 @@ import {
   getGwtStatsEvents,
   getPerformanceTiming,
   hasHighPrecisionTime,
+  logGwtEvent,
   round
 } from '../../main/frontend/internal/Profiler';
 
@@ -70,6 +71,30 @@ describe('Profiler', () => {
     } finally {
       win.Vaadin = savedVaadin;
       win.__gwtStatsEvent = savedLogger;
+    }
+  });
+
+  it('logGwtEvent forwards a well-formed event to __gwtStatsEvent', () => {
+    const win = window as unknown as { __gwtStatsEvent?: (event?: unknown) => boolean };
+    const saved = win.__gwtStatsEvent;
+    try {
+      const events: Array<Record<string, unknown>> = [];
+      win.__gwtStatsEvent = (event?: unknown) => {
+        events.push(event as Record<string, unknown>);
+        return true;
+      };
+      logGwtEvent('VaadinProfiler', 'com.example.App', 'bootstrap', 'begin', 12.5);
+      expect(events).to.have.length(1);
+      expect(events[0]).to.include({
+        evtGroup: 'VaadinProfiler',
+        moduleName: 'com.example.App',
+        subSystem: 'bootstrap',
+        type: 'begin',
+        relativeMillis: 12.5
+      });
+      expect(events[0].millis).to.be.a('number');
+    } finally {
+      win.__gwtStatsEvent = saved;
     }
   });
 });
