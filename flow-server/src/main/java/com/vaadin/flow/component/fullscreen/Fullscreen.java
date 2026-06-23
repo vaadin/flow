@@ -51,16 +51,30 @@ public final class Fullscreen implements Serializable {
     }
 
     /**
-     * Registers the given component as a clickable trigger for a fullscreen
-     * request — the common shape for fullscreen buttons. Equivalent to
-     * {@code new ClickTrigger(component)}, without making callers reach for the
-     * trigger framework's internal types.
+     * Starts a fullscreen request bound to clicks on the given component — the
+     * entry point for "Fullscreen" buttons. Chain the request onto the returned
+     * {@link FullscreenBinding}:
+     *
+     * <pre>{@code
+     * Button fullscreen = new Button("Fullscreen");
+     * Fullscreen.onClick(fullscreen).enter(); // whole page
+     * Fullscreen.onClick(fullscreen).enter(videoPanel); // single component
+     * }</pre>
+     *
+     * The browser only enters fullscreen while it is handling a genuine user
+     * gesture, and that activation is gone by the time a normal server-side
+     * click listener runs. Binding the request here makes it run inside the
+     * browser's own click handler, where the gesture is still valid — which is
+     * why entering fullscreen goes through {@code onClick} rather than an
+     * ordinary {@code addClickListener}.
      *
      * @param component
-     *            the component to listen for clicks on, not {@code null}
+     *            the component whose clicks trigger the fullscreen request, not
+     *            {@code null}
      * @param <T>
      *            the component type, must implement {@link ClickNotifier}
-     * @return a new binding that can chain a fullscreen request to this trigger
+     * @return a binding for chaining the fullscreen request on click
+     * @see FullscreenBinding
      */
     public static <T extends Component & ClickNotifier<?>> FullscreenBinding onClick(
             T component) {
