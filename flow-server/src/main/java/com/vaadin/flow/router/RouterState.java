@@ -49,9 +49,8 @@ import com.vaadin.flow.component.HasElement;
  *            first navigation completes.
  * @param navigationTarget
  *            the class of the leaf route target. {@code null} before the first
- *            navigation completes.
- *            navigation completes. Use {@link #isNavigationPending()} to check
- *            for this state.
+ *            navigation completes. navigation completes. Use
+ *            {@link #isNavigationPending()} to check for this state.
  * @since 25.2
  */
 public record RouterState(Location location, RouteParameters routeParameters,
