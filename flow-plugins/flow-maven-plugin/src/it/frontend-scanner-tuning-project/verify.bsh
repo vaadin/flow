@@ -10,35 +10,30 @@ import com.vaadin.flow.plugin.maven.it.IntegrationTestHelper;
 
 verifications = new LinkedHashMap();
 verifications.put("all-deps", List.of(
-    "@vaadin/common-frontend/ConnectionIndicator.js",
     "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
     "Frontend/project-component.js",
     "Frontend/generated/jar-resources/alpha.js",
     "Frontend/generated/jar-resources/beta.js"
 ));
 verifications.put("exclude-alpha", List.of(
-    "@vaadin/common-frontend/ConnectionIndicator.js",
     "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
     "Frontend/project-component.js",
     "!Frontend/generated/jar-resources/alpha.js",
     "Frontend/generated/jar-resources/beta.js"
 ));
 verifications.put("include-alpha", List.of(
-    "@vaadin/common-frontend/ConnectionIndicator.js",
     "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
     "Frontend/project-component.js",
     "Frontend/generated/jar-resources/alpha.js",
     "!Frontend/generated/jar-resources/beta.js"
 ));
 verifications.put("exclude-all", List.of(
-    "@vaadin/common-frontend/ConnectionIndicator.js",
     "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
     "Frontend/project-component.js",
     "!Frontend/generated/jar-resources/alpha.js",
     "!Frontend/generated/jar-resources/beta.js"
 ));
 verifications.put("exclude-target", List.of(
-    "@vaadin/common-frontend/ConnectionIndicator.js",
     "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
     "!Frontend/project-component.js",
     "Frontend/generated/jar-resources/alpha.js",
