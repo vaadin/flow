@@ -41,7 +41,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.open.Open;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.Capabilities;
 import com.vaadin.pro.licensechecker.Capability;
@@ -383,31 +382,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         // that to complete. The dev tools client may supply a custom timeout
         // for flows where the user needs more time; otherwise the license
         // checker's own default applies.
-        //
-        // The two calls and the explicit openSystemBrowser handler are only
-        // needed because LicenseChecker has no checkLicenseAsync overload that
-        // takes just a timeout: every timeout-bearing overload also requires a
-        // url handler, and the checker's own default handler is not accessible
-        // here. Once such an overload exists this can collapse into a single
-        // call without opening the browser from this class.
         JsonNode timeoutNode = data.get("timeout");
-        if (timeoutNode != null && timeoutNode.isIntegralNumber()) {
-            LicenseChecker.checkLicenseAsync(product.getName(),
-                    product.getVersion(), BuildType.DEVELOPMENT, callback,
-                    DebugWindowConnection::openSystemBrowser,
-                    timeoutNode.intValue());
-        } else {
-            LicenseChecker.checkLicenseAsync(product.getName(),
-                    product.getVersion(), BuildType.DEVELOPMENT, callback);
-        }
+        int timeout = timeoutNode != null && timeoutNode.isIntegralNumber()
+                ? timeoutNode.intValue()
+                : LicenseChecker.DEFAULT_KEY_URL_HANDLER_TIMEOUT_SECONDS;
+        LicenseChecker.checkLicenseAsync(product.getName(),
+                product.getVersion(), BuildType.DEVELOPMENT, callback, timeout);
         send(resource, "license-download-started", product);
-    }
-
-    private static void openSystemBrowser(String url) {
-        getLogger().info(
-                "Opening system browser to validate license. If the browser is not opened, please open {} manually",
-                url);
-        Open.open(url);
     }
 
     private void handlePreTrialStart(AtmosphereResource resource,

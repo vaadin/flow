@@ -36,7 +36,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.open.Open;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.Capabilities;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -186,46 +185,36 @@ class DebugWindowConnectionLicenseCheckTest {
 
     @Test
     void downloadLicenseKey_timeoutFromClient_passedToChecker() {
-        AtomicInteger usedTimeout = new AtomicInteger();
-        DebugWindowMessage message = sendAndReceive(downloadCommand(600),
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
-                                eq(TEST_PRODUCT.getVersion()),
-                                eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class), any(),
-                                Mockito.anyInt()))
-                        .then(i -> {
-                            usedTimeout.set(i.getArgument(5, Integer.class));
-                            return null;
-                        }));
-
-        assertEquals("license-download-started", message.getCommand());
+        AtomicInteger usedTimeout = captureDownloadTimeout(
+                downloadCommand(600));
         assertEquals(600, usedTimeout.get());
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void downloadLicenseKey_urlHandlerOpensSystemBrowser() {
-        AtomicReference<Consumer<String>> urlHandlerHolder = new AtomicReference<>();
+    void downloadLicenseKey_noTimeout_usesCheckerDefault() {
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        command.putPOJO("data", TEST_PRODUCT);
+        AtomicInteger usedTimeout = captureDownloadTimeout(command);
+        assertEquals(LicenseChecker.DEFAULT_KEY_URL_HANDLER_TIMEOUT_SECONDS,
+                usedTimeout.get());
+    }
 
-        sendAndReceive(downloadCommand(300),
+    private AtomicInteger captureDownloadTimeout(ObjectNode command) {
+        AtomicInteger usedTimeout = new AtomicInteger();
+        DebugWindowMessage message = sendAndReceive(command,
                 licenseChecker -> licenseChecker.when(() -> LicenseChecker
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class), any(),
+                                any(LicenseChecker.Callback.class),
                                 Mockito.anyInt()))
                         .then(i -> {
-                            urlHandlerHolder
-                                    .set(i.getArgument(4, Consumer.class));
+                            usedTimeout.set(i.getArgument(4, Integer.class));
                             return null;
                         }));
-
-        String url = "https://vaadin.com/pro/validate-license";
-        try (MockedStatic<Open> open = Mockito.mockStatic(Open.class)) {
-            urlHandlerHolder.get().accept(url);
-            open.verify(() -> Open.open(url));
-        }
+        assertEquals("license-download-started", message.getCommand());
+        return usedTimeout;
     }
 
     private static ObjectNode downloadCommand(int timeout) {
@@ -275,25 +264,24 @@ class DebugWindowConnectionLicenseCheckTest {
         ObjectNode command = OBJECT_MAPPER.createObjectNode();
         command.put("command", "downloadLicense");
         command.putPOJO("data", TEST_PRODUCT);
-        return sendAndReceive(command,
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
-                                eq(TEST_PRODUCT.getVersion()),
-                                eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class)))
-                        .then(i -> {
-                            LicenseChecker.Callback callback = i.getArgument(3,
-                                    LicenseChecker.Callback.class);
-                            callbackHolder.set(() -> {
-                                if (success) {
-                                    callback.ok();
-                                } else {
-                                    callback.failed(
-                                            new LicenseException("BOOM"));
-                                }
-                            });
-                            return null;
-                        }));
+        return sendAndReceive(command, licenseChecker -> licenseChecker
+                .when(() -> LicenseChecker.checkLicenseAsync(
+                        eq(TEST_PRODUCT.getName()),
+                        eq(TEST_PRODUCT.getVersion()),
+                        eq(BuildType.DEVELOPMENT),
+                        any(LicenseChecker.Callback.class), Mockito.anyInt()))
+                .then(i -> {
+                    LicenseChecker.Callback callback = i.getArgument(3,
+                            LicenseChecker.Callback.class);
+                    callbackHolder.set(() -> {
+                        if (success) {
+                            callback.ok();
+                        } else {
+                            callback.failed(new LicenseException("BOOM"));
+                        }
+                    });
+                    return null;
+                }));
     }
 
     private DebugWindowMessage sendAndReceive(ObjectNode command,
