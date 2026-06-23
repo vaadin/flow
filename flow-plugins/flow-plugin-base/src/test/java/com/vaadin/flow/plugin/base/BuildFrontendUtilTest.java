@@ -39,6 +39,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -51,6 +52,7 @@ import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -607,5 +609,22 @@ public class BuildFrontendUtilTest {
 
         FileIOUtils.writeIfChanged(tokenFile,
                 JsonUtil.stringify(buildInfo, 2) + "\n");
+    }
+
+    @Test
+    public void runVite_validatesProductionLicense() {
+        FrontendTools frontendTools = Mockito.mock(FrontendTools.class);
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            try {
+                BuildFrontendUtil.runVite(adapter, frontendTools);
+            } catch (Exception expected) {
+                // The build is expected to fail because the Vite executable is
+                // not available in this test setup. The license is validated
+                // before the build is run, which is what this test verifies.
+            }
+            licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                    Version.getFullVersion(), BuildType.PRODUCTION));
+        }
     }
 }
