@@ -20,6 +20,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, type ConnectionStateStore } from './ConnectionState';
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
+const STRUCTURAL_STYLE_ID = 'css-loading-indicator-structure';
 
 /**
  * The loading indicator states
@@ -198,6 +199,15 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
+  /**
+   * Whether the default theme (the indicator's skin: colors, fonts and the
+   * progress bar height) is applied. Defaults to `true`.
+   *
+   * Setting this to `false` removes only the skin so the indicator can be
+   * fully restyled by the application. The structural styles that make the
+   * indicator function - positioning, the progress animation and the
+   * state-driven visibility of the bar and status message - are always kept.
+   */
   get applyDefaultTheme() {
     return this.#applyDefaultThemeState;
   }
@@ -317,22 +327,44 @@ export class ConnectionIndicator extends LitElement {
   }
 
   #updateTheme() {
-    if (this.#applyDefaultThemeState && this.isConnected) {
-      if (!document.getElementById(DEFAULT_STYLE_ID)) {
+    // The structural styles are required for the indicator to function
+    // (positioning, progress animation, state-driven visibility) and are
+    // always present while the indicator is in the document, regardless of
+    // applyDefaultTheme.
+    this.#ensureStyle(STRUCTURAL_STYLE_ID, this.isConnected, () => this.#getStructuralStyle());
+    // The default theme is only the skin (colors, fonts, bar height) that an
+    // application would naturally override. It is removed when
+    // applyDefaultTheme is set to false, leaving the structural styles in
+    // place so the indicator keeps working.
+    this.#ensureStyle(DEFAULT_STYLE_ID, this.#applyDefaultThemeState && this.isConnected, () => this.#getThemeStyle());
+  }
+
+  #ensureStyle(id: string, present: boolean, content: () => string) {
+    const existing = document.getElementById(id);
+    if (present) {
+      if (!existing) {
         const style = document.createElement('style');
-        style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.#getDefaultStyle();
+        style.id = id;
+        style.textContent = content();
         document.head.appendChild(style);
       }
-    } else {
-      const style = document.getElementById(DEFAULT_STYLE_ID);
-      if (style) {
-        document.head.removeChild(style);
-      }
+    } else if (existing) {
+      existing.remove();
     }
   }
 
-  #getDefaultStyle(): string {
+  /**
+   * Styles required for the indicator to function: where it is positioned, how
+   * the progress bar grows and pulses, and how the bar and status message
+   * appear and disappear based on the connection state. These are always
+   * applied so that disabling the default theme does not break the indicator.
+   *
+   * The progress keyframes are defined here as the single source of truth. The
+   * height steps in `v-progress-wait` only have a visible effect once the bar
+   * has a base height, which the default theme provides; without the theme the
+   * bar has no height and stays invisible.
+   */
+  #getStructuralStyle(): string {
     return `
       @keyframes v-progress-start {
         0% {
@@ -375,6 +407,11 @@ export class ConnectionIndicator extends LitElement {
           opacity: 1;
         }
       }
+      @keyframes v-spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
       .v-loading-indicator,
       .v-status-message {
         box-sizing: border-box;
@@ -382,13 +419,11 @@ export class ConnectionIndicator extends LitElement {
         left: 0;
         right: 0;
         top: 0;
-        background-color: var(--lumo-primary-color, var(--material-primary-color, blue));
         transition: none;
       }
       .v-loading-indicator {
         right: auto;
         width: 50%;
-        height: 4px;
         opacity: 1;
         pointer-events: none;
         animation: v-progress-start 1000ms 200ms both;
@@ -419,34 +454,13 @@ export class ConnectionIndicator extends LitElement {
         pointer-events: none;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
-        background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
-        color: var(
-          --status-text-color-online,
-          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
-        );
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 1;
         transition: all 0.5s;
-        padding: 0 0.5em;
       }
 
       vaadin-connection-indicator[offline] .v-status-message,
       vaadin-connection-indicator[reconnecting] .v-status-message {
         opacity: 1;
         pointer-events: auto;
-        background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
-        color: var(
-          --status-text-color-offline,
-          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
-        );
-        background-image: repeating-linear-gradient(
-          45deg,
-          rgba(255, 255, 255, 0),
-          rgba(255, 255, 255, 0) 10px,
-          rgba(255, 255, 255, 0.1) 10px,
-          rgba(255, 255, 255, 0.1) 20px
-        );
       }
 
       vaadin-connection-indicator[reconnecting] .v-status-message {
@@ -475,22 +489,60 @@ export class ConnectionIndicator extends LitElement {
         content: '';
         width: 1em;
         height: 1em;
-        border-top: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
-        border-left: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
-        border-right: 2px solid transparent;
-        border-bottom: 2px solid transparent;
+        border: 2px solid transparent;
+        border-top-color: currentColor;
+        border-left-color: currentColor;
         border-radius: 50%;
         box-sizing: border-box;
         animation: v-spin 0.4s linear infinite;
         margin: 0 0.5em;
       }
+    `;
+  }
 
-      @keyframes v-spin {
-        100% {
-          transform: rotate(360deg);
-        }
+  /**
+   * The default skin: colors, fonts and the bar height. These are the styles an
+   * application would naturally override to make the indicator look different,
+   * and are the only styles removed when applyDefaultTheme is set to false.
+   */
+  #getThemeStyle(): string {
+    return `
+      .v-loading-indicator {
+        height: 4px;
+        background-color: var(--lumo-primary-color, var(--material-primary-color, blue));
+      }
+
+      .v-status-message {
+        background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
+        color: var(
+          --status-text-color-online,
+          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
+        );
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+        padding: 0 0.5em;
+      }
+
+      vaadin-connection-indicator[offline] .v-status-message,
+      vaadin-connection-indicator[reconnecting] .v-status-message {
+        background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
+        color: var(
+          --status-text-color-offline,
+          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
+        );
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0) 10px,
+          rgba(255, 255, 255, 0.1) 10px,
+          rgba(255, 255, 255, 0.1) 20px
+        );
+      }
+
+      vaadin-connection-indicator[reconnecting] .v-status-message span::before {
+        border-top-color: var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
+        border-left-color: var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
       }
     `;
   }
