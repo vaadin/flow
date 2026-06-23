@@ -27,6 +27,7 @@ interface PerformanceTiming {
 
 interface GwtStats {
   Vaadin: { Flow: { gwtStatsEvents?: unknown[] } };
+  __gwtStatsEvent?: (event?: unknown) => boolean;
 }
 
 /** The named window.performance.timing value, or 0 if unavailable. */
@@ -43,6 +44,39 @@ export function getGwtStatsEvents(): unknown[] {
 /** Resets the collected GWT stats events list. */
 export function clearEventsList(): void {
   (window as unknown as GwtStats).Vaadin.Flow.gwtStatsEvents = [];
+}
+
+/**
+ * Installs the __gwtStatsEvent logger (collecting events into the events list)
+ * if it is not already present, initializing the events list if needed.
+ */
+export function ensureLogger(): void {
+  const w = window as unknown as GwtStats;
+  if (typeof w.__gwtStatsEvent !== 'function') {
+    if (typeof w.Vaadin.Flow.gwtStatsEvents !== 'object') {
+      w.Vaadin.Flow.gwtStatsEvents = [];
+    }
+    w.__gwtStatsEvent = function (event?: unknown): boolean {
+      w.Vaadin.Flow.gwtStatsEvents!.push(event);
+      return true;
+    };
+  }
+}
+
+/**
+ * Removes the events list and neutralizes the logger function if it looks like
+ * the one installed by ensureLogger.
+ */
+export function ensureNoLogger(): void {
+  const w = window as unknown as GwtStats;
+  if (typeof w.Vaadin.Flow.gwtStatsEvents === 'object') {
+    delete w.Vaadin.Flow.gwtStatsEvents;
+    if (typeof w.__gwtStatsEvent === 'function') {
+      w.__gwtStatsEvent = function (): boolean {
+        return true;
+      };
+    }
+  }
 }
 
 /** Whether the browser provides a high-precision performance.now() clock. */

@@ -1,6 +1,8 @@
 import { expect } from '@open-wc/testing';
 import {
   clearEventsList,
+  ensureLogger,
+  ensureNoLogger,
   getGwtStatsEvents,
   getPerformanceTiming,
   hasHighPrecisionTime,
@@ -42,6 +44,32 @@ describe('Profiler', () => {
       expect(getGwtStatsEvents()).to.deep.equal([]);
     } finally {
       win.Vaadin = savedVaadin;
+    }
+  });
+
+  it('ensureLogger installs a collecting __gwtStatsEvent, ensureNoLogger removes it', () => {
+    const win = window as unknown as {
+      Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } };
+      __gwtStatsEvent?: (event?: unknown) => boolean;
+    };
+    const savedVaadin = win.Vaadin;
+    const savedLogger = win.__gwtStatsEvent;
+    try {
+      win.Vaadin = { Flow: {} };
+      win.__gwtStatsEvent = undefined;
+
+      ensureLogger();
+      expect(typeof win.__gwtStatsEvent).to.equal('function');
+      win.__gwtStatsEvent!({ x: 1 });
+      expect(win.Vaadin.Flow?.gwtStatsEvents).to.deep.equal([{ x: 1 }]);
+
+      ensureNoLogger();
+      expect(win.Vaadin.Flow?.gwtStatsEvents).to.equal(undefined);
+      // The logger is neutralized (still a function, but a no-op returning true).
+      expect(win.__gwtStatsEvent!()).to.be.true;
+    } finally {
+      win.Vaadin = savedVaadin;
+      win.__gwtStatsEvent = savedLogger;
     }
   });
 });

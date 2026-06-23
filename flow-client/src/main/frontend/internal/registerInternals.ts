@@ -59,7 +59,15 @@ import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './St
 import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import { isLocalStorageFlagEnabled } from './Console';
-import { clearEventsList, getGwtStatsEvents, getPerformanceTiming, hasHighPrecisionTime, round } from './Profiler';
+import {
+  clearEventsList,
+  ensureLogger,
+  ensureNoLogger,
+  getGwtStatsEvents,
+  getPerformanceTiming,
+  hasHighPrecisionTime,
+  round
+} from './Profiler';
 import {
   deferStartApplication,
   getJsoConfiguration,
@@ -157,7 +165,15 @@ export function registerInternals(): void {
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.Console = { isLocalStorageFlagEnabled };
-  internal.Profiler = { getPerformanceTiming, getGwtStatsEvents, clearEventsList, hasHighPrecisionTime, round };
+  internal.Profiler = {
+    getPerformanceTiming,
+    getGwtStatsEvents,
+    clearEventsList,
+    hasHighPrecisionTime,
+    round,
+    ensureLogger,
+    ensureNoLogger
+  };
   internal.Bootstrapper = { startApplicationImmediately, deferStartApplication, registerCallback, getJsoConfiguration };
   internal.JsoConfiguration = {
     getConfigString,

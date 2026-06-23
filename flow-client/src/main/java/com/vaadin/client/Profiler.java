@@ -616,15 +616,7 @@ public class Profiler {
      */
     private static native void ensureLogger()
     /*-{
-        if (typeof $wnd.__gwtStatsEvent != 'function') {
-            if (typeof $wnd.Vaadin.Flow.gwtStatsEvents != 'object') {
-                $wnd.Vaadin.Flow.gwtStatsEvents = [];
-            }
-            $wnd.__gwtStatsEvent = function(event) {
-                $wnd.Vaadin.Flow.gwtStatsEvents.push(event);
-                return true;
-            }
-        }
+        $wnd.Vaadin.Flow.internal.Profiler.ensureLogger();
     }-*/;
 
     /**
@@ -633,12 +625,7 @@ public class Profiler {
      */
     private static native void ensureNoLogger()
     /*-{
-        if (typeof $wnd.Vaadin.Flow.gwtStatsEvents == 'object') {
-            delete $wnd.Vaadin.Flow.gwtStatsEvents;
-            if (typeof $wnd.__gwtStatsEvent == 'function') {
-                $wnd.__gwtStatsEvent = function() { return true; };
-            }
-        }
+        $wnd.Vaadin.Flow.internal.Profiler.ensureNoLogger();
     }-*/;
 
     private static native JsArray<GwtStatsEvent> clearEventsList()
