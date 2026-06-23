@@ -1371,59 +1371,58 @@ class TaskUpdatePackagesNpmTest {
         assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
                 "vaadin.overrides should not be written");
     }
-  
-   @Test
-   void npmIsInUse_staleOverridesAndTrackingSection_healedToPlatformVersionsOnBump()
-           throws IOException {
-       // Reproduces the upgrade scenario from #24702: a project carried over
-       // from an earlier Vaadin version where the "overrides" section and the
-       // obsolete "vaadin.overrides" tracking section have drifted out of sync
-       // and lock platform packages to an older version. On the next run with
-       // newer platform versions, all locks must heal to the new versions and
-       // the tracking section must be dropped, without needing clean-frontend.
-       final String oldVersion = "1.0.0";
-       final String newVersion = "2.0.0";
-       createVaadinVersionsJson(newVersion, newVersion, newVersion);
-       ObjectNode pkgJson = getOrCreatePackageJson();
-       // Dialog is a direct dependency pinned to the old version; overlay is a
-       // transitive platform package locked to the old version directly.
-       ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
-       ObjectNode overrides = JacksonUtils.createObjectNode();
-       overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
-       overrides.put(VAADIN_OVERLAY, oldVersion);
-       pkgJson.set(OVERRIDES, overrides);
-       // Drifted tracking section: differs from the live overrides so the old
-       // diff logic would treat the live values as user opt-outs and freeze
-       // them at the old version.
-       JacksonUtils.setNestedKey(pkgJson,
-               List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_OVERLAY),
-               StringNode.valueOf(newVersion),
-               (nonObjectNode) -> JacksonUtils.createObjectNode());
-       FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
-               StandardCharsets.UTF_8);
-       final Map<String, String> applicationDependencies = createApplicationDependencies();
-       applicationDependencies.put(VAADIN_DIALOG, newVersion);
-       final TaskUpdatePackages task = createTask(applicationDependencies);
-       task.execute();
-       pkgJson = getOrCreatePackageJson();
-       JsonNode healed = pkgJson.get(OVERRIDES);
-       // The direct dependency was bumped to the new version and stays locked
-       // by reference.
-       assertEquals(newVersion,
-               pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
-       assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
-       // The overlay lock was frozen at the old version by the drifted
-       // tracking section; it now heals to the bumped platform version. The
-       // old diff logic would have left it stuck at oldVersion.
-       assertEquals(newVersion,
-               pkgJson.get(DEPENDENCIES).get(VAADIN_OVERLAY).asString());
-       assertEquals("$" + VAADIN_OVERLAY,
-               healed.get(VAADIN_OVERLAY).asString());
-       // The obsolete tracking section is removed.
-       assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
-               "vaadin.overrides tracking section should be removed on upgrade");
-   }
 
+    @Test
+    void npmIsInUse_staleOverridesAndTrackingSection_healedToPlatformVersionsOnBump()
+            throws IOException {
+        // Reproduces the upgrade scenario from #24702: a project carried over
+        // from an earlier Vaadin version where the "overrides" section and the
+        // obsolete "vaadin.overrides" tracking section have drifted out of sync
+        // and lock platform packages to an older version. On the next run with
+        // newer platform versions, all locks must heal to the new versions and
+        // the tracking section must be dropped, without needing clean-frontend.
+        final String oldVersion = "1.0.0";
+        final String newVersion = "2.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        // Dialog is a direct dependency pinned to the old version; overlay is a
+        // transitive platform package locked to the old version directly.
+        ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
+        overrides.put(VAADIN_OVERLAY, oldVersion);
+        pkgJson.set(OVERRIDES, overrides);
+        // Drifted tracking section: differs from the live overrides so the old
+        // diff logic would treat the live values as user opt-outs and freeze
+        // them at the old version.
+        JacksonUtils.setNestedKey(pkgJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_OVERLAY),
+                StringNode.valueOf(newVersion),
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        pkgJson = getOrCreatePackageJson();
+        JsonNode healed = pkgJson.get(OVERRIDES);
+        // The direct dependency was bumped to the new version and stays locked
+        // by reference.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
+        assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
+        // The overlay lock was frozen at the old version by the drifted
+        // tracking section; it now heals to the bumped platform version. The
+        // old diff logic would have left it stuck at oldVersion.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_OVERLAY).asString());
+        assertEquals("$" + VAADIN_OVERLAY,
+                healed.get(VAADIN_OVERLAY).asString());
+        // The obsolete tracking section is removed.
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides tracking section should be removed on upgrade");
+    }
 
     @Test
     void npmIsInUse_pwaOfflineDisabledAfterEnabled_workboxOverridesRemoved()
