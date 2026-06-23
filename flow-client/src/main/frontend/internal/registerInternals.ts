@@ -59,6 +59,7 @@ import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './St
 import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import { isLocalStorageFlagEnabled } from './Console';
+import { deferStartApplication, registerCallback, startApplicationImmediately } from './Bootstrapper';
 import {
   getAtmosphereVersion,
   getConfigBoolean,
@@ -150,6 +151,7 @@ export function registerInternals(): void {
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.Console = { isLocalStorageFlagEnabled };
+  internal.Bootstrapper = { startApplicationImmediately, deferStartApplication, registerCallback };
   internal.JsoConfiguration = {
     getConfigString,
     getConfigValueMap,
