@@ -30,13 +30,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{ env._HEAD_SHA }}
           fetch-depth: 0
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload formatter diff
         if: steps.formatter.outputs.modified != '0'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: formatter-diff
           path: formatter-diff.txt
@@ -73,7 +73,7 @@ jobs:
 
       - name: Find existing comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
-        uses: peter-evans/find-comment@v4
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -82,7 +82,7 @@ jobs:
 
       - name: Create or update comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.formatter.outputs.modified != '0'
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -111,7 +111,7 @@ jobs:
 
       - name: Delete comment if formatting is correct
         if: steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             github.rest.issues.deleteComment({
