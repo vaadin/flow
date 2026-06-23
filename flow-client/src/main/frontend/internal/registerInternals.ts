@@ -59,6 +59,7 @@ import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './St
 import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
 import { isLocalStorageFlagEnabled } from './Console';
+import { clear, pushArray, spliceArray } from './JsArray';
 import {
   clearEventsList,
   logGwtEvent,
@@ -166,6 +167,7 @@ export function registerInternals(): void {
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
   internal.Console = { isLocalStorageFlagEnabled };
+  internal.JsArray = { pushArray, spliceArray, clear };
   internal.Profiler = {
     logGwtEvent,
     getPerformanceTiming,
