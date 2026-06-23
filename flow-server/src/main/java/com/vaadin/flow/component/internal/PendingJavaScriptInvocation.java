@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -35,11 +40,16 @@ import com.vaadin.flow.internal.StateNode;
 public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private static final String EXECUTION_CANCELED = "Execution canceled";
 
+    private static final Pattern PARAMETER_NAME_PATTERN = Pattern
+            .compile("[A-Za-z_][A-Za-z_0-9]*");
+
     private final JavaScriptInvocation invocation;
     private final StateNode owner;
 
     private SerializableConsumer<JsonNode> successHandler;
     private SerializableConsumer<String> errorHandler;
+
+    private final Set<String> namedParameters = new HashSet<>();
 
     private boolean sentToBrowser = false;
     private boolean canceled = false;
@@ -131,6 +141,30 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     @Override
     public boolean isSentToBrowser() {
         return sentToBrowser;
+    }
+
+    @Override
+    public PendingJavaScriptInvocation withParameter(String name,
+            @Nullable Object value) {
+        if (name == null) {
+            throw new IllegalArgumentException("Parameter name cannot be null");
+        }
+        if (!PARAMETER_NAME_PATTERN.matcher(name).matches()) {
+            throw new IllegalArgumentException("Parameter name '" + name
+                    + "' is not a valid JavaScript identifier");
+        }
+        if (sentToBrowser) {
+            throw new IllegalStateException(
+                    "Cannot add a parameter after the execution has been sent to the client.");
+        }
+        if (!namedParameters.add(name)) {
+            throw new IllegalArgumentException(
+                    "Parameter '" + name + "' has already been added");
+        }
+
+        invocation.addNamedParameter(name, value);
+
+        return this;
     }
 
     // Non-private for testing purposes

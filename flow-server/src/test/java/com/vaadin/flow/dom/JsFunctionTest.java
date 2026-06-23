@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
@@ -26,4 +29,54 @@ class JsFunctionTest {
         JsFunction fn = JsFunction.of("return a;").withArguments("a");
         assertThrows(IllegalStateException.class, () -> fn.withArguments("b"));
     }
+
+    @Test
+    void withParameter_appendsCaptureAndAliasesInBody() {
+        JsFunction fn = JsFunction.of("doSomething(foo)").withParameter("foo",
+                "value");
+
+        assertEquals("let foo=$0;doSomething(foo)", fn.getBody());
+        assertEquals(List.of("value"), fn.getCaptures());
+        assertEquals(List.of(), fn.getArgumentNames());
+    }
+
+    @Test
+    void withParameter_combinesWithPositionalCaptures() {
+        JsFunction fn = JsFunction.of("doSomething($0, foo)", 42)
+                .withParameter("foo", "bar");
+
+        assertEquals("let foo=$1;doSomething($0, foo)", fn.getBody());
+        assertEquals(List.of(42, "bar"), fn.getCaptures());
+    }
+
+    @Test
+    void withParameter_returnsNewInstance_doesNotMutateOriginal() {
+        JsFunction original = JsFunction.of("doSomething(foo)");
+        JsFunction withParam = original.withParameter("foo", "value");
+
+        assertEquals("doSomething(foo)", original.getBody());
+        assertEquals(List.of(), original.getCaptures());
+        assertEquals("let foo=$0;doSomething(foo)", withParam.getBody());
+    }
+
+    @Test
+    void withParameter_duplicateName_throws() {
+        JsFunction fn = JsFunction.of("body").withParameter("foo", 1);
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("foo", 2));
+    }
+
+    @Test
+    void withParameter_invalidName_throws() {
+        JsFunction fn = JsFunction.of("body");
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("$0", 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("1foo", 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter("", 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> fn.withParameter(null, 1));
+    }
+
 }
