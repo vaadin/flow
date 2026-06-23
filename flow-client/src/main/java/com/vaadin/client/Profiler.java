@@ -602,16 +602,12 @@ public class Profiler {
 
     private static final native double getPerformanceTiming(String name)
     /*-{
-        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
-            return $wnd.performance.timing[name];
-        } else {
-            return 0;
-        }
+        return $wnd.Vaadin.Flow.internal.Profiler.getPerformanceTiming(name);
     }-*/;
 
     private static native JsArray<GwtStatsEvent> getGwtStatsEvents()
     /*-{
-        return $wnd.Vaadin.Flow.gwtStatsEvents || [];
+        return $wnd.Vaadin.Flow.internal.Profiler.getGwtStatsEvents();
     }-*/;
 
     /**
@@ -647,7 +643,7 @@ public class Profiler {
 
     private static native JsArray<GwtStatsEvent> clearEventsList()
     /*-{
-        $wnd.Vaadin.Flow.gwtStatsEvents = [];
+        return $wnd.Vaadin.Flow.internal.Profiler.clearEventsList();
     }-*/;
 
     /**
@@ -675,7 +671,7 @@ public class Profiler {
 
     private static native boolean hasHighPrecisionTime()
     /*-{
-       return $wnd.performance && (typeof $wnd.performance.now == 'function');
+       return $wnd.Vaadin.Flow.internal.Profiler.hasHighPrecisionTime();
     }-*/;
 
     private interface RelativeTimeSupplier {
@@ -721,7 +717,7 @@ public class Profiler {
      */
     private static native double round(double num, int exp)
     /*-{
-        return +(Math.round(num + "e+" + exp)  + "e-" + exp);
+        return $wnd.Vaadin.Flow.internal.Profiler.round(num, exp);
     }-*/;
 
 }
