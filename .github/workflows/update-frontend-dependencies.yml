@@ -12,21 +12,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [main, '25.2', '25.1', '25.0', '24.10', '24.9']
+        branch: [main, '25.2', '25.1', '24.10', '24.9']
     permissions:
       contents: write
       pull-requests: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ matrix.branch }}
           # Custom token so the created PR triggers CI and can push to the repo
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
 
@@ -40,11 +40,11 @@ jobs:
           if [ "${{ matrix.branch }}" = "main" ]; then
             echo "UPDATE_DESC=All new versions (major, minor, patch)" >> $GITHUB_ENV
           else
-            echo "UPDATE_DESC=Patch releases only" >> $GITHUB_ENV
+            echo "UPDATE_DESC=Minor and patch releases (no major)" >> $GITHUB_ENV
           fi
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
         with:
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
           branch: update-frontend-dependencies-${{ matrix.branch }}
