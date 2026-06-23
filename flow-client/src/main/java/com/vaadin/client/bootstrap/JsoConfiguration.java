@@ -110,17 +110,18 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as an {@link ErrorMessage} object. Please
-     * note that the javascript value of the parameter should also be an object
-     * with appropriate fields, or else an undefined exception may be thrown
-     * when calling this method or when calling methods on the returned object.
+     * Reads a configuration parameter as a native error-message object with
+     * caption, message, url and querySelector fields. Please note that the
+     * javascript value of the parameter should also be an object with
+     * appropriate fields, or else an undefined exception may be thrown when
+     * calling this method or when reading fields from the returned object.
      *
      * @param name
      *            name of the configuration parameter
      * @return error message with the given name, or <code>null</code> if no
      *         value is defined
      */
-    public native ErrorMessage getConfigError(String name)
+    public native JavaScriptObject getConfigError(String name)
     /*-{
         return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigError(this, name);
     }-*/;

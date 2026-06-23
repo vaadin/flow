@@ -17,7 +17,7 @@ package com.vaadin.client;
 
 import jsinterop.annotations.JsType;
 
-import com.vaadin.client.bootstrap.ErrorMessage;
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Application configuration data.
@@ -38,7 +38,7 @@ public class ApplicationConfiguration {
     private String contextRootUrl;
     private String serviceUrl;
     private int uiId;
-    private ErrorMessage sessionExpiredError;
+    private JavaScriptObject sessionExpiredError;
     private int heartbeatInterval;
     private int maxMessageSuspendTimeout;
 
@@ -201,9 +201,10 @@ public class ApplicationConfiguration {
     /**
      * Gets the message used when a session expiration error occurs.
      *
-     * @return the session expiration error message
+     * @return the session expiration error message as a native object with
+     *         caption, message, url and querySelector fields
      */
-    public ErrorMessage getSessionExpiredError() {
+    public JavaScriptObject getSessionExpiredError() {
         return sessionExpiredError;
     }
 
@@ -211,9 +212,10 @@ public class ApplicationConfiguration {
      * Sets the message used when a session expiration error occurs.
      *
      * @param sessionExpiredError
-     *            the session expiration error message
+     *            the session expiration error message as a native object with
+     *            caption, message, url and querySelector fields
      */
-    public void setSessionExpiredError(ErrorMessage sessionExpiredError) {
+    public void setSessionExpiredError(JavaScriptObject sessionExpiredError) {
         this.sessionExpiredError = sessionExpiredError;
     }
 
