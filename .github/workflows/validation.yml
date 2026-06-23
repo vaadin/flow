@@ -71,6 +71,11 @@ jobs:
         run: |
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)" >> $GITHUB_OUTPUT
+      - name: Set TB License
+        run: |
+          TB_LICENSE=${{secrets.TB_LICENSE}}
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
