@@ -73,12 +73,7 @@ public final class Console {
      */
     private static native boolean isLocalStorageFlagEnabled()
     /*-{
-        try {
-            return $wnd.localStorage && $wnd.localStorage.getItem('vaadin.browserLog') === 'true';
-        } catch (e) {
-            // localStorage might not be available or accessible
-            return false;
-        }
+        return $wnd.Vaadin.Flow.internal.Console.isLocalStorageFlagEnabled();
     }-*/;
 
     /**

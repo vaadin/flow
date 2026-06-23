@@ -58,6 +58,7 @@ import { getContextExecutionObject } from './ExecuteJavaScriptProcessor';
 import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from './StorageUtil';
 import { sendBeacon } from './MessageSender';
 import { bindPolymerModelProperties } from './SimpleElementBindingStrategy';
+import { isLocalStorageFlagEnabled } from './Console';
 import {
   getMethods,
   getPolymerPropertyObject,
@@ -139,6 +140,7 @@ export function registerInternals(): void {
   internal.StorageUtil = { getLocalItem, setLocalItem, getSessionItem, setSessionItem };
   internal.MessageSender = { sendBeacon };
   internal.SimpleElementBindingStrategy = { bindPolymerModelProperties };
+  internal.Console = { isLocalStorageFlagEnabled };
   internal.ServerEventObject = {
     initPromiseHandler,
     removeMethod,
