@@ -43,12 +43,7 @@ import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.Capabilities;
-import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.PreTrial;
-import com.vaadin.pro.licensechecker.PreTrialCreationException;
-import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.JsonObject;
@@ -359,20 +354,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         String name = data.get("name").textValue();
         String version = data.get("version").textValue();
         Product product = new Product(name, version);
-        PreTrial preTrial = null;
         String command = null;
         String errorMessage = "";
 
         try {
             LicenseChecker.checkLicense(product.getName(), product.getVersion(),
-                    BuildType.DEVELOPMENT, null,
-                    Capabilities.of(Capability.PRE_TRIAL));
-        } catch (PreTrialLicenseValidationException e) {
-            DevModeUsageStatistics
-                    .collectEvent("pre-trial/" + product.getName());
-            errorMessage = e.getMessage();
-            preTrial = e.getPreTrial();
-            command = "license-check-nokey";
+                    BuildType.DEVELOPMENT, null);
         } catch (Exception e) {
             errorMessage = e.getMessage();
             command = "license-check-failed";
@@ -380,7 +367,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (command == null) {
             send(resource, "license-check-ok", product);
         } else {
-            ProductAndMessage pm = new ProductAndMessage(product, preTrial,
+            ProductAndMessage pm = new ProductAndMessage(product, null,
                     errorMessage);
             send(resource, command, pm);
         }
@@ -400,16 +387,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handlePreTrialStart(AtmosphereResource resource,
             JsonNode data) {
-        try {
-            PreTrial preTrial = LicenseChecker.startPreTrial();
-            DevModeUsageStatistics.collectEvent("pre-trial/activated");
-            send(resource, "license-pretrial-started", preTrial);
-        } catch (PreTrialCreationException.Expired ex) {
-            send(resource, "license-pretrial-expired", null);
-        } catch (Exception ex) {
-            DevModeUsageStatistics.collectEvent("pre-trial/activation-failed");
-            send(resource, "license-pretrial-failed", null);
-        }
+        // Pre-trial is disabled: never call LicenseChecker.startPreTrial() so a
+        // trial can never be created accidentally.
+        getLogger().debug("Pre-trial activation is disabled; ignoring request");
+        send(resource, "license-pretrial-failed", null);
     }
 
     private static Logger getLogger() {

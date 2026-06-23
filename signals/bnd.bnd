@@ -2,6 +2,6 @@ Bundle-SymbolicName: ${project.groupId}.flow.signals
 Bundle-Name: Vaadin Full-Stack Signals Commons
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: !*
 Export-Package: !*

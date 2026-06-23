@@ -36,13 +36,9 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.Capabilities;
-import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.PreTrial;
-import com.vaadin.pro.licensechecker.PreTrialCreationException;
-import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -56,9 +52,7 @@ public class DebugWindowConnectionLicenseCheckTest {
     private static final Product TEST_PRODUCT = new Product(
             "commercial-component", "1.0.0");
     public static final String INVALID_LICENSE_ERROR = "Invalid license";
-    public static final String MISSING_KEY_ERROR = "Pre trial not started yet.";
-    public static final PreTrial TEST_PRE_TRIAL = new PreTrial("Test trial",
-            PreTrial.PreTrialState.START_ALLOWED, 5, 22);
+    public static final String MISSING_KEY_ERROR = "No license key found.";
 
     private final DebugWindowConnection reload = new DebugWindowConnection(
             getMockContext());
@@ -96,7 +90,7 @@ public class DebugWindowConnectionLicenseCheckTest {
         DebugWindowMessage message = doLicenseCheck(
                 LicenseCheckResult.MISSING_KEYS);
 
-        Assert.assertEquals("license-check-nokey", message.getCommand());
+        Assert.assertEquals("license-check-failed", message.getCommand());
         Assert.assertTrue(
                 "Expected a ProductAndMessage object in response message",
                 message.getData() instanceof ProductAndMessage);
@@ -106,54 +100,26 @@ public class DebugWindowConnectionLicenseCheckTest {
                 productAndMessage.getMessage().contains(MISSING_KEY_ERROR));
         Assert.assertEquals(TEST_PRODUCT.toString(),
                 productAndMessage.getProduct().toString());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
-                productAndMessage.getProduct().toString());
-        Assert.assertNotNull("Expected pre-trial info to be present",
+        Assert.assertNull("Expected pre-trial info to be absent",
                 productAndMessage.getPreTrial());
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(),
-                productAndMessage.getPreTrial().toString());
     }
 
     @Test
-    public void startPreTrial_preTrialAllowed_sendPreTrialInfo() {
-        DebugWindowMessage message = doStartPreTrial(
-                PreTrial.PreTrialState.START_ALLOWED);
-        Assert.assertEquals("license-pretrial-started", message.getCommand());
-        Assert.assertTrue("Expected a PreTrial object in response message",
-                message.getData() instanceof PreTrial);
-        PreTrial preTrial = (PreTrial) message.getData();
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
-    }
-
-    @Test
-    public void startPreTrial_preTrialRunning_sendPreTrialInfo() {
-        DebugWindowMessage message = doStartPreTrial(
-                PreTrial.PreTrialState.RUNNING);
-        Assert.assertEquals("license-pretrial-started", message.getCommand());
-        Assert.assertTrue("Expected a PreTrial object in response message",
-                message.getData() instanceof PreTrial);
-        PreTrial preTrial = (PreTrial) message.getData();
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
-    }
-
-    @Test
-    public void startPreTrial_preTrialExpired_sendPreTrialExpiredFailure() {
-        DebugWindowMessage message = doStartPreTrial(
-                PreTrial.PreTrialState.EXPIRED);
-        Assert.assertEquals("license-pretrial-expired", message.getCommand());
-    }
-
-    @Test
-    public void startPreTrial_preTrialNotAllowed_sendPreTrialNotAllowedFailure() {
-        DebugWindowMessage message = doStartPreTrial(null);
-        Assert.assertEquals("license-pretrial-failed", message.getCommand());
-    }
-
-    @Test
-    public void startPreTrial_genericError_sendPreTrialNotAllowedFailure() {
-        DebugWindowMessage message = doStartPreTrial(
-                PreTrial.PreTrialState.ACCESS_DENIED);
-        Assert.assertEquals("license-pretrial-failed", message.getCommand());
+    public void startPreTrial_disabled_neverStartsTrialAndReportsFailure() {
+        receiver.messages.clear();
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "startPreTrialLicense");
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+            reload.onMessage(receiver.resource, command.toString());
+            // Pre-trial is disabled: the trial-start service must never run
+            licenseChecker.verify(LicenseChecker::startPreTrial,
+                    Mockito.never());
+        }
+        Assert.assertEquals(1, receiver.messages.size());
+        Assert.assertEquals("license-pretrial-failed",
+                receiver.messages.get(0).getCommand());
+        receiver.messages.clear();
     }
 
     @Test
@@ -196,26 +162,6 @@ public class DebugWindowConnectionLicenseCheckTest {
         command.put("command", "checkLicense");
         command.putPOJO("data", TEST_PRODUCT);
         return sendAndReceive(command, mockCheckLicense(licenseCheckResult));
-    }
-
-    private DebugWindowMessage doStartPreTrial(
-            PreTrial.PreTrialState preTrialState) {
-        ObjectNode command = OBJECT_MAPPER.createObjectNode();
-        command.put("command", "startPreTrialLicense");
-        return sendAndReceive(command, licenseChecker -> licenseChecker
-                .when(LicenseChecker::startPreTrial).then(i -> {
-                    if (preTrialState == null) {
-                        throw new PreTrialCreationException("BOOM!!!!");
-                    }
-                    return switch (preTrialState) {
-                    case START_ALLOWED -> TEST_PRE_TRIAL;
-                    case RUNNING -> TEST_PRE_TRIAL;
-                    case EXPIRED -> throw new PreTrialCreationException.Expired(
-                            "Trial expired");
-                    case ACCESS_DENIED -> throw new PreTrialCreationException(
-                            "Pre trial not allowed");
-                    };
-                }));
     }
 
     private DebugWindowMessage doDownloadKey(boolean success,
@@ -269,18 +215,15 @@ public class DebugWindowConnectionLicenseCheckTest {
     private Consumer<MockedStatic<LicenseChecker>> mockCheckLicense(
             LicenseCheckResult licenseCheckResult) {
         return licenseChecker -> {
-            licenseChecker
-                    .when(() -> LicenseChecker.checkLicense(anyString(),
-                            anyString(), Mockito.any(BuildType.class),
-                            Mockito.isNull(), Mockito.any(Capabilities.class)))
+            licenseChecker.when(
+                    () -> LicenseChecker.checkLicense(anyString(), anyString(),
+                            Mockito.any(BuildType.class), Mockito.isNull()))
                     .then(i -> {
                         switch (licenseCheckResult) {
                         case INVALID ->
                             throw new LicenseException(INVALID_LICENSE_ERROR);
-                        case MISSING_KEYS -> {
-                            throw new PreTrialLicenseValidationException(
-                                    TEST_PRE_TRIAL);
-                        }
+                        case MISSING_KEYS ->
+                            throw new LicenseException(MISSING_KEY_ERROR);
                         default -> {
                         }
                         }
