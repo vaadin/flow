@@ -15,16 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.HtmlContainer;
-import com.vaadin.flow.component.Tag;
+public class TableFootTest extends ComponentTest {
+    // Actual test methods in super class
 
-/**
- * Represents the table caption element ({@code <caption>}).
- *
- * @since 24.4
- * @deprecated since 25.2; use {@link TableCaption} instead.
- */
-@Deprecated
-@Tag(Tag.CAPTION)
-public class NativeTableCaption extends HtmlContainer {
+    @Override
+    protected void addProperties() {
+        // Component defines no new properties
+    }
 }

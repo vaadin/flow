@@ -67,6 +67,14 @@ public @interface Tag {
      */
     String CODE = "code";
     /**
+     * Tag for a <code>&lt;col&gt;</code>.
+     */
+    String COL = "col";
+    /**
+     * Tag for a <code>&lt;colgroup&gt;</code>.
+     */
+    String COLGROUP = "colgroup";
+    /**
      * Tag for an <code>&lt;dd&gt;</code>.
      */
     String DD = "dd";

@@ -24,7 +24,9 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;tbody&gt;</code> element.
  *
  * @since 24.4
+ * @deprecated since 25.2; use {@link TableBody} instead.
  */
+@Deprecated
 @Tag(Tag.TBODY)
 public class NativeTableBody extends HtmlContainer
         implements NativeTableRowContainer, ClickNotifier<NativeTableBody> {

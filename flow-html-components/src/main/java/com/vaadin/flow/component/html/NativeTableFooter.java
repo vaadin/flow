@@ -24,7 +24,9 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;tfoot&gt;</code> element.
  *
  * @since 24.4
+ * @deprecated since 25.2; use {@link TableFoot} instead.
  */
+@Deprecated
 @Tag(Tag.TFOOT)
 public class NativeTableFooter extends HtmlContainer
         implements NativeTableRowContainer, ClickNotifier<NativeTableFooter> {

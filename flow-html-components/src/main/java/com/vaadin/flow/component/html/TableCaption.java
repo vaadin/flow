@@ -21,10 +21,8 @@ import com.vaadin.flow.component.Tag;
 /**
  * Represents the table caption element ({@code <caption>}).
  *
- * @since 24.4
- * @deprecated since 25.2; use {@link TableCaption} instead.
+ * @since 25.2
  */
-@Deprecated
 @Tag(Tag.CAPTION)
-public class NativeTableCaption extends HtmlContainer {
+public class TableCaption extends HtmlContainer {
 }
