@@ -101,7 +101,7 @@ import java.lang.annotation.Target;
  * {@code @CssImport("./styles/custom-style.css")}, the {@code custom-style.css}
  * will be present on the root route as well.
  *
- * @since 2.1
+ * @since 2.0.3
  *
  * @see JsModule
  */
