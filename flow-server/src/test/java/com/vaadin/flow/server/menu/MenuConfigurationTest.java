@@ -56,6 +56,7 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -98,6 +99,8 @@ class MenuConfigurationTest {
 
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
+        Mockito.when(vaadinService.getRouter())
+                .thenReturn(new Router(registry));
         Mockito.when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
 

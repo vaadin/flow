@@ -24,7 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -143,6 +146,165 @@ public class Router implements Serializable {
                     .build();
         }
         return Optional.ofNullable(result);
+    }
+
+    /**
+     * Resolves the page title of the given navigation target without creating
+     * an instance of it, using empty query parameters.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the title for, not
+     *            {@code null}
+     * @param routeParameters
+     *            the route parameters the target is resolved with, not
+     *            {@code null}
+     * @return the resolved title, or an empty {@link Optional} if the target
+     *         declares no title and no default generator is available
+     * @see #resolvePageTitle(Class, RouteParameters, QueryParameters)
+     */
+    public Optional<String> resolvePageTitle(
+            Class<? extends Component> navigationTarget,
+            RouteParameters routeParameters) {
+        return resolvePageTitle(navigationTarget, routeParameters,
+                QueryParameters.empty());
+    }
+
+    /**
+     * Resolves the page title of the given navigation target without creating
+     * an instance of it.
+     * <p>
+     * The title is resolved in this order:
+     * <ol>
+     * <li>the per-route {@link DynamicPageTitle} generator;</li>
+     * <li>the application-wide default {@link PageTitleGenerator};</li>
+     * <li>the static {@link PageTitle#value()}.</li>
+     * </ol>
+     * The generators are obtained from the current {@link VaadinService}; when
+     * no service is active, only annotation-based resolution is performed.
+     * <p>
+     * Since the navigation target is not instantiated,
+     * {@link HasDynamicTitle#getPageTitle()} is not consulted; the title of an
+     * instantiated, currently shown route may therefore differ from the result
+     * of this method. This is the stateless title resolution used to render
+     * navigation aids such as breadcrumbs and menus, for example over the
+     * entries of
+     * {@link RouteConfiguration#getRouteHierarchy(Class, RouteParameters)}.
+     *
+     * @param navigationTarget
+     *            the navigation target to resolve the title for, not
+     *            {@code null}
+     * @param routeParameters
+     *            the route parameters the target is resolved with, not
+     *            {@code null}
+     * @param queryParameters
+     *            the query parameters the target is resolved with, not
+     *            {@code null}
+     * @return the resolved title, or an empty {@link Optional} if the target
+     *         declares no title and no default generator is available
+     */
+    public Optional<String> resolvePageTitle(
+            Class<? extends Component> navigationTarget,
+            RouteParameters routeParameters, QueryParameters queryParameters) {
+        VaadinService service = VaadinService.getCurrent();
+        Instantiator instantiator = service != null ? service.getInstantiator()
+                : null;
+        PageTitle pageTitle = navigationTarget.getAnnotation(PageTitle.class);
+        DynamicPageTitle dynamic = navigationTarget
+                .getAnnotation(DynamicPageTitle.class);
+        String value = pageTitle != null ? pageTitle.value() : "";
+
+        PageTitleGenerator generator;
+        if (dynamic != null) {
+            generator = instantiatePageTitleGenerator(instantiator,
+                    dynamic.value());
+        } else {
+            generator = instantiator != null
+                    ? instantiator.getPageTitleGenerator()
+                    : null;
+        }
+        if (generator != null) {
+            return Optional.of(generator
+                    .generatePageTitle(new PageTitleContext(navigationTarget,
+                            routeParameters, queryParameters, value)));
+        }
+        return pageTitle != null ? Optional.of(value) : Optional.empty();
+    }
+
+    /**
+     * Resolves the page title of the given navigation target instance, using
+     * empty query parameters.
+     *
+     * @param navigationTarget
+     *            the navigation target instance to resolve the title for, not
+     *            {@code null}
+     * @param routeParameters
+     *            the route parameters the target is resolved with, not
+     *            {@code null}
+     * @return the resolved title, or an empty {@link Optional} if the target
+     *         declares no title and no default generator is available
+     * @see #resolvePageTitle(Component, RouteParameters, QueryParameters)
+     */
+    public Optional<String> resolvePageTitle(Component navigationTarget,
+            RouteParameters routeParameters) {
+        return resolvePageTitle(navigationTarget, routeParameters,
+                QueryParameters.empty());
+    }
+
+    /**
+     * Resolves the page title of the given navigation target instance.
+     * <p>
+     * The title is resolved in this order:
+     * <ol>
+     * <li>{@link HasDynamicTitle#getPageTitle()}, when the instance implements
+     * {@link HasDynamicTitle} and returns a non-{@code null} title &mdash; this
+     * matches the title shown when the route is actually navigated to;</li>
+     * <li>the per-route {@link DynamicPageTitle} generator;</li>
+     * <li>the application-wide default {@link PageTitleGenerator};</li>
+     * <li>the static {@link PageTitle#value()}.</li>
+     * </ol>
+     * Unlike
+     * {@link #resolvePageTitle(Class, RouteParameters, QueryParameters)}, which
+     * cannot create an instance and therefore skips {@link HasDynamicTitle},
+     * this overload mirrors the resolution performed during navigation.
+     *
+     * @param navigationTarget
+     *            the navigation target instance to resolve the title for, not
+     *            {@code null}
+     * @param routeParameters
+     *            the route parameters the target is resolved with, not
+     *            {@code null}
+     * @param queryParameters
+     *            the query parameters the target is resolved with, not
+     *            {@code null}
+     * @return the resolved title, or an empty {@link Optional} if the target
+     *         declares no title and no default generator is available
+     */
+    public Optional<String> resolvePageTitle(Component navigationTarget,
+            RouteParameters routeParameters, QueryParameters queryParameters) {
+        if (navigationTarget instanceof HasDynamicTitle hasDynamicTitle) {
+            String title = hasDynamicTitle.getPageTitle();
+            if (title != null) {
+                return Optional.of(title);
+            }
+            // a null dynamic title falls through to class-based resolution,
+            // matching navigation (RouteUtil.getDynamicTitle)
+        }
+        VaadinService service = VaadinService.getCurrent();
+        Instantiator instantiator = service != null ? service.getInstantiator()
+                : null;
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> targetClass = instantiator != null
+                ? (Class<? extends Component>) instantiator
+                        .getApplicationClass(navigationTarget)
+                : navigationTarget.getClass();
+        return resolvePageTitle(targetClass, routeParameters, queryParameters);
+    }
+
+    private PageTitleGenerator instantiatePageTitleGenerator(
+            Instantiator instantiator,
+            Class<? extends PageTitleGenerator> generatorType) {
+        return instantiator != null ? instantiator.getOrCreate(generatorType)
+                : ReflectTools.createInstance(generatorType);
     }
 
     /**

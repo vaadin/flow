@@ -1136,9 +1136,9 @@ public abstract class AbstractNavigationStateRenderer
         @SuppressWarnings("unchecked")
         Class<? extends Component> targetClass = (Class<? extends Component>) instantiator
                 .getApplicationClass(routeTarget);
-        Supplier<String> lookForTitleInTarget = () -> RouteUtil
-                .resolvePageTitle(instantiator, targetClass, parameters,
-                        queryParameters)
+        Supplier<String> lookForTitleInTarget = () -> navigationEvent
+                .getSource()
+                .resolvePageTitle(targetClass, parameters, queryParameters)
                 .orElse("");
 
         // check for HasDynamicTitle in current router targets chain

@@ -1,0 +1,74 @@
+name: Maintained Branch Release Check
+
+# Reports which maintained branches (read from validation.yml) have unreleased
+# feat:/fix: changes and keeps one GitHub issue per branch listing the patch
+# release to do, so each release can be tracked and assigned individually.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history + tags for every branch so the script can diff each
+          # maintained branch against its latest release tag.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Compute pending releases
+        run: node ./scripts/checkReleases.js --out=release-check
+
+      - name: Sync per-branch release issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create release-pending \
+            --description "Maintained branch with unreleased feat:/fix: changes" \
+            --color 0E8A16 2>/dev/null || true
+
+          # Look up an open release-pending issue by its exact (stable) title.
+          # List by label and match the title exactly to avoid search tokenizing
+          # the ":" in the title.
+          find_issue() {
+            gh issue list --state open --label release-pending --limit 100 \
+              --json number,title --jq ".[] | select(.title==\"$1\") | .number" | head -n1
+          }
+
+          # Create or update one issue per branch with pending changes.
+          jq -c '.pending[]' release-check/manifest.json | while read -r item; do
+            title=$(echo "$item" | jq -r '.title')
+            body=$(echo "$item" | jq -r '.body')
+            existing=$(find_issue "$title")
+            if [ -n "$existing" ]; then
+              gh issue edit "$existing" --body-file "$body"
+              echo "Updated #$existing — $title"
+            else
+              gh issue create --title "$title" --label release-pending --body-file "$body"
+              echo "Created — $title"
+            fi
+          done
+
+          # Close issues for branches that are now fully released.
+          jq -r '.clean[]' release-check/manifest.json | while read -r title; do
+            existing=$(find_issue "$title")
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" \
+                --comment "All \`feat:\`/\`fix:\` changes on this branch are released. Closing automatically."
+              echo "Closed #$existing — $title"
+            fi
+          done
+
+      - name: Job summary
+        if: always()
+        run: cat release-check/summary.md >> "$GITHUB_STEP_SUMMARY"

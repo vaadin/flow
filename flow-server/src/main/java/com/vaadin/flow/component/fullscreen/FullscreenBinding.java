@@ -26,9 +26,11 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 
 /**
- * Fluent surface returned from {@link Fullscreen#onClick}. Each {@code enter}
- * action attaches one {@link RequestFullscreenAction} to the underlying
- * {@link Trigger}.
+ * Fluent surface returned from {@link Fullscreen#onClick}, used to declare what
+ * a click should make fullscreen. Call {@link #enter()} for the whole page or
+ * {@link #enter(Component)} for a single component. The request runs in the
+ * browser at click time, while the user gesture required by the Fullscreen API
+ * is still valid.
  * <p>
  * Actions come in two flavours: fire-and-forget (no callbacks) and observed
  * (with {@code onSuccess}/{@code onError} callbacks). {@code onError} receives
@@ -98,8 +100,11 @@ public final class FullscreenBinding implements Serializable {
      */
     public void enter(Component component) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component,
-                () -> bind(new RequestFullscreenAction(component)));
+        // Defer wiring until the target attaches so RequestFullscreenAction can
+        // resolve the UI's wrapper element and see the target's install-time
+        // visibility; the trigger counts as armed straight away.
+        trigger.triggers(component,
+                () -> new RequestFullscreenAction(component));
     }
 
     /**
@@ -117,18 +122,8 @@ public final class FullscreenBinding implements Serializable {
     public void enter(Component component, SerializableRunnable onSuccess,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(component, "component must not be null");
-        whenAttached(component, () -> bind(
-                new RequestFullscreenAction(component, onSuccess, onError)));
-    }
-
-    private static void whenAttached(Component component, Runnable task) {
-        // Defer wiring until attach so the action's wrapper-element lookup
-        // (target.getUI().getInternals().getWrapperElement()) has a UI to
-        // resolve against, and so that RequestFullscreenAction's visibility
-        // check sees the same visibility state as the install JS would.
-        // runWhenAttached fires immediately if already attached and is
-        // one-shot otherwise.
-        component.getElement().getNode().runWhenAttached(ui -> task.run());
+        trigger.triggers(component, () -> new RequestFullscreenAction(component,
+                onSuccess, onError));
     }
 
     private void bind(RequestFullscreenAction action) {

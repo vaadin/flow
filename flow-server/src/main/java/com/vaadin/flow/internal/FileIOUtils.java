@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -366,8 +367,42 @@ public class FileIOUtils {
                 file);
 
         file.getParentFile().mkdirs();
-        Files.writeString(file.toPath(), content);
+        writeAtomically(file.toPath(), content);
         return true;
+    }
+
+    /**
+     * Writes the given content to the target path atomically.
+     * <p>
+     * The content is first written to a temporary file in the same directory
+     * and then moved over the target, so that a file system watcher (such as
+     * Vite's during development) never observes a truncated, partially written
+     * or momentarily missing file while the content is being updated. Observing
+     * such an intermediate state would otherwise make the dev server fail to
+     * resolve imports between generated files.
+     */
+    private static void writeAtomically(Path target, String content)
+            throws IOException {
+        Path directory = target.getParent();
+        Path tempFile = Files.createTempFile(directory,
+                target.getFileName().toString(), ".tmp");
+        try {
+            Files.writeString(tempFile, content);
+            try {
+                Files.move(tempFile, target, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                // Fall back to a non-atomic replace if the file system does not
+                // support atomic moves. This is still a single move operation
+                // and avoids the truncate-then-write window of a direct write.
+                log().debug("atomic move not supported for '{}', "
+                        + "falling back to a regular move", target, e);
+                Files.move(tempFile, target,
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     private static Logger log() {

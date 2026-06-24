@@ -28,6 +28,7 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionO
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -155,6 +156,63 @@ class TriggerTest {
         DomEventTrigger trigger = new DomEventTrigger(button, "click");
         assertThrows(IllegalArgumentException.class,
                 () -> trigger.triggers(new Action[0]));
+    }
+
+    @Test
+    void unarmedTrigger_failsWhenClientResponseIsBuilt() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        // Trigger created but never armed via triggers(...) — the mistake the
+        // check exists to catch.
+        new DomEventTrigger(button, "click");
+
+        IllegalStateException e = assertThrows(IllegalStateException.class,
+                () -> ui.getInternals().getStateTree()
+                        .runExecutionsBeforeClientResponse());
+        String message = e.getMessage();
+        assertNotNull(message);
+        assertTrue(message.contains("no action was assigned"),
+                "Message should explain the trigger was left unarmed");
+    }
+
+    @Test
+    void deferredArming_passesCheckBeforeTargetAttaches() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent target = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement());
+
+        // Wiring is deferred until the (still detached) target attaches, but
+        // the
+        // trigger counts as armed immediately — so the check must not fire even
+        // though no action has been installed yet.
+        new DomEventTrigger(button, "click").triggers(target,
+                () -> new SetPropertyAction<>(target, "value", "x"));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertTrue(installFns(ui).isEmpty(),
+                "No install expected before the target attaches");
+
+        // Attaching the target performs the deferred wiring.
+        ui.getElement().appendChild(target.getElement());
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertEquals(1, installFns(ui).size());
+    }
+
+    @Test
+    void armedTrigger_passesCheck() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent target = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement(), target.getElement());
+
+        new DomEventTrigger(button, "click")
+                .triggers(new SetPropertyAction<>(target, "value", "x"));
+
+        // Does not throw: the trigger was armed before the response is built.
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
     }
 
 }

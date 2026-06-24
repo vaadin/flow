@@ -55,16 +55,30 @@ public final class WebShare implements Serializable {
     }
 
     /**
-     * Registers the given component as a clickable trigger for a share action —
-     * the common shape for "Share" buttons. Equivalent to
-     * {@code new ClickTrigger(component)}, without making callers reach for the
-     * trigger framework's internal types.
+     * Starts a share action bound to clicks on the given component — the entry
+     * point for "Share" buttons. Chain the content to share onto the returned
+     * {@link WebShareBinding}:
+     *
+     * <pre>{@code
+     * Button share = new Button("Share");
+     * WebShare.onClick(share).share(
+     *         ShareContent.create().title("Vaadin").url("https://vaadin.com"));
+     * }</pre>
+     *
+     * The browser only opens the native share sheet while it is handling a
+     * genuine user gesture, and that activation is gone by the time a normal
+     * server-side click listener runs. Binding the action here makes it run
+     * inside the browser's own click handler, where the gesture is still valid
+     * — which is why sharing goes through {@code onClick} rather than an
+     * ordinary {@code addClickListener}.
      *
      * @param component
-     *            the component to listen for clicks on, not {@code null}
+     *            the component whose clicks trigger the share action, not
+     *            {@code null}
      * @param <T>
      *            the component type, must implement {@link ClickNotifier}
-     * @return a new binding that can chain actions to this trigger
+     * @return a binding for chaining the content to share on click
+     * @see WebShareBinding
      */
     public static <T extends Component & ClickNotifier<?>> WebShareBinding onClick(
             T component) {

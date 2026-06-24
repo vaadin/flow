@@ -2149,10 +2149,9 @@ public class Element extends Node<Element> {
 
         // Use setTimeout to work on newly created elements
         if (json == null) {
-            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
         } else {
-            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
-                    json);
+            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
         }
 
         return getSelf();

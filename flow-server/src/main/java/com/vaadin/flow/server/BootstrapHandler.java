@@ -1372,28 +1372,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Extracts browser details from the request JSON parameter and stores them
-     * in the UI's internals as ExtendedClientDetails.
+     * Extracts browser details from the request parameters and stores them in
+     * the UI's internals as ExtendedClientDetails.
+     * <p>
+     * The client sends each browser detail as an individual {@code v-*} query
+     * parameter (e.g. {@code v-sw}, {@code v-tzid}) in the {@code v-r=init}
+     * request. Plain {@code key=value} pairs are used instead of a single
+     * JSON-encoded value so the bootstrap URL does not carry the heavily
+     * percent-encoded payload that some firewalls/WAFs block. The values are
+     * read straight from the request, without any intermediate JSON.
      *
      * @param request
-     *            the request containing browser details as JSON parameter
+     *            the request containing browser details as query parameters
      * @param ui
      *            the UI instance to store the details in
      */
     private void extractAndStoreBrowserDetails(VaadinRequest request, UI ui) {
-        // Extract browser details JSON parameter from request
-        // This is sent by the client in the v-r=init request
-        String browserDetailsJson = request.getParameter("v-browserDetails");
-
-        if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
-            try {
-                JsonNode json = JacksonUtils.readTree(browserDetailsJson);
-                ExtendedClientDetails.updateFromJson(ui, json);
-            } catch (Exception e) {
-                // Log and continue without browser details
-                getLogger().debug(
-                        "Failed to parse browser details from init request", e);
-            }
+        // The client always sends the screen width when browser details are
+        // included; use it as the marker that the v-* parameters are present.
+        if (request.getParameter("v-sw") == null) {
+            return;
+        }
+        try {
+            ExtendedClientDetails.updateFromValues(ui, request::getParameter);
+        } catch (Exception e) {
+            // Log and continue without browser details
+            getLogger().debug(
+                    "Failed to parse browser details from init request", e);
         }
     }
 
