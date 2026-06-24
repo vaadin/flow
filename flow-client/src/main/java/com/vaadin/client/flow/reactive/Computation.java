@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import com.vaadin.client.Command;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
@@ -31,7 +32,7 @@ import elemental.events.EventRemover;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class Computation implements ReactiveValueChangeListener {
+public class Computation implements ReactiveValueChangeListener {
 
     private boolean invalidated = false;
 
@@ -41,10 +42,24 @@ public abstract class Computation implements ReactiveValueChangeListener {
 
     private JsSet<InvalidateListener> invalidateListeners = JsCollections.set();
 
+    private final Command recomputeCommand;
+
     /**
-     * Creates a new computation.
+     * Creates a new computation whose recomputation is handled by a subclass
+     * overriding {@link #doRecompute()}.
      */
-    public Computation() {
+    protected Computation() {
+        this(null);
+    }
+
+    /**
+     * Creates a new computation that runs the given command on recomputation.
+     *
+     * @param recomputeCommand
+     *            the command to run when this computation is recomputed
+     */
+    public Computation(Command recomputeCommand) {
+        this.recomputeCommand = recomputeCommand;
         // Make sure a recompute is scheduled
         invalidate();
     }
@@ -148,9 +163,15 @@ public abstract class Computation implements ReactiveValueChangeListener {
 
     /**
      * Does the actual recomputation. This method is run in a way that
-     * automatically registers dependencies to any reactive value accessed.
+     * automatically registers dependencies to any reactive value accessed. By
+     * default it runs the command passed to the constructor; subclasses may
+     * override it instead.
      */
-    protected abstract void doRecompute();
+    protected void doRecompute() {
+        if (recomputeCommand != null) {
+            recomputeCommand.execute();
+        }
+    }
 
     /**
      * Adds an invalidate listener that will be invoked the next time this
