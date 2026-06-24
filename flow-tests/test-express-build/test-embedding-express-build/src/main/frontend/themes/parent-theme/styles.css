@@ -1,3 +1,11 @@
+/**
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 /*
 Parent theme added only to ensure that exported web components do not add
 style sheet link to the document when the theme does not provide a document.css
