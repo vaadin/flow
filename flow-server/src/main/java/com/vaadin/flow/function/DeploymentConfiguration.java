@@ -69,6 +69,21 @@ public interface DeploymentConfiguration
     int getHeartbeatInterval();
 
     /**
+     * Returns the maximum size, in characters, that Flow reads from a
+     * client-to-server UIDL/RPC or push request body before rejecting the
+     * request with HTTP 413 (Request Entity Too Large). This guards against
+     * denial-of-service attacks that stream arbitrarily large payloads to
+     * exhaust server memory.
+     * <p>
+     * The limit does not apply to file uploads, which are streamed in chunks
+     * and have their own separate size limits.
+     *
+     * @return the maximum request body size in characters, or a negative number
+     *         if the limit is disabled
+     */
+    long getMaxRequestBodySize();
+
+    /**
      * In certain cases, such as when combining XmlHttpRequests and push over
      * low bandwidth connections, messages may be received out of order by the
      * client. This property specifies the maximum time (in milliseconds) that

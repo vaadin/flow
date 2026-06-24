@@ -67,6 +67,34 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_FRAME_OPTIONS = "frameOptions";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
+
+    /**
+     * Configuration parameter name for the maximum size, in characters, that
+     * Flow reads from a client-to-server UIDL/RPC or push request body before
+     * rejecting the request with HTTP 413 (Request Entity Too Large). This
+     * guards against denial-of-service attacks that stream arbitrarily large
+     * payloads to exhaust server memory. The default is 10&nbsp;MB; set the
+     * value to {@code -1} to disable the limit.
+     * <p>
+     * This limit does not apply to file uploads, which are streamed in chunks
+     * and have their own separate size limits (request size, file size and file
+     * count).
+     * <p>
+     * The body is read incrementally and the limit is enforced on the running
+     * total, so the request is rejected mid-stream once the limit is exceeded;
+     * even chunked ({@code Transfer-Encoding: chunked}) requests without a
+     * {@code Content-Length} header cannot bypass it. For this to hold, Flow
+     * must be the first component to read the body: if a filter or request
+     * wrapper in front of Flow buffers the whole body first, that memory cost
+     * is incurred before this check runs. As defense-in-depth, also configure a
+     * request body size limit and a request read timeout at the servlet
+     * container or reverse proxy (for example Tomcat {@code connectionTimeout}
+     * and {@code maxSwallowSize}, or nginx {@code client_max_body_size} and
+     * {@code client_body_timeout}). The read timeout in particular guards
+     * against slow-POST attacks that drip the body slowly to hold a worker
+     * thread open without exceeding this size limit.
+     */
+    public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
