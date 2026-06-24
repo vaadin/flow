@@ -75,13 +75,6 @@ public class FlowPlugin : Plugin<Project> {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
-                    // Restore the production token before packaging in
-                    // case it was deleted by a previous build's cleanup.
-                    task.doFirst {
-                        val svc = (project.tasks.getByName("vaadinBuildFrontend")
-                            as VaadinBuildFrontendTask).getTokenService().orNull
-                        svc?.ensureToken()
-                    }
                 }
             } else if (config.alwaysExecutePrepareFrontend.get()) {
                 // In development mode, vaadinPrepareFrontend is not
@@ -150,6 +143,13 @@ public class FlowPlugin : Plugin<Project> {
                 buildFrontendTask.usesService(tokenService)
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.usesService(tokenService)
+                    // Restore the production token before packaging in
+                    // case it was deleted by a previous build's cleanup.
+                    // Capture the service provider rather than the Project so
+                    // the action stays compatible with the configuration cache.
+                    task.doFirst {
+                        tokenService.get().ensureToken()
+                    }
                 }
             }
         }
