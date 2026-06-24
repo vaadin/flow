@@ -181,6 +181,7 @@ public @interface PWA {
      * unregistered on the user's next visit.
      *
      * @return whether offline is enabled.
+     * @since 23.1
      */
     boolean offline() default true;
 }

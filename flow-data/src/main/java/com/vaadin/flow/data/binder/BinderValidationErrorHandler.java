@@ -31,6 +31,7 @@ import com.vaadin.flow.component.HasValue;
  * @see Binder#setValidationErrorHandler(BinderValidationErrorHandler)
  * @author Vaadin Ltd
  *
+ * @since 8.0
  */
 public interface BinderValidationErrorHandler extends Serializable {
 

@@ -123,6 +123,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param uniqueKeyProviderSupplier
      *            Unique key provider for a row. If null, then using Grid's
      *            default key generator.
+     * @since 25.0
      */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater, StateNode stateNode,
@@ -190,6 +191,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Replaces the cached item with a new instance and schedules a client
      * update to re-render this item.
+     * 
+     * @since 25.0
      */
     @Override
     public void refresh(T item) {
@@ -704,6 +707,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * {@code dataGenerator} so that any associated client-side resources (for
      * example, DOM elements created by {@code ComponentRenderer}) can also be
      * released.
+     * 
+     * @since 25.0
      */
     @Override
     public void confirmUpdate(int updateId) {
@@ -772,6 +777,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param limit
      *            the maximum number of items to fetch
      * @return a hierarchical query for the specified range
+     * @since 25.0
      */
     @Override
     public HierarchicalQuery<T, Object> buildQuery(int offset, int limit) {
@@ -792,6 +798,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param limit
      *            the maximum number of items to fetch
      * @return a hierarchical query for the specified range and parent
+     * @since 25.0
      */
     public HierarchicalQuery<T, Object> buildQuery(T parent, int offset,
             int limit) {
@@ -919,6 +926,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimate(int itemCountEstimate) {
@@ -928,6 +937,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimate() {
@@ -937,6 +948,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
@@ -946,6 +959,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimateIncrease() {
@@ -955,6 +970,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setDefinedSize(boolean definedSize) {
@@ -965,6 +982,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Estimates are not supported in HierarchicalDataCommunicator. Therefore
      * this method will always return {@literal true}
+     * 
+     * @since 24.5
      */
     @Override
     public boolean isDefinedSize() {

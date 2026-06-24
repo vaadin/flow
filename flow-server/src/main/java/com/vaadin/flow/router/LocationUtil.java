@@ -85,6 +85,7 @@ public class LocationUtil {
      *            true to remove a potential query string and a URI fragment,
      *            false to use the path as is
      * @return tha path split into parts
+     * @since 23.3.1
      */
     public static List<String> parsePathToSegments(String path,
             boolean removeExtraParts) {

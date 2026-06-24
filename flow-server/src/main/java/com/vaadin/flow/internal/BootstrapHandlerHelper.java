@@ -34,6 +34,8 @@ import com.vaadin.flow.server.VaadinSession;
  * Helper methods for use in bootstrapping.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 4.0
  */
 public final class BootstrapHandlerHelper implements Serializable {
 
@@ -147,6 +149,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @param pushServletMapping
      *            Original pushServletMapping value
      * @return cleaned-up value, or null if the original value is blank.
+     * @since 23.3.5
      */
     public static String getCleanedPushServletMapping(
             String pushServletMapping) {
@@ -174,6 +177,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletConfig} to find the registration for.
      * @return an optional {@link ServletRegistration}, or an empty optional if
      *         a registration is not available.
+     * @since 23.3.5
      */
     public static Optional<ServletRegistration> getServletRegistration(
             ServletConfig servletConfig) {
@@ -198,6 +202,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletRegistration} from which to look up the
      *            mappings.
      * @return first URL mapping, ignoring '/VAADIN/*' and '/vaadinServlet/*'
+     * @since 23.3.5
      */
     public static String findFirstUrlMapping(ServletRegistration registration) {
         String firstMapping = registration.getMappings().stream()

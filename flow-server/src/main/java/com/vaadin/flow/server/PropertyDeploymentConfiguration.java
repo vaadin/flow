@@ -66,6 +66,7 @@ public class PropertyDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @since 6.0
      */
     public PropertyDeploymentConfiguration(
             ApplicationConfiguration parentConfig,
@@ -306,6 +307,7 @@ public class PropertyDeploymentConfiguration
      *            a property name
      * @return whether the {@code property} is explicitly set in the
      *         configuration
+     * @since 6.0
      */
     protected boolean isOwnProperty(String property) {
         return getApplicationProperty(getProperties()::get, property) != null;
@@ -315,6 +317,7 @@ public class PropertyDeploymentConfiguration
      * Returns parent application configuration.
      *
      * @return the parent config
+     * @since 6.0
      */
     protected ApplicationConfiguration getParentConfiguration() {
         return parentConfig;

@@ -50,6 +50,7 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,

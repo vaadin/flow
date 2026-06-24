@@ -81,6 +81,8 @@ import com.vaadin.flow.dom.JsFunction;
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class OpenInNewTabAction extends Action {
 

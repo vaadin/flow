@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.Signal;
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
  * used to group several UI components within a form, enhancing form
  * accessibility and organization.
+ * 
+ * @since 24.5
  */
 @Tag("fieldset")
 public class FieldSet extends HtmlContainer implements HasAriaLabel {
@@ -63,6 +65,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
          * @param textSignal
          *            the signal to bind the legend text to, not {@code null}
          * @see #bindText(Signal)
+         * @since 25.1
          */
         public Legend(Signal<String> textSignal) {
             Objects.requireNonNull(textSignal, "textSignal must not be null");
@@ -96,6 +99,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @param textSignal
      *            the legend text signal to bind to, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public FieldSet(Signal<String> textSignal) {
         addComponentAsFirst(new Legend(textSignal));

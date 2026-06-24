@@ -59,6 +59,7 @@ public class KeyUpEvent extends KeyboardEvent {
      * @param composing
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
+     * @since 1.3
      */
     public KeyUpEvent(Component source, boolean fromClient,
             @EventData("event.key") String key,
@@ -95,6 +96,7 @@ public class KeyUpEvent extends KeyboardEvent {
      *            the key for this event
      * @param code
      *            the code for this event
+     * @since 1.3
      */
     public KeyUpEvent(Component source, String key, String code) {
         super(source, key, code);

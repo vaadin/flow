@@ -26,6 +26,7 @@ import com.vaadin.flow.component.ComponentEvent;
  *            the type of item used by the identifier provider
  * @param <C>
  *            the event source type
+ * @since 23.2
  */
 public class IdentifierProviderChangeEvent<T, C extends Component>
         extends ComponentEvent<C> {

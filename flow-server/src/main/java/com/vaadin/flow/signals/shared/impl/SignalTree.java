@@ -44,6 +44,8 @@ import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHand
  * synchronous trees have their changes applied immediately whereas asynchronous
  * trees make a differences between submitted changes and changes that have been
  * asynchronously confirmed.
+ * 
+ * @since 25.1
  */
 public abstract class SignalTree implements Serializable {
     /**

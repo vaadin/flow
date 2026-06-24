@@ -25,6 +25,7 @@ package com.vaadin.flow.component.screenorientation;
  * browsers that do not implement the API.
  *
  * @see ScreenOrientation#orientationSignal()
+ * @since 25.2
  */
 public enum ScreenOrientationType {
 

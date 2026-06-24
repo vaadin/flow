@@ -37,6 +37,8 @@ import com.vaadin.flow.component.Component;
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class ClickTrigger extends MouseEventTrigger {
 

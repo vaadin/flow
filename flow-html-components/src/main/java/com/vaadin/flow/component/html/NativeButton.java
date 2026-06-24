@@ -58,6 +58,7 @@ public class NativeButton extends HtmlContainer implements
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public NativeButton(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

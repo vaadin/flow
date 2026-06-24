@@ -55,6 +55,7 @@ public class TreeDataProvider<T>
      *            {@code null}
      * @param hierarchyFormat
      *            the hierarchy format to return data in, not {@code null}
+     * @since 25.0
      */
     public TreeDataProvider(TreeData<T> treeData,
             HierarchyFormat hierarchyFormat) {

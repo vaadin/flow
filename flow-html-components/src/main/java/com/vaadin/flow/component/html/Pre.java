@@ -27,6 +27,7 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;pre&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 2.1
  */
 @Tag(Tag.PRE)
 public class Pre extends HtmlContainer implements ClickNotifier<Pre> {
@@ -66,6 +67,7 @@ public class Pre extends HtmlContainer implements ClickNotifier<Pre> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Pre(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

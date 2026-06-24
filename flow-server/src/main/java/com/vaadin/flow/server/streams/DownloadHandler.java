@@ -126,6 +126,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return a {@link DownloadHandler} that is served regardless of the
      *         owner's enabled state, or {@code this} if the disabled mode is
      *         already {@link DisabledUpdateMode#ALWAYS}
+     * @since 25.1.6
      */
     default DownloadHandler allowDisabled() {
         if (getDisabledUpdateMode() == DisabledUpdateMode.ALWAYS) {

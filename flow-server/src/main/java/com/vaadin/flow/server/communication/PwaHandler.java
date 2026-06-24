@@ -65,6 +65,7 @@ public class PwaHandler implements RequestHandler {
      * @param pwaRegistryGetter
      *            PWA registry getter
      *
+     * @since 6.0
      */
     public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
         this.pwaRegistryGetter = pwaRegistryGetter;

@@ -121,6 +121,7 @@ public enum ValueChangeMode {
      *            {@link #EAGER}
      * @param registration
      *            The registration of the DOM event listener that synchronizes.
+     * @since 2.0
      */
     public static void applyChangeTimeout(ValueChangeMode mode, int timeout,
             DomListenerRegistration registration) {

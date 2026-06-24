@@ -23,6 +23,7 @@ import java.util.Objects;
 /**
  * {@link VaadinConfig} implementation for Servlets.
  *
+ * @since 2.2
  */
 public class VaadinServletConfig implements VaadinConfig {
 
