@@ -59,7 +59,6 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 /**
  * Contains utility methods related to request handling.
  */
-@org.springframework.stereotype.Component
 public class RequestUtil {
 
     private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();

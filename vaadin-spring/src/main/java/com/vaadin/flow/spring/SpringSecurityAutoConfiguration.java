@@ -188,6 +188,7 @@ public class SpringSecurityAutoConfiguration {
      * @return the request util
      */
     @Bean
+    @ConditionalOnMissingBean
     public RequestUtil requestUtil() {
         return new RequestUtil();
     }

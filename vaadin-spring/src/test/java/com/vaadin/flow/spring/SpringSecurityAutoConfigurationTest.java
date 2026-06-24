@@ -28,10 +28,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.context.annotation.UserConfigurations;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -50,6 +53,8 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
+import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.RequestUtilConfiguration;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
@@ -132,6 +137,28 @@ class SpringSecurityAutoConfigurationTest {
         this.contextRunner.withUserConfiguration(
                 CustomNavigationAccessCheckersConfigurerWithoutVaadinWebSecurity.class)
                 .run(SpringSecurityAutoConfigurationTest::assertThatCustomNavigationAccessCheckerIsUsed);
+    }
+
+    @Test
+    void requestUtilProvidedByConfigurationClass() {
+        // Simulates an application that discovers Vaadin Spring beans through
+        // a component scan of com.vaadin.flow.spring rather than through Spring
+        // Boot auto-configuration.
+        new WebApplicationContextRunner()
+                .withConfiguration(
+                        UserConfigurations.of(RequestUtilConfiguration.class,
+                                ConfigurationPropertiesConfiguration.class))
+                .run((context) -> assertThat(context)
+                        .hasSingleBean(RequestUtil.class));
+    }
+
+    @Test
+    void singleRequestUtilWhenConfigurationCombinedWithAutoConfiguration() {
+        this.contextRunner
+                .withConfiguration(
+                        UserConfigurations.of(RequestUtilConfiguration.class))
+                .run((context) -> assertThat(context)
+                        .hasSingleBean(RequestUtil.class));
     }
 
     @Test
@@ -244,6 +271,16 @@ class SpringSecurityAutoConfigurationTest {
         NavigationAccessControlConfigurer navigationAccessCheckersConfigurer() {
             return new NavigationAccessControlConfigurer()
                     .withNavigationAccessChecker(CUSTOM);
+        }
+    }
+
+    @EnableConfigurationProperties(VaadinConfigurationProperties.class)
+    static class ConfigurationPropertiesConfiguration {
+
+        @Bean
+        @SuppressWarnings("unchecked")
+        ServletRegistrationBean<SpringServlet> springServletRegistration() {
+            return Mockito.mock(ServletRegistrationBean.class);
         }
     }
 
