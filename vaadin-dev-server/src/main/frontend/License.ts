@@ -8,6 +8,13 @@ export interface Product {
   version: string;
 }
 
+export interface DownloadLicenseOptions {
+  // Overrides how long, in seconds, the license checker waits for the user to
+  // sign in and download the license before giving up. When omitted, the
+  // license checker's own default is used.
+  timeout?: number;
+}
+
 export interface PreTrial {
   trialName?: String;
   trialState: String;
@@ -229,10 +236,10 @@ const notifyLicenseDownloadCompleted = (data: Product) => {
 export const startPreTrial = () => {
   (window as any).Vaadin.devTools.startPreTrial();
 };
-export const tryAcquireLicense = () => {
+export const tryAcquireLicense = (options?: DownloadLicenseOptions) => {
   const products = Object.values(productMissingLicense);
   if (products.length > 0) {
-    (window as any).Vaadin.devTools.downloadLicense(products[0].product);
+    (window as any).Vaadin.devTools.downloadLicense(products[0].product, options);
   }
 };
 
