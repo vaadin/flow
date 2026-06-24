@@ -236,6 +236,42 @@ class TaskRemoveOldFrontendGeneratedFilesTest {
                 generatedFiles.toArray(File[]::new));
     }
 
+    @Test
+    void execute_entriesInFlowGeneratedFilesList_notDeleted() throws Exception {
+        // Files generated only by a previous full generation run (e.g. dev
+        // server hot deploy) and recorded in the Flow manifest.
+        Set<File> devServerFiles = Set
+                .of(new File(generatedFolder, FrontendUtils.VITE_DEVMODE_TS),
+                        new File(generatedFolder, FrontendUtils.INDEX_TSX),
+                        new File(generatedFolder, "vaadin-react.tsx"),
+                        new File(generatedFolder, "layouts.json"),
+                        generatedFolder.toPath()
+                                .resolve(Path.of("flow", "ReactAdapter.tsx"))
+                                .toFile());
+        File staleFile = new File(generatedFolder, "stale.tsx");
+        for (File file : devServerFiles) {
+            file.getParentFile().mkdirs();
+            Files.writeString(file.toPath(), "TEST");
+        }
+        Files.writeString(staleFile.toPath(), "TEST");
+
+        File manifest = new File(generatedFolder,
+                FrontendUtils.GENERATED_FILES_LIST_NAME);
+        Files.writeString(manifest.toPath(), devServerFiles.stream()
+                .map(file -> generatedFolder.toPath().relativize(file.toPath()))
+                .map(Path::toString)
+                .collect(Collectors.joining(System.lineSeparator())));
+
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
+                options);
+        task.setGeneratedFileSupport(new GeneratedFilesSupport());
+        task.execute();
+
+        Set<File> expected = new HashSet<>(devServerFiles);
+        expected.add(manifest);
+        assertOnlyExpectedGeneratedFilesExists(expected.toArray(File[]::new));
+    }
+
     private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles)
             throws IOException {
         AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
