@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2000-2026 Vaadin Ltd
- *
- * This program is available under Vaadin Commercial License and Service Terms.
- *
- * See <https://vaadin.com/commercial-license-and-service-terms> for the full
- * license.
- */
 // Patches a Flow application's frontend to use the local vaadin-dev-tools, in
 // order to be able to work on the dev tools UI within an actual application
 // Usage: npm run patch-app /path/to/flow-app
