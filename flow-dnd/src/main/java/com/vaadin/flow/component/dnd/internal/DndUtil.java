@@ -109,8 +109,7 @@ public class DndUtil {
     public static <T extends Component> void updateDragSourceActivation(
             DragSource<T> dragSource) {
         Command command = () -> dragSource.getDraggableElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDragSource($0)",
-                dragSource.getDraggableElement());
+                "window.Vaadin.Flow.dndConnector.updateDragSource(this)");
         runOnAttachBeforeResponse(dragSource.getDragSourceComponent(), command);
     }
 
@@ -128,8 +127,7 @@ public class DndUtil {
     public static <T extends Component> void updateDropTargetActivation(
             DropTarget<T> dropTarget) {
         Command command = () -> dropTarget.getElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDropTarget($0)",
-                dropTarget.getElement());
+                "window.Vaadin.Flow.dndConnector.updateDropTarget(this)");
 
         runOnAttachBeforeResponse(dropTarget.getDropTargetComponent(), command);
 

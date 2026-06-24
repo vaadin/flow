@@ -16,13 +16,14 @@
 package com.vaadin.flow.component.fullscreen;
 
 /**
- * Represents the fullscreen state of a browser page.
+ * The fullscreen state of the browser page, as reported by
+ * {@link Fullscreen#stateSignal()}.
  * <p>
- * Wraps the browser's Fullscreen API ({@code document.fullscreenEnabled} and
- * {@code document.fullscreenElement}) into four observable states: the browser
- * does not support fullscreen at all, fullscreen is supported but the page is
- * not in it, the page is currently fullscreen, and an {@link #UNKNOWN} sentinel
- * used before the first value has arrived from the client.
+ * There are four observable states: the browser cannot go fullscreen at all
+ * ({@link #UNSUPPORTED}), it can but the page is not currently fullscreen
+ * ({@link #NOT_FULLSCREEN}), the page is fullscreen ({@link #FULLSCREEN}), and
+ * an {@link #UNKNOWN} sentinel used before the browser has reported its first
+ * value.
  *
  * @see Fullscreen#stateSignal()
  * @see Fullscreen#exit()
@@ -31,34 +32,30 @@ package com.vaadin.flow.component.fullscreen;
 public enum FullscreenState {
 
     /**
-     * No value has been reported by the browser yet. Used only as the initial
-     * value of the signal before the first client handshake delivers the real
-     * one. In normal request handling the signal is seeded before any user code
-     * (UI initialization, {@code UIInitListener}, component attach) runs, so
-     * this value is essentially never observed in practice; once a real value
-     * has arrived, the signal never returns to {@code UNKNOWN}.
+     * The browser has not reported a value yet. This is only the signal's
+     * initial value before the first client round-trip completes; in practice a
+     * real value is in place before any application code runs, and the signal
+     * never returns to {@code UNKNOWN} once it has a real value. Treat it as
+     * "not known yet" if you ever observe it.
      */
     UNKNOWN,
 
     /**
-     * The browser does not support fullscreen mode, or the document is not
-     * permitted to enter it. In the browser, this corresponds to
-     * {@code document.fullscreenEnabled} being {@code false}. Fullscreen
-     * requests bound via {@link Fullscreen} resolve to a rejection in this
-     * state.
+     * The browser cannot go fullscreen — either it does not support fullscreen,
+     * or the page is not permitted to enter it (for example when embedded in an
+     * iframe without the required permission). A fullscreen request started via
+     * {@link Fullscreen#onClick} fails in this state.
      */
     UNSUPPORTED,
 
     /**
-     * Fullscreen mode is supported and the page is currently not in it. In the
-     * browser, this corresponds to {@code document.fullscreenEnabled} being
-     * {@code true} and {@code document.fullscreenElement} being {@code null}.
+     * The browser can go fullscreen and the page is currently not fullscreen.
+     * This is the normal state before the user triggers a fullscreen request.
      */
     NOT_FULLSCREEN,
 
     /**
-     * The page is currently in fullscreen mode. In the browser, this
-     * corresponds to {@code document.fullscreenElement} being non-{@code null}.
+     * The page is currently displayed in fullscreen.
      */
     FULLSCREEN
 }

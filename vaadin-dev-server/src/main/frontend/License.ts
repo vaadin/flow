@@ -22,6 +22,23 @@ export interface ProductAndMessage {
   preTrial?: PreTrial;
 }
 
+/**
+ * Name of the event fired on `document` when a license has been successfully
+ * downloaded (e.g. after acquiring a trial or subscription from DevTools).
+ *
+ * The event is cancelable and carries the affected {@link Product} in
+ * `event.detail`. By default, DevTools reloads the page when the license is
+ * downloaded. This is necessary because components that failed the license
+ * check are replaced in the DOM by `<no-license>` placeholders (see
+ * {@link showNoLicenseFallback}); a refresh/reload is required to recreate the
+ * real components so that they show up again.
+ *
+ * Consumers that are able to recover without a full reload (for example by
+ * resuming an ongoing operation themselves) can listen for this event and call
+ * `event.preventDefault()` to suppress the default reload.
+ */
+export const LICENSE_DOWNLOAD_COMPLETED_EVENT = 'vaadin-license-download-completed';
+
 export const findAll = (element: Element | ShadowRoot | Document, tags: string[]): Element[] => {
   const lightDom = Array.from(element.querySelectorAll(tags.join(', ')));
   const shadowDom = Array.from(element.querySelectorAll('*'))
@@ -34,7 +51,10 @@ let licenseCheckListener = false;
 
 const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMessage) => {
   if (!licenseCheckListener) {
-    // When a license check has succeeded, refresh so that all elements are properly shown again
+    // When a license check has succeeded, refresh so that all elements are
+    // properly shown again. A reload is necessary here because components that
+    // failed the license check were replaced by `<no-license>` placeholders
+    // below; reloading recreates the real components so that they show up again.
     window.addEventListener(
       'message',
       (e) => {
@@ -67,6 +87,9 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
       );
 
   if (element.isConnected) {
+    // Replace the component with a `<no-license>` placeholder. Once a license is
+    // available, a refresh/reload (see notifyLicenseDownloadCompleted) is
+    // necessary to recreate the real component so that it shows up again.
     element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
   }
 };
@@ -174,7 +197,7 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
     return true;
   } else if (message.command === 'license-download-completed') {
     console.debug('License downloaded');
-    window.location.reload();
+    notifyLicenseDownloadCompleted(message.data);
     return true;
   } else if (message.command === 'license-download-started') {
     updateLicenseDownloadStatus('started', bodyShadowRoot);
@@ -184,6 +207,23 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
     return true;
   }
   return false;
+};
+
+const notifyLicenseDownloadCompleted = (data: Product) => {
+  // Fire a cancelable event so that consumers can resume an ongoing operation
+  // instead of reloading. If nobody listens, or no listener prevents the
+  // default behavior, fall back to reloading the page. The reload is required
+  // because components that failed the license check were replaced by
+  // `<no-license>` placeholders (see showNoLicenseFallback); reloading recreates
+  // the real components so that they show up again.
+  const event = new CustomEvent(LICENSE_DOWNLOAD_COMPLETED_EVENT, {
+    detail: data,
+    cancelable: true
+  });
+  const notPrevented = document.dispatchEvent(event);
+  if (notPrevented) {
+    window.location.reload();
+  }
 };
 
 export const startPreTrial = () => {
