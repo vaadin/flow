@@ -32,8 +32,9 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
  * hashes, which a single-build IT cannot produce. The test therefore drives a
  * model service worker ({@code swrebuild/sw-model.js}) that mirrors the policy
  * of Flow's generated {@code sw.ts}. Whether a freshly installed worker takes
- * over mid-session is read from the real generated {@code sw.js}, so this test
- * turns green automatically once the platform no longer takes over mid-session.
+ * over mid-session is read from the real generated {@code sw.js} (specifically
+ * whether it calls {@code self.skipWaiting()}), so this test turns green
+ * automatically once the platform no longer takes over mid-session.
  * <p>
  * The assertion is made on the still-open page (no navigation), so the result
  * is deterministic: with the current takeover policy the rebuilt worker claims
@@ -75,8 +76,10 @@ public class ServiceWorkerRebuildIT extends ChromeDeviceTest {
 
     /**
      * Reads the real generated service worker to determine whether a freshly
-     * installed worker takes over an already-open page (skipWaiting +
-     * clientsClaim).
+     * installed worker takes over an already-open page. The signal is the
+     * {@code self.skipWaiting()} call - matching the bare token
+     * {@code skipWaiting} is not enough because bundled workbox code mentions
+     * it in a doc comment.
      */
     private boolean generatedServiceWorkerTakesOverMidSession() {
         getDriver().get(getRootURL() + "/");
@@ -84,8 +87,7 @@ public class ServiceWorkerRebuildIT extends ChromeDeviceTest {
                 "const done = arguments[arguments.length - 1];"
                         + "fetch('sw.js').then(r => r.text()).then(done)"
                         + ".catch(() => done(''));");
-        return sw.contains("skipWaiting") && (sw.contains("clients.claim")
-                || sw.contains("clientsClaim"));
+        return sw.contains("self.skipWaiting");
     }
 
     private void cleanSlate() {
