@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -98,13 +99,10 @@ public class ResourceContentHash {
     private static InputStream openResource(VaadinService service,
             String resourceUrl) {
         String resolved = service.resolveResource(resourceUrl);
-        URL url = service.getStaticResource(resolved);
-        // Bare paths (e.g. "styles.css") may not resolve in the servlet
-        // context which requires a leading '/'. Try with '/' prefix.
-        if (url == null && !resolved.startsWith("/")
-                && !resolved.contains("://")) {
-            url = service.getStaticResource("/" + resolved);
+        if (!resolved.startsWith("/") && !resolved.contains("://")) {
+            resolved = URI.create("/" + resolved).normalize().getPath();
         }
+        URL url = service.getStaticResource(resolved);
         if (url == null) {
             logger.debug(
                     "Could not find static resource for '{}' "
