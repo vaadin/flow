@@ -31,20 +31,9 @@ public class TestReactiveEventRouter extends
     }
 
     public TestReactiveEventRouter() {
-        super(new TestEventSource());
+        super(new TestEventSource(), l -> l,
+                (l, event) -> l.onValueChange(event));
         ((TestEventSource) getReactiveValue()).router = this;
-    }
-
-    @Override
-    protected ReactiveValueChangeListener wrap(ReactiveValueChangeListener l) {
-        return l;
-    }
-
-    @Override
-    protected void dispatchEvent(
-            ReactiveValueChangeListener reactiveValueChangeListener,
-            ReactiveValueChangeEvent event) {
-        reactiveValueChangeListener.onValueChange(event);
     }
 
     public void invalidate() {

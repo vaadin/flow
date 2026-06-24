@@ -34,21 +34,60 @@ import elemental.events.EventRemover;
  * @param <E>
  *            the reactive event type of this router
  */
-public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
+public class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
+
+    /**
+     * Wraps a generic reactive change listener as the listener type natively
+     * supported by an event router.
+     *
+     * @param <L>
+     *            the native listener type
+     */
+    @FunctionalInterface
+    public interface ListenerWrapper<L> {
+        L wrap(ReactiveValueChangeListener reactiveValueChangeListener);
+    }
+
+    /**
+     * Dispatches an event to a listener of the type natively supported by an
+     * event router.
+     *
+     * @param <L>
+     *            the native listener type
+     * @param <E>
+     *            the reactive event type
+     */
+    @FunctionalInterface
+    public interface EventDispatcher<L, E> {
+        void dispatch(L listener, E event);
+    }
+
     private final JsSet<L> listeners = JsCollections.set();
 
     private final ReactiveValue reactiveValue;
+
+    private final ListenerWrapper<L> wrapper;
+
+    private final EventDispatcher<L, E> dispatcher;
 
     /**
      * Creates a new event router for a reactive value.
      *
      * @param reactiveValue
      *            the reactive value, not <code>null</code>
+     * @param wrapper
+     *            callback for wrapping a generic reactive change listener as
+     *            the native listener type
+     * @param dispatcher
+     *            callback for dispatching an event to a native listener
      */
-    public ReactiveEventRouter(ReactiveValue reactiveValue) {
+    public ReactiveEventRouter(ReactiveValue reactiveValue,
+            ListenerWrapper<L> wrapper, EventDispatcher<L, E> dispatcher) {
         assert reactiveValue != null;
 
         this.reactiveValue = reactiveValue;
+        this.wrapper = wrapper;
+        this.dispatcher = dispatcher;
     }
 
     /**
@@ -82,7 +121,7 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
     public EventRemover addReactiveListener(
             ReactiveValueChangeListener reactiveValueChangeListener) {
         assert reactiveValueChangeListener != null;
-        return addListener(wrap(reactiveValueChangeListener));
+        return addListener(wrapper.wrap(reactiveValueChangeListener));
     }
 
     /**
@@ -100,7 +139,7 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
 
         JsSet<L> copy = JsCollections.set(listeners);
 
-        copy.forEach(listener -> dispatchEvent(listener, event));
+        copy.forEach(listener -> dispatcher.dispatch(listener, event));
 
         Reactive.notifyEventCollectors(event);
     }
@@ -125,25 +164,4 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
     public ReactiveValue getReactiveValue() {
         return reactiveValue;
     }
-
-    /**
-     * Callback for wrapping a generic reactive change listener to an instance
-     * of the listener type natively supported by this event router.
-     *
-     * @param reactiveValueChangeListener
-     *            the reactive change listener
-     * @return an event listener wrapping the provided listener
-     */
-    protected abstract L wrap(
-            ReactiveValueChangeListener reactiveValueChangeListener);
-
-    /**
-     * Callback for dispatching an event to a listener.
-     *
-     * @param listener
-     *            the listener that should receive the event
-     * @param event
-     *            the event to dispatch
-     */
-    protected abstract void dispatchEvent(L listener, E event);
 }
