@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * for context objects with properties e.g. <code>ServletContext</code> and
  * <code>PortletContext</code>
  *
- * @since 2.0.0
+ * @since 2.0
  */
 public interface VaadinContext extends Serializable {
 

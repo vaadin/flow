@@ -72,7 +72,6 @@ public class ServerRpcHandler implements Serializable {
      * side.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -212,7 +211,6 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {

@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;thead&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Tag(Tag.THEAD)
 public class NativeTableHeader extends HtmlContainer

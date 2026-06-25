@@ -41,7 +41,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CH
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base class for resolving system properties and a set of init parameters.
  *
- * @since 1.2
+ * @since 1.2.1
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {

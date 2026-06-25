@@ -26,7 +26,7 @@ import com.vaadin.flow.internal.UrlUtil;
 /**
  * Utility class exposing reusable utility methods for location.
  *
- * @since 2.7
+ * @since 8.0
  */
 public class LocationUtil {
 

@@ -35,7 +35,6 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * The action to resume a postponed {@link BeforeEnterEvent}.
      *
      * @author Vaadin Ltd
-     * @since 1.0.
      */
     public class ContinueNavigationAction implements Serializable {
 

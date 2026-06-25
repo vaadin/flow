@@ -24,7 +24,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 /**
  * This is a default error view shown on access denied routing exceptions.
  *
- * @since 1.0
+ * @since 24.3
  */
 @Tag(Tag.DIV)
 @AnonymousAllowed
