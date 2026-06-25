@@ -63,11 +63,11 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  * the auto-configuration import mechanism. A plain Spring application that does
  * not use that mechanism (for example a Spring MVC application that registers
  * the {@link com.vaadin.flow.spring.SpringServlet} itself, similarly to
- * {@link VaadinMVCWebAppInitializer}) does not pick it up via a regular
- * component scan; register it explicitly instead, e.g. with
- * {@code @Import(SpringSecurityAutoConfiguration.class)} or by adding it to the
- * configuration classes, and make sure {@code spring-security-config} is
- * present.
+ * {@link VaadinMVCWebAppInitializer}) will not register it automatically; as an
+ * auto-configuration class it is not intended to be discovered through a
+ * component scan. Register it explicitly instead, e.g. with
+ * {@code @Import(SpringSecurityAutoConfiguration.class)}, and make sure
+ * {@code spring-security-config} is present.
  *
  * @author Vaadin Ltd
  *
