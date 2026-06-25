@@ -123,8 +123,6 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration parameter name for enabling pnpm.
-     *
-     * @since 2.2
      */
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
@@ -158,7 +156,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for enabling dev tools.
      *
-     * @since 9.0
+     * @since 23.1
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS = "devmode.devTools.enabled";
 

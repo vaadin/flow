@@ -93,7 +93,7 @@ import com.vaadin.flow.internal.StateNode;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final Set<Object> expandedItemIds = new HashSet<>();
