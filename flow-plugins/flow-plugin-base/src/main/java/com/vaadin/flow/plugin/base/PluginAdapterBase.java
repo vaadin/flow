@@ -298,8 +298,15 @@ public interface PluginAdapterBase {
 
     /**
      * The folder where everything is built into.
+     * <p>
+     * The returned value must be a path <em>relative</em> to the project root
+     * (the {@link #npmFolder() npm folder}), because consumers resolve it
+     * against that folder, e.g. {@code new File(npmFolder(), buildFolder())}.
+     * When the build directory lives outside the project root this means
+     * returning a {@code "../"} path; returning an absolute path would instead
+     * be appended under the project root and point to the wrong location.
      *
-     * @return build folder
+     * @return build folder, relative to the project root
      */
     String buildFolder();
 
