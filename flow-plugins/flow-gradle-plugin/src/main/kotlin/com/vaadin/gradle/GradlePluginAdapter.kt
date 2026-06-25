@@ -263,10 +263,19 @@ internal class GradlePluginAdapter private constructor(
 
     override fun buildFolder(): String {
         val projectBuildDir = config.projectBuildDir.get()
-        if (projectBuildDir.startsWith(projectDir.toString())) {
-            return File(projectBuildDir).relativeTo(projectDir).toString()
+        val buildDirFile = File(projectBuildDir)
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // projectDir. When the build dir is outside projectDir this yields a "../"
+        // path. Returning the absolute path would instead append it to the project
+        // folder and point outside the build dir.
+        // relativeToOrNull() needs a shared root; projectDir is always absolute
+        // in a real build, absoluteFile only guards exotic setups.
+        return when {
+            !buildDirFile.isAbsolute -> projectBuildDir
+            else -> buildDirFile.relativeToOrNull(projectDir.absoluteFile)
+                    ?.toString() ?: projectBuildDir
         }
-        return projectBuildDir
     }
 
     override fun postinstallPackages(): List<String> =
