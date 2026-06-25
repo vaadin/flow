@@ -26,6 +26,7 @@
 // Polymer model-property bridge (the window-registered bindPolymerModelProperties
 // in internal/SimpleElementBindingStrategy.ts) are folded in by later slices.
 
+import { NodeFeatures } from '../nodefeature/NodeFeatures';
 import { Debouncer } from './Debouncer';
 
 // The callback sending an event to the server for a given debounce phase (null
@@ -136,4 +137,111 @@ export function resolveFilters(
   }
 
   return noFilters || atLeastOneFilterMatched;
+}
+
+// --- Slice 2: closest-state-node lookups -----------------------------------
+// Used by handleDomEvent to map an event target / a DOM node returned by a JS
+// expression to the nearest bound state node id (the MAP_STATE_NODE_EVENT_DATA
+// event data). DOM parents are walked with native parentNode/isSameNode; the
+// shadow-tree-aware DomApi wrapping (not ported yet) replaces the raw traversal
+// at cutover.
+
+/** The slice of StateNode that the closest-node lookups read. */
+interface ClosestLookupNode {
+  getId(): number;
+  getDomNode(): Node | null;
+  getList(featureId: number): { forEach(callback: (child: unknown) => void): void };
+}
+
+/** The slice of StateTree that getClosestStateNodeIdToDomNode reads. */
+interface ClosestLookupTree {
+  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
+}
+
+/**
+ * Finds the id of the state node closest to the event target: a breadth-first
+ * search of the state-node tree for a direct DOM match, then a bottom-up DOM
+ * walk from the target's parent. Returns -1 if none is found. Mirrors
+ * getClosestStateNodeIdToEventTarget.
+ */
+export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, target: EventTarget | null): number {
+  if (target === null) {
+    return -1;
+  }
+  try {
+    const stack: ClosestLookupNode[] = [topNode];
+
+    // collect children and test eagerly for direct match; the stack grows as
+    // children are pushed during iteration (breadth-first)
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- index loop: stack is mutated during iteration
+    for (let i = 0; i < stack.length; i++) {
+      const stateNode = stack[i];
+      if ((target as unknown as Node).isSameNode(stateNode.getDomNode())) {
+        return stateNode.getId();
+      }
+      // NOTE: for now not looking at virtual children on purpose.
+      stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach((child) => stack.push(child as ClosestLookupNode));
+    }
+    // no direct match: bottom-up search from the target's parent
+    return getStateNodeForElement(stack, (target as unknown as Node).parentNode);
+  } catch (e) {
+    // not going to let event handling fail; just report nothing found
+    console.debug(
+      `An error occurred when Flow tried to find a state node matching the element ${String(
+        target
+      )}, which was the event.target. Error: ${(e as Error).message}`
+    );
+  }
+  return -1;
+}
+
+/**
+ * Walks up the DOM from targetNode and returns the id of the first state node
+ * in searchStack whose DOM node matches, or -1. Mirrors getStateNodeForElement.
+ */
+export function getStateNodeForElement(searchStack: ClosestLookupNode[], targetNode: Node | null): number {
+  let current = targetNode;
+  while (current !== null) {
+    for (let i = searchStack.length - 1; i > -1; i--) {
+      const stateNode = searchStack[i];
+      if (current.isSameNode(stateNode.getDomNode())) {
+        return stateNode.getId();
+      }
+    }
+    current = current.parentNode;
+  }
+  return -1;
+}
+
+/**
+ * Walks up the DOM from a node reference (e.g. returned by an event data
+ * expression) and returns the id of the first state node the tree maps it to,
+ * or -1. Mirrors getClosestStateNodeIdToDomNode.
+ */
+export function getClosestStateNodeIdToDomNode(
+  stateTree: ClosestLookupTree,
+  domNodeReference: unknown,
+  eventDataExpression: string
+): number {
+  if (domNodeReference === null || domNodeReference === undefined) {
+    return -1;
+  }
+  try {
+    let targetNode = domNodeReference as Node | null;
+    while (targetNode !== null) {
+      const stateNodeForDomNode = stateTree.getStateNodeForDomNode(targetNode);
+      if (stateNodeForDomNode !== null) {
+        return stateNodeForDomNode.getId();
+      }
+      targetNode = targetNode.parentNode;
+    }
+  } catch (e) {
+    // not going to let event handling fail; just report nothing found
+    console.debug(
+      `An error occurred when Flow tried to find a state node matching the element ${String(
+        domNodeReference
+      )}, returned by an event data expression ${eventDataExpression}. Error: ${(e as Error).message}`
+    );
+  }
+  return -1;
 }
