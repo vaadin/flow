@@ -273,9 +273,12 @@ internal class GradlePluginAdapter private constructor(
         // projectDir. When the build dir is outside projectDir this yields a "../"
         // path. Returning the absolute path would instead append it to the project
         // folder and point outside the build dir.
+        // relativeToOrNull() needs a shared root; projectDir is always absolute
+        // in a real build, absoluteFile only guards exotic setups.
         return when {
             !buildDirFile.isAbsolute -> projectBuildDir
-            else -> buildDirFile.relativeToOrNull(projectDir)?.toString() ?: projectBuildDir
+            else -> buildDirFile.relativeToOrNull(projectDir.absoluteFile)
+                    ?.toString() ?: projectBuildDir
         }
     }
 

@@ -707,11 +707,24 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public String buildFolder() {
-        if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
+        Path buildDir = Paths.get(projectBuildDir);
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // the project basedir. A build dir outside basedir then yields a "../"
+        // path. Returning the absolute path would instead append it to the
+        // project folder and point outside the build dir.
+        if (!buildDir.isAbsolute()) {
+            return projectBuildDir;
         }
-        return projectBuildDir;
+        // relativize() requires both paths to be absolute; basedir is always
+        // absolute in a real build, toAbsolutePath() only guards exotic setups.
+        try {
+            return projectBaseDirectory().toAbsolutePath().relativize(buildDir)
+                    .toString();
+        } catch (IllegalArgumentException e) {
+            // Different filesystem roots (e.g. on Windows): cannot relativize.
+            return projectBuildDir;
+        }
     }
 
     @Override
