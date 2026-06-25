@@ -48,5 +48,6 @@ export const NodeFeatures = {
 // com.vaadin.flow.internal.nodefeature.NodeProperties (only the entries the
 // ported client code needs so far).
 export const NodeProperties = {
-  VISIBLE: 'visible'
+  VISIBLE: 'visible',
+  TEXT: 'text'
 } as const;
