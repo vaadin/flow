@@ -611,9 +611,9 @@ public class MessageHandler {
 
     private static native void startViewTransition(Command command)
     /*-{
-        $doc.startViewTransition(function() {
+        $doc.startViewTransition($entry(function() {
             command.@com.vaadin.client.Command::execute()();
-        });
+        }));
     }-*/;
 
     private void endRequestIfResponse(ValueMap json) {
