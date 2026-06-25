@@ -425,56 +425,41 @@ public class MessageHandler {
 
             JsonObject json = valueMap.cast();
 
-            ValueMap meta = valueMap.getValueMap("meta");
+            if (json.hasKey("constants")) {
+                ConstantPool constantPool = registry.getConstantPool();
+                JsonObject constants = json.getObject("constants");
+                constantPool.importFromJson(constants);
+            }
 
-            // Applies all changes from the server and propagates them to the
-            // DOM. Wrapped in a command so that it can optionally be run inside
-            // a view transition.
-            Command applyChanges = () -> {
-                if (json.hasKey("constants")) {
-                    ConstantPool constantPool = registry.getConstantPool();
-                    JsonObject constants = json.getObject("constants");
-                    constantPool.importFromJson(constants);
-                }
+            if (json.hasKey("changes")) {
+                processChanges(json);
+            }
 
-                if (json.hasKey("changes")) {
-                    processChanges(json);
-                }
+            if (json.hasKey("stylesheetRemovals")) {
+                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
+            }
 
-                if (json.hasKey("stylesheetRemovals")) {
-                    processStylesheetRemovals(
-                            json.getArray("stylesheetRemovals"));
-                }
-
-                if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
-                    // Invoke JS only after all tree changes have been
-                    // propagated and after post flush listeners added during
-                    // message processing (so add one more post flush listener
-                    // which is called after all added post listeners).
-                    Reactive.addPostFlushListener(
-                            () -> Reactive.addPostFlushListener(() -> registry
-                                    .getExecuteJavaScriptProcessor()
-                                    .execute(json.getArray(
-                                            JsonConstants.UIDL_KEY_EXECUTE))));
-                }
-
-                Reactive.flush();
-            };
-
-            if (meta != null
-                    && meta.containsKey(JsonConstants.META_VIEW_TRANSITION)
-                    && supportsViewTransition()) {
-                // The DOM is updated asynchronously inside the view transition
-                // callback so that the browser can animate between the old and
-                // new states.
-                startViewTransition(applyChanges);
-            } else {
-                applyChanges.execute();
+            if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                // Invoke JS only after all tree changes have been
+                // propagated and after post flush listeners added during
+                // message processing (so add one more post flush listener which
+                // is called after all added post listeners).
+                Reactive.addPostFlushListener(
+                        () -> Reactive.addPostFlushListener(() -> registry
+                                .getExecuteJavaScriptProcessor()
+                                .execute(json.getArray(
+                                        JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
             Console.debug("handleUIDLMessage: "
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
+
+            // Propagate the changes to the DOM, optionally wrapping the update
+            // in a view transition when the server requested one.
+            flushChanges(valueMap);
+
+            ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
                 Profiler.enter("Error handling");
@@ -604,16 +589,28 @@ public class MessageHandler {
         }
     }-*/;
 
-    private static native boolean supportsViewTransition()
+    /**
+     * Propagates all pending changes to the DOM by flushing the reactive tree.
+     * When the server requested it through the
+     * {@link JsonConstants#META_VIEW_TRANSITION} flag and the browser supports
+     * the View Transitions API, the flush is performed inside a view transition
+     * so that the resulting DOM updates can be animated. The flush callback is
+     * wrapped in {@code $entry} because the browser invokes it asynchronously,
+     * outside the GWT call stack.
+     */
+    private static native void flushChanges(ValueMap valueMap)
     /*-{
-        return typeof $doc.startViewTransition === "function";
-    }-*/;
-
-    private static native void startViewTransition(Command command)
-    /*-{
-        $doc.startViewTransition($entry(function() {
-            command.@com.vaadin.client.Command::execute()();
-        }));
+        var flush = $entry(function() {
+            @com.vaadin.client.flow.reactive.Reactive::flush()();
+        });
+        var meta = valueMap && valueMap.meta;
+        var viewTransitionKey = @com.vaadin.flow.shared.JsonConstants::META_VIEW_TRANSITION;
+        if (meta && meta[viewTransitionKey]
+                && typeof $doc.startViewTransition === "function") {
+            $doc.startViewTransition(flush);
+        } else {
+            flush();
+        }
     }-*/;
 
     private void endRequestIfResponse(ValueMap json) {
