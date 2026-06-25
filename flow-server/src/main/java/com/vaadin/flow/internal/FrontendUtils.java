@@ -66,7 +66,7 @@ import static java.lang.String.format;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 25.1
  */
 public class FrontendUtils {
 

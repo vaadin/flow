@@ -26,7 +26,7 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;code&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since 25.0
+ * @since 24.9
  */
 @Tag(Tag.CODE)
 public class Code extends HtmlContainer {
