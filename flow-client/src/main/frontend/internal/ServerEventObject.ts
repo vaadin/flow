@@ -40,7 +40,7 @@ import { NodeFeatures } from './nodefeature/NodeFeatures';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).
-type ServerObject = Record<string, any>;
+export type ServerObject = Record<string, any>;
 
 // com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME -- the
 // (non-enumerable) key under which the promise-callback function is stored.
@@ -80,7 +80,7 @@ interface ServerEventTree {
 }
 
 /** The slice of StateNode that the $server methods use. */
-interface ServerEventNode {
+export interface ServerEventNode {
   getTree(): ServerEventTree;
   getMap(featureId: number): ServerEventMap;
   getDomNode(): Node | null;
@@ -184,6 +184,19 @@ export function get(element: Element): ServerObject {
 export function getIfPresent(node: Node): ServerObject | null {
   const serverObject = (node as any).$server;
   return serverObject === undefined ? null : serverObject;
+}
+
+/**
+ * Returns a handle that rejects the pending promises of the node's $server
+ * object, or null when the node has none. Used by StateTree.prepareForResync to
+ * reject promises waiting on nodes that a resynchronization discards.
+ */
+export function getServerEventObjectForResync(node: Node): { rejectPromises(): void } | null {
+  const serverObject = getIfPresent(node);
+  if (serverObject === null) {
+    return null;
+  }
+  return { rejectPromises: () => rejectPromises(serverObject, PROMISE_CALLBACK_NAME) };
 }
 
 /**
