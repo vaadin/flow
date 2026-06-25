@@ -292,6 +292,8 @@ public class UIInternals implements Serializable {
 
     private Element wrapperElement;
 
+    private boolean viewTransitionRequested;
+
     /**
      * Creates a new instance for the given UI.
      *
@@ -1123,6 +1125,32 @@ public class UIInternals implements Serializable {
      */
     public void clearPendingStyleSheetRemovals() {
         pendingStyleSheetRemovals.clear();
+    }
+
+    /**
+     * Checks whether the changes sent to the client in the response currently
+     * being built should be applied within a view transition.
+     *
+     * @return {@code true} if the changes should be applied within a view
+     *         transition, {@code false} otherwise
+     */
+    public boolean isViewTransitionRequested() {
+        return viewTransitionRequested;
+    }
+
+    /**
+     * Sets whether the changes sent to the client in the response currently
+     * being built should be applied within a view transition.
+     * <p>
+     * The flag is reset once the response has been written, so it only affects
+     * a single response.
+     *
+     * @param viewTransitionRequested
+     *            {@code true} to apply the changes within a view transition,
+     *            {@code false} otherwise
+     */
+    public void setViewTransitionRequested(boolean viewTransitionRequested) {
+        this.viewTransitionRequested = viewTransitionRequested;
     }
 
     /**

@@ -425,39 +425,56 @@ public class MessageHandler {
 
             JsonObject json = valueMap.cast();
 
-            if (json.hasKey("constants")) {
-                ConstantPool constantPool = registry.getConstantPool();
-                JsonObject constants = json.getObject("constants");
-                constantPool.importFromJson(constants);
-            }
+            ValueMap meta = valueMap.getValueMap("meta");
 
-            if (json.hasKey("changes")) {
-                processChanges(json);
-            }
+            // Applies all changes from the server and propagates them to the
+            // DOM. Wrapped in a command so that it can optionally be run inside
+            // a view transition.
+            Command applyChanges = () -> {
+                if (json.hasKey("constants")) {
+                    ConstantPool constantPool = registry.getConstantPool();
+                    JsonObject constants = json.getObject("constants");
+                    constantPool.importFromJson(constants);
+                }
 
-            if (json.hasKey("stylesheetRemovals")) {
-                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
-            }
+                if (json.hasKey("changes")) {
+                    processChanges(json);
+                }
 
-            if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
-                // Invoke JS only after all tree changes have been
-                // propagated and after post flush listeners added during
-                // message processing (so add one more post flush listener which
-                // is called after all added post listeners).
-                Reactive.addPostFlushListener(
-                        () -> Reactive.addPostFlushListener(() -> registry
-                                .getExecuteJavaScriptProcessor()
-                                .execute(json.getArray(
-                                        JsonConstants.UIDL_KEY_EXECUTE))));
+                if (json.hasKey("stylesheetRemovals")) {
+                    processStylesheetRemovals(
+                            json.getArray("stylesheetRemovals"));
+                }
+
+                if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                    // Invoke JS only after all tree changes have been
+                    // propagated and after post flush listeners added during
+                    // message processing (so add one more post flush listener
+                    // which is called after all added post listeners).
+                    Reactive.addPostFlushListener(
+                            () -> Reactive.addPostFlushListener(() -> registry
+                                    .getExecuteJavaScriptProcessor()
+                                    .execute(json.getArray(
+                                            JsonConstants.UIDL_KEY_EXECUTE))));
+                }
+
+                Reactive.flush();
+            };
+
+            if (meta != null
+                    && meta.containsKey(JsonConstants.META_VIEW_TRANSITION)
+                    && supportsViewTransition()) {
+                // The DOM is updated asynchronously inside the view transition
+                // callback so that the browser can animate between the old and
+                // new states.
+                startViewTransition(applyChanges);
+            } else {
+                applyChanges.execute();
             }
 
             Console.debug("handleUIDLMessage: "
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
-
-            Reactive.flush();
-
-            ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
                 Profiler.enter("Error handling");
@@ -585,6 +602,18 @@ public class MessageHandler {
         if ( node && node.afterServerUpdate ) {
             node.afterServerUpdate();
         }
+    }-*/;
+
+    private static native boolean supportsViewTransition()
+    /*-{
+        return typeof $doc.startViewTransition === "function";
+    }-*/;
+
+    private static native void startViewTransition(Command command)
+    /*-{
+        $doc.startViewTransition(function() {
+            command.@com.vaadin.client.Command::execute()();
+        });
     }-*/;
 
     private void endRequestIfResponse(ValueMap json) {

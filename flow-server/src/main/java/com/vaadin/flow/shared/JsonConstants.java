@@ -285,6 +285,12 @@ public class JsonConstants implements Serializable {
     public static final String META_ASYNC = "async";
 
     /**
+     * Key used to request that the client applies the changes in the message
+     * within a view transition.
+     */
+    public static final String META_VIEW_TRANSITION = "viewTransition";
+
+    /**
      * Key holding the debounce phase for an event data map from the client.
      */
     // "for" is a reserved keyword, which means that this cannot be a valid JS

@@ -820,6 +820,30 @@ public class UI extends Component
     }
 
     /**
+     * Requests that the changes made on the server during the current request
+     * are applied in the browser within a <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API">view
+     * transition</a>, allowing the resulting DOM updates to be animated.
+     * <p>
+     * The request only applies to the response that is currently being built,
+     * so this method needs to be called again for every request whose changes
+     * should be animated. This makes it possible for an add-on or a specific
+     * piece of application logic to opt in to view transitions for individual
+     * updates without enabling them globally.
+     * <p>
+     * The view transition is applied on a best-effort basis: if the browser
+     * does not support the View Transitions API, the changes are applied
+     * without any transition.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API">View
+     *      Transition API</a>
+     */
+    public void enableViewTransition() {
+        getInternals().setViewTransitionRequested(true);
+    }
+
+    /**
      * Retrieves the object used for configuring the push channel.
      * <p>
      * Note that you cannot change push parameters on the fly, you need to

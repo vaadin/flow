@@ -145,6 +145,10 @@ public class UidlWriter implements Serializable {
 
         ObjectNode meta = new MetadataWriter().createMetadata(ui, false, async,
                 messages);
+        if (uiInternals.isViewTransitionRequested()) {
+            meta.put(JsonConstants.META_VIEW_TRANSITION, true);
+            uiInternals.setViewTransitionRequested(false);
+        }
         if (!JacksonUtils.getKeys(meta).isEmpty()) {
             response.set("meta", meta);
         }
