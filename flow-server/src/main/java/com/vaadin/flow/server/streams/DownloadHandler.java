@@ -445,7 +445,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            postfix
      * @return DownloadHandler implementation for download from an input stream
      *
-     * @since 25.1
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride) {
@@ -498,7 +498,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            listener for transfer progress events
      * @return DownloadHandler implementation for download from an input stream
      *
-     * @since 25.1
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride,
