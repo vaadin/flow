@@ -64,7 +64,7 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 71;
+        int c1Line = 64;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
@@ -78,7 +78,7 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 82;
+        int c1Line = 75;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 
@@ -100,7 +100,7 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        int c1Line = 106;
+        int c1Line = 99;
         assertCreateLocation(c1, c1Line, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
