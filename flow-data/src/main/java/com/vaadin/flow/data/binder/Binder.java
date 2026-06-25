@@ -1526,6 +1526,8 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
+        private transient Registration signalEffectAttachRegistration;
+
         private transient ValueSignal<TARGET> bindingValueSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
@@ -1625,6 +1627,11 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration != null) {
                 signalRegistration.remove();
                 signalRegistration = null;
+            }
+
+            if (signalEffectAttachRegistration != null) {
+                signalEffectAttachRegistration.remove();
+                signalEffectAttachRegistration = null;
             }
 
             bindingValueSignal = null;
@@ -1744,13 +1751,19 @@ public class Binder<BEAN> implements Serializable {
                 if (component.isAttached()) {
                     initInternalSignalEffectForValidators(component);
                 } else {
-                    component.addAttachListener(event -> {
-                        if (event.isInitialAttach()) {
-                            event.unregisterListener();
-                        }
-                        initInternalSignalEffectForValidators(
-                                event.getSource());
-                    });
+                    // Set up the effect lazily on attach. The registration is
+                    // stored so unbind() can cancel it; otherwise a stale
+                    // listener would later create an effect for an already
+                    // unbound binding whose field is null.
+                    signalEffectAttachRegistration = component
+                            .addAttachListener(event -> {
+                                if (event.isInitialAttach()) {
+                                    event.unregisterListener();
+                                    signalEffectAttachRegistration = null;
+                                }
+                                initInternalSignalEffectForValidators(
+                                        event.getSource());
+                            });
                 }
             }
         }

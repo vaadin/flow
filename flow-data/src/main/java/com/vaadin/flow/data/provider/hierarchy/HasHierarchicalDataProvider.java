@@ -31,7 +31,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            the item data type
- * @since 1.2
+ * @since 1.1
  */
 public interface HasHierarchicalDataProvider<T> extends Serializable {
 

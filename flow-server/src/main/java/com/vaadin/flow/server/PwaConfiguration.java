@@ -26,7 +26,7 @@ import java.util.List;
  * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and
  * falls back to default values if {@link PWA} is unavailable ({@code null}).
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_PATH = "manifest.webmanifest";

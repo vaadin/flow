@@ -47,7 +47,7 @@ import org.jsoup.nodes.Element;
  *
  * Icon caching is left to the browser if it's not cached with service worker.
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaIcon implements Serializable {
     /**
