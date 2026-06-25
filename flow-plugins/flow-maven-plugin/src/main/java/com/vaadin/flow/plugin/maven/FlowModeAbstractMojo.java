@@ -82,9 +82,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.eagerServerLoad=true}.
      */
-    @Parameter(defaultValue = "${vaadin."
-            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL, defaultValue = "false")
     private boolean eagerServerLoad;
 
     /**
