@@ -82,4 +82,42 @@ public class FrontendDependencyUrlResolverTest {
         Assert.assertEquals("context://foo.css", FrontendDependencyUrlResolver
                 .resolveToContextRoot("  foo.css  "));
     }
+
+    @Test
+    public void isRuntimeDependencyUrl_runtimePrefixes_true() {
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("context://foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("base://foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("http://cdn/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("https://cdn/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("//cdn/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("/assets/foo.js"));
+    }
+
+    @Test
+    public void isRuntimeDependencyUrl_bareRelativeOrBundlerSpecifier_false() {
+        Assert.assertFalse(
+                FrontendDependencyUrlResolver.isRuntimeDependencyUrl("foo.js"));
+        Assert.assertFalse(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("./foo.js"));
+        Assert.assertFalse(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("../foo.js"));
+        Assert.assertFalse(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("@scope/pkg/foo.js"));
+    }
+
+    @Test
+    public void isRuntimeDependencyUrl_nullOrBlank_false() {
+        Assert.assertFalse(
+                FrontendDependencyUrlResolver.isRuntimeDependencyUrl(null));
+        Assert.assertFalse(
+                FrontendDependencyUrlResolver.isRuntimeDependencyUrl(""));
+        Assert.assertFalse(
+                FrontendDependencyUrlResolver.isRuntimeDependencyUrl("   "));
+    }
 }

@@ -135,6 +135,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
+            warnAboutDeprecatedJavaScriptUses();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
@@ -203,6 +204,33 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
         }
 
+    }
+
+    private void warnAboutDeprecatedJavaScriptUses() {
+        Set<String> warnedJavaScriptKeys = new LinkedHashSet<>();
+        for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
+            String className = entry.getKey();
+            ClassInfo classInfo = entry.getValue();
+            if (classInfo == null) {
+                continue;
+            }
+            for (String value : classInfo.scripts) {
+                if (warnedJavaScriptKeys.add(className + ':' + value)) {
+                    log().warn(
+                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
+                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
+                            className, value);
+                }
+            }
+            for (String value : classInfo.scriptsDevelopmentOnly) {
+                if (warnedJavaScriptKeys.add(className + ':' + value)) {
+                    log().warn(
+                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
+                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
+                            className, value);
+                }
+            }
+        }
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {

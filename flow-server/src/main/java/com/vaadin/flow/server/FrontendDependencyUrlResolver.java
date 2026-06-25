@@ -24,12 +24,15 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Resolves the {@code value()} of
- * {@link com.vaadin.flow.component.dependency.StyleSheet} annotation values to
+ * {@link com.vaadin.flow.component.dependency.StyleSheet} and
+ * {@link com.vaadin.flow.component.dependency.JavaScript} annotation values to
  * a canonical form that
  * {@link com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver} can
- * expand at render time. The same rules are used whether the annotation is on
- * an {@link com.vaadin.flow.component.page.AppShellConfigurator} or on an
- * ordinary {@link com.vaadin.flow.component.Component}.
+ * expand at render time.
+ * <p>
+ * The same rules are used whether the annotation is on an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator} or on an ordinary
+ * {@link com.vaadin.flow.component.Component}.
  * <p>
  * For internal framework use only.
  */
@@ -91,5 +94,35 @@ public final class FrontendDependencyUrlResolver implements Serializable {
             return value;
         }
         return ApplicationConstants.CONTEXT_PROTOCOL_PREFIX + value;
+    }
+
+    /**
+     * Tells whether the given value is a runtime-loaded URL — i.e. should be
+     * served by the servlet container at runtime rather than passed to the
+     * frontend bundler.
+     * <p>
+     * Returns {@code true} for values starting with any of: {@code http://},
+     * {@code https://}, {@code //}, {@code context://}, {@code base://}, or
+     * {@code /}. Returns {@code false} for {@code null}, blank, or any other
+     * value (e.g. bare relative paths and bundler import specifiers).
+     *
+     * @param value
+     *            the raw annotation value
+     * @return {@code true} if the value is a runtime URL
+     */
+    public static boolean isRuntimeDependencyUrl(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        String trimmed = value.trim();
+        if (trimmed.startsWith("/")) {
+            return true;
+        }
+        String lower = trimmed.toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://")
+                || lower.startsWith("//")
+                || lower.startsWith(
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX);
     }
 }
