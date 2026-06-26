@@ -16,21 +16,25 @@
 
 // TypeScript port of com.vaadin.client.flow.binding.SimpleElementBindingStrategy,
 // the binding strategy for a simple (non-template) Element. It is the largest
-// client class and pulls in the DOM-abstraction and configuration layers that
-// are not ported yet, so it is built up across several build-alongside slices.
-//
-// This first slice ports the self-contained DOM-event-data resolution helpers
-// (the event-expression cache plus filter/debounce resolution) used by
-// handleDomEvent. They depend only on the already-ported Debouncer. The strategy
-// class itself (create/isApplicable/bind and the DOM-binding methods) and the
-// Polymer model-property bridge (the window-registered bindPolymerModelProperties
-// in internal/SimpleElementBindingStrategy.ts) are folded in by later slices.
+// client class, so it is built up across several build-alongside slices, each a
+// labelled section below: event-data resolution, closest-state-node lookups,
+// styling binding, attribute binding, creation & identity, and visibility
+// binding. The methods are currently standalone functions; they get assembled
+// into the BindingStrategy<Element> class once bind() and its remaining
+// DOM-structure/event/shadow machinery (which need the BindingContext type) are
+// ported. The Polymer model-property bridge stays in
+// internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
+// at cutover.
 
 import { wrap } from '../dom/DomApi';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
+import { isInShadowRoot } from '../PolymerUtils';
 import type { EventRemover } from '../reactive/reactive';
 import { isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
 import { Debouncer } from './Debouncer';
+
+// com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
+const HIDDEN_ATTRIBUTE = 'hidden';
 
 // The callback sending an event to the server for a given debounce phase (null
 // when sent outside any debounce). Compatible with Debouncer's send command.
@@ -466,4 +470,97 @@ export function needsRebind(node: CreationNode): boolean {
 export function isVisible(node: CreationNode): boolean {
   const tree = node.getTree();
   return tree !== null && tree.isVisible(node);
+}
+
+// --- Slice 6: visibility binding -------------------------------------------
+// The element-visibility helpers of bind(): they capture the element's initial
+// hidden attribute and inline display once, hide an invisible element, restore
+// the captured state when it becomes visible again, and apply structural
+// attributes (the "slot") even while invisible. The bindVisibility/
+// updateVisibility wiring (which needs BindingContext, remove and doBind) lands
+// with the bind() core.
+
+/** The slice of MapProperty the visibility helpers read and write. */
+interface VisibilityProperty {
+  hasValue(): boolean;
+  getValue(): unknown;
+  setValue(value: unknown): void;
+}
+
+/** The slice of the ELEMENT_DATA NodeMap the visibility helpers use. */
+interface VisibilityNodeMap {
+  getProperty(name: string): VisibilityProperty;
+  getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
+}
+
+/** The slice of StateNode applyStructuralAttributes reads. */
+interface StructuralAttributesNode {
+  hasFeature(featureId: number): boolean;
+  getMap(featureId: number): {
+    hasPropertyValue(name: string): boolean;
+    getProperty(name: string): AttributeMapProperty;
+  };
+}
+
+/**
+ * Captures the element's initial `hidden` attribute and (in a shadow root) its
+ * inline display into the visibility data, once. Mirrors
+ * storeInitialHiddenAttribute.
+ */
+export function storeInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+  const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+  if (!initialVisibility.hasValue()) {
+    initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+  }
+
+  const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+  if (isInShadowRoot(element) && !initialDisplay.hasValue()) {
+    initialDisplay.setValue((element as HTMLElement).style.display);
+  }
+}
+
+/**
+ * Restores the element's captured initial hidden attribute and inline display.
+ * Mirrors restoreInitialHiddenAttribute.
+ */
+export function restoreInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+  storeInitialHiddenAttribute(element, visibilityData);
+  const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
+
+  const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+  if (initialVisibility.hasValue()) {
+    updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
+  }
+
+  const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+  if (initialDisplay.hasValue()) {
+    (element as HTMLElement).style.display = String(initialDisplay.getValue());
+  }
+}
+
+/**
+ * Hides the element: stores its initial state, sets `hidden`, and (in a shadow
+ * root) sets display:none. Mirrors setElementInvisible.
+ */
+export function setElementInvisible(element: Element, visibilityData: VisibilityNodeMap): void {
+  storeInitialHiddenAttribute(element, visibilityData);
+  const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
+  updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, true);
+  if (isInShadowRoot(element)) {
+    (element as HTMLElement).style.display = 'none';
+  }
+}
+
+/**
+ * Applies structural attributes (the "slot") to the element even while it is
+ * invisible, preserving CSS selectors without exposing backend data. Mirrors
+ * applyStructuralAttributes.
+ */
+export function applyStructuralAttributes(stateNode: StructuralAttributesNode, element: Element): void {
+  if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
+    const attributeMap = stateNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+    if (attributeMap.hasPropertyValue(NodeProperties.SLOT_ATTRIBUTE)) {
+      updateAttribute(attributeMap.getProperty(NodeProperties.SLOT_ATTRIBUTE), element);
+    }
+  }
 }
