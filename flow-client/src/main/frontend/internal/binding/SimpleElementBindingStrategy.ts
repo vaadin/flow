@@ -27,10 +27,12 @@
 // at cutover.
 
 import { wrap } from '../dom/DomApi';
+import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
 import { isInShadowRoot } from '../PolymerUtils';
 import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
-import { getJsProperty, isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
+import { StateNode } from '../StateNode';
+import { getJsProperty, getKeys, isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
 import type { BinderContext } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 
@@ -843,4 +845,154 @@ export function bindMap<P extends { getName(): string }>(
   map.forEachProperty((property) => bindProperty(user, property, bindings).recompute());
 
   return map.addPropertyAddListener((event) => bindProperty(user, event.getProperty(), bindings));
+}
+
+// --- Slice 9: Polymer model handlers ---------------------------------------
+// Handle changes coming from a Polymer element's model: a property change on the
+// element (handlePropertiesChanged/handlePropertyChange, gated by the node's
+// UpdatableModelProperties "security feature") and a list-item property change
+// in a dom-repeat (handleListItemPropertyChange). InitialPropertyUpdate defers
+// the very first property update until after the initial reactive flush.
+
+/** The slice of StateNode that InitialPropertyUpdate clears itself from. */
+interface NodeDataHolder {
+  clearNodeData(object: object): void;
+}
+
+/**
+ * Holds the deferred initial property update for a node: the command is run once
+ * (via execute) and then the holder removes itself from the node's data. Mirrors
+ * the InitialPropertyUpdate inner class.
+ */
+export class InitialPropertyUpdate {
+  private command: (() => void) | null = null;
+
+  private readonly node: NodeDataHolder;
+
+  constructor(node: NodeDataHolder) {
+    this.node = node;
+  }
+
+  setCommand(command: () => void): void {
+    this.command = command;
+  }
+
+  execute(): void {
+    this.command?.();
+    this.node.clearNodeData(this);
+  }
+}
+
+/** The slice of MapProperty the model handlers read/sync. */
+interface ModelMapProperty {
+  getValue(): unknown;
+  syncToServer(value: unknown): void;
+}
+
+/** The slice of NodeMap the model handlers read. */
+interface ModelNodeMap {
+  hasPropertyValue(name: string): boolean;
+  getProperty(name: string): ModelMapProperty;
+}
+
+/** The slice of StateNode the model handlers walk. */
+interface ModelNode {
+  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
+  getMap(featureId: number): ModelNodeMap;
+}
+
+/** The slice of StateNode handleListItemPropertyChange uses. */
+interface ListItemNode {
+  hasFeature(featureId: number): boolean;
+  getMap(featureId: number): ModelNodeMap;
+}
+
+/**
+ * Syncs a dom-repeat list-item property change to the server. The tree (a
+ * singleton) is passed explicitly because this runs from a replaced prototype
+ * method without the binding closure's context. Mirrors
+ * handleListItemPropertyChange.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleListItemPropertyChange signature
+export function handleListItemPropertyChange(
+  nodeId: number,
+  _host: unknown,
+  property: string,
+  value: unknown,
+  tree: { getNode(id: number): ListItemNode | null }
+): void {
+  const node = tree.getNode(nodeId);
+  if (node === null || !node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+    return;
+  }
+  node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(property).syncToServer(value);
+}
+
+/**
+ * Handles the set of changed property paths from a Polymer element, running the
+ * updates now or deferring them until the initial update if one is pending.
+ * Mirrors handlePropertiesChanged.
+ */
+export function handlePropertiesChanged(changedPropertyPathsToValues: object, node: ModelNode): void {
+  const keys = getKeys(changedPropertyPathsToValues);
+
+  const runnable = (): void => {
+    for (const propertyName of keys) {
+      handlePropertyChange(
+        propertyName,
+        () => getJsProperty(changedPropertyPathsToValues as Record<string, unknown>, propertyName),
+        node
+      );
+    }
+  };
+
+  const initialUpdate = node.getNodeData(InitialPropertyUpdate);
+  if (initialUpdate === null) {
+    runnable();
+  } else {
+    initialUpdate.setCommand(runnable);
+  }
+}
+
+/**
+ * Handles a single changed property path, sending the update to the server only
+ * if the property is in the node's updatable-properties "security feature" and
+ * isn't a model/list node. Mirrors handlePropertyChange.
+ */
+export function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: ModelNode): void {
+  const updatableProperties = node.getNodeData(UpdatableModelProperties);
+  if (updatableProperties === null || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
+    // not an updatable property/sub-property: do nothing
+    return;
+  }
+
+  // Walk the dot-separated path; this resolves the parent node of the property.
+  const subProperties = fullPropertyName.split('.');
+  let model: ModelNode = node;
+  let mapProperty: ModelMapProperty | null = null;
+  const size = subProperties.length;
+  let i = 0;
+  for (const subProperty of subProperties) {
+    const elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+    if (!elementProperties.hasPropertyValue(subProperty) && i < size - 1) {
+      console.debug(`Ignoring property change for property '${fullPropertyName}' which isn't defined from server`);
+      return;
+    }
+
+    mapProperty = elementProperties.getProperty(subProperty);
+    if (mapProperty.getValue() instanceof StateNode) {
+      model = mapProperty.getValue() as unknown as ModelNode;
+    }
+    i++;
+  }
+
+  if (mapProperty!.getValue() instanceof StateNode) {
+    // Don't send updates for list nodes
+    const nodeValue = mapProperty!.getValue() as StateNode;
+    const obj = valueProvider() as Record<string, unknown>;
+    if (obj.nodeId === undefined || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+      return;
+    }
+  }
+  mapProperty!.syncToServer(valueProvider());
 }
