@@ -56,6 +56,7 @@ public class LocaleChangeEvent extends EventObject {
      * Returns the UI where the locale changed in.
      *
      * @return the ui
+     * @since 3.1
      */
     public UI getUI() {
         return (UI) getSource();

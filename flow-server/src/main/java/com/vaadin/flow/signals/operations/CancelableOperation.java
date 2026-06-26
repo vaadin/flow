@@ -24,6 +24,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *
  * @param <T>
  *            the result type
+ * @since 25.1
  */
 public class CancelableOperation<T extends @Nullable Object>
         extends SignalOperation<T> {

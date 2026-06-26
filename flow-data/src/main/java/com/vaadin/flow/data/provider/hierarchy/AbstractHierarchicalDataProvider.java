@@ -37,6 +37,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * @throws UnsupportedOperationException
      *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
+     * @since 25.0
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {

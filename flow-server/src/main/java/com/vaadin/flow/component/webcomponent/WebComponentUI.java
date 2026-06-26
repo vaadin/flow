@@ -69,6 +69,8 @@ public class WebComponentUI extends UI {
     /**
      * Event used for sending the activation event for an exported web component
      * from the client to the server.
+     * 
+     * @since 2.1
      */
     @DomEvent("connect-web-component")
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
@@ -98,6 +100,7 @@ public class WebComponentUI extends UI {
          *            initial attribute values as a JsonObject. If present,
          *            these will override the default value designated by the
          *            {@code WebComponentExporter} but only for this instance.
+         * @since 24.8
          */
         public WebComponentConnectEvent(UI source, boolean fromClient,
                 @EventData("tag") String tag,

@@ -33,6 +33,8 @@ import tools.jackson.databind.node.NullNode;
  * the node instance. The node is either a {@link Data} node carrying actual
  * signal data or an {@link Alias} node that allows multiple signal ids to
  * reference the same data.
+ * 
+ * @since 25.1
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(value = {

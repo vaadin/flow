@@ -54,6 +54,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * the context of a node in a tree. You can use the various <code>as</code>
  * methods to get an instance of that specific type that you can use for
  * applying some specific operation.
+ * 
+ * @since 25.1
  */
 public class SharedNodeSignal
         extends AbstractSharedSignal<SharedNodeSignal.SharedNodeSignalState> {

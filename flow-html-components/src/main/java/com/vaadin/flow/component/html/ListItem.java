@@ -66,6 +66,7 @@ public class ListItem extends HtmlContainer implements ClickNotifier<ListItem> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public ListItem(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -41,6 +41,7 @@ public abstract class AbstractDeploymentConfiguration extends
      *
      * @param properties
      *            configuration properties
+     * @since 6.0
      */
     protected AbstractDeploymentConfiguration(Map<String, String> properties) {
         super(properties);

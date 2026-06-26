@@ -113,6 +113,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 24.8
      */
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
@@ -144,6 +145,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 25.0
      */
     public Image(byte[] imageContent, String imageName) {
         this(imageContent, imageName,
@@ -178,6 +180,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 25.0
      */
     public Image(byte[] imageContent, String imageName, String mimeType) {
         this(DownloadHandler.fromInputStream(event -> {
@@ -238,6 +241,7 @@ public class Image extends HtmlContainer
      *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {

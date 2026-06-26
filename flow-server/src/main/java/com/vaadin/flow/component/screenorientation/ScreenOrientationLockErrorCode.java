@@ -22,6 +22,8 @@ package com.vaadin.flow.component.screenorientation;
  * the browser failure to one of these constants before reporting it to the
  * server, so application code can branch with an exhaustive {@code switch}
  * instead of inspecting browser-specific error strings.
+ * 
+ * @since 25.2
  */
 public enum ScreenOrientationLockErrorCode {
     /**

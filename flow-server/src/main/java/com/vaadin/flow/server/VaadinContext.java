@@ -75,6 +75,7 @@ public interface VaadinContext extends Serializable {
      * @param value
      *            the attribute value to set, or <code>null</code> to remove the
      *            current value
+     * @since 2.2
      */
     <T> void setAttribute(Class<T> clazz, T value);
 
@@ -86,6 +87,7 @@ public interface VaadinContext extends Serializable {
      * @param value
      *            attribute value, not {@code null}.
      * @see #removeAttribute(Class) for removing attributes.
+     * @since 2.2
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     default void setAttribute(Object value) {
@@ -112,6 +114,7 @@ public interface VaadinContext extends Serializable {
      * are o initialization parameters.
      *
      * @return initialization parameters as a <code>Enumeration</code>
+     * @since 2.2
      */
     Enumeration<String> getContextParameterNames();
 
@@ -123,6 +126,7 @@ public interface VaadinContext extends Serializable {
      *            name of the parameter whose value is requested
      * @return parameter value as <code>String</code> or <code>null</code> for
      *         no parameter
+     * @since 2.2
      */
     String getContextParameter(String name);
 }

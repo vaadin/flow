@@ -88,6 +88,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      *
      * @param value
      *            the JSON return value from the client
+     * @since 25.0
      */
     public void complete(JsonNode value) {
         assert isSubscribed();
@@ -101,6 +102,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      *
      * @param value
      *            the JSON exception value from the client
+     * @since 25.0
      */
     public void completeExceptionally(JsonNode value) {
         assert isSubscribed();

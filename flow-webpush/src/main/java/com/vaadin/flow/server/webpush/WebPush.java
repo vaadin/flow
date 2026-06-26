@@ -104,6 +104,7 @@ public class WebPush {
      *            <code>title</code> and <code>body</code>
      * @throws WebPushException
      *             if sending a notification fails
+     * @since 24.6
      */
     public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {

@@ -33,6 +33,7 @@ import com.vaadin.flow.component.Component;
  *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
+ * @since 6.0
  */
 @Deprecated
 public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
@@ -48,6 +49,7 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      * @param convertedType
      *            target type that value should be converted to
      * @return true if valid template model value
+     * @since 25.0
      */
     boolean isTemplateModelValue(Component instance, JsonNode argValue,
             Class<?> convertedType);
@@ -64,6 +66,7 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      * @return the provided model value
      * @throws IllegalStateException
      *             if the component is not attached to the UI
+     * @since 25.0
      */
     Object getTemplateItem(Component template, JsonNode argValue,
             Type convertedType);

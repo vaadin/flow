@@ -60,6 +60,8 @@ import com.vaadin.flow.shared.Registration;
  * alongside whatever literal values the install expression needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public abstract class Trigger implements Serializable {
 
@@ -172,6 +174,7 @@ public abstract class Trigger implements Serializable {
      * @param action
      *            supplies the action to wire once {@code attachTarget} is
      *            attached, not {@code null}
+     * @since 25.3
      */
     public final void triggers(Component attachTarget,
             SerializableSupplier<Action> action) {

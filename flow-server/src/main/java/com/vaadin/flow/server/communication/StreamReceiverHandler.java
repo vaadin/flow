@@ -332,6 +332,7 @@ public class StreamReceiverHandler implements Serializable {
      * @return true if upload successful, else false
      * @throws UploadException
      *             Thrown for illegal target node state
+     * @since 5.0
      */
     protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
@@ -408,6 +409,7 @@ public class StreamReceiverHandler implements Serializable {
      *            whether the upload was successful
      * @throws IOException
      *             exception when writing to stream
+     * @since 5.0
      */
     protected void sendUploadResponse(VaadinResponse response, boolean success)
             throws IOException {
@@ -596,6 +598,7 @@ public class StreamReceiverHandler implements Serializable {
      *             if a file size exceeds the limit
      * @throws UploadFileCountLimitExceededException
      *             if the file count exceeds the limit
+     * @since 25.0
      */
     protected void validateUploadLimits(VaadinRequest request,
             Collection<Part> parts) throws UploadSizeLimitExceededException,

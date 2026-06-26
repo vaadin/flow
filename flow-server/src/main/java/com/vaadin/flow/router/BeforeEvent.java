@@ -69,6 +69,7 @@ public abstract class BeforeEvent extends EventObject {
      *            navigation target, not <code>null</code>
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
+     * @since 2.0
      */
     public BeforeEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -88,6 +89,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameters, not <code>null</code>
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
+     * @since 4.0
      */
     public BeforeEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -115,6 +117,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 2.0
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,
@@ -142,6 +145,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 4.0
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,
@@ -170,6 +174,7 @@ public abstract class BeforeEvent extends EventObject {
      * {@link #forwardTo(String, QueryParameters)} methods.
      *
      * @return forward route is not found in the route registry.
+     * @since 4.0
      */
     public boolean hasUnknownForward() {
         return unknownForward != null;
@@ -181,6 +186,7 @@ public abstract class BeforeEvent extends EventObject {
      * {@link #rerouteTo(String, QueryParameters)} method.
      *
      * @return reroute is not found in the route registry.
+     * @since 4.0
      */
     public boolean hasUnknownReroute() {
         return unknownReroute != null;
@@ -190,6 +196,7 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the unknown forward.
      *
      * @return the unknown forward.
+     * @since 4.0
      */
     public String getUnknownForward() {
         return unknownForward;
@@ -199,6 +206,7 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the unknown reroute.
      *
      * @return the unknown reroute.
+     * @since 4.0
      */
     public String getUnknownReroute() {
         return unknownReroute;
@@ -208,6 +216,7 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the external forward url.
      *
      * @return the external forward url or {@code null} if none has been set
+     * @since 23.2.3
      */
     public String getExternalForwardUrl() {
         return externalForwardUrl;
@@ -241,6 +250,7 @@ public abstract class BeforeEvent extends EventObject {
      * Check if we have a forward target.
      *
      * @return forward target exists
+     * @since 1.3
      */
     public boolean hasForwardTarget() {
         return forwardTarget != null;
@@ -250,6 +260,7 @@ public abstract class BeforeEvent extends EventObject {
      * Check if we have a forward for an external URL.
      *
      * @return forward target exists
+     * @since 23.2.3
      */
     public boolean hasExternalForwardUrl() {
         return externalForwardUrl != null;
@@ -269,6 +280,7 @@ public abstract class BeforeEvent extends EventObject {
      * some other view.
      *
      * @return navigation handler
+     * @since 1.3
      */
     public NavigationHandler getForwardTarget() {
         return forwardTarget;
@@ -299,6 +311,7 @@ public abstract class BeforeEvent extends EventObject {
      *            previously set forward target
      * @param targetState
      *            the target navigation state of the rerouting
+     * @since 1.3
      */
     public void forwardTo(NavigationHandler forwardTarget,
             NavigationState targetState) {
@@ -317,6 +330,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @param targetState
      *            the target navigation state, not {@code null}
+     * @since 1.3
      */
     public void forwardTo(NavigationState targetState) {
         Objects.requireNonNull(targetState, "targetState cannot be null");
@@ -335,6 +349,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
+     * @since 1.3
      */
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
         Objects.requireNonNull(forwardTargetComponent,
@@ -357,6 +372,7 @@ public abstract class BeforeEvent extends EventObject {
      *            the component type to display, not {@code null}
      * @param useForwardCallback
      *            {@literal true} to request navigation callback from client
+     * @since 24.4.9
      */
     public void forwardTo(Class<? extends Component> forwardTargetComponent,
             boolean useForwardCallback) {
@@ -386,6 +402,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameter type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
             Class<? extends C> forwardTargetComponent, T routeParameter) {
@@ -412,6 +429,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameters type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
             Class<? extends C> forwardTargetComponent,
@@ -435,6 +453,7 @@ public abstract class BeforeEvent extends EventObject {
      *            the component type to display, not {@code null}
      * @param parameters
      *            route parameters for the target
+     * @since 4.0
      */
     public void forwardTo(Class<? extends Component> forwardTargetComponent,
             RouteParameters parameters) {
@@ -461,6 +480,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameter type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
             Class<? extends C> forwardTargetComponent, T routeParameter,
@@ -488,6 +508,7 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <C extends Component> void forwardTo(
             Class<? extends C> forwardTargetComponent,
@@ -513,6 +534,7 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <C extends Component> void forwardTo(
             Class<? extends C> forwardTargetComponent,
@@ -536,6 +558,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @param location
      *            forward target location string
+     * @since 1.3
      */
     public void forwardTo(String location) {
         final Optional<NavigationState> navigationState = getSource()
@@ -556,6 +579,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @param externalForwardUrl
      *            forward target location string
+     * @since 23.2.3
      */
     public void forwardToUrl(String externalForwardUrl) {
         this.externalForwardUrl = externalForwardUrl;
@@ -577,6 +601,7 @@ public abstract class BeforeEvent extends EventObject {
      *            location parameter
      * @param <T>
      *            location parameter type
+     * @since 1.3
      */
     public <T> void forwardTo(String location, T locationParam) {
         forwardTo(location, Collections.singletonList(locationParam));
@@ -598,6 +623,7 @@ public abstract class BeforeEvent extends EventObject {
      *            location parameters
      * @param <T>
      *            location parameters type
+     * @since 1.3
      */
     public <T> void forwardTo(String location, List<T> locationParams) {
         forwardTo(getNavigationState(location, locationParams));
@@ -614,6 +640,7 @@ public abstract class BeforeEvent extends EventObject {
      *            forward target location string
      * @param queryParameters
      *            query parameters for the target
+     * @since 24.1.13
      */
     public void forwardTo(String locationString,
             QueryParameters queryParameters) {
@@ -702,6 +729,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameter type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
             Class<? extends C> routeTargetType, T routeParameter) {
@@ -726,6 +754,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameter type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
             Class<? extends C> routeTargetType, List<T> routeParameters) {
@@ -747,6 +776,7 @@ public abstract class BeforeEvent extends EventObject {
      *            the component type to display, not {@code null}
      * @param parameters
      *            parameters for the target url.
+     * @since 4.0
      */
     public void rerouteTo(Class<? extends Component> routeTargetType,
             RouteParameters parameters) {
@@ -773,6 +803,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameter type
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
             Class<? extends C> routeTargetType, T routeParameter,
@@ -800,6 +831,7 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <C extends Component> void rerouteTo(
             Class<? extends C> routeTargetType, RouteParameters routeParameters,
@@ -824,6 +856,7 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      * @param <C>
      *            navigation target type
+     * @since 24.1.13
      */
     public <C extends Component> void rerouteTo(
             Class<? extends C> routeTargetType,
@@ -910,6 +943,7 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      * @param queryParameters
      *            query parameters for the target
+     * @since 24.1.13
      */
     public void rerouteTo(String route, QueryParameters queryParameters) {
         final Optional<NavigationState> navigationState = getSource()
@@ -976,6 +1010,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no forward target is set. Check
      *             {@link #hasForwardTarget()} before accessing this method.
+     * @since 1.3
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -988,6 +1023,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no forward target is set. Check
      *             {@link #hasForwardTarget()} before accessing this method.
+     * @since 4.0
      */
     public RouteParameters getForwardTargetRouteParameters() {
         return forwardTargetState.getRouteParameters();
@@ -1000,6 +1036,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no forward target is set. Check
      *             {@link #hasForwardTarget()} before accessing this method.
+     * @since 4.0
      */
     public String getForwardUrl() {
         return forwardTargetState.getResolvedPath();
@@ -1012,6 +1049,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no reroute target is set. Check
      *             {@link #hasRerouteTarget()} before accessing this method.
+     * @since 2.2
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
@@ -1024,6 +1062,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no reroute target is set. Check
      *             {@link #hasRerouteTarget()} before accessing this method.
+     * @since 4.0
      */
     public RouteParameters getRerouteTargetRouteParameters() {
         return rerouteTargetState.getRouteParameters();
@@ -1036,6 +1075,7 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no reroute target is set. Check
      *             {@link #hasRerouteTarget()} before accessing this method.
+     * @since 4.0
      */
     public String getRerouteUrl() {
         return rerouteTargetState.getResolvedPath();
@@ -1054,6 +1094,7 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the route parameters associated with this event.
      *
      * @return route parameters retrieved from the navigation url.
+     * @since 4.0
      */
     public RouteParameters getRouteParameters() {
         return parameters;
@@ -1063,6 +1104,7 @@ public abstract class BeforeEvent extends EventObject {
      * Check if we have query parameters for forwarded and rerouted URL.
      *
      * @return query parameters exists
+     * @since 24.1.13
      */
     public boolean hasRedirectQueryParameters() {
         return redirectQueryParameters != null;
@@ -1074,6 +1116,7 @@ public abstract class BeforeEvent extends EventObject {
      * and rerouted URL.
      *
      * @return query parameters for forwarding and rerouting
+     * @since 24.1.13
      */
     public QueryParameters getRedirectQueryParameters() {
         return redirectQueryParameters;
@@ -1084,6 +1127,7 @@ public abstract class BeforeEvent extends EventObject {
      * navigation target}.
      *
      * @return layout chain
+     * @since 2.0
      */
     public List<Class<? extends RouterLayout>> getLayouts() {
         return layouts;
@@ -1171,6 +1215,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return {@literal true} if callback should be used,
      *         {@literal false otherwise}
+     * @since 24.4.9
      */
     public boolean isUseForwardCallback() {
         return useForwardCallback;
