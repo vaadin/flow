@@ -389,3 +389,81 @@ export function updateAttribute(mapProperty: AttributeMapProperty, element: Elem
     mapProperty.getValue()
   );
 }
+
+// --- Slice 5: element creation & identity ----------------------------------
+// The standalone, BindingContext-free parts of the strategy: creating the DOM
+// element for a state node, the applicability/tag/visibility checks and the
+// rebind check. They are assembled into the BindingStrategy<Element> class once
+// bind() (and its DOM-structure/event machinery) is ported.
+
+/** The slice of StateNode that creation & identity read. */
+interface CreationNode {
+  getMap(featureId: number): { getProperty(name: string): { getValue(): unknown } };
+  hasFeature(featureId: number): boolean;
+  getParent(): CreationNode | null;
+  getDomNode(): Node | null;
+  getTree(): { getRootNode(): CreationNode; isVisible(node: CreationNode): boolean } | null;
+}
+
+function readElementData(node: CreationNode, property: string): unknown {
+  return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(property).getValue();
+}
+
+/** The element tag for the state node; mirrors PolymerUtils.getTag / getTag. */
+export function getTag(node: CreationNode): string | null {
+  return (readElementData(node, NodeProperties.TAG) as string | null) ?? null;
+}
+
+/** The element namespace for the state node, if any; mirrors getNamespace. */
+export function getNamespace(node: CreationNode): string | null {
+  return (readElementData(node, NodeProperties.NAMESPACE) as string | null) ?? null;
+}
+
+/**
+ * Creates the DOM element for the state node, using the node's namespace, then
+ * the parent element's namespace, then no namespace. Mirrors create.
+ */
+export function create(node: CreationNode): Element {
+  const tag = getTag(node) as string;
+  const namespace = getNamespace(node);
+  if (namespace !== null) {
+    return document.createElementNS(namespace, tag);
+  }
+  const parent = node.getParent();
+  if (parent !== null) {
+    const namespaceURI = (parent.getDomNode() as Element | null)?.namespaceURI ?? null;
+    if (namespaceURI !== null) {
+      return document.createElementNS(namespaceURI, tag);
+    }
+  }
+  return document.createElement(tag);
+}
+
+/** Whether this strategy applies to the state node; mirrors isApplicable. */
+export function isApplicable(node: CreationNode): boolean {
+  if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
+    return true;
+  }
+  const tree = node.getTree();
+  return tree !== null && node === tree.getRootNode();
+}
+
+/** Whether the element's tag matches the node's required tag; mirrors hasSameTag. */
+export function hasSameTag(node: CreationNode, element: Element): boolean {
+  const nsTag = getTag(node);
+  return nsTag === null || element.tagName.toLowerCase() === nsTag.toLowerCase();
+}
+
+/**
+ * Whether the node needs a re-bind. Absence of value or "true" means no
+ * re-bind; only an explicit false means a re-bind is needed. Mirrors needsRebind.
+ */
+export function needsRebind(node: CreationNode): boolean {
+  return readElementData(node, NodeProperties.VISIBILITY_BOUND_PROPERTY) === false;
+}
+
+/** Whether the node is visible; mirrors isVisible. */
+export function isVisible(node: CreationNode): boolean {
+  const tree = node.getTree();
+  return tree !== null && tree.isVisible(node);
+}
