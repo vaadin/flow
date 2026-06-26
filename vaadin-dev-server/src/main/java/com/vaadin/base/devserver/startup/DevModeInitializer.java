@@ -268,13 +268,13 @@ public class DevModeInitializer implements Serializable {
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        String[] additionalPostinstallPackages = config
-                .getStringProperty(
-                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
-                .split(",");
+        List<String> additionalPostinstallPackages = parsePackageList(
+                config.getStringProperty(
+                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, ""));
 
-        String[] excludePostinstallPackages = config.getStringProperty(
-                InitParameters.EXCLUDE_POSTINSTALL_PACKAGES, "").split(",");
+        List<String> excludePostinstallPackages = parsePackageList(
+                config.getStringProperty(
+                        InitParameters.EXCLUDE_POSTINSTALL_PACKAGES, ""));
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
@@ -304,10 +304,8 @@ public class DevModeInitializer implements Serializable {
                 .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
-                .withPostinstallPackages(
-                        Arrays.asList(additionalPostinstallPackages))
-                .withExcludePostinstallPackages(
-                        Arrays.asList(excludePostinstallPackages))
+                .withPostinstallPackages(additionalPostinstallPackages)
+                .withExcludePostinstallPackages(excludePostinstallPackages)
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
@@ -358,6 +356,14 @@ public class DevModeInitializer implements Serializable {
                     () -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
+    }
+
+    static List<String> parsePackageList(String property) {
+        if (property.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(property.split(",")).map(String::trim)
+                .filter(input -> !input.isBlank()).toList();
     }
 
     static List<String> getFrontendExtraFileExtensions(
