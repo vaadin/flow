@@ -606,19 +606,46 @@ interface EventNodeMap {
   addPropertyAddListener(listener: (event: { getProperty(): EventMapProperty }) => void): EventRemover;
 }
 
-/** The slice of StateTree the event cluster reads. */
+/** The mapping of server node ids to existing elements (ExistingElementMap). */
+interface ExistingElementAccess {
+  getElement(id: number): Node | null;
+  remove(id: number): void;
+}
+
+/** The slice of StateTree the event/children clusters read. */
 interface EventTree {
-  getRegistry(): { getConstantPool(): { has(key: string): boolean; get<T>(key: string): T } };
+  getRegistry(): {
+    getConstantPool(): { has(key: string): boolean; get<T>(key: string): T };
+    getExistingElementMap(): ExistingElementAccess;
+  };
   sendEventToServer(node: BindingStateNode, type: string, eventData: unknown): void;
   getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
+}
+
+/** A list-splice event on the children list. */
+interface ChildListSpliceEvent {
+  isClear(): boolean;
+  getRemove(): unknown[];
+  getAdd(): unknown[];
+  getIndex(): number;
+}
+
+/** The slice of NodeList the children binding reads. */
+interface ChildNodeList {
+  length(): number;
+  get(index: number): unknown;
+  hasBeenCleared(): boolean;
+  forEach(callback: (child: unknown) => void): void;
+  addSpliceListener(listener: (event: ChildListSpliceEvent) => void): EventRemover;
 }
 
 /** The slice of StateNode the binding context exposes. */
 interface BindingStateNode {
   getId(): number;
   getDomNode(): Node | null;
+  setDomNode(node: Node | null): void;
   getMap(featureId: number): EventNodeMap;
-  getList(featureId: number): { forEach(callback: (child: unknown) => void): void };
+  getList(featureId: number): ChildNodeList;
   getTree(): EventTree;
 }
 
@@ -1052,4 +1079,141 @@ export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: 
     setJsProperty(elementObject, name, null);
   }
   mapProperty.clearPreviousDomValue();
+}
+
+// --- Slice 11: light-DOM children binding ----------------------------------
+// Binds the ELEMENT_CHILDREN feature to the element's DOM children, creating and
+// inserting child elements (or adopting existing ones) and keeping the DOM in
+// sync as the children list is spliced. Goes through the binder context to
+// create/bind child nodes and through DomApi for the DOM mutations.
+
+function createAndBindChild(context: BindingContext, childNode: BindingStateNode): Node {
+  return context.binderContext.createAndBind(childNode as unknown as StateNode);
+}
+
+/**
+ * Binds the node's children to the element, adopting existing elements where the
+ * server requested attaching to one and appending the rest. Mirrors bindChildren.
+ */
+export function bindChildren(context: BindingContext): EventRemover {
+  const children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+  if (children.hasBeenCleared()) {
+    removeAllChildren(context.htmlNode);
+  }
+
+  for (let i = 0; i < children.length(); i++) {
+    const childNode = children.get(i) as BindingStateNode;
+
+    const existingElementMap = childNode.getTree().getRegistry().getExistingElementMap();
+    const child = existingElementMap.getElement(childNode.getId());
+    if (child !== null) {
+      existingElementMap.remove(childNode.getId());
+      childNode.setDomNode(child);
+      createAndBindChild(context, childNode);
+    } else {
+      wrap(context.htmlNode).appendChild(createAndBindChild(context, childNode));
+    }
+  }
+
+  return children.addSpliceListener((e) => {
+    // Handle lazily: the change giving a child its element tag may not be
+    // applied yet.
+    Reactive.addFlushListener(() => handleChildrenSplice(e, context));
+  });
+}
+
+function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingContext): void {
+  const htmlNode = context.htmlNode;
+  if (event.isClear()) {
+    // A full clear removes all nodes, including ones the server doesn't know about.
+    removeAllChildren(htmlNode);
+  } else {
+    for (const removed of event.getRemove()) {
+      const childNode = removed as BindingStateNode;
+      const child = childNode.getDomNode();
+      // If the client-side element is not inside the parent the server expected
+      // (client-only DOM changes), nothing is done here.
+      if (child !== null && wrap(child).parentNode === htmlNode) {
+        wrap(htmlNode).removeChild(child);
+      }
+    }
+  }
+
+  const add = event.getAdd();
+  if (add.length > 0) {
+    addChildren(event.getIndex(), context, add);
+  }
+}
+
+function removeAllChildren(htmlNode: Node): void {
+  const wrapped = wrap(htmlNode);
+  while (wrapped.firstChild !== null) {
+    wrapped.removeChild(wrapped.firstChild);
+  }
+}
+
+function addChildren(index: number, context: BindingContext, add: unknown[]): void {
+  const nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+
+  let beforeRef: Node | null;
+  if (index === 0) {
+    // Insert at the first position after the client-side-only nodes.
+    beforeRef = getFirstNodeMappedAsStateNode(nodeChildren, context.htmlNode);
+  } else if (index <= nodeChildren.length() && index > 0) {
+    const previousSibling = getPreviousSibling(index, context);
+    beforeRef = previousSibling === null ? null : wrap(previousSibling.getDomNode()!).nextSibling;
+  } else {
+    // Insert at the end.
+    beforeRef = null;
+  }
+
+  for (const newChildObject of add) {
+    const newChild = newChildObject as BindingStateNode;
+
+    const existingElementMap = newChild.getTree().getRegistry().getExistingElementMap();
+    let childNode = existingElementMap.getElement(newChild.getId());
+    if (childNode !== null) {
+      existingElementMap.remove(newChild.getId());
+      newChild.setDomNode(childNode);
+      createAndBindChild(context, newChild);
+    } else {
+      childNode = createAndBindChild(context, newChild);
+      wrap(context.htmlNode).insertBefore(childNode, beforeRef);
+    }
+
+    beforeRef = wrap(childNode).nextSibling;
+  }
+}
+
+function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNode: Node): Node | null {
+  const clientList = wrap(htmlNode).childNodes;
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of -- ArrayLike DOM child list, not iterable
+  for (let i = 0; i < clientList.length; i++) {
+    const clientNode = clientList[i];
+    for (let j = 0; j < mappedNodeChildren.length(); j++) {
+      const stateNode = mappedNodeChildren.get(j) as BindingStateNode;
+      if (clientNode === stateNode.getDomNode()) {
+        return clientNode;
+      }
+    }
+  }
+  return null;
+}
+
+function getPreviousSibling(index: number, context: BindingContext): BindingStateNode | null {
+  const nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+
+  let count = 0;
+  let node: BindingStateNode | null = null;
+  for (let i = 0; i < nodeChildren.length(); i++) {
+    if (count === index) {
+      return node;
+    }
+    const child = nodeChildren.get(i) as BindingStateNode;
+    if (child.getDomNode() !== null) {
+      node = child;
+      count++;
+    }
+  }
+  return node;
 }
