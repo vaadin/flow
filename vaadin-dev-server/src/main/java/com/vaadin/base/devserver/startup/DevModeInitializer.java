@@ -359,6 +359,9 @@ public class DevModeInitializer implements Serializable {
     }
 
     static List<String> parsePackageList(String property) {
+        if (property.isBlank()) {
+            return List.of();
+        }
         return Arrays.stream(property.split(",")).map(String::trim)
                 .filter(input -> !input.isBlank()).toList();
     }
