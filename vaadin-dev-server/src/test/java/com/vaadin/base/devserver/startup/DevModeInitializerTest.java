@@ -572,6 +572,18 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertEquals(3, frontendExtraFileExtensions.size());
     }
 
+    @Test
+    void parsePackageList_emptyProperty_returnsEmptyList() {
+        assertTrue(DevModeInitializer.parsePackageList("").isEmpty());
+    }
+
+    @Test
+    void parsePackageList_packagesSet_returnsTrimmedNonBlankList() {
+        List<String> packages = DevModeInitializer
+                .parsePackageList("foo, bar ,,baz");
+        assertEquals(List.of("foo", "bar", "baz"), packages);
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, VaadinInitializerException {
         loadingJarsWithProtocol_allFilesExist(resourcesFolder,
