@@ -52,6 +52,7 @@ export const NodeProperties = {
   NAMESPACE: 'namespace',
   VISIBLE: 'visible',
   TEXT: 'text',
+  VALUE: 'value',
   URI_ATTRIBUTE: 'uri',
   VISIBILITY_BOUND_PROPERTY: 'bound',
   VISIBILITY_HIDDEN_PROPERTY: 'hidden',
