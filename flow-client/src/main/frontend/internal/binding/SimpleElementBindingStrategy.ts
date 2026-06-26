@@ -29,10 +29,21 @@
 import { wrap } from '../dom/DomApi';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
+import { createModelTree } from '../PolymerModelTree';
 import { isInShadowRoot } from '../PolymerUtils';
 import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
 import { StateNode } from '../StateNode';
-import { getJsProperty, getKeys, isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
+import {
+  deleteJsProperty,
+  equalsInJS,
+  getJsProperty,
+  getKeys,
+  hasOwnJsProperty,
+  isAbsoluteUrl,
+  isUndefined,
+  setJsProperty,
+  updateAttribute as setElementAttribute
+} from '../WidgetUtil';
 import type { BinderContext } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 
@@ -995,4 +1006,50 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
     }
   }
   mapProperty!.syncToServer(valueProvider());
+}
+
+// --- Slice 10: element property binding ------------------------------------
+// Applies a map property to a DOM-element JS property (the property user for the
+// ELEMENT_PROPERTIES feature). Values are converted through the Polymer model
+// tree; the previous DOM value guards against clobbering a user edit made during
+// the server round-trip.
+
+/** The slice of MapProperty that updateProperty reads. */
+interface UpdatePropertyMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+  getPreviousDomValue(): unknown;
+  clearPreviousDomValue(): void;
+}
+
+/**
+ * Updates the element's JS property from the map property, or removes/clears it
+ * when the property has no value. Mirrors updateProperty.
+ */
+export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: Element): void {
+  const name = mapProperty.getName();
+  const elementObject = element as unknown as Record<string, unknown>;
+  if (mapProperty.hasValue()) {
+    const treeValue = mapProperty.getValue();
+    const domValue = getJsProperty(elementObject, name);
+    const previousDomValue = mapProperty.getPreviousDomValue();
+
+    // The user might have modified the DOM value during the server round-trip,
+    // so only update to the tree value when it differs from the pre-round-trip
+    // DOM value.
+    const updateToTreeValue = previousDomValue === undefined ? true : !equalsInJS(treeValue, previousDomValue);
+
+    // Compare with the current property to avoid setting properties already
+    // updated on the client side (won't work for read-only properties).
+    if (updateToTreeValue && (isUndefined(domValue) || !equalsInJS(domValue, treeValue))) {
+      Reactive.runWithComputation(null, () => setJsProperty(elementObject, name, createModelTree(treeValue)));
+    }
+  } else if (hasOwnJsProperty(element, name)) {
+    deleteJsProperty(elementObject, name);
+  } else {
+    // Can't delete an inherited property, so just clear the value.
+    setJsProperty(elementObject, name, null);
+  }
+  mapProperty.clearPreviousDomValue();
 }
