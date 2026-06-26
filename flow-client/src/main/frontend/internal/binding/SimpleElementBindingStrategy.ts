@@ -26,7 +26,9 @@
 // Polymer model-property bridge (the window-registered bindPolymerModelProperties
 // in internal/SimpleElementBindingStrategy.ts) are folded in by later slices.
 
+import { wrap } from '../dom/DomApi';
 import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import type { EventRemover } from '../reactive/reactive';
 import { Debouncer } from './Debouncer';
 
 // The callback sending an event to the server for a given debounce phase (null
@@ -244,4 +246,84 @@ export function getClosestStateNodeIdToDomNode(
     );
   }
   return -1;
+}
+
+// --- Slice 3: styling binding ----------------------------------------------
+// The class-list and style-property binding parts of bind(). Both go through
+// the ported DomApi/native CSS; the property and attribute binders
+// (updateProperty/updateAttribute) wait on PolymerUtils.createModelTree and
+// WidgetUtil.updateAttribute, which are not ported yet.
+
+/** The slice of MapProperty that updateStyleProperty reads. */
+interface StyleMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+}
+
+/** The splice-event slice that the class-list listener reads. */
+interface ClassListSpliceEvent {
+  getRemove(): unknown[];
+  getAdd(): unknown[];
+}
+
+/** The slice of NodeList that holds the class names. */
+interface ClassNodeList {
+  length(): number;
+  get(index: number): unknown;
+  addSpliceListener(listener: (event: ClassListSpliceEvent) => void): EventRemover;
+}
+
+/** The slice of StateNode that bindClassList reads. */
+interface ClassListNode {
+  getList(featureId: number): ClassNodeList;
+}
+
+/**
+ * Updates a single inline style property of the element from a map property,
+ * preserving an `!important` priority, or removes it when the property has no
+ * value. Mirrors updateStyleProperty.
+ */
+export function updateStyleProperty(mapProperty: StyleMapProperty, element: HTMLElement): void {
+  const name = mapProperty.getName();
+  const styleElement = element.style;
+  if (mapProperty.hasValue()) {
+    const value = mapProperty.getValue() as string;
+    let styleIsSet = false;
+    if (value.includes('!important')) {
+      const temp = document.createElement(element.tagName);
+      const tmpStyle = temp.style;
+      tmpStyle.cssText = `${name}: ${value};`;
+      const priority = 'important';
+      if (priority === temp.style.getPropertyPriority(name)) {
+        styleElement.setProperty(name, temp.style.getPropertyValue(name), priority);
+        styleIsSet = true;
+      }
+    }
+    if (!styleIsSet) {
+      styleElement.setProperty(name, value);
+    }
+  } else {
+    styleElement.removeProperty(name);
+  }
+}
+
+/**
+ * Binds the CLASS_LIST feature of the node to the element's class list,
+ * applying the current classes and keeping them in sync as the list is spliced.
+ * Mirrors bindClassList.
+ */
+export function bindClassList(element: Element, node: ClassListNode): EventRemover {
+  const classNodeList = node.getList(NodeFeatures.CLASS_LIST);
+
+  for (let i = 0; i < classNodeList.length(); i++) {
+    wrap(element).classList.add(classNodeList.get(i) as string);
+  }
+
+  return classNodeList.addSpliceListener((e) => {
+    const classList = wrap(element).classList;
+
+    e.getRemove().forEach((token) => classList.remove(token as string));
+    e.getAdd().forEach((token) => classList.add(token as string));
+  });
 }
