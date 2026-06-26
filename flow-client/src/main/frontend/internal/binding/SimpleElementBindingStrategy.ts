@@ -27,8 +27,9 @@
 // in internal/SimpleElementBindingStrategy.ts) are folded in by later slices.
 
 import { wrap } from '../dom/DomApi';
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
 import type { EventRemover } from '../reactive/reactive';
+import { isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
 import { Debouncer } from './Debouncer';
 
 // The callback sending an event to the server for a given debounce phase (null
@@ -326,4 +327,65 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
     e.getRemove().forEach((token) => classList.remove(token as string));
     e.getAdd().forEach((token) => classList.add(token as string));
   });
+}
+
+// --- Slice 4: attribute binding --------------------------------------------
+// The element-attribute part of bind(). updateAttributeValue resolves a "uri"
+// model object against the application configuration (web-component mode); the
+// underlying attribute set/remove goes through WidgetUtil/DomApi.
+
+/** The slice of ApplicationConfiguration that attribute binding reads. */
+interface AttributeConfiguration {
+  isWebComponentMode(): boolean;
+  getServiceUrl(): string;
+}
+
+/** The Registry → ApplicationConfiguration chain reached from a node's tree. */
+interface AttributeMapProperty {
+  getName(): string;
+  getValue(): unknown;
+  getMap(): {
+    getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
+  };
+}
+
+/**
+ * Sets an element attribute from a map-property value. A plain string (or null)
+ * is applied as-is; a "uri" model object is resolved against the application
+ * configuration (prefixing the service URL in web-component mode for relative
+ * URIs); anything else is stringified. Mirrors updateAttributeValue.
+ */
+export function updateAttributeValue(
+  configuration: AttributeConfiguration,
+  element: Element,
+  attribute: string,
+  value: unknown
+): void {
+  if (value === null || value === undefined || typeof value === 'string') {
+    setElementAttribute(element, attribute, (value ?? null) as string | null);
+  } else if (typeof value === 'object' && !Array.isArray(value)) {
+    const uri = (value as Record<string, unknown>)[NodeProperties.URI_ATTRIBUTE] as string;
+    if (configuration.isWebComponentMode() && !isAbsoluteUrl(uri)) {
+      let baseUri = configuration.getServiceUrl();
+      baseUri = baseUri.endsWith('/') ? baseUri : `${baseUri}/`;
+      setElementAttribute(element, attribute, baseUri + uri);
+    } else {
+      setElementAttribute(element, attribute, uri);
+    }
+  } else {
+    setElementAttribute(element, attribute, String(value));
+  }
+}
+
+/**
+ * Updates the named element attribute from a map property, resolving the
+ * application configuration from the property's node. Mirrors updateAttribute.
+ */
+export function updateAttribute(mapProperty: AttributeMapProperty, element: Element): void {
+  updateAttributeValue(
+    mapProperty.getMap().getNode().getTree().getRegistry().getApplicationConfiguration(),
+    element,
+    mapProperty.getName(),
+    mapProperty.getValue()
+  );
 }

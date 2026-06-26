@@ -14,10 +14,19 @@ import {
   isUndefined,
   setJsProperty,
   stringify,
-  toPrettyJson
+  toPrettyJson,
+  updateAttribute
 } from '../../main/frontend/internal/WidgetUtil';
 
 describe('WidgetUtil', () => {
+  it('updateAttribute sets a value and removes it on null', () => {
+    const element = document.createElement('div');
+    updateAttribute(element, 'title', 'hello');
+    expect(element.getAttribute('title')).to.equal('hello');
+    updateAttribute(element, 'title', null);
+    expect(element.hasAttribute('title')).to.be.false;
+  });
+
   it('isAbsoluteUrl recognizes absolute URLs', () => {
     expect(isAbsoluteUrl('http://example.com/path')).to.be.true;
     expect(isAbsoluteUrl('https://example.com')).to.be.true;

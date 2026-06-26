@@ -19,6 +19,8 @@
 // delegate here. This module is also bundled to ES5 for the (old) HtmlUnit used
 // by GwtTests, so it avoids newer syntax and the unicode regex flag.
 
+import { wrap } from './dom/DomApi';
+
 /**
  * Redirects the browser to the given URL, or reloads the page when `url` is
  * null.
@@ -78,6 +80,19 @@ export function hasJsProperty(object: object, name: string): boolean {
 /** Checks whether the value is explicitly undefined (null returns false). */
 export function isUndefined(value: unknown): boolean {
   return value === undefined;
+}
+
+/**
+ * Sets the given attribute to the value on the element, or removes it when the
+ * value is null, going through the DOM API abstraction. Mirrors
+ * WidgetUtil.updateAttribute.
+ */
+export function updateAttribute(element: Element, attribute: string, value: string | null): void {
+  if (value === null) {
+    wrap(element).removeAttribute(attribute);
+  } else {
+    wrap(element).setAttribute(attribute, value);
+  }
 }
 
 /** Removes a JavaScript property from an object. */
