@@ -29,12 +29,18 @@
 import { wrap } from '../dom/DomApi';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
 import { isInShadowRoot } from '../PolymerUtils';
-import type { EventRemover } from '../reactive/reactive';
-import { isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
+import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
+import { getJsProperty, isAbsoluteUrl, updateAttribute as setElementAttribute } from '../WidgetUtil';
+import type { BinderContext } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
+
+// com.vaadin.flow.shared.JsonConstants tokens used by handleDomEvent.
+const EVENT_DATA_PHASE = 'for';
+const SYNCHRONIZE_PROPERTY_TOKEN = '}';
+const MAP_STATE_NODE_EVENT_DATA = ']';
 
 // The callback sending an event to the server for a given debounce phase (null
 // when sent outside any debounce). Compatible with Debouncer's send command.
@@ -561,6 +567,215 @@ export function applyStructuralAttributes(stateNode: StructuralAttributesNode, e
     const attributeMap = stateNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
     if (attributeMap.hasPropertyValue(NodeProperties.SLOT_ATTRIBUTE)) {
       updateAttribute(attributeMap.getProperty(NodeProperties.SLOT_ATTRIBUTE), element);
+    }
+  }
+}
+
+// --- Slice 7: DOM event listeners ------------------------------------------
+// Binds the ELEMENT_LISTENERS feature to real DOM event listeners and dispatches
+// fired events to the server. handleDomEvent ties together the slice-1 filter/
+// debounce resolution, the slice-2 closest-node lookups and the event-expression
+// cache. This is the first slice that needs the BindingContext.
+
+/** The slice of MapProperty the event cluster reads. */
+interface EventMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+  getSyncToServerCommand(newValue: unknown): () => void;
+  setPreviousDomValue(value: unknown): void;
+}
+
+/** The slice of NodeMap the event cluster reads. */
+interface EventNodeMap {
+  getProperty(name: string): EventMapProperty;
+  forEachProperty(callback: (property: EventMapProperty, name: string) => void): void;
+  addPropertyAddListener(listener: (event: { getProperty(): EventMapProperty }) => void): EventRemover;
+}
+
+/** The slice of StateTree the event cluster reads. */
+interface EventTree {
+  getRegistry(): { getConstantPool(): { has(key: string): boolean; get<T>(key: string): T } };
+  sendEventToServer(node: BindingStateNode, type: string, eventData: unknown): void;
+  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
+}
+
+/** The slice of StateNode the binding context exposes. */
+interface BindingStateNode {
+  getId(): number;
+  getDomNode(): Node | null;
+  getMap(featureId: number): EventNodeMap;
+  getList(featureId: number): { forEach(callback: (child: unknown) => void): void };
+  getTree(): EventTree;
+}
+
+/**
+ * Holds the data the binding operations pass around: the state node, its DOM
+ * node, the binder context for child nodes, and the per-event-type listener
+ * bookkeeping. Mirrors the BindingContext inner class.
+ */
+export class BindingContext {
+  readonly node: BindingStateNode;
+
+  readonly htmlNode: Node;
+
+  readonly binderContext: BinderContext;
+
+  readonly listenerBindings = new Map<string, Computation>();
+
+  readonly listenerRemovers = new Map<string, EventRemover>();
+
+  constructor(node: BindingStateNode, htmlNode: Node, binderContext: BinderContext) {
+    this.node = node;
+    this.htmlNode = htmlNode;
+    this.binderContext = binderContext;
+  }
+}
+
+function getDomEventListenerMap(node: BindingStateNode): EventNodeMap {
+  return node.getMap(NodeFeatures.ELEMENT_LISTENERS);
+}
+
+/**
+ * Binds the ELEMENT_LISTENERS feature to DOM event listeners, adding listeners
+ * for the current handlers and tracking later additions. Mirrors
+ * bindDomEventListeners.
+ */
+export function bindDomEventListeners(context: BindingContext): EventRemover {
+  const elementListeners = getDomEventListenerMap(context.node);
+  elementListeners.forEachProperty((property) => {
+    // Run eagerly to add initial listeners before the element is attached.
+    bindEventHandlerProperty(property, context).recompute();
+  });
+
+  return elementListeners.addPropertyAddListener((event) => bindEventHandlerProperty(event.getProperty(), context));
+}
+
+function bindEventHandlerProperty(eventHandlerProperty: EventMapProperty, context: BindingContext): Computation {
+  const name = eventHandlerProperty.getName();
+
+  const computation = Reactive.runWhenDependenciesChange(() => {
+    const hasValue = eventHandlerProperty.hasValue();
+    const hasListener = context.listenerRemovers.has(name);
+
+    if (hasValue !== hasListener) {
+      if (hasValue) {
+        addEventHandler(name, context);
+      } else {
+        removeEventHandler(name, context);
+      }
+    }
+  });
+
+  context.listenerBindings.set(name, computation);
+
+  return computation;
+}
+
+function removeEventHandler(eventType: string, context: BindingContext): void {
+  const remover = context.listenerRemovers.get(eventType);
+  context.listenerRemovers.delete(eventType);
+  remover?.remove();
+}
+
+function addEventHandler(eventType: string, context: BindingContext): void {
+  const handler = (event: Event): void => handleDomEvent(event, context);
+  context.htmlNode.addEventListener(eventType, handler, false);
+  context.listenerRemovers.set(eventType, {
+    remove: () => context.htmlNode.removeEventListener(eventType, handler, false)
+  });
+}
+
+function getSyncPropertyCommand(propertyName: string, context: BindingContext): () => void {
+  return context.node
+    .getMap(NodeFeatures.ELEMENT_PROPERTIES)
+    .getProperty(propertyName)
+    .getSyncToServerCommand(getJsProperty(context.htmlNode as unknown as Record<string, unknown>, propertyName));
+}
+
+function sendEventToServer(
+  node: BindingStateNode,
+  type: string,
+  eventData: Record<string, unknown> | null,
+  debouncePhase: string | null
+): void {
+  let data = eventData;
+  if (debouncePhase === null) {
+    if (data !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removes the debounce-phase marker before sending
+      delete data[EVENT_DATA_PHASE];
+    }
+  } else {
+    data ??= {};
+    data[EVENT_DATA_PHASE] = debouncePhase;
+  }
+
+  node.getTree().sendEventToServer(node, type, data);
+}
+
+/**
+ * Handles a fired DOM event: collects the server-requested event data
+ * (expressions, synchronized properties, mapped state nodes), resolves the
+ * event filters/debounces, and sends the event to the server. Mirrors
+ * handleDomEvent.
+ */
+export function handleDomEvent(event: Event, context: BindingContext): void {
+  const element = context.htmlNode as Element;
+  const node = context.node;
+  const type = event.type;
+
+  const listenerMap = getDomEventListenerMap(node);
+  const constantPool = node.getTree().getRegistry().getConstantPool();
+  const expressionConstantKey = listenerMap.getProperty(type).getValue() as string;
+
+  const expressionSettings = constantPool.get<Record<string, unknown>>(expressionConstantKey);
+  const expressions = Object.keys(expressionSettings);
+
+  const eventData: Record<string, unknown> | null = expressions.length === 0 ? null : {};
+  const synchronizeProperties = new Set<string>();
+
+  for (const expressionString of expressions) {
+    if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+      synchronizeProperties.add(expressionString.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
+    } else if (expressionString === MAP_STATE_NODE_EVENT_DATA) {
+      // map event.target to the closest state node
+      eventData![MAP_STATE_NODE_EVENT_DATA] = getClosestStateNodeIdToEventTarget(node, event.target);
+    } else if (expressionString.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
+      // map an element returned by JS to the closest state node
+      const jsEvaluation = expressionString.substring(MAP_STATE_NODE_EVENT_DATA.length);
+      const expressionValue = getOrCreateExpression(jsEvaluation)(event, element);
+      eventData![expressionString] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
+    } else {
+      eventData![expressionString] = getOrCreateExpression(expressionString)(event, element);
+    }
+  }
+
+  synchronizeProperties.forEach((name) => {
+    const property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(name);
+    const domValue = getJsProperty(element as unknown as Record<string, unknown>, name);
+    property.setPreviousDomValue(domValue);
+  });
+
+  const commands = new Map<string, () => void>();
+  synchronizeProperties.forEach((name) => commands.set(name, getSyncPropertyCommand(name, context)));
+
+  const sendCommand = (debouncePhase: string | null): void => sendEventToServer(node, type, eventData, debouncePhase);
+
+  const sendNow = resolveFilters(element, type, expressionSettings, eventData, sendCommand, commands);
+
+  if (sendNow) {
+    // Send if there were no filters or at least one matched.
+    let commandAlreadyExecuted = false;
+    const flushPendingChanges = synchronizeProperties.size === 0;
+
+    if (flushPendingChanges) {
+      // Flush all debounced events so they don't arrive out of order on the server.
+      commandAlreadyExecuted = Debouncer.flushAll().includes(sendCommand);
+    }
+
+    if (!commandAlreadyExecuted) {
+      commands.forEach((command) => command());
+      sendCommand(null);
     }
   }
 }
