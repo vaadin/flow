@@ -213,7 +213,7 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     }
 
     @Test
-    void eventAfterClearRestoresProjectVersionData() throws Exception {
+    void eventAfterClearRestoresProjectVersionData() {
         // A running dev session for this project
         File mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1");
