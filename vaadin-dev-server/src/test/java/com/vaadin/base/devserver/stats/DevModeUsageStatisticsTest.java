@@ -12,6 +12,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.IOUtils;
@@ -199,6 +200,43 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         Assert.assertEquals("Expected to have 4 projects", 4,
                 getNumberOfProjects(allData));
 
+    }
+
+    @Test
+    public void eventAfterClearRestoresProjectVersionData() {
+        // A running dev session for this project
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        // A successful upload (possibly triggered by another project sharing
+        // the machine-wide statistics file) clears all project data
+        storage.clearAllProjectData();
+        Assert.assertEquals("Expected the projects array to be cleared", 0,
+                getNumberOfProjects(storage.read()));
+
+        // The still-running session keeps reporting events without a restart
+        DevModeUsageStatistics
+                .collectEvent(StatisticsConstants.EVENT_LIVE_RELOAD);
+
+        // The recreated entry must still carry the project identity data so
+        // that the next report does not contain an empty-version row
+        StatisticsContainer projectData = new StatisticsContainer(
+                storage.readProject());
+        Assert.assertEquals("flowVersion must be restored after a clear",
+                Version.getFullVersion(),
+                projectData.getValue(StatisticsConstants.FIELD_FLOW_VERSION));
+        Assert.assertEquals("sourceId must be restored after a clear",
+                "https://start.vaadin.com/test/1",
+                projectData.getValue(StatisticsConstants.FIELD_SOURCE_ID));
+        // No restart happened, so devModeStarts stays 0 for this interval
+        Assert.assertEquals(
+                "devModeStarts must not be incremented by a plain event", 0,
+                projectData.getValueAsInt(
+                        StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS));
+        Assert.assertEquals("The live reload event must be recorded", 1,
+                projectData
+                        .getValueAsInt(StatisticsConstants.EVENT_LIVE_RELOAD));
     }
 
     @Test
