@@ -1217,3 +1217,33 @@ function getPreviousSibling(index: number, context: BindingContext): BindingStat
   }
   return node;
 }
+
+// --- Slice 12: shadow root binding -----------------------------------------
+// Attaches (or reuses) the element's open shadow root, binds the shadow root
+// state node's DOM node and its children, and re-runs when the shadow-root data
+// is (re)added.
+
+function attachShadow(context: BindingContext): void {
+  const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  if (shadowRootNode !== null) {
+    const element = context.htmlNode as Element;
+    const shadowRoot = element.shadowRoot ?? element.attachShadow({ mode: 'open' });
+
+    if (shadowRootNode.getDomNode() === null) {
+      shadowRootNode.setDomNode(shadowRoot);
+    }
+
+    bindChildren(new BindingContext(shadowRootNode, shadowRoot, context.binderContext));
+  }
+}
+
+/**
+ * Binds the element's shadow root: attaches it now and re-attaches whenever the
+ * SHADOW_ROOT_DATA feature gains the shadow-root node. Mirrors bindShadowRoot.
+ */
+export function bindShadowRoot(context: BindingContext): EventRemover {
+  const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  attachShadow(context);
+  return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
+}

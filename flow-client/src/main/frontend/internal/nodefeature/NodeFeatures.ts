@@ -53,6 +53,7 @@ export const NodeProperties = {
   VISIBLE: 'visible',
   TEXT: 'text',
   VALUE: 'value',
+  SHADOW_ROOT: 'shadowRoot',
   URI_ATTRIBUTE: 'uri',
   VISIBILITY_BOUND_PROPERTY: 'bound',
   VISIBILITY_HIDDEN_PROPERTY: 'hidden',
