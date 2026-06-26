@@ -49,5 +49,6 @@ export const NodeFeatures = {
 // ported client code needs so far).
 export const NodeProperties = {
   VISIBLE: 'visible',
-  TEXT: 'text'
+  TEXT: 'text',
+  URI_ATTRIBUTE: 'uri'
 } as const;
