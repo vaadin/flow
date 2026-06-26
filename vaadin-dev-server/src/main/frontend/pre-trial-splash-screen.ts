@@ -6,6 +6,7 @@ class PreTrial extends HTMLElement {
   #trialExpired: boolean;
   #startFailed: boolean | null;
   #licenseDownloadStatus: string | null;
+  #productName: string | null;
   constructor() {
     super();
 
@@ -13,6 +14,7 @@ class PreTrial extends HTMLElement {
     this.#trialExpired = false;
     this.#startFailed = null;
     this.#licenseDownloadStatus = null;
+    this.#productName = null;
 
     // Create a shadow DOM for encapsulation
     this.#shadowRoot = this.attachShadow({ mode: 'closed' });
@@ -24,7 +26,13 @@ class PreTrial extends HTMLElement {
 
   // Define the observed attributes for the web component
   static get observedAttributes(): string[] {
-    return ['expired', 'start-failure', 'license-download'];
+    return ['expired', 'start-failure', 'license-download', 'product'];
+  }
+
+  // True when the product that triggered the splash is the Vaadin Enterprise
+  // Edition umbrella, so the copy talks about EE instead of the pro components.
+  private get isEnterprise(): boolean {
+    return this.#productName === 'vaadin-ee';
   }
 
   private render(): void {
@@ -192,33 +200,7 @@ class PreTrial extends HTMLElement {
         this.#trialExpired
           ? `
         <h2>Trial expired</h2>
-        <p>
-          Vaadin Core is free and open-source. Sign in to keep using
-          <span class="badge">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 15V9.75H15V15H12ZM7.5 15V3H10.5V15H7.5ZM3 15V6.75H6V15H3Z" fill="url(#paint0_linear_85_186)"/>
-              <defs>
-                <linearGradient id="paint0_linear_85_186" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#1A81FA"/>
-                  <stop offset="1" stop-color="#8854FC"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            Pro components
-          </span> and 
-          <span class="badge">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.2125 11.6625L12.45 7.425L11.3812 6.35625L8.2125 9.525L6.6375 7.95L5.56875 9.01875L8.2125 11.6625ZM9 16.5C7.2625 16.0625 5.82812 15.0656 4.69687 13.5094C3.56562 11.9531 3 10.225 3 8.325V3.75L9 1.5L15 3.75V8.325C15 10.225 14.4344 11.9531 13.3031 13.5094C12.1719 15.0656 10.7375 16.0625 9 16.5ZM9 14.925C10.3 14.5125 11.375 13.6875 12.225 12.45C13.075 11.2125 13.5 9.8375 13.5 8.325V4.78125L9 3.09375L4.5 4.78125V8.325C4.5 9.8375 4.925 11.2125 5.775 12.45C6.625 13.6875 7.7 14.5125 9 14.925Z" fill="url(#paint0_linear_85_190)"/>
-              <defs>
-                <linearGradient id="paint0_linear_85_190" x1="9" y1="1.5" x2="9" y2="16.5" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#1A81FA"/>
-                  <stop offset="1" stop-color="#8854FC"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            Team features
-          </span> for 30 more days.
-        </p>
+        ${this.getExpiredIntro()}
         <p>Continue getting full access to:</p>
         ${this.getProductsList()}
         <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
@@ -228,19 +210,7 @@ class PreTrial extends HTMLElement {
         `
           : `
         <h2>Get full access to all features</h2>
-        <p>
-          Vaadin Core is free and open-source. To use Pro components like <span class="badge">
-          <svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 15V9.75h3V15h-3Zm-4.5 0V3h3v12h-3ZM3 15V6.75h3V15H3Z" fill="url(#a)"/>
-          <defs>
-            <linearGradient id="a" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#1A81FA"/>
-              <stop offset="1" stop-color="#8854FC"/>
-            </linearGradient>
-          </defs>
-        </svg>
-          Charts</span> in your app, activate a free trial.
-        </p>
+        ${this.getAccessIntro()}
         <p>Get full access:</p>
         ${this.getProductsList()}
         <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
@@ -294,7 +264,107 @@ class PreTrial extends HTMLElement {
     });
   }
 
+  private getAccessIntro(): string {
+    if (this.isEnterprise) {
+      return `
+        <p>
+          This application uses <span class="badge">
+          <svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V9.75h3V15h-3Zm-4.5 0V3h3v12h-3ZM3 15V6.75h3V15H3Z" fill="url(#ee)"/>
+          <defs>
+            <linearGradient id="ee" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1A81FA"/>
+              <stop offset="1" stop-color="#8854FC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+          Vaadin Enterprise Edition</span>. Activate a free trial to use it.
+        </p>`;
+    }
+    return `
+        <p>
+          Vaadin Core is free and open-source. To use Pro components like <span class="badge">
+          <svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V9.75h3V15h-3Zm-4.5 0V3h3v12h-3ZM3 15V6.75h3V15H3Z" fill="url(#a)"/>
+          <defs>
+            <linearGradient id="a" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1A81FA"/>
+              <stop offset="1" stop-color="#8854FC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+          Charts</span> in your app, activate a free trial.
+        </p>`;
+  }
+
+  private getExpiredIntro(): string {
+    if (this.isEnterprise) {
+      return `
+        <p>
+          Sign in to keep using
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 15V9.75H15V15H12ZM7.5 15V3H10.5V15H7.5ZM3 15V6.75H6V15H3Z" fill="url(#eex)"/>
+              <defs>
+                <linearGradient id="eex" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#1A81FA"/>
+                  <stop offset="1" stop-color="#8854FC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            Vaadin Enterprise Edition
+          </span> for 30 more days.
+        </p>`;
+    }
+    return `
+        <p>
+          Vaadin Core is free and open-source. Sign in to keep using
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 15V9.75H15V15H12ZM7.5 15V3H10.5V15H7.5ZM3 15V6.75H6V15H3Z" fill="url(#paint0_linear_85_186)"/>
+              <defs>
+                <linearGradient id="paint0_linear_85_186" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#1A81FA"/>
+                  <stop offset="1" stop-color="#8854FC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            Pro components
+          </span> and
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.2125 11.6625L12.45 7.425L11.3812 6.35625L8.2125 9.525L6.6375 7.95L5.56875 9.01875L8.2125 11.6625ZM9 16.5C7.2625 16.0625 5.82812 15.0656 4.69687 13.5094C3.56562 11.9531 3 10.225 3 8.325V3.75L9 1.5L15 3.75V8.325C15 10.225 14.4344 11.9531 13.3031 13.5094C12.1719 15.0656 10.7375 16.0625 9 16.5ZM9 14.925C10.3 14.5125 11.375 13.6875 12.225 12.45C13.075 11.2125 13.5 9.8375 13.5 8.325V4.78125L9 3.09375L4.5 4.78125V8.325C4.5 9.8375 4.925 11.2125 5.775 12.45C6.625 13.6875 7.7 14.5125 9 14.925Z" fill="url(#paint0_linear_85_190)"/>
+              <defs>
+                <linearGradient id="paint0_linear_85_190" x1="9" y1="1.5" x2="9" y2="16.5" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#1A81FA"/>
+                  <stop offset="1" stop-color="#8854FC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            Team features
+          </span> for 30 more days.
+        </p>`;
+  }
+
   private getProductsList(): string {
+    if (this.isEnterprise) {
+      return `
+        <ul>
+          <li>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+            <path d="M16 20v-7h4v7h-4Zm-6 0V4h4v16h-4Zm-6 0V9h4v11H4Z" fill="url(#eel)"/>
+            <defs>
+              <linearGradient id="eel" x1="12" y1="4" x2="12" y2="20" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1A81FA" />
+                <stop offset="1" stop-color="#8854FC" />
+              </linearGradient>
+            </defs>
+          </svg>
+            <span>Vaadin Enterprise Edition</span><span>⋅</span><span>all Pro components, Team features and Kits</span>
+          </li>
+        </ul>
+    `;
+    }
     return `
         <ul>
           <li>
@@ -360,6 +430,15 @@ class PreTrial extends HTMLElement {
       this.handleStartFailed(newValue === 'expired');
     } else if (name === 'license-download') {
       this.handleLicenseDownload(newValue);
+    } else if (name === 'product') {
+      this.handleProduct(newValue);
+    }
+  }
+
+  private handleProduct(value: string | null) {
+    if (this.#productName !== value) {
+      this.#productName = value;
+      this.render();
     }
   }
 
@@ -456,6 +535,9 @@ class PreTrial extends HTMLElement {
         (maybeParentNode as Node).removeChild(this);
       }
       const splashScreen = document.createElement('vaadin-pretrial');
+      if (this.#productName) {
+        splashScreen.setAttribute('product', this.#productName);
+      }
       if (this.#trialExpired) {
         splashScreen.setAttribute('expired', 'true');
       }
@@ -486,28 +568,36 @@ function secondaryButtonClickListener() {
 }
 
 export const showPreTrialSplashScreen = (shadowRoot: ShadowRoot | null, message: ProductAndMessage) => {
-  if (shadowRoot && !shadowRoot.querySelector('vaadin-pretrial')) {
-    const expiredPreTrial = message.preTrial?.trialState === 'EXPIRED';
-    const preTrialElement = document.createElement('vaadin-pretrial');
-    if (expiredPreTrial) {
-      preTrialElement.setAttribute('expired', '');
-    }
-    const productsDiv = document.createElement('div');
-    productsDiv.setAttribute('slot', 'products');
-    productsDiv.innerHTML = `
-      This application is using:
-      <ul>
-        <li>${message.product.name}</li>
-      </ul>
-    `;
-    preTrialElement.appendChild(productsDiv);
-
-    preTrialElement.addEventListener('secondary-button-click', secondaryButtonClickListener as EventListener);
-    preTrialElement.addEventListener('primary-button-click', primaryButtonClickListener as EventListener);
-
-    shadowRoot.innerHTML = `<slot></slot>`;
-    shadowRoot.appendChild(preTrialElement);
+  if (!shadowRoot) {
+    return;
   }
+  const productName = message.product?.name;
+  const existing = shadowRoot.querySelector('vaadin-pretrial');
+  if (existing) {
+    // Only one splash is shown. vaadin-ee is the umbrella that also covers the
+    // pro components, so when it is among the products it takes precedence over a
+    // splash already shown for another product (e.g. Charts), regardless of the
+    // order in which the license checks complete.
+    if (productName === 'vaadin-ee' && existing.getAttribute('product') !== 'vaadin-ee') {
+      existing.setAttribute('product', 'vaadin-ee');
+    }
+    return;
+  }
+
+  const expiredPreTrial = message.preTrial?.trialState === 'EXPIRED';
+  const preTrialElement = document.createElement('vaadin-pretrial');
+  if (productName) {
+    preTrialElement.setAttribute('product', productName);
+  }
+  if (expiredPreTrial) {
+    preTrialElement.setAttribute('expired', '');
+  }
+
+  preTrialElement.addEventListener('secondary-button-click', secondaryButtonClickListener as EventListener);
+  preTrialElement.addEventListener('primary-button-click', primaryButtonClickListener as EventListener);
+
+  shadowRoot.innerHTML = `<slot></slot>`;
+  shadowRoot.appendChild(preTrialElement);
 };
 export const preTrialStartFailed = (expired: boolean, shadowRoot: ShadowRoot | null) => {
   if (shadowRoot) {
