@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.SignalCommand;
  * {@link #confirmed} and might never end up there if a concurrent change causes
  * a conflict. This type of tree is intended for signals that are synchronized
  * across a cluster.
+ * 
+ * @since 25.1
  */
 public abstract class AsynchronousSignalTree extends SignalTree {
     private final CommandsAndHandlers unconfirmedCommands = new CommandsAndHandlers();

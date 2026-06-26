@@ -23,6 +23,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 @Component(service = RoutePathProvider.class, property = Constants.SERVICE_RANKING
         + ":Integer=" + Integer.MIN_VALUE)

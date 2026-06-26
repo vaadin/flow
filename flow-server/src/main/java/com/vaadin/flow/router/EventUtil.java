@@ -121,6 +121,7 @@ public final class EventUtil {
      *            in this collection will be excluded from the result
      *
      * @return list of found BeforeEnterObservers in the chain tree.
+     * @since 2.2
      */
     public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChain(
             Collection<? extends HasElement> chain,
@@ -146,6 +147,7 @@ public final class EventUtil {
      *            collection will be excluded from the result
      *
      * @return list of found BeforeEnterObservers in the element hierarchy tree.
+     * @since 2.2
      */
     public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChainElement(
             HasElement element,

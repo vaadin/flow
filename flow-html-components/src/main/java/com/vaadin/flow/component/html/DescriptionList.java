@@ -117,6 +117,7 @@ public class DescriptionList extends HtmlContainer
          * @param textSignal
          *            the signal to bind, not {@code null}
          * @see #bindText(Signal)
+         * @since 25.1
          */
         public Description(Signal<String> textSignal) {
             Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -28,6 +28,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *
  * @param <T>
  *            the type of data
+ * @since 4.0
  */
 public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         implements LazyDataView<T> {
@@ -92,6 +93,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * @throws UnsupportedOperationException
      *             if the item index provider is not set with
      *             {@link #setItemIndexProvider(ItemIndexProvider)}
+     * @since 24.4
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -186,6 +188,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * Gets the item index provider for this data view's component.
      *
      * @return the item index provider. May be null.
+     * @since 24.4
      */
     @SuppressWarnings("unchecked")
     protected ItemIndexProvider<T, ?> getItemIndexProvider() {

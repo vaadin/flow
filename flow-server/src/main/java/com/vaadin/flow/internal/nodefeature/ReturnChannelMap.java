@@ -168,6 +168,7 @@ public class ReturnChannelMap extends ServerSideFeature {
      * Return if map contains any registered channels.
      *
      * @return {@code true} if registered channels exist.
+     * @since 23.0.2
      */
     public boolean hasChannels() {
         return !channels.isEmpty();

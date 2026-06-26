@@ -41,6 +41,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * all signal operations running on that thread. Transactions can be nested so
  * that changes from an inner transaction are rolled up to the outer
  * transaction.
+ * 
+ * @since 25.1
  */
 public abstract class Transaction implements Serializable {
     /**

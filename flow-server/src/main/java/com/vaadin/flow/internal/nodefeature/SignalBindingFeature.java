@@ -31,6 +31,8 @@ import com.vaadin.flow.signals.Signal;
  * Node feature for binding {@link Signal}s to various properties of a node.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 @NullMarked
 public class SignalBindingFeature extends ServerSideFeature {

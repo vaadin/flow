@@ -36,6 +36,8 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
+ * 
+ * @since 24.3
  */
 @Tag(Tag.INPUT)
 public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>

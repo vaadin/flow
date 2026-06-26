@@ -59,6 +59,7 @@ public interface EndpointRequestUtil extends Serializable {
      * Checks if Hilla is available.
      *
      * @return true if Hilla is available, false otherwise
+     * @since 24.0
      */
     static boolean isHillaAvailable() {
         try {

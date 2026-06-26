@@ -60,11 +60,14 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 3.0
  */
 public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     /**
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
+     * 
+     * @since 7.0
      */
     public static class JavaScriptBootstrapContext extends BootstrapContext {
 

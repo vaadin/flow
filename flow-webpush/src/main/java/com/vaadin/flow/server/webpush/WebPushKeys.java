@@ -29,6 +29,7 @@ import java.io.Serializable;
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/getKey">PushSubscription
  *      Keys mdn web docs</a>
+ * @since 24.6
  */
 public record WebPushKeys(String p256dh, String auth) implements Serializable {
 }

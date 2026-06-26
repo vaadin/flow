@@ -39,6 +39,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            navigation target, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 2.0
      */
     public BeforeEnterEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -58,6 +59,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            route parameters, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 4.0
      */
     public BeforeEnterEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -84,6 +86,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 2.0
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,
@@ -111,6 +114,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 4.0
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,
@@ -125,6 +129,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Check if event is for a refresh of a preserveOnRefresh view.
      *
      * @return true if refresh of a preserve on refresh view
+     * @since 23.2.8
      */
     public boolean isRefreshEvent() {
         return getTrigger().equals(NavigationTrigger.REFRESH);
@@ -134,6 +139,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Check if the event is fired by an error handler.
      *
      * @return {@literal true} if the event is fired by an error handler.
+     * @since 24.3
      */
     public boolean isErrorEvent() {
         return errorEvent;

@@ -33,6 +33,7 @@ import java.io.Serializable;
  *            tablets and desktops landscape, so the same angle can mean
  *            different orientations on different devices — use {@link #type()}
  *            to reason about the orientation itself.
+ * @since 25.2
  */
 public record ScreenOrientationData(ScreenOrientationType type,
         int angle) implements Serializable {

@@ -43,6 +43,8 @@ public class NodeFeatureRegistry {
 
     /**
      * Comparator for finding the priority order between node feature types.
+     * 
+     * @since 1.1
      */
     public static final Comparator<Class<? extends NodeFeature>> PRIORITY_COMPARATOR = Comparator
             .comparingInt(feature -> getData(feature).priority);

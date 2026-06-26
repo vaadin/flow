@@ -51,6 +51,7 @@ import java.io.Serializable;
  *
  * @see VaadinService#addSessionLockListener(SessionLockListener)
  * @see SessionLockEvent
+ * @since 25.2
  */
 public interface SessionLockListener extends Serializable {
 
