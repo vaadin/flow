@@ -71,10 +71,8 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for the maximum size, in characters, that
      * Flow reads from a client-to-server UIDL/RPC or push request body before
-     * rejecting the request with HTTP 413 (Request Entity Too Large). This
-     * guards against denial-of-service attacks that stream arbitrarily large
-     * payloads to exhaust server memory. The default is 10&nbsp;MB; set the
-     * value to {@code -1} to disable the limit.
+     * rejecting the request with HTTP 413 (Request Entity Too Large). The
+     * default is 10&nbsp;MB; set the value to {@code -1} to disable the limit.
      * <p>
      * This limit does not apply to file uploads, which are streamed in chunks
      * and have their own separate size limits (request size, file size and file
@@ -90,9 +88,7 @@ public class InitParameters implements Serializable {
      * request body size limit and a request read timeout at the servlet
      * container or reverse proxy (for example Tomcat {@code connectionTimeout}
      * and {@code maxSwallowSize}, or nginx {@code client_max_body_size} and
-     * {@code client_body_timeout}). The read timeout in particular guards
-     * against slow-POST attacks that drip the body slowly to hold a worker
-     * thread open without exceeding this size limit.
+     * {@code client_body_timeout}).
      */
     public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
