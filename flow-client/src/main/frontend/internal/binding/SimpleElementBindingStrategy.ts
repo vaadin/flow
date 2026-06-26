@@ -779,3 +779,68 @@ export function handleDomEvent(event: Event, context: BindingContext): void {
     }
   }
 }
+
+// --- Slice 8: generic map/property binding ---------------------------------
+// The reactive binding of a NodeMap's properties to a "property user" callback
+// (which applies each property to the DOM, e.g. updateStyleProperty/
+// updateAttribute/updateProperty). createComputations tracks the per-feature
+// computation maps so they can be torn down on rebind.
+
+/** A property-add event carrying the new property. */
+interface PropertyAddEvent<P> {
+  getProperty(): P;
+}
+
+/** The slice of NodeMap that bindMap iterates and observes. */
+interface BindableNodeMap<P> {
+  forEachProperty(callback: (property: P, name: string) => void): void;
+  addPropertyAddListener(listener: (event: PropertyAddEvent<P>) => void): EventRemover;
+}
+
+/** The slice of StateNode that bindMap reads. */
+interface BindMapNode<P> {
+  getMap(featureId: number): BindableNodeMap<P>;
+}
+
+/**
+ * Creates a fresh per-feature computation map and tracks it in the collection
+ * (used to stop the computations on rebind). Mirrors createComputations.
+ */
+export function createComputations(computationsCollection: Array<Map<string, Computation>>): Map<string, Computation> {
+  const computations = new Map<string, Computation>();
+  computationsCollection.push(computations);
+  return computations;
+}
+
+/**
+ * Binds a single map property: re-runs the user whenever the property's
+ * dependencies change, tracking the computation by property name. Mirrors
+ * bindProperty.
+ */
+export function bindProperty<P extends { getName(): string }>(
+  user: (property: P) => void,
+  property: P,
+  bindings: Map<string, Computation>
+): Computation {
+  const name = property.getName();
+  const computation = Reactive.runWhenDependenciesChange(() => user(property));
+  bindings.set(name, computation);
+  return computation;
+}
+
+/**
+ * Binds every property of the node's feature map to the user, applying current
+ * properties eagerly and observing later additions. Mirrors bindMap.
+ */
+export function bindMap<P extends { getName(): string }>(
+  featureId: number,
+  user: (property: P) => void,
+  bindings: Map<string, Computation>,
+  node: BindMapNode<P>
+): EventRemover {
+  const map = node.getMap(featureId);
+  // Run eagerly to apply initial property values.
+  map.forEachProperty((property) => bindProperty(user, property, bindings).recompute());
+
+  return map.addPropertyAddListener((event) => bindProperty(user, event.getProperty(), bindings));
+}

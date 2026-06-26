@@ -18,7 +18,7 @@ function fakeNode(
 ): any {
   return {
     getMap: (_feature: number) => ({ getProperty: (name: string) => ({ getValue: () => data[name] }) }),
-    hasFeature: (feature: number) => (feature === ELEMENT_DATA ? opts.hasElementData ?? true : false),
+    hasFeature: (feature: number) => feature === ELEMENT_DATA && (opts.hasElementData ?? true),
     getParent: () => opts.parent ?? null,
     getDomNode: () => opts.domNode ?? null,
     getTree: () => opts.tree ?? null
