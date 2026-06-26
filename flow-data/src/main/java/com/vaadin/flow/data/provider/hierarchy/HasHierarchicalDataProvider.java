@@ -159,6 +159,7 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      *
      * @param hierarchicalDataProvider
      *            the hierarchical data provider to use, not {@code null}
+     * @since 4.0
      */
     void setDataProvider(
             HierarchicalDataProvider<T, ?> hierarchicalDataProvider);

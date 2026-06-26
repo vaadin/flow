@@ -34,6 +34,7 @@ import com.vaadin.flow.component.HasElement;
  *
  * @param <T>
  *            the type of the displayed items
+ * @since 4.0
  */
 public interface HasItemComponents<T> extends HasComponents {
 

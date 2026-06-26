@@ -19,6 +19,8 @@ import java.io.Serializable;
 
 /**
  * Predefined regex used with template parameters.
+ * 
+ * @since 4.0
  */
 public class RouteParameterRegex implements Serializable {
 

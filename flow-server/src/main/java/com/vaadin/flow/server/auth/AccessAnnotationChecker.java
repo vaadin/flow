@@ -52,6 +52,8 @@ import com.vaadin.flow.server.VaadinServletRequest;
  * any of the roles mentioned in the annotation</li>
  * <li>{@link DenyAll} - denies access.</li>
  * </ul>
+ * 
+ * @since 7.0
  */
 public class AccessAnnotationChecker implements Serializable {
 

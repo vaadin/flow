@@ -304,6 +304,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
+     * @since 25.1
      */
     default SignalBinding<V> bindValue(Signal<V> valueSignal,
             SerializableConsumer<V> writeCallback) {
@@ -339,6 +340,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)
+     * @since 25.1
      */
     default SignalBinding<Boolean> bindReadOnly(
             Signal<Boolean> readOnlySignal) {
@@ -376,6 +378,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setRequiredIndicatorVisible(boolean)
+     * @since 25.1
      */
     default SignalBinding<Boolean> bindRequiredIndicatorVisible(
             Signal<Boolean> requiredSignal) {

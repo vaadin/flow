@@ -45,6 +45,7 @@ public interface DependencyFilter extends Serializable {
      * @param service
      *            a Vaadin service
      * @return a list of dependencies to load
+     * @since 3.0
      */
     List<Dependency> filter(List<Dependency> dependencies,
             VaadinService service);

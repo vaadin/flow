@@ -74,6 +74,7 @@ public class UploadEvent {
      *            element owning this upload
      * @param part
      *            multipart part item, {@code null} for xhr upload
+     * @since 25.0
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, long contentLength,
@@ -220,6 +221,7 @@ public class UploadEvent {
      * The default rejection message "File rejected" will be used.
      *
      * @see #reject(String)
+     * @since 25.1
      */
     public void reject() {
         reject("File rejected");
@@ -234,6 +236,7 @@ public class UploadEvent {
      *
      * @param message
      *            the rejection message to send to the client
+     * @since 25.1
      */
     public void reject(String message) {
         this.rejected = true;
@@ -245,6 +248,7 @@ public class UploadEvent {
      *
      * @return {@code true} if the upload has been rejected, {@code false}
      *         otherwise
+     * @since 25.1
      */
     public boolean isRejected() {
         return rejected;
@@ -254,6 +258,7 @@ public class UploadEvent {
      * Gets the rejection message if this upload has been rejected.
      *
      * @return the rejection message, or {@code null} if not rejected
+     * @since 25.1
      */
     public String getRejectionMessage() {
         return rejectionMessage;

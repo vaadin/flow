@@ -48,6 +48,8 @@ import com.vaadin.flow.dom.JsFunction;
  * every action.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public abstract class Action implements Serializable {
 

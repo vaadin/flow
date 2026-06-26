@@ -102,6 +102,8 @@ public class TemplateDataAnalyzer {
      * Immutable parser data which may be stored in cache.
      *
      * Use {@link ParserData} instead.
+     * 
+     * @since 5.0
      */
     @Deprecated
     public static class PolymerParserData extends ParserData {

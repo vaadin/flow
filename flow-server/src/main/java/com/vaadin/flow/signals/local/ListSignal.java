@@ -45,6 +45,7 @@ import com.vaadin.flow.signals.impl.Transaction;
  *
  * @param <T>
  *            the element type
+ * @since 25.1
  */
 public class ListSignal<T extends @Nullable Object>
         extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {

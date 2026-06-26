@@ -41,6 +41,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * The ResponseWriter will be executed by
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * without holding Vaadin session lock.
+     * 
+     * @since 24.5.6
      */
     @FunctionalInterface
     public interface ResponseWriter extends Serializable {
@@ -109,6 +111,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *         should be called. Returns {@literal false} if
      *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      *         should be called.
+     * @since 24.5.6
      */
     public boolean isReadAndWriteOutsideSessionLock() {
         return false;
@@ -137,6 +140,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * @throws IOException
      *             If an IO error occurred
      * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
+     * @since 24.5.6
      */
     public Optional<ResponseWriter> synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request,

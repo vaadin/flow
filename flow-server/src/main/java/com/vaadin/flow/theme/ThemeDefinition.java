@@ -41,6 +41,7 @@ public class ThemeDefinition implements Serializable {
      *            the variant of the theme, not <code>null</code>
      * @param name
      *            name of the theme, not <code>null</code>
+     * @since 6.0
      */
     public ThemeDefinition(Class<? extends AbstractTheme> theme, String variant,
             String name) {
@@ -88,6 +89,7 @@ public class ThemeDefinition implements Serializable {
      * Gets the name of the theme.
      *
      * @return name of the theme
+     * @since 6.0
      */
     public String getName() {
         return name;

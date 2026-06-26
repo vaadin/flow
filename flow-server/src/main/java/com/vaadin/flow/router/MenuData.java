@@ -34,6 +34,7 @@ import com.vaadin.flow.component.Component;
  *            the icon of the menu item
  * @param menuClass
  *            the component class associated with this menu item
+ * @since 24.4
  */
 public record MenuData(String title, Double order, boolean exclude, String icon,
         Class<? extends Component> menuClass) implements Serializable {

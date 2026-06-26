@@ -221,6 +221,7 @@ public class HandlerHelper implements Serializable {
      *            the servlet request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
+     * @since 7.0
      */
     public static boolean isFrameworkInternalRequest(String servletMappingPath,
             HttpServletRequest request) {
@@ -316,6 +317,7 @@ public class HandlerHelper implements Serializable {
      * @return an optional containing the path relative to the servlet if the
      *         request is inside the servlet mapping, an empty optional
      *         otherwise
+     * @since 8.0
      */
     public static Optional<String> getPathIfInsideServlet(
             String servletMappingPath, String requestedPath) {
@@ -406,6 +408,7 @@ public class HandlerHelper implements Serializable {
      *            the servlet request
      * @return the path inside the context root, not including the slash after
      *         the context root path
+     * @since 23.0.1
      */
     public static String getRequestPathInsideContext(
             HttpServletRequest request) {
@@ -517,6 +520,7 @@ public class HandlerHelper implements Serializable {
      *            the URL path to be verified.
      * @return {@code true}, if the given path has a directory change
      *         instruction, {@code false} otherwise.
+     * @since 5.0
      */
     public static boolean isPathUnsafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C,
@@ -540,6 +544,7 @@ public class HandlerHelper implements Serializable {
      * These paths are relative to a potential Vaadin mapping
      *
      * @return array of public resource path patterns
+     * @since 7.0
      */
     public static String[] getPublicResources() {
         return publicResources;
@@ -554,6 +559,7 @@ public class HandlerHelper implements Serializable {
      * Vaadin mapping
      *
      * @return array of public resource root path patterns
+     * @since 24.0.2
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
@@ -569,6 +575,7 @@ public class HandlerHelper implements Serializable {
      * @param iconPath
      *            path of the base icon.
      * @return list of paths of icon variants.
+     * @since 24.3.3
      */
     public static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
@@ -581,6 +588,7 @@ public class HandlerHelper implements Serializable {
      * authentication information.
      *
      * @return array of public resource path patterns requiring security context
+     * @since 7.0
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
@@ -606,6 +614,7 @@ public class HandlerHelper implements Serializable {
      *            the HTTP servlet request to evaluate
      * @return {@code true} if the request is initiated by a non-HTML context;
      *         {@code false} otherwise
+     * @since 24.8
      */
     public static boolean isNonHtmlInitiatedRequest(
             HttpServletRequest request) {
@@ -627,6 +636,7 @@ public class HandlerHelper implements Serializable {
      *            the Vaadin request to evaluate
      * @return {@code true} if the request is initiated by a non-HTML context;
      *         {@code false} otherwise
+     * @since 24.8
      */
     public static boolean isNonHtmlInitiatedRequest(VaadinRequest request) {
         return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));
