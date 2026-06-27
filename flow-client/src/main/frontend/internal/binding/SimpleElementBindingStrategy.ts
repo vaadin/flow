@@ -27,10 +27,13 @@
 // at cutover.
 
 import { wrap } from '../dom/DomApi';
+import { getElementById, getElementByName, hasTag } from '../ElementUtil';
+import { isLitElement, whenRendered } from '../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
 import { createModelTree } from '../PolymerModelTree';
-import { isInShadowRoot } from '../PolymerUtils';
+import { addReadyListener, getCustomElement, getDomRoot, isInShadowRoot, isReady } from '../PolymerUtils';
+import { addReadyCallback, isInitialized } from '../ReactUtils';
 import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
 import { StateNode } from '../StateNode';
 import {
@@ -49,6 +52,9 @@ import { Debouncer } from './Debouncer';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
+
+// com.vaadin.client.flow.binding.SimpleElementBindingStrategy.ELEMENT_ATTACH_ERROR_PREFIX
+const ELEMENT_ATTACH_ERROR_PREFIX = 'Element addressed by the ';
 
 // com.vaadin.flow.shared.JsonConstants tokens used by handleDomEvent.
 const EVENT_DATA_PHASE = 'for';
@@ -612,13 +618,26 @@ interface ExistingElementAccess {
   remove(id: number): void;
 }
 
-/** The slice of StateTree the event/children clusters read. */
+/** The slice of InitialPropertiesHandler the attach machinery uses. */
+interface AttachInitialPropertiesHandler {
+  nodeRegistered(node: BindingStateNode): void;
+  flushPropertyUpdates(): void;
+}
+
+/** The slice of StateTree the event/children/attach clusters read. */
 interface EventTree {
   getRegistry(): {
     getConstantPool(): { has(key: string): boolean; get<T>(key: string): T };
     getExistingElementMap(): ExistingElementAccess;
+    getInitialPropertiesHandler(): AttachInitialPropertiesHandler;
   };
   sendEventToServer(node: BindingStateNode, type: string, eventData: unknown): void;
+  sendExistingElementWithIdAttachToServer(
+    node: BindingStateNode,
+    requestedId: number,
+    assignedId: number,
+    id: string | null
+  ): void;
   getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
 }
 
@@ -644,6 +663,7 @@ interface BindingStateNode {
   getId(): number;
   getDomNode(): Node | null;
   setDomNode(node: Node | null): void;
+  hasFeature(featureId: number): boolean;
   getMap(featureId: number): EventNodeMap;
   getList(featureId: number): ChildNodeList;
   getTree(): EventTree;
@@ -1317,4 +1337,210 @@ export function remove(
   listeners.forEach((remover) => remover.remove());
 
   boundNodes.delete(context.node);
+}
+
+// --- Slice 14: virtual children / attach-existing-element ------------------
+// Binds the VIRTUAL_CHILDREN feature: in-memory children are created/bound like
+// normal children, while inject-by-id/name and template-in-template virtual
+// children attach the state node to an existing DOM element found in the host's
+// (shadow) DOM, verifying the request and the element before binding.
+
+function getPayload(node: BindingStateNode): Record<string, unknown> {
+  return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.PAYLOAD).getValue() as Record<
+    string,
+    unknown
+  >;
+}
+
+/**
+ * Binds the node's virtual children, appending current ones and observing
+ * additions. Mirrors bindVirtualChildren.
+ */
+export function bindVirtualChildren(context: BindingContext): EventRemover {
+  const children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
+
+  for (let i = 0; i < children.length(); i++) {
+    appendVirtualChild(context, children.get(i) as BindingStateNode, true);
+  }
+
+  return children.addSpliceListener((e) => {
+    // Handle lazily: the change giving a child its element tag may not be applied yet.
+    Reactive.addFlushListener(() => {
+      for (const added of e.getAdd()) {
+        appendVirtualChild(context, added as BindingStateNode, true);
+      }
+    });
+  });
+}
+
+function appendVirtualChild(context: BindingContext, node: BindingStateNode, reactivePhase: boolean): void {
+  const object = getPayload(node);
+  const type = object[NodeProperties.TYPE] as string;
+
+  if (type === NodeProperties.IN_MEMORY_CHILD) {
+    context.binderContext.createAndBind(node as unknown as StateNode);
+    return;
+  }
+
+  const element = context.htmlNode as Element;
+  if (type === NodeProperties.INJECT_BY_ID) {
+    if (isLitElement(element)) {
+      whenRendered(element, () => handleInjectId(context, node, object, false));
+      return;
+    } else if (!isReady(element)) {
+      addReadyListener(element, () => handleInjectId(context, node, object, false));
+      return;
+    }
+    handleInjectId(context, node, object, reactivePhase);
+  } else if (type === NodeProperties.TEMPLATE_IN_TEMPLATE) {
+    if (getDomRoot(element) === null) {
+      addReadyListener(element, () => handleTemplateInTemplate(context, node, object, false));
+      return;
+    }
+    handleTemplateInTemplate(context, node, object, reactivePhase);
+  } else if (type === NodeProperties.INJECT_BY_NAME) {
+    const name = object[NodeProperties.PAYLOAD] as string;
+    const address = `name='${name}'`;
+    const elementLookup = (): Element | null => getElementByName(element, name);
+
+    if (!isInitialized(elementLookup)) {
+      addReadyCallback(element, name, () => doAppendVirtualChild(context, node, false, elementLookup, name, address));
+      return;
+    }
+    doAppendVirtualChild(context, node, reactivePhase, elementLookup, name, address);
+  }
+  // else: unexpected payload type (Java asserts; dropped here)
+}
+
+function handleTemplateInTemplate(
+  context: BindingContext,
+  node: BindingStateNode,
+  object: Record<string, unknown>,
+  reactivePhase: boolean
+): void {
+  const path = object[NodeProperties.PAYLOAD] as unknown[];
+  const address = `path='${JSON.stringify(path)}'`;
+  const elementLookup = (): Element | null => getCustomElement(getDomRoot(context.htmlNode as Element), path);
+  doAppendVirtualChild(context, node, reactivePhase, elementLookup, null, address);
+}
+
+function handleInjectId(
+  context: BindingContext,
+  node: BindingStateNode,
+  object: Record<string, unknown>,
+  reactivePhase: boolean
+): void {
+  const id = object[NodeProperties.PAYLOAD] as string;
+  const address = `id='${id}'`;
+  const elementLookup = (): Element | null => getElementById(context.htmlNode, id);
+  doAppendVirtualChild(context, node, reactivePhase, elementLookup, id, address);
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java doAppendVirtualChild signature
+function doAppendVirtualChild(
+  context: BindingContext,
+  node: BindingStateNode,
+  reactivePhase: boolean,
+  elementLookup: () => Element | null,
+  id: string | null,
+  address: string
+): void {
+  if (!verifyAttachRequest(context.node, node, id, address)) {
+    return;
+  }
+  const element = elementLookup();
+  if (verifyAttachedElement(element, node, id, address, context)) {
+    if (!reactivePhase) {
+      const initialPropertiesHandler = node.getTree().getRegistry().getInitialPropertiesHandler();
+      initialPropertiesHandler.nodeRegistered(node);
+      initialPropertiesHandler.flushPropertyUpdates();
+    }
+    node.setDomNode(element);
+    context.binderContext.createAndBind(node as unknown as StateNode);
+  }
+  if (!reactivePhase) {
+    // Out of the reactive phase, flush() must be called explicitly for binding.
+    Reactive.flush();
+  }
+}
+
+function verifyAttachRequest(
+  parent: BindingStateNode,
+  node: BindingStateNode,
+  id: string | null,
+  address: string
+): boolean {
+  // The server should not send several attach requests for the same client-side
+  // element; this verifies that assumption.
+  const virtualChildren = parent.getList(NodeFeatures.VIRTUAL_CHILDREN);
+  for (let i = 0; i < virtualChildren.length(); i++) {
+    const child = virtualChildren.get(i) as BindingStateNode;
+    if (child === node) {
+      continue;
+    }
+    if (JSON.stringify(getPayload(node)) === JSON.stringify(getPayload(child))) {
+      console.warn(
+        `There is already a request to attach element addressed by the ${address}. The existing request's node id='${child.getId()}'. Cannot attach the same element twice.`
+      );
+      node.getTree().sendExistingElementWithIdAttachToServer(parent, node.getId(), child.getId(), id);
+      return false;
+    }
+  }
+  return true;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java verifyAttachedElement signature
+function verifyAttachedElement(
+  element: Element | null,
+  attachNode: BindingStateNode,
+  id: string | null,
+  address: string,
+  context: BindingContext
+): boolean {
+  const node = context.node;
+  const tag = getTag(attachNode as unknown as CreationNode);
+
+  let failure = false;
+  if (element === null) {
+    failure = true;
+    console.warn(`${ELEMENT_ATTACH_ERROR_PREFIX}${address} is not found. The requested tag name is '${tag}'`);
+  } else if (!hasTag(element, tag as string)) {
+    failure = true;
+    console.warn(
+      `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has the wrong tag name '${element.tagName}', the requested tag name is '${tag}'`
+    );
+  }
+
+  if (failure) {
+    node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), -1, id);
+    return false;
+  }
+
+  if (!node.hasFeature(NodeFeatures.SHADOW_ROOT_DATA)) {
+    return true;
+  }
+  const map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  if (shadowRootNode === null) {
+    return true;
+  }
+
+  const list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
+  let existingId: number | null = null;
+  for (let i = 0; i < list.length(); i++) {
+    const stateNode = list.get(i) as BindingStateNode;
+    if (stateNode.getDomNode() === element) {
+      existingId = stateNode.getId();
+      break;
+    }
+  }
+
+  if (existingId !== null) {
+    console.warn(
+      `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has been already attached previously via the node id='${existingId}'`
+    );
+    node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), existingId, id);
+    return false;
+  }
+  return true;
 }
