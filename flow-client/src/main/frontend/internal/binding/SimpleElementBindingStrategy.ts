@@ -26,15 +26,24 @@
 // internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
 // at cutover.
 
+import { assert } from '../assert';
 import { wrap } from '../dom/DomApi';
 import { getElementById, getElementByName, hasTag } from '../ElementUtil';
 import { isLitElement, whenRendered } from '../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
 import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
 import { createModelTree } from '../PolymerModelTree';
-import { addReadyListener, getCustomElement, getDomRoot, isInShadowRoot, isReady } from '../PolymerUtils';
+import {
+  addReadyListener,
+  fireReadyEvent,
+  getCustomElement,
+  getDomRoot,
+  isInShadowRoot,
+  isReady
+} from '../PolymerUtils';
 import { addReadyCallback, isInitialized } from '../ReactUtils';
 import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
+import { bindPolymerModelProperties } from '../SimpleElementBindingStrategy';
 import { StateNode } from '../StateNode';
 import {
   deleteJsProperty,
@@ -47,8 +56,9 @@ import {
   setJsProperty,
   updateAttribute as setElementAttribute
 } from '../WidgetUtil';
-import type { BinderContext } from './BindingStrategy';
+import type { BinderContext, BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
+import { bindServerEventHandlerNames, type ServerEventHandlerNode } from './ServerEventHandlerBinder';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -393,6 +403,7 @@ export function updateAttributeValue(
   if (value === null || value === undefined || typeof value === 'string') {
     setElementAttribute(element, attribute, (value ?? null) as string | null);
   } else if (typeof value === 'object' && !Array.isArray(value)) {
+    assert(NodeProperties.URI_ATTRIBUTE in value, 'A URI attribute value must contain the uri property');
     const uri = (value as Record<string, unknown>)[NodeProperties.URI_ATTRIBUTE] as string;
     if (configuration.isWebComponentMode() && !isAbsoluteUrl(uri)) {
       let baseUri = configuration.getServiceUrl();
@@ -453,7 +464,8 @@ export function getNamespace(node: CreationNode): string | null {
  * the parent element's namespace, then no namespace. Mirrors create.
  */
 export function create(node: CreationNode): Element {
-  const tag = getTag(node) as string;
+  const tag = getTag(node);
+  assert(tag !== null, 'New child must have a tag');
   const namespace = getNamespace(node);
   if (namespace !== null) {
     return document.createElementNS(namespace, tag);
@@ -729,6 +741,7 @@ function bindEventHandlerProperty(eventHandlerProperty: EventMapProperty, contex
     }
   });
 
+  assert(!context.listenerBindings.has(name), `There is already an event-handler binding for ${name}`);
   context.listenerBindings.set(name, computation);
 
   return computation;
@@ -741,6 +754,7 @@ function removeEventHandler(eventType: string, context: BindingContext): void {
 }
 
 function addEventHandler(eventType: string, context: BindingContext): void {
+  assert(!context.listenerRemovers.has(eventType), `There is already a DOM event listener for ${eventType}`);
   const handler = (event: Event): void => handleDomEvent(event, context);
   context.htmlNode.addEventListener(eventType, handler, false);
   context.listenerRemovers.set(eventType, {
@@ -886,6 +900,7 @@ export function bindProperty<P extends { getName(): string }>(
 ): Computation {
   const name = property.getName();
   const computation = Reactive.runWhenDependenciesChange(() => user(property));
+  assert(!bindings.has(name), `There's already a binding for ${name}`);
   bindings.set(name, computation);
   return computation;
 }
@@ -1598,4 +1613,124 @@ export function bindVisibility(
   return visibilityData
     .getProperty(NodeProperties.VISIBLE)
     .addChangeListener(() => updateVisibility(listeners, context, computationsCollection, nodeFactory));
+}
+
+// --- Slice 16: bind() orchestrator + strategy class ------------------------
+// Ties every binding slice together: the bind() entry creates the binding
+// context, binds the server handlers, DOM events, children, shadow root, class
+// list, the style/attribute/property maps and the Polymer model bridge (for a
+// visible node), or just the structural attributes (for an invisible one), then
+// binds visibility and schedules the initial property update. The class exposes
+// create/isApplicable/bind as the BindingStrategy<Element>. The incoming
+// concrete StateNode is cast to each slice's narrower contract here (the
+// per-slice contracts are intentionally narrow; this is their unification point).
+
+function bindClientCallableMethods(context: BindingContext): EventRemover {
+  return bindServerEventHandlerNames(context.htmlNode as Element, context.node as unknown as ServerEventHandlerNode);
+}
+
+function bindPolymerEventHandlerNames(context: BindingContext): EventRemover {
+  return bindServerEventHandlerNames(
+    () => context.htmlNode as unknown as Record<string, unknown>,
+    context.node as unknown as ServerEventHandlerNode,
+    NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+    false
+  );
+}
+
+/** Binding strategy for a simple (non-template) Element; mirrors SimpleElementBindingStrategy. */
+export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
+  create(node: StateNode): Element {
+    return create(node as unknown as CreationNode);
+  }
+
+  isApplicable(node: StateNode): boolean {
+    return isApplicable(node as unknown as CreationNode);
+  }
+
+  getTag(node: StateNode): string {
+    return getTag(node as unknown as CreationNode) as string;
+  }
+
+  bind(stateNode: StateNode, htmlNode: Element, nodeFactory: BinderContext): void {
+    const visible = isVisible(stateNode as unknown as CreationNode);
+
+    if (boundNodes.has(stateNode)) {
+      return;
+    }
+    boundNodes.set(stateNode, true);
+
+    const node = stateNode as unknown as BindingStateNode;
+    const context = new BindingContext(node, htmlNode, nodeFactory);
+
+    const computationsCollection: Array<Map<string, Computation>> = [];
+    const listeners: EventRemover[] = [];
+
+    if (visible) {
+      // Potential dependencies for any observer.
+      listeners.push(bindClientCallableMethods(context));
+      listeners.push(bindPolymerEventHandlerNames(context));
+
+      // Flow's own event listeners.
+      listeners.push(bindDomEventListeners(context));
+
+      // DOM structure (shouldn't trigger observers synchronously).
+      listeners.push(bindVirtualChildren(context));
+      listeners.push(bindChildren(context));
+      listeners.push(bindShadowRoot(context));
+
+      // Styling.
+      listeners.push(bindClassList(htmlNode, node as unknown as ClassListNode));
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_STYLE_PROPERTIES,
+          (property: { getName(): string }) =>
+            updateStyleProperty(property as unknown as StyleMapProperty, htmlNode as HTMLElement),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+
+      // The things that might actually be observed.
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_ATTRIBUTES,
+          (property: { getName(): string }) => updateAttribute(property as unknown as AttributeMapProperty, htmlNode),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_PROPERTIES,
+          (property: { getName(): string }) =>
+            updateProperty(property as unknown as UpdatePropertyMapProperty, htmlNode),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+
+      bindPolymerModelProperties(htmlNode, {
+        handlePropertiesChanged: (changedProps: unknown) =>
+          handlePropertiesChanged(changedProps as object, stateNode as unknown as ModelNode),
+        fireReadyEvent: (element: unknown) => fireReadyEvent(element as Element),
+        handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) =>
+          handleListItemPropertyChange(
+            nodeId as number,
+            host,
+            propertyName,
+            value,
+            stateNode.getTree() as unknown as { getNode(id: number): ListItemNode | null }
+          )
+      });
+
+      // Prepare teardown.
+      listeners.push(stateNode.addUnregisterListener(() => remove(listeners, context, computationsCollection)));
+    } else {
+      applyStructuralAttributes(stateNode as unknown as StructuralAttributesNode, htmlNode);
+    }
+    listeners.push(bindVisibility(listeners, context, computationsCollection, nodeFactory));
+
+    scheduleInitialExecution(stateNode as unknown as LifecycleNode);
+  }
 }
