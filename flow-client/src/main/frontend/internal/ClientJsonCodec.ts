@@ -62,3 +62,28 @@ export function encodeWithoutTypeInfo(value: unknown): unknown {
 export function decodeWithoutTypeInfo(json: unknown): unknown {
   return json;
 }
+
+/** Resolves nodes by id; the slice of StateTree decodeStateNode uses. */
+interface NodeResolvingTree<N> {
+  getNode(nodeId: number): N | null;
+}
+
+/**
+ * Decodes the state node encoded in a type-info-tagged JSON value, if it is an
+ * element reference (`@v-node`); returns null otherwise. Mirrors
+ * ClientJsonCodec.decodeStateNode (the node-returning counterpart of
+ * decodeWithTypeInfo). Used e.g. by ExecuteJavaScriptProcessor to find the state
+ * node behind an element parameter.
+ */
+export function decodeStateNode<N>(tree: NodeResolvingTree<N>, json: unknown): N | null {
+  if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
+    const nodeIdValue = (json as Record<string, unknown>)['@v-node'];
+    if (nodeIdValue !== undefined && nodeIdValue !== null) {
+      if (typeof nodeIdValue !== 'number') {
+        throw new Error(`@v-node value must be a number, got ${typeof nodeIdValue} in ${JSON.stringify(json)}`);
+      }
+      return tree.getNode(nodeIdValue);
+    }
+  }
+  return null;
+}
