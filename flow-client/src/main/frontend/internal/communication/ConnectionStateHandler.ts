@@ -21,7 +21,7 @@
 // it). Consolidates the contract previously inlined across Heartbeat,
 // XhrConnection and MessageSender.
 
-import type { PushConnection } from './MessageSender';
+import type { PushConnection } from './PushConnection';
 import type { XhrConnectionError } from './XhrConnectionError';
 
 /** Reacts to connection successes/failures and reconnect-config changes. */

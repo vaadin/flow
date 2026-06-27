@@ -23,6 +23,7 @@
 // injected factory (GWT.create in the Java version).
 
 import { sendBeacon } from '../MessageSender';
+import type { PushConnection, PushConnectionFactory } from './PushConnection';
 import { ResynchronizationState } from './ResynchronizationState';
 
 // com.vaadin.flow.shared.ApplicationConstants
@@ -35,18 +36,6 @@ const RESYNCHRONIZE_ID = 'resynchronize';
 const UNLOAD_BEACON = 'UNLOAD';
 
 type Payload = Record<string, unknown>;
-
-/** A bidirectional/one-way push connection (Atmosphere); contract satisfied at cutover. */
-export interface PushConnection {
-  isActive(): boolean;
-  isBidirectional(): boolean;
-  push(payload: Payload): void;
-  disconnect(callback: () => void): void;
-  getTransportType(): string;
-}
-
-/** Creates a push connection for the registry; mirrors GWT-created PushConnectionFactory. */
-export type PushConnectionFactory = (registry: MessageSenderRegistry) => PushConnection;
 
 /** The slice of Registry that MessageSender uses. */
 export interface MessageSenderRegistry {
