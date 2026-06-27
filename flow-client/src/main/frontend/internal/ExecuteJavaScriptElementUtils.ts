@@ -36,7 +36,32 @@ export function isPropertyDefined(node: Node, property: string): boolean {
 // follow in a later installment and are integration-validated. The StateNode is
 // a contract (addUnregisterListener / setNodeData).
 
+import { getTag, invokeWhenDefined } from './PolymerUtils';
+import { Reactive } from './reactive/reactive';
+import { getJsProperty } from './WidgetUtil';
 import { UpdatableModelProperties } from './model/UpdatableModelProperties';
+
+// NodeFeatures.ELEMENT_PROPERTIES
+const ELEMENT_PROPERTIES = 1;
+
+/** The slice of MapProperty populateModelProperties uses. */
+interface ModelProperty {
+  setValue(value: unknown): void;
+  syncToServer(newValue: unknown): void;
+}
+
+/** The slice of NodeMap populateModelProperties uses. */
+interface ModelPropertiesMap {
+  hasPropertyValue(name: string): boolean;
+  getProperty(name: string): ModelProperty;
+}
+
+/** The slice of StateNode populateModelProperties uses. */
+interface ModelNode {
+  getDomNode(): Node | null;
+  getMap(featureId: number): ModelPropertiesMap;
+  getNodeData<T>(clazz: new (...args: never[]) => T): T | null;
+}
 
 /** The slice of StateNode registerUpdatableModelProperties uses. */
 interface UpdatablePropertiesNode {
@@ -51,6 +76,40 @@ interface UpdatablePropertiesNode {
 export function registerUpdatableModelProperties(node: UpdatablePropertiesNode, properties: string[]): void {
   if (properties.length > 0) {
     node.setNodeData(new UpdatableModelProperties(properties));
+  }
+}
+
+function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, property: string): void {
+  const domNode = node.getDomNode() as unknown as Node;
+  if (!isPropertyDefined(domNode, property)) {
+    if (!map.hasPropertyValue(property)) {
+      map.getProperty(property).setValue(null);
+    }
+  } else {
+    const updatableProperties = node.getNodeData(UpdatableModelProperties);
+    if (updatableProperties === null || !updatableProperties.isUpdatableProperty(property)) {
+      return;
+    }
+    map.getProperty(property).syncToServer(getJsProperty(domNode as unknown as Record<string, unknown>, property));
+  }
+}
+
+/**
+ * Populates the given model properties on the node's element, syncing
+ * client-side values back to the server for updatable properties. If the element
+ * is not yet upgraded, retries once its custom element is defined. Mirrors
+ * ExecuteJavaScriptElementUtils.populateModelProperties.
+ */
+export function populateModelProperties(node: ModelNode, properties: string[]): void {
+  const map = node.getMap(ELEMENT_PROPERTIES);
+  if (node.getDomNode() === null) {
+    invokeWhenDefined(getTag(node as never), () =>
+      Reactive.addPostFlushListener(() => populateModelProperties(node, properties))
+    );
+    return;
+  }
+  for (const property of properties) {
+    populateModelProperty(node, map, property);
   }
 }
 

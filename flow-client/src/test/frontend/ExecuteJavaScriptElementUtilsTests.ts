@@ -2,11 +2,39 @@ import { expect } from '@open-wc/testing';
 import {
   disposeInitializer,
   isPropertyDefined,
+  populateModelProperties,
   registerInitializer,
   registerUpdatableModelProperties,
   resetForTesting
 } from '../../main/frontend/internal/ExecuteJavaScriptElementUtils';
 import { UpdatableModelProperties } from '../../main/frontend/internal/model/UpdatableModelProperties';
+
+// A MapProperty/NodeMap/StateNode stand-in for populateModelProperties.
+function makeModelNode(domNode: unknown, updatable: UpdatableModelProperties | null) {
+  const props: Record<string, { value: unknown; hasValue: boolean; synced: unknown }> = {};
+  const map = {
+    hasPropertyValue: (name: string) => !!props[name]?.hasValue,
+    getProperty: (name: string) => {
+      props[name] ??= { value: undefined, hasValue: false, synced: undefined };
+      return {
+        setValue: (value: unknown) => {
+          props[name].value = value;
+          props[name].hasValue = true;
+        },
+        syncToServer: (newValue: unknown) => {
+          props[name].synced = newValue;
+        }
+      };
+    }
+  };
+  const node = {
+    props,
+    getDomNode: () => domNode as Node | null,
+    getMap: () => map,
+    getNodeData: <T>(_clazz: new (...args: never[]) => T) => updatable as unknown as T | null
+  };
+  return node;
+}
 
 function makeNode() {
   const listeners: Array<() => void> = [];
@@ -105,6 +133,40 @@ describe('ExecuteJavaScriptElementUtils', () => {
       const stored: object[] = [];
       registerUpdatableModelProperties({ setNodeData: (object: object) => stored.push(object) }, []);
       expect(stored).to.deep.equal([]);
+    });
+  });
+
+  describe('populateModelProperties', () => {
+    it('sets null for an undeclared property without a value', () => {
+      // Plain element: no declared property and no current value -> setValue(null).
+      const node = makeModelNode(document.createElement('div'), null);
+      populateModelProperties(node, ['caption']);
+      expect(node.props.caption.value).to.equal(null);
+      expect(node.props.caption.hasValue).to.be.true;
+    });
+
+    it('syncs a declared, updatable property value to the server', () => {
+      const element = document.createElement('div');
+      // Declare the property (Polymer-style) and give it a runtime value.
+      const ctor = { properties: { greeting: { value: '' } } };
+      (element as unknown as { constructor: unknown }).constructor = ctor;
+      (element as unknown as Record<string, unknown>).greeting = 'hi';
+
+      const node = makeModelNode(element, new UpdatableModelProperties(['greeting']));
+      populateModelProperties(node, ['greeting']);
+      expect(node.props.greeting.synced).to.equal('hi');
+    });
+
+    it('does not sync a declared property that is not updatable', () => {
+      const element = document.createElement('div');
+      const ctor = { properties: { greeting: { value: '' } } };
+      (element as unknown as { constructor: unknown }).constructor = ctor;
+      (element as unknown as Record<string, unknown>).greeting = 'hi';
+
+      const node = makeModelNode(element, new UpdatableModelProperties(['other']));
+      populateModelProperties(node, ['greeting']);
+      expect(node.props.greeting?.synced).to.equal(undefined);
+      // (constructor reassigned above via the shared ctor const)
     });
   });
 });
