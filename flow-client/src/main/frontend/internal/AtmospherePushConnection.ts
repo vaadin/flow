@@ -19,6 +19,55 @@
 // registerInternals; the Java methods delegate here. The AbstractJSO config
 // accessors stay in Java. Also bundled to ES5 for the HtmlUnit used by
 // GwtTests.
+//
+// FragmentedMessage below is the build-alongside TS port of the websocket
+// message-fragmentation helper from AtmospherePushConnection.java (pure logic).
+// The rest of AtmospherePushConnection (the Atmosphere library connection state
+// machine, push/connect/disconnect/onMessage) is library/network-bound and
+// integration-validated at cutover.
+
+// com.vaadin.flow.shared.communication.PushConstants
+const WEBSOCKET_FRAGMENT_SIZE = 16384 / 4 - 1; // 4095
+const MESSAGE_DELIMITER = '|';
+
+/**
+ * Splits a message into websocket fragments of at most WEBSOCKET_FRAGMENT_SIZE
+ * characters; the first fragment is prefixed with `<length><delimiter>` so the
+ * receiver can reassemble it. Mirrors AtmospherePushConnection.FragmentedMessage.
+ */
+export class FragmentedMessage {
+  private readonly message: string;
+
+  private index = 0;
+
+  constructor(message: string) {
+    this.message = message;
+  }
+
+  /** Whether another fragment remains to be retrieved. */
+  hasNextFragment(): boolean {
+    return this.index < this.message.length;
+  }
+
+  /** Returns the next fragment, advancing the internal cursor. */
+  getNextFragment(): string {
+    let result: string;
+    if (this.index === 0) {
+      const header = `${this.message.length}${MESSAGE_DELIMITER}`;
+      const fragmentLength = WEBSOCKET_FRAGMENT_SIZE - header.length;
+      result = header + this.getFragment(0, fragmentLength);
+      this.index += fragmentLength;
+    } else {
+      result = this.getFragment(this.index, this.index + WEBSOCKET_FRAGMENT_SIZE);
+      this.index += WEBSOCKET_FRAGMENT_SIZE;
+    }
+    return result;
+  }
+
+  private getFragment(begin: number, end: number): string {
+    return this.message.substring(begin, Math.min(this.message.length, end));
+  }
+}
 
 interface Atmosphere {
   subscribe: (config: unknown) => unknown;

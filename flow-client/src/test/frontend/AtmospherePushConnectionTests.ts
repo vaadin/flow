@@ -4,8 +4,19 @@ import {
   doConnect,
   doDisconnect,
   doPush,
+  FragmentedMessage,
   isAtmosphereLoaded
 } from '../../main/frontend/internal/AtmospherePushConnection';
+
+// Reassembles fragments produced by FragmentedMessage back into the original
+// message (strips the "<length>|" header from the first fragment).
+function reassemble(fragments: string[]): string {
+  const first = fragments[0];
+  const delimiterIndex = first.indexOf('|');
+  const length = Number(first.substring(0, delimiterIndex));
+  const body = first.substring(delimiterIndex + 1) + fragments.slice(1).join('');
+  return body.substring(0, length);
+}
 
 describe('AtmospherePushConnection', () => {
   const win = window as unknown as { vaadinPush?: unknown };
@@ -98,5 +109,39 @@ describe('AtmospherePushConnection', () => {
     expect(config.fallbackTransport).to.equal('long-polling');
     expect(config.trackMessageLength).to.be.true;
     expect(config.messageDelimiter).to.equal('|');
+  });
+
+  describe('FragmentedMessage', () => {
+    function fragmentsOf(message: string): string[] {
+      const fragmented = new FragmentedMessage(message);
+      const fragments: string[] = [];
+      while (fragmented.hasNextFragment()) {
+        fragments.push(fragmented.getNextFragment());
+      }
+      return fragments;
+    }
+
+    it('emits a short message as a single length-prefixed fragment', () => {
+      const fragments = fragmentsOf('hello');
+      expect(fragments).to.deep.equal(['5|hello']);
+      expect(reassemble(fragments)).to.equal('hello');
+    });
+
+    it('splits a long message into multiple fragments that reassemble', () => {
+      const message = 'a'.repeat(5000); // > the 4095-char fragment size
+      const fragments = fragmentsOf(message);
+      expect(fragments.length).to.be.greaterThan(1);
+      // Each fragment is at most the websocket fragment size.
+      for (const fragment of fragments) {
+        expect(fragment.length).to.be.at.most(4095);
+      }
+      expect(reassemble(fragments)).to.equal(message);
+    });
+
+    it('starts the first fragment with the message length and delimiter', () => {
+      const fragmented = new FragmentedMessage('abc');
+      expect(fragmented.getNextFragment().startsWith('3|')).to.be.true;
+      expect(fragmented.hasNextFragment()).to.be.false;
+    });
   });
 });
