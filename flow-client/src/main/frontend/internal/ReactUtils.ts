@@ -31,3 +31,11 @@ export function addReadyCallback(element: Element, name: string, callback: () =>
     el.addReadyCallback(name, callback);
   }
 }
+
+/**
+ * Whether the element looked up by the given supplier already exists. Mirrors
+ * ReactUtils.isInitialized.
+ */
+export function isInitialized(elementLookup: () => Element | null): boolean {
+  return elementLookup() !== null;
+}

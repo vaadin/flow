@@ -17,8 +17,15 @@
 // DOM/Polymer probes and model-data writers migrated from PolymerUtils.java,
 // registered on window.Vaadin.Flow.internal.PolymerUtils by registerInternals;
 // the Java methods delegate here. The StateNode-coupled model-tree building
-// (createModelTree and the change handlers) stays in Java. Also bundled to ES5
-// for the HtmlUnit used by GwtTests.
+// (createModelTree and the change handlers) is ported separately in
+// PolymerModelTree.ts. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+//
+// The ready-listener registry and custom-element-by-path lookup
+// (addReadyListener/fireReadyEvent/getCustomElement) are build-alongside
+// additions used by the SimpleElementBindingStrategy attach machinery; they are
+// not registered (the Java versions stay live until cutover).
+
+import { wrap } from './dom/DomApi';
 
 // A node exposing the Polymer model-data API (set/get/splice).
 interface PolymerModelNode {
@@ -121,4 +128,63 @@ export function storeNodeId(domNode: Node, id: number, path: string): void {
 /** Sets a property on an element via the Polymer set method. */
 export function setProperty(element: Element, path: string, value: unknown): void {
   (element as unknown as PolymerModelNode).set(path, value);
+}
+
+// Registry of "ready" listeners per (polymer) element; mirrors the static
+// readyListeners JsWeakMap.
+const readyListeners = new WeakMap<Element, Set<() => void>>();
+
+/** Registers a listener invoked when the polymer element fires its ready event. */
+export function addReadyListener(polymerElement: Element, listener: () => void): void {
+  let set = readyListeners.get(polymerElement);
+  if (set === undefined) {
+    set = new Set();
+    readyListeners.set(polymerElement, set);
+  }
+  set.add(listener);
+}
+
+/** Fires the ready event for the element, running and clearing its listeners. */
+export function fireReadyEvent(polymerElement: Element): void {
+  const listeners = readyListeners.get(polymerElement);
+  if (listeners !== undefined) {
+    readyListeners.delete(polymerElement);
+    listeners.forEach((listener) => listener());
+  }
+}
+
+// Returns the index-th child element of parent, ignoring <style> children.
+function getChildIgnoringStyles(parent: Node, index: number): Node | null {
+  const children = wrap(parent).children;
+  let filteredIndex = -1;
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of -- indexed HTMLCollection access
+  for (let i = 0; i < children.length; i++) {
+    const element = children[i];
+    if (element.tagName.toLowerCase() !== 'style') {
+      filteredIndex++;
+    }
+    if (filteredIndex === index) {
+      return element;
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolves the custom element addressed by a path of child indices (ignoring
+ * style children) from the given root. Mirrors PolymerUtils.getCustomElement.
+ */
+export function getCustomElement(root: Node | null, path: unknown[]): Element | null {
+  let current: Node | null = root;
+  for (const value of path) {
+    current = current === null ? null : getChildIgnoringStyles(current, value as number);
+  }
+  if (current instanceof Element) {
+    return current;
+  } else if (current === null) {
+    console.warn(`There is no element addressed by the path '${JSON.stringify(path)}'`);
+  } else {
+    console.warn(`The node addressed by path ${JSON.stringify(path)} is not an Element`);
+  }
+  return null;
 }
