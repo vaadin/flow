@@ -121,7 +121,7 @@ describe('SystemErrorHandler', () => {
 
     it('recreateWebComponents recreates each exported component (clones stale elements)', () => {
       // Register a stale custom element instance with a $server stub.
-      const stale = document.createElement('x-stale-probe') as Element & {
+      const stale = document.createElement('x-stale-probe') as unknown as Element & {
         $server: { disconnected: () => void };
       };
       stale.$server = { disconnected: () => {} };
