@@ -3,8 +3,10 @@ import {
   disposeInitializer,
   isPropertyDefined,
   registerInitializer,
+  registerUpdatableModelProperties,
   resetForTesting
 } from '../../main/frontend/internal/ExecuteJavaScriptElementUtils';
+import { UpdatableModelProperties } from '../../main/frontend/internal/model/UpdatableModelProperties';
 
 function makeNode() {
   const listeners: Array<() => void> = [];
@@ -84,6 +86,25 @@ describe('ExecuteJavaScriptElementUtils', () => {
       registerInitializer(node, 2, () => cleaned.push('2'));
       expect(() => node.fireUnregister()).to.not.throw();
       expect(cleaned).to.deep.equal(['2']);
+    });
+  });
+
+  describe('registerUpdatableModelProperties', () => {
+    it('stores an UpdatableModelProperties node data for non-empty properties', () => {
+      const stored: object[] = [];
+      const node = { setNodeData: (object: object) => stored.push(object) };
+      registerUpdatableModelProperties(node, ['first', 'item.value']);
+      expect(stored).to.have.length(1);
+      const data = stored[0] as UpdatableModelProperties;
+      expect(data).to.be.instanceOf(UpdatableModelProperties);
+      expect(data.isUpdatableProperty('first')).to.be.true;
+      expect(data.isUpdatableProperty('other')).to.be.false;
+    });
+
+    it('does nothing for an empty properties array', () => {
+      const stored: object[] = [];
+      registerUpdatableModelProperties({ setNodeData: (object: object) => stored.push(object) }, []);
+      expect(stored).to.deep.equal([]);
     });
   });
 });
