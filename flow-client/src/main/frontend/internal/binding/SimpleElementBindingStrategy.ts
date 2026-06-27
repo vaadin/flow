@@ -596,11 +596,13 @@ export function applyStructuralAttributes(stateNode: StructuralAttributesNode, e
 // debounce resolution, the slice-2 closest-node lookups and the event-expression
 // cache. This is the first slice that needs the BindingContext.
 
-/** The slice of MapProperty the event cluster reads. */
+/** The slice of MapProperty the event/visibility clusters read. */
 interface EventMapProperty {
   getName(): string;
   hasValue(): boolean;
   getValue(): unknown;
+  setValue(value: unknown): void;
+  addChangeListener(listener: () => void): EventRemover;
   getSyncToServerCommand(newValue: unknown): () => void;
   setPreviousDomValue(value: unknown): void;
 }
@@ -1543,4 +1545,57 @@ function verifyAttachedElement(
     return false;
   }
   return true;
+}
+
+// --- Slice 15: visibility binding ------------------------------------------
+// Binds the node's visibility: tracks the bound state, hides invisible nodes
+// (preserving their initial hidden/display state), and rebinds an initially
+// invisible node once it becomes visible. The cross-slice helper calls cast the
+// rich binding node to each helper's narrower contract (unified at class
+// assembly).
+
+function updateVisibility(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>,
+  nodeFactory: BinderContext
+): void {
+  const node = context.node;
+  const visibilityData = node.getMap(NodeFeatures.ELEMENT_DATA);
+  const element = context.htmlNode as Element;
+
+  if (needsRebind(node as unknown as CreationNode) && isVisible(node as unknown as CreationNode)) {
+    remove(listeners, context, computationsCollection);
+    Reactive.addFlushListener(() => {
+      restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
+      doBind(node as unknown as LifecycleNode, nodeFactory);
+    });
+  } else if (isVisible(node as unknown as CreationNode)) {
+    visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
+    restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
+  } else {
+    setElementInvisible(element, visibilityData as unknown as VisibilityNodeMap);
+  }
+}
+
+/**
+ * Binds the node's visibility: records the current bound state, applies it, and
+ * re-applies whenever the VISIBLE property changes. Mirrors bindVisibility.
+ */
+export function bindVisibility(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>,
+  nodeFactory: BinderContext
+): EventRemover {
+  const visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
+
+  visibilityData
+    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+    .setValue(isVisible(context.node as unknown as CreationNode));
+  updateVisibility(listeners, context, computationsCollection, nodeFactory);
+
+  return visibilityData
+    .getProperty(NodeProperties.VISIBLE)
+    .addChangeListener(() => updateVisibility(listeners, context, computationsCollection, nodeFactory));
 }
