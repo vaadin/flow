@@ -32,9 +32,27 @@ export function isPropertyDefined(node: Node, property: string): boolean {
 // The JS-initializer cleanup registry of ExecuteJavaScriptElementUtils, ported
 // build-alongside. It stores per-node cleanup callbacks for JS initializers
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
-// DOM/binding-coupled methods (attachExistingElement, populateModelProperties,
-// registerUpdatableModelProperties) follow in a later installment and are
-// integration-validated. The StateNode is a contract (addUnregisterListener).
+// remaining DOM-coupled methods (attachExistingElement, populateModelProperties)
+// follow in a later installment and are integration-validated. The StateNode is
+// a contract (addUnregisterListener / setNodeData).
+
+import { UpdatableModelProperties } from './model/UpdatableModelProperties';
+
+/** The slice of StateNode registerUpdatableModelProperties uses. */
+interface UpdatablePropertiesNode {
+  setNodeData(object: object): void;
+}
+
+/**
+ * Registers the model properties whose updates may be sent to the server
+ * without explicit synchronization. Mirrors
+ * ExecuteJavaScriptElementUtils.registerUpdatableModelProperties.
+ */
+export function registerUpdatableModelProperties(node: UpdatablePropertiesNode, properties: string[]): void {
+  if (properties.length > 0) {
+    node.setNodeData(new UpdatableModelProperties(properties));
+  }
+}
 
 /** A JS cleanup callback for a registered initializer. */
 type JsCallback = () => void;
