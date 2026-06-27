@@ -20,6 +20,8 @@
 // before the queue is sent. The Registry/UILifecycle/MessageSender are contracts
 // satisfied at cutover.
 
+import { getScheduler } from '../TrackingScheduler';
+
 // Sentinel flush strategy; identity-compared to detect a scheduled flush.
 const NO_OP = (): void => {};
 
@@ -77,8 +79,12 @@ export class ServerRpcQueue {
     this.flushPending = true;
 
     this.doFlushStrategy = () => this.doFlush();
-    // Deferred so all event handlers run before the queue is flushed.
-    setTimeout(() => this.doFlushStrategy(), 0);
+    // Deferred so all event handlers run before the queue is flushed. Scheduled
+    // through the shared TrackingScheduler (mirrors GWT's Scheduler.get()) so the
+    // pending flush keeps ApplicationConnection.isActive true until the resulting
+    // request completes — otherwise TestBench's waitForVaadin returns before the
+    // event is even sent.
+    getScheduler().scheduleDeferred(() => this.doFlushStrategy());
   }
 
   /** Whether a flush is pending. */
