@@ -18,6 +18,15 @@
 // window.Vaadin.Flow.internal.ResourceLoader by registerInternals; the Java
 // methods delegate here. Callbacks are passed in already $entry-guarded by the
 // Java caller. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+//
+// The ResourceLoader class below is the build-alongside TS port of the rest of
+// ResourceLoader.java, composing the ResourceRegistry dedup/fanout kernel. This
+// installment covers the non-stylesheet loaders (script / inline-script /
+// dynamic-import) plus DOM init and clear-by-id; the stylesheet/HTML loaders
+// (which need the BrowserInfo Safari/Opera quirks) follow in a later installment.
+
+import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
+import { getAbsoluteUrl } from './WidgetUtil';
 
 interface HtmlImports {
   whenReady: (callback: () => void) => void;
@@ -127,5 +136,137 @@ export function runPromiseExpression(
   } catch (error) {
     console.error(error);
     onError();
+  }
+}
+
+/** Reports resource load errors (the SystemErrorHandler slice ResourceLoader needs). */
+interface ResourceErrorHandler {
+  handleError(message: string): void;
+}
+
+/**
+ * Loads scripts and (later) stylesheets/HTML, deduping by key and notifying
+ * listeners. Mirrors ResourceLoader.java; composes the ResourceRegistry kernel.
+ */
+export class ResourceLoader {
+  private readonly resources: ResourceRegistry;
+
+  private readonly supportsHtmlWhenReadyValue = supportsHtmlWhenReady();
+
+  constructor(errorHandler: ResourceErrorHandler, initFromDom: boolean) {
+    this.resources = new ResourceRegistry(errorHandler);
+    if (initFromDom) {
+      this.initLoadedResourcesFromDom();
+    }
+  }
+
+  private makeEvent(resourceData: string): ResourceLoadEvent {
+    return { getResourceLoader: () => this, getResourceData: () => resourceData };
+  }
+
+  // Marks scripts/stylesheets already present in the document as loaded.
+  private initLoadedResourcesFromDom(): void {
+    for (const script of Array.from(document.getElementsByTagName('script'))) {
+      if (script.src) {
+        this.resources.markLoaded(script.src);
+      }
+    }
+    for (const link of Array.from(document.getElementsByTagName('link'))) {
+      const rel = link.rel?.toLowerCase();
+      const href = link.href;
+      if ((rel === 'stylesheet' || rel === 'import') && href) {
+        this.resources.markLoaded(href);
+        const dependencyId = link.getAttribute('data-id');
+        if (dependencyId) {
+          this.resources.registerDependencyId(dependencyId, href);
+        }
+      }
+    }
+  }
+
+  /** Loads an external script, notifying the listener when loaded (deduped). */
+  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java loadScript(url, listener, async, defer, type) signature
+  loadScript(
+    scriptUrl: string,
+    resourceLoadListener: ResourceLoadListener | null,
+    async = false,
+    defer = false,
+    type = 'text/javascript'
+  ): void {
+    const url = getAbsoluteUrl(scriptUrl);
+    const event = this.makeEvent(url);
+    if (this.resources.isLoaded(url)) {
+      resourceLoadListener?.onLoad(event);
+      return;
+    }
+    if (this.resources.addListener(url, resourceLoadListener)) {
+      const scriptTag = document.createElement('script');
+      scriptTag.src = url;
+      scriptTag.type = type;
+      scriptTag.async = async;
+      scriptTag.defer = defer;
+      addOnloadHandler(
+        scriptTag,
+        () => this.resources.fireLoad(event),
+        () => this.resources.fireError(event)
+      );
+      document.head.appendChild(scriptTag);
+    }
+  }
+
+  /** Loads an external script as a module. */
+  loadJsModule(
+    scriptUrl: string,
+    resourceLoadListener: ResourceLoadListener | null,
+    async = false,
+    defer = false
+  ): void {
+    this.loadScript(scriptUrl, resourceLoadListener, async, defer, 'module');
+  }
+
+  /** Inlines a script's contents, notifying the listener when loaded (deduped by contents). */
+  inlineScript(scriptContents: string, resourceLoadListener: ResourceLoadListener | null): void {
+    const event = this.makeEvent(scriptContents);
+    if (this.resources.isLoaded(scriptContents)) {
+      resourceLoadListener?.onLoad(event);
+      return;
+    }
+    if (this.resources.addListener(scriptContents, resourceLoadListener)) {
+      const scriptElement = document.createElement('script');
+      scriptElement.textContent = scriptContents;
+      scriptElement.type = 'text/javascript';
+      addOnloadHandler(
+        scriptElement,
+        () => this.resources.fireLoad(event),
+        () => this.resources.fireError(event)
+      );
+      document.head.appendChild(scriptElement);
+    }
+  }
+
+  /** Loads a dynamic import via a JS expression returning a Promise. */
+  loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
+    const event = this.makeEvent(expression);
+    const fn = new Function(expression) as () => unknown;
+    runPromiseExpression(
+      expression,
+      () => fn(),
+      () => resourceLoadListener.onLoad(event),
+      () => resourceLoadListener.onError(event)
+    );
+  }
+
+  /** Runs a task once HTML imports are ready, or immediately if unsupported. */
+  runWhenHtmlImportsReady(task: () => void): void {
+    if (this.supportsHtmlWhenReadyValue) {
+      addHtmlImportsReadyHandler(task);
+    } else {
+      task();
+    }
+  }
+
+  /** Clears a loaded resource (and its listeners) by its dependency id. */
+  clearLoadedResourceById(dependencyId: string): void {
+    this.resources.clearLoadedResourceById(dependencyId);
   }
 }
