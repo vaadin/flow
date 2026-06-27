@@ -36,13 +36,15 @@ export function isPropertyDefined(node: Node, property: string): boolean {
 // follow in a later installment and are integration-validated. The StateNode is
 // a contract (addUnregisterListener / setNodeData).
 
+import { wrap } from './dom/DomApi';
 import { getTag, invokeWhenDefined } from './PolymerUtils';
 import { Reactive } from './reactive/reactive';
 import { getJsProperty } from './WidgetUtil';
 import { UpdatableModelProperties } from './model/UpdatableModelProperties';
 
-// NodeFeatures.ELEMENT_PROPERTIES
+// NodeFeatures.ELEMENT_PROPERTIES / ELEMENT_CHILDREN
 const ELEMENT_PROPERTIES = 1;
+const ELEMENT_CHILDREN = 2;
 
 /** The slice of MapProperty populateModelProperties uses. */
 interface ModelProperty {
@@ -77,6 +79,111 @@ export function registerUpdatableModelProperties(node: UpdatablePropertiesNode, 
   if (properties.length > 0) {
     node.setNodeData(new UpdatableModelProperties(properties));
   }
+}
+
+/** A child state node in the parent's element-children list. */
+interface AttachChildNode {
+  getDomNode(): Node;
+  getId(): number;
+}
+
+/** The state tree slice attachExistingElement uses. */
+interface AttachTree {
+  sendExistingElementAttachToServer(
+    parent: AttachParentNode,
+    id: number,
+    existingId: number,
+    tagName: string,
+    index: number
+  ): void;
+  getRegistry(): {
+    getExistingElementMap(): { getId(element: Element): number | null; add(id: number, element: Element): void };
+  };
+}
+
+/** The slice of StateNode attachExistingElement uses (the parent). */
+interface AttachParentNode {
+  getDomNode(): Node;
+  getList(featureId: number): { length(): number; get(index: number): AttachChildNode };
+  getTree(): AttachTree;
+}
+
+function hasTag(node: Node, tag: string): boolean {
+  return node instanceof Element && tag.toLowerCase() === node.tagName.toLowerCase();
+}
+
+function getExistingIdOrUpdate(
+  parent: AttachParentNode,
+  serverSideId: number,
+  existingElement: Element,
+  existingId: number | null
+): number {
+  if (existingId === null) {
+    const map = parent.getTree().getRegistry().getExistingElementMap();
+    const fromMap = map.getId(existingElement);
+    if (fromMap === null) {
+      map.add(serverSideId, existingElement);
+      return serverSideId;
+    }
+    return fromMap;
+  }
+  return existingId;
+}
+
+/**
+ * Finds the existing DOM element matching the given tag after the previous
+ * sibling among the parent's children, resolves its server-side id (registering
+ * it if new), and reports the attachment back to the server. Mirrors
+ * ExecuteJavaScriptElementUtils.attachExistingElement.
+ */
+export function attachExistingElement(
+  parent: AttachParentNode,
+  previousSibling: Element | null,
+  tagName: string,
+  id: number
+): void {
+  let existingElement: Element | null = null;
+  const childNodes = wrap(parent.getDomNode()).childNodes;
+  const indices = new Map<Node, number>();
+  let afterSibling = previousSibling === null;
+  let elementIndex = -1;
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i];
+    indices.set(node, i);
+    if (node === previousSibling) {
+      afterSibling = true;
+    }
+    if (afterSibling && hasTag(node, tagName)) {
+      existingElement = node as Element;
+      elementIndex = i;
+      break;
+    }
+  }
+
+  if (existingElement === null) {
+    // Report an error (no matching element found).
+    parent.getTree().sendExistingElementAttachToServer(parent, id, -1, tagName, -1);
+    return;
+  }
+
+  const list = parent.getList(ELEMENT_CHILDREN);
+  let existingId: number | null = null;
+  let childIndex = 0;
+  for (let i = 0; i < list.length(); i++) {
+    const stateNode = list.get(i);
+    const domNode = stateNode.getDomNode();
+    const index = indices.get(domNode);
+    if (index !== undefined && index < elementIndex) {
+      childIndex++;
+    }
+    if (domNode === existingElement) {
+      existingId = stateNode.getId();
+      break;
+    }
+  }
+
+  existingId = getExistingIdOrUpdate(parent, id, existingElement, existingId);
+  parent.getTree().sendExistingElementAttachToServer(parent, id, existingId, existingElement.tagName, childIndex);
 }
 
 function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, property: string): void {
