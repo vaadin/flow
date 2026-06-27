@@ -1,5 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { getContextExecutionObject, invokeJavaScript } from '../../main/frontend/internal/ExecuteJavaScriptProcessor';
+import {
+  ExecuteJavaScriptProcessor,
+  getContextExecutionObject,
+  invokeJavaScript
+} from '../../main/frontend/internal/ExecuteJavaScriptProcessor';
 
 describe('ExecuteJavaScriptProcessor', () => {
   function makeCallbacks() {
@@ -100,6 +104,40 @@ describe('ExecuteJavaScriptProcessor', () => {
     it('catches exceptions thrown by the executed code', () => {
       expect(() => invokeJavaScript(['throw new Error("boom");'], [], {}, false)).to.not.throw();
       expect(() => invokeJavaScript(['throw new Error("boom");'], [], {}, true)).to.not.throw();
+    });
+  });
+
+  describe('class execute', () => {
+    function makeRegistry() {
+      const lifecycleStates: string[] = [];
+      const registry = {
+        lifecycleStates,
+        getStateTree: () => ({ getNode: () => null }),
+        getApplicationConfiguration: () => ({ getApplicationId: () => 'ROOT-1', isProductionMode: () => false }),
+        getUILifecycle: () => ({ isTerminated: () => false, setState: (state: string) => lifecycleStates.push(state) })
+      };
+      return registry;
+    }
+
+    afterEach(() => {
+      delete (globalThis as Record<string, unknown>).__ejpRan;
+      delete (globalThis as Record<string, unknown>).__ejpParam;
+    });
+
+    it('runs an invocation expression', () => {
+      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['globalThis.__ejpRan = true;']]);
+      expect((globalThis as Record<string, unknown>).__ejpRan).to.be.true;
+    });
+
+    it('binds invocation parameters to $0, $1, ...', () => {
+      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['hello', 'globalThis.__ejpParam = $0;']]);
+      expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('hello');
+    });
+
+    it('exposes stopApplication on the context, terminating the UI lifecycle', () => {
+      const registry = makeRegistry();
+      new ExecuteJavaScriptProcessor(registry as never).execute([['this.stopApplication();']]);
+      expect(registry.lifecycleStates).to.deep.equal(['TERMINATED']);
     });
   });
 });

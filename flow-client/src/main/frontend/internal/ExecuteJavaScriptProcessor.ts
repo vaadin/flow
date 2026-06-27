@@ -23,6 +23,35 @@
 // node resolution (getNode) keeps its $entry boundary on the Java side; here we
 // only assemble the object the executed script runs against. Also bundled to
 // ES5 for the HtmlUnit used by GwtTests.
+//
+// The ExecuteJavaScriptProcessor class below is the build-alongside TS port of
+// the rest of ExecuteJavaScriptProcessor.java: it decodes the invocation
+// parameters, defers until any referenced node is bound, then manifests and runs
+// the expression against a context wired to the ExecuteJavaScriptElementUtils
+// callbacks. Composes the ported decoders / invokeJavaScript /
+// getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
+// are contracts satisfied at cutover.
+
+import { needsRebind } from './binding/SimpleElementBindingStrategy';
+import { decodeStateNode, decodeWithTypeInfo } from './ClientJsonCodec';
+import {
+  attachExistingElement,
+  disposeInitializer,
+  populateModelProperties,
+  registerInitializer,
+  registerUpdatableModelProperties
+} from './ExecuteJavaScriptElementUtils';
+import { Reactive } from './reactive/reactive';
+import type { StateNode } from './StateNode';
+import type { StateTree } from './StateTree';
+import { UIState } from './UILifecycle';
+
+// NodeFeatures.ELEMENT_DATA / NodeProperties
+const ELEMENT_DATA = 0;
+const PAYLOAD = 'payload';
+const TYPE_PROPERTY = 'type';
+const INJECT_BY_ID = '@id';
+const TEMPLATE_IN_TEMPLATE = 'subTemplate';
 
 // The $entry-wrapped callbacks the executed script invokes via its context.
 // attachExistingElement / populateModelProperties / registerUpdatableModelProperties
@@ -89,5 +118,124 @@ export function invokeJavaScript(
       // Java brackets the snippets then strips the brackets, netting the join.
       console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
     }
+  }
+}
+
+/** The slice of Registry ExecuteJavaScriptProcessor uses. */
+interface ExecuteJsRegistry {
+  getStateTree(): StateTree;
+  getApplicationConfiguration(): { getApplicationId(): string; isProductionMode(): boolean };
+  getUILifecycle(): { isTerminated(): boolean; setState(state: string): void };
+}
+
+/** Executes server-sent JavaScript invocations against the live tree; mirrors ExecuteJavaScriptProcessor.java. */
+export class ExecuteJavaScriptProcessor {
+  private readonly registry: ExecuteJsRegistry;
+
+  constructor(registry: ExecuteJsRegistry) {
+    this.registry = registry;
+  }
+
+  /** Runs each invocation (an array of parameters followed by the JS expression). */
+  execute(invocations: unknown[][]): void {
+    for (const invocation of invocations) {
+      this.handleInvocation(invocation);
+    }
+  }
+
+  private handleInvocation(invocation: unknown[]): void {
+    const tree = this.registry.getStateTree();
+    // Last item is the script, the rest are parameters.
+    const parameterCount = invocation.length - 1;
+
+    const parameterNamesAndCode: string[] = [];
+    const parameters: unknown[] = [];
+    const nodeParameters = new Map<unknown, StateNode>();
+
+    for (let i = 0; i < parameterCount; i++) {
+      const parameterJson = invocation[i];
+      // The real StateTree's ServerConnector has sendReturnChannelMessage (used
+      // by the @v-return branch); StateTree's narrower type omits it.
+      const parameter = decodeWithTypeInfo(tree as never, parameterJson);
+      parameters.push(parameter);
+      parameterNamesAndCode.push(`$${i}`);
+
+      const stateNode = decodeStateNode(tree, parameterJson);
+      if (stateNode !== null) {
+        if (this.isVirtualChildAwaitingInitialization(stateNode) || !this.isBound(stateNode)) {
+          // Defer until the node's DOM is set, then retry the whole invocation.
+          stateNode.addDomNodeSetListener(() => {
+            Reactive.addPostFlushListener(() => this.handleInvocation(invocation));
+            return true;
+          });
+          return;
+        }
+        nodeParameters.set(parameter, stateNode);
+      }
+    }
+
+    parameterNamesAndCode.push(invocation[invocation.length - 1] as string);
+    this.invoke(parameterNamesAndCode, parameters, nodeParameters);
+  }
+
+  private invoke(
+    parameterNamesAndCode: string[],
+    parameters: unknown[],
+    nodeParameters: Map<unknown, StateNode>
+  ): void {
+    const configuration = this.registry.getApplicationConfiguration();
+    const getNode = (element: unknown): unknown => {
+      const node = nodeParameters.get(element);
+      if (node === undefined) {
+        throw new ReferenceError('There is no a StateNode for the given argument.');
+      }
+      return node;
+    };
+    const context = getContextExecutionObject(configuration.getApplicationId(), this.registry, {
+      getNode,
+      attachExistingElement: (node, previousSibling, tagName, id) =>
+        attachExistingElement(node as never, previousSibling as Element | null, tagName as string, id as number),
+      populateModelProperties: (node, properties) => populateModelProperties(node as never, properties as string[]),
+      registerUpdatableModelProperties: (node, properties) =>
+        registerUpdatableModelProperties(node as never, properties as string[]),
+      stopApplication: () => {
+        const lifecycle = this.registry.getUILifecycle();
+        if (!lifecycle.isTerminated()) {
+          lifecycle.setState(UIState.TERMINATED);
+        }
+      },
+      registerInitializer: (node, id, cleanup) =>
+        registerInitializer(node as never, id as number, cleanup as () => void),
+      disposeInitializer: (node, id) => disposeInitializer(node as never, id as number)
+    });
+    invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
+  }
+
+  // A node is bound once it has a DOM node that does not need rebinding, and so
+  // is each of its ancestors.
+  private isBound(node: StateNode): boolean {
+    const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
+    const parent = node.getParent();
+    if (!isNodeBound || parent === null) {
+      return isNodeBound;
+    }
+    return this.isBound(parent);
+  }
+
+  // A virtual child injected by id / as a sub-template is awaiting initialization
+  // until its DOM node is created.
+  private isVirtualChildAwaitingInitialization(node: StateNode): boolean {
+    if (node.getDomNode() !== null || node.getTree().getNode(node.getId()) === null) {
+      return false;
+    }
+    const elementData = node.getMap(ELEMENT_DATA);
+    if (elementData.hasPropertyValue(PAYLOAD)) {
+      const value = elementData.getProperty(PAYLOAD).getValue();
+      if (value !== null && typeof value === 'object') {
+        const type = (value as Record<string, unknown>)[TYPE_PROPERTY];
+        return type === INJECT_BY_ID || type === TEMPLATE_IN_TEMPLATE;
+      }
+    }
+    return false;
   }
 }
