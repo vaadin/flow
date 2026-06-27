@@ -53,3 +53,12 @@ export function encodeWithoutTypeInfo(value: unknown): unknown {
   // undefined shouldn't go as undefined; encode it as null.
   return value === null || value === undefined ? null : value;
 }
+
+/**
+ * Decodes a value transported without type information. In JavaScript the JSON
+ * representation is used as-is (the JVM-only conversions in the Java version are
+ * test scaffolding). Mirrors ClientJsonCodec.decodeWithoutTypeInfo.
+ */
+export function decodeWithoutTypeInfo(json: unknown): unknown {
+  return json;
+}
