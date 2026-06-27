@@ -25,6 +25,7 @@
 // dynamic-import) plus DOM init and clear-by-id; the stylesheet/HTML loaders
 // (which need the BrowserInfo Safari/Opera quirks) follow in a later installment.
 
+import { isOpera, isSafariOrIOS } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
 
@@ -263,6 +264,138 @@ export class ResourceLoader {
     } else {
       task();
     }
+  }
+
+  /** Loads an external stylesheet, optionally tracked by a dependency id (deduped). */
+  loadStylesheet(
+    stylesheetUrl: string,
+    resourceLoadListener: ResourceLoadListener | null,
+    dependencyId: string | null = null
+  ): void {
+    const url = getAbsoluteUrl(stylesheetUrl);
+    if (dependencyId !== null) {
+      this.resources.registerDependencyId(dependencyId, url);
+    }
+    const event = this.makeEvent(url);
+    if (this.resources.isLoaded(url)) {
+      resourceLoadListener?.onLoad(event);
+      return;
+    }
+    if (this.resources.addListener(url, resourceLoadListener)) {
+      const linkElement = document.createElement('link');
+      linkElement.rel = 'stylesheet';
+      linkElement.type = 'text/css';
+      linkElement.href = url;
+      if (dependencyId !== null) {
+        linkElement.setAttribute('data-id', dependencyId);
+      }
+
+      if (isSafariOrIOS()) {
+        // Safari fires no events for link elements; poll the stylesheet rules.
+        this.pollStylesheet(url, event);
+      } else {
+        addOnloadHandler(
+          linkElement,
+          () => this.resources.fireLoad(event),
+          () => this.resources.fireError(event)
+        );
+        if (isOpera()) {
+          // Opera never fires onerror; assume error if not loaded within 5s.
+          setTimeout(() => {
+            if (!this.resources.isLoaded(url)) {
+              this.resources.fireError(event);
+            }
+          }, 5000);
+        }
+      }
+      this.addInHeadBeforeComment(linkElement, 'Stylesheet end');
+    }
+  }
+
+  // Polls a Safari/iOS stylesheet's rule count to detect load/error.
+  private pollStylesheet(url: string, event: ResourceLoadEvent): void {
+    const start = performance.now();
+    const handle = setInterval(() => {
+      const styleSheetLength = getStyleSheetLength(url);
+      if (styleSheetLength > 0) {
+        this.resources.fireLoad(event);
+        clearInterval(handle);
+      } else if (styleSheetLength === 0) {
+        // "Loaded" empty sheet -> most likely a 404 error.
+        this.resources.fireError(event);
+      } else if (performance.now() - start > 60 * 1000) {
+        this.resources.fireError(event);
+        clearInterval(handle);
+      }
+    }, 10);
+  }
+
+  /** Inlines a stylesheet's contents, optionally tracked by a dependency id (deduped by contents). */
+  inlineStyleSheet(
+    styleSheetContents: string,
+    resourceLoadListener: ResourceLoadListener | null,
+    dependencyId: string | null = null
+  ): void {
+    if (dependencyId !== null) {
+      this.resources.registerDependencyId(dependencyId, styleSheetContents);
+    }
+    const event = this.makeEvent(styleSheetContents);
+    if (this.resources.isLoaded(styleSheetContents)) {
+      resourceLoadListener?.onLoad(event);
+      return;
+    }
+    if (this.resources.addListener(styleSheetContents, resourceLoadListener)) {
+      const styleElement = document.createElement('style');
+      styleElement.textContent = styleSheetContents;
+      styleElement.type = 'text/css';
+      if (dependencyId !== null) {
+        styleElement.setAttribute('data-id', dependencyId);
+      }
+      this.addCssLoadHandler(styleSheetContents, event, styleElement);
+      this.addInHeadBeforeComment(styleElement, 'Stylesheet end');
+    }
+  }
+
+  private addCssLoadHandler(
+    styleSheetContents: string,
+    event: ResourceLoadEvent,
+    styleElement: HTMLStyleElement
+  ): void {
+    if (isSafariOrIOS() || isOpera()) {
+      // Safari and Opera fire no events for style elements; assume done after 5s.
+      setTimeout(() => {
+        if (this.resources.isLoaded(styleSheetContents)) {
+          this.resources.fireLoad(event);
+        } else {
+          this.resources.fireError(event);
+        }
+      }, 5000);
+    } else {
+      addOnloadHandler(
+        styleElement,
+        () => this.resources.fireLoad(event),
+        () => this.resources.fireError(event)
+      );
+    }
+  }
+
+  // Inserts an element into <head> before the comment with the given text, or
+  // appends it (with a warning) if the comment is not found.
+  private addInHeadBeforeComment(element: Element, comment: string): void {
+    const commentNode = this.findCommentInHead(comment);
+    if (commentNode === null) {
+      console.error(`Expected to find a '${comment}' comment inside <head> but none was found. Appending instead.`);
+    }
+    document.head.insertBefore(element, commentNode);
+  }
+
+  private findCommentInHead(comment: string): Node | null {
+    for (const childNode of Array.from(document.head.childNodes)) {
+      if (childNode.nodeType === Node.COMMENT_NODE && childNode.nodeValue === comment) {
+        return childNode;
+      }
+    }
+    return null;
   }
 
   /** Clears a loaded resource (and its listeners) by its dependency id. */

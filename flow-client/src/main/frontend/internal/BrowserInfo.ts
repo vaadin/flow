@@ -51,3 +51,30 @@ export function isIos(): boolean {
     /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   );
 }
+
+// User-agent-based browser-family probes. The canonical parsing lives in the
+// shared BrowserDetails (Java); these approximate the predicates the client
+// needs for browser-specific workarounds (e.g. ResourceLoader stylesheet load
+// detection on Safari/Opera).
+
+/** Whether the browser is Safari (and not a Chromium-family browser). */
+export function isSafari(): boolean {
+  const ua = getBrowserString();
+  return /safari/i.test(ua) && !/chrome|chromium|crios|android/i.test(ua);
+}
+
+/** Whether the browser is Safari or running on iOS. */
+export function isSafariOrIOS(): boolean {
+  return isSafari() || isIos();
+}
+
+/** Whether the browser is Opera (Presto or Chromium-based OPR). */
+export function isOpera(): boolean {
+  return /opr\/|opera/i.test(getBrowserString());
+}
+
+/** Whether the browser is WebKit-based (excludes legacy Edge). */
+export function isWebkit(): boolean {
+  const ua = getBrowserString();
+  return /applewebkit/i.test(ua) && !/edge\//i.test(ua);
+}
