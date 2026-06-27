@@ -28,3 +28,83 @@ export function isPropertyDefined(node: Node, property: string): boolean {
   const declared = ctor && ctor.properties && ctor.properties[property];
   return !!declared && typeof declared.value !== 'undefined';
 }
+
+// The JS-initializer cleanup registry of ExecuteJavaScriptElementUtils, ported
+// build-alongside. It stores per-node cleanup callbacks for JS initializers
+// (Element#addJsInitializer) and drains them when the node leaves the tree. The
+// DOM/binding-coupled methods (attachExistingElement, populateModelProperties,
+// registerUpdatableModelProperties) follow in a later installment and are
+// integration-validated. The StateNode is a contract (addUnregisterListener).
+
+/** A JS cleanup callback for a registered initializer. */
+type JsCallback = () => void;
+
+/** The slice of StateNode the initializer registry uses. */
+interface InitializerNode {
+  addUnregisterListener(listener: () => void): unknown;
+}
+
+// Per-node map of initializer id -> cleanup callback.
+const initializerCleanups = new Map<InitializerNode, Map<number, JsCallback>>();
+
+function invokeSafely(fn: JsCallback): void {
+  try {
+    fn();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function drainInitializers(node: InitializerNode): void {
+  const entry = initializerCleanups.get(node);
+  if (entry === undefined) {
+    return;
+  }
+  initializerCleanups.delete(node);
+  entry.forEach((fn) => invokeSafely(fn));
+}
+
+/**
+ * Stores a cleanup callback for a JS initializer. If one was already stored for
+ * the same id, it is invoked before being replaced (defensive against stale
+ * state). The first registration for a node attaches an unregister listener that
+ * drains all remaining cleanups when the node leaves the tree. Mirrors
+ * ExecuteJavaScriptElementUtils.registerInitializer.
+ */
+export function registerInitializer(node: InitializerNode, id: number, cleanup: JsCallback): void {
+  let entry = initializerCleanups.get(node);
+  if (entry === undefined) {
+    entry = new Map<number, JsCallback>();
+    initializerCleanups.set(node, entry);
+    node.addUnregisterListener(() => drainInitializers(node));
+  }
+  const existing = entry.get(id);
+  // Install the new cleanup before invoking the previous one so a re-entrant
+  // register/dispose from inside the existing callback sees the new state.
+  entry.set(id, cleanup);
+  if (existing !== undefined) {
+    invokeSafely(existing);
+  }
+}
+
+/**
+ * Disposes a previously registered JS initializer cleanup (invoking it); a no-op
+ * for an unknown id. Mirrors ExecuteJavaScriptElementUtils.disposeInitializer.
+ */
+export function disposeInitializer(node: InitializerNode, id: number): void {
+  const entry = initializerCleanups.get(node);
+  if (entry === undefined) {
+    return;
+  }
+  const fn = entry.get(id);
+  if (fn === undefined) {
+    return;
+  }
+  entry.delete(id);
+  invokeSafely(fn);
+}
+
+/** Clears the registry; for tests only. */
+export function resetForTesting(): void {
+  initializerCleanups.clear();
+}
