@@ -1247,3 +1247,74 @@ export function bindShadowRoot(context: BindingContext): EventRemover {
   attachShadow(context);
   return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
 }
+
+// --- Slice 13: bind lifecycle ----------------------------------------------
+// The bind/unbind lifecycle glue: the weak set of already-bound nodes, the
+// re-bind helper that re-fires the dom-node-set event, the deferred initial
+// property update, and the teardown that stops computations and removes
+// listeners. bindVisibility/updateVisibility and bind() itself follow at class
+// assembly, once the per-slice node contracts are unified.
+
+// Used as a weak set: only the keys (bound state nodes) matter; mirrors the
+// static boundNodes JsWeakMap.
+const boundNodes = new WeakMap<object, boolean>();
+
+/** The slice of StateNode the lifecycle glue reads/writes. */
+interface LifecycleNode {
+  getDomNode(): Node | null;
+  setDomNode(node: Node | null): void;
+  setNodeData(object: object): void;
+  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
+  clearNodeData(object: object): void;
+}
+
+// Mirrors GWT Scheduler.scheduleDeferred: run after the current task.
+function scheduleDeferred(command: () => void): void {
+  setTimeout(command, 0);
+}
+
+/**
+ * Re-binds a node by clearing and re-setting its DOM node (which re-fires the
+ * dom-node-set event so initialization logic can run) and rebinding it. Mirrors
+ * doBind.
+ */
+export function doBind(node: LifecycleNode, nodeFactory: BinderContext): void {
+  const domNode = node.getDomNode();
+  // Re-fires the dom-node-set event, giving a chance to run logic that needs to
+  // know when the element is completely initialized.
+  node.setDomNode(null);
+  node.setDomNode(domNode);
+  nodeFactory.createAndBind(node as unknown as StateNode);
+}
+
+/**
+ * Schedules the deferred initial property update: stores an InitialPropertyUpdate
+ * on the node and, after the initial reactive flush, runs it (unless
+ * handlePropertiesChanged already cleared it). Mirrors scheduleInitialExecution.
+ */
+export function scheduleInitialExecution(stateNode: LifecycleNode): void {
+  const update = new InitialPropertyUpdate(stateNode);
+  stateNode.setNodeData(update);
+  // Run after all initial reactive work, so initial JS runs before this update.
+  Reactive.addPostFlushListener(() =>
+    scheduleDeferred(() => {
+      // cleared if handlePropertiesChanged already ran
+      stateNode.getNodeData(InitialPropertyUpdate)?.execute();
+    })
+  );
+}
+
+/** Removes all bindings: stops computations and removes listeners. Mirrors remove. */
+export function remove(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>
+): void {
+  computationsCollection.forEach((collection) => collection.forEach((computation) => computation.stop()));
+  context.listenerBindings.forEach((computation) => computation.stop());
+
+  context.listenerRemovers.forEach((remover) => remover.remove());
+  listeners.forEach((remover) => remover.remove());
+
+  boundNodes.delete(context.node);
+}
