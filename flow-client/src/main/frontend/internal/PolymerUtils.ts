@@ -93,6 +93,20 @@ export function invokeWhenDefined(tagName: string, callback: () => void): void {
   void window.customElements.whenDefined(tagName).then(callback);
 }
 
+// NodeFeatures.ELEMENT_DATA / NodeProperties.TAG
+const ELEMENT_DATA = 0;
+const TAG_PROPERTY = 'tag';
+
+/** The slice of StateNode getTag reads. */
+interface TagNode {
+  getMap(featureId: number): { getProperty(name: string): { getValue(): unknown } };
+}
+
+/** The element tag name stored in the node's element data. Mirrors PolymerUtils.getTag. */
+export function getTag(node: TagNode): string {
+  return node.getMap(ELEMENT_DATA).getProperty(TAG_PROPERTY).getValue() as string;
+}
+
 /** Sets a single list element via the Polymer set method (path + "." + index). */
 export function setListValueByIndex(htmlNode: Element, path: string, listIndex: number, newValue: unknown): void {
   (htmlNode as unknown as PolymerModelNode).set(`${path}.${listIndex}`, newValue);
