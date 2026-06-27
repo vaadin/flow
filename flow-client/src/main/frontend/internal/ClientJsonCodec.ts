@@ -42,3 +42,14 @@ export function applyCaptures(fn: JsFunction, captures: ArrayLike<unknown>): JsF
     return fn.apply(this, args);
   };
 }
+
+/**
+ * Encodes a value for transport without type information. In JavaScript the JSON
+ * representation is used as-is; only `undefined`/`null` are normalized to null
+ * (the JVM-only conversions in the Java version are test scaffolding). Mirrors
+ * ClientJsonCodec.encodeWithoutTypeInfo.
+ */
+export function encodeWithoutTypeInfo(value: unknown): unknown {
+  // undefined shouldn't go as undefined; encode it as null.
+  return value === null || value === undefined ? null : value;
+}
