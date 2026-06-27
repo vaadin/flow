@@ -63,3 +63,31 @@ export function getContextExecutionObject(
   object.disposeInitializer = callbacks.disposeInitializer;
   return object;
 }
+
+/**
+ * Manifests and runs a server-sent JavaScript invocation: builds a function from
+ * the parameter names followed by the expression, then applies it with the given
+ * context as `this` and the parameter values as arguments. Exceptions are caught
+ * and reported (the failing code is logged outside production mode). Mirrors
+ * ExecuteJavaScriptProcessor.invoke (the context object is assembled by
+ * getContextExecutionObject).
+ */
+export function invokeJavaScript(
+  parameterNamesAndCode: string[],
+  parameters: unknown[],
+  context: object,
+  productionMode: boolean
+): void {
+  try {
+    // The last entry is the expression; the rest are parameter names.
+    const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
+    fn.apply(context, parameters);
+  } catch (exception) {
+    console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
+    console.error(exception);
+    if (!productionMode) {
+      // Java brackets the snippets then strips the brackets, netting the join.
+      console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { getContextExecutionObject } from '../../main/frontend/internal/ExecuteJavaScriptProcessor';
+import { getContextExecutionObject, invokeJavaScript } from '../../main/frontend/internal/ExecuteJavaScriptProcessor';
 
 describe('ExecuteJavaScriptProcessor', () => {
   function makeCallbacks() {
@@ -82,5 +82,24 @@ describe('ExecuteJavaScriptProcessor', () => {
       ['registerInitializer', [node, 'id', 'cleanup']],
       ['disposeInitializer', [node, 'id']]
     ]);
+  });
+
+  describe('invokeJavaScript', () => {
+    it('runs the expression with the parameters bound to $0, $1, ...', () => {
+      const target: Record<string, unknown> = {};
+      invokeJavaScript(['$0', '$1', '$0.value = $1;'], [target, 42], {}, true);
+      expect(target.value).to.equal(42);
+    });
+
+    it('runs the expression with the given context as this', () => {
+      const context: Record<string, unknown> = {};
+      invokeJavaScript(['this.ran = true;'], [], context, true);
+      expect(context.ran).to.be.true;
+    });
+
+    it('catches exceptions thrown by the executed code', () => {
+      expect(() => invokeJavaScript(['throw new Error("boom");'], [], {}, false)).to.not.throw();
+      expect(() => invokeJavaScript(['throw new Error("boom");'], [], {}, true)).to.not.throw();
+    });
   });
 });
