@@ -3,7 +3,8 @@ import {
   getShadowRootElement,
   handleError,
   recreateNodes,
-  showPopover
+  showPopover,
+  SystemErrorHandler
 } from '../../main/frontend/internal/SystemErrorHandler';
 
 describe('SystemErrorHandler', () => {
@@ -88,5 +89,51 @@ describe('SystemErrorHandler', () => {
     const root = host.attachShadow({ mode: 'open' });
     expect(getShadowRootElement(host)).to.equal(root);
     expect(getShadowRootElement(document.createElement('div'))).to.equal(null);
+  });
+
+  describe('class', () => {
+    function makeHandler(opts: { webComponentMode?: boolean; exported?: string[] } = {}) {
+      return new SystemErrorHandler({
+        getApplicationConfiguration: () => ({
+          isWebComponentMode: () => opts.webComponentMode ?? false,
+          getExportedWebComponents: () => opts.exported ?? []
+        })
+      });
+    }
+
+    it('reflects web-component mode from the configuration', () => {
+      expect(makeHandler({ webComponentMode: true }).isWebComponentMode()).to.be.true;
+      expect(makeHandler({ webComponentMode: false }).isWebComponentMode()).to.be.false;
+    });
+
+    it('handleErrorObject extracts the error message', () => {
+      const messages: string[] = [];
+      const original = console.error;
+      console.error = (...args: unknown[]) => messages.push(String(args[0]));
+      try {
+        makeHandler().handleErrorObject(new Error('boom'));
+        makeHandler().handleErrorObject('plain string');
+      } finally {
+        console.error = original;
+      }
+      expect(messages).to.deep.equal(['boom', 'plain string']);
+    });
+
+    it('recreateWebComponents recreates each exported component (clones stale elements)', () => {
+      // Register a stale custom element instance with a $server stub.
+      const stale = document.createElement('x-stale-probe') as Element & {
+        $server: { disconnected: () => void };
+      };
+      stale.$server = { disconnected: () => {} };
+      document.body.appendChild(stale);
+      try {
+        makeHandler({ exported: ['x-stale-probe'] }).recreateWebComponents();
+        // The original stale element was replaced by a clone (different identity).
+        const after = document.getElementsByTagName('x-stale-probe')[0];
+        expect(after).to.not.equal(stale);
+      } finally {
+        document.getElementsByTagName('x-stale-probe')[0]?.remove();
+      }
+    });
   });
 });
