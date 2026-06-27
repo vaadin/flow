@@ -58,5 +58,11 @@ export const NodeProperties = {
   VISIBILITY_BOUND_PROPERTY: 'bound',
   VISIBILITY_HIDDEN_PROPERTY: 'hidden',
   VISIBILITY_STYLE_DISPLAY_PROPERTY: 'styleDisplay',
-  SLOT_ATTRIBUTE: 'slot'
+  SLOT_ATTRIBUTE: 'slot',
+  TYPE: 'type',
+  PAYLOAD: 'payload',
+  IN_MEMORY_CHILD: 'inMemory',
+  INJECT_BY_ID: '@id',
+  INJECT_BY_NAME: '@name',
+  TEMPLATE_IN_TEMPLATE: 'subTemplate'
 } as const;
