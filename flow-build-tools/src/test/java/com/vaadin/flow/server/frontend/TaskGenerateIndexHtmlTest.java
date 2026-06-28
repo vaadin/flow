@@ -63,10 +63,16 @@ class TaskGenerateIndexHtmlTest {
     }
 
     @Test
-    void should_generateIntoFrontendGeneratedFolder() {
+    void should_generateIntoFrontendRootGenerated_whenGeneratedFolderRelocated() {
+        File relocated = new File(temporaryFolder, "elsewhere/generated");
+        Options options = new Options(Mockito.mock(Lookup.class), null)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(relocated);
+        TaskGenerateIndexHtml task = new TaskGenerateIndexHtml(options);
+
         assertEquals(new File(generatedFolder, INDEX_HTML),
-                taskGenerateIndexHtml.getGeneratedFile(),
-                "Default index.html should be generated into the frontend generated folder, not the user-visible frontend folder");
+                task.getGeneratedFile(),
+                "index.html must stay under the frontend-root generated folder even when the generated TS folder is relocated outside the Vite root");
     }
 
     @Test
