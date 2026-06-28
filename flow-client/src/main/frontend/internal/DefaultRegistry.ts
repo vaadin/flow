@@ -21,11 +21,11 @@
 // resolves its collaborators through. This is the cutover-assembly step that
 // takes the build-alongside TS engine into use.
 //
-// Push is wired XHR-only for now: MessageSender is created without a
-// PushConnectionFactory, so setPushEnabled(true) is a no-op until the full
-// AtmospherePushConnection class is wired in as the factory.
+// Push is wired via the AtmospherePushConnection factory, so setPushEnabled(true)
+// creates a real Atmosphere connection (loading vaadinPush.js on demand).
 
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
+import { atmospherePushConnectionFactory } from './AtmospherePushConnection';
 import { ConstantPool } from './ConstantPool';
 import { DependencyLoader } from './DependencyLoader';
 import { DefaultConnectionStateHandler } from './communication/DefaultConnectionStateHandler';
@@ -44,6 +44,7 @@ import { ServerRpcQueue } from './communication/ServerRpcQueue';
 import { ExecuteJavaScriptProcessor } from './ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from './ExistingElementMap';
 import { InitialPropertiesHandler } from './InitialPropertiesHandler';
+import { getServerEventObjectForResync } from './ServerEventObject';
 import { StateTree } from './StateTree';
 import { SystemErrorHandler } from './SystemErrorHandler';
 import { UILifecycle } from './UILifecycle';
@@ -97,10 +98,10 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.DependencyLoader, new DependencyLoader(self));
     this.set(TOKEN.SystemErrorHandler, new SystemErrorHandler(self));
     this.setResettable(TOKEN.UILifecycle, () => new UILifecycle());
-    this.set(TOKEN.StateTree, new StateTree(self));
+    this.set(TOKEN.StateTree, new StateTree(self, getServerEventObjectForResync));
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(self));
     this.set(TOKEN.MessageHandler, new MessageHandler(self));
-    this.set(TOKEN.MessageSender, new MessageSender(self));
+    this.set(TOKEN.MessageSender, new MessageSender(self, atmospherePushConnectionFactory));
     this.set(TOKEN.ServerRpcQueue, new ServerRpcQueue(self));
     this.set(TOKEN.ServerConnector, new ServerConnector(self));
     this.set(TOKEN.ExecuteJavaScriptProcessor, new ExecuteJavaScriptProcessor(self));
