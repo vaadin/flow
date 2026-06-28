@@ -25,11 +25,21 @@
 //
 // populateApplicationConfiguration below is the build-alongside TS port of the
 // Bootstrapper DOM-config reader: it fills an ApplicationConfiguration from the
-// bootstrap JsoConfiguration. The EntryPoint sequence (onModuleLoad /
-// startApplication / doStartApplication -> new ApplicationConnection -> start) is
-// the cutover wiring.
+// bootstrap JsoConfiguration. doStartApplication is the cutover entry: it reads
+// the DOM config, assembles the TS engine via ApplicationConnection.create, and
+// starts it from the initial UIDL. The Java Bootstrapper.doStartApplication
+// delegates here, so the running engine is the TypeScript one.
 
-import type { ApplicationConfiguration } from './ApplicationConfiguration';
+import { ApplicationConfiguration } from './ApplicationConfiguration';
+import {
+  getAtmosphereVersion,
+  getConfigBoolean,
+  getConfigError,
+  getConfigString,
+  getConfigStringArray,
+  getConfigValueMap,
+  getVaadinVersion
+} from './JsoConfiguration';
 import { getAbsoluteUrl } from './WidgetUtil';
 
 // com.vaadin.flow.shared.ApplicationConstants
@@ -90,6 +100,62 @@ export function populateApplicationConfiguration(
   conf.setLiveReloadUrl(jsoConfiguration.getConfigString('liveReloadUrl') ?? '');
   conf.setLiveReloadBackend(jsoConfiguration.getConfigString('liveReloadBackend') ?? '');
   conf.setSpringBootLiveReloadPort(jsoConfiguration.getConfigString('springBootLiveReloadPort') ?? '');
+}
+
+// The raw bootstrap config object (exposes getConfig(name)); see JsoConfiguration.
+interface RawConfigObject {
+  getConfig(name: string): unknown;
+}
+
+/** The loaded Atmosphere library version, or '' if push is not loaded. */
+function atmosphereJsVersion(): string {
+  const push = (window as unknown as { vaadinPush?: { atmosphere?: { version?: string } } }).vaadinPush;
+  return push?.atmosphere?.version ?? '';
+}
+
+/**
+ * Wraps the raw bootstrap config object as a JsoConfiguration. getConfigInteger
+ * and getAtmosphereJSVersion are inlined here (they stay Java-native in the GWT
+ * build for deferred-binding reasons; see JsoConfiguration.ts).
+ */
+function toJsoConfiguration(rawConfig: unknown): JsoConfiguration {
+  const config = rawConfig as RawConfigObject;
+  return {
+    getConfigString: (name) => getConfigString(config, name),
+    getConfigBoolean: (name) => getConfigBoolean(config, name),
+    getConfigInteger: (name) => {
+      const value = config.getConfig(name);
+      return value === null || value === undefined ? 0 : Number(value);
+    },
+    getConfigStringArray: (name) => (getConfigStringArray(config, name) as string[] | null) ?? [],
+    getConfigError: (name) => getConfigError(config, name),
+    getVaadinVersion: () => getVaadinVersion(config) ?? '',
+    getAtmosphereVersion: () => getAtmosphereVersion(config) ?? '',
+    getAtmosphereJSVersion: () => atmosphereJsVersion()
+  };
+}
+
+/**
+ * Starts the application with the given id: reads its configuration from the DOM,
+ * assembles the TypeScript engine, and starts it from the initial UIDL. Mirrors
+ * Bootstrapper.doStartApplication (which delegates here).
+ */
+export function doStartApplication(applicationId: string): void {
+  const rawConfig = getJsoConfiguration(applicationId);
+
+  const conf = new ApplicationConfiguration();
+  conf.setApplicationId(applicationId);
+  populateApplicationConfiguration(conf, toJsoConfiguration(rawConfig));
+
+  const initialUidl = getConfigValueMap(rawConfig as RawConfigObject, 'uidl') as Record<string, unknown> | null;
+
+  // Load the engine lazily: this keeps ApplicationConnection/DefaultRegistry and
+  // the rest of the modern-JS engine out of the registerInternals bundle, which
+  // the HtmlUnit-based GwtTests also load and cannot run (no Array.from, etc.).
+  // The engine is only needed once a real application starts.
+  void import('./ApplicationConnection').then(({ ApplicationConnection }) => {
+    ApplicationConnection.create(conf).start(initialUidl ?? null);
+  });
 }
 
 interface WebComponentsGlobal {
