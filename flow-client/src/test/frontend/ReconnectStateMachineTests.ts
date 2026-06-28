@@ -58,7 +58,7 @@ describe('ReconnectStateMachine', () => {
     machine.handleRecoverableError(ConnectionMessageType.XHR, null); // attempt 2 >= 2 -> give up
     expect(machine.isReconnecting()).to.be.false;
     expect(scheduled).to.have.length(1);
-    expect(registry.log.heartbeatIntervals).to.deep.equal([-1]); // heartbeats paused
+    expect(registry.log.heartbeatIntervals).to.deep.equal([0]); // heartbeats paused (resumable)
     expect(registry.log.endRequests).to.equal(1);
   });
 
