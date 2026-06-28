@@ -143,8 +143,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Creates an instance of the handler with default {@link PageBuilder}.
-     * 
-     * @since 2.0
      */
     public BootstrapHandler() {
         this(new BootstrapPageBuilder());
