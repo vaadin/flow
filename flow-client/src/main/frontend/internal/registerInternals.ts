@@ -72,6 +72,7 @@ import {
 } from './Profiler';
 import {
   deferStartApplication,
+  doStartApplication,
   getJsoConfiguration,
   registerCallback,
   startApplicationImmediately
@@ -178,7 +179,13 @@ export function registerInternals(): void {
     ensureLogger,
     ensureNoLogger
   };
-  internal.Bootstrapper = { startApplicationImmediately, deferStartApplication, registerCallback, getJsoConfiguration };
+  internal.Bootstrapper = {
+    startApplicationImmediately,
+    deferStartApplication,
+    registerCallback,
+    getJsoConfiguration,
+    doStartApplication
+  };
   internal.JsoConfiguration = {
     getConfigString,
     getConfigValueMap,

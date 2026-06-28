@@ -23,7 +23,6 @@ import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -174,17 +173,19 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigString("springBootLiveReloadPort"));
     }
 
-    private static void doStartApplication(final String applicationId) {
-        Profiler.enter("Bootstrapper.startApplication");
-        ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
-        ApplicationConnection applicationConnection = new ApplicationConnection(
-                appConf);
-        runningApplications.push(applicationConnection);
-        Profiler.leave("Bootstrapper.startApplication");
-
-        ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
-        applicationConnection.start(initialUidl);
-    }
+    /**
+     * Starts the application by delegating to the TypeScript engine
+     * ({@code window.Vaadin.Flow.internal.Bootstrapper.doStartApplication}),
+     * which assembles the registry via {@code ApplicationConnection.create} and
+     * starts it. The GWT {@code ApplicationConnection} path
+     * ({@link #getConfigFromDOM}, {@link #populateApplicationConfiguration}) is
+     * retained but no longer invoked, so the cutover can be reverted by
+     * restoring this method's previous body.
+     */
+    private static native void doStartApplication(String applicationId)
+    /*-{
+        $wnd.Vaadin.Flow.internal.Bootstrapper.doStartApplication(applicationId);
+    }-*/;
 
     /**
      * Gets the configuration object for a specific application from the
