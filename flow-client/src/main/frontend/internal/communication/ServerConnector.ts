@@ -30,14 +30,6 @@ interface ConnectorNode {
   getId(): number;
 }
 
-/** Details of an existing-element attach request; mirrors StateTree's ExistingElementAttach. */
-interface ExistingElementAttach {
-  requestedId: number;
-  assignedId: number;
-  tagName: string;
-  index: number;
-}
-
 /** The slice of Registry that ServerConnector uses. */
 interface ServerConnectorRegistry {
   getLoadingIndicatorStateHandler(): { processMessage(type: string | null, eventType: string | null): void };
@@ -109,14 +101,21 @@ export class ServerConnector {
   }
 
   /** Sends an attach-existing-element callback to the server. */
-  sendExistingElementAttachToServer(parent: ConnectorNode, attach: ExistingElementAttach): void {
+  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java sendExistingElementAttachToServer signature
+  sendExistingElementAttachToServer(
+    parent: ConnectorNode,
+    requestedId: number,
+    assignedId: number,
+    tagName: string,
+    index: number
+  ): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_ATTACH_EXISTING_ELEMENT;
     message[JsonConstants.RPC_NODE] = parent.getId();
-    message[JsonConstants.RPC_ATTACH_REQUESTED_ID] = attach.requestedId;
-    message[JsonConstants.RPC_ATTACH_ASSIGNED_ID] = attach.assignedId;
-    message[JsonConstants.RPC_ATTACH_TAG_NAME] = attach.tagName;
-    message[JsonConstants.RPC_ATTACH_INDEX] = attach.index;
+    message[JsonConstants.RPC_ATTACH_REQUESTED_ID] = requestedId;
+    message[JsonConstants.RPC_ATTACH_ASSIGNED_ID] = assignedId;
+    message[JsonConstants.RPC_ATTACH_TAG_NAME] = tagName;
+    message[JsonConstants.RPC_ATTACH_INDEX] = index;
     this.sendMessage(message);
   }
 
