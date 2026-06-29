@@ -20,7 +20,7 @@ package com.vaadin.flow.data.provider.hierarchy;
  * data. Uses an instance of {@link TreeData} as its source of data.
  *
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  *
  * @param <T>
  *            data type
@@ -55,6 +55,7 @@ public class TreeDataProvider<T>
      *            {@code null}
      * @param hierarchyFormat
      *            the hierarchy format to return data in, not {@code null}
+     * @since 25.0
      */
     public TreeDataProvider(TreeData<T> treeData,
             HierarchyFormat hierarchyFormat) {

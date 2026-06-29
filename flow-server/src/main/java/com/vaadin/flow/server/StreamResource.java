@@ -245,6 +245,7 @@ public class StreamResource extends AbstractStreamResource {
      * @param value
      *            value of the header
      * @return this resource
+     * @since 9.0
      */
     public StreamResource setHeader(String name, String value) {
         if (headers == null) {
@@ -261,6 +262,7 @@ public class StreamResource extends AbstractStreamResource {
      *            name of header to get value for
      * @return an optional with header value, or an empty optional if it has not
      *         been set
+     * @since 9.0
      */
     public Optional<String> getHeader(String name) {
         if (headers != null) {
@@ -276,6 +278,7 @@ public class StreamResource extends AbstractStreamResource {
      * like {@link #setContentType(String)} and {@link #setCacheTime(long)}.
      *
      * @return a map of headers and their values
+     * @since 9.0
      */
     public Map<String, String> getHeaders() {
         if (headers == null) {

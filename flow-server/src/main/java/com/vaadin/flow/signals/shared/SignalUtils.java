@@ -24,6 +24,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * <strong>Note</strong>: This is internal API for Vaadin platform's internal
  * usages. It is not intended for public use and may change or be removed in
  * future releases.
+ * 
+ * @since 25.1
  */
 public class SignalUtils {
 

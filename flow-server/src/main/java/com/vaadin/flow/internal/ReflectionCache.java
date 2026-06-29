@@ -136,6 +136,7 @@ public class ReflectionCache<C, T> {
      *
      * @param type
      *            the type to remove; {@literal null} means all mappings.
+     * @since 25.0
      */
     public void clear(Class<? extends C> type) {
         if (type != null) {
@@ -157,6 +158,7 @@ public class ReflectionCache<C, T> {
      * @param action
      *            the action to run
      * @return a registration for removing the action
+     * @since 1.1
      */
     public static Registration addClearAllAction(Runnable action) {
         return Registration.addAndRemove(clearAllActions, k -> action.run());
@@ -175,6 +177,7 @@ public class ReflectionCache<C, T> {
      * @param action
      *            the action to run
      * @return a registration for removing the action
+     * @since 25.0
      */
     public static Registration addClearAllAction(Consumer<Class<?>> action) {
         return Registration.addAndRemove(clearAllActions, action);
@@ -190,6 +193,8 @@ public class ReflectionCache<C, T> {
     /**
      * Clears mappings for give type from all reflection caches and related
      * resources.
+     * 
+     * @since 25.0
      */
     public static void clearAll(Class<?> type) {
         clearAllActions.forEach(action -> action.accept(type));

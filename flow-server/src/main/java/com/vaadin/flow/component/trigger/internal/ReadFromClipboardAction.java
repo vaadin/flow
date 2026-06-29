@@ -55,6 +55,8 @@ import com.vaadin.flow.function.SerializableConsumer;
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
 

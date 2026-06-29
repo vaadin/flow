@@ -509,6 +509,7 @@ public class ElementListenerMap extends NodeMap {
      *            the name of the event, not <code>null</code>
      * @return an unmodifiable set of event data expressions, not
      *         <code>null</code>
+     * @since 3.0
      */
     public Set<String> getExpressions(String eventName) {
         assert eventName != null;
@@ -523,6 +524,7 @@ public class ElementListenerMap extends NodeMap {
      *            the property name to check, not <code>null</code>
      * @return the most permissive update mode, or <code>null</code> if
      *         synchronization is not configured for the given property
+     * @since 1.3
      */
     public DisabledUpdateMode getPropertySynchronizationMode(
             String propertyName) {
@@ -548,6 +550,7 @@ public class ElementListenerMap extends NodeMap {
      *            the property name to check, not <code>null</code>
      * @return {@code true} if allowInert is enabled for any listener for the
      *         given property, {@code false otherwise}
+     * @since 24.6.8
      */
     public boolean hasAllowInertForProperty(String propertyName) {
         assert propertyName != null;

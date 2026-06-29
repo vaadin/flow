@@ -29,6 +29,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SignalUpdater<T extends @Nullable Object>

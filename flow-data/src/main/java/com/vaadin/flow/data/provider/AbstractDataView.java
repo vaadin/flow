@@ -33,6 +33,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *            data type
+ * @since 4.0
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
@@ -127,6 +128,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      *            data provider to be verified
      * @throws IllegalStateException
      *             if data provider type is incompatible with data view type
+     * @since 24.4
      */
     protected final void verifyDataProviderType(
             DataProvider<T, ?> dataProvider) {
@@ -221,6 +223,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @param listener
      *            identifier provider change listener to register
      * @return registration for removing the listener
+     * @since 23.2
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Registration addIdentifierProviderChangeListener(
@@ -248,6 +251,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @param stream
      *            the stream to get index from
      * @return the index of the item in the stream, or -1 if not found
+     * @since 24.4
      */
     protected int getItemIndex(T item, Stream<T> stream) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);

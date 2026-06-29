@@ -29,6 +29,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *
  * @param <T>
  *            the result type
+ * @since 25.1
  */
 public class SignalOperation<T extends @Nullable Object>
         implements Serializable {

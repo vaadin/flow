@@ -158,6 +158,7 @@ public class UI extends Component
      *
      * @param internalsHandler
      *            an implementation of UIInternalsHandler.
+     * @since 3.0
      */
     protected UI(UIInternalUpdater internalsHandler) {
         super(null);
@@ -224,6 +225,7 @@ public class UI extends Component
      *            the application id
      *
      * @see #getUIId()
+     * @since 23.3
      */
     public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
@@ -339,6 +341,7 @@ public class UI extends Component
      *             if no UI is bound to the current thread
      * @see #getCurrent()
      * @see #access(Command)
+     * @since 25.0
      */
     public static UI getCurrentOrThrow() {
         UI ui = getCurrent();
@@ -634,6 +637,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a runnable that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
             SerializableRunnable detachHandler) {
@@ -663,6 +667,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a consumer that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
@@ -886,6 +891,7 @@ public class UI extends Component
      * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
+     * @since 25.1
      */
     public Signal<Locale> localeSignal() {
         return localeSignal.asReadonly();
@@ -953,6 +959,7 @@ public class UI extends Component
      *
      * @param direction
      *            the direction to use, not {@code null}
+     * @since 3.1
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
@@ -1112,6 +1119,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 4.0
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
@@ -1150,6 +1158,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1.1
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParam... parameters) {
@@ -1190,6 +1199,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
@@ -1239,6 +1249,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1
      */
     @SuppressWarnings("unchecked")
     public <C extends Component> Optional<C> navigate(
@@ -1274,6 +1285,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> Optional<T> navigate(
@@ -1379,6 +1391,7 @@ public class UI extends Component
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         getInternals().refreshCurrentRoute(refreshRouteChain);
@@ -1392,6 +1405,7 @@ public class UI extends Component
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
+     * @since 5.0
      */
     public boolean isNavigationSupported() {
         // By default any UI supports navigation. Override this to return false
@@ -1414,6 +1428,7 @@ public class UI extends Component
      * @return the currently active route instance if available
      * @throws IllegalStateException
      *             if current view is not yet available
+     * @since 24.0
      */
     public Component getCurrentView() {
         if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
@@ -1582,6 +1597,7 @@ public class UI extends Component
      * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...) for
      *      registering a listener which receives a ShortcutEvent
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(Command command, Key key,
             KeyModifier... keyModifiers) {
@@ -1616,6 +1632,7 @@ public class UI extends Component
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
@@ -1646,6 +1663,7 @@ public class UI extends Component
      * @param listener
      *            the heartbeat listener
      * @return handler to remove the heartbeat listener
+     * @since 23.0
      */
     public Registration addHeartbeatListener(HeartbeatListener listener) {
         Objects.requireNonNull(listener, NULL_LISTENER);
@@ -1694,6 +1712,7 @@ public class UI extends Component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
      * @see #setChildComponentModal(Component, ModalityMode)
+     * @since 23.0
      */
     public void addModal(Component component) {
         add(component);
@@ -1738,6 +1757,7 @@ public class UI extends Component
      *            the child component to change state for
      * @param mode
      *            the modality mode, not null
+     * @since 25.0
      */
     public void setChildComponentModal(Component childComponent,
             ModalityMode mode) {
@@ -1762,6 +1782,7 @@ public class UI extends Component
      * Check if UI has a defined modal component.
      *
      * @return {@code true} if a modal component has been set
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return getInternals().hasModalComponent();
@@ -1777,6 +1798,7 @@ public class UI extends Component
      *
      * @param component
      *            component to add to modal component
+     * @since 23.0
      */
     public void addToModalComponent(Component component) {
         if (hasModalComponent()) {
@@ -1816,6 +1838,7 @@ public class UI extends Component
      * the servlet mapping used for serving the related UI.
      *
      * @return the view location, not <code>null</code>
+     * @since 24.3
      */
     public Location getActiveViewLocation() {
         return getInternals().getActiveViewLocation();
@@ -1826,6 +1849,7 @@ public class UI extends Component
      *
      * @return a list of active router target and parent layout instances,
      *         starting from the innermost part
+     * @since 24.3
      */
     public List<HasElement> getActiveRouterTargetsChain() {
         return getInternals().getActiveRouterTargetsChain();
@@ -1847,6 +1871,7 @@ public class UI extends Component
      *
      * @deprecated Use {@link UIInternals#getWrapperElement()} through
      *             {@code getInternals().getWrapperElement()} instead.
+     * @since 24.0
      */
     @Deprecated(forRemoval = true)
     public Element wrapperElement;
@@ -1861,6 +1886,7 @@ public class UI extends Component
      * Gets the new forward url.
      *
      * @return the new forward url
+     * @since 24.0
      */
     public String getForwardToClientUrl() {
         return forwardToClientUrl;
@@ -1924,6 +1950,7 @@ public class UI extends Component
          * @param trigger
          *            navigation trigger
          *
+         * @since 24.8
          */
         public BrowserNavigateEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
@@ -1949,6 +1976,7 @@ public class UI extends Component
      * the route chain if the {@code fullRefresh} event flag is active.
      *
      * @see #refreshCurrentRoute(boolean)
+     * @since 24.5
      */
     @DomEvent(BrowserRefreshEvent.EVENT_NAME)
     public static class BrowserRefreshEvent extends ComponentEvent<UI> {
@@ -1983,6 +2011,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void browserNavigate(BrowserNavigateEvent event) {
 
@@ -2070,6 +2099,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void leaveNavigation(BrowserLeaveNavigationEvent event) {
         navigateToPlaceholder(new Location(PathUtil.trimPath(event.route),
@@ -2196,6 +2226,8 @@ public class UI extends Component
     /**
      * Placeholder view when navigating from server-side views to client-side
      * views.
+     * 
+     * @since 24.0
      */
     @Tag(Tag.DIV)
     @AnonymousAllowed

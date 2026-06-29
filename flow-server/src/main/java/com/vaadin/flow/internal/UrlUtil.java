@@ -80,6 +80,7 @@ public class UrlUtil {
      * @param uri
      *            the uri to encode
      * @return the encoded URI
+     * @since 9.0
      */
     public static String encodeURI(String uri) {
         try {
@@ -107,6 +108,7 @@ public class UrlUtil {
      * @param path
      *            the path to encode
      * @return the encoded path
+     * @since 9.0
      */
     public static String encodeURIComponent(String path) {
         try {
@@ -134,6 +136,7 @@ public class UrlUtil {
      * @param encoded
      *            the percent-encoded string
      * @return the decoded string
+     * @since 24.9.12
      */
     public static String decodeURIComponent(String encoded) {
         if (encoded == null || encoded.isEmpty()) {
@@ -191,6 +194,7 @@ public class UrlUtil {
      *            the parameter value, or {@code null} to skip
      * @return the URL with the parameter appended, or the original URL if name
      *         or value is {@code null}
+     * @since 25.1
      */
     public static String appendQueryParameter(String url, String name,
             String value) {
@@ -211,6 +215,7 @@ public class UrlUtil {
      * @return a relative path that when applied to the servlet path, refers to
      *         the absolute path without containing the context path or servlet
      *         path
+     * @since 23.3
      */
     public static String getServletPathRelative(String absolutePath,
             HttpServletRequest request) {
@@ -262,6 +267,7 @@ public class UrlUtil {
      * @param url
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
+     * @since 25.2
      */
     public static boolean isSafeUrl(String url) {
         VaadinService service = VaadinService.getCurrent();
@@ -298,6 +304,7 @@ public class UrlUtil {
      *            the signature of the method that bypasses validation, for
      *            example {@code "setUnsafeHref(String)"}
      * @return the exception message
+     * @since 25.2
      */
     public static String getUnsafeUrlMessage(String type, String url,
             String unsafeMethod) {

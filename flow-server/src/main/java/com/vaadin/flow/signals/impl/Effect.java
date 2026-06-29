@@ -43,6 +43,8 @@ import com.vaadin.flow.signals.function.EffectAction;
  * for all signals that are read from the callback. The callback is run again
  * whenever there's a change to any dependency. Dependencies are always updated
  * based the signals read during the most recent invocation.
+ * 
+ * @since 25.1
  */
 public class Effect implements Serializable {
     static {
@@ -324,6 +326,7 @@ public class Effect implements Serializable {
      * @param ui
      *            the owner UI, or {@code null} to fall back to
      *            VaadinRequest-based detection
+     * @since 25.1.1
      */
     public void setOwnerUI(@Nullable UI ui) {
         this.ownerUI = ui;

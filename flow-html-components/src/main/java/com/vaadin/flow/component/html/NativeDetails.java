@@ -36,6 +36,7 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;details&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 6.0
  */
 @Tag(Tag.DETAILS)
 public class NativeDetails extends HtmlComponent

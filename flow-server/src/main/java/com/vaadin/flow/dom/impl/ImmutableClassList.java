@@ -72,6 +72,8 @@ public class ImmutableClassList extends AbstractSet<String>
      * <p>
      * Text nodes do not support binding a {@link Signal} to a stylesheet class,
      * because they do not support styling in general.
+     * 
+     * @since 25.0
      */
     @Override
     public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
@@ -83,6 +85,8 @@ public class ImmutableClassList extends AbstractSet<String>
      * <p>
      * Text nodes do not support binding a {@link Signal} to stylesheet classes,
      * because they do not support styling in general.
+     * 
+     * @since 25.1
      */
     @Override
     public SignalBinding<List<String>> bind(Signal<List<String>> names) {

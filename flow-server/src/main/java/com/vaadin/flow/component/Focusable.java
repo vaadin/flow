@@ -131,6 +131,7 @@ public interface Focusable<T extends Component>
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
      *      at MDN</a>
+     * @since 25.0
      */
     default void focus(FocusOption... options) {
         Element element = getElement();
@@ -217,6 +218,7 @@ public interface Focusable<T extends Component>
      *            with the {@code key} for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
+     * @since 1.3
      */
     default ShortcutRegistration addFocusShortcut(Key key,
             KeyModifier... keyModifiers) {

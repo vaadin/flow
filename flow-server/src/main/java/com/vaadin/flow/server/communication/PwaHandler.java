@@ -47,7 +47,7 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaHandler implements RequestHandler {
     public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
@@ -65,6 +65,7 @@ public class PwaHandler implements RequestHandler {
      * @param pwaRegistryGetter
      *            PWA registry getter
      *
+     * @since 6.0
      */
     public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
         this.pwaRegistryGetter = pwaRegistryGetter;

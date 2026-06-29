@@ -65,6 +65,7 @@ public class History implements Serializable {
          * @param trigger
          *            the type of user action that triggered this history
          *            change, not <code>null</code>
+         * @since 25.0
          */
         public HistoryStateChangeEvent(History history, BaseJsonNode state,
                 Location location, NavigationTrigger trigger) {
@@ -164,6 +165,7 @@ public class History implements Serializable {
      * @param location
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
+     * @since 25.0
      */
     public void pushState(BaseJsonNode state, String location) {
         pushState(state,
@@ -185,6 +187,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 25.0
      */
     public void pushState(BaseJsonNode state, String location,
             boolean callback) {
@@ -203,6 +206,7 @@ public class History implements Serializable {
      * @param location
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
+     * @since 25.0
      */
     public void pushState(BaseJsonNode state, Location location) {
         pushState(state, location, false);
@@ -221,6 +225,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 25.0
      */
     public void pushState(BaseJsonNode state, Location location,
             boolean callback) {
@@ -252,6 +257,7 @@ public class History implements Serializable {
      * @param location
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
+     * @since 25.0
      */
     public void replaceState(BaseJsonNode state, String location) {
         replaceState(state,
@@ -273,6 +279,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 25.0
      */
     public void replaceState(BaseJsonNode state, String location,
             boolean callback) {
@@ -291,6 +298,7 @@ public class History implements Serializable {
      * @param location
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
+     * @since 25.0
      */
     public void replaceState(BaseJsonNode state, Location location) {
         replaceState(state, location, false);
@@ -309,6 +317,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 25.0
      */
     public void replaceState(BaseJsonNode state, Location location,
             boolean callback) {

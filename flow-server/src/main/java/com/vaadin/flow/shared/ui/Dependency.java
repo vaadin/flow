@@ -96,6 +96,7 @@ public class Dependency implements Serializable {
      *            details
      * @param id
      *            optional ID for tracking the dependency
+     * @since 25.0
      */
     public Dependency(Type type, String url, LoadMode loadMode, String id) {
         if (url == null) {
@@ -117,6 +118,7 @@ public class Dependency implements Serializable {
      *            the type of the dependency, not {@code null}
      * @param expression
      *            the JS expression to load the dependency, not {@code null}
+     * @since 2.1
      */
     public Dependency(Type type, String expression) {
         // It's important that the load mode of the dependency is Lazy because
@@ -161,6 +163,7 @@ public class Dependency implements Serializable {
      * For internal use only. May be renamed or removed in a future release.
      *
      * @return the dependency ID or null if not set
+     * @since 25.0
      */
     public String getId() {
         return id;

@@ -35,7 +35,6 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * The action to resume a postponed {@link BeforeEnterEvent}.
      *
      * @author Vaadin Ltd
-     * @since 1.0.
      */
     public class ContinueNavigationAction implements Serializable {
 
@@ -94,6 +93,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
          * <p>
          * This is so that the client router pending promise closes. Also
          * updates the correct url on back navigation if blocking back.
+         * 
+         * @since 24.1.13
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
@@ -115,6 +116,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            navigation target, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 2.0
      */
     public BeforeLeaveEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -133,6 +135,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            route parameters, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 4.0
      */
     public BeforeLeaveEvent(NavigationEvent event,
             Class<? extends Component> navigationTarget,
@@ -158,6 +161,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 2.0
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,
@@ -184,6 +188,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 4.0
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<? extends Component> navigationTarget,

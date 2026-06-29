@@ -24,6 +24,7 @@ import java.io.Serializable;
  *            the width in pixels
  * @param height
  *            the height in pixels
+ * @since 25.2
  */
 public record Size(int width, int height) implements Serializable {
 }

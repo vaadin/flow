@@ -33,6 +33,7 @@ import com.vaadin.flow.component.UI;
  * thread local.
  *
  * @see RpcInvocationListener
+ * @since 25.2
  */
 public class RpcInvocationEvent extends EventObject {
 

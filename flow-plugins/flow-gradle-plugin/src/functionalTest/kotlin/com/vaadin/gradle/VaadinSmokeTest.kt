@@ -707,6 +707,27 @@ class VaadinSmokeTest : AbstractGradleTest() {
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinBuildFrontend")
     }
 
+    @Test
+    fun testWarPackaging_configurationCache_productionMode() {
+        // Regression test for https://github.com/vaadin/flow/issues/24794
+        // In production mode the token-restore action is attached to the
+        // Jar/War packaging task. If that action captures the Project, the
+        // configuration cache cannot serialize the War task and the build
+        // fails. The existing config-cache tests only run vaadinBuildFrontend,
+        // so they never exercise the packaging task; this test does.
+
+        // Create frontend folder, that will otherwise be created by the first
+        // execution, invalidating the cache on the second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war")
+        result.expectTaskSucceded("war")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war", checkTasksSuccessful = false)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
     private fun enableHilla() {
         testProject.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR)
         testProject.newFile(FrontendUtils.DEFAULT_FRONTEND_DIR + "index.ts")
