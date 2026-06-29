@@ -405,19 +405,31 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     ObjectNode getDefaultOverrides() {
-        var overrides = JacksonUtils.createObjectNode();
-
         final PwaConfiguration pwaConfiguration = options
                 .getFrontendDependenciesScanner().getPwaConfiguration();
-        // Currently, we only have overrides for workbox uses overrides, and
-        // only when PWA is enabled
-        final ObjectNode workboxOverrides = pwaConfiguration != null
-                && pwaConfiguration.isOfflineEnabled()
-                        ? (ObjectNode) readPackageJsonKey("workbox",
-                                "overrides")
-                        : null;
-        if (workboxOverrides != null) {
-            overrides = overrides.setAll(workboxOverrides);
+        // Currently, the only default overrides come from workbox, and they
+        // are only needed when PWA offline support is enabled.
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
+            return getManagedDefaultOverrides();
+        }
+        return JacksonUtils.createObjectNode();
+    }
+
+    /**
+     * Returns all overrides Vaadin may add to package.json regardless of the
+     * current configuration. Used to recognize and clean up overrides that
+     * Vaadin previously added but no longer needs.
+     *
+     * @return the overrides Vaadin manages by default
+     */
+    ObjectNode getManagedDefaultOverrides() {
+        var overrides = JacksonUtils.createObjectNode();
+        if (hasPackageJson("workbox")) {
+            final JsonNode workboxOverrides = readPackageJsonKey("workbox",
+                    "overrides");
+            if (workboxOverrides instanceof ObjectNode workboxObject) {
+                overrides = overrides.setAll(workboxObject);
+            }
         }
         return overrides;
     }
