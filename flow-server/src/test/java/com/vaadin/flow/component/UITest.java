@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import elemental.json.Json;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.Node;
@@ -47,7 +49,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
+
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -1280,6 +1284,28 @@ public class UITest {
         verifyInert(fixture.ui, true);
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void pollListener_uiInertDueToModalComponent_listenerStillInvoked() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges(); // the modal add makes the UI inert
+        verifyInert(fixture.ui, true);
+
+        AtomicInteger count = new AtomicInteger();
+        fixture.ui.addPollListener(event -> count.incrementAndGet());
+
+        firePollEvent(fixture.ui);
+
+        assertEquals("Poll listener should be invoked even while the UI is inert "
+                        + "because of an open modal component", 1, count.get());
+    }
+
+    private void firePollEvent(UI ui) {
+        DomEvent pollEvent = new DomEvent(ui.getElement(),
+                PollEvent.DOM_EVENT_NAME, Json.createObject());
+        ui.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(pollEvent);
     }
 
     @Test
