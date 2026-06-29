@@ -28,20 +28,18 @@ import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures, NodeProperties } from './nodefeature/NodeFeatures';
 import { StateNode, type StateTree as StateTreeContract } from './StateNode';
 
-/** Details of an existing-element-attach request; mirrors the positional args in Java. */
-export interface ExistingElementAttach {
-  requestedId: number;
-  assignedId: number;
-  tagName: string;
-  index: number;
-}
-
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
   sendEventMessage(node: StateNode, eventType: string, eventData: unknown): void;
   sendNodeSyncMessage(node: StateNode, mapId: number, name: string, value: unknown): void;
   sendTemplateEventMessage(node: StateNode, methodName: string, args: unknown[], promiseId: number): void;
-  sendExistingElementAttachToServer(parent: StateNode, attach: ExistingElementAttach): void;
+  sendExistingElementAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    tagName: string,
+    index: number
+  ): void;
   sendExistingElementWithIdAttachToServer(parent: StateNode, requestedId: number, assignedId: number, id: string): void;
 }
 
@@ -207,8 +205,17 @@ export class StateTree implements StateTreeContract {
     }
   }
 
-  sendExistingElementAttachToServer(parent: StateNode, attach: ExistingElementAttach): void {
-    this.registry.getServerConnector().sendExistingElementAttachToServer(parent, attach);
+  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java sendExistingElementAttachToServer signature
+  sendExistingElementAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    tagName: string,
+    index: number
+  ): void {
+    this.registry
+      .getServerConnector()
+      .sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName, index);
   }
 
   sendExistingElementWithIdAttachToServer(

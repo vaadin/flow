@@ -62,12 +62,7 @@ describe('ServerConnector', () => {
   it('sends both existing-element attach variants', () => {
     const { registry, queued } = makeRegistry();
     const connector = new ServerConnector(registry);
-    connector.sendExistingElementAttachToServer(node(1), {
-      requestedId: 2,
-      assignedId: 3,
-      tagName: 'div',
-      index: 4
-    });
+    connector.sendExistingElementAttachToServer(node(1), 2, 3, 'div', 4);
     expect(queued[0]).to.deep.equal({
       type: 'attachExistingElement',
       node: 1,
