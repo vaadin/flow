@@ -10,6 +10,7 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -28,6 +29,12 @@ public interface PollNotifier extends Serializable {
      * <p>
      * The listener is called whenever the client polls the server for
      * asynchronous UI updates.
+     * <p>
+     * Poll listeners are registered as "inert" tolerant, which means that they
+     * keep being invoked even while a modal component (such as a modal dialog)
+     * is open. Polling is a UI-level "global" feature that isn't tied to any
+     * specific component and doesn't pass any user-controlled data to the
+     * server, so it should not be blocked by a modality curtain.
      *
      * @see UI#setPollInterval(int)
      * @param listener
@@ -38,7 +45,7 @@ public interface PollNotifier extends Serializable {
             ComponentEventListener<PollEvent> listener) {
         if (this instanceof Component) {
             return ComponentUtil.addListener((Component) this, PollEvent.class,
-                    listener);
+                    listener, DomListenerRegistration::allowInert);
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
