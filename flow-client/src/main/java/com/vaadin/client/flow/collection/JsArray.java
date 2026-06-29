@@ -237,18 +237,18 @@ class JsniHelper {
     static native <T> int pushArray(JsArray<T> array,
             JsArray<? extends T> values)
     /*-{
-        return array.push.apply(array, values);
+        return $wnd.Vaadin.Flow.internal.JsArray.pushArray(array, values);
     }-*/;
 
     static native <T> JsArray<T> spliceArray(JsArray<T> array, int index,
             int remove, JsArray<? extends T> add)
     /*-{
-        return array.splice.apply(array, [index, remove].concat(add));
+        return $wnd.Vaadin.Flow.internal.JsArray.spliceArray(array, index, remove, add);
     }-*/;
 
     static native void clear(JsArray<?> array)
     /*-{
-        array.length = 0;
+        $wnd.Vaadin.Flow.internal.JsArray.clear(array);
     }-*/;
 
     static native <T> T getValueNative(JsArray<T> array, int index)

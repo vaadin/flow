@@ -28,8 +28,17 @@ const fromFileName = fs.readdirSync(fromDir).find((filename) => fromFileRegex.ex
 // Read from target
 let clientSource = fs.readFileSync(fromDir + fromFileName, 'utf8');
 
-// Wrap with ES module export
-clientSource = `export function init() {
+// Wrap with ES module export.
+//
+// Register the TypeScript implementations the GWT engine calls into at the start
+// of init(), just before the engine runs. Doing it here (rather than in Flow.ts)
+// covers every bootstrap path that starts the engine - the client-side router,
+// web component embedding, server bootstrapping - not just Flow.ts. It runs per
+// init() so it survives any window.Vaadin reset during bootstrapping.
+clientSource = `import { registerInternals } from './internal/registerInternals';
+
+export function init() {
+registerInternals();
 ${clientSource}
 };`;
 

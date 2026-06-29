@@ -388,15 +388,11 @@ public class Profiler {
 
     private static final native void logGwtEvent(String name, String type)
     /*-{
-        $wnd.__gwtStatsEvent({
-            evtGroup: @com.vaadin.client.Profiler::EVT_GROUP,
-            moduleName: @com.google.gwt.core.client.GWT::getModuleName()(),
-            millis: (new Date).getTime(),
-            sessionId: undefined,
-            subSystem: name,
-            type: type,
-            relativeMillis: @com.vaadin.client.Profiler::getRelativeTimeMillis()()
-        });
+        $wnd.Vaadin.Flow.internal.Profiler.logGwtEvent(
+            @com.vaadin.client.Profiler::EVT_GROUP,
+            @com.google.gwt.core.client.GWT::getModuleName()(),
+            name, type,
+            @com.vaadin.client.Profiler::getRelativeTimeMillis()());
     }-*/;
 
     /**
@@ -602,16 +598,12 @@ public class Profiler {
 
     private static final native double getPerformanceTiming(String name)
     /*-{
-        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
-            return $wnd.performance.timing[name];
-        } else {
-            return 0;
-        }
+        return $wnd.Vaadin.Flow.internal.Profiler.getPerformanceTiming(name);
     }-*/;
 
     private static native JsArray<GwtStatsEvent> getGwtStatsEvents()
     /*-{
-        return $wnd.Vaadin.Flow.gwtStatsEvents || [];
+        return $wnd.Vaadin.Flow.internal.Profiler.getGwtStatsEvents();
     }-*/;
 
     /**
@@ -620,15 +612,7 @@ public class Profiler {
      */
     private static native void ensureLogger()
     /*-{
-        if (typeof $wnd.__gwtStatsEvent != 'function') {
-            if (typeof $wnd.Vaadin.Flow.gwtStatsEvents != 'object') {
-                $wnd.Vaadin.Flow.gwtStatsEvents = [];
-            }
-            $wnd.__gwtStatsEvent = function(event) {
-                $wnd.Vaadin.Flow.gwtStatsEvents.push(event);
-                return true;
-            }
-        }
+        $wnd.Vaadin.Flow.internal.Profiler.ensureLogger();
     }-*/;
 
     /**
@@ -637,17 +621,12 @@ public class Profiler {
      */
     private static native void ensureNoLogger()
     /*-{
-        if (typeof $wnd.Vaadin.Flow.gwtStatsEvents == 'object') {
-            delete $wnd.Vaadin.Flow.gwtStatsEvents;
-            if (typeof $wnd.__gwtStatsEvent == 'function') {
-                $wnd.__gwtStatsEvent = function() { return true; };
-            }
-        }
+        $wnd.Vaadin.Flow.internal.Profiler.ensureNoLogger();
     }-*/;
 
     private static native JsArray<GwtStatsEvent> clearEventsList()
     /*-{
-        $wnd.Vaadin.Flow.gwtStatsEvents = [];
+        return $wnd.Vaadin.Flow.internal.Profiler.clearEventsList();
     }-*/;
 
     /**
@@ -675,7 +654,7 @@ public class Profiler {
 
     private static native boolean hasHighPrecisionTime()
     /*-{
-       return $wnd.performance && (typeof $wnd.performance.now == 'function');
+       return $wnd.Vaadin.Flow.internal.Profiler.hasHighPrecisionTime();
     }-*/;
 
     private interface RelativeTimeSupplier {
@@ -721,7 +700,7 @@ public class Profiler {
      */
     private static native double round(double num, int exp)
     /*-{
-        return +(Math.round(num + "e+" + exp)  + "e-" + exp);
+        return $wnd.Vaadin.Flow.internal.Profiler.round(num, exp);
     }-*/;
 
 }

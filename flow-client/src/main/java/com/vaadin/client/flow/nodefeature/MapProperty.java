@@ -47,20 +47,9 @@ public class MapProperty implements ReactiveValue {
     public static final Runnable NO_OP = () -> {
     };
 
-    private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
-            this) {
-        @Override
-        protected MapPropertyChangeListener wrap(
-                ReactiveValueChangeListener listener) {
-            return listener::onValueChange;
-        }
-
-        @Override
-        protected void dispatchEvent(MapPropertyChangeListener listener,
-                MapPropertyChangeEvent event) {
-            listener.onPropertyChange(event);
-        }
-    };
+    private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<>(
+            this, listener -> listener::onValueChange,
+            (listener, event) -> listener.onPropertyChange(event));
 
     private Object value;
     private boolean hasValue = false;

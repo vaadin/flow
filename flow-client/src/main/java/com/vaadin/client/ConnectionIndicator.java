@@ -67,9 +67,7 @@ public class ConnectionIndicator {
      */
     public static native void setState(String state)
     /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.state = state;
-        }
+        $wnd.Vaadin.Flow.internal.ConnectionIndicator.setState(state);
     }-*/;
 
     /**
@@ -79,11 +77,7 @@ public class ConnectionIndicator {
      */
     public static native String getState()
     /*-{
-        if ($wnd.Vaadin.connectionState) {
-            return $wnd.Vaadin.connectionState.state;
-        } else {
-            return null;
-        }
+        return $wnd.Vaadin.Flow.internal.ConnectionIndicator.getState();
     }-*/;
 
     /**
@@ -96,9 +90,7 @@ public class ConnectionIndicator {
      */
     public static native void setProperty(String property, Object value)
     /*-{
-        if ($wnd.Vaadin.connectionIndicator) {
-            $wnd.Vaadin.connectionIndicator[property] = value;
-        }
+        $wnd.Vaadin.Flow.internal.ConnectionIndicator.setProperty(property, value);
     }-*/;
 
     /**
@@ -110,9 +102,7 @@ public class ConnectionIndicator {
      */
     public static native void loadingStarted()
     /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingStarted();
-        }
+        $wnd.Vaadin.Flow.internal.ConnectionIndicator.loadingStarted();
      }-*/;
 
     /**
@@ -125,9 +115,7 @@ public class ConnectionIndicator {
      */
     public static native void loadingFinished()
     /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingFinished();
-        }
+        $wnd.Vaadin.Flow.internal.ConnectionIndicator.loadingFinished();
      }-*/;
 
     /**
@@ -140,8 +128,6 @@ public class ConnectionIndicator {
      */
     public static native void loadingFailed()
     /*-{
-        if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingFailed();
-        }
+        $wnd.Vaadin.Flow.internal.ConnectionIndicator.loadingFailed();
      }-*/;
 }

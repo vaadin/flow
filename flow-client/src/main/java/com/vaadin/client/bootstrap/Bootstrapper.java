@@ -23,7 +23,6 @@ import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -174,17 +173,19 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigString("springBootLiveReloadPort"));
     }
 
-    private static void doStartApplication(final String applicationId) {
-        Profiler.enter("Bootstrapper.startApplication");
-        ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
-        ApplicationConnection applicationConnection = new ApplicationConnection(
-                appConf);
-        runningApplications.push(applicationConnection);
-        Profiler.leave("Bootstrapper.startApplication");
-
-        ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
-        applicationConnection.start(initialUidl);
-    }
+    /**
+     * Starts the application by delegating to the TypeScript engine
+     * ({@code window.Vaadin.Flow.internal.Bootstrapper.doStartApplication}),
+     * which assembles the registry via {@code ApplicationConnection.create} and
+     * starts it. The GWT {@code ApplicationConnection} path
+     * ({@link #getConfigFromDOM}, {@link #populateApplicationConfiguration}) is
+     * retained but no longer invoked, so the cutover can be reverted by
+     * restoring this method's previous body.
+     */
+    private static native void doStartApplication(String applicationId)
+    /*-{
+        $wnd.Vaadin.Flow.internal.Bootstrapper.doStartApplication(applicationId);
+    }-*/;
 
     /**
      * Gets the configuration object for a specific application from the
@@ -196,7 +197,7 @@ public class Bootstrapper implements EntryPoint {
      */
     private static native JsoConfiguration getJsoConfiguration(String appId)
     /*-{
-        return $wnd.Vaadin.Flow.getApp(appId);
+        return $wnd.Vaadin.Flow.internal.Bootstrapper.getJsoConfiguration(appId);
      }-*/;
 
     private static native boolean vaadinBootstrapLoaded()
@@ -206,15 +207,14 @@ public class Bootstrapper implements EntryPoint {
 
     private static native void deferStartApplication(String applicationId)
     /*-{
-        var callback = function() {
+        $wnd.Vaadin.Flow.internal.Bootstrapper.deferStartApplication($entry(function() {
             @Bootstrapper::doStartApplication(*)(applicationId);
-        };
-        $wnd.addEventListener('WebComponentsReady', $entry(callback));
+        }));
     }-*/;
 
     private static native boolean startApplicationImmediately()
     /*-{
-        return !$wnd.WebComponents || $wnd.WebComponents.ready;
+        return $wnd.Vaadin.Flow.internal.Bootstrapper.startApplicationImmediately();
     }-*/;
 
     /**
@@ -227,8 +227,8 @@ public class Bootstrapper implements EntryPoint {
      */
     public static native void registerCallback(String widgetsetName)
     /*-{
-        var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
-        $wnd.Vaadin.Flow.registerWidgetset(widgetsetName, callbackHandler);
+        $wnd.Vaadin.Flow.internal.Bootstrapper.registerCallback(widgetsetName,
+            $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;)));
     }-*/;
 
 }

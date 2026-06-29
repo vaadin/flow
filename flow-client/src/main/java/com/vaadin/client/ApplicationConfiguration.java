@@ -15,23 +15,30 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.bootstrap.ErrorMessage;
+import jsinterop.annotations.JsType;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Application configuration data.
  * <p>
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
+ * <p>
+ * Exported to JavaScript via {@link JsType} so that the TypeScript code taking
+ * over application startup can read the configuration. See
+ * {@code MIGRATION_STRATEGY.md}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JsType(namespace = "Vaadin.Flow.internal", name = "ApplicationConfiguration")
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
     private String serviceUrl;
     private int uiId;
-    private ErrorMessage sessionExpiredError;
+    private JavaScriptObject sessionExpiredError;
     private int heartbeatInterval;
     private int maxMessageSuspendTimeout;
 
@@ -194,9 +201,10 @@ public class ApplicationConfiguration {
     /**
      * Gets the message used when a session expiration error occurs.
      *
-     * @return the session expiration error message
+     * @return the session expiration error message as a native object with
+     *         caption, message, url and querySelector fields
      */
-    public ErrorMessage getSessionExpiredError() {
+    public JavaScriptObject getSessionExpiredError() {
         return sessionExpiredError;
     }
 
@@ -204,9 +212,10 @@ public class ApplicationConfiguration {
      * Sets the message used when a session expiration error occurs.
      *
      * @param sessionExpiredError
-     *            the session expiration error message
+     *            the session expiration error message as a native object with
+     *            caption, message, url and querySelector fields
      */
-    public void setSessionExpiredError(ErrorMessage sessionExpiredError) {
+    public void setSessionExpiredError(JavaScriptObject sessionExpiredError) {
         this.sessionExpiredError = sessionExpiredError;
     }
 

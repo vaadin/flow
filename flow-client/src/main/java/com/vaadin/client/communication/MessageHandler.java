@@ -547,11 +547,7 @@ public class MessageHandler {
     }
 
     private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
-        // Remove both link and style elements with matching dependency ID
-        var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].remove();
-        }
+        $wnd.Vaadin.Flow.internal.MessageHandler.removeStylesheetByIdFromDom(dependencyId);
     }-*/;
 
     private void processChanges(JsonObject json) {
@@ -582,9 +578,7 @@ public class MessageHandler {
 
     private native void callAfterServerUpdates(Node node)
     /*-{
-        if ( node && node.afterServerUpdate ) {
-            node.afterServerUpdate();
-        }
+        $wnd.Vaadin.Flow.internal.MessageHandler.callAfterServerUpdates(node);
     }-*/;
 
     private void endRequestIfResponse(ValueMap json) {
@@ -709,12 +703,7 @@ public class MessageHandler {
 
     private static final native int calculateBootstrapTime()
     /*-{
-        if ($wnd.performance && $wnd.performance.timing) {
-            return (new Date).getTime() - $wnd.performance.timing.responseStart;
-        } else {
-            // performance.timing not supported
-            return -1;
-        }
+        return $wnd.Vaadin.Flow.internal.MessageHandler.calculateBootstrapTime();
     }-*/;
 
     /**
@@ -839,16 +828,12 @@ public class MessageHandler {
 
     private static native ValueMap parseJSONResponse(String jsonText)
     /*-{
-       return JSON.parse(jsonText);
+       return $wnd.Vaadin.Flow.internal.MessageHandler.parseJSONResponse(jsonText);
     }-*/;
 
     private static final native double getFetchStartTime()
     /*-{
-        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing.fetchStart) {
-            return $wnd.performance.timing.fetchStart;
-        } else {
-            return 0;
-        }
+        return $wnd.Vaadin.Flow.internal.MessageHandler.getFetchStartTime();
     }-*/;
 
     /**

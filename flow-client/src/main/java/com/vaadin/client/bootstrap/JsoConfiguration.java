@@ -41,12 +41,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String getConfigString(String name)
     /*-{
-        var value = this.getConfig(name);
-        if (value === null || value === undefined) {
-            return null;
-        } else {
-            return value +"";
-        }
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigString(this, name);
     }-*/;
 
     /**
@@ -61,7 +56,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native ValueMap getConfigValueMap(String name)
     /*-{
-        return this.getConfig(name);
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigValueMap(this, name);
     }-*/;
 
     /**
@@ -74,7 +69,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String[] getConfigStringArray(String name)
     /*-{
-        return this.getConfig(name);
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigStringArray(this, name);
     }-*/;
 
     /**
@@ -90,13 +85,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native boolean getConfigBoolean(String name)
     /*-{
-        var value = this.getConfig(name);
-        if (value === null || value === undefined) {
-            return false;
-        } else {
-             // $entry not needed as function is not exported
-            return @java.lang.Boolean::valueOf(Z)(value);
-        }
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigBoolean(this, name);
     }-*/;
 
     /**
@@ -121,19 +110,20 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as an {@link ErrorMessage} object. Please
-     * note that the javascript value of the parameter should also be an object
-     * with appropriate fields, or else an undefined exception may be thrown
-     * when calling this method or when calling methods on the returned object.
+     * Reads a configuration parameter as a native error-message object with
+     * caption, message, url and querySelector fields. Please note that the
+     * javascript value of the parameter should also be an object with
+     * appropriate fields, or else an undefined exception may be thrown when
+     * calling this method or when reading fields from the returned object.
      *
      * @param name
      *            name of the configuration parameter
      * @return error message with the given name, or <code>null</code> if no
      *         value is defined
      */
-    public native ErrorMessage getConfigError(String name)
+    public native JavaScriptObject getConfigError(String name)
     /*-{
-        return this.getConfig(name);
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getConfigError(this, name);
     }-*/;
 
     /**
@@ -143,8 +133,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String getVaadinVersion()
     /*-{
-        var info = this.getConfig("versionInfo");
-        return info ? info.vaadinVersion : null;
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getVaadinVersion(this);
     }-*/;
 
     /**
@@ -154,8 +143,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String getAtmosphereVersion()
     /*-{
-        var info = this.getConfig("versionInfo");
-        return info ? info.atmosphereVersion : null;
+        return $wnd.Vaadin.Flow.internal.JsoConfiguration.getAtmosphereVersion(this);
     }-*/;
 
     /**

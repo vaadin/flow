@@ -50,7 +50,7 @@ public class MessageSender {
     }
 
     public static native void sendBeacon(String url, String payload) /*-{
-        $wnd.navigator.sendBeacon(url, payload);
+        $wnd.Vaadin.Flow.internal.MessageSender.sendBeacon(url, payload);
     }-*/;
 
     public enum ResynchronizationState {

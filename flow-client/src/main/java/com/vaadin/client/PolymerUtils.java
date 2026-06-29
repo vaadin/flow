@@ -73,7 +73,7 @@ public final class PolymerUtils {
     public static native void setListValueByIndex(Element htmlNode, String path,
             int listIndex, JsonValue newValue)
     /*-{
-        htmlNode.set(path + "." + listIndex, newValue);
+        $wnd.Vaadin.Flow.internal.PolymerUtils.setListValueByIndex(htmlNode, path, listIndex, newValue);
     }-*/;
 
     /**
@@ -100,7 +100,7 @@ public final class PolymerUtils {
     public static native void splice(Element htmlNode, String path,
             int startIndex, int deleteCount, JsonArray itemsToAdd)
     /*-{
-        htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(itemsToAdd));
+        $wnd.Vaadin.Flow.internal.PolymerUtils.splice(htmlNode, path, startIndex, deleteCount, itemsToAdd);
     }-*/;
 
     /**
@@ -115,13 +115,7 @@ public final class PolymerUtils {
      */
     public static native void storeNodeId(Node domNode, int id, String path)
     /*-{
-        if (typeof(domNode.get) !== 'undefined') {
-            var polymerProperty = domNode.get(path);
-            if (typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined) {
-                polymerProperty["nodeId"] = id;
-            }
-        }
+        $wnd.Vaadin.Flow.internal.PolymerUtils.storeNodeId(domNode, id, path);
     }-*/;
 
     /**
@@ -378,10 +372,7 @@ public final class PolymerUtils {
      */
     public static native boolean isPolymerElement(Element htmlNode)
     /*-{
-        var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
-        var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-    
-        return (isP2Element || isP3Element);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isPolymerElement(htmlNode);
     }-*/;
 
     /**
@@ -401,7 +392,7 @@ public final class PolymerUtils {
     @Deprecated
     public static native boolean mayBePolymerElement(Element htmlNode)
     /*-{
-        return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.mayBePolymerElement(htmlNode);
     }-*/;
 
     /**
@@ -422,7 +413,7 @@ public final class PolymerUtils {
     public static native Node searchForElementInShadowRoot(
             ShadowRoot shadowRoot, String cssQuery)
     /*-{
-        return shadowRoot.querySelector(cssQuery);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.searchForElementInShadowRoot(shadowRoot, cssQuery);
     }-*/;
 
     /**
@@ -443,7 +434,7 @@ public final class PolymerUtils {
     public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
             String id)
     /*-{
-        return shadowRoot.getElementById(id);
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getElementInShadowRootById(shadowRoot, id);
     }-*/;
 
     /**
@@ -464,7 +455,7 @@ public final class PolymerUtils {
     public static native Element getDomElementById(Node shadowRootParent,
             String id)
     /*-{
-        return shadowRootParent.$[id];
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getDomElementById(shadowRootParent, id);
     }-*/;
 
     /**
@@ -478,7 +469,7 @@ public final class PolymerUtils {
      */
     public static native boolean isReady(Node shadowRootParent)
     /*-{
-        return typeof(shadowRootParent.$) != "undefined";
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isReady(shadowRootParent);
     }-*/;
 
     /**
@@ -536,7 +527,7 @@ public final class PolymerUtils {
      */
     public static native Element getDomRoot(Node templateElement)
     /*-{
-        return templateElement.root;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.getDomRoot(templateElement);
     }-*/;
 
     /**
@@ -551,10 +542,9 @@ public final class PolymerUtils {
     public static native void invokeWhenDefined(String tagName,
             Runnable runnable)
     /*-{
-        $wnd.customElements.whenDefined(tagName).then(
-            function () {
-                runnable.@java.lang.Runnable::run(*)();
-            });
+        $wnd.Vaadin.Flow.internal.PolymerUtils.invokeWhenDefined(tagName, function () {
+            runnable.@java.lang.Runnable::run(*)();
+        });
     }-*/;
 
     /**
@@ -645,7 +635,7 @@ public final class PolymerUtils {
     public static native void setProperty(Element element, String path,
             Object value)
     /*-{
-         element.set(path, value);
+         $wnd.Vaadin.Flow.internal.PolymerUtils.setProperty(element, path, value);
      }-*/;
 
     /**
@@ -657,11 +647,6 @@ public final class PolymerUtils {
      */
     public static native boolean isInShadowRoot(Element element)
     /*-{
-        while (element.parentNode && (element = element.parentNode)) {
-            if (element.toString() === '[object ShadowRoot]') {
-                return true;
-            }
-        }
-        return false;
+        return $wnd.Vaadin.Flow.internal.PolymerUtils.isInShadowRoot(element);
      }-*/;
 }

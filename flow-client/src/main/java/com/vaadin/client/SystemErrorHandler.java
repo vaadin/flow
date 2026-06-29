@@ -16,22 +16,20 @@
 package com.vaadin.client;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
-import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
-import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.KeyboardEvent;
@@ -74,12 +72,15 @@ public class SystemErrorHandler {
      * @param details
      *            message details or null if there are no details
      * @param message
-     *            an ErrorMessage describing the error
+     *            a native object describing the error, with caption, message
+     *            and url fields
      */
     protected void handleUnrecoverableError(String details,
-            ErrorMessage message) {
-        handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl(), null);
+            JavaScriptObject message) {
+        handleUnrecoverableError(
+                (String) WidgetUtil.getJsProperty(message, "caption"),
+                (String) WidgetUtil.getJsProperty(message, "message"), details,
+                (String) WidgetUtil.getJsProperty(message, "url"), null);
     }
 
     /**
@@ -236,12 +237,7 @@ public class SystemErrorHandler {
 
     private native void recreateNodes(String elementName)
     /*-{
-        var elements = document.getElementsByTagName(elementName);
-        for (var i = 0 ; i < elements.length ; ++i) {
-            var elem = elements[i];
-            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
-            elem.parentNode.replaceChild(elem.cloneNode(false), elem);
-        }
+        $wnd.Vaadin.Flow.internal.SystemErrorHandler.recreateNodes(elementName);
     }-*/;
 
     /**
@@ -271,62 +267,14 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message, String details,
-            String querySelector) {
-        Document document = Browser.getDocument();
-        Element systemErrorContainer = document.createDivElement();
-        // Set the popover attribute for native popovers.
-        systemErrorContainer.setAttribute("popover", "manual");
-        systemErrorContainer.setClassName("v-system-error");
-
-        if (caption != null) {
-            Element captionDiv = document.createDivElement();
-            captionDiv.setClassName("caption");
-            captionDiv.setTextContent(caption);
-            systemErrorContainer.appendChild(captionDiv);
-            Console.error(caption);
-        }
-        if (message != null) {
-            Element messageDiv = document.createDivElement();
-            messageDiv.setClassName("message");
-            messageDiv.setTextContent(message);
-            systemErrorContainer.appendChild(messageDiv);
-            Console.error(message);
-        }
-        if (details != null) {
-            Element detailsDiv = document.createDivElement();
-            detailsDiv.setClassName("details");
-            detailsDiv.setTextContent(details);
-            systemErrorContainer.appendChild(detailsDiv);
-            Console.error(details);
-        }
-        if (querySelector != null) {
-            Element baseElement = document.querySelector(querySelector);
-            // if querySelector does not match an element on the page, the
-            // error will not be displayed
-            if (baseElement != null) {
-                // if the baseElement has a shadow root, add the warning to
-                // the shadow - otherwise add it to the baseElement
-                findShadowRoot(baseElement).orElse(baseElement)
-                        .appendChild(systemErrorContainer);
-            }
-        } else {
-            document.getBody().appendChild(systemErrorContainer);
-        }
-        showPopover(systemErrorContainer);
-
-        return systemErrorContainer;
-    }
-
-    // @formatter:off
-    private native void showPopover(Element el) 
+    private native Element handleError(String caption, String message,
+            String details, String querySelector)
     /*-{
-        var fn = el && el.showPopover;
-        if (typeof fn === "function") {
-            fn.call(el);
-        }
+        return $wnd.Vaadin.Flow.internal.SystemErrorHandler.handleError(caption,
+            message, details, querySelector, function(text) {
+                @com.vaadin.client.Console::error(Ljava/lang/Object;)(text);
+            });
     }-*/;
-    // @formatter:on
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
         if (e instanceof UmbrellaException) {
@@ -338,17 +286,8 @@ public class SystemErrorHandler {
         return e;
     }
 
-    private Optional<Element> findShadowRoot(Element host) {
-        return Optional.ofNullable(getShadowRootElement(host));
-    }
-
     private boolean isWebComponentMode() {
         return registry.getApplicationConfiguration().isWebComponentMode();
     }
-
-    private native Element getShadowRootElement(Element host)
-    /*-{
-        return host.shadowRoot;
-    }-*/;
 
 }

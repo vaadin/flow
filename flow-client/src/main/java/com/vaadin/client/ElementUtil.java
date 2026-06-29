@@ -20,10 +20,15 @@ import elemental.dom.Node;
 
 /**
  * Utils class, intended to ease working with DOM elements on client side.
+ * <p>
+ * The implementation has been migrated to TypeScript (see
+ * {@code ElementUtil.ts} registered on
+ * {@code window.Vaadin.Flow.internal.ElementUtil}); these methods delegate to
+ * it.
  *
  * @author Vaadin Ltd
  */
-public class ElementUtil {
+public final class ElementUtil {
 
     private ElementUtil() {
         // Only static helpers
@@ -38,10 +43,10 @@ public class ElementUtil {
      *            the required tag name
      * @return {@code true} if the node has required tag name
      */
-    public static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
-    }
+    public static native boolean hasTag(Node node, String tag)
+    /*-{
+        return $wnd.Vaadin.Flow.internal.ElementUtil.hasTag(node, tag);
+    }-*/;
 
     /**
      * Searches the shadow root of the given context element for the given id or
@@ -56,23 +61,21 @@ public class ElementUtil {
      */
     public static native Element getElementById(Node context, String id)
     /*-{
-       if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
-         // Exported WCs add their id to body.$ and cannot be found using a real id attribute
-         return document.body.$[id];
-       } else if (context.shadowRoot) {
-         return context.shadowRoot.getElementById(id);
-       } else if (context.getElementById) {
-         return context.getElementById(id);
-       } else if (id && id.match("^[a-zA-Z0-9-_]*$")) {
-         // No funky characters in id so querySelector can be used directly
-         return context.querySelector("#" + id);
-       } else {
-         // Find all elements with an id attribute and filter out the correct one
-         return Array.from(context.querySelectorAll('[id]')).find(function(e) {return e.id == id});
-       }
+        return $wnd.Vaadin.Flow.internal.ElementUtil.getElementById(context, id);
     }-*/;
 
-    public static native Element getElementByName(Node context, String name) /*-{
-        return Array.from(context.querySelectorAll('[name]')).find(function(e) {return e.getAttribute('name') == name});
+    /**
+     * Searches the context for an element with the given {@code name}
+     * attribute.
+     *
+     * @param context
+     *            the container element to search through
+     * @param name
+     *            the name attribute value to search for
+     * @return the element if found, otherwise <code>null</code>
+     */
+    public static native Element getElementByName(Node context, String name)
+    /*-{
+        return $wnd.Vaadin.Flow.internal.ElementUtil.getElementByName(context, name);
     }-*/;
 }

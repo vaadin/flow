@@ -1,6 +1,9 @@
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.TextResource;
 
 /**
  * Base class for all unit tests that run as JavaScript compiled by GWT. The
@@ -45,7 +48,31 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
     @Override
     protected void gwtSetUp() throws Exception {
         installPolyfills();
+        registerInternals();
         super.gwtSetUp();
+    }
+
+    /**
+     * Registers the TypeScript implementations that the GWT engine calls into
+     * ({@code window.Vaadin.Flow.internal.*}). In production these are
+     * registered by the engine's {@code init()}; GwtTests do not run
+     * {@code init()}, so the same implementations (bundled by esbuild from
+     * {@code registerInternals.ts}) are eval'd here instead.
+     */
+    private static void registerInternals() {
+        evalInHostWindow(TestInternals.INSTANCE.script().getText());
+    }
+
+    private static native void evalInHostWindow(String script)
+    /*-{
+        $wnd.eval(script);
+    }-*/;
+
+    interface TestInternals extends ClientBundle {
+        TestInternals INSTANCE = GWT.create(TestInternals.class);
+
+        @Source("gwtTestInternals.js")
+        TextResource script();
     }
 
     @Override
@@ -80,6 +107,15 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
         // Keep also original _immediateFn so it can be restored if needed
         window.Promise._originalImmediateFn = window.Promise._immediateFn;
         window.Promise._immediateFn = function(callback) { callback(); };
+
+        // The migrated TypeScript implementations are eval'd in $wnd (see
+        // registerInternals), so code in the bundle resolves Promise from $wnd
+        // rather than the module window polyfilled above. Mirror the same
+        // synchronous Promise onto $wnd so deferred bundle callbacks (e.g.
+        // Polymer whenDefined handling in SimpleElementBindingStrategy) run
+        // immediately in tests, matching the behaviour the engine's JSNI had
+        // when it ran in the module window.
+        $wnd.Promise = window.Promise;
     }-*/;
 
 }

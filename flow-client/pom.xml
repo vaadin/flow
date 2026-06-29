@@ -255,6 +255,10 @@
                         a separate production build -->
           <enableAssertions>true</enableAssertions>
           <failOnError>true</failOnError>
+          <!-- Export classes annotated with @JsType to the JS namespace so the
+               TypeScript migration can call into the GWT bundle. See
+               MIGRATION_STRATEGY.md. -->
+          <generateJsInteropExports>true</generateJsInteropExports>
           <gwtSdkFirstInClasspath/>
           <persistentunitcache>false</persistentunitcache>
           <webappDirectory>${gwt.module.output}</webappDirectory>
@@ -376,6 +380,24 @@
               <arguments>
                 <argument>run</argument>
                 <argument>compile</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- Bundle the TypeScript implementations the GWT engine calls into
+                 (ES5, for HtmlUnit) so GwtTests can register them; embedded via
+                 a ClientBundle and eval'd by ClientEngineTestBase. Runs before
+                 the GWT test goal (test phase). -->
+            <id>build-gwt-test-internals</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-test-classes</phase>
+            <configuration>
+              <executable>npm</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>build-gwt-test-internals</argument>
               </arguments>
             </configuration>
           </execution>

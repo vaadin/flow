@@ -73,6 +73,11 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
             'serviceUrl' : '//localhost:8080/flow/',
             'webComponentMode' : webComponentMode,
         };
+        // Preserve the TypeScript implementations registered by
+        // ClientEngineTestBase.gwtSetUp() (window.Vaadin.Flow.internal.*) while
+        // replacing the rest of the mock bootstrap.
+        var internal = $wnd.Vaadin && $wnd.Vaadin.Flow
+                && $wnd.Vaadin.Flow.internal;
         $wnd.Vaadin = {
             Flow : {
                 clients : {},
@@ -85,7 +90,8 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
                             return mockCfg[key];
                         }
                     }
-                }
+                },
+                internal : internal
             },
         };
     }-*/;

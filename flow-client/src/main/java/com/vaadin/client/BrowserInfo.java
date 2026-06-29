@@ -70,22 +70,7 @@ public class BrowserInfo {
 
     private native boolean checkForTouchDevice()
     /*-{
-        if (navigator && "maxTouchPoints" in navigator) {
-            return navigator.maxTouchPoints > 0;
-        } else if (navigator && "msMaxTouchPoints" in navigator) {
-            return navigator.msMaxTouchPoints > 0;
-        } else {
-            var mQ = $wnd.matchMedia && matchMedia("(pointer:coarse)");
-            if (mQ && mQ.media === "(pointer:coarse)") {
-                return !!mQ.matches;
-            }
-        }
-        try {
-            $doc.createEvent("TouchEvent");
-            return true;
-        } catch(e){
-            return false;
-        }
+        return $wnd.Vaadin.Flow.internal.BrowserInfo.checkForTouchDevice();
     }-*/;
 
     /**
@@ -233,13 +218,12 @@ public class BrowserInfo {
 
     private static native String getBrowserString()
     /*-{
-        return $wnd.navigator.userAgent;
+        return $wnd.Vaadin.Flow.internal.BrowserInfo.getBrowserString();
     }-*/;
 
     private static native boolean isIos()
     /*-{
-        return (/iPad|iPhone|iPod/.test(navigator.platform) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+        return $wnd.Vaadin.Flow.internal.BrowserInfo.isIos();
     }-*/;
 
     /**

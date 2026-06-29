@@ -39,7 +39,7 @@ public final class LitUtils {
      */
     public static native boolean isLitElement(Node element)
     /*-{
-        return typeof element.update == "function" && element.updateComplete instanceof Promise && typeof element.shouldUpdate == "function" && typeof element.firstUpdated == "function";
+        return $wnd.Vaadin.Flow.internal.LitUtils.isLitElement(element);
     }-*/;
 
     /**
@@ -53,12 +53,10 @@ public final class LitUtils {
      */
     public static native void whenRendered(Element element, Runnable runnable)
     /*-{
-        element.updateComplete.then(
-            $entry(
-              function() {
+        $wnd.Vaadin.Flow.internal.LitUtils.whenRendered(element, $entry(
+            function() {
                 runnable.@java.lang.Runnable::run(*)();
-              })
-            );
+            }));
     }-*/;
 
 }

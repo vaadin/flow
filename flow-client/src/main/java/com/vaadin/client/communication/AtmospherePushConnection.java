@@ -681,76 +681,59 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected final native AtmosphereConfiguration createConfig()
     /*-{
-        return {
-            transport: 'websocket',
-            maxStreamingLength: 1000000,
-            fallbackTransport: 'long-polling',
-            contentType: 'application/json; charset=UTF-8',
-            reconnectInterval: 5000,
-            withCredentials: true,
-            maxWebsocketErrorRetries: 12,
-            timeout: -1,
-            maxReconnectOnClose: 10000000,
-            trackMessageLength: true,
-            enableProtocol: true,
-            handleOnlineOffline: false,
-            executeCallbackBeforeReconnect: true,
-            messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
-        };
+        return $wnd.Vaadin.Flow.internal.AtmospherePushConnection.createConfig(
+            @com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER);
     }-*/;
 
     private final native JavaScriptObject doConnect(String uri,
             JavaScriptObject config)
     /*-{
         var self = this;
-    
-        config.url = uri;
-        config.onOpen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
-        });
-        config.onReopen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
-        });
-        config.onMessage = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
-        });
-        config.onError = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
-        });
-        config.onTransportFailure = $entry(function(reason,request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
-        });
-        config.onClose = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
-        });
-        config.onReconnect = $entry(function(request, response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
-        });
-        config.onClientTimeout = $entry(function(request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
-        });
-        config.headers = {
-            'X-Vaadin-LastSeenServerSyncId': function() {
+        var callbacks = {
+            onOpen: $entry(function(response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
+            }),
+            onReopen: $entry(function(response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
+            }),
+            onMessage: $entry(function(response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
+            }),
+            onError: $entry(function(response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
+            }),
+            onTransportFailure: $entry(function(reason,request) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
+            }),
+            onClose: $entry(function(response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
+            }),
+            onReconnect: $entry(function(request, response) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
+            }),
+            onClientTimeout: $entry(function(request) {
+                self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
+            }),
+            getLastSeenServerSyncId: function() {
                 return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
             }
         };
-    
-        return $wnd.vaadinPush.atmosphere.subscribe(config);
+        return $wnd.Vaadin.Flow.internal.AtmospherePushConnection.doConnect(uri, config, callbacks);
     }-*/;
 
     private native void doPush(JavaScriptObject socket, String message)
     /*-{
-       socket.push(message);
+       $wnd.Vaadin.Flow.internal.AtmospherePushConnection.doPush(socket, message);
     }-*/;
 
     private static native void doDisconnect(String url)
     /*-{
-       $wnd.vaadinPush.atmosphere.unsubscribeUrl(url);
+       $wnd.Vaadin.Flow.internal.AtmospherePushConnection.doDisconnect(url);
     }-*/;
 
     private static native boolean isAtmosphereLoaded()
     /*-{
-        return $wnd.vaadinPush && $wnd.vaadinPush.atmosphere;
+        return $wnd.Vaadin.Flow.internal.AtmospherePushConnection.isAtmosphereLoaded();
     }-*/;
 
     private void runWhenAtmosphereLoaded(final Command command) {

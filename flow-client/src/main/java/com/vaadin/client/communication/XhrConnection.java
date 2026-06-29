@@ -202,17 +202,7 @@ public class XhrConnection {
 
     private static native boolean resendRequest(XMLHttpRequest xhr)
     /*-{
-        if (xhr.readyState != 1) {
-            // Progressed to some other readyState -> no longer blocked
-            return false;
-        }
-        try {
-            xhr.send();
-            return true;
-        } catch (e) {
-            // send throws exception if it is running for real
-            return false;
-        }
+        return $wnd.Vaadin.Flow.internal.XhrConnection.resendRequest(xhr);
     }-*/;
 
 }

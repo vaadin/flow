@@ -518,12 +518,12 @@ public class ResourceLoader {
 
     private static native boolean supportsHtmlWhenReady()
     /*-{
-        return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
+        return $wnd.Vaadin.Flow.internal.ResourceLoader.supportsHtmlWhenReady();
     }-*/;
 
     private static native void addHtmlImportsReadyHandler(Runnable handler)
     /*-{
-        $wnd.HTMLImports.whenReady($entry(function() {
+        $wnd.Vaadin.Flow.internal.ResourceLoader.addHtmlImportsReadyHandler($entry(function() {
             handler.@Runnable::run()();
         }));
     }-*/;
@@ -543,23 +543,13 @@ public class ResourceLoader {
     public static native void addOnloadHandler(Element element,
             ResourceLoadListener listener, ResourceLoadEvent event)
     /*-{
-        element.onload = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onerror = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onreadystatechange = function() {
-            if ("loaded" === element.readyState || "complete" === element.readyState ) {
-                element.onload(arguments[0]);
-            }
-        };
+        $wnd.Vaadin.Flow.internal.ResourceLoader.addOnloadHandler(element,
+            $entry(function() {
+                listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+            }),
+            $entry(function() {
+                listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+            }));
     }-*/;
 
     /**
@@ -797,27 +787,7 @@ public class ResourceLoader {
 
     private static native int getStyleSheetLength(String url)
     /*-{
-        for(var i = 0; i < $doc.styleSheets.length; i++) {
-            if ($doc.styleSheets[i].href === url) {
-                var sheet = $doc.styleSheets[i];
-                try {
-                    var rules = sheet.cssRules;
-                    if (rules === undefined) {
-                        rules = sheet.rules;
-                    }
-                    if (rules === null) {
-                        // Style sheet loaded, but can't access length because of XSS -> assume there's something there
-                        return 1;
-                    }
-                    // Return length so we can distinguish 0 (probably 404 error) from normal case.
-                    return rules.length;
-                } catch (err) {
-                    return 1;
-                }
-            }
-        }
-        // No matching stylesheet found -> not yet loaded
-        return -1;
+        return $wnd.Vaadin.Flow.internal.ResourceLoader.getStyleSheetLength(url);
     }-*/;
 
     private static boolean addListener(String resourceId,
@@ -872,18 +842,14 @@ public class ResourceLoader {
             Supplier<Object> promiseSupplier, Runnable onSuccess,
             Runnable onError)
     /*-{
-          try {
-            var promise = promiseSupplier.@java.util.function.Supplier::get(*)();
-            if ( !(promise instanceof $wnd.Promise )){
-                throw new Error('The expression "'+expression+'" result is not a Promise.');
-            }
-            promise.then( function(result) { onSuccess.@java.lang.Runnable::run(*)(); } ,
-                          function(error) { console.error(error); onError.@java.lang.Runnable::run(*)(); } );
-          }
-          catch(error) {
-               console.error(error);
-               onError.@java.lang.Runnable::run(*)();
-          }
+        // The supplier is intentionally not wrapped in $entry: its exception is
+        // expected and handled by runPromiseExpression's try/catch. Wrapping it
+        // would additionally report the exception to GWT's uncaught handler,
+        // logging it twice.
+        $wnd.Vaadin.Flow.internal.ResourceLoader.runPromiseExpression(expression,
+            function() { return promiseSupplier.@java.util.function.Supplier::get(*)(); },
+            $entry(function() { onSuccess.@java.lang.Runnable::run(*)(); }),
+            $entry(function() { onError.@java.lang.Runnable::run(*)(); }));
     }-*/;
 
 }
