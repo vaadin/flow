@@ -24,6 +24,6 @@
     "vite-plugin-checker": "0.14.4",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
-    "@types/node": "26.0.0"
+    "@types/node": "26.0.1"
   }
 }
