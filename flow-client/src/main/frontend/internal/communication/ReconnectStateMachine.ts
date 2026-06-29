@@ -110,6 +110,7 @@ export class ReconnectStateMachine {
     }
 
     this.reconnectAttempt++;
+    console.debug(`Reconnect attempt ${this.reconnectAttempt} for ${type}`);
     if (this.reconnectAttempt >= this.registry.getReconnectConfiguration().getReconnectAttempts()) {
       // Max attempts reached -> give up (CONNECTION_LOST).
       this.giveUp();
@@ -133,6 +134,7 @@ export class ReconnectStateMachine {
     } else {
       this.registry.getLoadingIndicatorStateHandler().stopLoading();
     }
+    console.debug('Re-established connection to server');
   }
 
   /** Stops reconnecting and goes to CONNECTION_LOST. Mirrors giveUp. */
