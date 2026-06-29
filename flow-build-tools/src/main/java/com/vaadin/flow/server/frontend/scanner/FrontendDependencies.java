@@ -66,7 +66,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
@@ -162,12 +161,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // Add ReactRouterOutlet and adapter as internal so it gets added to the
         // bundle if available.
         try {
-            if ((finder
+            if (finder
                     .getResource(RESOURCES_FRONTEND_DEFAULT
                             + "/ReactRouterOutletElement.tsx") != null
-                    || finder.getResource(
-                            COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
-                                    + "/ReactRouterOutletElement.tsx") != null)
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactRouterOutlet")) {
                 Class<Object> entryPointClass = finder.loadClass(
