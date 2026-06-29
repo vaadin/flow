@@ -19,7 +19,7 @@ import java.util.List;
  * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and
  * falls back to default values if {@link PWA} is unavailable ({@code null}).
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_PATH = "manifest.webmanifest";
@@ -48,6 +48,8 @@ public class PwaConfiguration implements Serializable {
 
     /**
      * Creates the configuration using default PWA parameters.
+     *
+     * @since 6.0
      */
     public PwaConfiguration() {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
@@ -61,6 +63,7 @@ public class PwaConfiguration implements Serializable {
      *
      * @param pwa
      *            the annotation to use for configuration
+     * @since 6.0
      */
     public PwaConfiguration(PWA pwa) {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
@@ -98,6 +101,7 @@ public class PwaConfiguration implements Serializable {
      *            the list of files to add for pre-caching
      * @param offlineEnabled
      *            is offline enabled.
+     * @since 7.0
      */
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
@@ -260,6 +264,7 @@ public class PwaConfiguration implements Serializable {
      * Is offline enabled.
      *
      * @return is offline enabled.
+     * @since 23.1
      */
     public boolean isOfflineEnabled() {
         return offlineEnabled;
@@ -306,6 +311,7 @@ public class PwaConfiguration implements Serializable {
      * Set {@link PWA#offlinePath()} value in PWA annotation to enable.
      *
      * @return true when static offline HTML is used
+     * @since 6.0
      */
     public boolean isOfflinePathEnabled() {
         return !offlinePath.isEmpty();

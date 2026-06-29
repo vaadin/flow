@@ -17,7 +17,7 @@ import java.io.Serializable;
  * {@link ValidationStatusChangeListener#validationStatusChanged(ValidationStatusChangeEvent)}
  * invoked.
  *
- * @since 23.2
+ * @since 23.1.2
  *
  * @param <V>
  *            the value type

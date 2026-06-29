@@ -100,6 +100,8 @@ public class FrontendUtils {
     /**
      * Default folder for client-side generated files inside the project root
      * frontend folder.
+     *
+     * @since 6.0
      */
     public static final String GENERATED = "generated/";
 
@@ -118,47 +120,63 @@ public class FrontendUtils {
      *
      * By default the old folder is <code>/frontend</code> in the project
      * folder.
+     *
+     * @since 24.4
      */
     public static final String LEGACY_FRONTEND_DIR = DEFAULT_NODE_DIR
             + FRONTEND;
 
     /**
      * The name of the vite configuration file.
+     *
+     * @since 9.0
      */
     public static final String VITE_CONFIG = "vite.config.ts";
 
     /**
      * The name of the generated vite configuration file.
+     *
+     * @since 9.0
      */
     public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
 
     /**
      * The name of the service worker source file for InjectManifest method of
      * the workbox plugin.
+     *
+     * @since 6.0
      */
     public static final String SERVICE_WORKER_SRC = "sw.ts";
 
     /**
      * The JavaScript version of the service worker file, for checking if a user
      * has a JavaScript version of a custom service worker file already.
+     *
+     * @since 6.0
      */
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
      * The folder inside the 'generated' folder where frontend resources from
      * jars are copied.
+     *
+     * @since 23.3
      */
     public static final String JAR_RESOURCES_FOLDER = "jar-resources";
 
     /**
      * The location where javascript files present in jar resources are copied
      * and can be imported from.
+     *
+     * @since 23.3
      */
     public static final String JAR_RESOURCES_IMPORT = "Frontend/generated/"
             + JAR_RESOURCES_FOLDER + "/";
     /**
      * The location where javascript files present in jar resources are copied
      * and can be imported from, relative to the frontend folder.
+     *
+     * @since 23.3
      */
     public static final String JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE = JAR_RESOURCES_IMPORT
             .replace("Frontend/", "./");
@@ -172,12 +190,16 @@ public class FrontendUtils {
     /**
      * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME}
      * file.
+     *
+     * @since 3.0
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
      * Name of the file that contains application imports, javascript, theme and
      * style annotations used when embedding Flow as web-component.
+     *
+     * @since 24.3.10
      */
     public static final String IMPORTS_WEB_COMPONENT_NAME = "generated-flow-webcomponent-imports.js";
 
@@ -188,6 +210,8 @@ public class FrontendUtils {
      * File name of the bootstrap file that is generated in frontend
      * {@link #GENERATED} folder. The bootstrap file is always executed in a
      * Vaadin app.
+     *
+     * @since 6.0
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
@@ -195,6 +219,8 @@ public class FrontendUtils {
      * File name of the web component bootstrap file that is generated in
      * frontend {@link #GENERATED} folder. The bootstrap file is always executed
      * in an exported web component.
+     *
+     * @since 23.1
      */
     public static final String WEB_COMPONENT_BOOTSTRAP_FILE_NAME = "vaadin-web-component.ts";
 
@@ -203,36 +229,50 @@ public class FrontendUtils {
      * {@link #GENERATED} folder. The feature flags file contains code to define
      * feature flags as globals that might be used by Vaadin web components or
      * application code.
+     *
+     * @since 23.0
      */
     public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
 
     /**
      * File name of the index.html in client side.
+     *
+     * @since 3.0
      */
     public static final String INDEX_HTML = "index.html";
 
     /**
      * File name of the web-component.html in client side.
+     *
+     * @since 23.0.13
      */
     public static final String WEB_COMPONENT_HTML = "web-component.html";
 
     /**
      * File name of the index.ts in client side.
+     *
+     * @since 3.0
      */
     public static final String INDEX_TS = "index.ts";
 
     /**
      * File name of the index.js in client side.
+     *
+     * @since 3.0
      */
     public static final String INDEX_JS = "index.js";
 
     /**
      * File name of the index.tsx in client side.
+     *
+     * @since 24.0
      */
     public static final String INDEX_TSX = "index.tsx";
 
     /**
      * File name of Vite helper used in development mode.
+     *
+     * @since 9.0
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
@@ -248,6 +288,8 @@ public class FrontendUtils {
 
     /**
      * Default generated path for generated frontend files.
+     *
+     * @since 6.0
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
             + GENERATED;
@@ -268,11 +310,15 @@ public class FrontendUtils {
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
      * <code>import 'Frontend/foo.js';</code> references the
      * file<code>frontend/foo.js</code>.
+     *
+     * @since 23.3
      */
     public static final String FRONTEND_FOLDER_ALIAS = "Frontend/";
 
     /**
      * The prefix used to import files generated by Flow.
+     *
+     * @since 24.1
      */
     public static final String FRONTEND_GENERATED_FLOW_IMPORT_PATH = FRONTEND_FOLDER_ALIAS
             + "generated/flow/";
@@ -280,6 +326,8 @@ public class FrontendUtils {
     /**
      * The default directory in frontend directory, where Hilla views are
      * located.
+     *
+     * @since 24.4
      */
     public static final String HILLA_VIEWS_PATH = "views";
 
@@ -291,21 +339,29 @@ public class FrontendUtils {
 
     /**
      * A key in a Json object for chunks list.
+     *
+     * @since 2.1
      */
     public static final String CHUNKS = "chunks";
 
     /**
      * The entry-point key used for the exported bundle.
+     *
+     * @since 3.0.1
      */
     public static final String EXPORT_CHUNK = "export";
 
     /**
      * A key in a Json object for css imports data.
+     *
+     * @since 2.1
      */
     public static final String CSS_IMPORTS = "cssImports";
 
     /**
      * A key in a Json object for js modules data.
+     *
+     * @since 2.1
      */
     public static final String JS_MODULES = "jsModules";
 
@@ -438,6 +494,7 @@ public class FrontendUtils {
      *            the function to make changes to the created instance of
      *            ProcessBuilder, not {@literal null}.
      * @return a configured process builder
+     * @since 24.8
      */
     public static ProcessBuilder createProcessBuilder(List<String> command,
             UnaryOperator<ProcessBuilder> configureProcessBuilder) {
@@ -496,6 +553,7 @@ public class FrontendUtils {
      * @throws IOException
      *             on error when reading file
      *
+     * @since 3.0
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
@@ -519,6 +577,7 @@ public class FrontendUtils {
      * @throws IOException
      *             on error when reading file
      *
+     * @since 23.0.13
      */
     public static String getWebComponentHtmlContent(VaadinService service)
             throws IOException {
@@ -604,6 +663,7 @@ public class FrontendUtils {
      *            the file path.
      * @return an input stream for reading the file contents; null if there is
      *         no such file or the dev server is not running.
+     * @since 9.0
      */
     public static InputStream getFrontendFileFromDevModeHandler(
             VaadinService service, String path) {
@@ -635,6 +695,7 @@ public class FrontendUtils {
      * @param path
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
+     * @since 24.4
      */
     public static File resolveFrontendPath(File projectRoot,
             DeploymentConfiguration deploymentConfiguration, String path) {
@@ -650,6 +711,7 @@ public class FrontendUtils {
      * @param frontendDir
      *            the frontend directory location from project's configuration
      * @return correct folder or legacy folder if not user defined
+     * @since 24.4
      */
     public static File getLegacyFrontendFolderIfExists(File projectRoot,
             File frontendDir) {
@@ -676,6 +738,7 @@ public class FrontendUtils {
      * @param frontendDirectory
      *            the frontend directory.
      * @return an existing {@link File} , or null if the file doesn't exist.
+     * @since 23.2.2
      */
     public static File resolveFrontendPath(File projectRoot, String path,
             File frontendDirectory) {
@@ -695,6 +758,7 @@ public class FrontendUtils {
      * @param jarImport
      *            jar file to get (no resource folder should be added)
      * @return resource as String or {@code null} if not found
+     * @since 24.1
      */
     public static String getJarResourceString(String jarImport,
             ClassFinder finder) {
@@ -722,6 +786,7 @@ public class FrontendUtils {
      * @param frontendDirectory
      *            project's frontend directory
      * @return a {@link File} representing a folder with copied resources
+     * @since 24.0
      */
     public static File getJarResourcesFolder(File frontendDirectory) {
         return new File(getFrontendGeneratedFolder(frontendDirectory),
@@ -746,6 +811,7 @@ public class FrontendUtils {
      *
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     * @since 24.1
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
@@ -761,6 +827,7 @@ public class FrontendUtils {
      * @param target
      *            the target path
      * @return unix relative path from source to target
+     * @since 2.2
      */
     public static String getUnixRelativePath(Path source, Path target) {
         return getUnixPath(source.relativize(target));
@@ -772,6 +839,7 @@ public class FrontendUtils {
      * @param source
      *            path to get
      * @return path as a String in Unix form.
+     * @since 2.2
      */
     public static String getUnixPath(Path source) {
         return source.toString().replaceAll("\\\\", "/");
@@ -826,6 +894,8 @@ public class FrontendUtils {
 
     /**
      * Thrown when the command execution fails.
+     *
+     * @since 9.0
      */
     public static class CommandExecutionException extends Exception {
         /**
@@ -849,6 +919,7 @@ public class FrontendUtils {
          *            the output from the command
          * @param errorOutput
          *            the error output from the command
+         * @since 23.2.7
          */
         public CommandExecutionException(int processExitCode, String output,
                 String errorOutput) {
@@ -897,6 +968,7 @@ public class FrontendUtils {
      * @return process output string.
      * @throws CommandExecutionException
      *             if the process completes exceptionally.
+     * @since 9.0
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {
@@ -914,6 +986,7 @@ public class FrontendUtils {
      * @return process output string.
      * @throws CommandExecutionException
      *             if the process completes exceptionally.
+     * @since 24.8
      */
     public static String executeCommand(List<String> command,
             UnaryOperator<ProcessBuilder> configureProcessBuilder)
@@ -962,6 +1035,7 @@ public class FrontendUtils {
      * @return a {@link CompletableFuture} that return the string contents of
      *         the process input and error streams when both are consumed,
      *         wrapped into a {@link Pair}.
+     * @since 24.1
      */
     public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
             Process process) {
@@ -984,6 +1058,7 @@ public class FrontendUtils {
      * @return FrontendVersion of versionString
      * @throws IOException
      *             if parsing fails
+     * @since 3.1
      */
     public static FrontendVersion parseFrontendVersion(String versionString)
             throws IOException {
@@ -997,6 +1072,7 @@ public class FrontendUtils {
      * The directory is created if it's doesn't exist.
      *
      * @return a vaadin home directory
+     * @since 3.1
      */
     public static File getVaadinHomeDirectory() {
         File home = FileUtils.getUserDirectory();
@@ -1062,6 +1138,7 @@ public class FrontendUtils {
      * @param command
      *            the command and it's arguments
      * @return the string for printing in logs
+     * @since 2.2
      */
     public static String commandToString(String baseDir, List<String> command) {
         StringBuilder retval = new StringBuilder("\n");
@@ -1092,6 +1169,7 @@ public class FrontendUtils {
      * @param versionOrigin
      *            origin of the version (like a file), used in error message
      * @return the frontend version the package or {@code null}
+     * @since 24.7
      */
     public static FrontendVersion getPackageVersionFromJson(JsonNode sourceJson,
             String pkg, String versionOrigin) {
@@ -1123,6 +1201,7 @@ public class FrontendUtils {
      *            outlet for the message
      * @param message
      *            the string to show
+     * @since 2.2
      */
     @SuppressWarnings("squid:S106")
     public static void console(String format, Object message) {
@@ -1140,6 +1219,7 @@ public class FrontendUtils {
      * @throws IOException
      *             on failure to delete any one file, or if the directory name
      *             is not {@code node_modules}
+     * @since 9.0.5
      */
     public static void deleteNodeModules(File nodeModules) throws IOException {
         if (!nodeModules.exists()) {
@@ -1165,6 +1245,7 @@ public class FrontendUtils {
      *            directory to delete
      * @throws IOException
      *             on failure to delete or read any one file
+     * @since 23.1.5
      */
     public static void deleteDirectory(File directory) throws IOException {
         if (!directory.exists() || !directory.isDirectory()) {
@@ -1253,6 +1334,7 @@ public class FrontendUtils {
      * @return the path to the servlet used for the frontend bundle. Empty for a
      *         /* mapping, otherwise always starts with a slash but never ends
      *         with a slash
+     * @since 23.2
      */
     public static String getFrontendServletPath(ServletContext servletContext) {
         String mapping = VaadinServlet.getFrontendMapping();
@@ -1269,6 +1351,7 @@ public class FrontendUtils {
      * @param frontendFolder
      *            the project frontend folder
      * @return the folder for Flow generated files
+     * @since 24.1
      */
     public static File getFlowGeneratedFolder(File frontendFolder) {
         return new File(getFrontendGeneratedFolder(frontendFolder), "flow");
@@ -1281,6 +1364,7 @@ public class FrontendUtils {
      * @param frontendFolder
      *            the project frontend folder
      * @return the location of the generated import JS file
+     * @since 24.1
      */
     public static File getFlowGeneratedImports(File frontendFolder) {
         return new File(getFlowGeneratedFolder(frontendFolder), IMPORTS_NAME);
@@ -1294,6 +1378,7 @@ public class FrontendUtils {
      *            the project frontend folder
      * @return the location of the generated import JS file for exported web
      *         components
+     * @since 24.3.10
      */
     public static File getFlowGeneratedWebComponentsImports(
             File frontendFolder) {
@@ -1307,6 +1392,7 @@ public class FrontendUtils {
      * @param frontendFolder
      *            the project frontend folder
      * @return the exported web components folder
+     * @since 24.1
      */
     public static File getFlowGeneratedWebComponentsFolder(
             File frontendFolder) {
@@ -1321,6 +1407,7 @@ public class FrontendUtils {
      * @param frontendDirectory
      *            path to the frontend folder in a project.
      * @return {@code false} if vaadin-router is used, {@code true} otherwise.
+     * @since 24.4
      */
     public static boolean isReactRouterRequired(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
@@ -1354,6 +1441,7 @@ public class FrontendUtils {
      * @param frontendDirectory
      *            Target frontend directory.
      * @return {@code true} if hilla views are used, {@code false} otherwise.
+     * @since 24.4
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
@@ -1415,6 +1503,7 @@ public class FrontendUtils {
      *
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
+     * @since 24.4
      */
     public static boolean isHillaUsed(File frontendDirectory) {
         return EndpointRequestUtil.isHillaAvailable()
@@ -1432,6 +1521,7 @@ public class FrontendUtils {
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
+     * @since 24.4
      */
     public static boolean isHillaUsed(File frontendDirectory,
             ClassFinder classFinder) {
@@ -1493,6 +1583,7 @@ public class FrontendUtils {
      * Is the React module available in the classpath.
      *
      * @return true if the React module is available, false otherwise
+     * @since 24.4
      */
     public static boolean isReactModuleAvailable(Options options) {
         try {
@@ -1508,6 +1599,7 @@ public class FrontendUtils {
      * Get all available client routes in a distinct list of route paths.
      *
      * @return a list of available client routes
+     * @since 24.4
      */
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,

@@ -24,6 +24,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTST
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 23.1
  */
 public class TaskGenerateWebComponentBootstrap
         extends AbstractTaskClientGenerator {

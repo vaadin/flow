@@ -56,6 +56,8 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Dynamic resource URI prefix.
+     *
+     * @since 4.0
      */
     public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
@@ -287,6 +289,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to -1 (no limit).
      *
      * @return maximum request size for upload
+     * @since 23.3.5
      */
     protected long getRequestSizeMax() {
         return DEFAULT_REQUEST_SIZE_MAX;
@@ -297,6 +300,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to -1 (no limit).
      *
      * @return maximum file size for upload
+     * @since 23.3.5
      */
     protected long getFileSizeMax() {
         return DEFAULT_FILE_SIZE_MAX;
@@ -307,6 +311,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to 10000.
      *
      * @return maximum file part count for upload
+     * @since 23.3.5
      */
     protected long getFileCountMax() {
         return DEFAULT_FILE_COUNT_MAX;

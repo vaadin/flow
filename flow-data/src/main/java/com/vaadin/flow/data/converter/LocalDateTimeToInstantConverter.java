@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * A converter that converts between <code>LocalDateTime</code> and
  * <code>Instant</code>.
  *
+ * @since 24.1
  */
 public class LocalDateTimeToInstantConverter
         implements Converter<LocalDateTime, Instant> {

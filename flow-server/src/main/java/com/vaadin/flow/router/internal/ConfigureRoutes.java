@@ -155,6 +155,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *            navigation target to add
      * @param parentChain
      *            chain of parent layouts that should be used with this target
+     * @since 4.0
      */
     public void setRoute(String template,
             Class<? extends Component> navigationTarget,

@@ -63,6 +63,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param state
      *            includes navigation state info including for example the
      *            scroll position and the complete href of the RouterLink
+     * @since 4.0
      */
     @Deprecated
     public ErrorNavigationEvent(Router router, Location location, UI ui,
@@ -90,6 +91,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param state
      *            includes navigation state info including for example the
      *            scroll position and the complete href of the RouterLink
+     * @since 24.8
      */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,
@@ -119,6 +121,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param recreateLayoutChain
      *            if set to {@code true}, the complete layout chain up to the
      *            navigation target will be re-instantiated
+     * @since 24.10.1
      */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,

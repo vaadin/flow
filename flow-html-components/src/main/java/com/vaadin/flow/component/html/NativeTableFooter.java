@@ -17,7 +17,7 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;tfoot&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Tag(Tag.TFOOT)
 public class NativeTableFooter extends HtmlContainer

@@ -154,6 +154,7 @@ public interface Focusable<T extends Component>
      *            with the {@code key} for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
+     * @since 1.3
      */
     default ShortcutRegistration addFocusShortcut(Key key,
             KeyModifier... keyModifiers) {

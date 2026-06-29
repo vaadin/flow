@@ -15,6 +15,8 @@ import com.vaadin.flow.internal.UsageStatistics;
 
 /**
  * Information about a feature available behind a flag.
+ *
+ * @since 9.0
  */
 public final class Feature implements Serializable {
 
@@ -39,6 +41,7 @@ public final class Feature implements Serializable {
      * @param componentClassName
      *            If the feature is a component, the qualified name of the class
      *            otherwise null
+     * @since 23.0
      */
     public Feature(String title, String id, String moreInfoLink,
             boolean requiresServerRestart, String componentClassName) {

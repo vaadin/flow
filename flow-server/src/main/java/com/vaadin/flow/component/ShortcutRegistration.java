@@ -259,6 +259,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return this <code>ShortcutRegistration</code>
      * @see #setResetFocusOnActiveElement(boolean)
+     * @since 24.3
      */
     public ShortcutRegistration resetFocusOnActiveElement() {
         if (!resetFocusOnActiveElement) {
@@ -302,6 +303,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *            bound. Must not be null. Must not contain null. Must not have
      *            duplicate components.
      * @return this <code>ShortcutRegistration</code>
+     * @since 2.2
      */
     public ShortcutRegistration listenOn(Component... listenOnComponents) {
         Objects.requireNonNull(listenOnComponents,
@@ -394,6 +396,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * shortcut. The default value is {@code false}.
      *
      * @return Allows default key behavior
+     * @since 1.4
      */
     public boolean isBrowserDefaultAllowed() {
         return allowDefaultBehavior;
@@ -406,6 +409,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param browserDefaultAllowed
      *            Allow default behavior on keydown
+     * @since 1.4
      */
     public void setBrowserDefaultAllowed(boolean browserDefaultAllowed) {
         if (allowDefaultBehavior != browserDefaultAllowed) {
@@ -419,6 +423,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * shortcut) propagation in the browser. The default value is {@code false}.
      *
      * @return Allows event propagation
+     * @since 1.4
      */
     public boolean isEventPropagationAllowed() {
         return allowEventPropagation;
@@ -431,6 +436,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param eventPropagationAllowed
      *            Allow event propagation
+     * @since 1.4
      */
     public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
         if (allowEventPropagation != eventPropagationAllowed) {
@@ -444,6 +450,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * shortcut event handler.
      *
      * @return True when focus is reset on the active element, false otherwise.
+     * @since 24.3
      */
     public boolean isResetFocusOnActiveElement() {
         return resetFocusOnActiveElement;
@@ -461,6 +468,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param resetFocusOnActiveElement
      *            Reset focus on active element
+     * @since 24.3
      */
     public void setResetFocusOnActiveElement(
             boolean resetFocusOnActiveElement) {
@@ -493,6 +501,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * The {@link Component}s which own the shortcuts key event listeners.
      *
      * @return Component[]
+     * @since 2.2
      */
     public Component[] getOwners() {
         if (listenOnComponents == null) {
@@ -524,6 +533,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *            component is disabled.
      *
      * @return this registration, for chaining
+     * @since 24.7
      */
     public ShortcutRegistration setDisabledUpdateMode(
             DisabledUpdateMode disabledUpdateMode) {
@@ -540,6 +550,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * component is disabled.
      *
      * @return current disabledUpdateMode for this listener
+     * @since 24.7
      */
     public DisabledUpdateMode getDisabledUpdateMode() {
         return mode;

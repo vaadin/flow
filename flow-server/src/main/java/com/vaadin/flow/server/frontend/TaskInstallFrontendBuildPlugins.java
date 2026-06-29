@@ -33,7 +33,7 @@ import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
+ * @since 24.0
  */
 public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 

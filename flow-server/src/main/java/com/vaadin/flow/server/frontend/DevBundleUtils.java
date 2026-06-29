@@ -23,6 +23,8 @@ import com.vaadin.flow.server.Constants;
  * Helpers related to the development bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.1
  */
 public class DevBundleUtils {
 
@@ -42,6 +44,7 @@ public class DevBundleUtils {
      *            the file name inside the bundle
      * @return a URL referring to the file inside the bundle or {@code null} if
      *         the file was not found
+     * @since 24.3
      */
     public static URL findBundleFile(File projectDir, String buildFolder,
             String filename) throws IOException {
@@ -65,6 +68,7 @@ public class DevBundleUtils {
      * @param buildFolder
      *            the project build folder name
      * @return the bundle directory
+     * @since 24.3
      */
     public static File getDevBundleFolder(File projectDir, String buildFolder) {
         return new File(new File(projectDir, buildFolder),
@@ -81,6 +85,7 @@ public class DevBundleUtils {
      * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
+     * @since 24.3
      */
     public static String findBundleStatsJson(File projectDir,
             String buildFolder) throws IOException {
@@ -106,6 +111,7 @@ public class DevBundleUtils {
      *            current project root directory
      * @param devBundleFolder
      *            dev bundle location
+     * @since 24.3
      */
     public static void compressBundle(File projectDir, File devBundleFolder) {
         File bundleFile = new File(projectDir,
@@ -126,6 +132,7 @@ public class DevBundleUtils {
      *            current project root directory
      * @param devBundleFolder
      *            unpacked dev bundle location
+     * @since 24.3
      */
     public static void unpackBundle(File projectDir, File devBundleFolder) {
         File bundleFile = new File(projectDir,

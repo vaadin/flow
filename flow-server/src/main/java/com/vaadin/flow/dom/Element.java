@@ -365,6 +365,7 @@ public class Element extends Node<Element> {
      * @param requestHandler
      *            the resource value, not null
      * @return this element
+     * @since 24.8
      */
     public Element setAttribute(String attribute,
             ElementRequestHandler requestHandler) {
@@ -551,6 +552,7 @@ public class Element extends Node<Element> {
      * client.
      *
      * @return this element
+     * @since 2.0
      */
     public Element removeFromTree() {
         return removeFromTree(true);
@@ -568,6 +570,7 @@ public class Element extends Node<Element> {
      * @param sendDetach
      *            if the detach event should be sent to the client
      * @return this element
+     * @since 24.2
      */
     public Element removeFromTree(boolean sendDetach) {
         Node<?> parent = getParentNode();
@@ -785,6 +788,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public <T> Element setPropertyList(String name, List<T> value) {
         if (value == null) {
@@ -809,6 +813,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public Element setPropertyMap(String name, Map<String, ?> value) {
         if (value == null) {
@@ -1428,6 +1433,7 @@ public class Element extends Node<Element> {
      *            {@link JsonCodec}
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @since 2.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
             Serializable... arguments) {
@@ -1494,6 +1500,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
@@ -1650,6 +1657,7 @@ public class Element extends Node<Element> {
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
      * @return the element
+     * @since 23.1
      */
     public Element scrollIntoView() {
         return scrollIntoView(null);
@@ -1664,6 +1672,7 @@ public class Element extends Node<Element> {
      * @param scrollOptions
      *            the scroll options to pass to the method
      * @return the element
+     * @since 24.0
      */
     public Element scrollIntoView(ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly

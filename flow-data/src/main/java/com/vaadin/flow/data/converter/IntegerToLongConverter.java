@@ -13,6 +13,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 
 /**
  * A converter that converts from {@link Integer} to {@link Long} and back.
+ *
+ * @since 24.5
  */
 public class IntegerToLongConverter implements Converter<Integer, Long> {
 

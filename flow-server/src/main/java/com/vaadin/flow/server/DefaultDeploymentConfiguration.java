@@ -68,11 +68,15 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Default value for {@link #getMaxMessageSuspendTimeout()} ()} = {@value} .
+     *
+     * @since 3.0.1
      */
     public static final int DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT = 5000;
 
     /**
      * Default value for {@link #getWebComponentDisconnect()} = {@value}.
+     *
+     * @since 2.0
      */
     public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
 
@@ -117,6 +121,7 @@ public class DefaultDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @since 6.0
      */
     public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
             Class<?> systemPropertyBaseClass, Properties initParameters) {
@@ -204,6 +209,8 @@ public class DefaultDeploymentConfiguration
      * {@inheritDoc}
      * <p>
      * The default max message suspension time is 5000 milliseconds.
+     *
+     * @since 3.0.1
      */
     @Override
     public int getMaxMessageSuspendTimeout() {
@@ -259,6 +266,8 @@ public class DefaultDeploymentConfiguration
      * {@inheritDoc}
      * <p>
      * The default mode is <code>""</code> which uses the service mapping.
+     *
+     * @since 23.3.5
      */
     @Override
     public String getPushServletMapping() {

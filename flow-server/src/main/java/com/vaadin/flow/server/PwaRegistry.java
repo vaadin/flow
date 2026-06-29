@@ -56,7 +56,7 @@ import elemental.json.JsonObject;
  * <li>Service worker
  * </ul>
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaRegistry implements Serializable {
 
@@ -88,6 +88,7 @@ public class PwaRegistry implements Serializable {
      *            the context
      * @throws IOException
      *             when icon or offline resources are not found.
+     * @since 3.0
      */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
@@ -424,6 +425,7 @@ public class PwaRegistry implements Serializable {
      * resources) as a String.
      *
      * @return contents of sw-runtime.js
+     * @since 6.0
      */
     public String getRuntimeServiceWorkerJs() {
         return runtimeServiceWorkerJs;
@@ -481,6 +483,7 @@ public class PwaRegistry implements Serializable {
      * @param baseName
      *            path of the base icon.
      * @return list of PWA icons variants.
+     * @since 24.6
      */
     public static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();

@@ -17,7 +17,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
  * Interface class for RouteRegistries that can be used to request for error
  * navigation views for Exceptions.
  *
- * @since
+ * @since 6.0.10
  */
 public interface ErrorRouteRegistry extends Serializable {
     /**

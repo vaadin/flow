@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
  * </p>
  *
  * @see Route
+ * @since 24.4
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

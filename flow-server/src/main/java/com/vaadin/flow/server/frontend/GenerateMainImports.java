@@ -30,6 +30,8 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
  * a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.0
  */
 public class GenerateMainImports extends AbstractUpdateImports {
     private JsonNode statsJson;

@@ -41,6 +41,8 @@ public @interface Viewport {
     /**
      * Sets the viewport to the height of the device rather than the rendered
      * space.
+     *
+     * @since 1.3
      */
     String DEVICE_HEIGHT = "height=device-height, initial-scale=1.0, viewport-fit=cover";
 
@@ -48,6 +50,8 @@ public @interface Viewport {
      * Sets the viewport at the width and height of the device. The device-width
      * and device-height properties are translated to 100vw and 100vh
      * respectively.
+     *
+     * @since 1.3
      */
     String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover";
 

@@ -127,11 +127,15 @@ public final class NodeFeatures {
 
     /**
      * Id for {@link ReturnChannelMap}.
+     *
+     * @since 2.0
      */
     public static final int RETURN_CHANNEL_MAP = 25;
 
     /**
      * Id for {@link InertData}.
+     *
+     * @since 23.0
      */
     public static final int INERT_DATA = 26;
 

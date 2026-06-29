@@ -177,6 +177,7 @@ public class DefaultInstantiator implements Instantiator {
      * application.properties property file.
      *
      * @return parameter value or null if not found
+     * @since 24.4
      */
     protected String getInitProperty(String propertyName) {
         DeploymentConfiguration deploymentConfiguration = service

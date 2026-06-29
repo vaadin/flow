@@ -53,6 +53,7 @@ public interface EndpointRequestUtil extends Serializable {
      * Checks if Hilla is available.
      *
      * @return true if Hilla is available, false otherwise
+     * @since 24.0
      */
     static boolean isHillaAvailable() {
         try {
@@ -69,6 +70,7 @@ public interface EndpointRequestUtil extends Serializable {
      * @param classFinder
      *            class finder to check the presence of Hilla endpoint class
      * @return true if Hilla is available, false otherwise
+     * @since 24.4
      */
     static boolean isHillaAvailable(ClassFinder classFinder) {
         try {

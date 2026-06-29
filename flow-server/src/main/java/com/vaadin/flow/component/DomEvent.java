@@ -93,6 +93,7 @@ public @interface DomEvent {
      * Controls if the event is let to propagate to parent elements.
      *
      * @return true if the event is not let to propagate to parent elements
+     * @since 24.2
      */
     public boolean stopPropagation() default false;
 
@@ -100,6 +101,7 @@ public @interface DomEvent {
      * Controls if the browser is asked to prevent the default browser behavior.
      *
      * @return true if default behavior is should be prevented
+     * @since 24.2
      */
     public boolean preventDefault() default false;
 

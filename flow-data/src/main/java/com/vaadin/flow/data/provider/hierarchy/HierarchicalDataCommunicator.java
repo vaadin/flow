@@ -51,7 +51,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
@@ -601,6 +601,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             HierarchicalDataCommunicator will be <a href=
      *             "https://github.com/vaadin/platform/issues/7843">refactored</a>
      *             to handle hierarchy management entirely on the server side.
+     * @since 23.2.8
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
@@ -629,6 +630,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             HierarchicalDataCommunicator will be <a href=
      *             "https://github.com/vaadin/platform/issues/7843">refactored</a>
      *             to handle hierarchy management entirely on the server side.
+     * @since 24.5
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
@@ -684,6 +686,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimate(int itemCountEstimate) {
@@ -693,6 +697,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimate() {
@@ -702,6 +708,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
@@ -711,6 +719,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimateIncrease() {
@@ -720,6 +730,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setDefinedSize(boolean definedSize) {
@@ -730,6 +742,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Estimates are not supported in HierarchicalDataCommunicator. Therefore
      * this method will always return {@literal true}
+     *
+     * @since 24.5
      */
     @Override
     public boolean isDefinedSize() {

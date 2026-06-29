@@ -88,6 +88,7 @@ public final class LocaleUtil {
      * <p>
      *
      * @return the optional value of I18nProvider
+     * @since 24.0.4
      */
     public static Optional<I18NProvider> getI18NProvider() {
         return Optional.ofNullable(VaadinService.getCurrent())
@@ -105,6 +106,7 @@ public final class LocaleUtil {
      * @param i18NProvider
      *            - supplier for the i18n provider
      * @return the locale for the UI
+     * @since 24.0.4
      */
     public static Locale getLocale(
             Supplier<Optional<I18NProvider>> i18NProvider) {
@@ -124,6 +126,7 @@ public final class LocaleUtil {
      * -> if I18NProvider is null, then default locale is returned.
      *
      * @return the locale for the UI
+     * @since 24.5
      */
     public static Locale getLocale() {
         return getLocale(LocaleUtil::getI18NProvider);

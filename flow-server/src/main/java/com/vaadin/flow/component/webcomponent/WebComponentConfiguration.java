@@ -90,6 +90,7 @@ public interface WebComponentConfiguration<C extends Component>
      *            set using the web component's attributes.
      * @return web component binding which can be used by the web component host
      *         to communicate with the component it is hosting
+     * @since 24.8
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
             Element element, JsonNode newAttributeDefaults);

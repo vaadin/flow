@@ -36,6 +36,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     /**
      * Keeps track of whether a warning update has already been logged. This is
      * used to avoid spamming the log with the same message.
+     *
+     * @since 24.4
      */
     protected static boolean warningEmitted = false;
 

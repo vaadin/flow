@@ -27,6 +27,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Updated <code>index.ts</code> if it imports Flow from an old location.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.1
  */
 public class TaskUpdateOldIndexTs implements FallibleCommand {
 

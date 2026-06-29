@@ -150,6 +150,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * Enabled by default.
      *
      * @return true iff bootstrap fragment caching is enabled
+     * @since 2.2
      */
     public boolean isCacheEnabled() {
         return cache != null;
@@ -161,6 +162,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      *
      * @param cacheEnabled
      *            whether bootstrap fragments should be cached per tag
+     * @since 2.2
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
@@ -180,6 +182,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * @param response
      *            current VaadinResponse
      * @return npm response script
+     * @since 2.2
      */
     protected String generateNPMResponse(String tagName, VaadinRequest request,
             VaadinResponse response) {

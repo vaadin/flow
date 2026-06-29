@@ -535,6 +535,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
+     * @since 2.1
      */
     protected String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
@@ -587,6 +588,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param response
      *            the response object
      * @return Service url for the given request.
+     * @since 2.2
      */
     protected String getServiceUrl(VaadinRequest request,
             VaadinResponse response) {
@@ -615,6 +617,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param response
      *            the response object
      * @return true if request has been handled, false otherwise
+     * @since 23.3.2
      */
     protected boolean handleWebComponentResyncRequest(BootstrapContext context,
             VaadinRequest request, VaadinResponse response) {

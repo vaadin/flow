@@ -130,6 +130,7 @@ public class ListAddChange<T extends Serializable>
      *
      * @param item
      *            Item to be removed.
+     * @since 23.2.2
      */
     public void removeItem(T item) {
         assert (newItems.size() > 1)

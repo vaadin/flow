@@ -33,6 +33,8 @@ import java.io.Serializable;
  *
  * {@link NavigationContext} provides the methods to create the above
  * {@link AccessCheckResult}s.
+ *
+ * @since 24.3
  */
 @FunctionalInterface
 public interface NavigationAccessChecker extends Serializable {

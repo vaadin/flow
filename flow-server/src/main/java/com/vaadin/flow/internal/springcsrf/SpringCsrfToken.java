@@ -12,6 +12,8 @@ import java.io.Serializable;
 
 /**
  * A pojo for Spring CSRF token.
+ *
+ * @since 9.0
  */
 public class SpringCsrfToken implements Serializable {
     private String headerName;

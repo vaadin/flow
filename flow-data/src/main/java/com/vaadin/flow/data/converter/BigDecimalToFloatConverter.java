@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 
 /**
  * A converter that converts from {@link BigDecimal} to {@link Float} and back.
+ *
+ * @since 24.5
  */
 public class BigDecimalToFloatConverter
         implements Converter<BigDecimal, Float> {

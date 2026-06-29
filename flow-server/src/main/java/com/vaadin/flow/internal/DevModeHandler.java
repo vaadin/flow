@@ -16,6 +16,9 @@ import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
 
+/**
+ * @since 8.0
+ */
 public interface DevModeHandler extends RequestHandler {
 
     /**
@@ -62,6 +65,7 @@ public interface DevModeHandler extends RequestHandler {
      * Gets the project root folder.
      *
      * @return the project root folder
+     * @since 9.0
      */
     File getProjectRoot();
 
@@ -69,6 +73,7 @@ public interface DevModeHandler extends RequestHandler {
      * Get the listening port of the dev server.
      *
      * @return the listening port
+     * @since 23.1
      */
     int getPort();
 }

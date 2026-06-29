@@ -96,6 +96,7 @@ public interface VaadinHotswapper {
      *
      * @param event
      *            an event containing information about the hotswap operation.
+     * @since 24.5.3
      */
     default void onHotswapComplete(HotswapCompleteEvent event) {
         // no-op by default

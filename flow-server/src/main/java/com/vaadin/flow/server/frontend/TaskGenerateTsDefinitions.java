@@ -28,7 +28,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 3.1
  */
 public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
@@ -62,6 +62,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     /**
      * Keeps track of whether a warning update has already been logged. This is
      * used to avoid spamming the log with the same message.
+     *
+     * @since 24.4
      */
     protected static boolean warningEmitted = false;
 

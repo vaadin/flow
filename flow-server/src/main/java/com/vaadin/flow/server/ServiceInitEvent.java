@@ -68,6 +68,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
+     * @since 3.0
      */
     public void addIndexHtmlRequestListener(
             IndexHtmlRequestListener indexHtmlRequestListener) {
@@ -94,6 +95,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param vaadinRequestInterceptor
      *            the request interceptor to add, not <code>null</code>
+     * @since 24.3
      */
     public void addVaadinRequestInterceptor(
             VaadinRequestInterceptor vaadinRequestInterceptor) {
@@ -119,6 +121,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param executor
      *            the executor to set.
+     * @since 24.8
      */
     public void setExecutor(Executor executor) {
         this.executor = executor;
@@ -139,6 +142,7 @@ public class ServiceInitEvent extends EventObject {
      * for the service.
      *
      * @return the stream of added Index HTML request listeners
+     * @since 3.0
      */
     public Stream<IndexHtmlRequestListener> getAddedIndexHtmlRequestListeners() {
         return addedIndexHtmlRequestListeners.stream();
@@ -159,6 +163,7 @@ public class ServiceInitEvent extends EventObject {
      * the service.
      *
      * @return the stream of added request interceptors
+     * @since 24.3
      */
     public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
         return addedVaadinRequestInterceptors.stream();
@@ -170,6 +175,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @return an {@link Optional} containing the {@link Executor}, or an empty
      *         {@link Optional} if no executor is set.
+     * @since 24.8
      */
     public Optional<Executor> getExecutor() {
         return Optional.ofNullable(executor);

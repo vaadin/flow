@@ -12,6 +12,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.vaadin.flow.router.internal.ParameterInfo;
 
+/**
+ * @since 24.5
+ */
 public enum RouteParamType {
     // @formatter:off
     @JsonProperty("req") REQUIRED,

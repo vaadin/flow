@@ -13,7 +13,7 @@ package com.vaadin.flow.router;
  * components annotated with {@code @Route(Route.NAMING_CONVENTION)}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 9.0
  *
  */
 @FunctionalInterface

@@ -12,6 +12,8 @@ package com.vaadin.flow.server;
  * The mode the application is running in.
  *
  * One of production, development using livereload or development using bundle
+ *
+ * @since 24.0.1
  */
 public enum Mode {
     PRODUCTION_CUSTOM("production", true),

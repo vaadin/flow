@@ -92,6 +92,7 @@ public @interface RouteAlias {
      * for.
      *
      * @return {@code false} skips automatic layout
+     * @since 24.5
      */
     boolean autoLayout() default true;
 

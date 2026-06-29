@@ -43,6 +43,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      * @throws IllegalArgumentException
      *             if parameters is not empty.
+     * @since 1.3
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, List<Class<?>> parameters,
@@ -68,6 +69,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            route navigation target
      * @param routeAliases
      *            list of aliases for this route
+     * @since 4.0
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,
@@ -92,6 +94,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      * @param menuData
      *            menu data for this route
+     * @since 24.4
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,
@@ -117,6 +120,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      * Get the menu data for this route.
      *
      * @return the menu data for this route
+     * @since 24.4
      */
     public MenuData getMenuData() {
         return menuData;

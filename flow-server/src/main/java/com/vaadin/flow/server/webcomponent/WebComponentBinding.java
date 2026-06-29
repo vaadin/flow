@@ -141,6 +141,7 @@ public final class WebComponentBinding<C extends Component>
      * @throws IllegalArgumentException
      *             if the {@code jsonValue} cannot be converted to the type of
      *             the property identified by {@code propertyName}.
+     * @since 24.8
      */
     public void updateProperty(String propertyName, BaseJsonNode jsonValue) {
         Objects.requireNonNull(propertyName,
@@ -210,6 +211,7 @@ public final class WebComponentBinding<C extends Component>
      *            {@link PropertyData}
      * @throws NullPointerException
      *             if {@code propertyConfiguration} is {@code null}
+     * @since 24.8
      */
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
@@ -234,6 +236,7 @@ public final class WebComponentBinding<C extends Component>
      *            have any effect
      * @throws NullPointerException
      *             if {@code propertyConfiguration} is {@code null}
+     * @since 24.8
      */
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,

@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
  * <p>
  * </p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.4
  */
 public final class GeneratedFilesSupport {
 

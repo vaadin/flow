@@ -32,6 +32,9 @@ import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
+/**
+ * @since 24.1
+ */
 public final class BundleUtils {
 
     private BundleUtils() {
@@ -141,6 +144,7 @@ public final class BundleUtils {
      * @param chunkLines
      *            content of the chunk, collection of string lines
      * @return chunk's hash
+     * @since 24.1.9
      */
     public static String getChunkHash(List<String> chunkLines) {
         List<String> sortedChunkLines = new ArrayList<>(chunkLines);

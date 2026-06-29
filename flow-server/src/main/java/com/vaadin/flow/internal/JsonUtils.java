@@ -311,6 +311,7 @@ public final class JsonUtils {
      * @param bean
      *            the bean to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonObject beanToJson(Object bean) {
         Objects.requireNonNull(bean, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -328,6 +329,7 @@ public final class JsonUtils {
      * @param list
      *            the list to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonArray listToJson(List<?> list) {
         Objects.requireNonNull(list, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -344,6 +346,7 @@ public final class JsonUtils {
      * @param map
      *            the map to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonObject mapToJson(Map<String, ?> map) {
         Objects.requireNonNull(map, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -364,6 +367,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.1
      */
     public static <T> T readToObject(JsonObject jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -385,6 +389,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.4
      */
     public static <T> T readValue(JsonValue jsonValue, Class<T> tClass) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -406,6 +411,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.4
      */
     public static <T> T readValue(JsonValue jsonValue,
             TypeReference<T> typeReference) {
@@ -424,6 +430,7 @@ public final class JsonUtils {
      * @param object
      *            Java object to convert
      * @return converted JSON value
+     * @since 24.4
      */
     public static JsonValue writeValue(Object object) {
         try {

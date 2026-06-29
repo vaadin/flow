@@ -56,6 +56,7 @@ public final class StringUtil {
      *            if {@code true} then ' is also considered a string and
      *            comments will not be considered inside it
      * @return the code with removed comments
+     * @since 9.0.5
      */
     public static String removeComments(String code,
             boolean useStringApostrophe) {
@@ -160,6 +161,7 @@ public final class StringUtil {
      *            the suffix
      * @return the string without the suffix at the end or the same string if
      *         the suffix was not found
+     * @since 24.1.1
      */
     public static String stripSuffix(String string, String suffix) {
         if (string.endsWith(suffix)) {
@@ -176,6 +178,7 @@ public final class StringUtil {
      *            content to generate hash for
      * @return hash String for given content. In case content is null or empty
      *         returns empty String.
+     * @since 9.0.6
      */
     public static String getHash(String content) {
         return getHash(content, StandardCharsets.UTF_16);
@@ -190,6 +193,7 @@ public final class StringUtil {
      *            charset for encoding
      * @return hash String for given content. In case content is null or empty *
      *         returns empty String.
+     * @since 24.0
      */
     public static String getHash(String content, Charset charset) {
         return getHash(content, null, charset);
@@ -207,6 +211,7 @@ public final class StringUtil {
      *            charset for encoding
      * @return hash String for given content. In case content is null or empty *
      *         returns empty String.
+     * @since 24.5
      */
     public static String getHash(String content, byte[] salt, Charset charset) {
         if (content == null || content.isEmpty()) {

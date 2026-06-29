@@ -22,6 +22,8 @@ import com.vaadin.flow.router.RouteParameters;
  * configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 4.0
  */
 public class NavigationRouteTarget implements Serializable {
 

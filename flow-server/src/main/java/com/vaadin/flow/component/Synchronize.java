@@ -71,6 +71,7 @@ public @interface Synchronize {
      *
      * @return {@code true} to allow inert synchronization, {@code false} to
      *         disallow. Defaults to {@code false}.
+     * @since 24.6.8
      */
     boolean allowInert() default false;
 }

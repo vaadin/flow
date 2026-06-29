@@ -33,7 +33,7 @@ import org.apache.commons.io.IOUtils;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0.
+ * @since 2.0.2
  */
 public class JarContentsManager {
     private static final String JAR_PATH_SEPARATOR = "/";

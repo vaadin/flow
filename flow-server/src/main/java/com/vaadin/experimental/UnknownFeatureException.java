@@ -12,6 +12,8 @@ package com.vaadin.experimental;
  * Exception thrown for when a FeatureFlag that doesn't exist is checked.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 9.0
  */
 public class UnknownFeatureException extends RuntimeException {
 

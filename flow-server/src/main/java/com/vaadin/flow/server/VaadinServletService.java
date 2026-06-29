@@ -257,6 +257,7 @@ public class VaadinServletService extends VaadinService {
      *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
+     * @since 3.0
      */
     public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();

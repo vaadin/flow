@@ -36,6 +36,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
  * This annotation must be added to the class implementing
  * {@link AppShellConfigurator}.
  *
+ * @since 24.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -99,6 +99,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setBackground(String value) {
         return set(STYLE_BACKGROUND, value);
@@ -111,6 +112,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBackgroundColor(String value) {
         return set(STYLE_BACKGROUND_COLOR, value);
@@ -123,6 +125,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.9
      */
     default Style setBackgroundPosition(String value) {
         return set(STYLE_BACKGROUND_POSITION, value);
@@ -135,6 +138,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.9
      */
     default Style setBackgroundSize(String value) {
         return set(STYLE_BACKGROUND_SIZE, value);
@@ -147,6 +151,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setBorder(String value) {
         return set(STYLE_BORDER, value);
@@ -159,6 +164,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBorderLeft(String value) {
         return set(STYLE_BORDER_LEFT, value);
@@ -171,6 +177,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBorderRight(String value) {
         return set(STYLE_BORDER_RIGHT, value);
@@ -183,6 +190,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBorderTop(String value) {
         return set(STYLE_BORDER_TOP, value);
@@ -195,6 +203,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBorderBottom(String value) {
         return set(STYLE_BORDER_BOTTOM, value);
@@ -207,11 +216,15 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setBorderRadius(String value) {
         return set(STYLE_BORDER_RADIUS, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum BoxSizing {
         CONTENT_BOX, BORDER_BOX, INITIAL, INHERIT
     }
@@ -223,6 +236,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setBoxSizing(BoxSizing value) {
         return applyOrErase(STYLE_BOX_SIZING, value);
@@ -235,6 +249,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setBoxShadow(String value) {
         return set(STYLE_BOX_SHADOW, value);
@@ -242,6 +257,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the clear property.
+     *
+     * @since 24.1
      */
     public enum Clear {
         NONE, LEFT, RIGHT, BOTH, INITIAL, INHERIT
@@ -254,6 +271,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setClear(Clear value) {
         return applyOrErase(STYLE_CLEAR, value);
@@ -266,6 +284,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setCursor(String value) {
         return set(STYLE_CURSOR, value);
@@ -278,6 +297,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setColor(String value) {
         return set(STYLE_COLOR, value);
@@ -290,11 +310,15 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.9
      */
     default Style setFilter(String value) {
         return applyOrErase(STYLE_FILTER, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum Display {
         INLINE,
         BLOCK,
@@ -328,6 +352,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setDisplay(Display value) {
         return applyOrErase(STYLE_DISPLAY, value);
@@ -336,6 +361,8 @@ public interface Style extends Serializable {
     // PostFixed with "Css" to avoid a collision with java.lang.Float
     /**
      * Css values for the float property.
+     *
+     * @since 24.1
      */
     public enum FloatCss {
         NONE, LEFT, RIGHT, INITIAL, INHERIT
@@ -348,6 +375,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setFloat(FloatCss value) {
         return applyOrErase(STYLE_FLOAT, value);
@@ -360,6 +388,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setFont(String value) {
         return set(STYLE_FONT, value);
@@ -372,6 +401,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.9
      */
     default Style setGap(String value) {
         return applyOrErase(STYLE_GAP, value);
@@ -384,6 +414,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setHeight(String value) {
         return set(STYLE_HEIGHT, value);
@@ -396,6 +427,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMinHeight(String value) {
         return set(STYLE_MIN_HEIGHT, value);
@@ -408,6 +440,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMaxHeight(String value) {
         return set(STYLE_MAX_HEIGHT, value);
@@ -420,6 +453,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setMargin(String value) {
         return set(STYLE_MARGIN, value);
@@ -432,6 +466,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginLeft(String value) {
         return set(STYLE_MARGIN_LEFT, value);
@@ -444,6 +479,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginRight(String value) {
         return set(STYLE_MARGIN_RIGHT, value);
@@ -456,6 +492,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginTop(String value) {
         return set(STYLE_MARGIN_TOP, value);
@@ -468,6 +505,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginBottom(String value) {
         return set(STYLE_MARGIN_BOTTOM, value);
@@ -480,6 +518,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginInlineStart(String value) {
         return set(STYLE_MARGIN_INLINE_START, value);
@@ -492,6 +531,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMarginInlineEnd(String value) {
         return set(STYLE_MARGIN_INLINE_END, value);
@@ -504,6 +544,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setOutline(String value) {
         return set(STYLE_OUTLINE, value);
@@ -516,11 +557,15 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setOpacity(String value) {
         return set(STYLE_OPACITY, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum Overflow {
         VISIBLE, HIDDEN, CLIP, SCROLL, AUTO, INITIAL, INHERIT
     }
@@ -532,6 +577,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setOverflow(Overflow value) {
         return applyOrErase(STYLE_OVERFLOW, value);
@@ -544,6 +590,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setPadding(String value) {
         return set(STYLE_PADDING, value);
@@ -556,6 +603,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setPaddingLeft(String value) {
         return set(STYLE_PADDING_LEFT, value);
@@ -568,6 +616,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setPaddingRight(String value) {
         return set(STYLE_PADDING_RIGHT, value);
@@ -580,6 +629,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setPaddingTop(String value) {
         return set(STYLE_PADDING_TOP, value);
@@ -592,6 +642,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setPaddingBottom(String value) {
         return set(STYLE_PADDING_BOTTOM, value);
@@ -599,6 +650,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the position property.
+     *
+     * @since 24.1
      */
     public enum Position {
         STATIC, RELATIVE, ABSOLUTE, FIXED, STICKY;
@@ -611,6 +664,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setPosition(Position value) {
         return applyOrErase(STYLE_POSITION, value);
@@ -623,6 +677,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.9
      */
     default Style setRotate(String value) {
         return applyOrErase(STYLE_ROTATE, value);
@@ -635,6 +690,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setScale(String value) {
         return set(STYLE_SCALE, value);
@@ -642,6 +698,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the text-align property.
+     *
+     * @since 24.1
      */
     public enum TextAlign {
         LEFT, RIGHT, CENTER, JUSTIFY, INITIAL, INHERIT
@@ -654,6 +712,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setTextAlign(TextAlign value) {
         return applyOrErase(STYLE_TEXT_ALIGN, value);
@@ -666,6 +725,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setTextDecoration(String value) {
         return set(STYLE_TEXT_DECORATION, value);
@@ -678,6 +738,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setTransform(String value) {
         return set(STYLE_TRANSFORM, value);
@@ -690,6 +751,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.4
      */
     default Style setTransformOrigin(String value) {
         return set(STYLE_TRANSFORM_ORIGIN, value);
@@ -702,6 +764,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setTransition(String value) {
         return set(STYLE_TRANSITION, value);
@@ -709,6 +772,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the visibility property.
+     *
+     * @since 24.1
      */
     public enum Visibility {
         VISIBLE, HIDDEN, COLLAPSE, INITIAL, INHERIT
@@ -721,6 +786,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setVisibility(Visibility value) {
         return applyOrErase(STYLE_VISIBILITY, value);
@@ -733,6 +799,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setWidth(String value) {
         return set(STYLE_WIDTH, value);
@@ -745,6 +812,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMinWidth(String value) {
         return set(STYLE_MIN_WIDTH, value);
@@ -757,6 +825,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setMaxWidth(String value) {
         return set(STYLE_MAX_WIDTH, value);
@@ -764,6 +833,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the white-space property.
+     *
+     * @since 24.1
      */
     public enum WhiteSpace {
         NORMAL, NOWRAP, PRE, PRE_LINE, PRE_WRAP, BREAK_SPACES, INITIAL, INHERIT
@@ -776,6 +847,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setWhiteSpace(WhiteSpace value) {
         return applyOrErase(STYLE_WHITE_SPACE, value);
@@ -788,6 +860,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setLeft(String value) {
         return set(STYLE_LEFT, value);
@@ -800,6 +873,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setRight(String value) {
         return set(STYLE_RIGHT, value);
@@ -812,6 +886,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setTop(String value) {
         return set(STYLE_TOP, value);
@@ -824,6 +899,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setBottom(String value) {
         return set(STYLE_BOTTOM, value);
@@ -836,6 +912,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.1
      */
     default Style setZIndex(Integer value) {
         return applyOrErase(STYLE_Z_INDEX, value);
@@ -843,6 +920,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>font-weight</code> property.
+     *
+     * @since 24.3
      */
     public enum FontWeight {
         NORMAL, LIGHTER, BOLD, BOLDER, INITIAL, INHERIT
@@ -855,6 +934,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFontWeight(FontWeight value) {
         return applyOrErase(STYLE_FONT_WEIGHT, value);
@@ -867,6 +947,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFontWeight(Integer value) {
         return applyOrErase(STYLE_FONT_WEIGHT, value);
@@ -879,6 +960,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFontWeight(String value) {
         return set(STYLE_FONT_WEIGHT, value);
@@ -891,6 +973,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFontSize(String value) {
         return set(STYLE_FONT_SIZE, value);
@@ -903,6 +986,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setLineHeight(String value) {
         return set(STYLE_LINE_HEIGHT, value);
@@ -910,6 +994,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>align-items</code> property.
+     *
+     * @since 24.3
      */
     public enum AlignItems {
         NORMAL,
@@ -934,6 +1020,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setAlignItems(AlignItems value) {
         return applyOrErase(STYLE_ALIGN_ITEMS, value);
@@ -941,6 +1028,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>align-self</code> property.
+     *
+     * @since 24.3
      */
     public enum AlignSelf {
         AUTO,
@@ -966,6 +1055,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setAlignSelf(AlignSelf value) {
         return applyOrErase(STYLE_ALIGN_SELF, value);
@@ -973,6 +1063,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>flex-wrap</code> property.
+     *
+     * @since 24.3
      */
     public enum FlexWrap {
         NOWRAP, WRAP, WRAP_REVERSE, INITIAL
@@ -985,6 +1077,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexWrap(FlexWrap value) {
         return applyOrErase(STYLE_FLEX_WRAP, value);
@@ -997,6 +1090,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexGrow(String value) {
         return set(STYLE_FLEX_GROW, value);
@@ -1009,6 +1103,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexShrink(String value) {
         return set(STYLE_FLEX_SHRINK, value);
@@ -1016,6 +1111,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>justify-content</code> property.
+     *
+     * @since 24.3
      */
     public enum JustifyContent {
         CENTER,
@@ -1042,6 +1139,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setJustifyContent(JustifyContent value) {
         return applyOrErase(STYLE_JUSTIFY_CONTENT, value);
@@ -1049,6 +1147,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>justify-content</code> property.
+     *
+     * @since 24.3
      */
     public enum FlexDirection {
         ROW, ROW_REVERSE, COLUMN, COLUMN_REVERSE, INITIAL
@@ -1061,6 +1161,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexDirection(FlexDirection value) {
         return applyOrErase(STYLE_FLEX_DIRECTION, value);
@@ -1068,6 +1169,8 @@ public interface Style extends Serializable {
 
     /**
      * Css values for the <code>flex-basis</code> property.
+     *
+     * @since 24.3
      */
     public enum FlexBasis {
         AUTO, MAX_CONTENT, MIN_CONTENT, FIT_CONTENT, CONTENT, INITIAL
@@ -1080,6 +1183,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexBasis(FlexBasis value) {
         return applyOrErase(STYLE_FLEX_BASIS, value);
@@ -1092,6 +1196,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @since 24.3
      */
     default Style setFlexBasis(String value) {
         return set(STYLE_FLEX_BASIS, value);

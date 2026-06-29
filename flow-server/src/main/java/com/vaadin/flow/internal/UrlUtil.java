@@ -62,6 +62,7 @@ public class UrlUtil {
      *
      * @param uri
      *            the uri to encode
+     * @since 9.0
      */
     public static String encodeURI(String uri) {
         try {
@@ -88,6 +89,7 @@ public class UrlUtil {
      *
      * @param path
      *            the path to encode
+     * @since 9.0
      */
     public static String encodeURIComponent(String path) {
         try {
@@ -115,6 +117,7 @@ public class UrlUtil {
      * @param encoded
      *            the percent-encoded string
      * @return the decoded string
+     * @since 24.9.12
      */
     public static String decodeURIComponent(String encoded) {
         if (encoded == null || encoded.isEmpty()) {
@@ -168,6 +171,7 @@ public class UrlUtil {
      * @return a relative path that when applied to the servlet path, refers to
      *         the absolute path without containing the context path or servlet
      *         path
+     * @since 23.3
      */
     public static String getServletPathRelative(String absolutePath,
             HttpServletRequest request) {

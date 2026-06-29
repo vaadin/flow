@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <R>
  *            type of the subclass implementing this abstract class, needed for
  *            revealing a proper type when you chain the methods
+ * @since 24.8
  */
 public abstract class TransferProgressAwareHandler<T, R extends TransferProgressAwareHandler>
         implements Serializable {

@@ -504,6 +504,7 @@ public abstract class NodeMap extends NodeFeature {
      * @param newValue
      *            the new value for the {@code key}
      * @return
+     * @since 4.0
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
             Serializable newValue) {

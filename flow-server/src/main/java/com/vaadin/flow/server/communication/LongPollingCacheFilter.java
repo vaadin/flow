@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
  * Messages already seen are discarded, whereas messages not yet sent to the
  * client are added again to the cache to preserve them until client confirms
  * reception by sending the last seen message identifier.
+ *
+ * @since 23.3.4
  */
 public class LongPollingCacheFilter
         implements PerRequestBroadcastFilter, Serializable {

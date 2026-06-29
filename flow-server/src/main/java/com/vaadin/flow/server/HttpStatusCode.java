@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 
 /**
  * HTTP status codes as defined in RFC 2068.
+ *
+ * @since 23.1
  */
 public enum HttpStatusCode {
 

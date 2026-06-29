@@ -24,6 +24,7 @@ public interface EndpointGeneratorTaskFactory {
      * @param options
      *            the task options
      * @return an endpoint tasks for generating TypeScript files for endpoints.
+     * @since 24.0
      */
     TaskGenerateEndpoint createTaskGenerateEndpoint(Options options);
 
@@ -33,6 +34,7 @@ public interface EndpointGeneratorTaskFactory {
      * @param options
      *            the task options
      * @return an endpoint task that generates open api json file.
+     * @since 24.0
      */
     TaskGenerateOpenAPI createTaskGenerateOpenAPI(Options options);
 }

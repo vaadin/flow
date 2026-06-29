@@ -103,6 +103,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
      *         handler does not handle the given request type
      * @throws IOException
      *             if an IO error occurred
+     * @since 24.9.11
      */
     @Override
     public boolean handleSessionExpired(VaadinRequest request,

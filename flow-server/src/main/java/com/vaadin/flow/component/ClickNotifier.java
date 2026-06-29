@@ -51,6 +51,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
+     * @since 24.1
      */
     default Registration addDoubleClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
@@ -73,6 +74,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
+     * @since 24.1
      */
     default Registration addSingleClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
@@ -119,6 +121,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      *            with the {@code key} for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
+     * @since 1.3
      */
     default ShortcutRegistration addClickShortcut(Key key,
             KeyModifier... keyModifiers) {

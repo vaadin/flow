@@ -23,7 +23,7 @@ import java.util.Set;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 25.0
+ * @since 24.9.12
  */
 @Priority(100)
 public class ErrorViewHotswapper implements VaadinHotswapper {

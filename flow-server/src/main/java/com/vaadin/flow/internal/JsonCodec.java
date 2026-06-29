@@ -56,6 +56,8 @@ public class JsonCodec {
     /**
      * Type id for a complex type array identifying a
      * {@link ReturnChannelRegistration} reference.
+     *
+     * @since 2.0
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
@@ -141,6 +143,7 @@ public class JsonCodec {
      * @param type
      *            the type to check
      * @return whether the type can be encoded
+     * @since 2.2
      */
     public static boolean canEncodeWithTypeInfo(Class<?> type) {
         return canEncodeWithoutTypeInfo(type)

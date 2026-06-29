@@ -22,6 +22,8 @@ import java.util.List;
  * processes. In addition, it allows to avoid writes on disk of the file already
  * exists and has exactly the same generated content, preventing file system
  * watchers to trigger unnecessary events.
+ *
+ * @since 24.4
  */
 public abstract class AbstractFileGeneratorFallibleCommand
         implements FallibleCommand {

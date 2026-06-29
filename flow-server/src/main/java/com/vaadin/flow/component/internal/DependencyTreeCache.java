@@ -27,7 +27,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  * @param <T>
  *            the value type
  */

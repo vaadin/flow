@@ -21,7 +21,7 @@ import com.vaadin.flow.component.UI;
  * parameters here.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 4.0
  */
 public class InitParameters implements Serializable {
 
@@ -80,11 +80,15 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the time waiting for the frontend build tool to
      * output a success or error pattern.
+     *
+     * @since 24.0
      */
     public static final String SERVLET_PARAMETER_DEVMODE_TIMEOUT = "devmode.output.pattern.timeout";
 
     /**
      * Configuration name for adding extra options to the vite.
+     *
+     * @since 9.0
      */
     public static final String SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS = "devmode.vite.options";
 
@@ -99,6 +103,8 @@ public class InitParameters implements Serializable {
      * A comma separated list of IP addresses, potentially with wildcards, which
      * can connect to the dev tools. If not specified, only localhost
      * connections are allowed.
+     *
+     * @since 24.3
      */
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
@@ -108,18 +114,20 @@ public class InitParameters implements Serializable {
      * is supposed to contain a single address, and the HTTP request to have a
      * single occurrence of the header. If not specified, remote address are
      * read from the {@literal X-Forwarded-For} header.
+     *
+     * @since 24.4
      */
     public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
     /**
      * Configuration parameter name for enabling pnpm.
-     *
-     * @since 2.2
      */
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
      * Configuration parameter name for enabling bun.
+     *
+     * @since 24.3
      */
     public static final String SERVLET_PARAMETER_ENABLE_BUN = "bun.enable";
 
@@ -133,6 +141,8 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for using globally installed pnpm or default
      * one.
+     *
+     * @since 9.0
      */
     public static final String SERVLET_PARAMETER_GLOBAL_PNPM = "pnpm.global";
 
@@ -142,15 +152,13 @@ public class InitParameters implements Serializable {
      * Note that if the dev tools are disabled
      * ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS} is set to {@code
      * false}), the live reload will be disabled as well.
-     *
-     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
     /**
      * Configuration parameter name for enabling dev tools.
      *
-     * @since 9.0
+     * @since 23.1
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS = "devmode.devTools.enabled";
 
@@ -160,7 +168,7 @@ public class InitParameters implements Serializable {
      * {@link com.vaadin.flow.component.UI} instances will be serialized.
      * Otherwise, it won't be serialized.
      *
-     * @since
+     * @since 8.0
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
@@ -168,13 +176,15 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for enabling component tracking in
      * development mode. If not set, tracking is enabled by default.
      *
-     * @since
+     * @since 24.4
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
     /**
      * Configuration parameter name for adding extra file extensions for stats
      * bundle to generate hashes for.
+     *
+     * @since 24.6
      */
     public static final String FRONTEND_EXTRA_EXTENSIONS = "devmode.frontendExtraFileExtensions";
 
@@ -185,6 +195,8 @@ public class InitParameters implements Serializable {
 
     /**
      * Menu access control property.
+     *
+     * @since 24.4
      */
     public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
@@ -197,8 +209,6 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for requiring node executable installed in
      * home directory.
-     *
-     * @since
      */
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
@@ -206,7 +216,7 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for requiring node executable installed in
      * home directory.
      *
-     * @since
+     * @since 9.0
      */
     public static final String NODE_AUTO_UPDATE = "node.auto.update";
 
@@ -223,7 +233,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the build folder.
      *
-     * @since
+     * @since 7.0
      */
     public static final String BUILD_FOLDER = "build.folder";
 
@@ -231,38 +241,50 @@ public class InitParameters implements Serializable {
      * Packages, in addition to the internally used ones, to run postinstall
      * scripts for.
      *
-     * @since
+     * @since 23.0
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 
     /**
      * Configuration name for enabling development using the frontend
      * development server instead of using an application bundle.
+     *
+     * @since 24.0
      */
     public static final String FRONTEND_HOTDEPLOY = "frontend.hotdeploy";
 
     /**
      * Configuration name for adding dependencies on other projects when using
      * the frontend development server.
+     *
+     * @since 24.1
      */
     public static final String FRONTEND_HOTDEPLOY_DEPENDENCIES = "frontend.hotdeploy.dependencies";
 
     /**
      * Configuration name for enabling ci build for npm/pnpm.
+     *
+     * @since 24.1
      */
     public static final String CI_BUILD = "vaadin.ci.build";
 
     /**
      * Configuration name for disabling dev bundle rebuild.
+     *
+     * @since 24.1
      */
     public static final String SKIP_DEV_BUNDLE_REBUILD = "vaadin.skip.dev.bundle";
 
     /**
      * Configuration name for forcing optimized production bundle build.
+     *
+     * @since 24.1
      */
     public static final String FORCE_PRODUCTION_BUILD = "vaadin.force.production.build";
     /**
      * Configuration name for forcing optimized production bundle build.
+     *
+     * @since 24.3
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
 
@@ -270,11 +292,15 @@ public class InitParameters implements Serializable {
      * Configuration name to enable adding a commercial banner to the
      * application when commercial components are used without a valid license
      * key.
+     *
+     * @since 24.9
      */
     public static final String COMMERCIAL_WITH_BANNER = "commercialWithBanner";
 
     /**
      * Configuration name for cleaning or leaving frontend files in build.
+     *
+     * @since 24.4
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 
@@ -283,16 +309,22 @@ public class InitParameters implements Serializable {
      * new tab for the application in development mode.
      *
      * Time is given in minutes.
+     *
+     * @since 24.4
      */
     public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
 
     /**
      * Configuration name for setting the application identifier.
+     *
+     * @since 24.5
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
     /**
      * Configuration name for excluding npm packages for web components.
+     *
+     * @since 24.6
      */
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
 

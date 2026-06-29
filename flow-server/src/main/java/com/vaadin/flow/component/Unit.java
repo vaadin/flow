@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 
 /**
  * Enum of supported units in Css sizes.
+ *
+ * @since 4.0
  */
 public enum Unit {
     /**
@@ -34,18 +36,26 @@ public enum Unit {
     EM("em"),
     /**
      * Unit code representing the viewport's width.
+     *
+     * @since 7.0
      */
     VW("vw"),
     /**
      * Unit code representing the viewport's height.
+     *
+     * @since 7.0
      */
     VH("vh"),
     /**
      * Unit code representing the viewport's smaller dimension.
+     *
+     * @since 7.0
      */
     VMIN("vmin"),
     /**
      * Unit code representing the viewport's larger dimension.
+     *
+     * @since 7.0
      */
     VMAX("vmax"),
     /**
@@ -66,6 +76,8 @@ public enum Unit {
     MM("mm"),
     /**
      * Unit code representing the width of the "0" (zero).
+     *
+     * @since 7.0
      */
     CH("ch"),
     /**

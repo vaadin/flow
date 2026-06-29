@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see AccessPathChecker
  * @see NavigationAccessControl
+ * @since 24.3
  */
 public class RoutePathAccessChecker implements NavigationAccessChecker {
 

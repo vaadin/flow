@@ -14,7 +14,7 @@ import com.vaadin.flow.server.frontend.FallibleCommand;
  * Thrown by {@link FallibleCommand} if it's unable to complete its execution.
  *
  * @author Vaadin Ltd
- * @since 2.0
+ * @since 2.0.5
  *
  */
 public class ExecutionFailedException extends Exception {

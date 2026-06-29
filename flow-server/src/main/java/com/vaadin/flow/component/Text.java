@@ -77,6 +77,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 3.1.7
      */
     @Override
     public void setId(String id) {
@@ -89,6 +90,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 3.1.7
      */
     @Override
     public void setVisible(boolean visible) {
@@ -104,6 +106,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public void addClassName(String className) {
@@ -118,6 +121,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public boolean removeClassName(String className) {
@@ -133,6 +137,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public void setClassName(String className) {
@@ -148,6 +153,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public void setClassName(String className, boolean set) {
@@ -163,6 +169,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public void addClassNames(String... classNames) {
@@ -177,6 +184,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     * @since 24.2
      */
     @Override
     public void removeClassNames(String... classNames) {

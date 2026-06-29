@@ -44,7 +44,7 @@ import elemental.json.JsonArray;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 2.0
  * @deprecated Use {@code LitTemplateDataAnalyzer} for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
  *             you to use {@code LitTemplate} instead. Read more details from
@@ -75,7 +75,6 @@ public class TemplateDataAnalyzer {
      * Three argument consumer.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      *
      */
     @FunctionalInterface
@@ -103,6 +102,8 @@ public class TemplateDataAnalyzer {
      * Immutable parser data which may be stored in cache.
      *
      * Use {@link ParserData} instead.
+     *
+     * @since 5.0
      */
     @Deprecated
     public static class PolymerParserData extends ParserData {

@@ -16,7 +16,7 @@ import java.io.Serializable;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 2.0
  */
 public class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {

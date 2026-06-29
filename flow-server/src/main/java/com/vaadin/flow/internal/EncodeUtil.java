@@ -78,6 +78,7 @@ public final class EncodeUtil {
      * @param value
      *            the string to encode, not <code>null</code>
      * @return the encoded string
+     * @since 24.8.7
      */
     public static String rfc2047Encode(String value) {
         byte[] source = value.getBytes(UTF_8);
@@ -112,6 +113,7 @@ public final class EncodeUtil {
      *            the string to check, not <code>null</code>
      * @return <code>true</code> if the string contains only US-ASCII
      *         characters,
+     * @since 24.8.7
      */
     public static boolean isPureUSASCII(String text) {
         return StandardCharsets.US_ASCII.newEncoder().canEncode(text);

@@ -68,7 +68,7 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
@@ -151,6 +151,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @deprecated Use
      *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
      *             instead.
+     * @since 24.0
      */
     @Deprecated
     public FrontendDependencies(ClassFinder finder,
@@ -332,6 +333,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get the PWA configuration of the application.
      *
      * @return the PWA configuration
+     * @since 6.0
      */
     @Override
     public PwaConfiguration getPwaConfiguration() {
@@ -357,6 +359,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all JS modules needed in development mode.
      *
      * @return list of JS modules
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getModulesDevelopment() {
@@ -395,6 +398,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all the JS files needed in development mode.
      *
      * @return the set of JS files
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getScriptsDevelopment() {
@@ -435,6 +439,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all entryPoints in the application.
      *
      * @return the set of JS files
+     * @since 24.1
      */
     public Collection<EntryPointData> getEntryPoints() {
         return entryPoints.values();

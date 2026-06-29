@@ -85,6 +85,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      * @param clazz
      *            class to validate annotations
      * @return an optional error message or empty if there is no error
+     * @since 2.0
      */
     protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
         return Optional.of(String.format(NON_ROUTER_LAYOUT, clazz.getName(),
@@ -95,6 +96,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      * Returns a hint for the discovered validation errors.
      *
      * @return the error hint
+     * @since 2.0
      */
     protected String getErrorHint() {
         return ERROR_MESSAGE_BEGINNING;
@@ -107,6 +109,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      *            the type to get validation annotations
      * @return comma separated list of validation annotation declared for the
      *         {@code clazz}
+     * @since 2.0
      */
     protected String getClassAnnotations(Class<?> clazz) {
         return getClassAnnotations(clazz, getAnnotations());
@@ -120,6 +123,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      * @param annotations
      *            the annotation list
      * @return a comma separated string with the annotation names
+     * @since 3.0
      */
     @SuppressWarnings("unchecked")
     public static String getClassAnnotations(Class<?> clazz,
@@ -179,6 +183,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      *            the object with a @HandlesTypes annotation
      *
      * @return a filtered set of classes
+     * @since 23.1
      */
     public static Set<Class<?>> removeHandleTypesSelfReferences(
             Set<Class<?>> classSet, Object handlesTypesAnnotated) {

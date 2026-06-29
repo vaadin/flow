@@ -16,6 +16,7 @@ import java.io.Serializable;
  * will be copied to {@code META-INF/VAADIN/config/templates}.
  *
  * @author Vaadin Ltd
+ * @since 9.0
  */
 public interface Template extends Serializable {
 }

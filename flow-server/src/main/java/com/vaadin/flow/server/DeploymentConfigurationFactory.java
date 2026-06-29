@@ -40,6 +40,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
+     * @since 2.2
      */
     public DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
@@ -59,6 +60,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
+     * @since 2.2
      */
     public DeploymentConfiguration createPropertyDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
@@ -77,6 +79,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link Properties} instance
+     * @since 2.2
      */
     protected Properties createInitParameters(Class<?> systemPropertyBaseClass,
             VaadinConfig vaadinConfig) {

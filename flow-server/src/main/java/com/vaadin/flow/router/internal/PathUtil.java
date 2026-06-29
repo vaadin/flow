@@ -23,6 +23,8 @@ import com.vaadin.flow.internal.UrlUtil;
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 4.0
  */
 public class PathUtil implements Serializable {
 
@@ -65,6 +67,7 @@ public class PathUtil implements Serializable {
      *            start with a slash `/` but it may not contain the url
      *            protocol.
      * @return a List containing the decoded segments of the path.
+     * @since 24.9.12
      */
     public static List<String> getSegmentsListWithDecoding(String path) {
         path = path == null ? "" : trimSegmentsString(path);
@@ -142,6 +145,7 @@ public class PathUtil implements Serializable {
      *            url path to trim, not null
      * @return a String representing the input path without any leading and
      *         trailing whitespaces or trailing slash.
+     * @since 6.0.9
      */
     public static String trimSegmentsString(String path) {
         Objects.requireNonNull(path);

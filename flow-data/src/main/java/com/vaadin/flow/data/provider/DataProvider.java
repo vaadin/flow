@@ -115,6 +115,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            the item to refresh
      * @param refreshChildren
      *            whether or not to refresh child items
+     * @since 2.1
      */
     default void refreshItem(T item, boolean refreshChildren) {
         refreshItem(item);

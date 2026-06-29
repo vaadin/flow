@@ -23,6 +23,7 @@ public interface WebPushSubscriptionResponse extends Serializable {
      *
      * @param subscription
      *            web push subscription object
+     * @since 24.6
      */
     void subscription(WebPushSubscription subscription);
 }

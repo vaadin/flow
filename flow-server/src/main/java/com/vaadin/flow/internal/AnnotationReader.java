@@ -60,6 +60,7 @@ public class AnnotationReader {
      * @return a list the CssImport annotations found
      * @see #getAnnotationFor(Class, Class) for what order the annotations are
      *      in the list
+     * @since 2.0.12
      */
     public static List<CssImport> getCssImportAnnotations(
             Class<? extends Component> componentClass) {
@@ -88,6 +89,7 @@ public class AnnotationReader {
      * @param componentClass
      *            the component class to search for the annotation
      * @return a list the JavaScript annotations found
+     * @since 2.0
      */
     public static List<JsModule> getJsModuleAnnotations(
             Class<? extends Component> componentClass) {

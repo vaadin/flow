@@ -40,7 +40,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * Default implementation of {@link ApplicationConfigurationFactory}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 @Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING
@@ -117,6 +117,7 @@ public class DefaultApplicationConfigurationFactory
      * @param properties
      *            the context parameters, not {@code null}
      * @return a new application configuration instance
+     * @since 24.1
      */
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
             Map<String, String> properties) {

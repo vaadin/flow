@@ -95,6 +95,7 @@ public final class ParameterDeserializer {
      * @param parameters
      *            the list of route parameters to deserialize
      * @return the deserialized url parameter, can be {@code null}
+     * @since 4.0
      */
     public static Object deserializeRouteParameters(Class<?> navigationTarget,
             List<String> parameters) {

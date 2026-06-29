@@ -59,6 +59,8 @@ import com.vaadin.flow.router.AccessDeniedException;
  *     }
  * }
  * </pre>
+ *
+ * @since 24.3
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

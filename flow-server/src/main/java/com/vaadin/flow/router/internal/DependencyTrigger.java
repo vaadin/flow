@@ -19,6 +19,8 @@ import java.lang.annotation.Target;
  * Marks which classes should trigger loading of a chunk defined by a route.
  * <p>
  * This only exists only for internal use.
+ *
+ * @since 24.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

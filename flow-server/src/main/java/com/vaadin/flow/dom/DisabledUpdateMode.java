@@ -44,6 +44,7 @@ public enum DisabledUpdateMode {
      *            the second mode, or <code>null</code>
      * @return the most permissive mode, or <code>null</code> if both parameters
      *         are <code>null</code>
+     * @since 1.3
      */
     public static DisabledUpdateMode mostPermissive(DisabledUpdateMode mode1,
             DisabledUpdateMode mode2) {

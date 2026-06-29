@@ -15,7 +15,7 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
  * that will be applied to all queries.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 1.3
  *
  * @param <T>
  *            the data provider item type

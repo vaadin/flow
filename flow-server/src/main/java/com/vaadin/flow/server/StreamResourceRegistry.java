@@ -113,6 +113,7 @@ public class StreamResourceRegistry implements Serializable {
      *            element request handler to register
      *
      * @return registration handler
+     * @since 24.8
      */
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler) {
@@ -137,6 +138,7 @@ public class StreamResourceRegistry implements Serializable {
      *            owner element this request handler is scoped to
      *
      * @return registration handler
+     * @since 24.8
      */
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler, Element owner) {
@@ -150,6 +152,8 @@ public class StreamResourceRegistry implements Serializable {
      * instances as {@link AbstractStreamResource} compatible instances.
      *
      * For internal use only. May be renamed or removed in a future release.
+     *
+     * @since 24.8
      */
     public static class ElementStreamResource extends AbstractStreamResource {
         private final ElementRequestHandler elementRequestHandler;
@@ -209,6 +213,7 @@ public class StreamResourceRegistry implements Serializable {
      * @param resource
      *            stream resource
      * @return resource URI
+     * @since 2.2
      */
     public URI getTargetURI(AbstractStreamResource resource) {
         return StreamResourceRegistry.getURI(resource);

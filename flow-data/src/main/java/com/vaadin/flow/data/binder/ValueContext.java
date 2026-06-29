@@ -35,6 +35,7 @@ public class ValueContext implements Serializable {
      *
      * @param binder
      *            the Binder using the value context
+     * @since 24.5
      */
     public ValueContext(Binder<?> binder) {
         this.binder = binder;
@@ -50,6 +51,7 @@ public class ValueContext implements Serializable {
      *            the Binder using the value context
      * @param locale
      *            The locale used with conversion. Can be null.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Locale locale) {
         this.binder = binder;
@@ -67,6 +69,7 @@ public class ValueContext implements Serializable {
      *            The component related to current value. Can be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
@@ -88,6 +91,7 @@ public class ValueContext implements Serializable {
      *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue) {
@@ -109,6 +113,7 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be
      *            {@code null}.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue, Locale locale) {
@@ -256,6 +261,7 @@ public class ValueContext implements Serializable {
      * context.
      *
      * @return the optional of {@code Binder}
+     * @since 24.5
      */
     public Optional<Binder<?>> getBinder() {
         return Optional.ofNullable(binder);

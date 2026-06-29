@@ -74,6 +74,7 @@ public class Platform implements Serializable {
      *
      * @return Hilla version if Hilla is on the classpath; empty Optional if
      *         Hilla is not on the classpath.
+     * @since 24.1.8
      */
     public static Optional<String> getHillaVersion() {
         // thread-safe: in the worst case hillaVersion may be computed multiple

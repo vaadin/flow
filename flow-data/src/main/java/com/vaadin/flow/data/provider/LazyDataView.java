@@ -13,7 +13,7 @@ package com.vaadin.flow.data.provider;
  *
  * @param <T>
  *            data type
- * @since
+ * @since 4.0
  */
 public interface LazyDataView<T> extends DataView<T> {
 
@@ -106,6 +106,7 @@ public interface LazyDataView<T> extends DataView<T> {
      *
      * @param itemIndexProvider
      *            the item index provider to use
+     * @since 24.4
      */
     void setItemIndexProvider(ItemIndexProvider<T, ?> itemIndexProvider);
 }

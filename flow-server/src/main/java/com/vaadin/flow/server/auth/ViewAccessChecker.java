@@ -41,6 +41,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
  * @deprecated for annotation based view security use
  *             {@link NavigationAccessControl} with
  *             {@link AnnotatedViewAccessChecker}.
+ * @since 8.0
  */
 @Deprecated(forRemoval = true, since = "24.3")
 public class ViewAccessChecker implements BeforeEnterListener {
@@ -72,6 +73,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * @param enabled
      *            {@code false} for disabling the access checker, {@code
      * true} for enabling the access checker.
+     * @since 9.0
      */
     public ViewAccessChecker(boolean enabled) {
         this(new AccessAnnotationChecker());
@@ -241,6 +243,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      *            progress (e.g. in a background thread)
      * @return a function which takes a role name and returns {@code true} if
      *         the user is included in that role
+     * @since 23.1
      */
     protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
         if (request == null) {
@@ -259,6 +262,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * @return a representation of the currently logged in user or {@code null}
      *         if no user is currently logged in
      *
+     * @since 23.1
      */
     protected Principal getPrincipal(VaadinRequest request) {
         if (request == null) {
@@ -288,6 +292,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * @param context
      *            the navigation context
      * @return the result of the access check
+     * @since 24.4
      */
     public AccessCheckResult checkAccess(NavigationContext context) {
         if (!enabled) {
@@ -318,6 +323,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * @param vaadinRequest
      *            the Vaadin request.
      * @return a new navigation context instance.
+     * @since 24.4
      */
     public NavigationContext createNavigationContext(Class<?> navigationTarget,
             String path, VaadinService vaadinService,

@@ -40,6 +40,7 @@ public enum SortDirection {
      *
      * @return The shortened representation of the sort direction, either "asc"
      *         or "desc"
+     * @since 24.9
      */
     public String getShortName() {
         return ASCENDING.equals(this) ? "asc" : "desc";

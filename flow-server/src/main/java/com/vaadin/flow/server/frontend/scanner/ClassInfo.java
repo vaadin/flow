@@ -14,6 +14,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @since 24.1
+ */
 public class ClassInfo {
     String className;
     final LinkedHashSet<String> modules = new LinkedHashSet<>();

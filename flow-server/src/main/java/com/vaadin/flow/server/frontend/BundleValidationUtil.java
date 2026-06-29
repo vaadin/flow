@@ -69,6 +69,7 @@ public final class BundleValidationUtil {
      * @param mode
      *            Vaadin application mode
      * @return true if a new frontend bundle is needed, false otherwise
+     * @since 24.4
      */
     public static boolean needsBuild(Options options,
             FrontendDependenciesScanner frontendDependencies, Mode mode) {
@@ -306,6 +307,7 @@ public final class BundleValidationUtil {
      * @param frontendDependencies
      *            frontend dependency scanner
      * @return package.json content as JsonNode
+     * @since 24.4
      */
     public static JsonNode getPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies) {
@@ -436,6 +438,7 @@ public final class BundleValidationUtil {
      * @param npmPackages
      *            npm packages map
      * @return {@code true} if up to date
+     * @since 24.7
      */
     public static boolean hashAndBundleModulesEqual(JsonNode statsJson,
             JsonNode packageJson, Map<String, String> npmPackages) {

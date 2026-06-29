@@ -30,7 +30,6 @@ public class DescriptionList extends HtmlContainer
      * Component representing a <code>&lt;dt&gt;</code> element.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DT)
     public static class Term extends HtmlContainer
@@ -69,7 +68,6 @@ public class DescriptionList extends HtmlContainer
      * Component representing a <code>&lt;dd&gt;</code> element.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DD)
     public static class Description extends HtmlContainer

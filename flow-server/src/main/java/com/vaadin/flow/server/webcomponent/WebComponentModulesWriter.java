@@ -186,6 +186,7 @@ public final class WebComponentModulesWriter implements Serializable {
          *             if reflective method invocation fails
          * @see #writeWebComponentsToDirectory(java.util.Set, java.io.File,
          *      java.lang.String)
+         * @since 24.1
          */
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(

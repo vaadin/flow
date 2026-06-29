@@ -13,6 +13,8 @@ package com.vaadin.flow.server.frontend;
  * encountered.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 6.0
  */
 public class UnknownTaskException extends RuntimeException {
 

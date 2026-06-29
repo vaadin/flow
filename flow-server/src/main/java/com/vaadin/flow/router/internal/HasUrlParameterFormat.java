@@ -29,6 +29,8 @@ import com.vaadin.flow.router.WildcardParameter;
  * {@link HasUrlParameter} format into/from the template format.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 4.0
  */
 public class HasUrlParameterFormat implements Serializable {
 

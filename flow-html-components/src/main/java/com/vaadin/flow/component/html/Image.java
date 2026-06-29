@@ -103,6 +103,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 24.8
      */
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
@@ -157,6 +158,7 @@ public class Image extends HtmlContainer
      *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {

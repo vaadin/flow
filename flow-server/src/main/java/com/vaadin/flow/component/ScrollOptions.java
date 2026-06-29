@@ -19,6 +19,8 @@ import com.vaadin.flow.internal.JacksonUtils;
  * Options for scrollIntoView.
  * <p>
  * See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+ *
+ * @since 24.0
  **/
 public class ScrollOptions implements Serializable {
     /**

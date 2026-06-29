@@ -32,12 +32,16 @@ public enum ValueChangeMode {
      * <p>
      * The recommended default timeout for input fields is
      * {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     *
+     * @since 2.0
      */
     LAZY,
 
     /**
      * Syncs the value at defined intervals as long as the value changes from
      * one event to the next.
+     *
+     * @since 2.0
      */
     TIMEOUT,
 
@@ -114,6 +118,7 @@ public enum ValueChangeMode {
      *            {@link #EAGER}
      * @param registration
      *            The registration of the DOM event listener that synchronizes.
+     * @since 2.0
      */
     public static void applyChangeTimeout(ValueChangeMode mode, int timeout,
             DomListenerRegistration registration) {

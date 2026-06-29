@@ -44,6 +44,7 @@ public class ConstantPoolKey implements Serializable {
      *
      * @param json
      *            the JSON constant, not <code>null</code>
+     * @since 24.8
      */
     public ConstantPoolKey(JsonNode json) {
         assert json != null;
@@ -84,6 +85,7 @@ public class ConstantPoolKey implements Serializable {
      * @param clientConstantPoolUpdate
      *            the constant pool update that is to be sent to the client, not
      *            <code>null</code>
+     * @since 24.8
      */
     public void export(ObjectNode clientConstantPoolUpdate) {
         clientConstantPoolUpdate.set(getId(), json);

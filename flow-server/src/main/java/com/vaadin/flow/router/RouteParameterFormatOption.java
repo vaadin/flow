@@ -14,6 +14,8 @@ package com.vaadin.flow.router;
  * represented according with the specified flags.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 4.0
  */
 public enum RouteParameterFormatOption {
 

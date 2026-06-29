@@ -24,7 +24,7 @@ import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
+ * @since 3.1
  */
 public class Platform {
 
@@ -205,6 +205,7 @@ public class Platform {
      * Check if platform is linux.
      *
      * @return true if linux
+     * @since 23.0.5
      */
     public boolean isLinux() {
         return os == OS.LINUX;
@@ -234,6 +235,7 @@ public class Platform {
      * @param nodeVersion
      *            node version to get classifier for
      * @return platform node classifier
+     * @since 6.0.10
      */
     public String getNodeClassifier(FrontendVersion nodeVersion) {
         String result = getCodename() + "-"
@@ -245,6 +247,7 @@ public class Platform {
      * Gets the platform dependent download root.
      *
      * @return platform download root
+     * @since 23.1.5
      */
     public String getNodeDownloadRoot() {
         return nodeDownloadRoot;
