@@ -1,0 +1,98 @@
+name: Update @since tags
+
+# Reconcile Javadoc @since tags for any branch against the published release
+# history, and open a PR with the result. The reconciliation engine and caching
+# live in the shared vaadin/reconcile-since-tags action; the target branch is
+# chosen at dispatch time (the version is derived from that branch's pom).
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to reconcile (the PR is opened against it)
+        required: true
+        default: main
+      dev:
+        description: Target version override (blank = derive major.minor from pom)
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Disable git hooks (husky isn't set up in CI)
+        run: git config core.hooksPath /dev/null
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - id: since
+        uses: vaadin/reconcile-since-tags@a652ebfbaf9a3ee001fab8474d78501c039517f0 # v1.1.0
+        with:
+          group-id: com.vaadin
+          version: ${{ inputs.dev }}
+          artifacts: |
+            flow-server=flow-server/src/main/java
+            flow-data=flow-data/src/main/java
+            flow-html-components=flow-html-components/src/main/java
+            flow-polymer-template=flow-polymer-template/src/main/java
+            flow-dnd=flow-dnd/src/main/java
+            flow-webpush=flow-webpush/src/main/java
+            flow-react=flow-react/src/main/java
+            flow-lit-template=flow-lit-template/src/main/java
+            flow-html-components-testbench=flow-html-components-testbench/src/main/java
+            flow-build-tools=flow-build-tools/src/main/java
+            vaadin-dev-server=vaadin-dev-server/src/main/java
+
+      # vaadin-spring MUST reconcile against its own isolated index (index-dir),
+      # never the shared one above. Why: the tool merges every listed module's
+      # releases onto a single version axis and derives @since as the start of the
+      # unbroken "present" streak reaching the latest release. That is only correct
+      # when all pooled modules share one release timeline (the shared axis then
+      # equals each module's own timeline). vaadin-spring does NOT share it: under
+      # the same com.vaadin:vaadin-spring GAV it kept its own scheme -- ~64 releases
+      # in the 10.x-19.x range -- before aligning with the platform at 23.x. Flow
+      # itself jumped straight from 9.2 to 23.0 with nothing in between, so pooling
+      # vaadin-spring drops those 64 versions into Flow's gap. flow-server is absent
+      # from all of them, so the streak for every pre-23 Flow type would break there
+      # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
+      # of the framework. An isolated index-dir keeps vaadin-spring's versions off
+      # the shared axis (a separate load + axis per invocation).
+      - uses: vaadin/reconcile-since-tags@a652ebfbaf9a3ee001fab8474d78501c039517f0 # v1.1.0
+        with:
+          group-id: com.vaadin
+          version: ${{ inputs.dev }}
+          index-dir: .since-index-spring
+          artifacts: |
+            vaadin-spring=vaadin-spring/src/main/java
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        with:
+          base: ${{ inputs.branch }}
+          branch: since-tags/${{ inputs.branch }}
+          add-paths: "**/*.java"
+          title: "docs: reconcile @since tags (${{ steps.since.outputs.version }})"
+          commit-message: |
+            docs: reconcile @since tags
+
+            Automated reconciliation against the published release history:
+            add missing tags, correct wrong ones, create minimal @since javadoc
+            for undocumented types, and remove redundant tags.
+          body: |
+            Automated `@since` reconciliation for `${{ inputs.branch }}` (version `${{ steps.since.outputs.version }}`).
+
+            Generated via [`vaadin/reconcile-since-tags`](https://github.com/vaadin/reconcile-since-tags). See the run's job summary for counts.
+          delete-branch: true
