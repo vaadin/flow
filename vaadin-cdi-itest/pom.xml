@@ -15,7 +15,7 @@
     <surefire.excludedGroups>com.vaadin.cdi.itest.SlowTests</surefire.excludedGroups>
     <apache-tomcat.version>11.0.8</apache-tomcat.version>
     <apache-tomee.version>10.1.0</apache-tomee.version>
-    <wildfly.version>39.0.0.Final</wildfly.version>
+    <wildfly.version>40.0.1.Final</wildfly.version>
     <openliberty.version>25.0.0.6</openliberty.version>
     <openliberty.template>jakartaee10</openliberty.template>
     <openliberty.runtimeArtifactGroupId>io.openliberty</openliberty.runtimeArtifactGroupId>
@@ -189,7 +189,7 @@
         <dependency>
           <groupId>org.wildfly.arquillian</groupId>
           <artifactId>wildfly-arquillian-container-managed</artifactId>
-          <version>5.0.1.Final</version>
+          <version>5.1.0.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
@@ -215,7 +215,7 @@
                   <artifactItems>
                     <artifactItem>
                       <groupId>org.wildfly</groupId>
-                      <artifactId>wildfly-preview-dist</artifactId>
+                      <artifactId>wildfly-dist</artifactId>
                       <version>${wildfly.version}</version>
                       <type>zip</type>
                       <outputDirectory>target</outputDirectory>
@@ -234,7 +234,7 @@
               <groups>${surefire.groups}</groups>
               <systemPropertyVariables>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                <jboss.home>${project.build.directory}/wildfly-preview-${wildfly.version}</jboss.home>
+                <jboss.home>${project.build.directory}/wildfly-${wildfly.version}</jboss.home>
                 <arquillian.launch>wildfly</arquillian.launch>
               </systemPropertyVariables>
               <redirectTestOutputToFile>false</redirectTestOutputToFile>
