@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -130,6 +132,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("clientServiceWorkerSource", getServiceWorkerFile());
 
+        settings.put("clientIndexHtmlSource", getIndexHtmlFile());
+
         settings.put("pwaEnabled", pwaConfiguration.isEnabled());
 
         settings.put("offlineEnabled", pwaConfiguration.isOfflineEnabled());
@@ -175,6 +179,21 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             return Paths.get(frontendDirectory.toString(), serviceWorkerFile)
                     .toString();
         }
+    }
+
+    private String getIndexHtmlFile() {
+        // User-provided index.html in the frontend folder takes precedence
+        // over the default generated into the frontend generated/ folder.
+        File userIndexHtml = new File(frontendDirectory, INDEX_HTML);
+        if (userIndexHtml.exists()) {
+            return userIndexHtml.toPath().toString();
+        }
+        // The default is served by Vite at /generated/index.html, so it must
+        // live in the generated/ folder under the frontend root (alongside the
+        // generated bootstrap), not in frontendGeneratedFolder, which a custom
+        // generatedTsFolder can relocate outside the Vite root.
+        return new File(new File(frontendDirectory, GENERATED), INDEX_HTML)
+                .toPath().toString();
     }
 
     private String getOfflinePath() {
