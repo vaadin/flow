@@ -112,9 +112,15 @@ export function invokeJavaScript(
     const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
     fn.apply(context, parameters);
   } catch (exception) {
-    console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
-    console.error(exception);
-    if (!productionMode) {
+    if (productionMode) {
+      // Mirror Console.shouldLogToBrowserConsole: in production the explanatory
+      // messages are suppressed and only the failure itself is surfaced, as a
+      // single console entry carrying the error message (matching the Java path
+      // where the rethrown error's message reaches the console).
+      console.error(exception instanceof Error ? exception.message : String(exception));
+    } else {
+      console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
+      console.error(exception);
       // Java brackets the snippets then strips the brackets, netting the join.
       console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
     }
