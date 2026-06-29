@@ -166,7 +166,8 @@ export class MessageHandler {
       const meta = json.meta as ValueMap | undefined;
       if (!meta || !(META_SESSION_EXPIRED in meta)) {
         console.error(
-          'Response did not contain a server id. Please verify that the server is up-to-date and the response was not modified in transmission.'
+          "Response didn't contain a server id. " +
+            'Please verify that the server is up-to-date and that the response data has not been modified in transmission.'
         );
       }
     }
