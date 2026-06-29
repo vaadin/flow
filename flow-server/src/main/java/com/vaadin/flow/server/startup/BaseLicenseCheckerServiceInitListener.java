@@ -58,6 +58,7 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see VaadinServiceInitListener
+ * @since 24.9
  */
 public abstract class BaseLicenseCheckerServiceInitListener
         implements VaadinServiceInitListener {

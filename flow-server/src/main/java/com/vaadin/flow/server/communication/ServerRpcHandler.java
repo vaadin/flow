@@ -72,7 +72,6 @@ public class ServerRpcHandler implements Serializable {
      * side.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -212,7 +211,6 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {
@@ -227,6 +225,8 @@ public class ServerRpcHandler implements Serializable {
 
     /**
      * Exception thrown then the client side resynchronization is required.
+     * 
+     * @since 2.1
      */
     public static class ResynchronizationRequiredException
             extends RuntimeException {
@@ -241,6 +241,8 @@ public class ServerRpcHandler implements Serializable {
 
     /**
      * Exception thrown when the client side re-sends the same request.
+     * 
+     * @since 24.7
      */
     public static class ClientResentPayloadException extends RuntimeException {
 
@@ -339,6 +341,7 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @since 24.5.6
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {

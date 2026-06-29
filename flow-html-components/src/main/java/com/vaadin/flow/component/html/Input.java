@@ -62,6 +62,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @param valueChangeMode
      *            initial value change mode, or <code>null</code> to disable the
      *            value synchronization
+     * @since 2.0
      */
     public Input(ValueChangeMode valueChangeMode) {
         super("value", "", false);
@@ -122,6 +123,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * {@inheritDoc}
      *
      * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     * 
+     * @since 2.0
      */
     @Override
     public int getValueChangeTimeout() {

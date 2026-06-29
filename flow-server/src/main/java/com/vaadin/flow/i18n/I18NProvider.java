@@ -47,6 +47,7 @@ public interface I18NProvider extends Serializable {
      * {@link #getProvidedLocales}.
      *
      * @return default locale
+     * @since 25.0
      */
     default Locale getDefaultLocale() {
         List<Locale> providedLocales = getProvidedLocales();
@@ -85,6 +86,7 @@ public interface I18NProvider extends Serializable {
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @since 23.2
      */
     default String getTranslation(Object key, Locale locale, Object... params) {
         return getTranslation(key.toString(), locale, params);
@@ -98,6 +100,7 @@ public interface I18NProvider extends Serializable {
      *            locale to use
      * @return a map of all available translations (the default implementation
      *         just returns an empty map)
+     * @since 24.8
      */
     default Map<String, String> getAllTranslations(Locale locale) {
         return Map.of();
@@ -113,6 +116,7 @@ public interface I18NProvider extends Serializable {
      * @param locale
      *            locale to use
      * @return a map of translations
+     * @since 24.8
      */
     default Map<String, String> getTranslations(Collection<String> keys,
             Locale locale) {
@@ -132,6 +136,7 @@ public interface I18NProvider extends Serializable {
      * @return translation for key if found
      * @throws IllegalStateException
      *             thrown if no I18NProvider found from the VaadinService
+     * @since 24.5
      */
     static String translate(String key, Object... params) {
         return translate(LocaleUtil.getLocale(), key, params);
@@ -151,6 +156,7 @@ public interface I18NProvider extends Serializable {
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @since 24.5
      */
     static String translate(Locale locale, String key, Object... params) {
         VaadinService vaadinService = VaadinService.getCurrent();

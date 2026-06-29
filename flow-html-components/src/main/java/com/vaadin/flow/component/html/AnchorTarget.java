@@ -20,6 +20,7 @@ package com.vaadin.flow.component.html;
  * <code>&lt;a&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 8.0
  */
 public enum AnchorTarget implements AnchorTargetValue {
     /**

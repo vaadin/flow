@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 
 /**
  * Enum of supported units in Css sizes.
+ * 
+ * @since 4.0
  */
 public enum Unit {
     /**

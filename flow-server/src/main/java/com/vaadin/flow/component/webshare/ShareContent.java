@@ -37,6 +37,8 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
  * WebShare.onClick(button).share(ShareContent.create().title("Hello")
  *         .text("World").url("https://vaadin.com"));
  * }</pre>
+ * 
+ * @since 25.2
  */
 public final class ShareContent implements Serializable {
 

@@ -474,6 +474,7 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            Request.
      * @return Relative context root path for that request.
+     * @since 2.0
      */
     public abstract String getContextRootRelativePath(VaadinRequest request);
 
@@ -517,6 +518,7 @@ public abstract class VaadinService implements Serializable {
      * @return The list of request handlers used by this service.
      * @throws ServiceException
      *             if a problem occurs when creating the request interceptors
+     * @since 24.3
      */
     protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
             throws ServiceException {
@@ -627,6 +629,7 @@ public abstract class VaadinService implements Serializable {
      * @return a default executor instance to use, never {@literal null}.
      * @see VaadinServiceInitListener
      * @see ServiceInitEvent#setExecutor(Executor)
+     * @since 24.8
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
@@ -665,6 +668,7 @@ public abstract class VaadinService implements Serializable {
      * @return the Executor instance, never {@literal null}.
      * @see VaadinServiceInitListener
      * @see ServiceInitEvent#setExecutor(Executor)
+     * @since 24.8
      */
     public Executor getExecutor() {
         return executor;
@@ -676,6 +680,7 @@ public abstract class VaadinService implements Serializable {
      * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
+     * @since 24.8
      */
     protected ObjectMapper createDefaultObjectMapper() {
         return JacksonUtils.getMapper();
@@ -831,6 +836,7 @@ public abstract class VaadinService implements Serializable {
      *            the RPC invocation listener
      * @return a handle that can be used for removing the listener
      * @see RpcInvocationListener
+     * @since 25.2
      */
     public Registration addRpcInvocationListener(
             RpcInvocationListener listener) {
@@ -842,6 +848,7 @@ public abstract class VaadinService implements Serializable {
      * can skip building per-invocation events when nobody is observing.
      *
      * @return {@code true} if at least one listener is registered
+     * @since 25.2
      */
     public boolean hasRpcInvocationListeners() {
         return !rpcInvocationListeners.isEmpty();
@@ -853,6 +860,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param event
      *            the invocation event
+     * @since 25.2
      */
     public void fireRpcInvocationStarted(RpcInvocationEvent event) {
         for (RpcInvocationListener listener : rpcInvocationListeners) {
@@ -873,6 +881,7 @@ public abstract class VaadinService implements Serializable {
      *            the invocation event
      * @param error
      *            the throwable raised by the invocation handler
+     * @since 25.2
      */
     public void fireRpcInvocationFailed(RpcInvocationEvent event,
             Throwable error) {
@@ -893,6 +902,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param event
      *            the invocation event
+     * @since 25.2
      */
     public void fireRpcInvocationEnded(RpcInvocationEvent event) {
         for (RpcInvocationListener listener : rpcInvocationListeners) {
@@ -918,6 +928,7 @@ public abstract class VaadinService implements Serializable {
      *            the session lock listener
      * @return a handle that can be used for removing the listener
      * @see SessionLockListener
+     * @since 25.2
      */
     public Registration addSessionLockListener(SessionLockListener listener) {
         return Registration.addAndRemove(sessionLockListeners, listener);
@@ -1012,6 +1023,7 @@ public abstract class VaadinService implements Serializable {
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the Index HTML response.
+     * @since 3.0
      */
     public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
         indexHtmlRequestListeners.forEach(
@@ -1229,6 +1241,7 @@ public abstract class VaadinService implements Serializable {
      *            The session to unlock
      * @param lock
      *            Lock instance to unlock
+     * @since 8.0.5
      */
     protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
         assert ((ReentrantLock) lock).isHeldByCurrentThread()
@@ -1950,6 +1963,7 @@ public abstract class VaadinService implements Serializable {
      * @return a collection of request interceptors in the order they are
      *         invoked
      * @see #createVaadinRequestInterceptors()
+     * @since 24.3
      */
     public Iterable<VaadinRequestInterceptor> getVaadinRequestInterceptors() {
         return vaadinRequestInterceptors;
@@ -2224,6 +2238,7 @@ public abstract class VaadinService implements Serializable {
      *            shown. If the selector is {@code null}, the body element is
      *            used.
      * @return A JSON string to be sent to the client
+     * @since 2.2
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url, String querySelector) {
@@ -2261,6 +2276,7 @@ public abstract class VaadinService implements Serializable {
      *            or asynchronously.
      * @return the JSON used to inform the client about a session expiration, as
      *         a string
+     * @since 2.2
      */
     public static String createSessionExpiredJSON(boolean async) {
         ObjectNode json = JacksonUtils.createObjectNode();
@@ -2283,6 +2299,7 @@ public abstract class VaadinService implements Serializable {
      *            or asynchronously.
      * @return the JSON used to inform the client that the UI cannot be found,
      *         as a string
+     * @since 2.2
      */
     public static String createUINotFoundJSON(boolean async) {
         // Session Expired is technically not really the correct thing as
@@ -2400,6 +2417,7 @@ public abstract class VaadinService implements Serializable {
      *         disabled; <code>false</code> if protection is enabled and the
      *         token is invalid
      * @see DeploymentConfiguration#isXsrfProtectionEnabled()
+     * @since 2.0
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
@@ -2740,6 +2758,7 @@ public abstract class VaadinService implements Serializable {
      *            the untranslated Vaadin URL for the resource
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
+     * @since 3.0
      */
     public abstract URL getResource(String url);
 
@@ -2750,6 +2769,7 @@ public abstract class VaadinService implements Serializable {
      *            the untranslated Vaadin URL for the resource
      * @return a stream for the resource or <code>null</code> if no resource
      *         exists at the specified path
+     * @since 3.0
      */
     public abstract InputStream getResourceAsStream(String url);
 
@@ -2761,6 +2781,7 @@ public abstract class VaadinService implements Serializable {
      * @return <code>true</code> if a resource is found and can be read using
      *         {@link #getResourceAsStream(String)}, <code>false</code> if it is
      *         not found
+     * @since 3.0
      */
     public boolean isResourceAvailable(String url) {
         return getResource(url) != null;
@@ -2774,6 +2795,7 @@ public abstract class VaadinService implements Serializable {
      *            the resource to resolve, not <code>null</code>
      * @return the resolved URL or the same as the input url if no translation
      *         was performed
+     * @since 3.0
      */
     public abstract String resolveResource(String url);
 
@@ -2784,6 +2806,7 @@ public abstract class VaadinService implements Serializable {
      * {@link #getContext()}.
      *
      * @return Context. This may never be {@code null}.
+     * @since 2.0
      */
     protected abstract VaadinContext constructVaadinContext();
 
@@ -2791,6 +2814,7 @@ public abstract class VaadinService implements Serializable {
      * Returns {@link VaadinContext} for this service.
      *
      * @return A non-null context instance.
+     * @since 2.0
      */
     public VaadinContext getContext() {
         if (vaadinContext == null) {
@@ -2824,6 +2848,7 @@ public abstract class VaadinService implements Serializable {
      * in the case
      *
      * @return a non-null instance.
+     * @since 3.0
      */
     public BootstrapInitialPredicate getBootstrapInitialPredicate() {
         if (bootstrapInitialPredicate == null) {
@@ -2839,6 +2864,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param bootstrapInitialPredicate
      *            the predicate.
+     * @since 3.0
      */
     public void setBootstrapInitialPredicate(
             BootstrapInitialPredicate bootstrapInitialPredicate) {
@@ -2852,6 +2878,7 @@ public abstract class VaadinService implements Serializable {
      * By default it returns an instance that returns true for all requests.
      *
      * @return a non-null instance.
+     * @since 3.0
      */
     public BootstrapUrlPredicate getBootstrapUrlPredicate() {
         if (bootstrapUrlPredicate == null) {
@@ -2866,6 +2893,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param bootstrapUrlPredicate
      *            the predicate.
+     * @since 3.0
      */
     public void setBootstrapUrlPredicate(
             BootstrapUrlPredicate bootstrapUrlPredicate) {
@@ -2876,6 +2904,7 @@ public abstract class VaadinService implements Serializable {
      * Get the name of the CSRF Token attribute in HTTP session.
      *
      * @return the attribute name string
+     * @since 3.0
      */
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."

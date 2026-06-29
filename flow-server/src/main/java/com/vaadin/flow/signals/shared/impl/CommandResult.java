@@ -32,6 +32,7 @@ import com.vaadin.flow.signals.SignalCommand;
  *
  * @see SignalCommand
  * @see TreeRevision
+ * @since 25.1
  */
 public sealed interface CommandResult extends Serializable {
     /**

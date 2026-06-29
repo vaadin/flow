@@ -22,6 +22,7 @@ import com.vaadin.flow.server.VaadinContext;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 public interface ApplicationConfigurationFactory {
 

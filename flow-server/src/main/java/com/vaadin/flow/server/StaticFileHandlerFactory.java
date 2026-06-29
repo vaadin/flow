@@ -20,6 +20,7 @@ package com.vaadin.flow.server;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0.2
  */
 public interface StaticFileHandlerFactory {
 

@@ -56,6 +56,7 @@ public class Div extends HtmlContainer
      *
      * @param text
      *            the text
+     * @since 24.3
      */
     public Div(String text) {
         setText(text);
@@ -67,6 +68,7 @@ public class Div extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Div(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

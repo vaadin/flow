@@ -62,6 +62,7 @@ import com.vaadin.flow.router.MenuData;
  * @param detail
  *            additional information to be used in the menu, encoded in JSON
  *            format
+ * @since 24.5
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,

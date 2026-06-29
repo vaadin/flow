@@ -47,6 +47,8 @@ import com.vaadin.flow.signals.Signal;
  *
  * The Web Share API requires a fresh user gesture for each call, so actions
  * only run during the DOM event that fires the underlying trigger.
+ * 
+ * @since 25.2
  */
 public final class WebShare implements Serializable {
 

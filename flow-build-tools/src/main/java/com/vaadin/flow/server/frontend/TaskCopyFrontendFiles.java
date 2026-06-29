@@ -36,9 +36,17 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 /**
  * Copies all frontend resources from JAR files into a given folder.
  * <p>
- * The task considers "frontend resources" all files placed in
- * {@literal META-INF/frontend}, {@literal META-INF/resources/frontend} and
- * {@literal META-INF/resources/[**]/themes} folders.
+ * "Frontend resources" are bundle sources for {@code @JsModule} /
+ * {@code @CssImport} annotations. The recommended location for them in addon
+ * JARs is {@literal META-INF/frontend}. The legacy location
+ * {@literal META-INF/resources/frontend} is still scanned for backwards
+ * compatibility but is deprecated; a per-jar warning is emitted when it is
+ * used. Theme files under {@literal META-INF/resources/[**]/themes} are also
+ * copied.
+ * <p>
+ * Public runtime resources for {@code @StyleSheet} / {@code @JavaScript} should
+ * be placed under {@literal META-INF/resources/} and are served directly by the
+ * servlet container — they are not handled by this task.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -49,6 +57,7 @@ public class TaskCopyFrontendFiles
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private final Options options;
     private final Set<File> resourceLocations;
+    private final Set<File> warnedLegacyLocations = new HashSet<>();
 
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
@@ -85,10 +94,13 @@ public class TaskCopyFrontendFiles
                         .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
                                 new File(location, RESOURCES_FRONTEND_DEFAULT),
                                 targetDirectory));
+                File legacyDir = new File(location,
+                        COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+                if (legacyDir.isDirectory()) {
+                    warnAboutDeprecatedFrontendLayout(location);
+                }
                 handledFiles.addAll(TaskCopyLocalFrontendFiles
-                        .copyLocalResources(new File(location,
-                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
-                                targetDirectory));
+                        .copyLocalResources(legacyDir, targetDirectory));
                 // copies from resources, but excludes already copied from
                 // resources/frontend
                 handledFiles
@@ -100,6 +112,10 @@ public class TaskCopyFrontendFiles
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
                                 RESOURCES_FRONTEND_DEFAULT, targetDirectory,
                                 "**/*"));
+                if (jarContentsManager.containsPath(location,
+                        COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/")) {
+                    warnAboutDeprecatedFrontendLayout(location);
+                }
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
@@ -134,6 +150,18 @@ public class TaskCopyFrontendFiles
 
     private Logger log() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    private void warnAboutDeprecatedFrontendLayout(File location) {
+        if (warnedLegacyLocations.add(location)) {
+            log().warn("Addon '{}' contains frontend sources under {}/. "
+                    + "This location is deprecated; migrate them to {}/ "
+                    + "(bundle sources for @JsModule/@CssImport) or to "
+                    + "META-INF/resources/ (runtime resources for "
+                    + "@StyleSheet/@JavaScript).", location.getName(),
+                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
+                    RESOURCES_FRONTEND_DEFAULT);
+        }
     }
 
 }

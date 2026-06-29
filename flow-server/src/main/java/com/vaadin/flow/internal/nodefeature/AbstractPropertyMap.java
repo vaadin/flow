@@ -149,6 +149,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @return <code>true</code> if there is an active signal binding for the
      *         property with a non-null write callback; <code>false</code>
      *         otherwise
+     * @since 25.1
      */
     public boolean hasWriteCallbackForSignal(String name) {
         if (!hasSignal(name)) {
@@ -186,6 +187,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
+     * @since 25.1
      */
     public <T> SignalBinding<T> bindSignal(Element owner, String name,
             Signal<T> signal, SerializableConsumer<?> writeCallback) {
@@ -204,6 +206,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *            the value to apply; <code>null</code> removes the property on
      *            the client but keeps the binding and last-applied value as
      *            <code>null</code>
+     * @since 25.0
      */
     protected abstract void setPropertyFromSignal(String name, Object value);
 }

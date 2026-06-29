@@ -70,6 +70,8 @@ public class AtmospherePushConnection
          * <p>
          * Immediately reads the length of the message (up until
          * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
+         * 
+         * @since 24.3.1
          */
         public FragmentedMessage() {
         }
@@ -260,6 +262,7 @@ public class AtmospherePushConnection
      *         received message was a partial message
      * @throws IOException
      *             if an IO error occurred
+     * @since 24.3.1
      */
     protected static Reader receiveMessage(AtmosphereResource resource,
             Reader reader, FragmentedMessageHolder holder) throws IOException {

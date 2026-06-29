@@ -129,6 +129,7 @@ public interface HasEnabled extends HasElement {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
+     * @since 25.1
      */
     default SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         return getElement().bindEnabled(enabledSignal);

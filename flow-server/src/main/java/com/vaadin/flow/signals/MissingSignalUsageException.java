@@ -20,6 +20,8 @@ package com.vaadin.flow.signals;
  * values. Computed signals and effects must read at least one signal to
  * establish reactive dependencies, otherwise they will never recompute or
  * re-run.
+ * 
+ * @since 25.1
  */
 public class MissingSignalUsageException extends IllegalStateException {
     /**

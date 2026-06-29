@@ -39,7 +39,6 @@ public class DescriptionList extends HtmlContainer
      * Component representing a <code>&lt;dt&gt;</code> element.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DT)
     public static class Term extends HtmlContainer
@@ -78,7 +77,6 @@ public class DescriptionList extends HtmlContainer
      * Component representing a <code>&lt;dd&gt;</code> element.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DD)
     public static class Description extends HtmlContainer
@@ -119,6 +117,7 @@ public class DescriptionList extends HtmlContainer
          * @param textSignal
          *            the signal to bind, not {@code null}
          * @see #bindText(Signal)
+         * @since 25.1
          */
         public Description(Signal<String> textSignal) {
             Objects.requireNonNull(textSignal, "textSignal must not be null");

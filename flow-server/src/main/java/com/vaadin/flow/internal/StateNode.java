@@ -370,6 +370,7 @@ public class StateNode implements Serializable {
      *
      * @param action
      *            the action to execute, not {@code null}
+     * @since 23.0
      */
     public void forEachChild(Consumer<StateNode> action) {
         forEachFeature(n -> n.forEachChild(action));
@@ -403,6 +404,8 @@ public class StateNode implements Serializable {
     /**
      * Removes the node from its parent and unlinks the node (and children) from
      * the state tree.
+     * 
+     * @since 2.0
      */
     public void removeFromTree() {
         removeFromTree(false);
@@ -414,6 +417,7 @@ public class StateNode implements Serializable {
      *
      * @param sendDetach
      *            if removal should send detach event for the element
+     * @since 24.2
      */
     public void removeFromTree(boolean sendDetach) {
         if (getOwner() instanceof StateTree) {
@@ -448,6 +452,8 @@ public class StateNode implements Serializable {
      * Prepares the tree below this node for resynchronization by detaching all
      * descendants, setting their internal state to not yet attached, and
      * calling the attach listeners.
+     * 
+     * @since 3.1
      */
     protected void prepareForResync() {
         visitNodeTreeBottomUp(StateNode::fireDetachListeners);
@@ -548,6 +554,7 @@ public class StateNode implements Serializable {
      *            the desired feature type, not <code>null</code>
      * @return a feature instance, or an empty optional if the feature is not
      *         yet initialized for this node
+     * @since 1.1
      */
     public <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
             Class<T> featureType) {
@@ -1077,6 +1084,7 @@ public class StateNode implements Serializable {
      * Non-visible node should not participate in any RPC communication.
      *
      * @return {@code true} if the node is effectively visible
+     * @since 24.0.8
      */
     public boolean isVisible() {
         if (hasFeature(ElementData.class)) {
@@ -1100,6 +1108,7 @@ public class StateNode implements Serializable {
      *
      * @return {@code true} if the node is inert, {@code false} if not
      * @see InertData
+     * @since 23.0
      */
     public boolean isInert() {
         if (hasFeature(InertData.class)) {

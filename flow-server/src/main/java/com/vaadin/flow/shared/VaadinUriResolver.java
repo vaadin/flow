@@ -48,6 +48,7 @@ public abstract class VaadinUriResolver implements Serializable {
      *            the relative path from the servlet path (used as base path in
      *            the client) to the context root
      * @return the resolved URI
+     * @since 3.0
      */
     protected String resolveVaadinUri(String uri, String servletToContextRoot) {
         if (uri == null) {
