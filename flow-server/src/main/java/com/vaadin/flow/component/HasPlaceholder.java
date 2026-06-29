@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
  * The default implementations sets the <code>placeholder</code> property for
  * this element. Override all methods in this interface if the placeholder
  * should be set in some other way.
+ *
+ * @since 24.3
  */
 public interface HasPlaceholder extends HasElement {
     /**

@@ -471,6 +471,8 @@ public class StateTree implements NodeOwner {
      * Prepares the tree for resynchronization, meaning that the client will
      * receive the same changes as when the component tree was initially
      * attached, so that it can build the DOM tree from scratch.
+     *
+     * @since 3.1
      */
     public void prepareForResync() {
         preparingForResync = true;
@@ -491,6 +493,7 @@ public class StateTree implements NodeOwner {
      *
      * @return {@code true} if the tree is preparing for resynchronization,
      *         {@code false} otherwise
+     * @since 24.7.5
      */
     public boolean isPreparingForResync() {
         return preparingForResync;

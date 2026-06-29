@@ -18,6 +18,8 @@ import com.vaadin.flow.component.*;
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
  * used to group several UI components within a form, enhancing form
  * accessibility and organization.
+ *
+ * @since 24.5
  */
 @Tag("fieldset")
 public class FieldSet extends HtmlContainer implements HasAriaLabel {

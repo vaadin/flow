@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 6.0
  */
 public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 

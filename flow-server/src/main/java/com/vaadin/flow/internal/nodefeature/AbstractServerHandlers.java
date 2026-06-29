@@ -195,6 +195,7 @@ public abstract class AbstractServerHandlers<T>
      *
      * @param method
      *            method to check return type for
+     * @since 2.2
      */
     protected void ensureSupportedReturnType(Method method) {
         if (!void.class.equals(method.getReturnType())) {
@@ -212,6 +213,7 @@ public abstract class AbstractServerHandlers<T>
      * Gets the annotation FQN which is used to mark methods as handlers.
      *
      * @return the handler marker annotation
+     * @since 5.0
      */
     protected abstract String getHandlerAnnotationFqn();
 

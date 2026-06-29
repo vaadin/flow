@@ -46,6 +46,8 @@ public class DndUtil {
     /**
      * Key for storing server side drag image for a
      * {@link com.vaadin.flow.component.dnd.DragSource}.
+     *
+     * @since 24.6
      */
     public static final String DRAG_SOURCE_IMAGE = "drag-source-image";
 
@@ -89,6 +91,7 @@ public class DndUtil {
      *            the drag source to update active status on
      * @param <T>
      *            the type of the drag source component
+     * @since 2.1
      */
     public static <T extends Component> void updateDragSourceActivation(
             DragSource<T> dragSource) {
@@ -108,6 +111,7 @@ public class DndUtil {
      *            the drop target to update active status on
      * @param <T>
      *            the type of the drop target component
+     * @since 2.1
      */
     public static <T extends Component> void updateDropTargetActivation(
             DropTarget<T> dropTarget) {
@@ -137,6 +141,8 @@ public class DndUtil {
 
     /**
      * Reports DnD feature usage from mixin interfaces.
+     *
+     * @since 2.1
      */
     public static void reportUsage() {
         UsageStatistics.markAsUsed("flow/generic-dnd", null);

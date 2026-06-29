@@ -313,6 +313,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *      MDN web docs</a> for more information.
      * @param dragImage
      *            the image to be used as drag image or null to remove it
+     * @since 24.6
      */
     default void setDragImage(Component dragImage) {
         setDragImage(dragImage, 0, 0);
@@ -338,6 +339,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *            the x-offset of the drag image
      * @param offsetY
      *            the y-offset of the drag image
+     * @since 24.6
      */
     default void setDragImage(Component dragImage, int offsetX, int offsetY) {
         if (dragImage != null && !dragImage.isVisible()) {
@@ -398,6 +400,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * next drag start event in the browser.
      *
      * @return Server side drag image if set, otherwise {@literal null}.
+     * @since 24.6
      */
     default Component getDragImage() {
         return (Component) ComponentUtil.getData(getDragSourceComponent(),

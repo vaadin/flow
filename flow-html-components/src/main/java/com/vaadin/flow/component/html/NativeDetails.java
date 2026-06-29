@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.Registration;
  * Component representing a <code>&lt;details&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  */
 @Tag(Tag.DETAILS)
 public class NativeDetails extends HtmlComponent

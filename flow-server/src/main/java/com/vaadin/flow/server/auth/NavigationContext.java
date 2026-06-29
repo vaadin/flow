@@ -43,6 +43,8 @@ import com.vaadin.flow.router.Router;
  * navigation checker to take a decision; for example, a configuration where the
  * path {@literal /my/view} is public, but {@literal /my/*} is protected.</li>
  * </ul>
+ *
+ * @since 24.3
  */
 public final class NavigationContext {
     private final Router router;

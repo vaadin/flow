@@ -30,6 +30,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * at runtime in production mode.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 9.0
  */
 public class TaskCopyTemplateFiles implements FallibleCommand {
 

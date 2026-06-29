@@ -93,6 +93,7 @@ public final class JacksonUtils {
      * Create a nullNode for null value.
      *
      * @return NullNode
+     * @since 24.8
      */
     public static ValueNode nullNode() {
         return (ValueNode) objectMapper.nullNode();
@@ -105,6 +106,7 @@ public final class JacksonUtils {
      *            JsonArray to change
      * @return ArrayNode of elemental json array object or null for null
      *         jsonArray
+     * @since 24.8
      */
     public static ArrayNode mapElemental(JsonArray jsonArray) {
         if (jsonArray == null || jsonArray instanceof JsonNull) {
@@ -124,6 +126,7 @@ public final class JacksonUtils {
      *            JsonObject to change
      * @return ObjectNode of elemental json object object or null for null
      *         jsonObject
+     * @since 24.8
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {
@@ -142,6 +145,7 @@ public final class JacksonUtils {
      * @param jsonValue
      *            JsonValue to change
      * @return ObjectNode of elemental json value
+     * @since 24.8
      */
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
         if (jsonValue == null || jsonValue instanceof JsonNull) {
@@ -169,6 +173,7 @@ public final class JacksonUtils {
      * @param jsonNodes
      *            ArrayNode to convert
      * @return JsonArray of ArrayNode content
+     * @since 24.8
      */
     public static JsonArray createElementalArray(ArrayNode jsonNodes) {
         return (JsonArray) parseNode(jsonNodes);
@@ -548,6 +553,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -569,6 +575,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
@@ -584,6 +591,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
@@ -633,6 +641,7 @@ public final class JacksonUtils {
      * @param keyPath
      *            the nested key path
      * @return the value of the last key found, or {@code null}
+     * @since 24.10.3
      */
     public static JsonNode getNestedKey(ObjectNode objectNode,
             List<String> keyPath) {
@@ -670,6 +679,7 @@ public final class JacksonUtils {
      *            a function that converts intermediate {@code null} and
      *            non-{@code ObjectNode} values into {@code ObjectNode}s when
      *            necessary for recursive traversal
+     * @since 24.10.3
      */
     public static void setNestedKey(ObjectNode objectNode, List<String> keyPath,
             JsonNode valueNode,
@@ -703,6 +713,7 @@ public final class JacksonUtils {
      *            the root object containing to process
      * @param keyPath
      *            the nested key path
+     * @since 24.10.3
      */
     public static void removeNestedKey(ObjectNode objectNode,
             List<String> keyPath) {

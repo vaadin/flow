@@ -142,6 +142,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param downloadHandler
      *            the download handler callback that provides a resource from
      *            server, not null
+     * @since 24.8
      */
     public IFrame(DownloadHandler downloadHandler) {
         setSrc(downloadHandler);
@@ -168,6 +169,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            the resource value, not null
      * @deprecated use {@link #setSrc(DownloadHandler)} instead
+     * @since 24.7
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
@@ -193,6 +195,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
@@ -337,6 +340,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     /**
      * Reloads the IFrame.
+     *
+     * @since 3.0
      */
     public void reload() {
         getElement().executeJs("this.src = this.src");

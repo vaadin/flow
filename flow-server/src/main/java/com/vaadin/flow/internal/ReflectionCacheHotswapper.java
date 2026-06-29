@@ -16,6 +16,8 @@ import com.vaadin.flow.server.VaadinService;
 /**
  * Clears all mappings from all reflection caches and related resources when one
  * or more classes has been changed.
+ *
+ * @since 24.5
  */
 public class ReflectionCacheHotswapper implements VaadinHotswapper {
 

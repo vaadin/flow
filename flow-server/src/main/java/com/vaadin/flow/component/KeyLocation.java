@@ -33,6 +33,8 @@ public enum KeyLocation {
 
     /**
      * Right key location.
+     *
+     * @since 1.3
      */
     RIGHT(2),
 

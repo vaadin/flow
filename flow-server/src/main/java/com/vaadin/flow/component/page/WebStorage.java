@@ -20,6 +20,8 @@ import com.vaadin.flow.component.UI;
  * data that you want to be stored on the client side, instead of e.g. database
  * on the server. An example could be certain UI settings that the same users
  * might want to have set differently based on their device.
+ *
+ * @since 24.2
  */
 public interface WebStorage extends Serializable {
 
@@ -243,6 +245,7 @@ public interface WebStorage extends Serializable {
      * @return a CompletableFuture that will be completed with the value once
      *         transferred from the client side or <code>null</code> if the
      *         value was not available.
+     * @since 24.5
      */
     public static CompletableFuture<String> getItem(String key) {
         return getItem(Storage.LOCAL_STORAGE, key);
@@ -264,6 +267,7 @@ public interface WebStorage extends Serializable {
      * @return a CompletableFuture that will be completed with the value once
      *         transferred from the client side or <code>null</code> if the
      *         value was not available.
+     * @since 24.5
      */
     public static CompletableFuture<String> getItem(Storage storage,
             String key) {
@@ -288,6 +292,7 @@ public interface WebStorage extends Serializable {
      * @return a CompletableFuture that will be completed with the value once
      *         transferred from the client side or <code>null</code> if the
      *         value was not available.
+     * @since 24.5
      */
     public static CompletableFuture<String> getItem(UI ui, Storage storage,
             String key) {

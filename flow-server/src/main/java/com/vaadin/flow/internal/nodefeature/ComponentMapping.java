@@ -82,6 +82,7 @@ public class ComponentMapping extends ServerSideFeature {
      *            <code>null</code>
      * @return the mapped component, or an empty optional if no component is
      *         mapped
+     * @since 1.1
      */
     public static Optional<Component> getComponent(StateNode node) {
         assert node != null;

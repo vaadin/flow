@@ -16,6 +16,7 @@ package com.vaadin.flow.internal.nodefeature;
  *
  * @author Vaadin Ltd
  *
+ * @since 4.0
  */
 public class PropertyChangeDeniedException extends Exception {
 

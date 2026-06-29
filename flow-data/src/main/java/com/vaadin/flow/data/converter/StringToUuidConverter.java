@@ -27,6 +27,7 @@ import java.util.UUID;
  * </p>
  *
  * @author Vaadin Ltd
+ * @since 2.1
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
 

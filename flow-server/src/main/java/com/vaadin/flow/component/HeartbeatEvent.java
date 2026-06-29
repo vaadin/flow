@@ -13,7 +13,7 @@ import java.util.EventObject;
 /**
  * Event created for an application heartbeat from the client.
  *
- * @since 2.0
+ * @since 23.0
  */
 public class HeartbeatEvent extends EventObject {
 

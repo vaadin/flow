@@ -21,6 +21,8 @@ import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * A util class for helping dealing with Spring CSRF token.
+ *
+ * @since 9.0
  */
 public class SpringCsrfTokenUtil {
     private static final String CONTENT_ATTRIBUTE = "content";

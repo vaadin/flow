@@ -10,6 +10,8 @@ package com.vaadin.flow.server;
 
 /**
  * Available strategies for session lock checking.
+ *
+ * @since 24.4
  */
 public enum SessionLockCheckStrategy {
     /**

@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * Makes a <code>@ClientCallable</code> method callable even if the UI is inert.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 23.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

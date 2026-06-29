@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.Element;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 5.0
  *
  */
 public abstract class AbstractInjectableElementInitializer

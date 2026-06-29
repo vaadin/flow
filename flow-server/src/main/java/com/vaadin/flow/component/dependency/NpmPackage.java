@@ -64,6 +64,7 @@ public @interface NpmPackage {
      *
      * @return {@code true} if the package should be installed as a dev
      *         dependency, {@code false} otherwise.
+     * @since 24.3
      */
     boolean dev() default false;
 
@@ -73,6 +74,7 @@ public @interface NpmPackage {
      * "dist/line-awesome/css/**:line-awesome/dist/line-awesome/css"
      *
      * @return array of assets to copy from npm package
+     * @since 24.9
      */
     String[] assets() default {};
 

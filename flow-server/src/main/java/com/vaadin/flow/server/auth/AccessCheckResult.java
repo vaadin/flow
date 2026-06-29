@@ -14,6 +14,8 @@ import java.util.Objects;
 /**
  * A representation of the access check result, potentially providing deny
  * reason.
+ *
+ * @since 24.3
  */
 public class AccessCheckResult implements Serializable {
 

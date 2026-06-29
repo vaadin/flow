@@ -21,6 +21,9 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
+/**
+ * @since 24.5
+ */
 public class ProxyFactory {
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";

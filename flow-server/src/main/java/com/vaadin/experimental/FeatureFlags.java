@@ -37,6 +37,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * Enabled feature flags are stored in
  * <code>vaadin-featureflags.properties</code> inside the resources folder
  * (<code>src/main/resources</code>).
+ *
+ * @since 9.0
  */
 public class FeatureFlags implements Serializable {
 
@@ -44,6 +46,7 @@ public class FeatureFlags implements Serializable {
 
     /**
      * @deprecated Use {@link #SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL} instead.
+     * @since 23.2
      */
     @Deprecated
     public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
@@ -199,6 +202,8 @@ public class FeatureFlags implements Serializable {
     /**
      * Read the feature flag properties files and updates the enable property of
      * each feature object.
+     *
+     * @since 23.0
      */
     public void loadProperties() {
         final ResourceProvider resourceProvider = lookup

@@ -98,6 +98,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
      * @throws InvalidRouteLayoutConfigurationException
      *             Thrown if any {@link Layout} annotations are found on non
      *             {@link RouterLayout} classes
+     * @since 24.5
      */
     public static void validateLayoutAnnotations(Set<Class<?>> routesSet)
             throws InvalidRouteLayoutConfigurationException {

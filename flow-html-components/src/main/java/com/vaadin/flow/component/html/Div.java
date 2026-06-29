@@ -46,6 +46,7 @@ public class Div extends HtmlContainer
      *
      * @param text
      *            the text
+     * @since 24.3
      */
     public Div(String text) {
         setText(text);

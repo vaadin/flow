@@ -18,6 +18,7 @@ import com.vaadin.flow.server.VaadinService;
  * plugins.
  *
  * @deprecated Use {@link BrowserLiveReloadAccessor} instead
+ * @since 24.0.8
  */
 @Deprecated
 public class BrowserLiveReloadAccess {

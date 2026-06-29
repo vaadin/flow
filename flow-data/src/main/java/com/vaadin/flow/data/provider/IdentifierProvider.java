@@ -15,7 +15,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            the type of the item
- * @since
+ * @since 4.0
  */
 @FunctionalInterface
 public interface IdentifierProvider<T> extends ValueProvider<T, Object> {

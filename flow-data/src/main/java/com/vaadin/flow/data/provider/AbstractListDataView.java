@@ -31,6 +31,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            data type
+ * @since 4.0
  */
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
@@ -53,6 +54,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      * @param filterOrSortingChangedCallback
      *            callback, which is being invoked when the component filtering
      *            or sorting changes, not <code>null</code>
+     * @since 5.0
      */
     public AbstractListDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,

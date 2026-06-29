@@ -15,7 +15,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
  * for the web application.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 @FunctionalInterface

@@ -178,6 +178,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 24.4.6
      */
     public void pushState(JsonValue state, String location, boolean callback) {
         pushState(state,
@@ -213,6 +214,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 24.4.6
      */
     public void pushState(JsonValue state, Location location,
             boolean callback) {
@@ -265,6 +267,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 24.4.6
      */
     public void replaceState(JsonValue state, String location,
             boolean callback) {
@@ -301,6 +304,7 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @since 24.4.6
      */
     public void replaceState(JsonValue state, Location location,
             boolean callback) {

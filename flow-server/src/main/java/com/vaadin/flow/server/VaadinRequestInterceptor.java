@@ -14,7 +14,7 @@ import java.io.Serializable;
  * Used to provide an around-like aspect option around request processing.
  *
  * @author Marcin Grzejszczak
- * @since 24.2
+ * @since 24.3
  */
 public interface VaadinRequestInterceptor extends Serializable {
 

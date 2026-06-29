@@ -14,6 +14,9 @@ import org.atmosphere.cpr.AtmosphereResource;
 
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 
+/**
+ * @since 24.3.1
+ */
 public interface FragmentedMessageHolder extends Serializable {
 
     /**

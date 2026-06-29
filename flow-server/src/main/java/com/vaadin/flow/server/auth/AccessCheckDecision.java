@@ -10,6 +10,8 @@ package com.vaadin.flow.server.auth;
 
 /**
  * Decision on navigation access.
+ *
+ * @since 24.3
  */
 public enum AccessCheckDecision {
     /**

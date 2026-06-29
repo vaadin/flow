@@ -64,6 +64,7 @@ public class DataChangeEvent<T> extends EventObject {
          * @param refreshChildren
          *            whether, in hierarchical providers, subelements should be
          *            refreshed as well
+         * @since 2.1
          */
         public DataRefreshEvent(DataProvider<T, ?> source, T item,
                 boolean refreshChildren) {
@@ -88,6 +89,7 @@ public class DataChangeEvent<T> extends EventObject {
          *
          * @return whether, in hierarchical providers, subelements should be
          *         refreshed as well
+         * @since 2.1
          */
         public boolean isRefreshChildren() {
             return refreshChildren;
@@ -131,6 +133,7 @@ public class DataChangeEvent<T> extends EventObject {
      *
      * @throws IllegalStateException
      *             if the method is called outside of the event listener.
+     * @since 9.0
      */
     public void unregisterListener() throws IllegalStateException {
         if (unregisterListenerCommand == null) {

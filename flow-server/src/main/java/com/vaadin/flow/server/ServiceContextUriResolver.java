@@ -29,6 +29,7 @@ public class ServiceContextUriResolver extends VaadinUriResolver
      * @param uri
      *            the URI to resolve
      * @return the URI resolved to be relative to the context root
+     * @since 3.0
      */
     public String resolveVaadinUri(String uri) {
         return super.resolveVaadinUri(uri, "/");

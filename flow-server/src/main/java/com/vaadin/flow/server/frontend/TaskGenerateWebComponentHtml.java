@@ -22,7 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 23.1
  */
 public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
 

@@ -51,6 +51,7 @@ public @interface PreserveOnRefresh {
      * Default is {@code false} so only url match is repopulated.
      *
      * @return {@code true} if partial chain match should be checked and used
+     * @since 24.8
      */
     boolean partialMatch() default false;
 }

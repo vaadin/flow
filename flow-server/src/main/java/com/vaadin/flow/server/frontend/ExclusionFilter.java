@@ -28,6 +28,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 /**
  * Excludes dependencies listed in an "exclusions" array of
  * vaadin-*versions.json file from a package.json.
+ *
+ * @since 24.4
  */
 public class ExclusionFilter implements Serializable {
 
@@ -58,6 +60,7 @@ public class ExclusionFilter implements Serializable {
      *            whether React is enabled
      * @param excludeWebComponentNpmPackages
      *            whether to exclude web component npm packages
+     * @since 24.6
      */
     public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
             boolean excludeWebComponentNpmPackages) {

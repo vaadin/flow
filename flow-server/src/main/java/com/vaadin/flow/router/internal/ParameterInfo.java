@@ -15,6 +15,8 @@ import java.util.Optional;
  * Define a route url parameter details.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.5
  */
 public class ParameterInfo implements Serializable {
 

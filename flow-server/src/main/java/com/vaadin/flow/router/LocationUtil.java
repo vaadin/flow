@@ -19,7 +19,7 @@ import com.vaadin.flow.internal.UrlUtil;
 /**
  * Utility class exposing reusable utility methods for location.
  *
- * @since 2.7
+ * @since 8.0
  */
 public class LocationUtil {
 
@@ -93,6 +93,7 @@ public class LocationUtil {
      *            true to remove a potential query string and a URI fragment,
      *            false to use the path as is
      * @return tha path split into parts
+     * @since 23.3.1
      */
     public static List<String> parsePathToSegments(String path,
             boolean removeExtraParts) {

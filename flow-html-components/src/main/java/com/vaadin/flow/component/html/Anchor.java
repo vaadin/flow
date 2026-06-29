@@ -81,6 +81,7 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      * @param target
      *            the target window, tab or frame
+     * @since 8.0
      */
     public Anchor(String href, String text, AnchorTarget target) {
         setHref(href);
@@ -125,6 +126,7 @@ public class Anchor extends HtmlContainer
      *            the callback that handles data download, not null
      * @param text
      *            the text content to set
+     * @since 24.8
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
         AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
@@ -156,6 +158,7 @@ public class Anchor extends HtmlContainer
      *            {@code null} will set type to {@link AttachmentType#DOWNLOAD}
      * @param text
      *            the text content to set
+     * @since 24.8
      */
     public Anchor(DownloadHandler downloadHandler,
             AttachmentType attachmentType, String text) {
@@ -176,6 +179,7 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param components
      *            the components to add
+     * @since 1.3
      */
     public Anchor(String href, Component... components) {
         setHref(href);
@@ -210,6 +214,7 @@ public class Anchor extends HtmlContainer
      *
      * @see Anchor#setHref(String)
      *
+     * @since 1.2
      */
     public void removeHref() {
         getElement().removeAttribute("href");
@@ -241,6 +246,7 @@ public class Anchor extends HtmlContainer
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
+     * @since 24.8
      */
     public void setHref(DownloadHandler downloadHandler) {
         setHref(downloadHandler, getLinkMode(downloadHandler));
@@ -274,6 +280,7 @@ public class Anchor extends HtmlContainer
      *            set the correct attribute for anchor according to given mode,
      *            {@code null} will set the type to
      *            {@link AttachmentType#DOWNLOAD}
+     * @since 24.8
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {
@@ -296,6 +303,7 @@ public class Anchor extends HtmlContainer
      * @param download
      *            {@code true} to add the 'download' attribute and {@code false}
      *            to remove it
+     * @since 24.8
      */
     public void setDownload(boolean download) {
         if (download) {
@@ -309,6 +317,7 @@ public class Anchor extends HtmlContainer
      * Check if the anchor target will be downloaded for a click.
      *
      * @return {@code true} if download is set for this anchor
+     * @since 24.8
      */
     public boolean isDownload() {
         return getElement().hasAttribute("download");
@@ -323,6 +332,7 @@ public class Anchor extends HtmlContainer
      * @param ignore
      *            true if this link should not be intercepted by the single-page
      *            web application routing mechanism in Vaadin.
+     * @since 24.3
      */
     public void setRouterIgnore(boolean ignore) {
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, ignore);
@@ -331,6 +341,7 @@ public class Anchor extends HtmlContainer
     /**
      * @return true if this anchor should be ignored by the Vaadin router and
      *         behave normally.
+     * @since 24.3
      */
     public boolean isRouterIgnore() {
         return getElement().hasAttribute(ROUTER_IGNORE_ATTRIBUTE);
@@ -428,6 +439,7 @@ public class Anchor extends HtmlContainer
      *
      * @param target
      *            the target value, not null
+     * @since 8.0
      */
     public void setTarget(AnchorTargetValue target) {
         Objects.requireNonNull(target, "target cannot be null.");
@@ -442,6 +454,7 @@ public class Anchor extends HtmlContainer
      *
      * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
      *         target has been set
+     * @since 8.0
      */
     public AnchorTargetValue getTargetValue() {
         Optional<String> target = getTarget();

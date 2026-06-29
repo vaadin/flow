@@ -21,6 +21,8 @@ import com.vaadin.flow.router.internal.PathUtil;
 /**
  * Immutable container which stores the route parameters extracted from a
  * navigation url received from the client.
+ *
+ * @since 4.0
  */
 public final class RouteParameters implements Serializable {
 

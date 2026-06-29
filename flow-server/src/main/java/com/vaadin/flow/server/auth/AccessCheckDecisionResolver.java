@@ -19,6 +19,8 @@ import java.util.List;
  * The component is used by {@link NavigationAccessControl} to compute the final
  * decision, based on the results of all registered
  * {@link NavigationAccessChecker}s.
+ *
+ * @since 24.3
  */
 @FunctionalInterface
 public interface AccessCheckDecisionResolver extends Serializable {

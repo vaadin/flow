@@ -78,6 +78,8 @@ public @interface JsModule {
      * loaded.
      * <p>
      * By default, scripts are always loaded.
+     *
+     * @since 24.2
      */
     boolean developmentOnly() default false;
 

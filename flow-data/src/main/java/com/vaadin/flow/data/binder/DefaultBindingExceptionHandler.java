@@ -27,7 +27,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * exception is not produced if the element has no any attribute or property.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 9.0
  *
  */
 public class DefaultBindingExceptionHandler implements BindingExceptionHandler {

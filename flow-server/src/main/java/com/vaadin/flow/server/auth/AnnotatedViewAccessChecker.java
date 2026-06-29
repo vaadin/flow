@@ -27,6 +27,8 @@ import com.vaadin.flow.server.RouteRegistry;
  * An instance of this class should be provided to a
  * {@link NavigationAccessControl} added as a {@link BeforeEnterListener} to the
  * {@link com.vaadin.flow.component.UI} of interest.
+ *
+ * @since 24.3
  */
 public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 

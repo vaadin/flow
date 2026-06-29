@@ -122,6 +122,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, Exception exception) {
         DownloadResponse downloadResponse = new DownloadResponse(null, null,
@@ -156,6 +157,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, String message,
             Exception exception) {
@@ -187,6 +189,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             Exception exception) {
@@ -223,6 +226,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             String message, Exception exception) {
@@ -258,6 +262,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, Exception exception) {
         this.error = error;
@@ -286,6 +291,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, String errorMessage, Exception exception) {
         setError(error, errorMessage);
@@ -309,6 +315,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, Exception exception) {
         this.error = error.getCode();
@@ -337,6 +344,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, String errorMessage,
             Exception exception) {
@@ -370,6 +378,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return the exception or null if no exception occurred
      * @see TransferContext#exception()
+     * @since 24.9
      */
     public Exception getException() {
         return exception;

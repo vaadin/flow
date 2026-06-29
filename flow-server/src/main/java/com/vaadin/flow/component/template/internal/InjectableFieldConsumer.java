@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 5.0
  *
  */
 @FunctionalInterface

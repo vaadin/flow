@@ -235,6 +235,7 @@ public class VaadinServlet extends HttpServlet {
      *
      * @param runnable
      *            the runnable to run
+     * @since 24.0
      */
     public static void whenFrontendMappingAvailable(Runnable runnable) {
         synchronized (VaadinServlet.class) {
@@ -266,6 +267,7 @@ public class VaadinServlet extends HttpServlet {
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
+     * @since 7.0
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
@@ -673,6 +675,7 @@ public class VaadinServlet extends HttpServlet {
      * For internal use only.
      *
      * @return the vaadin servlet used for frontend files in development mode
+     * @since 23.2
      */
     public static String getFrontendMapping() {
         return frontendMapping;

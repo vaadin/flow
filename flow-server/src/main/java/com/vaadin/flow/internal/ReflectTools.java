@@ -506,6 +506,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            instantiation target class
      * @return an IllegalArgumentException with descriptive message
+     * @since 24.5
      */
     public static IllegalArgumentException convertInstantiationException(
             Exception exception, Class<?> clazz) {
@@ -618,6 +619,7 @@ public class ReflectTools implements Serializable {
      * @param interfaceType
      *            class type of interface to get generic for
      * @return List of Class if found else empty List, never {@literal null}
+     * @since 23.1
      */
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
             Class<?> interfaceType) {
@@ -778,6 +780,7 @@ public class ReflectTools implements Serializable {
      *         if there is no shared ancestor. Or if the implementation treats
      *         bootstrap loaders as {@code null} (as per
      *         {@link ClassLoader#getParent()}).
+     * @since 2.0.1
      */
     public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(
             ClassLoader classLoaderA, ClassLoader classLoaderB) {
@@ -817,6 +820,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return {@code true} is {@code element} has annotation whose FQN is
      *         {@code annotationFqn}, {@code false} otherwise
+     * @since 5.0
      */
     public static boolean hasAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -833,6 +837,7 @@ public class ReflectTools implements Serializable {
      *            annotation simple name
      * @return {@code true} is {@code element} has annotation whose simple name
      *         is {@code simpleName}, {@code false} otherwise
+     * @since 6.0
      */
     public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
             String simpleName) {
@@ -849,6 +854,7 @@ public class ReflectTools implements Serializable {
      *            the method name
      * @return an optional value, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Object getAnnotationMethodValue(Annotation annotation,
             String methodName) {
@@ -874,6 +880,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return an optional annotation, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Optional<Annotation> getAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -892,6 +899,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            the class to check
      * @return true if the class can be instantiated, otherwise false
+     * @since 6.0
      */
     public static boolean isInstantiableService(Class<?> clazz) {
         if (clazz.isInterface()) {

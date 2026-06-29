@@ -79,6 +79,7 @@ public abstract class AbstractListChange<T extends Serializable>
      *
      * @param index
      *            Integer value.
+     * @since 23.2.2
      */
     public void setIndex(int index) {
         assert (index > -1) : "Index can't be negative.";

@@ -23,7 +23,7 @@ import java.util.Set;
  * {@link ClassLoaderAwareServletContainerInitializer#onStartup(Set, ServletContext)})</li>
  * </ul>
  *
- * @since
+ * @since 6.0
  *
  * @see ClassLoaderAwareServletContainerInitializer
  * @see VaadinServletContextStartupInitializer

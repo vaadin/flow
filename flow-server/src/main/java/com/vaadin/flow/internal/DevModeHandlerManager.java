@@ -25,7 +25,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 8.0
  *
  */
 public interface DevModeHandlerManager {
@@ -55,6 +55,7 @@ public interface DevModeHandlerManager {
     /**
      * Stops a running {@link DevModeHandler}.
      *
+     * @since 23.3
      */
     void stopDevModeHandler();
 
@@ -63,6 +64,7 @@ public interface DevModeHandlerManager {
      *
      * @param devModeHandler
      *            the dev mode handler to use
+     * @since 9.0
      */
     void setDevModeHandler(DevModeHandler devModeHandler);
 
@@ -79,6 +81,7 @@ public interface DevModeHandlerManager {
      *
      * @param url
      *            the url to open
+     * @since 23.3
      */
     void launchBrowserInDevelopmentMode(String url);
 
@@ -89,6 +92,7 @@ public interface DevModeHandlerManager {
      *
      * @param applicationUrl
      *            the application url
+     * @since 24.5
      */
     void setApplicationUrl(String applicationUrl);
 
@@ -97,6 +101,7 @@ public interface DevModeHandlerManager {
      *
      * @param command
      *            the command to run
+     * @since 24.5
      */
     void registerShutdownCommand(Command command);
 
@@ -119,6 +124,7 @@ public interface DevModeHandlerManager {
      *            the Vaadin context
      * @return an {@link Optional} containing a {@link DevModeHandler} instance
      *         or <code>EMPTY</code> if disabled
+     * @since 9.0
      */
     static Optional<DevModeHandler> getDevModeHandler(VaadinContext context) {
         return Optional.ofNullable(context)

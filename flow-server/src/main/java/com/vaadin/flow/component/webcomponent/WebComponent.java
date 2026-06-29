@@ -138,6 +138,7 @@ public final class WebComponent<C extends Component> implements Serializable {
      *            data the event should carry. This data is placed as the {@code
      *         detail} property of the event, nullable
      * @see #fireEvent(String, JsonNode, EventOptions) for full set of options
+     * @since 24.8
      */
     public void fireEvent(String eventName, JsonNode objectData) {
         fireEvent(eventName, objectData, BASIC_OPTIONS);
@@ -160,6 +161,7 @@ public final class WebComponent<C extends Component> implements Serializable {
      * @throws NullPointerException
      *             if either {@code eventName} or {@code options} is
      *             {@code null}
+     * @since 24.8
      */
     public void fireEvent(String eventName, JsonNode objectData,
             EventOptions options) {

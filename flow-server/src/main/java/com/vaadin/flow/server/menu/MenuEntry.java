@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
  *            the source class with {@link com.vaadin.flow.router.Menu}
  *            annotation or null if not available. Always null for
  *            Hilla/TypeScript client views.
+ * @since 24.5
  */
 public record MenuEntry(String path, String title, Double order, String icon,
         Class<? extends Component> menuClass) implements Serializable {

@@ -77,6 +77,7 @@ public class WebComponentWrapper extends Component {
      *            {@code rootElement}. These are copies of the original elements
      *            and the copies are created by
      *            {@link com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry}
+     * @since 2.2
      */
     protected WebComponentWrapper(Element rootElement,
             WebComponentBinding<?> binding, List<Element> bootstrapElements) {

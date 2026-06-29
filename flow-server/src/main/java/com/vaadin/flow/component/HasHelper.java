@@ -31,7 +31,7 @@ import com.vaadin.flow.dom.Element;
  * }</pre>
  *
  * @author Vaadin Ltd
- * @since 2.4
+ * @since 5.0
  */
 public interface HasHelper extends HasElement {
     /**

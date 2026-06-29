@@ -16,7 +16,7 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;td&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Tag(Tag.TD)
 public class NativeTableCell extends HtmlContainer

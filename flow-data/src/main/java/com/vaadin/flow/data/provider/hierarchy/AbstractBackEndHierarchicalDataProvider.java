@@ -28,7 +28,7 @@ import com.vaadin.flow.data.provider.SortOrder;
  *            data type
  * @param <F>
  *            filter type
- * @since 1.2
+ * @since 1.1
  */
 public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
         extends AbstractHierarchicalDataProvider<T, F>

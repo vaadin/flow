@@ -121,6 +121,7 @@ public class Html extends Component {
      *
      * @param html
      *            the HTML to wrap
+     * @since 23.3
      */
     public void setHtmlContent(String html) {
         setOuterHtml(html, true);

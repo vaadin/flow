@@ -84,6 +84,7 @@ public class WebComponentGenerator {
      *            the theme defined using {@link Theme} or {@code null} if not
      *            defined
      * @return generated web component html/JS to be served to the client
+     * @since 24.1
      */
     public static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
@@ -108,6 +109,7 @@ public class WebComponentGenerator {
      *            the theme defined using {@link Theme} or {@code null} if not
      *            defined
      * @return generated web component html/JS to be served to the client
+     * @since 24.1
      */
     public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,

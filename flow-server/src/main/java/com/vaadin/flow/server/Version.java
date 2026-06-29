@@ -148,6 +148,7 @@ public class Version implements Serializable {
      * and varies from build to build.
      *
      * @return version's build hash
+     * @since 24.1.14
      */
     public static String getBuildHash() {
         return VERSION_BUILD_HASH;

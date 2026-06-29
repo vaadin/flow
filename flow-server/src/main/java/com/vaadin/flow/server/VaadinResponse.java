@@ -170,6 +170,7 @@ public interface VaadinResponse {
      * @param len
      *            a long specifying the length of the content being returned to
      *            the client
+     * @since 24.8
      */
     void setContentLengthLong(long len);
 

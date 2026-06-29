@@ -98,6 +98,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * Configuration name for the system parameter that determines whether
      * Hotswapper should always trigger a full page reload instead of computing
      * an appropriate UI refresh strategy.
+     *
+     * @since 24.7.1
      */
     public static final String FORCE_RELOAD_PROPERTY = "vaadin.hotswap.forcePageReload";
 
@@ -577,6 +579,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *            {@literal true} to always force a page reload,
      *            {@literal false} to let the {@link Hotswapper} decide the
      *            refresh strategy.
+     * @since 24.7.1
      */
     public static void forcePageReload(VaadinService vaadinService,
             boolean forceReload) {
@@ -591,6 +594,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *            the {@link VaadinService} instance.
      * @return {@literal true} if full page reload if forced, otherwise
      *         {@literal false}.
+     * @since 24.7.1
      */
     public static boolean isForcedPageReload(VaadinService vaadinService) {
         return getForceReloadHolder(vaadinService).isActive();

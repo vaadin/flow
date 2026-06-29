@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * and perform any required programmatic registration of servlets, filters, and
  * listeners in response to it.
  *
- * @since
+ * @since 6.0
  *
  * @see ClassLoaderAwareServletContainerInitializer
  */

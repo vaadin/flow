@@ -43,6 +43,8 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Utility class with methods for handling transfer of upload and download
  * requests.
+ *
+ * @since 24.8
  */
 public final class TransferUtil {
 

@@ -317,6 +317,7 @@ public class SharedUtil implements Serializable {
      * @param upperCamelCaseString
      *            The input string in UpperCamelCase format
      * @return A dash separated lowercase version of the input
+     * @since 24.1.1
      */
     public static String upperCamelCaseToDashSeparatedLowerCase(
             String upperCamelCaseString) {

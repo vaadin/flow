@@ -81,6 +81,7 @@ public class ResponseWriter implements Serializable {
      *
      * @param deploymentConfiguration
      *            the deployment configuration to use, not <code>null</code>
+     * @since 1.3
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
         this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
@@ -459,6 +460,7 @@ public class ResponseWriter implements Serializable {
      *            the request for the resource
      * @return true if the servlet should attempt to serve a Brotli version of
      *         the resource, false otherwise
+     * @since 1.3
      */
     protected boolean acceptsBrotliResource(HttpServletRequest request) {
         return acceptsEncoding(request, "br");

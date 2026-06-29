@@ -16,6 +16,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Implemented by classes that want to modify the bootstrap typescript.
+ *
+ * @since 24.3
  */
 public interface TypeScriptBootstrapModifier extends Serializable {
 
@@ -43,6 +45,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            true if building for production, false otherwise
      * @param themeDefinition
      *            the theme used by the application
+     * @since 24.3.3
      */
     @Deprecated
     default void modify(List<String> bootstrapTypeScript,
@@ -59,6 +62,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            options used by the build
      * @param frontendDependenciesScanner
      *            the frontend dependencies scanner
+     * @since 24.4
      */
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
@@ -73,6 +77,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            the input typescript split into lines
      * @param options
      *            options used by the build
+     * @since 24.10.5
      */
     default void modify(List<String> bootstrapTypeScript, Options options) {
         modify(bootstrapTypeScript, options,

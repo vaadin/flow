@@ -127,6 +127,7 @@ public class ComponentEventBus implements Serializable {
      * @return an object which can be used to remove the event listener
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
+     * @since 1.1
      */
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener,
@@ -189,6 +190,7 @@ public class ComponentEventBus implements Serializable {
      *            the component event type
      * @return A collection with all registered listeners for a given event
      *         type. Empty if no listeners are found.
+     * @since 23.2
      */
     public Collection<?> getListeners(
             Class<? extends ComponentEvent> eventType) {

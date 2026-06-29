@@ -16,7 +16,7 @@ import java.util.Optional;
  * model and a presentation type.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 23.1
  */
 public interface ConverterFactory extends Serializable {
 

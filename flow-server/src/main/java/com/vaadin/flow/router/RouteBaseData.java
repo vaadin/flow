@@ -75,6 +75,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *            navigation target path parameters
      * @param navigationTarget
      *            route navigation target
+     * @since 4.0
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,
@@ -110,6 +111,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get the full route template of {@link Route}.
      *
      * @return route template.
+     * @since 4.0
      */
     public String getTemplate() {
         return template;
@@ -119,6 +121,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get {@link Route} route parameters if any.
      *
      * @return route parameters names mapped with their defined regex.
+     * @since 4.0
      */
     public Map<String, RouteParameterData> getRouteParameters() {
         return parameters;
@@ -128,6 +131,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get {@link Route} route parameters in a list if any.
      *
      * @return route parameters in a list. Never null.
+     * @since 24.5
      */
     public List<RouteParameterData> getRouteParametersList() {
         return parameters != null ? parameters.values().stream().toList()

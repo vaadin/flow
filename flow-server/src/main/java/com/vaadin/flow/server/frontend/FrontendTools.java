@@ -49,6 +49,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.1
  */
 public class FrontendTools {
 
@@ -56,10 +57,14 @@ public class FrontendTools {
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     *
+     * @since 4.0
      */
     public static final String DEFAULT_NODE_VERSION = "v22.23.1";
     /**
      * This is the version shipped with the default Node version.
+     *
+     * @since 9.0
      */
     public static final String DEFAULT_NPM_VERSION = "10.9.7";
 
@@ -183,6 +188,7 @@ public class FrontendTools {
      *
      * @param settings
      *            tooling settings to use
+     * @since 9.0
      */
     public FrontendTools(FrontendToolsSettings settings) {
         this.baseDir = Objects.requireNonNull(settings.getBaseDir());
@@ -204,6 +210,7 @@ public class FrontendTools {
      *            the project root directory
      * @param applicationConfiguration
      *            the configuration for the application
+     * @since 23.0
      */
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
@@ -231,6 +238,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 6.0.8
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -268,6 +276,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 4.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -309,6 +318,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 9.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -355,6 +365,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 9.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -597,6 +608,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have bun running
+     * @since 24.3
      */
     public List<String> getBunExecutable() {
         List<String> bunCommand = getSuitableBun();
@@ -649,6 +661,8 @@ public class FrontendTools {
 
     /**
      * Gets the version of the node executable.
+     *
+     * @since 8.0.5
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();
@@ -785,6 +799,7 @@ public class FrontendTools {
      * @return the version of npm.
      * @throws UnknownVersionException
      *             if the npm command fails or returns unexpected output.
+     * @since 9.0
      */
     public FrontendVersion getNpmVersion() throws UnknownVersionException {
         List<String> npmVersionCommand = new ArrayList<>(
@@ -806,6 +821,7 @@ public class FrontendTools {
      * @return the path to the executable.
      * @throws CommandExecutionException
      *             if the node resolution fails.
+     * @since 24.8
      */
     public Path getNpmPackageExecutable(String packageName, String binName,
             File cwd) throws CommandExecutionException {
@@ -831,6 +847,7 @@ public class FrontendTools {
      * @return the flags
      * @deprecated Webpack is not used anymore, this method is obsolete and have
      *             no replacements.
+     * @since 9.0.4
      */
     @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
@@ -1091,6 +1108,7 @@ public class FrontendTools {
      * part of a process builder command.
      *
      * @return the path to the node binary
+     * @since 23.0
      */
     public String getNodeBinary() {
         if (forceAlternativeNode) {

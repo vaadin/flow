@@ -33,6 +33,7 @@ public class IdMapper
      *
      * @param template
      *            a template instance
+     * @since 4.0
      */
     public IdMapper(Component template) {
         super(template);

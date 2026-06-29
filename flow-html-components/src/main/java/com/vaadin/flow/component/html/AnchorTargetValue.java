@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * element.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 8.0
  *
  * @see AnchorTarget
  *

@@ -24,7 +24,7 @@ import com.vaadin.flow.server.VaadinContext;
  * container level configuration (e.g. Servlet).
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 public interface ApplicationConfiguration extends AbstractConfiguration {
@@ -88,6 +88,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *
      * @return {@code true} if dev mode session serialization is enabled,
      *         {@code false} otherwise
+     * @since 8.0
      */
     boolean isDevModeSessionSerializationEnabled();
 
@@ -102,6 +103,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *
      * @return {@code true} if Flow should not automatically register servlets
      * @see com.vaadin.flow.server.startup.ServletDeployer
+     * @since 9.0
      */
     default boolean disableAutomaticServletRegistration() {
         return getBooleanProperty(

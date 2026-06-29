@@ -57,7 +57,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
  * A configuration factory base logic which reads the token file.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 public class AbstractConfigurationFactory implements Serializable {
@@ -71,6 +71,7 @@ public class AbstractConfigurationFactory implements Serializable {
      * @param buildInfo
      *            the token file data
      * @return the config parameters
+     * @since 24.8
      */
     protected Map<String, String> getConfigParametersUsingTokenData(
             JsonNode buildInfo) {
@@ -214,6 +215,7 @@ public class AbstractConfigurationFactory implements Serializable {
      *            the configuration parameters to set dev mode properties to
      * @param buildInfo
      *            the token file data
+     * @since 24.8
      */
     protected void setDevModePropertiesUsingTokenData(
             Map<String, String> params, JsonNode buildInfo) {

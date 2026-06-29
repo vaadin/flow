@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.JacksonUtils;
  * <p>
  * </p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.1
  */
 public class CssBundler {
 
@@ -127,6 +129,7 @@ public class CssBundler {
      *         rewritten URLs.
      * @throws IOException
      *             if filesystem resources can not be read.
+     * @since 24.7
      */
     public static String inlineImports(File themeFolder, File cssFile,
             JsonNode themeJson) throws IOException {

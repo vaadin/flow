@@ -128,6 +128,7 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
      *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
+     * @since 1.3
      */
     @Override
     public List<Class<? extends RouterLayout>> getRouterLayoutTypes(

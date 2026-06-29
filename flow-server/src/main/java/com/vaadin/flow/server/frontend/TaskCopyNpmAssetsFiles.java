@@ -35,7 +35,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 24.9
  */
 public class TaskCopyNpmAssetsFiles
         extends AbstractFileGeneratorFallibleCommand {

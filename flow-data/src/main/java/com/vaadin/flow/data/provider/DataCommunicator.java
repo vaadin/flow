@@ -142,6 +142,7 @@ public class DataCommunicator<T> implements Serializable {
      *            item type
      *
      * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
+     * @since 5.0
      */
     public static final class EmptyDataProvider<T1>
             extends ListDataProvider<T1> {
@@ -160,6 +161,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param <F>
      *            filter's type
+     * @since 5.0
      */
     public static final class Filter<F> implements Serializable {
 
@@ -299,6 +301,7 @@ public class DataCommunicator<T> implements Serializable {
      *            if {@code fetchEnabled} is {@code true} then the data provider
      *            will be called to fetch the items and/or to get the items
      *            count until it's set to {@code false}
+     * @since 5.0
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
@@ -338,6 +341,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the viewport range
      * @param length
      *            the end of the viewport range
+     * @since 24.9
      */
     public void setViewportRange(int start, int length) {
         setRequestedRange(start, length);
@@ -354,6 +358,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return
      * @deprecated since 24.9 and will be removed in Vaadin 26. Use
      *             {@link #computeViewportRange(int, int)} instead.
+     * @since 24.3.3
      */
     protected final Range computeRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
@@ -375,6 +380,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the viewport range
      * @param length
      *            the end of the viewport range
+     * @since 24.9
      */
     protected final Range computeViewportRange(int start, int length) {
         return computeRequestedRange(start, length);
@@ -391,6 +397,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param executor
      *            The Executor used for async updates.
+     * @since 23.0
      */
     public void enablePushUpdates(Executor executor) {
         if (this.executor != null && future != null) {
@@ -481,6 +488,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the filter type
      *
      * @return a consumer that accepts a new filter value to use
+     * @since 5.0
      */
     public <F> SerializableConsumer<Filter<F>> setDataProvider(
             DataProvider<T, F> dataProvider, F initialFilter,
@@ -554,6 +562,7 @@ public class DataCommunicator<T> implements Serializable {
      * fetched from the DataProvider if client data has not been sent.
      *
      * @return count of available items
+     * @since 4.0
      */
     public int getItemCount() {
         if (isDefinedSize()
@@ -576,6 +585,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param item
      *            the item to check, not {@code null}
      * @return {@code true} if item is active, {@code false} if not
+     * @since 4.0
      */
     public boolean isItemActive(T item) {
         return getKeyMapper().has(item);
@@ -594,6 +604,7 @@ public class DataCommunicator<T> implements Serializable {
      * @throws IndexOutOfBoundsException
      *             requested index is outside of the filtered and sorted data
      *             set
+     * @since 4.0
      */
     @SuppressWarnings("unchecked")
     public T getItem(int index) {
@@ -647,6 +658,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param limit
      *            fetched item count
      * @return {@link Query} for component state
+     * @since 4.0
      */
     public Query buildQuery(int offset, int limit) {
         return new Query(offset, limit, getBackEndSorting(),
@@ -659,6 +671,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param pageSize
      *            the page size to set
+     * @since 4.0
      */
     public void setPageSize(int pageSize) {
         if (pageSize < 1) {
@@ -672,6 +685,7 @@ public class DataCommunicator<T> implements Serializable {
      * Returns the page size set to fetch items.
      *
      * @return the page size
+     * @since 4.0
      */
     public int getPageSize() {
         return pageSize;
@@ -683,6 +697,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param countCallback
      *            the size callback to use
+     * @since 4.0
      */
     public void setCountCallback(
             CallbackDataProvider.CountCallback<T, ?> countCallback) {
@@ -713,6 +728,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param itemCountEstimate
      *            the item count estimate to be used
+     * @since 4.0
      */
     public void setItemCountEstimate(int itemCountEstimate) {
         if (itemCountEstimate < 1) {
@@ -733,6 +749,7 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item count estimate used.
      *
      * @return the item count estimate used
+     * @since 4.0
      */
     public int getItemCountEstimate() {
         if (itemCountEstimate < 1) {
@@ -750,6 +767,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param itemCountEstimateIncrease
      *            the item count estimate step to use
+     * @since 4.0
      */
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
         if (itemCountEstimateIncrease < 1) {
@@ -765,6 +783,7 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item count estimate increase used.
      *
      * @return the item count estimate increase
+     * @since 4.0
      */
     public int getItemCountEstimateIncrease() {
         if (itemCountEstimateIncrease == -1) {
@@ -788,6 +807,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
      *            size
+     * @since 4.0
      */
     public void setDefinedSize(boolean definedSize) {
         if (this.definedSize != definedSize) {
@@ -813,6 +833,7 @@ public class DataCommunicator<T> implements Serializable {
      * Returns whether defined or undefined size is used.
      *
      * @return {@code true} for defined size, {@code false} for undefined size
+     * @since 4.0
      */
     public boolean isDefinedSize() {
         return definedSize;
@@ -836,6 +857,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param keyMapper
      *            the keyMapper
+     * @since 1.1
      */
     protected void setKeyMapper(DataKeyMapper<T> keyMapper) {
         this.keyMapper = keyMapper;
@@ -894,6 +916,7 @@ public class DataCommunicator<T> implements Serializable {
      *         queries
      *
      * @see #setPagingEnabled(boolean)
+     * @since 4.0
      */
     public boolean isPagingEnabled() {
         return pagingEnabled;
@@ -905,6 +928,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param pagingEnabled
      *            {@code true} for paged queries, {@code false} for offset/limit
      *            queries
+     * @since 4.0
      */
     public void setPagingEnabled(boolean pagingEnabled) {
         this.pagingEnabled = pagingEnabled;
@@ -917,6 +941,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return {@code true} if the calls to data provider are enabled,
      *         {@code false} otherwise
+     * @since 5.0
      */
     public boolean isFetchEnabled() {
         return fetchEnabled;
@@ -936,6 +961,7 @@ public class DataCommunicator<T> implements Serializable {
      *            if {@code true} then the calls to data provider are enabled,
      *            otherwise the data provider won't be called to fetch the
      *            items.
+     * @since 5.0
      */
     public void setFetchEnabled(boolean fetchEnabled) {
         this.fetchEnabled = fetchEnabled;

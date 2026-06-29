@@ -78,6 +78,7 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the {@link VaadinContext}.
+     * @since 6.0
      */
     @SuppressWarnings("unchecked")
     public static void init(Set<Class<?>> classes, VaadinContext context) {

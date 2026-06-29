@@ -21,6 +21,7 @@ import java.util.Optional;
  * HTML response contains of the full DOM of the HTML document as well as the
  * HTTP headers that will be included in the corresponding HTTP response.
  *
+ * @since 3.0
  */
 public class IndexHtmlResponse {
 

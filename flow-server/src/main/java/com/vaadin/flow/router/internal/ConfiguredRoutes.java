@@ -142,6 +142,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param template
      *            template to check
      * @return true if configuration contains route
+     * @since 4.0
      */
     public boolean hasTemplate(String template) {
         return getRoutesMap().containsKey(template);
@@ -183,6 +184,7 @@ public class ConfiguredRoutes implements Serializable {
      *         {@link RouteTarget} and {@link RouteParameters} extracted from
      *         the <code>url</code> argument according with the route
      *         configuration.
+     * @since 4.0
      */
     public NavigationRouteTarget getNavigationRouteTarget(String url) {
         return getRouteModel().getNavigationRouteTarget(url);
@@ -198,6 +200,7 @@ public class ConfiguredRoutes implements Serializable {
      *            parameter values that may be used with given target.
      * @return the {@link RouteTarget} instance matching the given target
      *         component and route parameters.
+     * @since 4.0
      */
     public RouteTarget getRouteTarget(Class<? extends Component> target,
             RouteParameters parameters) {
@@ -216,6 +219,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param url
      *            string to get the route for
      * @return {@link Optional} containing the navigationTarget class if found
+     * @since 4.0
      */
     public Optional<Class<? extends Component>> getTarget(String url) {
         final NavigationRouteTarget result = getNavigationRouteTarget(url);
@@ -273,6 +277,7 @@ public class ConfiguredRoutes implements Serializable {
      * Make a copy of the target and route models mapping.
      *
      * @return a copy of the target and route models mapping.
+     * @since 4.0
      */
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
             boolean mutable) {
@@ -300,6 +305,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return base route string if target class found
+     * @since 4.0
      */
     public String getTemplate(Class<? extends Component> navigationTarget) {
         return getTargetRoutes().get(navigationTarget);
@@ -318,6 +324,7 @@ public class ConfiguredRoutes implements Serializable {
      *            {@link RouteParameterFormatOption#REGEX} are provided, the
      *            unformatted template will be provided.
      * @return base route string if target class found
+     * @since 4.0
      */
     public String getTemplate(Class<? extends Component> navigationTarget,
             Set<RouteParameterFormatOption> format) {
@@ -335,6 +342,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return route string if target class found
+     * @since 4.0
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget) {
         return iterateTemplates(navigationTarget, template -> {
@@ -362,6 +370,7 @@ public class ConfiguredRoutes implements Serializable {
      *            route parameters
      * @return url String populated with parameters for the given
      *         navigationTarget
+     * @since 4.0
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -402,6 +411,7 @@ public class ConfiguredRoutes implements Serializable {
      *            template to get parameters from.
      * @return map parameter names with
      *         {@link com.vaadin.flow.router.RouteParameterData}.
+     * @since 4.0
      */
     public Map<String, RouteParameterData> getParameters(String template) {
         return getRouteModel().getParameters(template);

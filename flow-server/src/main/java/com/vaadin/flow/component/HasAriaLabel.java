@@ -43,7 +43,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * details.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 9.0
  */
 public interface HasAriaLabel extends HasElement {
     /**
@@ -90,6 +90,7 @@ public interface HasAriaLabel extends HasElement {
      * @param ariaLabelledBy
      *            the string with the id of the element that will be used as
      *            label or {@code null} to clear
+     * @since 24.1
      */
     default void setAriaLabelledBy(String ariaLabelledBy) {
         if (ariaLabelledBy != null) {
@@ -107,6 +108,7 @@ public interface HasAriaLabel extends HasElement {
      *
      * @return an optional aria-labelledby of the component if no
      *         aria-labelledby has been set
+     * @since 24.1
      */
     default Optional<String> getAriaLabelledBy() {
         return Optional.ofNullable(getElement()

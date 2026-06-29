@@ -30,6 +30,8 @@ public final class NodeProperties {
 
     /**
      * Key for {@link ElementData#getJavaClass()}.
+     *
+     * @since 24.4
      */
     public static final String JAVA_CLASS = "jc";
 
@@ -63,6 +65,8 @@ public final class NodeProperties {
 
     /**
      * JsonObject {@code @name} type value for {@link VirtualChildrenList}.
+     *
+     * @since 24.5
      */
     public static final String INJECT_BY_NAME = "@name";
 
@@ -98,6 +102,8 @@ public final class NodeProperties {
      * property to be able to restore when making a hidden element visible
      * again. Used only when the element is inside a shadow root, and the CSS
      * "display: none" is set in addition the "hidden" attribute.
+     *
+     * @since 5.0
      */
     public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
 
@@ -106,6 +112,8 @@ public final class NodeProperties {
      * transmitting URI (not just any string).
      * <p>
      * Used in the {@link ElementAttributeMap}.
+     *
+     * @since 3.1.7
      */
     public static final String URI_ATTRIBUTE = "uri";
 

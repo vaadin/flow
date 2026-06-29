@@ -61,6 +61,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * @param components
      *            the components to add
+     * @since 23.2
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
@@ -75,6 +76,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * @param text
      *            the text to add, not <code>null</code>
+     * @since 1.3
      */
     default void add(String text) {
         add(new Text(text));
@@ -102,6 +104,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @throws IllegalArgumentException
      *             if there is a component whose non {@code null} parent is not
      *             this component
+     * @since 23.2
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
@@ -148,6 +151,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            be non-negative and may not exceed the children count
      * @param component
      *            the component to add, value should not be null
+     * @since 1.1
      */
     default void addComponentAtIndex(int index, Component component) {
         Objects.requireNonNull(component, "Component should not be null");
@@ -168,6 +172,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * @param component
      *            the component to add, value should not be null
+     * @since 1.1
      */
     default void addComponentAsFirst(Component component) {
         addComponentAtIndex(0, component);
@@ -191,6 +196,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the new component to be replaced. Can be <code>null</code>,
      *            which will make the oldComponent to be removed from the layout
      *            without adding any other
+     * @since 24.10
      */
     default void replace(Component oldComponent, Component newComponent) {
         if (oldComponent == null && newComponent == null) {
@@ -222,6 +228,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param component
      *            the component to look up, can not be <code>null</code>
      * @return the index of the component or -1 if the component is not a child
+     * @since 24.10
      */
     default int indexOf(Component component) {
         if (component == null) {
@@ -244,6 +251,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * Gets the number of children components.
      *
      * @return the number of components
+     * @since 24.10
      */
     default int getComponentCount() {
         return (int) getChildren().count();
@@ -260,6 +268,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             if the index is less than 0 or greater than or equals to the
      *             number of children components
      * @see #getComponentCount()
+     * @since 24.10
      */
     default Component getComponentAt(int index) {
         if (index < 0) {
@@ -279,6 +288,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @see Component#getChildren()
      *
      * @return the children components of this component
+     * @since 24.10
      */
     default Stream<Component> getChildren() {
         if (this instanceof Component parent) {

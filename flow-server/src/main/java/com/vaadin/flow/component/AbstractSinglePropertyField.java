@@ -302,6 +302,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      * @return the registration of the DOM event listener that synchronizes the
      *         property value, or <code>null</code> if property synchronization
      *         is disabled
+     * @since 2.0
      */
     protected DomListenerRegistration getSynchronizationRegistration() {
         return synchronizationRegistration;

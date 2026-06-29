@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
  * {@link AnnotatedViewAccessChecker} is enabled because it computes only ALLOW
  * or DENY results.
  *
+ * @since 24.3
  */
 public class DefaultAccessCheckDecisionResolver
         implements AccessCheckDecisionResolver {

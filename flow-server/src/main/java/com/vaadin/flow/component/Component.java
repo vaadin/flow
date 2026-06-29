@@ -382,6 +382,7 @@ public abstract class Component
      *            the component event type
      * @return A collection with all registered listeners for a given event
      *         type. Empty if no listeners are found.
+     * @since 23.2
      */
     protected Collection<?> getListeners(
             Class<? extends ComponentEvent> eventType) {
@@ -485,6 +486,7 @@ public abstract class Component
      * current request which also detaches the UI and its components.
      *
      * @return true if the component is attached to an active UI.
+     * @since 5.0
      */
     public boolean isAttached() {
         return getElement().getNode().isAttached();
@@ -651,6 +653,7 @@ public abstract class Component
      *            parameters used in translation string
      * @return translation for key if found (implementation should not return
      *         null)
+     * @since 23.2
      */
     public String getTranslation(Object key, Object... params) {
         final Optional<I18NProvider> i18NProvider = LocaleUtil
@@ -699,6 +702,7 @@ public abstract class Component
      * @return translation for key if found
      * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
      *             instead
+     * @since 23.2
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
@@ -719,6 +723,7 @@ public abstract class Component
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @since 9.0
      */
     public String getTranslation(Locale locale, String key, Object... params) {
         return LocaleUtil.getI18NProvider()
@@ -740,6 +745,7 @@ public abstract class Component
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @since 23.2
      */
     public String getTranslation(Locale locale, Object key, Object... params) {
         return LocaleUtil.getI18NProvider()
@@ -764,6 +770,8 @@ public abstract class Component
     /**
      * Scrolls the current component into the visible area of the browser
      * window.
+     *
+     * @since 23.1
      */
     public void scrollIntoView() {
         scrollIntoView(null);
@@ -775,6 +783,7 @@ public abstract class Component
      *
      * @param scrollOptions
      *            options to define the scrolling behavior
+     * @since 24.0
      */
     public void scrollIntoView(ScrollOptions scrollOptions) {
         getElement().scrollIntoView(scrollOptions);
@@ -790,6 +799,7 @@ public abstract class Component
      *         if no ancestor with the correct type could be found.
      * @param <T>
      *            the type of the ancestor component to return
+     * @since 23.2
      */
     public <T> T findAncestor(Class<T> componentType) {
         Optional<Component> optionalParent = getParent();
@@ -806,6 +816,8 @@ public abstract class Component
 
     /**
      * Removes the component from its parent.
+     *
+     * @since 24.0
      */
     public void removeFromParent() {
         getElement().removeFromParent();

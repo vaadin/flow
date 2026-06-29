@@ -24,6 +24,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 23.0
  */
 public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
 

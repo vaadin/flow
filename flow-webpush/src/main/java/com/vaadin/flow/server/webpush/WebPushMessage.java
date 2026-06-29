@@ -36,6 +36,7 @@ public record WebPushMessage(String title,
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters">
      *      showNotification parameters</a>
+     * @since 24.6
      */
     public WebPushMessage(String title, Serializable options) {
         this(title, objectMapper.convertValue(options, ObjectNode.class));
@@ -48,6 +49,7 @@ public record WebPushMessage(String title,
      *            notification title
      * @param body
      *            notification body
+     * @since 24.6
      */
     public WebPushMessage(String title, String body) {
         this(title, getBodyOption(body));
@@ -58,6 +60,7 @@ public record WebPushMessage(String title,
      *
      * @param title
      *            notification title
+     * @since 24.6
      */
     public WebPushMessage(String title) {
         this(title, (ObjectNode) null);

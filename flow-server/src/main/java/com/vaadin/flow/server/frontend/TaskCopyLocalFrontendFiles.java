@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.5
  */
 public class TaskCopyLocalFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {

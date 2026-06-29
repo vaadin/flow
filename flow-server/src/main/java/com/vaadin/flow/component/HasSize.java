@@ -52,6 +52,7 @@ public interface HasSize extends HasElement {
      *            the width of the object.
      * @param unit
      *            the unit used for the width.
+     * @since 4.0
      */
     default void setWidth(float width, Unit unit) {
         if (unit == null) {
@@ -72,6 +73,7 @@ public interface HasSize extends HasElement {
      * @param minWidth
      *            the min-width value (if <code>null</code>, the property will
      *            be removed)
+     * @since 1.3
      */
     default void setMinWidth(String minWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_WIDTH, minWidth);
@@ -85,6 +87,7 @@ public interface HasSize extends HasElement {
      *            the min-width of the object.
      * @param unit
      *            the unit used for the min-width.
+     * @since 4.0
      */
     default void setMinWidth(float minWidth, Unit unit) {
         if (unit == null) {
@@ -105,6 +108,7 @@ public interface HasSize extends HasElement {
      * @param maxWidth
      *            the max-width value (if <code>null</code>, the property will
      *            be removed)
+     * @since 1.3
      */
     default void setMaxWidth(String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
@@ -118,6 +122,7 @@ public interface HasSize extends HasElement {
      *            the max-width of the object.
      * @param unit
      *            the unit used for the max-width.
+     * @since 4.0
      */
     default void setMaxWidth(float maxWidth, Unit unit) {
         if (unit == null) {
@@ -147,6 +152,7 @@ public interface HasSize extends HasElement {
      * min-width which has been set using {@link #setMinWidth(String)}.
      *
      * @return the min-width which has been set for the component
+     * @since 1.3
      */
     default String getMinWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_MIN_WIDTH);
@@ -160,6 +166,7 @@ public interface HasSize extends HasElement {
      * max-width which has been set using {@link #setMaxWidth(String)}.
      *
      * @return the max-width which has been set for the component
+     * @since 1.3
      */
     default String getMaxWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_MAX_WIDTH);
@@ -170,6 +177,7 @@ public interface HasSize extends HasElement {
      *
      * @return an optional width unit for the component, or an empty optional if
      *         no width unit has been set
+     * @since 7.0
      */
     default Optional<Unit> getWidthUnit() {
         return Unit.getUnit(getWidth());
@@ -200,6 +208,7 @@ public interface HasSize extends HasElement {
      *            the height of the object.
      * @param unit
      *            the unit used for the height.
+     * @since 4.0
      */
     default void setHeight(float height, Unit unit) {
         if (unit == null) {
@@ -220,6 +229,7 @@ public interface HasSize extends HasElement {
      * @param minHeight
      *            the min-height value (if <code>null</code>, the property will
      *            be removed)
+     * @since 1.3
      */
     default void setMinHeight(String minHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT,
@@ -234,6 +244,7 @@ public interface HasSize extends HasElement {
      *            the min-height of the object.
      * @param unit
      *            the unit used for the min-height.
+     * @since 4.0
      */
     default void setMinHeight(float minHeight, Unit unit) {
         if (unit == null) {
@@ -254,6 +265,7 @@ public interface HasSize extends HasElement {
      * @param maxHeight
      *            the max-height value (if <code>null</code>, the property will
      *            be removed)
+     * @since 1.3
      */
     default void setMaxHeight(String maxHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT,
@@ -268,6 +280,7 @@ public interface HasSize extends HasElement {
      *            the max-height of the object.
      * @param unit
      *            the unit used for the max-height.
+     * @since 4.0
      */
     default void setMaxHeight(float maxHeight, Unit unit) {
         if (unit == null) {
@@ -295,6 +308,7 @@ public interface HasSize extends HasElement {
      * min-height which has been set using {@link #setMinHeight(String)}.
      *
      * @return the min-height which has been set for the component
+     * @since 1.3
      */
     default String getMinHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_MIN_HEIGHT);
@@ -307,6 +321,7 @@ public interface HasSize extends HasElement {
      * max-height which has been set using {@link #setMaxHeight(String)}.
      *
      * @return the max-height which has been set for the component
+     * @since 1.3
      */
     default String getMaxHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_MAX_HEIGHT);
@@ -317,6 +332,7 @@ public interface HasSize extends HasElement {
      *
      * @return an optional height unit for the component, or an empty optional
      *         if no height unit has been set
+     * @since 7.0
      */
     default Optional<Unit> getHeightUnit() {
         return Unit.getUnit(getHeight());
@@ -365,6 +381,8 @@ public interface HasSize extends HasElement {
      * layout. This applies additional CSS styles that allow the component to
      * shrink below 100% if there are other components with fixed or relative
      * sizes in the layout.
+     *
+     * @since 1.3
      */
     default void setWidthFull() {
         setWidth("100%");
@@ -389,6 +407,8 @@ public interface HasSize extends HasElement {
      * layout. This applies additional CSS styles that allow the component to
      * shrink below 100% if there are other components with fixed or relative
      * sizes in the layout.
+     *
+     * @since 1.3
      */
     default void setHeightFull() {
         setHeight("100%");
@@ -415,6 +435,7 @@ public interface HasSize extends HasElement {
      * @param unit
      *            Unit
      * @return Css format size string
+     * @since 4.0
      */
     static String getCssSize(float size, Unit unit) {
         if (size < 0) {

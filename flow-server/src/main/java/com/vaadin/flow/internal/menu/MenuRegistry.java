@@ -59,6 +59,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  * that require path parameters.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.5
  */
 public class MenuRegistry {
 

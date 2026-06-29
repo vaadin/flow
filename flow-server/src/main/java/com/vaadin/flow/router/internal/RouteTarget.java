@@ -24,7 +24,7 @@ import com.vaadin.flow.router.RouterLayout;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.0
+ * @since 4.0
  */
 public class RouteTarget implements Serializable {
 

@@ -68,6 +68,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * @param composing
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
+     * @since 1.3
      */
     public KeyboardEvent(Component source, boolean fromClient, String key,
             String code, int location, boolean ctrlKey, boolean shiftKey,
@@ -118,6 +119,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            the key for this event
      * @param code
      *            the code for this event
+     * @since 1.3
      */
     public KeyboardEvent(Component source, String key, String code) {
         this(source, false, key, code, 0, false, false, false, false, false,
@@ -138,6 +140,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * empty Optional will be given.
      *
      * @return the optional code of the event as a {@link Key}
+     * @since 1.3
      */
     public Optional<Key> getCode() {
         return Optional.ofNullable(code);

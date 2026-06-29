@@ -14,7 +14,7 @@ import com.vaadin.flow.server.VaadinService;
  * A factory for an {@link Instantiator}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 public interface InstantiatorFactory {

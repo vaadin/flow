@@ -18,7 +18,7 @@ import java.util.Objects;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public final class CssData implements Serializable {
     private String value;

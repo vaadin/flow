@@ -22,7 +22,7 @@ import org.apache.commons.io.IOUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
+ * @since 9.0
  */
 public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 

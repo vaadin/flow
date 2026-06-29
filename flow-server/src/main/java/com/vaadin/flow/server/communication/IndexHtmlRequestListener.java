@@ -26,6 +26,7 @@ import com.vaadin.flow.server.VaadinResponse;
  *
  * @see ServiceInitEvent#addIndexHtmlRequestListener(IndexHtmlRequestListener)
  * @see IndexHtmlRequestHandler
+ * @since 3.0
  */
 @FunctionalInterface
 public interface IndexHtmlRequestListener extends EventListener, Serializable {

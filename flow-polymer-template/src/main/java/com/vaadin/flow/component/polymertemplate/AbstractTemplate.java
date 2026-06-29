@@ -123,6 +123,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @param type
      *            Class to check support for
      * @return True if supported by this PolymerTemplate
+     * @since 2.0
      */
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
@@ -164,6 +165,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @param type
      *            Type to get the ModelType for
      * @return ModelType for given Type
+     * @since 2.0
      */
     public ModelType getModelType(Type type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())

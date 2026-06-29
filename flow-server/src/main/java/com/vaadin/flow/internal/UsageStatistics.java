@@ -102,6 +102,7 @@ public class UsageStatistics {
      *
      * @param name
      *            the feature name want to be removed, not <code>null</code>
+     * @since 3.0
      */
     public static void removeEntry(String name) {
         entries.remove(name);
@@ -109,6 +110,8 @@ public class UsageStatistics {
 
     /**
      * Reset the usage entries.
+     *
+     * @since 9.0.4
      */
     public static void resetEntries() {
         entries.clear();

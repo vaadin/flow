@@ -67,6 +67,7 @@ public interface Instantiator extends Serializable {
      *
      * @return a stream of all Index HTML request listeners to use, not
      *         <code>null</code>
+     * @since 3.0
      */
     default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
             Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
@@ -119,6 +120,7 @@ public interface Instantiator extends Serializable {
      * @param instance
      *            the instance to check
      * @return the user-defined class
+     * @since 24.3.9
      */
     default Class<?> getApplicationClass(Object instance) {
         Objects.requireNonNull(instance, "Instance cannot be null");
@@ -133,6 +135,7 @@ public interface Instantiator extends Serializable {
      * @param clazz
      *            the class to check
      * @return the user-defined class
+     * @since 24.3.9
      */
     default Class<?> getApplicationClass(Class<?> clazz) {
         Class<?> appClass = clazz;
@@ -205,6 +208,7 @@ public interface Instantiator extends Serializable {
      * Get the MenuAccessControl.
      *
      * @return MenuAccessControl instance
+     * @since 24.4
      */
     default MenuAccessControl getMenuAccessControl() {
         return getOrCreate(MenuAccessControl.class);

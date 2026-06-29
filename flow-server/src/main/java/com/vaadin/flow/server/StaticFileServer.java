@@ -91,6 +91,7 @@ public class StaticFileServer implements StaticFileHandler {
      *
      * @param vaadinService
      *            vaadin service for the deployment, not <code>null</code>
+     * @since 7.0
      */
     public StaticFileServer(VaadinService vaadinService) {
         this.vaadinService = vaadinService;
@@ -441,6 +442,7 @@ public class StaticFileServer implements StaticFileHandler {
      *         {@code null} if there is no resource at that path or it should
      *         not be exposed
      * @see VaadinService#getStaticResource(String)
+     * @since 6.0.2
      */
     protected URL getStaticResource(String path) {
         return vaadinService.getStaticResource(path);

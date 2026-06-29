@@ -21,7 +21,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *            data type
- * @since
+ * @since 4.0
  */
 public interface DataView<T> extends Serializable {
 
@@ -45,6 +45,7 @@ public interface DataView<T> extends Serializable {
      * @param item
      *            item to get index for
      * @return index of the item or empty optional if the item is not found
+     * @since 24.4
      */
     Optional<Integer> getItemIndex(T item);
 
@@ -94,6 +95,8 @@ public interface DataView<T> extends Serializable {
 
     /**
      * Notifies the component that all the items should be refreshed.
+     *
+     * @since 5.0.2
      */
     void refreshAll();
 

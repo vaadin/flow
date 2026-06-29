@@ -21,7 +21,7 @@ import com.vaadin.flow.dom.Element;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 5.0
  * @deprecated {@code InjectableLitElementInitializer} should be used for Lit
  *             templates since polymer support is deprecated, we recommend you
  *             to use {@code LitTemplate} instead. Read more details from

@@ -48,22 +48,30 @@ public enum NavigationTrigger {
     /**
      * Navigation was triggered via
      * {@link UI#navigate(String, QueryParameters)}. It's for internal use only.
+     *
+     * @since 4.0
      */
     UI_NAVIGATE,
 
     /**
      * Navigation was triggered by client-side.
+     *
+     * @since 3.0
      */
     CLIENT_SIDE,
 
     /**
      * Navigation is for a reload event on a preserveOnRefresh route.
+     *
+     * @since 23.2.8
      */
     REFRESH,
 
     /**
      * Navigation was triggered via {@link UI#refreshCurrentRoute(boolean)}.
      * It's for internal use only.
+     *
+     * @since 24.5.8
      */
     REFRESH_ROUTE,
 

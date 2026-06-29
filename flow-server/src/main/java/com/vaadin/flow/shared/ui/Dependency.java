@@ -87,6 +87,7 @@ public class Dependency implements Serializable {
      *            the type of the dependency, not {@code null}
      * @param expression
      *            the JS expression to load the dependency, not {@code null}
+     * @since 2.1
      */
     public Dependency(Type type, String expression) {
         // It's important that the load mode of the dependency is Lazy because

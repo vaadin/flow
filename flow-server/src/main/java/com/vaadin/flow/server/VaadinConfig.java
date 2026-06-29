@@ -16,7 +16,7 @@ import java.util.Enumeration;
  * for Config objects for instance <code>ServletConfig</code> and
  * <code>PortletConfig</code>.
  *
- * @since
+ * @since 2.2
  */
 public interface VaadinConfig extends Serializable {
 

@@ -360,6 +360,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information from the browser is present
+     * @since 2.2
      */
     public boolean isIPad() {
         return navigatorPlatform != null && (navigatorPlatform
@@ -372,6 +373,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
+     * @since 2.2
      */
     public boolean isIOS() {
         return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()

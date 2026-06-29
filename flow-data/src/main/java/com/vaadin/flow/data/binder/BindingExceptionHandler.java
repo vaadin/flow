@@ -21,7 +21,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
  * {@link HasValue} object is the source of the exception).
  *
  * @author Vaadin Ltd
- * @since
+ * @since 9.0
  *
  * @see BindingException
  */

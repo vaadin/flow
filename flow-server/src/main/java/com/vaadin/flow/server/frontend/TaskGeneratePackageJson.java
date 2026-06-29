@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 3.0
  */
 public class TaskGeneratePackageJson extends NodeUpdater {
 

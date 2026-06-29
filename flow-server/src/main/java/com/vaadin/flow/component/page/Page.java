@@ -196,6 +196,7 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @since 2.0
      */
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
@@ -218,6 +219,7 @@ public class Page implements Serializable {
      *
      * @param expression
      *            the JavaScript expression which return a Promise
+     * @since 2.1
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
@@ -262,6 +264,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
@@ -303,6 +306,7 @@ public class Page implements Serializable {
      *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see Registration
+     * @since 1.2
      */
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
@@ -342,6 +346,7 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
+     * @since 2.0
      */
     public void open(String url) {
         open(url, "_blank");
@@ -384,6 +389,7 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
+     * @since 2.2
      */
     public void open(String url, String windowName) {
         // The vaadin-redirect-pending event might be useful to block other
@@ -401,6 +407,7 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @since 2.0
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -412,6 +419,7 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @since 2.0
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
@@ -424,6 +432,8 @@ public class Page implements Serializable {
 
     /**
      * Callback for receiving extended client-side details.
+     *
+     * @since 2.0
      */
     @FunctionalInterface
     public interface ExtendedClientDetailsReceiver extends Serializable {
@@ -444,6 +454,7 @@ public class Page implements Serializable {
      *
      * @param receiver
      *            the callback to which the details are provided
+     * @since 2.0
      */
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
@@ -524,6 +535,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the url is resolved.
+     * @since 7.0
      */
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
@@ -554,6 +566,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the direction is resolved.
+     * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
         executeJs("return document.dir").then(String.class, dir -> {

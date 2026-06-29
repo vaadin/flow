@@ -49,7 +49,7 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  * Default implementation of {@link AbstractLookupInitializer}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  * @see AbstractLookupInitializer
  */
@@ -66,7 +66,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link Lookup}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class LookupImpl implements Lookup {
@@ -148,7 +147,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link ResourceProvider}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class ResourceProviderImpl implements ResourceProvider {
@@ -228,7 +226,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link AppShellPredicate}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class AppShellPredicateImpl implements AppShellPredicate {
@@ -337,6 +334,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * @param implementation
      *            service implementation class
      * @return an instantiated service implementation object
+     * @since 6.0.1
      */
     protected <T> T instantiate(Class<T> serviceClass,
             Class<?> implementation) {
@@ -354,6 +352,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * This method is public only for internal purposes.
      *
      * @return a set of classes
+     * @since 24.0
      */
     public static Set<Class<?>> getDefaultImplementations() {
         return Set.of(RegularOneTimeInitializerPredicate.class,
