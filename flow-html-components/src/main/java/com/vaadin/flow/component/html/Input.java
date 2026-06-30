@@ -18,10 +18,10 @@ package com.vaadin.flow.component.html;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasInputMode;
 import com.vaadin.flow.component.HasPlaceholder;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.InputMode;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
@@ -37,7 +37,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String>
         implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode,
-        HasAriaLabel, HasPlaceholder {
+        HasAriaLabel, HasPlaceholder, HasInputMode {
 
     private static final PropertyDescriptor<String, String> placeholderDescriptor = PropertyDescriptors
             .attributeWithDefault("placeholder", "");
@@ -99,39 +99,6 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      */
     public String getType() {
         return get(typeDescriptor);
-    }
-
-    /**
-     * Sets the {@link InputMode} that hints at the type of virtual keyboard to
-     * display when the user interacts with the field on a mobile device. If not
-     * set, the browser defaults to {@link InputMode#TEXT}.
-     *
-     * @param inputMode
-     *            the {@code inputmode} value, or {@code null} to unset
-     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
-     * @since 25.3
-     */
-    public void setInputMode(InputMode inputMode) {
-        if (inputMode == null) {
-            getElement().removeAttribute("inputmode");
-        } else {
-            getElement().setAttribute("inputmode", inputMode.getValue());
-        }
-    }
-
-    /**
-     * Gets the {@link InputMode} of this input.
-     *
-     * @return the {@code inputmode} value, or {@code null} if not set
-     * @see #setInputMode(InputMode)
-     * @since 25.3
-     */
-    public InputMode getInputMode() {
-        String inputMode = getElement().getAttribute("inputmode");
-        if (inputMode == null || inputMode.isEmpty()) {
-            return null;
-        }
-        return InputMode.valueOf(inputMode.toUpperCase());
     }
 
     @Override

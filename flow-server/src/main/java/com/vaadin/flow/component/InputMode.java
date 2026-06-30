@@ -20,7 +20,9 @@ package com.vaadin.flow.component;
  * browser which type of virtual keyboard to display when the user interacts
  * with the field on a mobile device.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode">The
+ *      inputmode global attribute (MDN)</a>
  * @since 25.3
  */
 public enum InputMode {
