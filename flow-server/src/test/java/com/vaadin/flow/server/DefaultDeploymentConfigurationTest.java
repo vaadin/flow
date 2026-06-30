@@ -185,7 +185,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    void maxRequestBodySize_defaultValue() {
+    public void maxRequestBodySize_defaultValue() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
         assertEquals(
@@ -194,7 +194,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    void maxRequestBodySize_validValue_accepted() {
+    public void maxRequestBodySize_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "2048");
@@ -204,7 +204,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    void maxRequestBodySize_invalidValue_defaultValue() {
+    public void maxRequestBodySize_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "kk");
