@@ -41,6 +41,9 @@ import com.vaadin.flow.function.SerializableFunction;
  * @since 1.1
  */
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
+    /**
+     * @since 25.0
+     */
     public enum HierarchyFormat {
         /**
          * The nested hierarchy format refers to a data provider implementation
@@ -213,8 +216,6 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          * example, the use of recursive CTEs (Common Table Expressions) to
          * retrieve all descendants of an item in a single SQL query.
          * </ul>
-         *
-         * @since 25.0
          */
         FLATTENED,
     }

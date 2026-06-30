@@ -39,12 +39,16 @@ public enum ValueChangeMode {
      * <p>
      * The recommended default timeout for input fields is
      * {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     * 
+     * @since 2.0
      */
     LAZY,
 
     /**
      * Syncs the value at defined intervals as long as the value changes from
      * one event to the next.
+     * 
+     * @since 2.0
      */
     TIMEOUT,
 
