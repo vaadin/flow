@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
  * automatically. The session is locked before
@@ -57,8 +59,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         try {
             if (isReadAndWriteOutsideSessionLock()) {
                 BufferedReader reader = request.getReader();
-                String requestBody = reader == null ? null
-                        : getRequestBody(reader);
+                String requestBody;
+                try {
+                    requestBody = reader == null ? null
+                            : getRequestBody(reader,
+                                    getMaxRequestBodySize(request));
+                } catch (RequestBodyTooLargeException e) {
+                    return rejectOversizedRequest(response, e);
+                }
                 session.lock();
                 Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
                         session, request, response, requestBody);
@@ -165,18 +173,85 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         return true;
     }
 
+    /**
+     * Reads the entire request body from the given reader without any size
+     * limit.
+     * <p>
+     * Prefer {@link #getRequestBody(Reader, long)} on request-handling code
+     * paths so that the configured maximum request body size is enforced.
+     *
+     * @param reader
+     *            the reader to read the request body from
+     * @return the request body as a string
+     * @throws IOException
+     *             if reading fails
+     */
     public static String getRequestBody(Reader reader) throws IOException {
+        return getRequestBody(reader, -1L);
+    }
+
+    /**
+     * Reads the request body from the given reader, rejecting it once it
+     * exceeds {@code maxBodySize} characters.
+     * <p>
+     * The limit is enforced on the number of characters read from the reader.
+     * For typical ASCII/UTF-8 JSON payloads this equals the number of bytes;
+     * multi-byte content makes the effective byte limit larger.
+     *
+     * @param reader
+     *            the reader to read the request body from
+     * @param maxBodySize
+     *            the maximum number of characters to read, or a negative number
+     *            to read without any limit
+     * @return the request body as a string
+     * @throws IOException
+     *             if reading fails
+     * @throws RequestBodyTooLargeException
+     *             if the body exceeds {@code maxBodySize} characters
+     */
+    public static String getRequestBody(Reader reader, long maxBodySize)
+            throws IOException {
         StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
         char[] buffer = new char[MAX_BUFFER_SIZE];
+        long total = 0;
 
         while (true) {
             int read = reader.read(buffer);
             if (read == -1) {
                 break;
             }
+            total += read;
+            if (maxBodySize >= 0 && total > maxBodySize) {
+                throw new RequestBodyTooLargeException(maxBodySize);
+            }
             sb.append(buffer, 0, read);
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Gets the configured maximum request body size for the given request, in
+     * characters.
+     *
+     * @param request
+     *            the request being handled
+     * @return the maximum request body size in characters, or a negative number
+     *         if the limit is disabled
+     */
+    public static long getMaxRequestBodySize(VaadinRequest request) {
+        return request.getService().getDeploymentConfiguration()
+                .getMaxRequestBodySize();
+    }
+
+    private static boolean rejectOversizedRequest(VaadinResponse response,
+            RequestBodyTooLargeException e) throws IOException {
+        LoggerFactory.getLogger(SynchronizedRequestHandler.class)
+                .warn("Rejected a request with a body larger than the "
+                        + "configured maximum of {} characters",
+                        e.getMaxBodySize());
+        response.sendError(HttpStatusCode.REQUEST_ENTITY_TOO_LARGE.getCode(),
+                e.getMessage());
+        return true;
     }
 }
