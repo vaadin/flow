@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 
 // API to test
-import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { ConnectionState, ConnectionStateStore } from '../../main/frontend/ConnectionState';
 import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
@@ -195,6 +195,36 @@ describe('Flow', () => {
     expect(indicator.classList.contains('first')).to.be.false;
     expect(indicator.classList.contains('second')).to.be.false;
     expect(indicator.classList.contains('third')).to.be.false;
+  });
+
+  it('should keep structural styles but drop the skin when the default theme is disabled', async () => {
+    new Flow({ imports: () => {} });
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+
+    const structural = () => $wnd.document.querySelector('style#css-loading-indicator-structure');
+    const theme = () => $wnd.document.querySelector('style#css-loading-indicator');
+
+    // By default both the structural styles and the default theme are applied
+    expect(structural()).not.to.be.null;
+    expect(theme()).not.to.be.null;
+
+    // Disabling the default theme removes only the skin (e.g. the bar height
+    // and colors), the structural styles that make the indicator work remain
+    $wnd.Vaadin.connectionIndicator.applyDefaultTheme = false;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+
+    expect(theme()).to.be.null;
+    expect(structural()).not.to.be.null;
+    expect(structural()!.textContent).to.contain('position: fixed');
+    // Paint such as background-color lives only in the removable theme
+    expect(structural()!.textContent).to.not.contain('background-color');
+
+    // Re-enabling restores the default theme
+    $wnd.Vaadin.connectionIndicator.applyDefaultTheme = true;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+
+    expect(theme()).not.to.be.null;
+    expect(theme()!.textContent).to.contain('background-color');
   });
 
   it('should throw when an incorrect server response is received', () => {
