@@ -9,7 +9,7 @@ plugins {
     id 'java-gradle-plugin'
 	id 'maven-publish'
     id 'idea'
-    id 'com.gradle.plugin-publish' version '0.11.0'
+    id 'com.gradle.plugin-publish' version '1.3.1'
     id 'org.jetbrains.kotlin.jvm' version '1.9.20'
     id 'org.jetbrains.dokka' version '1.8.20'
 }
@@ -45,9 +45,13 @@ configurations {
     functionalTestImplementation.extendsFrom testImplementation
 }
 
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
+// The plugin-publish plugin (1.x) automatically registers `sourcesJar` and
+// `javadocJar` tasks and includes their output in the published plugin
+// artifacts. Package the Dokka-generated API documentation into the javadoc
+// jar so the published javadoc reflects the Kotlin sources.
+tasks.matching { it.name == 'javadocJar' }.configureEach {
+    dependsOn dokkaJavadoc
+    from dokkaJavadoc.outputDirectory
 }
 
 /***********************************************************************************************************************
@@ -97,25 +101,6 @@ jar {
     from 'gradle.properties'
 }
 
-/**
- * Plugin artifact sources.
- */
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    archiveClassifier = 'sources'
-    include 'com/**/*.groovy'
-    include 'com/**/*.java'
-    include 'com/**/*.kt'
-}
-
-/**
- * Artifacts in build
- */
-artifacts {
-    archives jar
-    archives sourcesJar
-}
-
 /***********************************************************************************************************************
  *
  * Testing & Quality
@@ -140,43 +125,25 @@ check.dependsOn functionalTest
  * Deployment
  *
  ***********************************************************************************************************************/
+// As of plugin-publish 1.x the bundle metadata (website, vcsUrl, display name,
+// description, tags) lives directly in the gradlePlugin block; the separate
+// pluginBundle block has been removed. The plugin also auto-applies
+// java-gradle-plugin and maven-publish and creates a single `pluginMaven`
+// publication (jar + sources + javadoc) used by publishPlugins, so no manual
+// MavenPublication is declared here.
 gradlePlugin {
+    website = 'https://vaadin.com/docs/latest/flow/configuration/gradle'
+    vcsUrl = 'https://github.com/vaadin/flow'
     testSourceSets sourceSets.functionalTest
     plugins {
         flowPlugin {
             id = 'com.vaadin.flow'
             implementationClass = 'com.vaadin.flow.gradle.FlowPlugin'
-        }
-    }
-}
-
-pluginBundle {
-    website = 'https://vaadin.com/docs/latest/flow/configuration/gradle'
-    vcsUrl = 'https://github.com/vaadin/flow'
-    description = 'Build Vaadin Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
-    tags = ['vaadin-flow']
-    plugins {
-        flowPlugin {
-            id = gradlePlugin.plugins.flowPlugin.id
             displayName = 'Vaadin Flow Gradle Plugin'
+            description = 'Build Vaadin Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
+            tags.set(['vaadin-flow'])
         }
     }
-    mavenCoordinates {
-        groupId = project.group
-        artifactId = project.archivesBaseName
-    }
-}
-
-publishing {
-	publications {
-		maven(MavenPublication) {
-			groupId = project.group
-			artifactId = project.archivesBaseName
-			version = project.version
-
-			from components.java
-		}
-	}
 }
 
 /***********************************************************************************************************************

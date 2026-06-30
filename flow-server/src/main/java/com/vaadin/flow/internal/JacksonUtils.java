@@ -36,6 +36,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.core.util.DefaultIndenter;
 import tools.jackson.core.util.DefaultPrettyPrinter;
 import tools.jackson.core.util.Separators;
 import tools.jackson.core.util.Separators.Spacing;
@@ -537,6 +538,10 @@ public final class JacksonUtils {
         DefaultPrettyPrinter filePrinter = new DefaultPrettyPrinter(
                 Separators.createDefaultInstance()
                         .withObjectNameValueSpacing(Spacing.AFTER));
+        // Force LF line endings so output (and any hash derived from it) is
+        // identical across platforms; Jackson's default object indenter uses
+        // the system line separator (\r\n on Windows, \n elsewhere).
+        filePrinter.indentObjectsWith(new DefaultIndenter("  ", "\n"));
         return objectMapper.writer().with(filePrinter).writeValueAsString(node);
     }
 

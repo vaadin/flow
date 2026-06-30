@@ -973,6 +973,71 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void setApplyBindingsToHiddenFields_defaultsToFalse_appliesToHiddenFieldsWhenEnabled() {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .withValidator(name -> false, "")
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        assertFalse(binder.isApplyBindingsToHiddenFields());
+
+        ((Component) nameBinding.getField()).setVisible(false);
+        assertTrue("Hidden field should be skipped by default",
+                binder.isValid());
+
+        binder.setApplyBindingsToHiddenFields(true);
+        assertFalse(
+                "Hidden field should be validated when applyBindingsToHiddenFields is true",
+                binder.isValid());
+
+        nameBinding.setIsAppliedPredicate(p -> false);
+        assertTrue(
+                "Per-binding predicate should override Binder-level applyBindingsToHiddenFields",
+                binder.isValid());
+    }
+
+    @Test
+    public void writeBean_applyBindingsToHiddenFields_writesHiddenFieldsWhenEnabled()
+            throws ValidationException {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+
+        nameField.setValue("NewName");
+        ((Component) nameBinding.getField()).setVisible(false);
+
+        binder.writeBean(item);
+        assertEquals("Hidden field should not be written by default",
+                "Johannes", item.getFirstName());
+
+        binder.setApplyBindingsToHiddenFields(true);
+        binder.writeBean(item);
+        assertEquals(
+                "Hidden field should be written when applyBindingsToHiddenFields is true",
+                "NewName", item.getFirstName());
+    }
+
+    @Test
+    public void writeBeanIfValid_applyBindingsToHiddenFields_writesHiddenFieldsWhenEnabled() {
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+
+        nameField.setValue("NewName");
+        ((Component) nameBinding.getField()).setVisible(false);
+
+        assertTrue(binder.writeBeanIfValid(item));
+        assertEquals("Hidden field should not be written by default",
+                "Johannes", item.getFirstName());
+
+        binder.setApplyBindingsToHiddenFields(true);
+        assertTrue(binder.writeBeanIfValid(item));
+        assertEquals(
+                "Hidden field should be written when applyBindingsToHiddenFields is true",
+                "NewName", item.getFirstName());
+    }
+
+    @Test
     public void writeBean_isAppliedIsEvaluated() {
         AtomicInteger invokes = new AtomicInteger();
 

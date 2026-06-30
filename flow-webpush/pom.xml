@@ -12,7 +12,9 @@
   <name>Flow WebPush</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <testListener/>
+  </properties>
 
   <dependencies>
     <!-- Project dependencies -->

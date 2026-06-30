@@ -203,6 +203,20 @@ public class AtmospherePushConnection
             }
         } else {
             synchronized (lock) {
+                // A concurrent disconnect() may have cleared the
+                // resource and transitioned state to DISCONNECTED while
+                // this thread was waiting to enter the monitor. In that
+                // case treat the push as if disconnecting had been
+                // observed above: defer it and skip sendMessage, which
+                // would otherwise NPE on the null resource.
+                if (!isConnected()) {
+                    if (async && state != State.RESPONSE_PENDING) {
+                        state = State.PUSH_PENDING;
+                    } else {
+                        state = State.RESPONSE_PENDING;
+                    }
+                    return;
+                }
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
@@ -337,15 +351,16 @@ public class AtmospherePushConnection
             return;
         }
 
-        synchronized (lock) {
-            if (!isConnected() || resource == null) {
-                // Already disconnected. Should not happen but if it does,
-                // we don't want to cause NPEs
-                getLogger().debug(
-                        "Disconnection already happened, ignoring request");
-                return;
-            }
-            try {
+        AtmosphereResource resourceToClose;
+        try {
+            synchronized (lock) {
+                if (!isConnected() || resource == null) {
+                    // Already disconnected. Should not happen but if it does,
+                    // we don't want to cause NPEs
+                    getLogger().debug(
+                            "Disconnection already happened, ignoring request");
+                    return;
+                }
                 if (resource.isResumed()) {
                     // This can happen for long polling because of
                     // http://dev.vaadin.com/ticket/16919
@@ -374,15 +389,27 @@ public class AtmospherePushConnection
                     }
                     outgoingMessage = null;
                 }
+                // Capture the resource and transition this connection to
+                // the disconnected state BEFORE releasing the monitor, so
+                // concurrent push() callers observe an already-closed
+                // connection and skip sendMessage. The actual
+                // resource.close() call is performed outside of
+                // synchronized(lock) below, to avoid a lock-ordering
+                // deadlock between this monitor and the HTTP session
+                // lock that the servlet container may acquire while
+                // closing the AtmosphereResource.
+                resourceToClose = resource;
+                connectionLost();
+            }
+            if (resourceToClose != null) {
                 try {
-                    resource.close();
+                    resourceToClose.close();
                 } catch (IOException e) {
                     getLogger().info("Error when closing push connection", e);
                 }
-                connectionLost();
-            } finally {
-                disconnecting.set(false);
             }
+        } finally {
+            disconnecting.set(false);
         }
     }
 

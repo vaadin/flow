@@ -168,6 +168,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
+        final ObjectNode overridesSection = getOverridesSection(packageJson);
+
         // Flatten overrides to simplify diffing
         final Map<String, String> flatVaadinOverrides = flattenOverrides(
                 vaadinOverrides);
@@ -179,7 +181,6 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         boolean versionLockingUpdated = false;
         // Update overrides based on diff between current and last overrides
-        final ObjectNode overridesSection = getOverridesSection(packageJson);
         for (final Map.Entry<String, String> entryToUpdate : flatVaadinOverrides
                 .entrySet()) {
             final String lastValue = flatLastVaadinOverrides
@@ -189,25 +190,42 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Override value didn't change, skipping.
                 continue;
             }
+            final JsonNode lastUserValue;
+            final List<String> keyPath = List
+                    .of(entryToUpdate.getKey().split(">"));
+            if (enablePnpm) {
+                lastUserValue = overridesSection.get(entryToUpdate.getKey());
+            } else {
+                lastUserValue = JacksonUtils.getNestedKey(overridesSection,
+                        keyPath);
+            }
+            boolean optOut;
+            if (lastValue == null) {
+                // Old-style package.json did not have Vaadin overrides.
+                // We generally cannot detect opt-out except for one case:
+                // prevent unpinning with relative version when the user has
+                // existing non-relative override.
+                optOut = lastUserValue != null
+                        && entryToUpdate.getValue().startsWith("$")
+                        && !lastUserValue.stringValue().startsWith("$");
+            } else {
+                // Detect opt-out: the actual override value is different from
+                // last Vaadin override:
+                optOut = !StringNode.valueOf(lastValue).equals(lastUserValue);
+            }
+            if (optOut) {
+                // Skip due to user opt-out using a custom override
+                continue;
+            }
             versionLockingUpdated = true;
             if (enablePnpm) {
                 // Use flat format for pnpm
                 overridesSection.put(entryToUpdate.getKey(),
                         entryToUpdate.getValue());
-                continue;
+            } else {
+                putNestedOverride(overridesSection, keyPath,
+                        entryToUpdate.getValue());
             }
-            // Handle possibly nested overrides object
-            final List<String> keyPath = List
-                    .of(entryToUpdate.getKey().split(">"));
-            final JsonNode lastValueNode = StringNode.valueOf(lastValue);
-            if (lastValueNode != null && !lastValueNode.equals(
-                    JacksonUtils.getNestedKey(overridesSection, keyPath))) {
-                // Actual override value is different from last Vaadin override:
-                // assume opt-out and skip.
-                continue;
-            }
-            putNestedOverride(overridesSection, keyPath,
-                    entryToUpdate.getValue());
         }
         for (final Map.Entry<String, String> entryToRemove : flatLastVaadinOverrides
                 .entrySet()) {

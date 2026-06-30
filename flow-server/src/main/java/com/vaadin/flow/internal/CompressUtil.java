@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -143,17 +144,21 @@ public class CompressUtil {
 
     private static File newFile(File destinationDir, ZipEntry zipEntry)
             throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
+        // Canonicalize the destination directory once. Resolving each entry
+        // lexically against this base (instead of canonicalizing the
+        // not-yet-created target file) avoids inconsistent path forms, e.g. on
+        // Windows mapped network drives where getCanonicalPath() returns the
+        // UNC form for an existing directory but the drive-letter form for a
+        // non-existent child, which made a legitimate entry look "outside".
+        Path destDir = destinationDir.getCanonicalFile().toPath();
+        Path destFile = destDir.resolve(zipEntry.getName()).normalize();
 
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+        if (!destFile.startsWith(destDir)) {
             throw new IOException("Entry is outside of the target dir: "
                     + zipEntry.getName());
         }
 
-        return destFile;
+        return destFile.toFile();
     }
 
     /**
