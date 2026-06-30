@@ -89,6 +89,14 @@ public class InitParameters implements Serializable {
      * container or reverse proxy (for example Tomcat {@code connectionTimeout}
      * and {@code maxSwallowSize}, or nginx {@code client_max_body_size} and
      * {@code client_body_timeout}).
+     * <p>
+     * Be careful not to set the limit too low: every Flow interaction adds a
+     * small protocol overhead (roughly 100&nbsp;bytes per request on top of the
+     * actual payload), and request bodies also grow with the size of component
+     * state changes and RPC arguments sent from the browser. A limit that is
+     * too low will reject legitimate interactions and make the application
+     * unusable. Choose a value that comfortably accommodates the largest
+     * expected UIDL/RPC payload produced by the application.
      */
     public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
