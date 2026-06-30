@@ -154,6 +154,9 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
+    /**
+     * @since 25.1
+     */
     public record InternalSignalBinding(Signal<?> signal, Serializable value,
             SerializableConsumer<?> writeCallback) implements Serializable {
     }

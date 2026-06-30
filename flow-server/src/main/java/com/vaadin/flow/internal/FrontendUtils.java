@@ -255,6 +255,8 @@ public class FrontendUtils {
      * not regenerate dev-server only files such as {@link #INDEX_TSX} or
      * {@link #VITE_DEVMODE_TS}, recognize them as generated instead of deleting
      * them as stale.
+     * 
+     * @since 25.2
      */
     public static final String GENERATED_FILES_LIST_NAME = "generated-flow-files.txt";
 

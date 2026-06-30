@@ -181,6 +181,10 @@ public class ChromeBrowserTest extends ViewOrUITest {
         // behavior.
         options.addArguments("--disable-backgrounding-occluded-windows");
 
+        // Required to run reliably in CI and other headless/container
+        // environments such as Docker, where Chrome cannot use its sandbox.
+        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
+
         return options;
     }
 }

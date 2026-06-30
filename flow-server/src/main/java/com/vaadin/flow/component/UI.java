@@ -1894,6 +1894,9 @@ public class UI extends Component
         return forwardToClientUrl;
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-leave-navigation";
@@ -1922,6 +1925,9 @@ public class UI extends Component
         }
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-navigate";
