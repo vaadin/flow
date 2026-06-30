@@ -81,6 +81,8 @@ class ServerRpcHandlerTest {
         deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
+        Mockito.when(deploymentConfiguration.getMaxRequestBodySize())
+                .thenReturn(-1L);
 
         uiTree = new StateTree(uiInternals);
         Mockito.when(uiInternals.getStateTree()).thenReturn(uiTree);
