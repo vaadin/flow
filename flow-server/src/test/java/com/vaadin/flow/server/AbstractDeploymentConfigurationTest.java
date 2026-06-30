@@ -124,6 +124,11 @@ class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public long getMaxRequestBodySize() {
+            return -1;
+        }
+
+        @Override
         public int getMaxMessageSuspendTimeout() {
             return 0;
         }
