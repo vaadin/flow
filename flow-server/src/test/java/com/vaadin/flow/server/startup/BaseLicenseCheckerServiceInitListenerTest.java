@@ -26,6 +26,8 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
+import com.vaadin.pro.licensechecker.PreTrial;
+import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -217,6 +219,71 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                             eq(PRODUCT_VERSION), isNull(BuildType.class)),
                     never());
 
+        }
+    }
+
+    @Test
+    void serviceInit_devToolsEnabled_expiredPreTrial_delegateHandlingToDevTools() {
+        config.setProductionMode(false);
+        config.setDevToolsEnabled(true);
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            licenseChecker
+                    .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), isNull(BuildType.class),
+                            any(Consumer.class), eq(0),
+                            any(Capabilities.class)))
+                    .thenThrow(new PreTrialLicenseValidationException(
+                            new PreTrial(PRODUCT_NAME,
+                                    PreTrial.PreTrialState.EXPIRED, 0, 5)));
+
+            listener.serviceInit(event);
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
+
+            var indexHtmlRequestListeners = event
+                    .getAddedIndexHtmlRequestListeners().toList();
+            assertEquals(1, indexHtmlRequestListeners.size(),
+                    "Expected index html request listener to be installed, but was not");
+            Document document = Jsoup
+                    .parse("<html><head></head><body></body></html>");
+            IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
+                    Mockito.mock(VaadinRequest.class),
+                    Mockito.mock(VaadinResponse.class), document);
+            indexHtmlRequestListeners.get(0)
+                    .modifyIndexHtmlResponse(indexHtmlResponse);
+
+            String headHTML = document.head().html();
+            assertTrue(headHTML.contains(
+                    "window.Vaadin.devTools.createdCvdlElements.push(product);"));
+            assertTrue(headHTML.contains("registerProduct('%s','%s');"
+                    .formatted(PRODUCT_NAME, PRODUCT_VERSION)));
+        }
+    }
+
+    @Test
+    void serviceInit_devToolsEnabled_nonExpiredPreTrial_throws() {
+        config.setProductionMode(false);
+        config.setDevToolsEnabled(true);
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            PreTrialLicenseValidationException checkerException = new PreTrialLicenseValidationException(
+                    new PreTrial(PRODUCT_NAME,
+                            PreTrial.PreTrialState.ACCESS_DENIED, 7, 0));
+            licenseChecker
+                    .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), isNull(BuildType.class),
+                            any(Consumer.class), eq(0),
+                            any(Capabilities.class)))
+                    .thenThrow(checkerException);
+
+            PreTrialLicenseValidationException exception = assertThrows(
+                    PreTrialLicenseValidationException.class,
+                    () -> listener.serviceInit(event));
+            assertSame(checkerException, exception);
+            assertEquals(0, event.getAddedIndexHtmlRequestListeners().count());
         }
     }
 

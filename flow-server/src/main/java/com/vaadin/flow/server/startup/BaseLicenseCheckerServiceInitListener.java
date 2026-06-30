@@ -25,6 +25,8 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
+import com.vaadin.pro.licensechecker.PreTrial;
+import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 
 /**
  * Abstract base class implementing the {@link VaadinServiceInitListener} for
@@ -100,6 +102,21 @@ public abstract class BaseLicenseCheckerServiceInitListener
                     // instruct dev tools to check license at runtime
                     CheckProductLicense.register(event, productName,
                             productVersion);
+                } catch (PreTrialLicenseValidationException ex) {
+                    // An expired pre-trial must not abort startup in dev mode:
+                    // delegate to dev tools so the splash screen can offer
+                    // signing in or extending the trial. Any other pre-trial
+                    // state is rethrown to preserve the previous behavior.
+                    if (ex.getPreTrial()
+                            .getTrialState() == PreTrial.PreTrialState.EXPIRED) {
+                        LOGGER.debug(
+                                "Expired pre-trial for {} {} will be handled by Vaadin Dev Server",
+                                productName, productVersion);
+                        CheckProductLicense.register(event, productName,
+                                productVersion);
+                    } else {
+                        throw ex;
+                    }
                 }
             } else {
                 // Fallback to online validation waiting for license key
