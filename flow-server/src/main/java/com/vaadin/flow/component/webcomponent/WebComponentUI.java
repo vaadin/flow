@@ -70,7 +70,7 @@ public class WebComponentUI extends UI {
      * Event used for sending the activation event for an exported web component
      * from the client to the server.
      */
-    @DomEvent("connect-web-component")
+    @DomEvent(value = "connect-web-component", allowInert = true)
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
 
         private String tag;
