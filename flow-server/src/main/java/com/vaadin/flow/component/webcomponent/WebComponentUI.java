@@ -72,7 +72,7 @@ public class WebComponentUI extends UI {
      * 
      * @since 2.1
      */
-    @DomEvent("connect-web-component")
+    @DomEvent(value = "connect-web-component", allowInert = true)
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
 
         private String tag;
