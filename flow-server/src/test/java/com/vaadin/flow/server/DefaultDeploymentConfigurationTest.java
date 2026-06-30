@@ -168,6 +168,37 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    public void maxRequestBodySize_defaultValue() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+        assertEquals(
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                config.getMaxRequestBodySize());
+    }
+
+    @Test
+    public void maxRequestBodySize_validValue_accepted() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "2048");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(2048, config.getMaxRequestBodySize());
+    }
+
+    @Test
+    public void maxRequestBodySize_invalidValue_defaultValue() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "kk");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                config.getMaxRequestBodySize());
+    }
+
+    @Test
     public void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
