@@ -287,8 +287,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
                 .mockStatic(LicenseChecker.class)) {
             PreTrialLicenseValidationException checkerException = new PreTrialLicenseValidationException(
-                    new PreTrial(PRODUCT_NAME, PreTrial.PreTrialState.RUNNING,
-                            7, 0));
+                    new PreTrial(PRODUCT_NAME,
+                            PreTrial.PreTrialState.ACCESS_DENIED, 7, 0));
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
