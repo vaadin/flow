@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.WrappedSession;
@@ -79,7 +80,12 @@ public interface DeploymentConfiguration
      * @return the maximum request body size in characters, or a negative number
      *         if the limit is disabled
      */
-    long getMaxRequestBodySize();
+    default long getMaxRequestBodySize() {
+        return getApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                Long::parseLong);
+    }
 
     /**
      * In certain cases, such as when combining XmlHttpRequests and push over
