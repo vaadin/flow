@@ -57,7 +57,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             + PARENT_THEME + "/";
     private static final String THEME_GENERATED_PATTERN = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/generated/theme-%s.generated.js";
-    private static final String COMPONENT_STYLE_SHEET = "components/vaadin-text-field.css";
+    private static final String COMPONENT_STYLE_SHEET = "components/themable-input.css";
 
     private File currentThemeComponentCSSFile;
     private File currentThemeGeneratedFile;
