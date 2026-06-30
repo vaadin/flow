@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -100,6 +101,24 @@ public interface DeploymentConfiguration extends Serializable {
      * @return The time between heartbeats.
      */
     int getHeartbeatInterval();
+
+    /**
+     * Returns the maximum size, in characters, that Flow reads from a
+     * client-to-server UIDL/RPC or push request body before rejecting the
+     * request with HTTP 413 (Request Entity Too Large).
+     * <p>
+     * The limit does not apply to file uploads, which are streamed in chunks
+     * and have their own separate size limits.
+     *
+     * @return the maximum request body size in characters, or a negative number
+     *         if the limit is disabled
+     */
+    default long getMaxRequestBodySize() {
+        return getApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                Long::parseLong);
+    }
 
     /**
      * In certain cases, such as when combining XmlHttpRequests and push over
