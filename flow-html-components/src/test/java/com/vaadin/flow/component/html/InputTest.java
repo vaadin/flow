@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.HasInputMode;
+import com.vaadin.flow.component.InputMode;
 
 class InputTest extends ComponentTest {
 
@@ -40,8 +40,23 @@ class InputTest extends ComponentTest {
     }
 
     @Test
-    void implementsHasInputMode() {
-        Assertions.assertInstanceOf(HasInputMode.class, new Input());
+    void inputMode_defaultsToNull() {
+        Input input = new Input();
+        Assertions.assertNull(input.getInputMode());
+    }
+
+    @Test
+    void setInputMode_getInputMode() {
+        Input input = new Input();
+
+        input.setInputMode(InputMode.NUMERIC);
+        Assertions.assertEquals(InputMode.NUMERIC, input.getInputMode());
+        Assertions.assertEquals("numeric",
+                input.getElement().getAttribute("inputmode"));
+
+        input.setInputMode(null);
+        Assertions.assertNull(input.getInputMode());
+        Assertions.assertNull(input.getElement().getAttribute("inputmode"));
     }
 
     @Override
