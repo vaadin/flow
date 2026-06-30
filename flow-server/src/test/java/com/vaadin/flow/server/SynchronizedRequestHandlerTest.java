@@ -17,22 +17,22 @@ package com.vaadin.flow.server;
 
 import java.io.StringReader;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
-class SynchronizedRequestHandlerTest {
+public class SynchronizedRequestHandlerTest {
 
     @Test
-    void getRequestBody_underLimit_readsBody() throws Exception {
+    public void getRequestBody_underLimit_readsBody() throws Exception {
         String body = "a".repeat(1000);
         assertEquals(body, SynchronizedRequestHandler
                 .getRequestBody(new StringReader(body), 1000));
     }
 
     @Test
-    void getRequestBody_overLimit_throws() {
+    public void getRequestBody_overLimit_throws() {
         String body = "a".repeat(1001);
         assertThrows(RequestBodyTooLargeException.class,
                 () -> SynchronizedRequestHandler
@@ -40,7 +40,8 @@ class SynchronizedRequestHandlerTest {
     }
 
     @Test
-    void getRequestBody_negativeLimit_readsWithoutLimit() throws Exception {
+    public void getRequestBody_negativeLimit_readsWithoutLimit()
+            throws Exception {
         String body = "a".repeat(200_000);
         assertEquals(body, SynchronizedRequestHandler
                 .getRequestBody(new StringReader(body), -1));
