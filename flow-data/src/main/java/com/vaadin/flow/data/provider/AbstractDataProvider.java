@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemAddedEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemRemovedEvent;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
@@ -80,6 +82,16 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     @Override
     public void refreshItem(T item) {
         fireEvent(new DataRefreshEvent<>(this, item));
+    }
+
+    @Override
+    public void notifyItemAdded(T item) {
+        fireEvent(new ItemAddedEvent<>(this, item));
+    }
+
+    @Override
+    public void notifyItemRemoved(T item) {
+        fireEvent(new ItemRemovedEvent<>(this, item));
     }
 
     /**

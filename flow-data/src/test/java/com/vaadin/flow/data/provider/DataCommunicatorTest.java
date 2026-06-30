@@ -445,6 +445,73 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void notifyItemAdded_viewportRefreshedWithoutDestroyingItemState(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(new Item(i));
+        }
+        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+        // Reset mock interactions accumulated during the initial flush so we
+        // can assert specifically what notifyItemAdded triggers
+        Mockito.reset(dataGenerator);
+        lastSet = null;
+
+        Item newItem = new Item(2);
+        items.add(newItem);
+        dataProvider.notifyItemAdded(newItem);
+        fakeClientCommunication();
+
+        // The viewport is resent to pick up the new item and its size
+        assertEquals(Range.withLength(0, 3), lastSet);
+        // Per-item state for unrelated items must not be discarded
+        Mockito.verify(dataGenerator, Mockito.never()).destroyAllData();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void notifyItemRemoved_itemKeyDroppedAndViewportRefreshedWithoutDestroyingItemState(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            items.add(new Item(i));
+        }
+        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+
+        Item removed = items.get(1);
+        String removedKey = dataCommunicator.getKeyMapper().key(removed);
+        assertNotNull(removedKey);
+
+        Mockito.reset(dataGenerator);
+        lastSet = null;
+
+        items.remove(removed);
+        dataProvider.notifyItemRemoved(removed);
+        fakeClientCommunication();
+
+        // Viewport is resent with the new size
+        assertEquals(Range.withLength(0, 2), lastSet);
+        // The removed item's key is dropped immediately so any in-flight
+        // client interaction for it can no longer resolve to a stale instance
+        assertFalse(dataCommunicator.getKeyMapper().has(removed));
+        // Per-item state for unrelated items must not be discarded; only the
+        // removed item should have its state cleaned up
+        Mockito.verify(dataGenerator, Mockito.never()).destroyAllData();
+        Mockito.verify(dataGenerator).destroyData(removed);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
