@@ -74,8 +74,6 @@ public class StreamRequestHandler implements RequestHandler {
     /**
      * Create a new stream request handler with the default
      * StreamReceiverHandler.
-     * 
-     * @since 2.2
      */
     public StreamRequestHandler() {
         this(new StreamReceiverHandler());
