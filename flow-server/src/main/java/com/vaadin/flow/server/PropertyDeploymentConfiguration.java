@@ -237,6 +237,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public long getMaxRequestBodySize() {
+        return getApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                Long::parseLong);
+    }
+
+    @Override
     public int getMaxMessageSuspendTimeout() {
         return DefaultDeploymentConfiguration.DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
     }
