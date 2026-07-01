@@ -17,6 +17,7 @@ public class MockDeploymentConfiguration
     private boolean compatibilityMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
+    private long maxRequestBodySize = 10L * 1024 * 1024;
     private int maxMessageSuspendTimeout = 5000;
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
@@ -90,6 +91,15 @@ public class MockDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public long getMaxRequestBodySize() {
+        return maxRequestBodySize;
+    }
+
+    public void setMaxRequestBodySize(long maxRequestBodySize) {
+        this.maxRequestBodySize = maxRequestBodySize;
     }
 
     @Override
