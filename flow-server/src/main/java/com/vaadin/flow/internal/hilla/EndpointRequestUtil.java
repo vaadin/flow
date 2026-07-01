@@ -79,6 +79,9 @@ public interface EndpointRequestUtil extends Serializable {
     class HillaAvailability {
         private static final boolean AVAILABLE = computeAvailable();
 
+        private HillaAvailability() {
+        }
+
         private static boolean computeAvailable() {
             try {
                 Class.forName(HILLA_ENDPOINT_CLASS);
