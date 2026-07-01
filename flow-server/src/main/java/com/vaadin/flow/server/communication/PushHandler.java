@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
@@ -145,9 +146,17 @@ public class PushHandler {
 
         try {
             new ServerRpcHandler().handleRpc(ui,
-                    SynchronizedRequestHandler.getRequestBody(reader),
+                    SynchronizedRequestHandler.getRequestBody(reader,
+                            SynchronizedRequestHandler
+                                    .getMaxRequestBodySize(vaadinRequest)),
                     vaadinRequest);
             connection.push(false);
+        } catch (RequestBodyTooLargeException e) {
+            getLogger().warn(
+                    "Rejected a push message with a body larger than the "
+                            + "configured maximum of {} characters",
+                    e.getMaxBodySize());
+            sendRefreshAndDisconnect(resource);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
