@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -263,8 +264,7 @@ public class ServerRpcHandler implements Serializable {
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException {
-        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
-                request);
+        handleRpc(ui, getMessage(reader, request), request);
     }
 
     /**
@@ -581,20 +581,27 @@ public class ServerRpcHandler implements Serializable {
     }
 
     protected String getMessage(Reader reader) throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader);
+    }
 
-        StringBuilder sb = new StringBuilder(
-                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
-        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
-
-        while (true) {
-            int read = reader.read(buffer);
-            if (read == -1) {
-                break;
-            }
-            sb.append(buffer, 0, read);
-        }
-
-        return sb.toString();
+    /**
+     * Reads the RPC message from the given reader, enforcing the maximum
+     * request body size configured for the given request.
+     *
+     * @param reader
+     *            the reader to read the message from
+     * @param request
+     *            the request the message was received through
+     * @return the message as a string
+     * @throws IOException
+     *             if reading fails
+     * @throws RequestBodyTooLargeException
+     *             if the message exceeds the configured maximum size
+     */
+    protected String getMessage(Reader reader, VaadinRequest request)
+            throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader,
+                SynchronizedRequestHandler.getMaxRequestBodySize(request));
     }
 
     private static Logger getLogger() {

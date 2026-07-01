@@ -72,6 +72,12 @@ public class DefaultDeploymentConfiguration
     public static final int DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT = 5000;
 
     /**
+     * Default value for {@link #getMaxRequestBodySize()} = {@value} characters
+     * (10&nbsp;MB).
+     */
+    public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = 10L * 1024 * 1024;
+
+    /**
      * Default value for {@link #getWebComponentDisconnect()} = {@value}.
      */
     public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
@@ -91,6 +97,7 @@ public class DefaultDeploymentConfiguration
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
+    private long maxRequestBodySize;
     private int maxMessageSuspendTimeout;
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
@@ -129,6 +136,7 @@ public class DefaultDeploymentConfiguration
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
+        checkMaxRequestBodySize();
         checkMaxMessageSuspendTimeout();
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
@@ -198,6 +206,16 @@ public class DefaultDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default is 10&nbsp;MB.
+     */
+    @Override
+    public long getMaxRequestBodySize() {
+        return maxRequestBodySize;
     }
 
     /**
@@ -347,6 +365,20 @@ public class DefaultDeploymentConfiguration
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+        }
+    }
+
+    private void checkMaxRequestBodySize() {
+        try {
+            maxRequestBodySize = getApplicationOrSystemProperty(
+                    InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                    DEFAULT_MAX_REQUEST_BODY_SIZE, Long::parseLong);
+        } catch (NumberFormatException e) {
+            String warning = "WARNING: maxRequestBodySize has been set to an illegal value."
+                    + " The default of " + DEFAULT_MAX_REQUEST_BODY_SIZE
+                    + " characters will be used.";
+            warnings.add(warning);
+            maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE;
         }
     }
 
