@@ -223,8 +223,30 @@ public class DefaultApplicationConfigurationFactory
         return FrontendUtils.streamToString(firstResource.openStream());
     }
 
+    /**
+     * Counts how many times {@code value} occurs as a non-overlapping substring
+     * within {@code input}.
+     * <p>
+     * Used to determine how many nested {@code jar!/} segments appear in a
+     * resource path, which indicates whether the resource is packaged inside
+     * one or several jars.
+     *
+     * @param input
+     *            the string to search within, not {@code null}
+     * @param value
+     *            the substring to count occurrences of, not {@code null} and
+     *            not empty
+     * @return the number of non-overlapping occurrences of {@code value} in
+     *         {@code input}, or {@code 0} if none are found
+     */
     private int countInstances(String input, String value) {
-        return input.split(value, -1).length - 1;
+        int count = 0;
+        int index = input.indexOf(value);
+        while (index != -1) {
+            count++;
+            index = input.indexOf(value, index + value.length());
+        }
+        return count;
     }
 
     private Logger getLogger() {
