@@ -413,6 +413,54 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         });
     }
 
+    public void testViewTransitionRequested_supported_changesAppliedWithinViewTransition() {
+        resetInternalEvents();
+        installViewTransitionStub();
+
+        JavaScriptObject object = JavaScriptObject.createObject();
+        JsonObject obj = object.cast();
+        // Empty changes array still triggers changes processing
+        obj.put("changes", Json.createArray());
+
+        JsonObject meta = Json.createObject();
+        meta.put(JsonConstants.META_VIEW_TRANSITION, true);
+        obj.put("meta", meta);
+
+        handler.handleJSON(object.cast());
+
+        doAssert(() -> {
+            assertTrue("Changes should have been applied within a view "
+                    + "transition", isViewTransitionStarted());
+            EventsOrder eventsOrder = registry.get(EventsOrder.class);
+            assertTrue("Changes should have been applied to the state tree",
+                    eventsOrder.sources.contains(StateTree.class.getName()));
+        });
+    }
+
+    public void testViewTransitionRequested_notSupported_changesAppliedDirectly() {
+        resetInternalEvents();
+        removeViewTransitionStub();
+
+        JavaScriptObject object = JavaScriptObject.createObject();
+        JsonObject obj = object.cast();
+        obj.put("changes", Json.createArray());
+
+        JsonObject meta = Json.createObject();
+        meta.put(JsonConstants.META_VIEW_TRANSITION, true);
+        obj.put("meta", meta);
+
+        handler.handleJSON(object.cast());
+
+        doAssert(() -> {
+            assertFalse("No view transition should be started when the browser "
+                    + "does not support the API", isViewTransitionStarted());
+            EventsOrder eventsOrder = registry.get(EventsOrder.class);
+            assertTrue(
+                    "Changes should still have been applied to the state tree",
+                    eventsOrder.sources.contains(StateTree.class.getName()));
+        });
+    }
+
     private TestResourceLoader getResourceLoader() {
         return (TestResourceLoader) registry.getResourceLoader();
     }
@@ -463,6 +511,29 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
     private static native boolean getResyncState()
     /*-{
         return window.resynchronizing;
+    }-*/;
+
+    private static native void installViewTransitionStub()
+    /*-{
+        $wnd.__viewTransitionStarted = false;
+        $doc.startViewTransition = function(callback) {
+            $wnd.__viewTransitionStarted = true;
+            // The production code passes the DOM-updating callback here
+            callback();
+        };
+    }-*/;
+
+    private static native void removeViewTransitionStub()
+    /*-{
+        $wnd.__viewTransitionStarted = false;
+        if ($doc.startViewTransition) {
+            delete $doc.startViewTransition;
+        }
+    }-*/;
+
+    private static native boolean isViewTransitionStarted()
+    /*-{
+        return !!$wnd.__viewTransitionStarted;
     }-*/;
 
 }
