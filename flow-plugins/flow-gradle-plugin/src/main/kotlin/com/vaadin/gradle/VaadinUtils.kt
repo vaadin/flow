@@ -22,7 +22,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
-import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
@@ -81,15 +80,10 @@ internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSour
 internal val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
 
 /**
- * Same thing as [Provider.map]. Works around the bug in Gradle+Kotlin which
- * renders [Provider.map] unable to return null in Kotlin: https://github.com/gradle/gradle/issues/12388
+ * Passes the value through only when [block] returns `true`, otherwise the
+ * returned provider has no value. Backed by the public [Provider.filter] API.
  */
-internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> = flatMap { Providers.ofNullable(block(it)) }
-
-/**
- * Workaround for https://github.com/gradle/gradle/issues/19981
- */
-internal fun <T: Any> Provider<T>.filterBy(block: (T) -> Boolean): Provider<T> = mapOrNull { if (block(it)) it else null }
+internal fun <T: Any> Provider<T>.filterBy(block: (T) -> Boolean): Provider<T> = filter { block(it) }
 
 /**
  * Passes the value if the file exists.
