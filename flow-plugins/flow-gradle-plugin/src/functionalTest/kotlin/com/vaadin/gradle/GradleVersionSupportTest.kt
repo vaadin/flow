@@ -40,9 +40,9 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
                         FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION,
                         // Newer Gradle major versions must keep working with the
                         // same published plugin (cross-version support): the
-                        // first Gradle 9 release and a recent 9.x.
+                        // first Gradle 9 release and the latest released 9.x.
                         "9.0.0",
-                        "9.5.0"
+                        "9.6.1"
                     ).map { GradleVersion(it, true) }
     }
 

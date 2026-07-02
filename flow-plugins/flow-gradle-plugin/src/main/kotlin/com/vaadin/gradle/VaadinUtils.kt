@@ -73,7 +73,10 @@ internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "
 internal val Configuration.jars: FileCollection
     get() = filter { it.name.endsWith(".jar", true) }
 
-internal val Project.sourceSets: SourceSetContainer get() = project.properties["sourceSets"] as SourceSetContainer
+// `Project.getProperties()["sourceSets"]` is deprecated and scheduled to fail
+// in Gradle 10. The Java plugin registers the source sets as a typed extension,
+// so fetch it through the extensions API instead.
+internal val Project.sourceSets: SourceSetContainer get() = project.extensions.getByType(SourceSetContainer::class.java)
 internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets.getByName(sourceSetName)
 internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!
 
