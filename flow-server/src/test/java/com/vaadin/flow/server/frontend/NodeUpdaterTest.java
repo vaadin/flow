@@ -179,6 +179,7 @@ public class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@types/node");
         expectedDependencies.add("typescript");
         expectedDependencies.add("workbox-core");
         expectedDependencies.add("workbox-precaching");
