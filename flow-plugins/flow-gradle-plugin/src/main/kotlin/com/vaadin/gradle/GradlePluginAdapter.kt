@@ -32,7 +32,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.bundling.War
-import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 
 private val servletApiJarRegex =
     Regex(".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$")
@@ -66,7 +65,7 @@ internal class GradlePluginAdapter private constructor(
             project.configurations.getByName(config.dependencyScope.get())
         resolvedArtifacts =
             dependencyConfiguration.incoming.artifacts.resolvedArtifacts.map { result ->
-                result.filter { it.id is ModuleComponentArtifactIdentifier }
+                result.filter { it.id.componentIdentifier is ModuleComponentIdentifier }
                     .map { (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier }
                     .toSet()
             } ?: project.provider { emptySet() }

@@ -34,7 +34,6 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 import java.net.URI
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
@@ -422,7 +421,7 @@ public class PluginEffectiveConfiguration(
             .incoming.artifacts.resolvedArtifacts
             .map { result ->
                 result.filter {
-                    it.id is ModuleComponentArtifactIdentifier && it.id.componentIdentifier is ModuleComponentIdentifier
+                    it.id.componentIdentifier is ModuleComponentIdentifier
                 }.map {
                     (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier
                 }.any {
