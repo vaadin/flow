@@ -278,6 +278,42 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void refreshViewport_dataProviderNotQueried(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        var dataProviderQueryCount = new AtomicInteger(0);
+        dataCommunicator.setDataProvider(new AbstractDataProvider<>() {
+            @Override
+            public boolean isInMemory() {
+                return true;
+            }
+
+            @Override
+            public int size(Query<Item, Object> query) {
+                dataProviderQueryCount.incrementAndGet();
+                return 100;
+            }
+
+            @Override
+            public Stream<Item> fetch(Query<Item, Object> query) {
+                dataProviderQueryCount.incrementAndGet();
+                return asParallelIfRequired(IntStream.range(query.getOffset(),
+                        query.getLimit() + query.getOffset()))
+                        .mapToObj(Item::new);
+            }
+        }, null);
+        dataCommunicator.setViewportRange(0, 6);
+        fakeClientCommunication();
+        dataProviderQueryCount.set(0);
+
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        assertEquals(0, dataProviderQueryCount.get(),
+                "Expected no data provider queries on viewport refresh");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void setFlushRequest_remove_setFlushRequest_reattach_noEndlessFlushLoop(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
