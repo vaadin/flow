@@ -103,7 +103,10 @@ public class DataCommunicator<T> implements Serializable {
     private int assumedSize;
     private int lastSent = -1;
 
-    private boolean resendEntireRange = true;
+    // Reloads the viewport range from the data provider and resends it
+    private boolean reloadViewportRange = true;
+    // Resends the viewport range without reloading it from the data provider
+    private boolean resendViewportRange = false;
     private boolean assumeEmptyClient = true;
 
     private int nextUpdateId = 0;
@@ -421,7 +424,7 @@ public class DataCommunicator<T> implements Serializable {
     public void reset() {
         skipCountIncreaseUntilReset = false;
         sizeReset = true;
-        resendEntireRange = true;
+        reloadViewportRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
         requestFlush();
@@ -443,12 +446,13 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Regenerates and resends data for all items in the current viewport.
-     * 
+     * Regenerates and resends data for all items in the current viewport. The
+     * items themselves are not reloaded from the data provider.
+     *
      * @since 25.0.1
      */
     protected void refreshViewport() {
-        resendEntireRange = true;
+        resendViewportRange = true;
         requestFlush();
     }
 
@@ -582,7 +586,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public int getItemCount() {
         if (isDefinedSize()
-                && (resendEntireRange || assumeEmptyClient || sizeReset)) {
+                && (reloadViewportRange || assumeEmptyClient || sizeReset)) {
             // TODO it could be possible to cache the value returned here
             // and use it next time instead of making another query, unless
             // the conditions like filter (or another reset) have changed
@@ -1008,7 +1012,7 @@ public class DataCommunicator<T> implements Serializable {
     private void updateUndefinedSize() {
         assert !definedSize
                 : "This method should never be called when using defined size";
-        if (resendEntireRange || sizeReset) {
+        if (reloadViewportRange || sizeReset) {
             // things have reset
             assumedSize = getItemCountEstimate();
         }
@@ -1253,7 +1257,7 @@ public class DataCommunicator<T> implements Serializable {
         // Phase 1: Find all items that the client should have
 
         // With defined size the backend is only queried when necessary
-        if (definedSize && (resendEntireRange || sizeReset)) {
+        if (definedSize && (reloadViewportRange || sizeReset)) {
             assumedSize = getDataProviderSize();
         } else if (!definedSize
                 && (!skipCountIncreaseUntilReset || sizeReset)) {
@@ -1263,7 +1267,7 @@ public class DataCommunicator<T> implements Serializable {
         effectiveRequested = viewportRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
-        resendEntireRange |= !(previousActive.intersects(effectiveRequested)
+        reloadViewportRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
         UI ui = getUI();
@@ -1349,7 +1353,8 @@ public class DataCommunicator<T> implements Serializable {
         boolean updated = collectChangesToSend(previousActive,
                 effectiveRequested, update);
 
-        resendEntireRange = false;
+        reloadViewportRange = false;
+        resendViewportRange = false;
         assumeEmptyClient = false;
         sizeReset = false;
 
@@ -1452,7 +1457,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean collectChangesToSend(final Range previousActive,
             final Range effectiveRequested, Update update) {
         boolean updated = false;
-        if (assumeEmptyClient || resendEntireRange) {
+        if (assumeEmptyClient || reloadViewportRange || resendViewportRange) {
             if (!assumeEmptyClient) {
                 /*
                  * TODO: Not necessary to clear something that would be set back
@@ -1507,7 +1512,7 @@ public class DataCommunicator<T> implements Serializable {
          * actually be useful can be optimized away once we have some actual
          * test coverage for the logic here.
          */
-        if (resendEntireRange) {
+        if (reloadViewportRange) {
             return activate(effectiveRequested);
         } else {
             List<String> newActiveKeyOrder = new ArrayList<>();
