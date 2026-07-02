@@ -94,6 +94,24 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         Assert.assertNull("Expected null value, not string 'null'", value);
     }
 
+    @Test
+    public void moveWhileConnecting_rendersComponentOnce() {
+        open();
+
+        waitForDevServer();
+
+        $(NativeButtonElement.class).id("moveWhileConnectingButton").click();
+
+        TestBenchElement moveTarget = $(TestBenchElement.class)
+                .id("moveTarget");
+        waitUntil(driver -> !moveTarget.$("react-input").all().isEmpty());
+
+        Assert.assertEquals(
+                "Adapter element moved while connecting must render exactly one "
+                        + "React component",
+                1, moveTarget.$("input").all().size());
+    }
+
     private TestBenchElement getAdapterElement() {
         return $("react-input").first();
     }
