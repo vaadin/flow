@@ -231,7 +231,13 @@ public class DefaultApplicationConfigurationFactory
     }
 
     private int countInstances(String input, String value) {
-        return input.split(value, -1).length - 1;
+        int count = 0;
+        int index = input.indexOf(value);
+        while (index != -1) {
+            count++;
+            index = input.indexOf(value, index + value.length());
+        }
+        return count;
     }
 
     private Logger getLogger() {
