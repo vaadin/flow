@@ -37,7 +37,12 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
         fun gradleVersionsUnderTest(): List<GradleVersion> =
             arrayOf("8.3", "8.6", "8.9", "8.13").map { GradleVersion(it, false) } +
                     arrayOf(
-                        FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION
+                        FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION,
+                        // Newer Gradle major versions must keep working with the
+                        // same published plugin (cross-version support): the
+                        // first Gradle 9 release and the latest released 9.x.
+                        "9.0.0",
+                        "9.6.1"
                     ).map { GradleVersion(it, true) }
     }
 
