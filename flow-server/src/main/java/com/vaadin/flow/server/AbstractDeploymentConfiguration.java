@@ -62,8 +62,13 @@ public abstract class AbstractDeploymentConfiguration extends
     public Set<String> getUrlSafeSchemes() {
         Set<String> cached = urlSafeSchemes;
         if (cached == null) {
-            cached = parseUrlSafeSchemes(
-                    getStringProperty(InitParameters.URL_SAFE_SCHEMES, null));
+            String configured = getStringProperty(
+                    InitParameters.URL_SAFE_SCHEMES, null);
+            if (configured == null) {
+                configured = getStringProperty(
+                        InitParameters.URL_SAFE_SCHEMES_LEGACY, null);
+            }
+            cached = parseUrlSafeSchemes(configured);
             urlSafeSchemes = cached;
         }
         return cached;
