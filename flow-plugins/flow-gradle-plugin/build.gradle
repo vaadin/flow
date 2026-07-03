@@ -10,8 +10,8 @@ plugins {
 	id 'maven-publish'
     id 'idea'
     id 'com.gradle.plugin-publish' version '1.3.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.20'
-    id 'org.jetbrains.dokka' version '1.8.20'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.0'
+    id 'org.jetbrains.dokka' version '1.9.20'
 }
 
 /***********************************************************************************************************************
@@ -22,11 +22,21 @@ plugins {
 
 def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
 defaultTasks('jar', 'test')
-group pom.parent.groupId
+group = pom.parent.groupId.text()
 version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
-archivesBaseName = pom.artifactId
-sourceCompatibility = 21
-targetCompatibility = 21
+
+// The `archivesBaseName` project property and project-level source/target
+// compatibility were provided by the Base/Java plugin conventions, which are
+// removed in Gradle 9. Configure them through the `base` and `java` extensions
+// instead so the build works on both Gradle 8.x and 9.x.
+base {
+    archivesName = pom.artifactId.text()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
 /***********************************************************************************************************************
  *
@@ -68,12 +78,12 @@ repositories {
 }
 
 dependencies {
-    implementation('org.jetbrains.kotlin:kotlin-stdlib:1.9.20')
+    implementation('org.jetbrains.kotlin:kotlin-stdlib:2.4.0')
 
     implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.4.0")
 }
 
 idea {
