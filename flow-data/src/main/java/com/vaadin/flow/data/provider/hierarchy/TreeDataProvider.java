@@ -37,7 +37,14 @@ public class TreeDataProvider<T>
      * @param treeData
      *            the backing {@link TreeData} for this provider, not
      *            {@code null}
+     * @deprecated this constructor currently defaults to
+     *             {@link HierarchyFormat#NESTED}, but starting from Vaadin 26
+     *             it will default to {@link HierarchyFormat#FLATTENED} instead.
+     *             To keep using {@link HierarchyFormat#NESTED}, use
+     *             {@link #TreeDataProvider(TreeData, HierarchyFormat)} and pass
+     *             it explicitly.
      */
+    @Deprecated(since = "25.3")
     public TreeDataProvider(TreeData<T> treeData) {
         super(treeData);
     }
