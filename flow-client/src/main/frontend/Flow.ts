@@ -1,9 +1,5 @@
-import {
-  ConnectionIndicator,
-  ConnectionState,
-  type ConnectionStateChangeListener,
-  type ConnectionStateStore
-} from '@vaadin/common-frontend';
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import './Clipboard';
 import { currentFullscreenState } from './Fullscreen';
 import './Download';
