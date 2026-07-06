@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -549,7 +550,8 @@ class TaskRunNpmInstallTest {
         packageJson.set(DEPENDENCIES, dependencies);
         packageJson.set(DEV_DEPENDENCIES, devDependencies);
         ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
-                TaskUpdatePackages.generatePackageJsonHash(packageJson));
+                TaskUpdatePackages.generatePackageJsonHash(packageJson,
+                        Map.of()));
         packageJson.remove(DEPENDENCIES);
         packageJson.remove(DEV_DEPENDENCIES);
     }

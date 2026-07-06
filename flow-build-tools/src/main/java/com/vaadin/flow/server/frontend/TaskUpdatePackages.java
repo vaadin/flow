@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -96,7 +97,12 @@ public class TaskUpdatePackages extends NodeUpdater {
             modified = lockVersionForNpm(packageJson) || modified;
 
             // Recompute hash
-            final String finalHash = generatePackageJsonHash(packageJson);
+            final Map<String, String> pnpmOverrides = enablePnpm
+                    ? new PnpmWorkspaceFile(options.getNpmFolder())
+                            .getOverrides()
+                    : Map.of();
+            final String finalHash = generatePackageJsonHash(packageJson,
+                    pnpmOverrides);
             final JsonNode hashNode = JacksonUtils.getNestedKey(packageJson,
                     List.of(VAADIN_DEP_KEY, HASH_KEY));
             modified = !finalHash
@@ -131,7 +137,19 @@ public class TaskUpdatePackages extends NodeUpdater {
         final ObjectNode vaadinOverrides = computeVaadinOverrides(
                 platformVersions, dependencies, devDependencies);
 
-        final ObjectNode overridesSection = getOverridesSection(packageJson);
+        boolean updated = enablePnpm
+                ? lockPnpmOverrides(packageJson, vaadinOverrides,
+                        platformVersions, dependencies, devDependencies)
+                : lockNpmOverrides(packageJson, vaadinOverrides,
+                        platformVersions, dependencies, devDependencies);
+        updated |= removeLegacyVaadinOverrides(packageJson);
+        return updated;
+    }
+
+    private boolean lockNpmOverrides(ObjectNode packageJson,
+            ObjectNode vaadinOverrides, Map<String, String> platformVersions,
+            JsonNode dependencies, JsonNode devDependencies) {
+        final ObjectNode overridesSection = getNpmOverridesSection(packageJson);
         final Map<String, String> overridesBefore = flattenOverrides(
                 overridesSection);
 
@@ -140,10 +158,37 @@ public class TaskUpdatePackages extends NodeUpdater {
                 devDependencies);
         applyOverrides(overridesSection, flattenOverrides(vaadinOverrides));
 
-        boolean updated = !overridesBefore
+        return !overridesBefore.equals(flattenOverrides(overridesSection));
+    }
+
+    private boolean lockPnpmOverrides(ObjectNode packageJson,
+            ObjectNode vaadinOverrides, Map<String, String> platformVersions,
+            JsonNode dependencies, JsonNode devDependencies)
+            throws IOException {
+        final PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(
+                options.getNpmFolder());
+
+        // Seed the overrides section from the workspace file, then fold in any
+        // overrides still living in legacy package.json locations.
+        final ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        workspace.getOverrides().forEach(overridesSection::put);
+        boolean migrated = migrateLegacyOverridesToPnpm(packageJson,
+                overridesSection);
+
+        final Map<String, String> overridesBefore = flattenOverrides(
+                overridesSection);
+
+        removeManagedOverrides(overridesSection,
+                managedOverrideKeys(platformVersions), dependencies,
+                devDependencies);
+        applyOverrides(overridesSection, flattenOverrides(vaadinOverrides));
+
+        workspace.setOverrides(toFlatMap(overridesSection));
+        boolean workspaceChanged = workspace.save();
+
+        boolean overridesChanged = !overridesBefore
                 .equals(flattenOverrides(overridesSection));
-        updated |= removeLegacyVaadinOverrides(packageJson);
-        return updated;
+        return migrated || workspaceChanged || overridesChanged;
     }
 
     /**
@@ -409,50 +454,75 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .startsWith("./" + options.getBuildDirectoryName());
     }
 
-    private ObjectNode getOverridesSection(ObjectNode packageJson) {
-        ObjectNode overridesSection;
-        ObjectNode oldOverrides;
-        if (options.isEnablePnpm()) {
-            ObjectNode pnpm = (ObjectNode) packageJson.get(PNPM);
-            if (pnpm == null) {
-                pnpm = JacksonUtils.createObjectNode();
-                packageJson.set(PNPM, pnpm);
-            }
-            overridesSection = (ObjectNode) pnpm.get(OVERRIDES);
-            if (overridesSection == null) {
-                overridesSection = JacksonUtils.createObjectNode();
-                pnpm.set(OVERRIDES, overridesSection);
-            }
-            oldOverrides = (ObjectNode) packageJson.get(OVERRIDES);
-            if (oldOverrides != null) {
-                // convert npm overrides to flat format for pnpm
-                flattenOverrides(oldOverrides).forEach(overridesSection::put);
-                // remove npm overrides when moving to pnpm
-                packageJson.remove(OVERRIDES);
-            }
-            return overridesSection;
-        }
-        overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
+    private ObjectNode getNpmOverridesSection(ObjectNode packageJson) {
+        ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
         if (overridesSection == null) {
             overridesSection = JacksonUtils.createObjectNode();
             packageJson.set(OVERRIDES, overridesSection);
         }
+        // Migrate overrides left in package.json.pnpm by an older Flow/pnpm.
         if (packageJson.has(PNPM)) {
             ObjectNode pnpm = (ObjectNode) packageJson.get(PNPM);
-            oldOverrides = (ObjectNode) pnpm.get(OVERRIDES);
-            // convert pnpm overrides to nested format for npm
-            for (String key : oldOverrides.propertyNames()) {
-                final List<String> keyPath = List.of(key.split(">"));
-                putNestedOverride(overridesSection, keyPath,
-                        oldOverrides.get(key).stringValue());
+            ObjectNode oldOverrides = (ObjectNode) pnpm.get(OVERRIDES);
+            if (oldOverrides != null) {
+                for (String key : oldOverrides.propertyNames()) {
+                    final List<String> keyPath = List.of(key.split(">"));
+                    putNestedOverride(overridesSection, keyPath,
+                            oldOverrides.get(key).stringValue());
+                }
+                pnpm.remove(OVERRIDES);
             }
-            // remove pnpm overrides when moving to npm
-            pnpm.remove(OVERRIDES);
             if (pnpm.isEmpty()) {
                 packageJson.remove(PNPM);
             }
         }
         return overridesSection;
+    }
+
+    /**
+     * Moves overrides written by older versions into the flat pnpm format used
+     * in pnpm-workspace.yaml: from {@code package.json.pnpm.overrides} and from
+     * the npm-style top-level {@code overrides}. Both legacy locations are
+     * removed from package.json so pnpm no longer warns about the ignored
+     * {@code pnpm} field.
+     *
+     * @return {@code true} if package.json was changed by the migration
+     */
+    private boolean migrateLegacyOverridesToPnpm(ObjectNode packageJson,
+            ObjectNode overridesSection) {
+        boolean changed = false;
+        if (packageJson.has(PNPM)) {
+            ObjectNode pnpm = (ObjectNode) packageJson.get(PNPM);
+            ObjectNode legacy = (ObjectNode) pnpm.get(OVERRIDES);
+            if (legacy != null) {
+                flattenOverrides(legacy).forEach(overridesSection::put);
+                pnpm.remove(OVERRIDES);
+                changed = true;
+            }
+            if (pnpm.isEmpty()) {
+                packageJson.remove(PNPM);
+                changed = true;
+            }
+        }
+        ObjectNode npmOverrides = (ObjectNode) packageJson.get(OVERRIDES);
+        if (npmOverrides != null) {
+            flattenOverrides(npmOverrides).forEach(overridesSection::put);
+            packageJson.remove(OVERRIDES);
+            changed = true;
+        }
+        return changed;
+    }
+
+    /**
+     * Converts a flat overrides {@link ObjectNode} (pnpm format) into a sorted
+     * {@code key -> version} map suitable for pnpm-workspace.yaml.
+     */
+    private Map<String, String> toFlatMap(ObjectNode overridesSection) {
+        Map<String, String> map = new LinkedHashMap<>();
+        JacksonUtils.getKeys(overridesSection).stream()
+                .sorted(String::compareToIgnoreCase).forEach(key -> map.put(key,
+                        overridesSection.get(key).stringValue()));
+        return map;
     }
 
     /**
@@ -791,9 +861,13 @@ public class TaskUpdatePackages extends NodeUpdater {
      *
      * @param packageJson
      *            JsonNode built in the same format as package.json
+     * @param pnpmOverrides
+     *            the pnpm overrides stored in pnpm-workspace.yaml, or an empty
+     *            map when pnpm is not in use
      * @return has for dependencies and devDependencies
      */
-    static String generatePackageJsonHash(JsonNode packageJson) {
+    static String generatePackageJsonHash(JsonNode packageJson,
+            Map<String, String> pnpmOverrides) {
         StringBuilder hashContent = new StringBuilder();
         if (packageJson.has(DEPENDENCIES)) {
             JsonNode dependencies = packageJson.get(DEPENDENCIES);
@@ -838,23 +912,15 @@ public class TaskUpdatePackages extends NodeUpdater {
                 hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
             }
         }
-        // Include pnpm overrides in hash
-        if (packageJson.has(PNPM) && packageJson.get(PNPM).has(OVERRIDES)) {
-            JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
-            // Only include overrides in hash if section has actual content
-            if (overrides.isObject() && !overrides.isEmpty()
-                    && !hashContent.isEmpty()) {
-                hashContent.append(",\n");
-                hashContent.append("\"pnpm.overrides\": ");
-                final ObjectNode sortedOverrides = JacksonUtils
-                        .createObjectNode();
-                JacksonUtils.getKeys(overrides).stream()
-                        .sorted(String::compareToIgnoreCase)
-                        .forEachOrdered(key -> {
-                            sortedOverrides.set(key, overrides.get(key));
-                        });
-                hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
-            }
+        // Include pnpm overrides in hash (stored in pnpm-workspace.yaml)
+        if (!pnpmOverrides.isEmpty() && !hashContent.isEmpty()) {
+            hashContent.append(",\n");
+            hashContent.append("\"pnpm.overrides\": ");
+            final ObjectNode sortedOverrides = JacksonUtils.createObjectNode();
+            pnpmOverrides.keySet().stream().sorted(String::compareToIgnoreCase)
+                    .forEachOrdered(key -> sortedOverrides.put(key,
+                            pnpmOverrides.get(key)));
+            hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
         }
         return StringUtil.getHash(hashContent.toString());
     }

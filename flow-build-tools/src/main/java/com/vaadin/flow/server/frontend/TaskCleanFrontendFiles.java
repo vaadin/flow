@@ -51,6 +51,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
             Constants.PACKAGE_LOCK_BUN_1_2, TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
+            PnpmWorkspaceFile.WORKSPACE_FILE,
             FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();
 
