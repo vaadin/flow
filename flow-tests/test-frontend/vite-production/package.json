@@ -5,7 +5,7 @@
   "dependencies": {
     "@polymer/polymer": "3.5.2",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
-    "@vaadin/common-frontend": "0.0.22",
+    "@vaadin/common-frontend": "0.0.23",
     "@vaadin/test-package-outside-npm": "file:../vite-test-assets/packages/@vaadin/test-package-outside-npm",
     "@vaadin/test-package2-outside-npm": "../vite-test-assets/packages/@vaadin/test-package2-outside-npm",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
@@ -43,7 +43,7 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
-      "@vaadin/common-frontend": "0.0.22",
+      "@vaadin/common-frontend": "0.0.23",
       "@vaadin/text-field": "25.0.5",
       "@vaadin/vaadin-lumo-styles": "25.0.5",
       "@vaadin/vaadin-themable-mixin": "25.0.5",
