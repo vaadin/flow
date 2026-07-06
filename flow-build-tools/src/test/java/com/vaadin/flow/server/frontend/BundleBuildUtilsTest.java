@@ -33,6 +33,8 @@ import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BundleBuildUtilsTest {
 
@@ -252,6 +254,138 @@ class BundleBuildUtilsTest {
 
         assertEquals(packageLockContent, packageLockContents,
                 "dev-bundle file should be used");
+    }
+
+    private static final String LOCK_WITH_NPMJS_URLS = """
+            {
+              "name": "test",
+              "lockfileVersion": 3,
+              "requires": true,
+              "packages": {
+                "": { "name": "test" },
+                "node_modules/foo": {
+                  "version": "1.0.0",
+                  "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
+                  "integrity": "sha512-fooHash"
+                },
+                "node_modules/bar": {
+                  "version": "2.3.4",
+                  "resolved": "https://registry.npmjs.org/bar/-/bar-2.3.4.tgz",
+                  "integrity": "sha512-barHash"
+                }
+              }
+            }
+            """;
+
+    @Test
+    void customRegistryInNpmrc_resolvedStrippedIntegrityKept()
+            throws IOException {
+        Options options = new MockOptions(temporaryFolder)
+                .withBuildDirectory("target");
+
+        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
+                "registry=https://my.registry/repository/npm/\n");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
+                StandardCharsets.UTF_8);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+
+        BundleBuildUtils.copyPackageLockFromBundle(options);
+
+        final String result = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        assertFalse(result.contains("registry.npmjs.org"),
+                "resolved URLs pointing to npmjs.org should be stripped when a custom registry is configured");
+        assertFalse(result.contains("\"resolved\""),
+                "resolved fields should be removed so npm re-resolves against the configured registry");
+        assertTrue(
+                result.contains("sha512-fooHash")
+                        && result.contains("sha512-barHash"),
+                "integrity fields should be preserved");
+        assertTrue(result.contains("\"version\": \"1.0.0\""),
+                "version pins should be preserved");
+    }
+
+    @Test
+    void noCustomRegistry_resolvedKeptVerbatim() throws IOException {
+        Options options = new MockOptions(temporaryFolder)
+                .withBuildDirectory("target");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
+                StandardCharsets.UTF_8);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+
+        BundleBuildUtils.copyPackageLockFromBundle(options);
+
+        final String result = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        assertEquals(LOCK_WITH_NPMJS_URLS, result,
+                "Without a custom registry the lock should be copied verbatim");
+    }
+
+    @Test
+    void scopedCustomRegistryInNpmrc_resolvedStripped() throws IOException {
+        Options options = new MockOptions(temporaryFolder)
+                .withBuildDirectory("target");
+
+        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
+                """
+                        @myorg:registry=https://somewhere-else.com/myorg
+                        @another:registry=https://somewhere-else.com/another
+                        """);
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
+                StandardCharsets.UTF_8);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+
+        BundleBuildUtils.copyPackageLockFromBundle(options);
+
+        final String result = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        assertFalse(result.contains("\"resolved\""),
+                "A scoped @scope:registry entry should also trigger stripping of resolved fields");
+        assertTrue(result.contains("sha512-fooHash"),
+                "integrity fields should be preserved");
+    }
+
+    @Test
+    void customRegistry_invalidJson_copiedVerbatim() throws IOException {
+        Options options = new MockOptions(temporaryFolder)
+                .withBuildDirectory("target");
+
+        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
+                "registry=https://my.registry/repository/npm/\n");
+
+        final String notJson = "{ not valid json";
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        FileUtils.write(jarPackageLock, notJson, StandardCharsets.UTF_8);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+
+        BundleBuildUtils.copyPackageLockFromBundle(options);
+
+        final String result = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        assertEquals(notJson, result,
+                "Unparseable content should be copied verbatim without failing the build");
     }
 
     @Test

@@ -19,12 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
@@ -88,8 +90,8 @@ public class BundleBuildUtils {
         if (devBundleFolder.exists()) {
             File devPackageLock = new File(devBundleFolder, packageLockFile);
             if (devPackageLock.exists()) {
-                Files.copy(devPackageLock.toPath(), packageLock.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING);
+                writePackageLock(Files.readString(devPackageLock.toPath()),
+                        packageLock, options);
                 return;
             }
         }
@@ -115,12 +117,93 @@ public class BundleBuildUtils {
         }
         if (resource != null) {
             String filecontents = FileIOUtils.urlToString(resource);
-            Files.writeString(packageLock.toPath(), filecontents);
+            writePackageLock(filecontents, packageLock, options);
         } else {
             getLogger().debug(
                     "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",
                     packageLockFile);
         }
+    }
+
+    /**
+     * Writes the seeded lock file, stripping the hardcoded {@code resolved}
+     * download URLs for the npm {@code package-lock.json} when the project
+     * configures a custom registry, so that {@code npm install} re-resolves
+     * them against that registry instead of reusing the {@code npmjs.org} URLs
+     * baked into the dev-bundle template. The {@code integrity} content hashes
+     * are kept so npm still verifies the downloaded tarballs against the
+     * versions Vaadin tested. In all other cases the content is written
+     * verbatim.
+     */
+    private static void writePackageLock(String contents, File packageLock,
+            Options options) throws IOException {
+        String toWrite = contents;
+        if (!options.isEnablePnpm() && hasCustomRegistry(options)) {
+            toWrite = stripResolvedUrls(contents, packageLock);
+        }
+        Files.writeString(packageLock.toPath(), toWrite);
+    }
+
+    private static String stripResolvedUrls(String contents, File packageLock) {
+        try {
+            ObjectNode root = JacksonUtils.readTree(contents);
+            removeResolvedEntries(root.get("packages"));
+            return JacksonUtils.toFileJson(root);
+        } catch (RuntimeException e) {
+            getLogger().debug(
+                    "Could not process '{}' to strip registry URLs; copying it verbatim.",
+                    packageLock.getName(), e);
+            return contents;
+        }
+    }
+
+    private static void removeResolvedEntries(JsonNode section) {
+        if (section instanceof ObjectNode entries) {
+            for (String name : entries.propertyNames()) {
+                if (entries.get(name) instanceof ObjectNode entry) {
+                    entry.remove("resolved");
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether a custom npm registry is configured in the project or user
+     * {@code .npmrc}. A global {@code registry=...} or a scoped
+     * {@code @scope:registry=...} entry both count.
+     */
+    private static boolean hasCustomRegistry(Options options) {
+        return npmrcDefinesRegistry(new File(options.getNpmFolder(), ".npmrc"))
+                || npmrcDefinesRegistry(
+                        new File(FileIOUtils.getUserDirectory(), ".npmrc"));
+    }
+
+    private static boolean npmrcDefinesRegistry(File npmrc) {
+        if (!npmrc.exists()) {
+            return false;
+        }
+        try {
+            for (String rawLine : Files.readAllLines(npmrc.toPath())) {
+                String line = rawLine.trim();
+                if (line.isEmpty() || line.startsWith("#")
+                        || line.startsWith(";")) {
+                    continue;
+                }
+                int separator = line.indexOf('=');
+                if (separator < 0) {
+                    continue;
+                }
+                String key = line.substring(0, separator).trim();
+                if (key.equals("registry") || key.endsWith(":registry")) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            getLogger().debug(
+                    "Could not read '{}' to detect a custom registry.", npmrc,
+                    e);
+        }
+        return false;
     }
 
 }
