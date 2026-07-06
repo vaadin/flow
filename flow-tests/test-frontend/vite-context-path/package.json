@@ -4,7 +4,7 @@
   "type": "module",
   "dependencies": {
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
-    "@vaadin/common-frontend": "0.0.19",
+    "@vaadin/common-frontend": "0.0.23",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
@@ -37,7 +37,7 @@
   },
   "vaadin": {
     "dependencies": {
-      "@vaadin/common-frontend": "0.0.19",
+      "@vaadin/common-frontend": "0.0.23",
       "@vaadin/text-field": "25.0.0-rc1",
       "@vaadin/vaadin-lumo-styles": "25.0.0-rc1",
       "@vaadin/vaadin-themable-mixin": "25.0.0-rc1",
