@@ -37,7 +37,17 @@ public class TreeDataProvider<T>
      * @param treeData
      *            the backing {@link TreeData} for this provider, not
      *            {@code null}
+     * @deprecated this constructor currently defaults to
+     *             {@link HierarchyFormat#NESTED}, but starting from Vaadin 26
+     *             it will default to {@link HierarchyFormat#FLATTENED} instead.
+     *             This may affect TreeGrid methods whose behavior depends on
+     *             the hierarchy format, such as {@code scrollToIndex}. To avoid
+     *             unexpected changes, switch to
+     *             {@link #TreeDataProvider(TreeData, HierarchyFormat)} and pass
+     *             {@link HierarchyFormat#NESTED} explicitly to keep the current
+     *             default behavior.
      */
+    @Deprecated(since = "25.3")
     public TreeDataProvider(TreeData<T> treeData) {
         super(treeData);
     }
