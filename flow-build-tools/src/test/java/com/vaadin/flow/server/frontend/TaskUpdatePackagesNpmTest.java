@@ -1603,7 +1603,7 @@ class TaskUpdatePackagesNpmTest {
                   "license": "UNLICENSED",
                   "type": "module",
                   "dependencies": {
-                    "@vaadin/common-frontend": "0.0.22",
+                    "@vaadin/common-frontend": "0.0.23",
                     "@vaadin/react-components": "25.1.2",
                     "@vaadin/vaadin-development-mode-detector": "2.0.7",
                     "adaptivecards": "1.2.6",
@@ -1625,7 +1625,7 @@ class TaskUpdatePackagesNpmTest {
                   },
                   "vaadin": {
                     "dependencies": {
-                        "@vaadin/common-frontend": "0.0.22",
+                        "@vaadin/common-frontend": "0.0.23",
                         "@vaadin/react-components": "25.1.2",
                         "@vaadin/vaadin-development-mode-detector": "2.0.7",
                         "adaptivecards": "1.2.6",
@@ -1645,7 +1645,7 @@ class TaskUpdatePackagesNpmTest {
                         "vite": "7.3.2",
                         "vite-plugin-checker": "0.12.0"
                     },
-                    "hash": "a4b492aecb32fe13902befbcc4ad0efbe6417273e8ca60346c4839973ae8242c"
+                    "hash": "3e24abefab9213fc1c8c312e7bb14eb645dfefda1f0ce799eef30bc00d2eb9c4"
                   }
                 }
                 """;
