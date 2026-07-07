@@ -13,268 +13,273 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class NavigationIT extends ChromeBrowserTest {
-    @Test
+@TestFor(NavigationView.class)
+public class NavigationIT extends AbstractDefaultIT {
+    @BrowserTest
     public void testNavigation() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("AnchorView",
+        Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText());
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("ServerView",
+        Assertions.assertEquals("ServerView",
                 $(SpanElement.class).first().getText());
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("RouterView",
+        Assertions.assertEquals("RouterView",
                 $(SpanElement.class).first().getText());
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
     }
 
-    @Test
+    @BrowserTest
     public void testNavigationPostpone_anchor() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
 
-        Assert.assertEquals("PostponeView",
+        Assertions.assertEquals("PostponeView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
 
-        Assert.assertEquals("Navigation should have postponed", "PostponeView",
-                $(SpanElement.class).first().getText());
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have postponed");
 
-        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
-        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+        Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assert.assertTrue("Url should not have changed",
-                getDriver().getCurrentUrl().endsWith("PostponeView"));
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("PostponeView"),
+                "Url should not have changed");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
 
-        Assert.assertEquals(
-                "Navigation should have fired and be postponed again",
-                "PostponeView", $(SpanElement.class).first().getText());
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have fired and be postponed again");
 
-        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 
-        Assert.assertEquals(
-                "Navigation should have continued to NavigationView",
-                "NavigationView", $(SpanElement.class).first().getText());
+        Assertions.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have continued to NavigationView");
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("NavigationView"),
                 "Url should have updated to NavigationView was : "
-                        + getDriver().getCurrentUrl(),
-                getDriver().getCurrentUrl().endsWith("NavigationView"));
+                        + getDriver().getCurrentUrl());
     }
 
-    @Test
+    @BrowserTest
     public void testNavigationPostpone_routerLink() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
 
-        Assert.assertEquals("PostponeView",
+        Assertions.assertEquals("PostponeView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ROUTER_LINK_ID)
                 .click();
 
-        Assert.assertEquals("Navigation should have postponed", "PostponeView",
-                $(SpanElement.class).first().getText());
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have postponed");
 
-        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
-        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+        Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assert.assertTrue("Url should not have changed",
-                getDriver().getCurrentUrl().endsWith("PostponeView"));
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("PostponeView"),
+                "Url should not have changed");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ROUTER_LINK_ID)
                 .click();
 
-        Assert.assertEquals(
-                "Navigation should have fired and be postponed again",
-                "PostponeView", $(SpanElement.class).first().getText());
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have fired and be postponed again");
 
-        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 
-        Assert.assertEquals(
-                "Navigation should have continued to NavigationView",
-                "NavigationView", $(SpanElement.class).first().getText());
+        Assertions.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have continued to NavigationView");
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("NavigationView"),
                 "Url should have updated to NavigationView was : "
-                        + getDriver().getCurrentUrl(),
-                getDriver().getCurrentUrl().endsWith("NavigationView"));
+                        + getDriver().getCurrentUrl());
     }
 
-    @Test
+    @BrowserTest
     public void testNavigationBrowserHistoryBack_anchor() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("AnchorView",
+        Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("AnchorView",
+        Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
     }
 
-    @Test
+    @BrowserTest
     public void testNavigationBrowserHistoryBack_routerLink() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("RouterView",
+        Assertions.assertEquals("RouterView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("RouterView",
+        Assertions.assertEquals("RouterView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
     }
 
-    @Test
+    @BrowserTest
     public void testNavigationBrowserHistoryBack_serverNavigation() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("ServerView",
+        Assertions.assertEquals("ServerView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("ServerView",
+        Assertions.assertEquals("ServerView",
                 $(SpanElement.class).first().getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
     }
 
-    @Test
+    @BrowserTest
     public void testreactNavigationBrowserHistoryBack_anchor() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.REACT_ANCHOR_ID).click();
-        Assert.assertEquals("This is a simple view for a React route",
+        Assertions.assertEquals("This is a simple view for a React route",
                 $(ParagraphElement.class).id("react").getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.REACT_ANCHOR_ID).click();
-        Assert.assertEquals("This is a simple view for a React route",
+        Assertions.assertEquals("This is a simple view for a React route",
                 $(ParagraphElement.class).id("react").getText());
         getDriver().navigate().back();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
     }
 
-    @Test
+    @BrowserTest
     public void testReactNavigation_flowContentCleaned() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.REACT_ANCHOR_ID).click();
-        Assert.assertEquals("This is a simple view for a React route",
+        Assertions.assertEquals("This is a simple view for a React route",
                 $(ParagraphElement.class).id("react").getText());
 
-        Assert.assertFalse("Flow navigation view contents should not exist",
-                $(AnchorElement.class)
-                        .attribute("id", NavigationView.REACT_ANCHOR_ID)
-                        .exists());
+        Assertions.assertFalse($(AnchorElement.class)
+                .attribute("id", NavigationView.REACT_ANCHOR_ID).exists(),
+                "Flow navigation view contents should not exist");
     }
 
-    @Test
+    @BrowserTest
     public void testReactNavigationBrowserHistoryBack_serverNavigation() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(NativeButtonElement.class).id(NavigationView.REACT_ID).click();
@@ -292,147 +297,144 @@ public class NavigationIT extends ChromeBrowserTest {
                 .equals($(SpanElement.class).first().getText()));
     }
 
-    @Test
+    @BrowserTest
     public void testRouterLinkWithQueryNavigation() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_QUERY_ID).click();
-        Assert.assertEquals(
-                "Exception on router-link navigation with query parameters",
-                "AnchorView", $(SpanElement.class).first().getText());
-        System.out.println(getDriver().getCurrentUrl());
-        Assert.assertTrue("Query was missing in url",
-                getDriver().getCurrentUrl().endsWith("?test=value"));
+        Assertions.assertEquals("AnchorView",
+                $(SpanElement.class).first().getText(),
+                "Exception on router-link navigation with query parameters");
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("?test=value"),
+                "Query was missing in url");
     }
 
-    @Test
+    @BrowserTest
     public void testAnchorWithQueryNavigation() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.ANCHOR_QUERY_ID).click();
-        Assert.assertEquals(
-                "Exception on router-link navigation with query parameters",
-                "AnchorView", $(SpanElement.class).first().getText());
-        System.out.println(getDriver().getCurrentUrl());
-        Assert.assertTrue("Query was missing in url",
-                getDriver().getCurrentUrl().endsWith("?test=anchor"));
+        Assertions.assertEquals("AnchorView",
+                $(SpanElement.class).first().getText(),
+                "Exception on router-link navigation with query parameters");
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("?test=anchor"),
+                "Query was missing in url");
     }
 
     private void checkNavigatedEvent(String log) {
         Object message = ((JavascriptExecutor) getDriver())
                 .executeScript("return window.testMessage;");
 
-        Assert.assertTrue(message instanceof String);
-        Assert.assertTrue(message.equals(log));
+        Assertions.assertTrue(message instanceof String);
+        Assertions.assertEquals(log, message);
     }
 
-    @Test
+    @BrowserTest
     public void testNavigatedEvent() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent(
-                "navigated to /view/com.vaadin.flow.NavigationView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.NavigationView");
 
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("AnchorView",
+        Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.AnchorView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.AnchorView");
         $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent(
-                "navigated to /view/com.vaadin.flow.NavigationView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.NavigationView");
 
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("ServerView",
+        Assertions.assertEquals("ServerView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.ServerView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.ServerView");
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent(
-                "navigated to /view/com.vaadin.flow.NavigationView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.NavigationView");
 
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("RouterView",
+        Assertions.assertEquals("RouterView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.RouterView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.RouterView");
         $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent(
-                "navigated to /view/com.vaadin.flow.NavigationView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.NavigationView");
     }
 
-    @Test
+    @BrowserTest
     public void testNavigatedForPostponeView() {
         open();
 
-        Assert.assertEquals("NavigationView",
+        Assertions.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
 
         $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
 
-        Assert.assertEquals("PostponeView",
+        Assertions.assertEquals("PostponeView",
                 $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
 
-        Assert.assertEquals("Navigation should have postponed", "PostponeView",
-                $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have postponed");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
-        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+        Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assert.assertTrue("Url should not have changed",
-                getDriver().getCurrentUrl().endsWith("PostponeView"));
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl().endsWith("PostponeView"),
+                "Url should not have changed");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
 
-        Assert.assertEquals(
-                "Navigation should have fired and be postponed again",
-                "PostponeView", $(SpanElement.class).first().getText());
-        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+        Assertions.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have fired and be postponed again");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
-        Assert.assertTrue($(NativeButtonElement.class)
+        Assertions.assertTrue($(NativeButtonElement.class)
                 .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
-                .isDisplayed());
+        Assertions.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.STAY_ID).isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 
-        Assert.assertEquals(
-                "Navigation should have continued to NavigationView",
-                "NavigationView", $(SpanElement.class).first().getText());
-        checkNavigatedEvent(
-                "navigated to /view/com.vaadin.flow.NavigationView");
+        Assertions.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText(),
+                "Navigation should have continued to NavigationView");
+        checkNavigatedEvent("navigated to /com.vaadin.flow.NavigationView");
     }
 
-    @Test
+    @BrowserTest
     public void testNavigation_HasUrlParameter_setParameterCalledOnce() {
         open();
 
         $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
-        Assert.assertEquals("ServerView",
+        Assertions.assertEquals("ServerView",
                 $(SpanElement.class).first().getText());
-        Assert.assertEquals("1", $(SpanElement.class)
+        Assertions.assertEquals("1", $(SpanElement.class)
                 .id(NavigationView.SET_PARAMETER_COUNTER_ID).getText());
     }
 }
