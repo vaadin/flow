@@ -111,9 +111,12 @@ class PreTrial extends HTMLElement {
         }
         
         ul li {
-          align-items: center;
           display: flex;
-          gap: 0.25rem;
+          gap: 0.5rem;
+        }
+
+        ul li svg {
+          flex-shrink: 0;
         }
         
         ul li span:first-of-type {
@@ -360,7 +363,7 @@ class PreTrial extends HTMLElement {
               </linearGradient>
             </defs>
           </svg>
-            <span>Vaadin Enterprise Edition</span><span>⋅</span><span>all Pro components, Team features and Kits</span>
+            <p><span>Vaadin Enterprise Edition</span><br/><span>All Pro components, Team features and Kits</span></p>
           </li>
         </ul>
     `;
@@ -387,7 +390,7 @@ class PreTrial extends HTMLElement {
               </linearGradient>
             </defs>
           </svg>
-            <span>Pro components</span><span>⋅</span><span>Charts, Grid Pro, CRUD and more</span>
+            <p><span>Pro components</span><br/><span>Charts, Grid Pro, CRUD and more</span></p>
           </li>
           <li>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
@@ -409,7 +412,7 @@ class PreTrial extends HTMLElement {
               </linearGradient>
             </defs></svg
           >
-            <span>Team features</span><span>⋅</span><span>Acceleration Kits</span>
+            <p><span>Team features</span><br/><span>Acceleration Kits</span></p>
           </li>
         </ul>
     `;
