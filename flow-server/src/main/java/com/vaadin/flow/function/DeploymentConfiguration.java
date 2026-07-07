@@ -280,9 +280,13 @@ public interface DeploymentConfiguration
      * <p>
      * Concrete implementations read this from the
      * {@link InitParameters#URL_SAFE_SCHEMES} property; the default returns
-     * 
-     * @code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses the
-     *       validation and allows all URLs.
+     * {@code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses the
+     * validation and allows all URLs.
+     * <p>
+     * <strong>Note:</strong> the default changes in future Flow versions.
+     * Starting from Flow 25.2, the default safe schemes are "http", "https",
+     * "mailto", "tel", "ftp". Script-capable schemes such as {@code javascript}
+     * and {@code data} will be intentionally excluded.
      *
      * @return the set of safe URL schemes, never {@code null}
      */

@@ -26,6 +26,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
@@ -73,8 +74,10 @@ public class Anchor extends HtmlContainer
      * @param text
      *            the text content to set
      * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe;
-     *             see {@link #setUnsafeHref(String)} and the
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
      */
@@ -104,8 +107,10 @@ public class Anchor extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe;
-     *             see {@link #setUnsafeHref(String)} and the
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
      * @since 25.1
@@ -130,8 +135,10 @@ public class Anchor extends HtmlContainer
      * @param target
      *            the target window, tab or frame
      * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe;
-     *             see {@link #setUnsafeHref(String)} and the
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
      */
@@ -266,8 +273,10 @@ public class Anchor extends HtmlContainer
      * @param components
      *            the components to add
      * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe;
-     *             see {@link #setUnsafeHref(String)} and the
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
      */
@@ -291,7 +300,9 @@ public class Anchor extends HtmlContainer
      * @param href
      *            the href to set
      * @throws IllegalArgumentException
-     *             if the URL uses a scheme that is not considered safe; see
+     *             if the URL uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
      *             {@link #setUnsafeHref(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property

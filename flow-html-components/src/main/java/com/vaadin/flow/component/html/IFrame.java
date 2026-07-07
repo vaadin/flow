@@ -24,6 +24,7 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
@@ -134,7 +135,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            Source URL
      * @throws IllegalArgumentException
-     *             if {@code src} uses a scheme that is not considered safe; see
+     *             if {@code src} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
      *             {@link #setUnsafeSrc(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
@@ -168,7 +171,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            Source URL.
      * @throws IllegalArgumentException
-     *             if the URL uses a scheme that is not considered safe; see
+     *             if the URL uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
      *             {@link #setUnsafeSrc(String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property

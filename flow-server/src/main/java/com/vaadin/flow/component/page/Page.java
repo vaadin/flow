@@ -34,6 +34,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.InitParameters;
@@ -485,9 +486,11 @@ public class Page implements Serializable {
      *            the URL to open.
      * @throws IllegalArgumentException
      *             if {@code url} is {@code null}, or if the URL uses a scheme
-     *             that is not considered safe; see {@link #openUnsafe(String)}
-     *             and the {@value InitParameters#URL_SAFE_SCHEMES}
-     *             configuration property
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #openUnsafe(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void open(String url) {
         open(url, "_blank");
@@ -527,7 +530,8 @@ public class Page implements Serializable {
      *            the name of the window.
      * @throws IllegalArgumentException
      *             if {@code url} is {@code null}, or if the URL uses a scheme
-     *             that is not considered safe; see
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
      *             {@link #openUnsafe(String, String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
@@ -600,7 +604,8 @@ public class Page implements Serializable {
      *            the URI to show
      * @throws IllegalArgumentException
      *             if {@code uri} is {@code null}, or if the URI uses a scheme
-     *             that is not considered safe; call
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
      *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
      *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
      *             configuration property
@@ -617,7 +622,8 @@ public class Page implements Serializable {
      *            the URI to show
      * @throws IllegalArgumentException
      *             if {@code uri} is {@code null}, or if the URI uses a scheme
-     *             that is not considered safe; call
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
      *             {@code openUnsafe(uri.toString(), "_self")} to bypass scheme
      *             validation, and see the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration

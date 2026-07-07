@@ -441,9 +441,9 @@ public final class Constants implements Serializable {
      * intentionally excluded as they can be used to execute scripts in the
      * browser when used as a link or frame target.
      * <p>
-     * Important: in this version, the actual default is {@code Set.of("*")},
-     * URL validation is disabled by default. This constant is provided as a
-     * reference for future defaults.
+     * <strong>Note:</strong> in this version, the actual default is
+     * {@code Set.of("*")}, URL validation is disabled by default. This constant
+     * is provided as a reference for future defaults.
      */
     public static final Set<String> DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
             "https", "mailto", "tel", "ftp");
