@@ -92,6 +92,10 @@ export class StateTree implements StateTreeContract {
   }
 
   registerNode(node: StateNode): void {
+    assert(node.getTree() === this, 'Node is not created for this tree');
+    assert(!node.isUnregistered(), "Can't re-register a node");
+    assert(!this.idToNode.has(node.getId()), `Node ${node.getId()} is already registered`);
+
     this.idToNode.set(node.getId(), node);
 
     if (this.isUpdateInProgress()) {
