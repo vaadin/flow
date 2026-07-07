@@ -36,6 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UrlUtilTest {
+    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
+            "https", "mailto", "tel", "ftp");
 
     private String encodeURIShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789;,/?:@&=+$-_.!~*'()#";
     private String encodeURIComponentShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()";
@@ -214,58 +216,58 @@ class UrlUtilTest {
     @Test
     void isSafeUrl_safeScheme_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("https://vaadin.com",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_unsafeScheme_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
         assertFalse(UrlUtil.isSafeUrl("data:text/html,<script>",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_schemeMatchIsCaseInsensitive_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("JavaScript:alert(1)",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_relativeUrl_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("/path/to/view",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
         assertTrue(
-                UrlUtil.isSafeUrl("foo", Constants.DEFAULT_URL_SAFE_SCHEMES));
+                UrlUtil.isSafeUrl("foo", FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_relativeUrlWithSpecialCharacters_returnsTrue() {
         // A strict URI parser would reject this, but it is a valid relative URL
         assertTrue(UrlUtil.isSafeUrl("/search?q=a b&x=[1]",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
         // A colon in the path must not be mistaken for a scheme separator
         assertTrue(UrlUtil.isSafeUrl("/path:with:colon",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_emptyOrBlank_returnsTrue() {
-        assertTrue(UrlUtil.isSafeUrl("", Constants.DEFAULT_URL_SAFE_SCHEMES));
+        assertTrue(UrlUtil.isSafeUrl("", FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
         assertTrue(
-                UrlUtil.isSafeUrl("   ", Constants.DEFAULT_URL_SAFE_SCHEMES));
+                UrlUtil.isSafeUrl("   ", FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_null_returnsFalse() {
         assertFalse(
-                UrlUtil.isSafeUrl(null, Constants.DEFAULT_URL_SAFE_SCHEMES));
+                UrlUtil.isSafeUrl(null, FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test
     void isSafeUrl_controlCharacterObfuscation_returnsFalse() {
         assertFalse(UrlUtil.isSafeUrl("java\tscript:alert(1)",
-                Constants.DEFAULT_URL_SAFE_SCHEMES));
+                FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES));
     }
 
     @Test

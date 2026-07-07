@@ -58,7 +58,7 @@ class AbstractDeploymentConfigurationTest {
     @Test
     void getUrlSafeSchemes_propertyNotSet_returnsDefault() {
         DeploymentConfiguration config = getConfig(null, null);
-        assertEquals(Constants.DEFAULT_URL_SAFE_SCHEMES,
+        assertEquals(Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD),
                 config.getUrlSafeSchemes());
     }
 

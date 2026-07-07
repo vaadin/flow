@@ -22,12 +22,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
@@ -38,6 +42,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class PageTest {
+    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
+            "https", "mailto", "tel", "ftp");
 
     private class TestUI extends UI {
         @Override
@@ -351,33 +358,66 @@ class PageTest {
     }
 
     @Test
-    void open_unsafeScheme_throws() {
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Unsafe URL should not reach the client");
-            }
-        };
-
-        assertThrows(IllegalArgumentException.class,
-                () -> page.open("javascript:alert(1)"));
-        assertThrows(IllegalArgumentException.class,
-                () -> page.open("javascript:alert(1)", "_blank"));
+    void open_unsafeScheme_doesNotThrowByDefault() {
+        assertDoesNotThrow(() -> page.open("javascript:alert(1)"));
+        assertDoesNotThrow(() -> page.open("javascript:alert(1)", "_blank"));
     }
 
     @Test
-    void setLocation_unsafeScheme_throws() {
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Unsafe URL should not reach the client");
-            }
-        };
+    void open_unsafeScheme_throws_withSafeUrlSchemesConfiguration() {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> page.setLocation("javascript:alert(1)"));
+            Page page = new Page(new MockUI()) {
+                @Override
+                public PendingJavaScriptResult executeJs(String expression,
+                                                         Object... parameters) {
+                    return fail("Unsafe URL should not reach the client");
+                }
+            };
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> page.open("javascript:alert(1)"));
+            assertThrows(IllegalArgumentException.class,
+                    () -> page.open("javascript:alert(1)", "_blank"));
+        }
+    }
+
+    @Test
+    void setLocation_unsafeScheme_doesNotThrow() {
+        assertDoesNotThrow(() -> page.setLocation("javascript:alert(1)"));
+    }
+
+    @Test
+    void setLocation_unsafeScheme_throws_withSafeUrlSchemesConfiguration() {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
+
+            Page page = new Page(new MockUI()) {
+                @Override
+                public PendingJavaScriptResult executeJs(String expression,
+                                                         Object... parameters) {
+                    return fail("Unsafe URL should not reach the client");
+                }
+            };
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> page.setLocation("javascript:alert(1)"));
+        }
     }
 
     @Test

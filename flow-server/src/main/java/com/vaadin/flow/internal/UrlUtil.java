@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinService;
  * @since 2.0
  */
 public class UrlUtil {
+    static final Set<String> ALLOW_ALL_URL_SAFE_SCHEMES = Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD);
 
     private static final Pattern PERCENT_ENCODED = Pattern
             .compile("%([0-9A-Fa-f]{2})");
@@ -254,10 +255,11 @@ public class UrlUtil {
      * <p>
      * The set of safe schemes is read from the current {@link VaadinService}'s
      * {@link DeploymentConfiguration#getUrlSafeSchemes()}, falling back to
-     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
-     * is available. Relative URLs (without a scheme) are always considered
-     * safe, whereas URLs containing control characters are rejected as they can
-     * be used to obfuscate the scheme. A {@code null} URL is considered unsafe.
+     * {@code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses
+     * the validation and allows all URLs when no {@link VaadinService} is
+     * available. Relative URLs (without a scheme) are always considered safe,
+     * whereas URLs containing control characters are rejected as they can be
+     * used to obfuscate the scheme. A {@code null} URL is considered unsafe.
      *
      * @param url
      *            the URL to check, may be {@code null}
@@ -270,11 +272,11 @@ public class UrlUtil {
             if (getLogger().isDebugEnabled()) {
                 getLogger()
                         .debug("No VaadinService available on current thread; "
-                                + "falling back to default safe URL schemes. "
+                                + "bypassing URL scheme validation. "
                                 + "Any custom {} configuration will not apply "
                                 + "here.", InitParameters.URL_SAFE_SCHEMES);
             }
-            safeSchemes = Constants.DEFAULT_URL_SAFE_SCHEMES;
+            safeSchemes = ALLOW_ALL_URL_SAFE_SCHEMES;
         } else {
             safeSchemes = service.getDeploymentConfiguration()
                     .getUrlSafeSchemes();

@@ -43,7 +43,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
  */
 public interface DeploymentConfiguration
         extends AbstractConfiguration, Serializable {
-
     /**
      * Returns whether the server provides timing info to the client.
      *
@@ -281,12 +280,13 @@ public interface DeploymentConfiguration
      * <p>
      * Concrete implementations read this from the
      * {@link InitParameters#URL_SAFE_SCHEMES} property; the default returns
-     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}.
+     * @code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses
+     * the validation and allows all URLs.
      *
      * @return the set of safe URL schemes, never {@code null}
      */
     default Set<String> getUrlSafeSchemes() {
-        return Constants.DEFAULT_URL_SAFE_SCHEMES;
+        return Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD);
     }
 
     /**

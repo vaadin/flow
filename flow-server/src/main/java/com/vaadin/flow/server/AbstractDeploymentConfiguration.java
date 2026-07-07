@@ -67,7 +67,10 @@ public abstract class AbstractDeploymentConfiguration extends
                 configured = getStringProperty(
                         InitParameters.URL_SAFE_SCHEMES_LEGACY, null);
             }
-            cached = parseUrlSafeSchemes(configured);
+            final Set<String> parsed = parseUrlSafeSchemes(configured);
+            cached = parsed != null
+                    ? parsed
+                    : DeploymentConfiguration.super.getUrlSafeSchemes();
             urlSafeSchemes = cached;
         }
         return cached;
@@ -75,7 +78,7 @@ public abstract class AbstractDeploymentConfiguration extends
 
     private static Set<String> parseUrlSafeSchemes(String configured) {
         if (configured == null || configured.isBlank()) {
-            return Constants.DEFAULT_URL_SAFE_SCHEMES;
+            return null;
         }
         Set<String> schemes = new HashSet<>();
         for (String scheme : configured.split(",")) {
@@ -84,8 +87,7 @@ public abstract class AbstractDeploymentConfiguration extends
                 schemes.add(trimmed.toLowerCase(Locale.ROOT));
             }
         }
-        return schemes.isEmpty() ? Constants.DEFAULT_URL_SAFE_SCHEMES
-                : Set.copyOf(schemes);
+        return schemes.isEmpty() ? null : Set.copyOf(schemes);
     }
 
 }
