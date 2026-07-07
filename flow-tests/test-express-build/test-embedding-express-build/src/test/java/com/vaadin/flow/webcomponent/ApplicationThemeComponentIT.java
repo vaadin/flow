@@ -59,7 +59,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void embeddedComponent_expressBuild_componentRendered() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
 
         TestBenchElement themedComponent = $("themed-component").waitForFirst();
 
@@ -91,7 +91,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddedComponent() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
         checkLogsForErrors();
 
         validateEmbeddedComponent($("themed-component").id("first"), "first");
@@ -147,7 +147,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssFonts_fontsAreAppliedAndAvailable() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
         checkLogsForErrors();
         final TestBenchElement themedComponent = $("themed-component").first();
         final TestBenchElement embeddedComponent = themedComponent
@@ -170,7 +170,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
 
         Object ostrichFontStylesFound = getCommandExecutor().executeScript(
                 "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
@@ -183,7 +183,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssFonts_fromLocalCssFile_fontNotAppliedToEmbeddedComponent() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
 
         Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
                 .executeScript("let target = document.getElementsByTagName"
@@ -198,7 +198,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssLinkAddedToHead() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("themed-component");
 
         final WebElement documentHead = getDriver()
                 .findElement(By.xpath("/html/head"));
