@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.ui;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.uitest.ui.RemoveAddVisibilityView")
+@Route("remove-add-visibility")
 public class RemoveAddVisibilityView extends Div {
 
     public RemoveAddVisibilityView() {
