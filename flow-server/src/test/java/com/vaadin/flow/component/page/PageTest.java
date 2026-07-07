@@ -26,8 +26,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.VaadinService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
@@ -36,8 +34,10 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
@@ -50,8 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class PageTest {
-    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
-            "https", "mailto", "tel", "ftp");
+    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set
+            .of("http", "https", "mailto", "tel", "ftp");
 
     private class TestUI extends UI {
         @Override
@@ -378,7 +378,7 @@ class PageTest {
             Page page = new Page(new MockUI()) {
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                                                         Object... parameters) {
+                        Object... parameters) {
                     return fail("Unsafe URL should not reach the client");
                 }
             };
@@ -410,7 +410,7 @@ class PageTest {
             Page page = new Page(new MockUI()) {
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                                                         Object... parameters) {
+                        Object... parameters) {
                     return fail("Unsafe URL should not reach the client");
                 }
             };

@@ -68,8 +68,7 @@ public abstract class AbstractDeploymentConfiguration extends
                         InitParameters.URL_SAFE_SCHEMES_LEGACY, null);
             }
             final Set<String> parsed = parseUrlSafeSchemes(configured);
-            cached = parsed != null
-                    ? parsed
+            cached = parsed != null ? parsed
                     : DeploymentConfiguration.super.getUrlSafeSchemes();
             urlSafeSchemes = cached;
         }

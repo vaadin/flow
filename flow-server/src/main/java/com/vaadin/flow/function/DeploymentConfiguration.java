@@ -280,8 +280,9 @@ public interface DeploymentConfiguration
      * <p>
      * Concrete implementations read this from the
      * {@link InitParameters#URL_SAFE_SCHEMES} property; the default returns
-     * @code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses
-     * the validation and allows all URLs.
+     * 
+     * @code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses the
+     *       validation and allows all URLs.
      *
      * @return the set of safe URL schemes, never {@code null}
      */

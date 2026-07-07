@@ -36,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UrlUtilTest {
-    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
-            "https", "mailto", "tel", "ftp");
+    private static final Set<String> FUTURE_25_2_DEFAULT_URL_SAFE_SCHEMES = Set
+            .of("http", "https", "mailto", "tel", "ftp");
 
     private String encodeURIShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789;,/?:@&=+$-_.!~*'()#";
     private String encodeURIComponentShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()";
