@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.AddQueryParamView")
+@Route("add-query-param")
 public class AddQueryParamView extends Div {
 
     public static final String PARAM_BUTTON_ID = "setParameter";
