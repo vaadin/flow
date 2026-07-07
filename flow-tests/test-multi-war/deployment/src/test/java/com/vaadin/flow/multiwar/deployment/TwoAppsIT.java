@@ -55,7 +55,8 @@ public class TwoAppsIT extends ChromeBrowserTest {
     @Test
     public void bothWebComponentsEmbedded() {
         open();
-        waitForWebComponentsBootstrap();
+        waitForWebComponentShadowRoot("hello-war1");
+        waitForWebComponentShadowRoot("hello-war2");
         WebElement hello1 = findElement(By.id("hello1"));
         WebElement hello2 = findElement(By.id("hello2"));
 
