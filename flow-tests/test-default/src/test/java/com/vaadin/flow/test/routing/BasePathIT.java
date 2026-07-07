@@ -13,16 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.router.Route;
+import org.junit.jupiter.api.Assertions;
 
-@Route("view/com.vaadin.flow.BasePathView")
-public class BasePathView extends Div {
+import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-    public BasePathView() {
-        add(new Span("BasePathView"));
+@TestFor(BasePathView.class)
+public class BasePathIT extends AbstractDefaultIT {
+
+    @BrowserTest
+    public void navigationTo_routeWithBasePath_succeeds() {
+        open();
+
+        Assertions.assertTrue(
+                $(SpanElement.class).withText("BasePathView").exists());
     }
+
 }

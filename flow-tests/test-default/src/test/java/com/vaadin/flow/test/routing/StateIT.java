@@ -13,32 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class StateIT extends ChromeBrowserTest {
+@TestFor(StateView.class)
+public class StateIT extends AbstractDefaultIT {
 
-    @Test
+    @BrowserTest
     public void validateReactInUse() {
         open();
 
-        waitForDevServer();
-
         SpanElement reactEnabled = $(SpanElement.class)
                 .id(StateView.ENABLED_SPAN);
-        Assert.assertEquals("React not enabled", "React enabled: true",
-                reactEnabled.getText());
+        Assertions.assertEquals("React enabled: true", reactEnabled.getText(),
+                "React not enabled");
 
         SpanElement reactInPackage = $(SpanElement.class)
                 .id(StateView.REACT_SPAN);
 
-        Assert.assertEquals("No react found in package.json",
-                "React found: true", reactInPackage.getText());
+        Assertions.assertEquals("React found: true", reactInPackage.getText(),
+                "No react found in package.json");
     }
 
 }
