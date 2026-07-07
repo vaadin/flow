@@ -363,15 +363,4 @@ public class InitParameters implements Serializable {
      */
     public static final String URL_SAFE_SCHEMES = "safeUrlSchemes";
 
-    /**
-     * Legacy name of the {@link #URL_SAFE_SCHEMES} configuration property, kept
-     * for backwards compatibility with applications configured against Vaadin
-     * 25.2.1. Use {@link #URL_SAFE_SCHEMES} instead; when both are present, the
-     * new name takes precedence.
-     *
-     * @deprecated use {@link #URL_SAFE_SCHEMES} instead
-     */
-    @Deprecated
-    public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
-
 }

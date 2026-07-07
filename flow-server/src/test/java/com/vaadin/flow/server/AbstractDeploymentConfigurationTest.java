@@ -70,22 +70,6 @@ class AbstractDeploymentConfigurationTest {
     }
 
     @Test
-    void getUrlSafeSchemes_legacyPropertyName_stillSupported() {
-        DeploymentConfiguration config = getConfig(
-                InitParameters.URL_SAFE_SCHEMES_LEGACY, " HTTPS , MyApp ");
-        assertEquals(Set.of("https", "myapp"), config.getUrlSafeSchemes());
-    }
-
-    @Test
-    void getUrlSafeSchemes_newPropertyNameTakesPrecedenceOverLegacy() {
-        Properties props = new Properties();
-        props.put(InitParameters.URL_SAFE_SCHEMES, "current");
-        props.put(InitParameters.URL_SAFE_SCHEMES_LEGACY, "legacy");
-        DeploymentConfiguration config = new DeploymentConfigImpl(props);
-        assertEquals(Set.of("current"), config.getUrlSafeSchemes());
-    }
-
-    @Test
     void getUrlSafeSchemes_memoizedAcrossCalls() {
         DeploymentConfiguration config = getConfig(
                 InitParameters.URL_SAFE_SCHEMES, "custom");

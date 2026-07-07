@@ -63,10 +63,6 @@ public abstract class AbstractDeploymentConfiguration extends
         if (cached == null) {
             String configured = getStringProperty(
                     InitParameters.URL_SAFE_SCHEMES, null);
-            if (configured == null) {
-                configured = getStringProperty(
-                        InitParameters.URL_SAFE_SCHEMES_LEGACY, null);
-            }
             final Set<String> parsed = parseUrlSafeSchemes(configured);
             cached = parsed != null ? parsed
                     : DeploymentConfiguration.super.getUrlSafeSchemes();
