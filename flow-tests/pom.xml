@@ -387,7 +387,6 @@
 
         <module>vaadin-spring-tests</module>
         <module>test-vaadin-router</module>
-        <module>test-react-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
         <module>test-legacy-frontend</module>
