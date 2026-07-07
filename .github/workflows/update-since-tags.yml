@@ -39,22 +39,22 @@ jobs:
           cache: maven
 
       - id: since
-        uses: vaadin/reconcile-since-tags@a652ebfbaf9a3ee001fab8474d78501c039517f0 # v1.1.0
+        uses: vaadin/reconcile-since-tags@8b841d0837a7c2108ea4eb4fc62ef864321cd61b # v1.2.0
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
           artifacts: |
-            flow-server=flow-server/src/main/java
-            flow-data=flow-data/src/main/java
-            flow-html-components=flow-html-components/src/main/java
-            flow-polymer-template=flow-polymer-template/src/main/java
-            flow-dnd=flow-dnd/src/main/java
-            flow-webpush=flow-webpush/src/main/java
-            flow-react=flow-react/src/main/java
-            flow-lit-template=flow-lit-template/src/main/java
-            flow-html-components-testbench=flow-html-components-testbench/src/main/java
-            flow-build-tools=flow-build-tools/src/main/java
-            vaadin-dev-server=vaadin-dev-server/src/main/java
+            flow-server
+            flow-data
+            flow-html-components
+            flow-polymer-template
+            flow-dnd
+            flow-webpush
+            flow-react
+            flow-lit-template
+            flow-html-components-testbench
+            flow-build-tools
+            vaadin-dev-server
 
       # vaadin-spring MUST reconcile against its own isolated index (index-dir),
       # never the shared one above. Why: the tool merges every listed module's
@@ -70,13 +70,13 @@ jobs:
       # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
       # of the framework. An isolated index-dir keeps vaadin-spring's versions off
       # the shared axis (a separate load + axis per invocation).
-      - uses: vaadin/reconcile-since-tags@a652ebfbaf9a3ee001fab8474d78501c039517f0 # v1.1.0
+      - uses: vaadin/reconcile-since-tags@8b841d0837a7c2108ea4eb4fc62ef864321cd61b # v1.2.0
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
           index-dir: .since-index-spring
           artifacts: |
-            vaadin-spring=vaadin-spring/src/main/java
+            vaadin-spring
 
       - name: Open pull request
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
