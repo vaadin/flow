@@ -57,6 +57,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -111,6 +113,7 @@ public class VaadinServletContextInitializer
     private static boolean devModeCachingEnabled;
     private ApplicationContext appContext;
     private ResourceLoader customLoader;
+    private MetadataReaderFactory metadataReaderFactory;
 
     /**
      * Packages that should be excluded when scanning all packages.
@@ -166,10 +169,16 @@ public class VaadinServletContextInitializer
             extends ClassPathScanningCandidateComponentProvider {
         private ClassPathScanner(Environment environment,
                 ResourceLoader resourceLoader,
+                MetadataReaderFactory metadataReaderFactory,
                 Collection<Class<? extends Annotation>> annotations,
                 Collection<Class<?>> types) {
             super(false, environment);
             setResourceLoader(resourceLoader);
+            // Keep the filtering resource loader as the pattern resolver, but
+            // override the metadata reader factory (which setResourceLoader
+            // just replaced) so class metadata is read through a cache shared
+            // across all scan passes. Must be called after setResourceLoader.
+            setMetadataReaderFactory(metadataReaderFactory);
 
             annotations.stream().map(AnnotationTypeFilter::new)
                     .forEach(this::addIncludeFilter);
@@ -883,9 +892,30 @@ public class VaadinServletContextInitializer
             Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
         ClassPathScanner scanner = new ClassPathScanner(
-                appContext.getEnvironment(), loader, annotations, types);
+                appContext.getEnvironment(), loader, getMetadataReaderFactory(),
+                annotations, types);
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(Collection::stream).map(this::getBeanClass);
+    }
+
+    /**
+     * Returns a shared {@link MetadataReaderFactory} reused by every scan pass.
+     * <p>
+     * It is backed by the application context, which is a
+     * {@link org.springframework.core.io.DefaultResourceLoader}, so that
+     * {@link CachingMetadataReaderFactory} stores parsed class metadata in the
+     * context's shared, unbounded resource cache instead of a per-scan cache
+     * bounded to {@value CachingMetadataReaderFactory#DEFAULT_CACHE_LIMIT}
+     * entries. This avoids re-parsing the same classes for each of the many
+     * scan passes (routes, error handlers, web components, ...) done at
+     * startup.
+     */
+    private MetadataReaderFactory getMetadataReaderFactory() {
+        if (metadataReaderFactory == null) {
+            metadataReaderFactory = new CachingMetadataReaderFactory(
+                    appContext);
+        }
+        return metadataReaderFactory;
     }
 
     private Class<?> getBeanClass(BeanDefinition beanDefinition) {

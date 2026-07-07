@@ -532,7 +532,7 @@ public class ExtendedClientDetails implements Serializable {
      *            resolves a browser-detail key to its raw string value, or
      *            {@code null} if not present
      * @return the parsed details
-     * @since 25.3
+     * @since 25.2.1
      */
     public static ExtendedClientDetails updateFromValues(UI ui,
             UnaryOperator<String> getStringElseNull) {

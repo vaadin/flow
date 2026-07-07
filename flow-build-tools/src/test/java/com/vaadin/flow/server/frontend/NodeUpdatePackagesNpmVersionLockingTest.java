@@ -124,13 +124,15 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    void shouldNotUpdatesOverrides_whenHasUserModification()
+    void userPinnedDependency_overrideUsesDependencyReference()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ObjectNode overridesSection = JacksonUtils.createObjectNode();
         packageJson.set(OVERRIDES, overridesSection);
 
+        // The user pins the dependency to a custom version. The override is
+        // reset to a dependency reference so the pinned version is enforced.
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
@@ -138,8 +140,59 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        assertEquals(USER_PINNED_DEPENDENCY_VERSION,
+        assertEquals(RELATIVE_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void dependencyInDevDependencies_overrideUsesDependencyReference()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // The package is declared as a devDependency, so the override should
+        // reference it instead of pinning the platform version.
+        ((ObjectNode) packageJson.get("devDependencies")).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        assertEquals(RELATIVE_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void overrideReferencesMissingDependency_referenceRemoved()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        // A dependency reference whose target is not declared anywhere.
+        overridesSection.put("@some/unused", "$@some/unused");
+        packageJson.set(OVERRIDES, overridesSection);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        assertNull(packageJson.get(OVERRIDES).get("@some/unused"),
+                "Dangling dependency reference should be removed");
+    }
+
+    @Test
+    void legacyVaadinOverridesSection_removed() throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // Simulate a vaadin.overrides section written by an earlier Flow
+        // version, which is no longer used.
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        boolean updated = packageUpdater.lockVersionForNpm(packageJson);
+
+        assertTrue(updated, "Removing vaadin.overrides should mark as updated");
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "Legacy vaadin.overrides section should be removed");
     }
 
     @Test
@@ -183,6 +236,22 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         packageUpdater.lockVersionForNpm(packageJson);
 
         // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void platformDependencyNotDeclared_overridePinnedToPlatformVersion()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // The platform package is not declared as a dependency, so a fresh
+        // override pinned to the platform version is added.
+        assertNull(packageJson.get(OVERRIDES));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
         assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
@@ -278,20 +347,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 overrides.get("parent-package").get("nested-dep").stringValue(),
                 "Nested override value should be preserved");
 
-        // Verify vaadin.overrides tracks the nested structure correctly
-        assertTrue(packageJson.has(VAADIN_DEP_KEY));
-        JsonNode vaadinSection = packageJson.get(VAADIN_DEP_KEY);
-        assertTrue(vaadinSection.has(OVERRIDES),
-                "vaadin.overrides should exist");
-        JsonNode vaadinOverrides = vaadinSection.get(OVERRIDES);
-        assertTrue(vaadinOverrides.has("parent-package"),
-                "vaadin.overrides should track nested override");
-        assertTrue(vaadinOverrides.get("parent-package").isObject(),
-                "vaadin.overrides should preserve nested structure");
-        assertEquals("1.0.0",
-                vaadinOverrides.get("parent-package").get("nested-dep")
-                        .stringValue(),
-                "vaadin.overrides should track exact nested values");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
 
         // Verify deep nesting is preserved
         JsonNode level1Override = overrides.get("level1");
@@ -344,13 +402,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 "Flat override should remain unchanged");
         assertEquals("3.0.0", overrides.get("flat-dep").stringValue());
 
-        // Verify vaadin.overrides tracks the original nested structure
-        JsonNode vaadinOverrides = packageJson.get(VAADIN_DEP_KEY)
-                .get(OVERRIDES);
-        assertTrue(vaadinOverrides.has("parent-package"),
-                "vaadin.overrides should track nested structure");
-        assertTrue(vaadinOverrides.get("parent-package").isObject(),
-                "vaadin.overrides should preserve object format");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
 
         // Verify deep nesting is fully flattened
         assertTrue(overrides.has("level1>level2>deep-dep"),

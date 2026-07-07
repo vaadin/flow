@@ -111,6 +111,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + routeParameters + ", detail=" + detail + '}';
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailDeserializer extends ValueDeserializer<String> {
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt) {
@@ -122,6 +125,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         }
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailSerializer extends ValueSerializer<String> {
         @Override
         public void serialize(String value, JsonGenerator gen,

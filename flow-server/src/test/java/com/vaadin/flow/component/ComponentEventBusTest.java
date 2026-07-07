@@ -28,6 +28,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.internal.KeyboardEvent;
+import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -849,6 +850,35 @@ class ComponentEventBusTest {
 
         // Listener should be called because allowInert is true
         eventTracker.assertEventCalled(component, true);
+    }
+
+    @Test
+    void inertWebComponentUI_connectWebComponentEvent_listenerCalled() {
+        // Embedded web components share a single WebComponentUI and are
+        // attached as children of its element. A modal opened by one of them
+        // makes the WebComponentUI inert, so the connect event for any other
+        // embedded web component must still be delivered (allowInert).
+        MockUI ui = new MockUI();
+
+        InertData inertData = ui.getElement().getNode()
+                .getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+
+        EventTracker<WebComponentUI.WebComponentConnectEvent> eventTracker = new EventTracker<>();
+        ComponentUtil.addListener(ui,
+                WebComponentUI.WebComponentConnectEvent.class, eventTracker);
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("tag", "my-component");
+        eventData.put("id", "id-1");
+        eventData.put("userAssignedId", "user-id-1");
+        eventData.set("attributeValues", JacksonUtils.createObjectNode());
+
+        fireDomEvent(ui, "connect-web-component", eventData);
+
+        assertEquals(1, eventTracker.getCalls(),
+                "Connect event must be delivered even when the WebComponentUI is inert");
     }
 
     @Test

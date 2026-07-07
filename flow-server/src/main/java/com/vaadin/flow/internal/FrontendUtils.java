@@ -255,6 +255,8 @@ public class FrontendUtils {
      * not regenerate dev-server only files such as {@link #INDEX_TSX} or
      * {@link #VITE_DEVMODE_TS}, recognize them as generated instead of deleting
      * them as stale.
+     * 
+     * @since 25.2
      */
     public static final String GENERATED_FILES_LIST_NAME = "generated-flow-files.txt";
 
@@ -580,7 +582,14 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(getProjectFrontendDir(config), path);
+        File frontendDir = getProjectFrontendDir(config);
+        File file = new File(frontendDir, path);
+        if (!file.exists()) {
+            // Fall back to the frontend generated/ folder, where the default
+            // index.html and other Flow-generated client files live when the
+            // user has not provided their own.
+            file = new File(getFrontendGeneratedFolder(frontendDir), path);
+        }
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());

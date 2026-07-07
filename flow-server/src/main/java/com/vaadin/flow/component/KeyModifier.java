@@ -42,6 +42,8 @@ public enum KeyModifier implements Key {
 
     /**
      * KeyModifier for "{@code Alt Graph}" key.
+     * 
+     * @since 1.3
      */
     ALT_GRAPH(Key.ALT_GRAPH),
 
