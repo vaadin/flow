@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 
@@ -45,6 +46,11 @@ public class BundleBuildUtils {
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
+        copyPackageLockFromBundle(options, createFrontendTools(options));
+    }
+
+    static void copyPackageLockFromBundle(Options options,
+            FrontendTools frontendTools) {
         try {
             if (FrontendBuildUtils.isPlatformMajorVersionUpdated(
                     options.getClassFinder(), options.getNodeModulesFolder(),
@@ -70,7 +76,7 @@ public class BundleBuildUtils {
         }
 
         try {
-            copyAppropriatePackageLock(options, packageLock);
+            copyAppropriatePackageLock(options, packageLock, frontendTools);
         } catch (IOException ioe) {
             getLogger().error(
                     "Failed to copy existing `" + lockFile + "` to use", ioe);
@@ -78,8 +84,22 @@ public class BundleBuildUtils {
 
     }
 
+    private static FrontendTools createFrontendTools(Options options) {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                options.getNpmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
+        return new FrontendTools(settings);
+    }
+
     private static void copyAppropriatePackageLock(Options options,
-            File packageLock) throws IOException {
+            File packageLock, FrontendTools frontendTools) throws IOException {
         File devBundleFolder = new File(
                 new File(options.getNpmFolder(),
                         options.getBuildDirectoryName()),
@@ -91,7 +111,7 @@ public class BundleBuildUtils {
             File devPackageLock = new File(devBundleFolder, packageLockFile);
             if (devPackageLock.exists()) {
                 writePackageLock(Files.readString(devPackageLock.toPath()),
-                        packageLock, options);
+                        packageLock, options, frontendTools);
                 return;
             }
         }
@@ -117,7 +137,7 @@ public class BundleBuildUtils {
         }
         if (resource != null) {
             String filecontents = FileIOUtils.urlToString(resource);
-            writePackageLock(filecontents, packageLock, options);
+            writePackageLock(filecontents, packageLock, options, frontendTools);
         } else {
             getLogger().debug(
                     "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",
@@ -127,18 +147,19 @@ public class BundleBuildUtils {
 
     /**
      * Writes the seeded lock file, stripping the hardcoded {@code resolved}
-     * download URLs for the npm {@code package-lock.json} when the project
-     * configures a custom registry, so that {@code npm install} re-resolves
-     * them against that registry instead of reusing the {@code npmjs.org} URLs
-     * baked into the dev-bundle template. The {@code integrity} content hashes
-     * are kept so npm still verifies the downloaded tarballs against the
-     * versions Vaadin tested. In all other cases the content is written
-     * verbatim.
+     * download URLs for the npm {@code package-lock.json} when npm is
+     * configured with a custom registry, so that {@code npm install}
+     * re-resolves them against that registry instead of reusing the
+     * {@code npmjs.org} URLs baked into the dev-bundle template. The
+     * {@code integrity} content hashes are kept so npm still verifies the
+     * downloaded tarballs against the versions Vaadin tested. In all other
+     * cases the content is written verbatim.
      */
     private static void writePackageLock(String contents, File packageLock,
-            Options options) throws IOException {
+            Options options, FrontendTools frontendTools) throws IOException {
         String toWrite = contents;
-        if (!options.isEnablePnpm() && hasCustomRegistry(options)) {
+        if (!options.isEnablePnpm()
+                && frontendTools.hasCustomNpmRegistry(options.getNpmFolder())) {
             toWrite = stripResolvedUrls(contents, packageLock);
         }
         Files.writeString(packageLock.toPath(), toWrite);
@@ -165,45 +186,6 @@ public class BundleBuildUtils {
                 }
             }
         }
-    }
-
-    /**
-     * Checks whether a custom npm registry is configured in the project or user
-     * {@code .npmrc}. A global {@code registry=...} or a scoped
-     * {@code @scope:registry=...} entry both count.
-     */
-    private static boolean hasCustomRegistry(Options options) {
-        return npmrcDefinesRegistry(new File(options.getNpmFolder(), ".npmrc"))
-                || npmrcDefinesRegistry(
-                        new File(FileIOUtils.getUserDirectory(), ".npmrc"));
-    }
-
-    private static boolean npmrcDefinesRegistry(File npmrc) {
-        if (!npmrc.exists()) {
-            return false;
-        }
-        try {
-            for (String rawLine : Files.readAllLines(npmrc.toPath())) {
-                String line = rawLine.trim();
-                if (line.isEmpty() || line.startsWith("#")
-                        || line.startsWith(";")) {
-                    continue;
-                }
-                int separator = line.indexOf('=');
-                if (separator < 0) {
-                    continue;
-                }
-                String key = line.substring(0, separator).trim();
-                if (key.equals("registry") || key.endsWith(":registry")) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            getLogger().debug(
-                    "Could not read '{}' to detect a custom registry.", npmrc,
-                    e);
-        }
-        return false;
     }
 
 }

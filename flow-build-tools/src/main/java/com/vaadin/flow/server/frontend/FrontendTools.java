@@ -32,11 +32,13 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.InitParameters;
@@ -512,6 +514,73 @@ public class FrontendTools {
                             String.join(" ", npmCacheCommand)));
         }
         return new File(output);
+    }
+
+    /**
+     * Checks whether npm resolves package downloads against a registry other
+     * than the public npm registry.
+     * <p>
+     * The check delegates to npm itself, so it accounts for every configuration
+     * source and precedence rule npm applies (command line, environment
+     * variables, project/user/global/builtin {@code .npmrc}) and covers both
+     * the global {@code registry} and any scoped {@code @scope:registry}
+     * entries. If the configuration cannot be read the default registry is
+     * assumed.
+     *
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return {@code true} if a custom global or scoped registry is configured
+     */
+    boolean hasCustomNpmRegistry(File workingDirectory) {
+        return containsCustomRegistry(
+                getConfiguredRegistries(workingDirectory));
+    }
+
+    /**
+     * Reads the registry URLs npm resolves for the given directory by running
+     * {@code npm config ls --json}. The returned map contains the global
+     * {@code registry} entry and every scoped {@code @scope:registry} entry, as
+     * resolved by npm across all its configuration sources.
+     *
+     * @param workingDirectory
+     *            the directory to resolve the configuration from
+     * @return the configured registry keys mapped to their URLs, or an empty
+     *         map if the configuration cannot be read
+     */
+    Map<String, String> getConfiguredRegistries(File workingDirectory) {
+        List<String> command = new ArrayList<>(getNpmExecutable(false));
+        command.add("config");
+        command.add("ls");
+        command.add("--json");
+        Map<String, String> registries = new HashMap<>();
+        try {
+            String output = FrontendUtils.executeCommand(command,
+                    builder -> builder.directory(workingDirectory));
+            JsonNode config = JacksonUtils.readTree(output);
+            for (String key : config.propertyNames()) {
+                if ((key.equals("registry") || key.endsWith(":registry"))
+                        && config.get(key).isString()) {
+                    registries.put(key, config.get(key).asString());
+                }
+            }
+        } catch (CommandExecutionException | RuntimeException e) {
+            getLogger().debug("Could not read the npm registry configuration; "
+                    + "assuming the default registry.", e);
+        }
+        return registries;
+    }
+
+    static boolean containsCustomRegistry(Map<String, String> registries) {
+        return registries.values().stream()
+                .anyMatch(registry -> !isDefaultNpmRegistry(registry));
+    }
+
+    private static boolean isDefaultNpmRegistry(String registry) {
+        String normalized = registry.endsWith("/")
+                ? registry.substring(0, registry.length() - 1)
+                : registry;
+        return "https://registry.npmjs.org".equals(normalized);
     }
 
     /**

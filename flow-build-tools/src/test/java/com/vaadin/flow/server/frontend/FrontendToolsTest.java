@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -910,6 +911,33 @@ class FrontendToolsTest {
                 ? "node-" + nodeVersion + "\\node_modules\\npm\\bin\\npm-cli.js"
                 : "node-" + nodeVersion
                         + "/lib/node_modules/npm/bin/npm-cli.js";
+    }
+
+    @Test
+    void containsCustomRegistry_defaultRegistryOnly_isNotCustom() {
+        assertFalse(FrontendTools.containsCustomRegistry(
+                Map.of("registry", "https://registry.npmjs.org/")));
+        // npm may report the default without a trailing slash
+        assertFalse(FrontendTools.containsCustomRegistry(
+                Map.of("registry", "https://registry.npmjs.org")));
+    }
+
+    @Test
+    void containsCustomRegistry_noRegistryResolved_isNotCustom() {
+        assertFalse(FrontendTools.containsCustomRegistry(Map.of()));
+    }
+
+    @Test
+    void containsCustomRegistry_customGlobalRegistry_isCustom() {
+        assertTrue(FrontendTools.containsCustomRegistry(
+                Map.of("registry", "https://nexus.corp/repository/npm/")));
+    }
+
+    @Test
+    void containsCustomRegistry_customScopedRegistryWithDefaultGlobal_isCustom() {
+        assertTrue(FrontendTools.containsCustomRegistry(Map.of("registry",
+                "https://registry.npmjs.org/", "@vaadin:registry",
+                "https://nexus.corp/repository/npm/")));
     }
 
 }

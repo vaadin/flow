@@ -41,6 +41,13 @@ class BundleBuildUtilsTest {
     @TempDir
     File temporaryFolder;
 
+    private static FrontendTools mockTools(boolean customRegistry) {
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+        Mockito.when(tools.hasCustomNpmRegistry(Mockito.any()))
+                .thenReturn(customRegistry);
+        return tools;
+    }
+
     @Test
     void packageLockExists_nothingIsCopied() throws IOException {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
@@ -64,7 +71,7 @@ class BundleBuildUtilsTest {
 
         FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
@@ -98,7 +105,7 @@ class BundleBuildUtilsTest {
         final String packageLockContent = "{ \"bundleFile\"}";
         FileUtils.write(devPackageLockJson, packageLockContent);
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -133,7 +140,7 @@ class BundleBuildUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -173,7 +180,7 @@ class BundleBuildUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -208,7 +215,7 @@ class BundleBuildUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(null);
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -246,7 +253,7 @@ class BundleBuildUtilsTest {
         FileUtils.write(devPackageLock, packageLockContent);
         FileUtils.write(devPackageLockJson, "{ \"json\"}");
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML),
@@ -278,13 +285,10 @@ class BundleBuildUtilsTest {
             """;
 
     @Test
-    void customRegistryInNpmrc_resolvedStrippedIntegrityKept()
+    void customRegistryConfigured_resolvedStrippedIntegrityKept()
             throws IOException {
         Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
-
-        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
-                "registry=https://my.registry/repository/npm/\n");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
@@ -293,7 +297,7 @@ class BundleBuildUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(true));
 
         final String result = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -323,7 +327,7 @@ class BundleBuildUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String result = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -334,42 +338,9 @@ class BundleBuildUtilsTest {
     }
 
     @Test
-    void scopedCustomRegistryInNpmrc_resolvedStripped() throws IOException {
-        Options options = new MockOptions(temporaryFolder)
-                .withBuildDirectory("target");
-
-        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
-                """
-                        @myorg:registry=https://somewhere-else.com/myorg
-                        @another:registry=https://somewhere-else.com/another
-                        """);
-
-        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
-        FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
-                StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
-                .thenReturn(jarPackageLock.toURI().toURL());
-
-        BundleBuildUtils.copyPackageLockFromBundle(options);
-
-        final String result = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
-                StandardCharsets.UTF_8);
-
-        assertFalse(result.contains("\"resolved\""),
-                "A scoped @scope:registry entry should also trigger stripping of resolved fields");
-        assertTrue(result.contains("sha512-fooHash"),
-                "integrity fields should be preserved");
-    }
-
-    @Test
     void customRegistry_invalidJson_copiedVerbatim() throws IOException {
         Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
-
-        Files.writeString(new File(options.getNpmFolder(), ".npmrc").toPath(),
-                "registry=https://my.registry/repository/npm/\n");
 
         final String notJson = "{ not valid json";
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
@@ -378,7 +349,7 @@ class BundleBuildUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(true));
 
         final String result = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -412,7 +383,7 @@ class BundleBuildUtilsTest {
 
         FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
 
-        BundleBuildUtils.copyPackageLockFromBundle(options);
+        BundleBuildUtils.copyPackageLockFromBundle(options, mockTools(false));
 
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
