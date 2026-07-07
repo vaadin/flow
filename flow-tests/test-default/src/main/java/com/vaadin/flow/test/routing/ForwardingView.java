@@ -13,18 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.ForwardingToParametersView")
-public class ForwardingToParametersView extends Div
-        implements BeforeEnterObserver {
+@Route("com.vaadin.flow.ForwardingView")
+public class ForwardingView extends Div implements BeforeEnterObserver {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        event.forwardTo(ForwardTargetWithParametersView.class);
+        event.forwardTo(ForwardTargetView.class);
     }
 }

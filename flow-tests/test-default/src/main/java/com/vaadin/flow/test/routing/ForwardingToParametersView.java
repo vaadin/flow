@@ -13,22 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.ForwardTargetWithParametersView")
-public class ForwardTargetWithParametersView extends Div
-        implements HasUrlParameter<String> {
-
+@Route("com.vaadin.flow.ForwardingToParametersView")
+public class ForwardingToParametersView extends Div
+        implements BeforeEnterObserver {
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
-        add(new Span("setParameter"));
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.forwardTo(ForwardTargetWithParametersView.class);
     }
 }

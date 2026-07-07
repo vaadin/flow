@@ -13,19 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 
-@Route("com.vaadin.flow.BackNavFirstView")
-public class BackNavFirstView extends Div {
+@Route("com.vaadin.flow.ForwardTargetWithParametersView")
+public class ForwardTargetWithParametersView extends Div
+        implements HasUrlParameter<String> {
 
-    public BackNavFirstView() {
-        add(new NativeButton("Server side navigation", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
-        add(new RouterLink("Client side navigation", BackNavSecondView.class));
+    @Override
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
+        add(new Span("setParameter"));
     }
 }
