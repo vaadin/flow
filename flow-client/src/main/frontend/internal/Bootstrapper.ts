@@ -40,6 +40,7 @@ import {
   getConfigValueMap,
   getVaadinVersion
 } from './JsoConfiguration';
+import { getScheduler } from './TrackingScheduler';
 import { getAbsoluteUrl } from './WidgetUtil';
 
 // com.vaadin.flow.shared.ApplicationConstants
@@ -194,6 +195,58 @@ export function deferStartApplication(callback: () => void): void {
  */
 export function registerCallback(widgetsetName: string, callback: (applicationId: string) => void): void {
   (window as unknown as FlowWidgetsetRegistrar).Vaadin.Flow.registerWidgetset(widgetsetName, callback);
+}
+
+// The client widgetset/module name (ClientEngine.gwt.xml rename-to="client").
+const WIDGETSET_NAME = 'client';
+
+// Guards against re-initializing when the bootstrap module is evaluated more than
+// once. Mirrors Bootstrapper.moduleLoaded.
+let moduleLoaded = false;
+
+/**
+ * Whether the vaadinBootstrap JavaScript has run, i.e. window.Vaadin.Flow exists.
+ * Mirrors Bootstrapper.vaadinBootstrapLoaded.
+ */
+function vaadinBootstrapLoaded(): boolean {
+  return (window as unknown as { Vaadin?: { Flow?: unknown } }).Vaadin?.Flow != null;
+}
+
+/**
+ * Starts the application with the given id. On the next deferred tick it starts
+ * immediately, or defers until the WebComponents polyfill signals it is ready.
+ * Mirrors Bootstrapper.startApplication.
+ */
+export function startApplication(applicationId: string): void {
+  getScheduler().scheduleDeferred(() => {
+    if (startApplicationImmediately()) {
+      doStartApplication(applicationId);
+    } else {
+      deferStartApplication(() => doStartApplication(applicationId));
+    }
+  });
+}
+
+/**
+ * The client bootstrap entry point: verifies the bootstrap JavaScript is present
+ * and registers the widgetset start callback so the server bootstrap can start
+ * applications once the widgetset is loaded. Runs at most once. Mirrors the GWT
+ * Bootstrapper onModuleLoad / initModule entry.
+ */
+export function onModuleLoad(): void {
+  // Don't run twice if the module is evaluated several times, and don't continue
+  // if vaadinBootstrap.js was not executed.
+  if (moduleLoaded || !vaadinBootstrapLoaded()) {
+    console.warn('vaadinBootstrap.js was not loaded, skipping vaadin application configuration.');
+    return;
+  }
+  moduleLoaded = true;
+
+  // GWT initModule also calls Profiler.initialize() here. That is intentionally
+  // omitted: the __gwtStatsEvent profiling logger is installed by the server
+  // bootstrap JavaScript (BootstrapHandler.js), and the TypeScript profiler reads
+  // performance timing directly, so it needs no relative-time supplier setup.
+  registerCallback(WIDGETSET_NAME, startApplication);
 }
 
 /**

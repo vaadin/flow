@@ -16,31 +16,24 @@
 
 const fs = require('fs');
 
-const fromDir = 'target/classes/META-INF/resources/VAADIN/static/client/';
-const fromFileRegex = /^client-.*\.cache\.js$/u;
-
 const sourceDir = 'src/main/frontend/';
 const targetDir = 'target/classes/META-INF/frontend/';
 const toFile = 'FlowClient.js';
 
-const fromFileName = fs.readdirSync(fromDir).find((filename) => fromFileRegex.exec(filename));
-
-// Read from target
-let clientSource = fs.readFileSync(fromDir + fromFileName, 'utf8');
-
-// Wrap with ES module export.
-//
-// Register the TypeScript implementations the GWT engine calls into at the start
-// of init(), just before the engine runs. Doing it here (rather than in Flow.ts)
-// covers every bootstrap path that starts the engine - the client-side router,
-// web component embedding, server bootstrapping - not just Flow.ts. It runs per
-// init() so it survives any window.Vaadin reset during bootstrapping.
-clientSource = `import { registerInternals } from './internal/registerInternals';
+// FlowClient.init() is the client entry point that Flow.ts imports and calls. It
+// registers the TypeScript implementations on window.Vaadin.Flow.internal, then
+// runs the TypeScript bootstrap (onModuleLoad): it registers the widgetset start
+// callback so the server bootstrap can start the application, which assembles and
+// starts the TypeScript engine (ApplicationConnection). This replaces the former
+// GWT engine bundle that used to be inlined here.
+const clientSource = `import { registerInternals } from './internal/registerInternals';
+import { onModuleLoad } from './internal/Bootstrapper';
 
 export function init() {
-registerInternals();
-${clientSource}
-};`;
+  registerInternals();
+  onModuleLoad();
+}
+`;
 
 // Write to source
 fs.writeFileSync(sourceDir + toFile, clientSource, 'utf8');
