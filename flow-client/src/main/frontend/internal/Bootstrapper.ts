@@ -200,16 +200,19 @@ export function registerCallback(widgetsetName: string, callback: (applicationId
 // The client widgetset/module name (ClientEngine.gwt.xml rename-to="client").
 const WIDGETSET_NAME = 'client';
 
-// Guards against re-initializing when the bootstrap module is evaluated more than
-// once. Mirrors Bootstrapper.moduleLoaded.
-let moduleLoaded = false;
-
 /**
- * Whether the vaadinBootstrap JavaScript has run, i.e. window.Vaadin.Flow exists.
- * Mirrors Bootstrapper.vaadinBootstrapLoaded.
+ * The bootstrap state, kept on window.Vaadin.Flow. The already-bootstrapped guard
+ * lives here rather than in a module variable so it follows the bootstrap
+ * context: the GWT client kept the equivalent Bootstrapper.moduleLoaded guard in
+ * its engine, which was recreated whenever the engine re-ran, so the flag must
+ * likewise reset when window.Vaadin.Flow is replaced (e.g. between tests).
  */
-function vaadinBootstrapLoaded(): boolean {
-  return (window as unknown as { Vaadin?: { Flow?: unknown } }).Vaadin?.Flow != null;
+interface FlowBootstrapState {
+  clientBootstrapped?: boolean;
+}
+
+function flowBootstrapState(): FlowBootstrapState | undefined {
+  return (window as unknown as { Vaadin?: { Flow?: FlowBootstrapState } }).Vaadin?.Flow;
 }
 
 /**
@@ -234,13 +237,18 @@ export function startApplication(applicationId: string): void {
  * Bootstrapper onModuleLoad / initModule entry.
  */
 export function onModuleLoad(): void {
-  // Don't run twice if the module is evaluated several times, and don't continue
-  // if vaadinBootstrap.js was not executed.
-  if (moduleLoaded || !vaadinBootstrapLoaded()) {
+  const flow = flowBootstrapState();
+  // Don't continue if vaadinBootstrap.js was not executed (window.Vaadin.Flow
+  // absent).
+  if (flow == null) {
     console.warn('vaadinBootstrap.js was not loaded, skipping vaadin application configuration.');
     return;
   }
-  moduleLoaded = true;
+  // Don't run twice for the same bootstrap context.
+  if (flow.clientBootstrapped === true) {
+    return;
+  }
+  flow.clientBootstrapped = true;
 
   // GWT initModule also calls Profiler.initialize() here. That is intentionally
   // omitted: the __gwtStatsEvent profiling logger is installed by the server
