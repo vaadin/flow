@@ -22,8 +22,8 @@
  * Adds the given query parameters to a URI, before any fragment. Mirrors
  * SharedUtil.addGetParameters.
  */
-export function addGetParameters(uri: string, extraParams: string): string {
-  if (extraParams.length === 0) {
+export function addGetParameters(uri: string, extraParams: string | null): string {
+  if (extraParams === null || extraParams.length === 0) {
     return uri;
   }
   // RFC 3986: the query starts at the first "?" and ends at "#" or the URI end.
