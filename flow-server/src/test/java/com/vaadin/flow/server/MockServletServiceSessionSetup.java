@@ -57,7 +57,6 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
@@ -355,17 +354,6 @@ public class MockServletServiceSessionSetup {
                 .thenReturn(routePathProvider);
         Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
-
-        try {
-            Mockito.when(resourceProvider
-                    .getClientResourceAsStream("META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties"))
-                    .thenAnswer(invocation -> new ByteArrayInputStream(
-                            "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
