@@ -106,4 +106,24 @@ public class IFrameTest extends ComponentTest {
         new TestIFrame(handler);
         Assert.assertTrue(handler.isInline());
     }
+
+    @Test
+    public void setSrc_unsafeScheme_throws() {
+        IFrame iframe = new IFrame();
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> iframe.setSrc("javascript:alert(1)"));
+    }
+
+    @Test
+    public void setUnsafeSrc_unsafeScheme_setsSrcWithoutValidation() {
+        IFrame iframe = new IFrame();
+        iframe.setUnsafeSrc("javascript:alert(1)");
+        Assert.assertEquals("javascript:alert(1)", iframe.getSrc());
+    }
+
+    @Test
+    public void constructor_unsafeSrc_throws() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> new IFrame("javascript:alert(1)"));
+    }
 }

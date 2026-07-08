@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -1842,6 +1843,7 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getUrlSafeSchemes()).thenReturn(Set.of("*"));
     }
 
     @After
