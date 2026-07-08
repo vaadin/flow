@@ -28,10 +28,12 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnchorTest extends ComponentTest {
@@ -426,6 +428,47 @@ class AnchorTest extends ComponentTest {
 
         assertTrue(anchor.isDownload(),
                 "Custom download handlers should by default add download attribute");
+    }
+
+    @Test
+    void setHref_unsafeScheme_throws() {
+        Anchor anchor = new Anchor();
+        assertThrows(IllegalArgumentException.class,
+                () -> anchor.setHref("javascript:alert(1)"));
+    }
+
+    @Test
+    void setUnsafeHref_unsafeScheme_setsHrefWithoutValidation() {
+        Anchor anchor = new Anchor();
+        anchor.setUnsafeHref("javascript:alert(1)");
+        assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    void constructor_stringHrefStringText_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click"));
+    }
+
+    @Test
+    void constructor_stringHrefSignalText_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)",
+                        new ValueSignal<>("Click")));
+    }
+
+    @Test
+    void constructor_stringHrefStringTextTarget_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click",
+                        AnchorTarget.BLANK));
+    }
+
+    @Test
+    void constructor_stringHrefComponents_unsafeScheme_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)"));
     }
 
     private void mockUI() {

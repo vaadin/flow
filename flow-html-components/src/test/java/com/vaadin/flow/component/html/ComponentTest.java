@@ -29,14 +29,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -51,10 +57,33 @@ abstract class ComponentTest {
 
     private Set<String> WHITE_LIST = new HashSet<>();
 
+    static private MockedStatic<VaadinService> vaadinServiceMockedStatic;
+
+    @BeforeAll
+    static void init() {
+        // Mock strict Flow 25.2+ safe URL scheme validation configuration
+        // for feature validation in component tests (AnchorTest, IFrameTest)
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(Set.of("http", "https", "mailto", "tel", "ftp"));
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        vaadinServiceMockedStatic = Mockito.mockStatic(VaadinService.class);
+        vaadinServiceMockedStatic.when(VaadinService::getCurrent)
+                .thenReturn(service);
+    }
+
+    @AfterAll
+    static void clean() {
+        vaadinServiceMockedStatic.close();
+    }
+
     @BeforeEach
     void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
+
         component = createComponent();
         whitelistProperty("visible");
         whitelistProperty("testId");

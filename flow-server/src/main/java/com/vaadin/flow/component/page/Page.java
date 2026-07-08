@@ -34,8 +34,10 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -482,6 +484,13 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #openUnsafe(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void open(String url) {
         open(url, "_blank");
@@ -519,8 +528,65 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #openUnsafe(String, String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void open(String url, String windowName) {
+        if (url == null) {
+            throw new IllegalArgumentException("URL must not be null");
+        }
+        if (!UrlUtil.isSafeUrl(url)) {
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "URL", url, "openUnsafe(String, String)"));
+        }
+        openInternal(url, windowName);
+    }
+
+    /**
+     * Opens the given url in a new tab without validating its scheme.
+     * <p>
+     * Unlike {@link #open(String)}, this method does not reject URLs based on
+     * the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it only
+     * for URLs that are fully under your control and known to be safe. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #open(String)
+     *
+     * @param url
+     *            the URL to open.
+     */
+    public void openUnsafe(String url) {
+        openInternal(url, "_blank");
+    }
+
+    /**
+     * Opens the given URL in a window with the given name without validating
+     * its scheme.
+     * <p>
+     * Unlike {@link #open(String, String)}, this method does not reject URLs
+     * based on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use
+     * it only for URLs that are fully under your control and known to be safe.
+     * Passing untrusted input here can expose the application to cross-site
+     * scripting (XSS) attacks.
+     *
+     * @see #open(String, String)
+     *
+     * @param url
+     *            the URL to open.
+     * @param windowName
+     *            the name of the window.
+     */
+    public void openUnsafe(String url, String windowName) {
+        openInternal(url, windowName);
+    }
+
+    private void openInternal(String url, String windowName) {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
@@ -536,6 +602,13 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
+     *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
+     *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -547,6 +620,14 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
+     *             {@code openUnsafe(uri.toString(), "_self")} to bypass scheme
+     *             validation, and see the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
