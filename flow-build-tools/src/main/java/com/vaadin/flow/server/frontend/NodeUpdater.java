@@ -106,6 +106,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      *
      * @param options
      *            the task options
+     * @since 25.1.2
      */
     protected NodeUpdater(Options options) {
         this.finder = options.getClassFinder();
@@ -609,6 +610,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            the package json content
      * @throws IOException
      *             when file IO fails
+     * @since 24.7
      */
     protected void generateVersionsJson(ObjectNode packageJson)
             throws IOException {

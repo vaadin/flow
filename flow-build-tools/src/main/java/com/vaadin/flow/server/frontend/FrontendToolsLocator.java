@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.Pair;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.2
+ * @since 2.0
  */
 public class FrontendToolsLocator implements Serializable {
     private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";

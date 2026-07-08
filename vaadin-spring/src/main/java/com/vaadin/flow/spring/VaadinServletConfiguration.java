@@ -58,6 +58,7 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 @Configuration
 @Conditional(RootMappedCondition.class)
@@ -99,6 +100,9 @@ public class VaadinServletConfiguration {
         }
     }
 
+    /**
+     * @since 24.0
+     */
     public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
@@ -181,6 +185,7 @@ public class VaadinServletConfiguration {
      *            the resource handler mapping, if available
      * @return an url handler mapping instance which forwards requests to vaadin
      *         servlet
+     * @since 24.8.1
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,

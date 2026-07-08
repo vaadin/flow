@@ -53,7 +53,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 24.3
  */
 public class TaskGenerateReactFiles
         extends AbstractFileGeneratorFallibleCommand {
@@ -218,6 +218,7 @@ public class TaskGenerateReactFiles
      *            the task options
      * @param layoutsClasses
      *            {@link Layout} annotated classes.
+     * @since 24.5
      */
     public static void writeLayouts(Options options,
             Collection<Class<?>> layoutsClasses) {

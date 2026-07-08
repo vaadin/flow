@@ -28,6 +28,7 @@ import com.vaadin.flow.spring.scopes.VaadinUIScope;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 @Configuration
 public class VaadinScopesConfig {
@@ -56,6 +57,7 @@ public class VaadinScopesConfig {
      * Creates a Vaadin route scope.
      *
      * @return the Vaadin route scope
+     * @since 18.0
      */
     @Bean
     public static BeanFactoryPostProcessor vaadinRouteScope() {
