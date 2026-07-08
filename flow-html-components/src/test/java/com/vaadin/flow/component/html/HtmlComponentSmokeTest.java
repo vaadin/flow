@@ -254,6 +254,11 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().equals("setUnsafeSrc")) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == HtmlObject.class
                 && method.getName().startsWith("setData")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
@@ -263,6 +268,11 @@ public class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == Anchor.class
                 && method.getName().startsWith("setHref")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setUnsafeHref")) {
             return true;
         }
 
