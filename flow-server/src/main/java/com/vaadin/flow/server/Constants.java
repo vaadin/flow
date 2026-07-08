@@ -532,6 +532,13 @@ public final class Constants implements Serializable {
     // Non-default port currently not supported (#7970)
     public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
 
+    /**
+     * Special {@link InitParameters#URL_SAFE_SCHEMES} entry that marks every
+     * scheme as safe, disabling scheme validation. Mixing this entry with other
+     * schemes still disables validation.
+     */
+    public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
+
     private Constants() {
         // prevent instantiation constants class only
     }
