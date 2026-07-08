@@ -1,0 +1,1736 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+// TypeScript port of com.vaadin.client.flow.binding.SimpleElementBindingStrategy,
+// the binding strategy for a simple (non-template) Element. It is the largest
+// client class, so it is built up across several build-alongside slices, each a
+// labelled section below: event-data resolution, closest-state-node lookups,
+// styling binding, attribute binding, creation & identity, and visibility
+// binding. The methods are currently standalone functions; they get assembled
+// into the BindingStrategy<Element> class once bind() and its remaining
+// DOM-structure/event/shadow machinery (which need the BindingContext type) are
+// ported. The Polymer model-property bridge stays in
+// internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
+// at cutover.
+
+import { assert } from '../assert';
+import { wrap } from '../dom/DomApi';
+import { getElementById, getElementByName, hasTag } from '../ElementUtil';
+import { isLitElement, whenRendered } from '../LitUtils';
+import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
+import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
+import { createModelTree } from '../PolymerModelTree';
+import {
+  addReadyListener,
+  fireReadyEvent,
+  getCustomElement,
+  getDomRoot,
+  isInShadowRoot,
+  isReady
+} from '../PolymerUtils';
+import { addReadyCallback, isInitialized } from '../ReactUtils';
+import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
+import { bindPolymerModelProperties } from '../SimpleElementBindingStrategy';
+import { StateNode } from '../StateNode';
+import {
+  deleteJsProperty,
+  equalsInJS,
+  getJsProperty,
+  getKeys,
+  hasOwnJsProperty,
+  isAbsoluteUrl,
+  isUndefined,
+  setJsProperty,
+  updateAttribute as setElementAttribute
+} from '../WidgetUtil';
+import type { BinderContext, BindingStrategy } from './BindingStrategy';
+import { Debouncer } from './Debouncer';
+import { bindServerEventHandlerNames, type ServerEventHandlerNode } from './ServerEventHandlerBinder';
+
+// com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
+const HIDDEN_ATTRIBUTE = 'hidden';
+
+// com.vaadin.client.flow.binding.SimpleElementBindingStrategy.ELEMENT_ATTACH_ERROR_PREFIX
+const ELEMENT_ATTACH_ERROR_PREFIX = 'Element addressed by the ';
+
+// com.vaadin.flow.shared.JsonConstants tokens used by handleDomEvent.
+const EVENT_DATA_PHASE = 'for';
+const SYNCHRONIZE_PROPERTY_TOKEN = '}';
+const MAP_STATE_NODE_EVENT_DATA = ']';
+
+// The callback sending an event to the server for a given debounce phase (null
+// when sent outside any debounce). Compatible with Debouncer's send command.
+type SendCommand = (phase: string | null) => void;
+
+// A synchronization command run before an event is sent.
+type Command = () => void;
+
+// An event expression parsed via `new Function`, evaluated against the DOM event
+// and target element; mirrors the EventExpression @JsFunction.
+type EventExpression = (event: Event, element: Element) => unknown;
+
+let expressionCache: Map<string, EventExpression> | null = null;
+
+/**
+ * Parses an event-data expression into a function `(event, element) => value`,
+ * caching the result per expression string; mirrors getOrCreateExpression.
+ */
+export function getOrCreateExpression(expressionString: string): EventExpression {
+  if (expressionCache === null) {
+    expressionCache = new Map();
+  }
+  let expression = expressionCache.get(expressionString);
+
+  if (expression === undefined) {
+    // Mirrors NativeFunction.create; the server controls these expressions.
+    expression = new Function('event', 'element', `return (${expressionString})`) as EventExpression;
+    expressionCache.set(expressionString, expression);
+  }
+
+  return expression;
+}
+
+/**
+ * Resolves the debounce settings for one event filter. Each entry in
+ * debounceList is `[timeout, phase1, phase2, ...]`; a zero timeout is eager.
+ * Returns true if at least one debounce is eager (should be sent now). Mirrors
+ * resolveDebounces.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java resolveDebounces signature
+export function resolveDebounces(
+  element: Node,
+  debouncerId: string,
+  debounceList: unknown[][],
+  sendCommand: SendCommand,
+  commands: Map<string, Command>
+): boolean {
+  let atLeastOneEager = false;
+
+  for (const debounceSettings of debounceList) {
+    const timeout = debounceSettings[0] as number;
+
+    if (timeout === 0) {
+      atLeastOneEager = true;
+      continue;
+    }
+
+    const phases = new Set<string>();
+    for (let j = 1; j < debounceSettings.length; j++) {
+      phases.add(debounceSettings[j] as string);
+    }
+
+    const eager = Debouncer.getOrCreate(element, debouncerId, timeout).trigger(phases, sendCommand, commands);
+
+    atLeastOneEager = atLeastOneEager || eager;
+  }
+
+  return atLeastOneEager;
+}
+
+/**
+ * Resolves the event filters for an event type. Returns true if there are no
+ * filters or at least one filter matched (so the event should be sent). Mirrors
+ * resolveFilters.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java resolveFilters signature
+export function resolveFilters(
+  element: Node,
+  eventType: string,
+  expressionSettings: Record<string, unknown>,
+  eventData: Record<string, unknown> | null,
+  sendCommand: SendCommand,
+  commands: Map<string, Command>
+): boolean {
+  let noFilters = true;
+  let atLeastOneFilterMatched = false;
+
+  for (const expression of Object.keys(expressionSettings)) {
+    const settings = expressionSettings[expression];
+
+    const hasDebounce = Array.isArray(settings);
+
+    if (!hasDebounce && !(settings as boolean)) {
+      continue;
+    }
+    noFilters = false;
+
+    let filterMatched = eventData !== null && Boolean(eventData[expression]);
+    if (hasDebounce && filterMatched) {
+      const debouncerId = `on-${eventType}:${expression}`;
+
+      // Count as a match only if at least one debounce is eager
+      filterMatched = resolveDebounces(element, debouncerId, settings as unknown[][], sendCommand, commands);
+    }
+
+    atLeastOneFilterMatched = atLeastOneFilterMatched || filterMatched;
+  }
+
+  return noFilters || atLeastOneFilterMatched;
+}
+
+// --- Slice 2: closest-state-node lookups -----------------------------------
+// Used by handleDomEvent to map an event target / a DOM node returned by a JS
+// expression to the nearest bound state node id (the MAP_STATE_NODE_EVENT_DATA
+// event data). DOM parents are walked with native parentNode/isSameNode; the
+// shadow-tree-aware DomApi wrapping (not ported yet) replaces the raw traversal
+// at cutover.
+
+/** The slice of StateNode that the closest-node lookups read. */
+interface ClosestLookupNode {
+  getId(): number;
+  getDomNode(): Node | null;
+  getList(featureId: number): { forEach(callback: (child: unknown) => void): void };
+}
+
+/** The slice of StateTree that getClosestStateNodeIdToDomNode reads. */
+interface ClosestLookupTree {
+  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
+}
+
+/**
+ * Finds the id of the state node closest to the event target: a breadth-first
+ * search of the state-node tree for a direct DOM match, then a bottom-up DOM
+ * walk from the target's parent. Returns -1 if none is found. Mirrors
+ * getClosestStateNodeIdToEventTarget.
+ */
+export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, target: EventTarget | null): number {
+  if (target === null) {
+    return -1;
+  }
+  try {
+    const stack: ClosestLookupNode[] = [topNode];
+
+    // collect children and test eagerly for direct match; the stack grows as
+    // children are pushed during iteration (breadth-first)
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- index loop: stack is mutated during iteration
+    for (let i = 0; i < stack.length; i++) {
+      const stateNode = stack[i];
+      if ((target as unknown as Node).isSameNode(stateNode.getDomNode())) {
+        return stateNode.getId();
+      }
+      // NOTE: for now not looking at virtual children on purpose.
+      stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach((child) => stack.push(child as ClosestLookupNode));
+    }
+    // no direct match: bottom-up search from the target's parent
+    return getStateNodeForElement(stack, (target as unknown as Node).parentNode);
+  } catch (e) {
+    // not going to let event handling fail; just report nothing found
+    console.debug(
+      `An error occurred when Flow tried to find a state node matching the element ${String(
+        target
+      )}, which was the event.target. Error: ${(e as Error).message}`
+    );
+  }
+  return -1;
+}
+
+/**
+ * Walks up the DOM from targetNode and returns the id of the first state node
+ * in searchStack whose DOM node matches, or -1. Mirrors getStateNodeForElement.
+ */
+export function getStateNodeForElement(searchStack: ClosestLookupNode[], targetNode: Node | null): number {
+  let current = targetNode;
+  while (current !== null) {
+    for (let i = searchStack.length - 1; i > -1; i--) {
+      const stateNode = searchStack[i];
+      if (current.isSameNode(stateNode.getDomNode())) {
+        return stateNode.getId();
+      }
+    }
+    current = current.parentNode;
+  }
+  return -1;
+}
+
+/**
+ * Walks up the DOM from a node reference (e.g. returned by an event data
+ * expression) and returns the id of the first state node the tree maps it to,
+ * or -1. Mirrors getClosestStateNodeIdToDomNode.
+ */
+export function getClosestStateNodeIdToDomNode(
+  stateTree: ClosestLookupTree,
+  domNodeReference: unknown,
+  eventDataExpression: string
+): number {
+  if (domNodeReference === null || domNodeReference === undefined) {
+    return -1;
+  }
+  try {
+    let targetNode = domNodeReference as Node | null;
+    while (targetNode !== null) {
+      const stateNodeForDomNode = stateTree.getStateNodeForDomNode(targetNode);
+      if (stateNodeForDomNode !== null) {
+        return stateNodeForDomNode.getId();
+      }
+      targetNode = targetNode.parentNode;
+    }
+  } catch (e) {
+    // not going to let event handling fail; just report nothing found
+    console.debug(
+      `An error occurred when Flow tried to find a state node matching the element ${String(
+        domNodeReference
+      )}, returned by an event data expression ${eventDataExpression}. Error: ${(e as Error).message}`
+    );
+  }
+  return -1;
+}
+
+// --- Slice 3: styling binding ----------------------------------------------
+// The class-list and style-property binding parts of bind(). Both go through
+// the ported DomApi/native CSS; the property and attribute binders
+// (updateProperty/updateAttribute) wait on PolymerUtils.createModelTree and
+// WidgetUtil.updateAttribute, which are not ported yet.
+
+/** The slice of MapProperty that updateStyleProperty reads. */
+interface StyleMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+}
+
+/** The splice-event slice that the class-list listener reads. */
+interface ClassListSpliceEvent {
+  getRemove(): unknown[];
+  getAdd(): unknown[];
+}
+
+/** The slice of NodeList that holds the class names. */
+interface ClassNodeList {
+  length(): number;
+  get(index: number): unknown;
+  addSpliceListener(listener: (event: ClassListSpliceEvent) => void): EventRemover;
+}
+
+/** The slice of StateNode that bindClassList reads. */
+interface ClassListNode {
+  getList(featureId: number): ClassNodeList;
+}
+
+/**
+ * Updates a single inline style property of the element from a map property,
+ * preserving an `!important` priority, or removes it when the property has no
+ * value. Mirrors updateStyleProperty.
+ */
+export function updateStyleProperty(mapProperty: StyleMapProperty, element: HTMLElement): void {
+  const name = mapProperty.getName();
+  const styleElement = element.style;
+  if (mapProperty.hasValue()) {
+    const value = mapProperty.getValue() as string;
+    let styleIsSet = false;
+    if (value.includes('!important')) {
+      const temp = document.createElement(element.tagName);
+      const tmpStyle = temp.style;
+      tmpStyle.cssText = `${name}: ${value};`;
+      const priority = 'important';
+      if (priority === temp.style.getPropertyPriority(name)) {
+        styleElement.setProperty(name, temp.style.getPropertyValue(name), priority);
+        styleIsSet = true;
+      }
+    }
+    if (!styleIsSet) {
+      styleElement.setProperty(name, value);
+    }
+  } else {
+    styleElement.removeProperty(name);
+  }
+}
+
+/**
+ * Binds the CLASS_LIST feature of the node to the element's class list,
+ * applying the current classes and keeping them in sync as the list is spliced.
+ * Mirrors bindClassList.
+ */
+export function bindClassList(element: Element, node: ClassListNode): EventRemover {
+  const classNodeList = node.getList(NodeFeatures.CLASS_LIST);
+
+  for (let i = 0; i < classNodeList.length(); i++) {
+    wrap(element).classList.add(classNodeList.get(i) as string);
+  }
+
+  return classNodeList.addSpliceListener((e) => {
+    const classList = wrap(element).classList;
+
+    e.getRemove().forEach((token) => classList.remove(token as string));
+    e.getAdd().forEach((token) => classList.add(token as string));
+  });
+}
+
+// --- Slice 4: attribute binding --------------------------------------------
+// The element-attribute part of bind(). updateAttributeValue resolves a "uri"
+// model object against the application configuration (web-component mode); the
+// underlying attribute set/remove goes through WidgetUtil/DomApi.
+
+/** The slice of ApplicationConfiguration that attribute binding reads. */
+interface AttributeConfiguration {
+  isWebComponentMode(): boolean;
+  getServiceUrl(): string;
+}
+
+/** The Registry → ApplicationConfiguration chain reached from a node's tree. */
+interface AttributeMapProperty {
+  getName(): string;
+  getValue(): unknown;
+  getMap(): {
+    getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
+  };
+}
+
+/**
+ * Sets an element attribute from a map-property value. A plain string (or null)
+ * is applied as-is; a "uri" model object is resolved against the application
+ * configuration (prefixing the service URL in web-component mode for relative
+ * URIs); anything else is stringified. Mirrors updateAttributeValue.
+ */
+export function updateAttributeValue(
+  configuration: AttributeConfiguration,
+  element: Element,
+  attribute: string,
+  value: unknown
+): void {
+  if (value === null || value === undefined || typeof value === 'string') {
+    setElementAttribute(element, attribute, (value ?? null) as string | null);
+  } else if (typeof value === 'object' && !Array.isArray(value)) {
+    assert(NodeProperties.URI_ATTRIBUTE in value, 'A URI attribute value must contain the uri property');
+    const uri = (value as Record<string, unknown>)[NodeProperties.URI_ATTRIBUTE] as string;
+    if (configuration.isWebComponentMode() && !isAbsoluteUrl(uri)) {
+      let baseUri = configuration.getServiceUrl();
+      baseUri = baseUri.endsWith('/') ? baseUri : `${baseUri}/`;
+      setElementAttribute(element, attribute, baseUri + uri);
+    } else {
+      setElementAttribute(element, attribute, uri);
+    }
+  } else {
+    setElementAttribute(element, attribute, String(value));
+  }
+}
+
+/**
+ * Updates the named element attribute from a map property, resolving the
+ * application configuration from the property's node. Mirrors updateAttribute.
+ */
+export function updateAttribute(mapProperty: AttributeMapProperty, element: Element): void {
+  updateAttributeValue(
+    mapProperty.getMap().getNode().getTree().getRegistry().getApplicationConfiguration(),
+    element,
+    mapProperty.getName(),
+    mapProperty.getValue()
+  );
+}
+
+// --- Slice 5: element creation & identity ----------------------------------
+// The standalone, BindingContext-free parts of the strategy: creating the DOM
+// element for a state node, the applicability/tag/visibility checks and the
+// rebind check. They are assembled into the BindingStrategy<Element> class once
+// bind() (and its DOM-structure/event machinery) is ported.
+
+/** The slice of StateNode that creation & identity read. */
+interface CreationNode {
+  getMap(featureId: number): { getProperty(name: string): { getValue(): unknown } };
+  hasFeature(featureId: number): boolean;
+  getParent(): CreationNode | null;
+  getDomNode(): Node | null;
+  getTree(): { getRootNode(): CreationNode; isVisible(node: CreationNode): boolean } | null;
+}
+
+function readElementData(node: CreationNode, property: string): unknown {
+  return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(property).getValue();
+}
+
+/** The element tag for the state node; mirrors PolymerUtils.getTag / getTag. */
+export function getTag(node: CreationNode): string | null {
+  return (readElementData(node, NodeProperties.TAG) as string | null) ?? null;
+}
+
+/** The element namespace for the state node, if any; mirrors getNamespace. */
+export function getNamespace(node: CreationNode): string | null {
+  return (readElementData(node, NodeProperties.NAMESPACE) as string | null) ?? null;
+}
+
+/**
+ * Creates the DOM element for the state node, using the node's namespace, then
+ * the parent element's namespace, then no namespace. Mirrors create.
+ */
+export function create(node: CreationNode): Element {
+  const tag = getTag(node);
+  assert(tag !== null, 'New child must have a tag');
+  const namespace = getNamespace(node);
+  if (namespace !== null) {
+    return document.createElementNS(namespace, tag);
+  }
+  const parent = node.getParent();
+  if (parent !== null) {
+    const namespaceURI = (parent.getDomNode() as Element | null)?.namespaceURI ?? null;
+    if (namespaceURI !== null) {
+      return document.createElementNS(namespaceURI, tag);
+    }
+  }
+  return document.createElement(tag);
+}
+
+/** Whether this strategy applies to the state node; mirrors isApplicable. */
+export function isApplicable(node: CreationNode): boolean {
+  if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
+    return true;
+  }
+  const tree = node.getTree();
+  return tree !== null && node === tree.getRootNode();
+}
+
+/** Whether the element's tag matches the node's required tag; mirrors hasSameTag. */
+export function hasSameTag(node: CreationNode, element: Element): boolean {
+  const nsTag = getTag(node);
+  return nsTag === null || element.tagName.toLowerCase() === nsTag.toLowerCase();
+}
+
+/**
+ * Whether the node needs a re-bind. Absence of value or "true" means no
+ * re-bind; only an explicit false means a re-bind is needed. Mirrors needsRebind.
+ */
+export function needsRebind(node: CreationNode): boolean {
+  return readElementData(node, NodeProperties.VISIBILITY_BOUND_PROPERTY) === false;
+}
+
+/** Whether the node is visible; mirrors isVisible. */
+export function isVisible(node: CreationNode): boolean {
+  const tree = node.getTree();
+  return tree !== null && tree.isVisible(node);
+}
+
+// --- Slice 6: visibility binding -------------------------------------------
+// The element-visibility helpers of bind(): they capture the element's initial
+// hidden attribute and inline display once, hide an invisible element, restore
+// the captured state when it becomes visible again, and apply structural
+// attributes (the "slot") even while invisible. The bindVisibility/
+// updateVisibility wiring (which needs BindingContext, remove and doBind) lands
+// with the bind() core.
+
+/** The slice of MapProperty the visibility helpers read and write. */
+interface VisibilityProperty {
+  hasValue(): boolean;
+  getValue(): unknown;
+  setValue(value: unknown): void;
+}
+
+/** The slice of the ELEMENT_DATA NodeMap the visibility helpers use. */
+interface VisibilityNodeMap {
+  getProperty(name: string): VisibilityProperty;
+  getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
+}
+
+/** The slice of StateNode applyStructuralAttributes reads. */
+interface StructuralAttributesNode {
+  hasFeature(featureId: number): boolean;
+  getMap(featureId: number): {
+    hasPropertyValue(name: string): boolean;
+    getProperty(name: string): AttributeMapProperty;
+  };
+}
+
+/**
+ * Captures the element's initial `hidden` attribute and (in a shadow root) its
+ * inline display into the visibility data, once. Mirrors
+ * storeInitialHiddenAttribute.
+ */
+export function storeInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+  const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+  if (!initialVisibility.hasValue()) {
+    initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+  }
+
+  const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+  if (isInShadowRoot(element) && !initialDisplay.hasValue()) {
+    initialDisplay.setValue((element as HTMLElement).style.display);
+  }
+}
+
+/**
+ * Restores the element's captured initial hidden attribute and inline display.
+ * Mirrors restoreInitialHiddenAttribute.
+ */
+export function restoreInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+  storeInitialHiddenAttribute(element, visibilityData);
+  const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
+
+  const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+  if (initialVisibility.hasValue()) {
+    updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
+  }
+
+  const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+  if (initialDisplay.hasValue()) {
+    (element as HTMLElement).style.display = String(initialDisplay.getValue());
+  }
+}
+
+/**
+ * Hides the element: stores its initial state, sets `hidden`, and (in a shadow
+ * root) sets display:none. Mirrors setElementInvisible.
+ */
+export function setElementInvisible(element: Element, visibilityData: VisibilityNodeMap): void {
+  storeInitialHiddenAttribute(element, visibilityData);
+  const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
+  updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, true);
+  if (isInShadowRoot(element)) {
+    (element as HTMLElement).style.display = 'none';
+  }
+}
+
+/**
+ * Applies structural attributes (the "slot") to the element even while it is
+ * invisible, preserving CSS selectors without exposing backend data. Mirrors
+ * applyStructuralAttributes.
+ */
+export function applyStructuralAttributes(stateNode: StructuralAttributesNode, element: Element): void {
+  if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
+    const attributeMap = stateNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+    if (attributeMap.hasPropertyValue(NodeProperties.SLOT_ATTRIBUTE)) {
+      updateAttribute(attributeMap.getProperty(NodeProperties.SLOT_ATTRIBUTE), element);
+    }
+  }
+}
+
+// --- Slice 7: DOM event listeners ------------------------------------------
+// Binds the ELEMENT_LISTENERS feature to real DOM event listeners and dispatches
+// fired events to the server. handleDomEvent ties together the slice-1 filter/
+// debounce resolution, the slice-2 closest-node lookups and the event-expression
+// cache. This is the first slice that needs the BindingContext.
+
+/** The slice of MapProperty the event/visibility clusters read. */
+interface EventMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+  setValue(value: unknown): void;
+  addChangeListener(listener: () => void): EventRemover;
+  getSyncToServerCommand(newValue: unknown): () => void;
+  setPreviousDomValue(value: unknown): void;
+}
+
+/** The slice of NodeMap the event cluster reads. */
+interface EventNodeMap {
+  getProperty(name: string): EventMapProperty;
+  forEachProperty(callback: (property: EventMapProperty, name: string) => void): void;
+  addPropertyAddListener(listener: (event: { getProperty(): EventMapProperty }) => void): EventRemover;
+}
+
+/** The mapping of server node ids to existing elements (ExistingElementMap). */
+interface ExistingElementAccess {
+  getElement(id: number): Node | null;
+  remove(id: number): void;
+}
+
+/** The slice of InitialPropertiesHandler the attach machinery uses. */
+interface AttachInitialPropertiesHandler {
+  nodeRegistered(node: BindingStateNode): void;
+  flushPropertyUpdates(): void;
+}
+
+/** The slice of StateTree the event/children/attach clusters read. */
+interface EventTree {
+  getRegistry(): {
+    getConstantPool(): { has(key: string): boolean; get<T>(key: string): T };
+    getExistingElementMap(): ExistingElementAccess;
+    getInitialPropertiesHandler(): AttachInitialPropertiesHandler;
+  };
+  sendEventToServer(node: BindingStateNode, type: string, eventData: unknown): void;
+  sendExistingElementWithIdAttachToServer(
+    node: BindingStateNode,
+    requestedId: number,
+    assignedId: number,
+    id: string | null
+  ): void;
+  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
+}
+
+/** A list-splice event on the children list. */
+interface ChildListSpliceEvent {
+  isClear(): boolean;
+  getRemove(): unknown[];
+  getAdd(): unknown[];
+  getIndex(): number;
+}
+
+/** The slice of NodeList the children binding reads. */
+interface ChildNodeList {
+  length(): number;
+  get(index: number): unknown;
+  hasBeenCleared(): boolean;
+  forEach(callback: (child: unknown) => void): void;
+  addSpliceListener(listener: (event: ChildListSpliceEvent) => void): EventRemover;
+}
+
+/** The slice of StateNode the binding context exposes. */
+interface BindingStateNode {
+  getId(): number;
+  getDomNode(): Node | null;
+  setDomNode(node: Node | null): void;
+  hasFeature(featureId: number): boolean;
+  getMap(featureId: number): EventNodeMap;
+  getList(featureId: number): ChildNodeList;
+  getTree(): EventTree;
+}
+
+/**
+ * Holds the data the binding operations pass around: the state node, its DOM
+ * node, the binder context for child nodes, and the per-event-type listener
+ * bookkeeping. Mirrors the BindingContext inner class.
+ */
+export class BindingContext {
+  readonly node: BindingStateNode;
+
+  readonly htmlNode: Node;
+
+  readonly binderContext: BinderContext;
+
+  readonly listenerBindings = new Map<string, Computation>();
+
+  readonly listenerRemovers = new Map<string, EventRemover>();
+
+  constructor(node: BindingStateNode, htmlNode: Node, binderContext: BinderContext) {
+    this.node = node;
+    this.htmlNode = htmlNode;
+    this.binderContext = binderContext;
+  }
+}
+
+function getDomEventListenerMap(node: BindingStateNode): EventNodeMap {
+  return node.getMap(NodeFeatures.ELEMENT_LISTENERS);
+}
+
+/**
+ * Binds the ELEMENT_LISTENERS feature to DOM event listeners, adding listeners
+ * for the current handlers and tracking later additions. Mirrors
+ * bindDomEventListeners.
+ */
+export function bindDomEventListeners(context: BindingContext): EventRemover {
+  const elementListeners = getDomEventListenerMap(context.node);
+  elementListeners.forEachProperty((property) => {
+    // Run eagerly to add initial listeners before the element is attached.
+    bindEventHandlerProperty(property, context).recompute();
+  });
+
+  return elementListeners.addPropertyAddListener((event) => bindEventHandlerProperty(event.getProperty(), context));
+}
+
+function bindEventHandlerProperty(eventHandlerProperty: EventMapProperty, context: BindingContext): Computation {
+  const name = eventHandlerProperty.getName();
+
+  const computation = Reactive.runWhenDependenciesChange(() => {
+    const hasValue = eventHandlerProperty.hasValue();
+    const hasListener = context.listenerRemovers.has(name);
+
+    if (hasValue !== hasListener) {
+      if (hasValue) {
+        addEventHandler(name, context);
+      } else {
+        removeEventHandler(name, context);
+      }
+    }
+  });
+
+  assert(!context.listenerBindings.has(name), `There is already an event-handler binding for ${name}`);
+  context.listenerBindings.set(name, computation);
+
+  return computation;
+}
+
+function removeEventHandler(eventType: string, context: BindingContext): void {
+  const remover = context.listenerRemovers.get(eventType);
+  context.listenerRemovers.delete(eventType);
+  remover?.remove();
+}
+
+function addEventHandler(eventType: string, context: BindingContext): void {
+  assert(!context.listenerRemovers.has(eventType), `There is already a DOM event listener for ${eventType}`);
+  const handler = (event: Event): void => handleDomEvent(event, context);
+  context.htmlNode.addEventListener(eventType, handler, false);
+  context.listenerRemovers.set(eventType, {
+    remove: () => context.htmlNode.removeEventListener(eventType, handler, false)
+  });
+}
+
+function getSyncPropertyCommand(propertyName: string, context: BindingContext): () => void {
+  return context.node
+    .getMap(NodeFeatures.ELEMENT_PROPERTIES)
+    .getProperty(propertyName)
+    .getSyncToServerCommand(getJsProperty(context.htmlNode as unknown as Record<string, unknown>, propertyName));
+}
+
+function sendEventToServer(
+  node: BindingStateNode,
+  type: string,
+  eventData: Record<string, unknown> | null,
+  debouncePhase: string | null
+): void {
+  let data = eventData;
+  if (debouncePhase === null) {
+    if (data !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removes the debounce-phase marker before sending
+      delete data[EVENT_DATA_PHASE];
+    }
+  } else {
+    data ??= {};
+    data[EVENT_DATA_PHASE] = debouncePhase;
+  }
+
+  node.getTree().sendEventToServer(node, type, data);
+}
+
+/**
+ * Handles a fired DOM event: collects the server-requested event data
+ * (expressions, synchronized properties, mapped state nodes), resolves the
+ * event filters/debounces, and sends the event to the server. Mirrors
+ * handleDomEvent.
+ */
+export function handleDomEvent(event: Event, context: BindingContext): void {
+  const element = context.htmlNode as Element;
+  const node = context.node;
+  const type = event.type;
+
+  const listenerMap = getDomEventListenerMap(node);
+  const constantPool = node.getTree().getRegistry().getConstantPool();
+  const expressionConstantKey = listenerMap.getProperty(type).getValue() as string;
+
+  const expressionSettings = constantPool.get<Record<string, unknown>>(expressionConstantKey);
+  const expressions = Object.keys(expressionSettings);
+
+  const eventData: Record<string, unknown> | null = expressions.length === 0 ? null : {};
+  const synchronizeProperties = new Set<string>();
+
+  for (const expressionString of expressions) {
+    if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+      synchronizeProperties.add(expressionString.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
+    } else if (expressionString === MAP_STATE_NODE_EVENT_DATA) {
+      // map event.target to the closest state node
+      eventData![MAP_STATE_NODE_EVENT_DATA] = getClosestStateNodeIdToEventTarget(node, event.target);
+    } else if (expressionString.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
+      // map an element returned by JS to the closest state node
+      const jsEvaluation = expressionString.substring(MAP_STATE_NODE_EVENT_DATA.length);
+      const expressionValue = getOrCreateExpression(jsEvaluation)(event, element);
+      eventData![expressionString] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
+    } else {
+      eventData![expressionString] = getOrCreateExpression(expressionString)(event, element);
+    }
+  }
+
+  synchronizeProperties.forEach((name) => {
+    const property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(name);
+    const domValue = getJsProperty(element as unknown as Record<string, unknown>, name);
+    property.setPreviousDomValue(domValue);
+  });
+
+  const commands = new Map<string, () => void>();
+  synchronizeProperties.forEach((name) => commands.set(name, getSyncPropertyCommand(name, context)));
+
+  const sendCommand = (debouncePhase: string | null): void => sendEventToServer(node, type, eventData, debouncePhase);
+
+  const sendNow = resolveFilters(element, type, expressionSettings, eventData, sendCommand, commands);
+
+  if (sendNow) {
+    // Send if there were no filters or at least one matched.
+    let commandAlreadyExecuted = false;
+    const flushPendingChanges = synchronizeProperties.size === 0;
+
+    if (flushPendingChanges) {
+      // Flush all debounced events so they don't arrive out of order on the server.
+      commandAlreadyExecuted = Debouncer.flushAll().includes(sendCommand);
+    }
+
+    if (!commandAlreadyExecuted) {
+      commands.forEach((command) => command());
+      sendCommand(null);
+    }
+  }
+}
+
+// --- Slice 8: generic map/property binding ---------------------------------
+// The reactive binding of a NodeMap's properties to a "property user" callback
+// (which applies each property to the DOM, e.g. updateStyleProperty/
+// updateAttribute/updateProperty). createComputations tracks the per-feature
+// computation maps so they can be torn down on rebind.
+
+/** A property-add event carrying the new property. */
+interface PropertyAddEvent<P> {
+  getProperty(): P;
+}
+
+/** The slice of NodeMap that bindMap iterates and observes. */
+interface BindableNodeMap<P> {
+  forEachProperty(callback: (property: P, name: string) => void): void;
+  addPropertyAddListener(listener: (event: PropertyAddEvent<P>) => void): EventRemover;
+}
+
+/** The slice of StateNode that bindMap reads. */
+interface BindMapNode<P> {
+  getMap(featureId: number): BindableNodeMap<P>;
+}
+
+/**
+ * Creates a fresh per-feature computation map and tracks it in the collection
+ * (used to stop the computations on rebind). Mirrors createComputations.
+ */
+export function createComputations(computationsCollection: Array<Map<string, Computation>>): Map<string, Computation> {
+  const computations = new Map<string, Computation>();
+  computationsCollection.push(computations);
+  return computations;
+}
+
+/**
+ * Binds a single map property: re-runs the user whenever the property's
+ * dependencies change, tracking the computation by property name. Mirrors
+ * bindProperty.
+ */
+export function bindProperty<P extends { getName(): string }>(
+  user: (property: P) => void,
+  property: P,
+  bindings: Map<string, Computation>
+): Computation {
+  const name = property.getName();
+  const computation = Reactive.runWhenDependenciesChange(() => user(property));
+  assert(!bindings.has(name), `There's already a binding for ${name}`);
+  bindings.set(name, computation);
+  return computation;
+}
+
+/**
+ * Binds every property of the node's feature map to the user, applying current
+ * properties eagerly and observing later additions. Mirrors bindMap.
+ */
+export function bindMap<P extends { getName(): string }>(
+  featureId: number,
+  user: (property: P) => void,
+  bindings: Map<string, Computation>,
+  node: BindMapNode<P>
+): EventRemover {
+  const map = node.getMap(featureId);
+  // Run eagerly to apply initial property values.
+  map.forEachProperty((property) => bindProperty(user, property, bindings).recompute());
+
+  return map.addPropertyAddListener((event) => bindProperty(user, event.getProperty(), bindings));
+}
+
+// --- Slice 9: Polymer model handlers ---------------------------------------
+// Handle changes coming from a Polymer element's model: a property change on the
+// element (handlePropertiesChanged/handlePropertyChange, gated by the node's
+// UpdatableModelProperties "security feature") and a list-item property change
+// in a dom-repeat (handleListItemPropertyChange). InitialPropertyUpdate defers
+// the very first property update until after the initial reactive flush.
+
+/** The slice of StateNode that InitialPropertyUpdate clears itself from. */
+interface NodeDataHolder {
+  clearNodeData(object: object): void;
+}
+
+/**
+ * Holds the deferred initial property update for a node: the command is run once
+ * (via execute) and then the holder removes itself from the node's data. Mirrors
+ * the InitialPropertyUpdate inner class.
+ */
+export class InitialPropertyUpdate {
+  private command: (() => void) | null = null;
+
+  private readonly node: NodeDataHolder;
+
+  constructor(node: NodeDataHolder) {
+    this.node = node;
+  }
+
+  setCommand(command: () => void): void {
+    this.command = command;
+  }
+
+  execute(): void {
+    this.command?.();
+    this.node.clearNodeData(this);
+  }
+}
+
+/** The slice of MapProperty the model handlers read/sync. */
+interface ModelMapProperty {
+  getValue(): unknown;
+  syncToServer(value: unknown): void;
+}
+
+/** The slice of NodeMap the model handlers read. */
+interface ModelNodeMap {
+  hasPropertyValue(name: string): boolean;
+  getProperty(name: string): ModelMapProperty;
+}
+
+/** The slice of StateNode the model handlers walk. */
+interface ModelNode {
+  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
+  getMap(featureId: number): ModelNodeMap;
+}
+
+/** The slice of StateNode handleListItemPropertyChange uses. */
+interface ListItemNode {
+  hasFeature(featureId: number): boolean;
+  getMap(featureId: number): ModelNodeMap;
+}
+
+/**
+ * Syncs a dom-repeat list-item property change to the server. The tree (a
+ * singleton) is passed explicitly because this runs from a replaced prototype
+ * method without the binding closure's context. Mirrors
+ * handleListItemPropertyChange.
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleListItemPropertyChange signature
+export function handleListItemPropertyChange(
+  nodeId: number,
+  _host: unknown,
+  property: string,
+  value: unknown,
+  tree: { getNode(id: number): ListItemNode | null }
+): void {
+  const node = tree.getNode(nodeId);
+  if (node === null || !node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+    return;
+  }
+  node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(property).syncToServer(value);
+}
+
+/**
+ * Handles the set of changed property paths from a Polymer element, running the
+ * updates now or deferring them until the initial update if one is pending.
+ * Mirrors handlePropertiesChanged.
+ */
+export function handlePropertiesChanged(changedPropertyPathsToValues: object, node: ModelNode): void {
+  const keys = getKeys(changedPropertyPathsToValues);
+
+  const runnable = (): void => {
+    for (const propertyName of keys) {
+      handlePropertyChange(
+        propertyName,
+        () => getJsProperty(changedPropertyPathsToValues as Record<string, unknown>, propertyName),
+        node
+      );
+    }
+  };
+
+  const initialUpdate = node.getNodeData(InitialPropertyUpdate);
+  if (initialUpdate === null) {
+    runnable();
+  } else {
+    initialUpdate.setCommand(runnable);
+  }
+}
+
+/**
+ * Handles a single changed property path, sending the update to the server only
+ * if the property is in the node's updatable-properties "security feature" and
+ * isn't a model/list node. Mirrors handlePropertyChange.
+ */
+export function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: ModelNode): void {
+  const updatableProperties = node.getNodeData(UpdatableModelProperties);
+  if (updatableProperties === null || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
+    // not an updatable property/sub-property: do nothing
+    return;
+  }
+
+  // Walk the dot-separated path; this resolves the parent node of the property.
+  const subProperties = fullPropertyName.split('.');
+  let model: ModelNode = node;
+  let mapProperty: ModelMapProperty | null = null;
+  const size = subProperties.length;
+  let i = 0;
+  for (const subProperty of subProperties) {
+    const elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+    if (!elementProperties.hasPropertyValue(subProperty) && i < size - 1) {
+      console.debug(`Ignoring property change for property '${fullPropertyName}' which isn't defined from server`);
+      return;
+    }
+
+    mapProperty = elementProperties.getProperty(subProperty);
+    if (mapProperty.getValue() instanceof StateNode) {
+      model = mapProperty.getValue() as unknown as ModelNode;
+    }
+    i++;
+  }
+
+  if (mapProperty!.getValue() instanceof StateNode) {
+    // Don't send updates for list nodes
+    const nodeValue = mapProperty!.getValue() as StateNode;
+    const obj = valueProvider() as Record<string, unknown>;
+    if (obj.nodeId === undefined || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+      return;
+    }
+  }
+  mapProperty!.syncToServer(valueProvider());
+}
+
+// --- Slice 10: element property binding ------------------------------------
+// Applies a map property to a DOM-element JS property (the property user for the
+// ELEMENT_PROPERTIES feature). Values are converted through the Polymer model
+// tree; the previous DOM value guards against clobbering a user edit made during
+// the server round-trip.
+
+/** The slice of MapProperty that updateProperty reads. */
+interface UpdatePropertyMapProperty {
+  getName(): string;
+  hasValue(): boolean;
+  getValue(): unknown;
+  getPreviousDomValue(): unknown;
+  clearPreviousDomValue(): void;
+}
+
+/**
+ * Updates the element's JS property from the map property, or removes/clears it
+ * when the property has no value. Mirrors updateProperty.
+ */
+export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: Element): void {
+  const name = mapProperty.getName();
+  const elementObject = element as unknown as Record<string, unknown>;
+  if (mapProperty.hasValue()) {
+    const treeValue = mapProperty.getValue();
+    const domValue = getJsProperty(elementObject, name);
+    const previousDomValue = mapProperty.getPreviousDomValue();
+
+    // The user might have modified the DOM value during the server round-trip,
+    // so only update to the tree value when it differs from the pre-round-trip
+    // DOM value.
+    const updateToTreeValue = previousDomValue === undefined ? true : !equalsInJS(treeValue, previousDomValue);
+
+    // Compare with the current property to avoid setting properties already
+    // updated on the client side (won't work for read-only properties).
+    if (updateToTreeValue && (isUndefined(domValue) || !equalsInJS(domValue, treeValue))) {
+      Reactive.runWithComputation(null, () => setJsProperty(elementObject, name, createModelTree(treeValue)));
+    }
+  } else if (hasOwnJsProperty(element, name)) {
+    deleteJsProperty(elementObject, name);
+  } else {
+    // Can't delete an inherited property, so just clear the value.
+    setJsProperty(elementObject, name, null);
+  }
+  mapProperty.clearPreviousDomValue();
+}
+
+// --- Slice 11: light-DOM children binding ----------------------------------
+// Binds the ELEMENT_CHILDREN feature to the element's DOM children, creating and
+// inserting child elements (or adopting existing ones) and keeping the DOM in
+// sync as the children list is spliced. Goes through the binder context to
+// create/bind child nodes and through DomApi for the DOM mutations.
+
+function createAndBindChild(context: BindingContext, childNode: BindingStateNode): Node {
+  return context.binderContext.createAndBind(childNode as unknown as StateNode);
+}
+
+/**
+ * Binds the node's children to the element, adopting existing elements where the
+ * server requested attaching to one and appending the rest. Mirrors bindChildren.
+ */
+export function bindChildren(context: BindingContext): EventRemover {
+  const children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+  if (children.hasBeenCleared()) {
+    removeAllChildren(context.htmlNode);
+  }
+
+  for (let i = 0; i < children.length(); i++) {
+    const childNode = children.get(i) as BindingStateNode;
+
+    const existingElementMap = childNode.getTree().getRegistry().getExistingElementMap();
+    const child = existingElementMap.getElement(childNode.getId());
+    if (child !== null) {
+      existingElementMap.remove(childNode.getId());
+      childNode.setDomNode(child);
+      createAndBindChild(context, childNode);
+    } else {
+      wrap(context.htmlNode).appendChild(createAndBindChild(context, childNode));
+    }
+  }
+
+  return children.addSpliceListener((e) => {
+    // Handle lazily: the change giving a child its element tag may not be
+    // applied yet.
+    Reactive.addFlushListener(() => handleChildrenSplice(e, context));
+  });
+}
+
+function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingContext): void {
+  const htmlNode = context.htmlNode;
+  if (event.isClear()) {
+    // A full clear removes all nodes, including ones the server doesn't know about.
+    removeAllChildren(htmlNode);
+  } else {
+    for (const removed of event.getRemove()) {
+      const childNode = removed as BindingStateNode;
+      const child = childNode.getDomNode();
+      // If the client-side element is not inside the parent the server expected
+      // (client-only DOM changes), nothing is done here.
+      if (child !== null && wrap(child).parentNode === htmlNode) {
+        wrap(htmlNode).removeChild(child);
+      }
+    }
+  }
+
+  const add = event.getAdd();
+  if (add.length > 0) {
+    addChildren(event.getIndex(), context, add);
+  }
+}
+
+function removeAllChildren(htmlNode: Node): void {
+  const wrapped = wrap(htmlNode);
+  while (wrapped.firstChild !== null) {
+    wrapped.removeChild(wrapped.firstChild);
+  }
+}
+
+function addChildren(index: number, context: BindingContext, add: unknown[]): void {
+  const nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+
+  let beforeRef: Node | null;
+  if (index === 0) {
+    // Insert at the first position after the client-side-only nodes.
+    beforeRef = getFirstNodeMappedAsStateNode(nodeChildren, context.htmlNode);
+  } else if (index <= nodeChildren.length() && index > 0) {
+    const previousSibling = getPreviousSibling(index, context);
+    beforeRef = previousSibling === null ? null : wrap(previousSibling.getDomNode()!).nextSibling;
+  } else {
+    // Insert at the end.
+    beforeRef = null;
+  }
+
+  for (const newChildObject of add) {
+    const newChild = newChildObject as BindingStateNode;
+
+    const existingElementMap = newChild.getTree().getRegistry().getExistingElementMap();
+    let childNode = existingElementMap.getElement(newChild.getId());
+    if (childNode !== null) {
+      existingElementMap.remove(newChild.getId());
+      newChild.setDomNode(childNode);
+      createAndBindChild(context, newChild);
+    } else {
+      childNode = createAndBindChild(context, newChild);
+      wrap(context.htmlNode).insertBefore(childNode, beforeRef);
+    }
+
+    beforeRef = wrap(childNode).nextSibling;
+  }
+}
+
+function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNode: Node): Node | null {
+  const clientList = wrap(htmlNode).childNodes;
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of -- ArrayLike DOM child list, not iterable
+  for (let i = 0; i < clientList.length; i++) {
+    const clientNode = clientList[i];
+    for (let j = 0; j < mappedNodeChildren.length(); j++) {
+      const stateNode = mappedNodeChildren.get(j) as BindingStateNode;
+      if (clientNode === stateNode.getDomNode()) {
+        return clientNode;
+      }
+    }
+  }
+  return null;
+}
+
+function getPreviousSibling(index: number, context: BindingContext): BindingStateNode | null {
+  const nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+
+  let count = 0;
+  let node: BindingStateNode | null = null;
+  for (let i = 0; i < nodeChildren.length(); i++) {
+    if (count === index) {
+      return node;
+    }
+    const child = nodeChildren.get(i) as BindingStateNode;
+    if (child.getDomNode() !== null) {
+      node = child;
+      count++;
+    }
+  }
+  return node;
+}
+
+// --- Slice 12: shadow root binding -----------------------------------------
+// Attaches (or reuses) the element's open shadow root, binds the shadow root
+// state node's DOM node and its children, and re-runs when the shadow-root data
+// is (re)added.
+
+function attachShadow(context: BindingContext): void {
+  const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  if (shadowRootNode !== null) {
+    const element = context.htmlNode as Element;
+    const shadowRoot = element.shadowRoot ?? element.attachShadow({ mode: 'open' });
+
+    if (shadowRootNode.getDomNode() === null) {
+      shadowRootNode.setDomNode(shadowRoot);
+    }
+
+    bindChildren(new BindingContext(shadowRootNode, shadowRoot, context.binderContext));
+  }
+}
+
+/**
+ * Binds the element's shadow root: attaches it now and re-attaches whenever the
+ * SHADOW_ROOT_DATA feature gains the shadow-root node. Mirrors bindShadowRoot.
+ */
+export function bindShadowRoot(context: BindingContext): EventRemover {
+  const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  attachShadow(context);
+  return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
+}
+
+// --- Slice 13: bind lifecycle ----------------------------------------------
+// The bind/unbind lifecycle glue: the weak set of already-bound nodes, the
+// re-bind helper that re-fires the dom-node-set event, the deferred initial
+// property update, and the teardown that stops computations and removes
+// listeners. bindVisibility/updateVisibility and bind() itself follow at class
+// assembly, once the per-slice node contracts are unified.
+
+// Used as a weak set: only the keys (bound state nodes) matter; mirrors the
+// static boundNodes JsWeakMap.
+const boundNodes = new WeakMap<object, boolean>();
+
+/** The slice of StateNode the lifecycle glue reads/writes. */
+interface LifecycleNode {
+  getDomNode(): Node | null;
+  setDomNode(node: Node | null): void;
+  setNodeData(object: object): void;
+  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
+  clearNodeData(object: object): void;
+}
+
+// Mirrors GWT Scheduler.scheduleDeferred: run after the current task.
+function scheduleDeferred(command: () => void): void {
+  setTimeout(command, 0);
+}
+
+/**
+ * Re-binds a node by clearing and re-setting its DOM node (which re-fires the
+ * dom-node-set event so initialization logic can run) and rebinding it. Mirrors
+ * doBind.
+ */
+export function doBind(node: LifecycleNode, nodeFactory: BinderContext): void {
+  const domNode = node.getDomNode();
+  // Re-fires the dom-node-set event, giving a chance to run logic that needs to
+  // know when the element is completely initialized.
+  node.setDomNode(null);
+  node.setDomNode(domNode);
+  nodeFactory.createAndBind(node as unknown as StateNode);
+}
+
+/**
+ * Schedules the deferred initial property update: stores an InitialPropertyUpdate
+ * on the node and, after the initial reactive flush, runs it (unless
+ * handlePropertiesChanged already cleared it). Mirrors scheduleInitialExecution.
+ */
+export function scheduleInitialExecution(stateNode: LifecycleNode): void {
+  const update = new InitialPropertyUpdate(stateNode);
+  stateNode.setNodeData(update);
+  // Run after all initial reactive work, so initial JS runs before this update.
+  Reactive.addPostFlushListener(() =>
+    scheduleDeferred(() => {
+      // cleared if handlePropertiesChanged already ran
+      stateNode.getNodeData(InitialPropertyUpdate)?.execute();
+    })
+  );
+}
+
+/** Removes all bindings: stops computations and removes listeners. Mirrors remove. */
+export function remove(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>
+): void {
+  computationsCollection.forEach((collection) => collection.forEach((computation) => computation.stop()));
+  context.listenerBindings.forEach((computation) => computation.stop());
+
+  context.listenerRemovers.forEach((remover) => remover.remove());
+  listeners.forEach((remover) => remover.remove());
+
+  boundNodes.delete(context.node);
+}
+
+// --- Slice 14: virtual children / attach-existing-element ------------------
+// Binds the VIRTUAL_CHILDREN feature: in-memory children are created/bound like
+// normal children, while inject-by-id/name and template-in-template virtual
+// children attach the state node to an existing DOM element found in the host's
+// (shadow) DOM, verifying the request and the element before binding.
+
+function getPayload(node: BindingStateNode): Record<string, unknown> {
+  return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.PAYLOAD).getValue() as Record<
+    string,
+    unknown
+  >;
+}
+
+/**
+ * Binds the node's virtual children, appending current ones and observing
+ * additions. Mirrors bindVirtualChildren.
+ */
+export function bindVirtualChildren(context: BindingContext): EventRemover {
+  const children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
+
+  for (let i = 0; i < children.length(); i++) {
+    appendVirtualChild(context, children.get(i) as BindingStateNode, true);
+  }
+
+  return children.addSpliceListener((e) => {
+    // Handle lazily: the change giving a child its element tag may not be applied yet.
+    Reactive.addFlushListener(() => {
+      for (const added of e.getAdd()) {
+        appendVirtualChild(context, added as BindingStateNode, true);
+      }
+    });
+  });
+}
+
+function appendVirtualChild(context: BindingContext, node: BindingStateNode, reactivePhase: boolean): void {
+  const object = getPayload(node);
+  const type = object[NodeProperties.TYPE] as string;
+
+  if (type === NodeProperties.IN_MEMORY_CHILD) {
+    context.binderContext.createAndBind(node as unknown as StateNode);
+    return;
+  }
+
+  const element = context.htmlNode as Element;
+  if (type === NodeProperties.INJECT_BY_ID) {
+    if (isLitElement(element)) {
+      whenRendered(element, () => handleInjectId(context, node, object, false));
+      return;
+    } else if (!isReady(element)) {
+      addReadyListener(element, () => handleInjectId(context, node, object, false));
+      return;
+    }
+    handleInjectId(context, node, object, reactivePhase);
+  } else if (type === NodeProperties.TEMPLATE_IN_TEMPLATE) {
+    if (getDomRoot(element) === null) {
+      addReadyListener(element, () => handleTemplateInTemplate(context, node, object, false));
+      return;
+    }
+    handleTemplateInTemplate(context, node, object, reactivePhase);
+  } else if (type === NodeProperties.INJECT_BY_NAME) {
+    const name = object[NodeProperties.PAYLOAD] as string;
+    const address = `name='${name}'`;
+    const elementLookup = (): Element | null => getElementByName(element, name);
+
+    if (!isInitialized(elementLookup)) {
+      addReadyCallback(element, name, () => doAppendVirtualChild(context, node, false, elementLookup, name, address));
+      return;
+    }
+    doAppendVirtualChild(context, node, reactivePhase, elementLookup, name, address);
+  }
+  // else: unexpected payload type (Java asserts; dropped here)
+}
+
+function handleTemplateInTemplate(
+  context: BindingContext,
+  node: BindingStateNode,
+  object: Record<string, unknown>,
+  reactivePhase: boolean
+): void {
+  const path = object[NodeProperties.PAYLOAD] as unknown[];
+  const address = `path='${JSON.stringify(path)}'`;
+  const elementLookup = (): Element | null => getCustomElement(getDomRoot(context.htmlNode as Element), path);
+  doAppendVirtualChild(context, node, reactivePhase, elementLookup, null, address);
+}
+
+function handleInjectId(
+  context: BindingContext,
+  node: BindingStateNode,
+  object: Record<string, unknown>,
+  reactivePhase: boolean
+): void {
+  const id = object[NodeProperties.PAYLOAD] as string;
+  const address = `id='${id}'`;
+  const elementLookup = (): Element | null => getElementById(context.htmlNode, id);
+  doAppendVirtualChild(context, node, reactivePhase, elementLookup, id, address);
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java doAppendVirtualChild signature
+function doAppendVirtualChild(
+  context: BindingContext,
+  node: BindingStateNode,
+  reactivePhase: boolean,
+  elementLookup: () => Element | null,
+  id: string | null,
+  address: string
+): void {
+  if (!verifyAttachRequest(context.node, node, id, address)) {
+    return;
+  }
+  const element = elementLookup();
+  if (verifyAttachedElement(element, node, id, address, context)) {
+    if (!reactivePhase) {
+      const initialPropertiesHandler = node.getTree().getRegistry().getInitialPropertiesHandler();
+      initialPropertiesHandler.nodeRegistered(node);
+      initialPropertiesHandler.flushPropertyUpdates();
+    }
+    node.setDomNode(element);
+    context.binderContext.createAndBind(node as unknown as StateNode);
+  }
+  if (!reactivePhase) {
+    // Out of the reactive phase, flush() must be called explicitly for binding.
+    Reactive.flush();
+  }
+}
+
+function verifyAttachRequest(
+  parent: BindingStateNode,
+  node: BindingStateNode,
+  id: string | null,
+  address: string
+): boolean {
+  // The server should not send several attach requests for the same client-side
+  // element; this verifies that assumption.
+  const virtualChildren = parent.getList(NodeFeatures.VIRTUAL_CHILDREN);
+  for (let i = 0; i < virtualChildren.length(); i++) {
+    const child = virtualChildren.get(i) as BindingStateNode;
+    if (child === node) {
+      continue;
+    }
+    if (JSON.stringify(getPayload(node)) === JSON.stringify(getPayload(child))) {
+      console.warn(
+        `There is already a request to attach element addressed by the ${address}. The existing request's node id='${child.getId()}'. Cannot attach the same element twice.`
+      );
+      node.getTree().sendExistingElementWithIdAttachToServer(parent, node.getId(), child.getId(), id);
+      return false;
+    }
+  }
+  return true;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java verifyAttachedElement signature
+function verifyAttachedElement(
+  element: Element | null,
+  attachNode: BindingStateNode,
+  id: string | null,
+  address: string,
+  context: BindingContext
+): boolean {
+  const node = context.node;
+  const tag = getTag(attachNode as unknown as CreationNode);
+
+  let failure = false;
+  if (element === null) {
+    failure = true;
+    console.warn(`${ELEMENT_ATTACH_ERROR_PREFIX}${address} is not found. The requested tag name is '${tag}'`);
+  } else if (!hasTag(element, tag as string)) {
+    failure = true;
+    console.warn(
+      `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has the wrong tag name '${element.tagName}', the requested tag name is '${tag}'`
+    );
+  }
+
+  if (failure) {
+    node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), -1, id);
+    return false;
+  }
+
+  if (!node.hasFeature(NodeFeatures.SHADOW_ROOT_DATA)) {
+    return true;
+  }
+  const map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  if (shadowRootNode === null) {
+    return true;
+  }
+
+  const list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
+  let existingId: number | null = null;
+  for (let i = 0; i < list.length(); i++) {
+    const stateNode = list.get(i) as BindingStateNode;
+    if (stateNode.getDomNode() === element) {
+      existingId = stateNode.getId();
+      break;
+    }
+  }
+
+  if (existingId !== null) {
+    console.warn(
+      `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has been already attached previously via the node id='${existingId}'`
+    );
+    node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), existingId, id);
+    return false;
+  }
+  return true;
+}
+
+// --- Slice 15: visibility binding ------------------------------------------
+// Binds the node's visibility: tracks the bound state, hides invisible nodes
+// (preserving their initial hidden/display state), and rebinds an initially
+// invisible node once it becomes visible. The cross-slice helper calls cast the
+// rich binding node to each helper's narrower contract (unified at class
+// assembly).
+
+function updateVisibility(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>,
+  nodeFactory: BinderContext
+): void {
+  const node = context.node;
+  const visibilityData = node.getMap(NodeFeatures.ELEMENT_DATA);
+  const element = context.htmlNode as Element;
+
+  if (needsRebind(node as unknown as CreationNode) && isVisible(node as unknown as CreationNode)) {
+    remove(listeners, context, computationsCollection);
+    Reactive.addFlushListener(() => {
+      restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
+      doBind(node as unknown as LifecycleNode, nodeFactory);
+    });
+  } else if (isVisible(node as unknown as CreationNode)) {
+    visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
+    restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
+  } else {
+    setElementInvisible(element, visibilityData as unknown as VisibilityNodeMap);
+  }
+}
+
+/**
+ * Binds the node's visibility: records the current bound state, applies it, and
+ * re-applies whenever the VISIBLE property changes. Mirrors bindVisibility.
+ */
+export function bindVisibility(
+  listeners: EventRemover[],
+  context: BindingContext,
+  computationsCollection: Array<Map<string, Computation>>,
+  nodeFactory: BinderContext
+): EventRemover {
+  const visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
+
+  visibilityData
+    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+    .setValue(isVisible(context.node as unknown as CreationNode));
+  updateVisibility(listeners, context, computationsCollection, nodeFactory);
+
+  return visibilityData
+    .getProperty(NodeProperties.VISIBLE)
+    .addChangeListener(() => updateVisibility(listeners, context, computationsCollection, nodeFactory));
+}
+
+// --- Slice 16: bind() orchestrator + strategy class ------------------------
+// Ties every binding slice together: the bind() entry creates the binding
+// context, binds the server handlers, DOM events, children, shadow root, class
+// list, the style/attribute/property maps and the Polymer model bridge (for a
+// visible node), or just the structural attributes (for an invisible one), then
+// binds visibility and schedules the initial property update. The class exposes
+// create/isApplicable/bind as the BindingStrategy<Element>. The incoming
+// concrete StateNode is cast to each slice's narrower contract here (the
+// per-slice contracts are intentionally narrow; this is their unification point).
+
+function bindClientCallableMethods(context: BindingContext): EventRemover {
+  return bindServerEventHandlerNames(context.htmlNode as Element, context.node as unknown as ServerEventHandlerNode);
+}
+
+function bindPolymerEventHandlerNames(context: BindingContext): EventRemover {
+  return bindServerEventHandlerNames(
+    () => context.htmlNode as unknown as Record<string, unknown>,
+    context.node as unknown as ServerEventHandlerNode,
+    NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+    false
+  );
+}
+
+/** Binding strategy for a simple (non-template) Element; mirrors SimpleElementBindingStrategy. */
+export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
+  create(node: StateNode): Element {
+    return create(node as unknown as CreationNode);
+  }
+
+  isApplicable(node: StateNode): boolean {
+    return isApplicable(node as unknown as CreationNode);
+  }
+
+  getTag(node: StateNode): string {
+    return getTag(node as unknown as CreationNode) as string;
+  }
+
+  bind(stateNode: StateNode, htmlNode: Element, nodeFactory: BinderContext): void {
+    const visible = isVisible(stateNode as unknown as CreationNode);
+
+    if (boundNodes.has(stateNode)) {
+      return;
+    }
+    boundNodes.set(stateNode, true);
+
+    const node = stateNode as unknown as BindingStateNode;
+    const context = new BindingContext(node, htmlNode, nodeFactory);
+
+    const computationsCollection: Array<Map<string, Computation>> = [];
+    const listeners: EventRemover[] = [];
+
+    if (visible) {
+      // Potential dependencies for any observer.
+      listeners.push(bindClientCallableMethods(context));
+      listeners.push(bindPolymerEventHandlerNames(context));
+
+      // Flow's own event listeners.
+      listeners.push(bindDomEventListeners(context));
+
+      // DOM structure (shouldn't trigger observers synchronously).
+      listeners.push(bindVirtualChildren(context));
+      listeners.push(bindChildren(context));
+      listeners.push(bindShadowRoot(context));
+
+      // Styling.
+      listeners.push(bindClassList(htmlNode, node as unknown as ClassListNode));
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_STYLE_PROPERTIES,
+          (property: { getName(): string }) =>
+            updateStyleProperty(property as unknown as StyleMapProperty, htmlNode as HTMLElement),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+
+      // The things that might actually be observed.
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_ATTRIBUTES,
+          (property: { getName(): string }) => updateAttribute(property as unknown as AttributeMapProperty, htmlNode),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+      listeners.push(
+        bindMap(
+          NodeFeatures.ELEMENT_PROPERTIES,
+          (property: { getName(): string }) =>
+            updateProperty(property as unknown as UpdatePropertyMapProperty, htmlNode),
+          createComputations(computationsCollection),
+          node as unknown as BindMapNode<{ getName(): string }>
+        )
+      );
+
+      bindPolymerModelProperties(htmlNode, {
+        handlePropertiesChanged: (changedProps: unknown) =>
+          handlePropertiesChanged(changedProps as object, stateNode as unknown as ModelNode),
+        fireReadyEvent: (element: unknown) => fireReadyEvent(element as Element),
+        handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) =>
+          handleListItemPropertyChange(
+            nodeId as number,
+            host,
+            propertyName,
+            value,
+            stateNode.getTree() as unknown as { getNode(id: number): ListItemNode | null }
+          )
+      });
+
+      // Prepare teardown.
+      listeners.push(stateNode.addUnregisterListener(() => remove(listeners, context, computationsCollection)));
+    } else {
+      applyStructuralAttributes(stateNode as unknown as StructuralAttributesNode, htmlNode);
+    }
+    listeners.push(bindVisibility(listeners, context, computationsCollection, nodeFactory));
+
+    scheduleInitialExecution(stateNode as unknown as LifecycleNode);
+  }
+}
