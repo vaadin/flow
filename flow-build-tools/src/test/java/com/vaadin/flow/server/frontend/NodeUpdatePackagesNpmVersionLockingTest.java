@@ -478,7 +478,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         assertFalse(new PnpmWorkspaceFile(baseDir).getOverrides().isEmpty(),
                 "Precondition: pnpm run wrote overrides to the workspace file");
 
-        // Now switch to npm: overrides belong in package.json again.
+        // Now switch to npm: managed overrides are (re)written to package.json.
         TaskUpdatePackages npmUpdater = createPackageUpdater(false);
         ObjectNode npmPackageJson = npmUpdater.getPackageJson();
         ((ObjectNode) npmPackageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
@@ -490,6 +490,13 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 "npm overrides must be written to package.json");
         assertTrue(npmPackageJson.get(OVERRIDES).has(TEST_DEPENDENCY),
                 "Managed override must be present in npm overrides");
+        // pnpm-workspace.yaml is left untouched: Flow manages it only while
+        // pnpm is in use, so an npm build never rewrites or deletes the user's
+        // file.
+        assertTrue(new File(baseDir, PnpmWorkspaceFile.WORKSPACE_FILE).exists(),
+                "pnpm-workspace.yaml must be left in place when using npm");
+        assertFalse(new PnpmWorkspaceFile(baseDir).getOverrides().isEmpty(),
+                "Existing workspace overrides must be preserved");
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm,

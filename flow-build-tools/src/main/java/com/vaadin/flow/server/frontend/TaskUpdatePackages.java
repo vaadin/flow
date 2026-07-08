@@ -206,7 +206,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                 overrides.putAll(flattenOverrides(object));
             }
             // Migrate overrides left in package.json.pnpm by an older
-            // Flow/pnpm.
+            // Flow/pnpm. pnpm-workspace.yaml is deliberately left untouched: it
+            // is the user's pnpm configuration, managed only while pnpm is
+            // actually in use, so an npm build never rewrites or deletes it.
             migrated = foldLegacyPnpmOverrides(packageJson, overrides);
             return overrides;
         }

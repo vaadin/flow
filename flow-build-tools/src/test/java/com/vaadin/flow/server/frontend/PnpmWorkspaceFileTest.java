@@ -79,6 +79,23 @@ class PnpmWorkspaceFileTest {
         assertTrue(content.contains("shamefully-hoist"),
                 "User settings must be preserved");
         assertTrue(content.contains("dep"), "Override must be written");
+
+        // Clearing overrides (e.g. once the last override is removed) keeps the
+        // file and its unrelated user content.
+        PnpmWorkspaceFile cleared = new PnpmWorkspaceFile(projectRoot);
+        cleared.setOverrides(Map.of());
+        cleared.save();
+
+        assertTrue(workspaceFile().exists(),
+                "File with other user content must not be deleted");
+        content = Files.readString(workspaceFile().toPath(),
+                StandardCharsets.UTF_8);
+        assertTrue(content.contains("packages:"),
+                "User packages section must survive clearing overrides");
+        assertTrue(content.contains("shamefully-hoist"),
+                "User settings must survive clearing overrides");
+        assertTrue(new PnpmWorkspaceFile(projectRoot).getOverrides().isEmpty(),
+                "Overrides must be removed");
     }
 
     @Test
