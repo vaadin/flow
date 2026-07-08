@@ -53,6 +53,8 @@ describe('SharedUtil', () => {
       'http://demo.vaadin.com/foo?f&a=b&c=d#fragment',
       'http://demo.vaadin.com/foo?f=1&a=b&c=d#fragment',
       'http://demo.vaadin.com:1234/foo?a&a=b&c=d#fragment',
+      // Mirrors Java test: URI already has a fragment, so appending "#fragment"
+      // would not produce a second fragment section.
       ''
     ];
 
