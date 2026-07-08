@@ -20,6 +20,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.communication.TransferUtil;
 
@@ -32,8 +35,7 @@ import com.vaadin.flow.server.communication.TransferUtil;
  * @since 24.8
  */
 public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHandler>
-        extends TransferProgressAwareHandler<UploadEvent, R>
-        implements UploadHandler {
+        extends AbstractUploadHandler<R> {
     private final FileUploadCallback successCallback;
     private final FileFactory fileFactory;
 
@@ -57,27 +59,87 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
         UploadMetadata metadata = new UploadMetadata(event.getFileName(),
                 event.getContentType(), event.getFileSize());
         setTransferUI(event.getUI());
-        File file;
+        File file = null;
         try {
-            file = fileFactory.createFile(metadata);
-            try (InputStream inputStream = event.getInputStream();
-                    FileOutputStream outputStream = new FileOutputStream(
-                            file)) {
-                TransferUtil.transfer(inputStream, outputStream,
-                        getTransferContext(event), getListeners());
+            runMetadataValidators(event);
+            if (!event.isRejected()) {
+                try (InputStream raw = event.getInputStream()) {
+                    InputStream in = applyHeaderValidators(event, raw);
+                    if (!event.isRejected()) {
+                        // Create the file only once metadata and header passed,
+                        // so a rejection leaves no file behind.
+                        file = fileFactory.createFile(metadata);
+                        try (FileOutputStream outputStream = new FileOutputStream(
+                                file)) {
+                            TransferUtil.transfer(in, outputStream,
+                                    getTransferContext(event), getListeners());
+                        }
+                    }
+                }
             }
         } catch (IOException e) {
-            notifyError(event, e);
+            deleteAndNotify(event, file, e);
+            throw e;
+        } catch (RuntimeException e) {
+            // A validator may throw an unchecked exception; still clean up.
+            deleteQuietly(file);
             throw e;
         }
+        if (hasValidators() && file != null && !event.isRejected()) {
+            // Whole-content validation. Its streams are closed (try-with-
+            // resources) before any deletion, so a validator leaving one open
+            // can't block deletion. This runs after the transfer's onComplete
+            // has already fired, so any failure here is reported via onError.
+            try (FileUploadContent content = new FileUploadContent(file)) {
+                runCompleteValidators(event, content);
+            } catch (IOException e) {
+                deleteAndNotify(event, file, e);
+                throw e;
+            } catch (RuntimeException e) {
+                deleteQuietly(file);
+                notifyError(event, new IOException(e));
+                throw e;
+            }
+        }
+        if (event.isRejected()) {
+            // A validator rejected the upload; report it as a terminal error so
+            // progress listeners get a signal.
+            notifyError(event,
+                    new UploadRejectedException(event.getRejectionMessage()));
+        }
+        final File uploadedFile = file;
         event.getUI().access(() -> {
+            // A validator may have rejected the upload while it was received;
+            // discard the written file and skip the callback.
+            if (event.isRejected()) {
+                deleteQuietly(uploadedFile);
+                return;
+            }
             try {
-                successCallback.complete(metadata, file);
+                successCallback.complete(metadata, uploadedFile);
             } catch (IOException e) {
                 throw new UncheckedIOException("Error in file upload callback",
                         e);
             }
         });
+    }
+
+    private void deleteAndNotify(UploadEvent event, File file, IOException e) {
+        deleteQuietly(file);
+        notifyError(event, e);
+    }
+
+    private static void deleteQuietly(File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try {
+            Files.delete(file.toPath());
+        } catch (IOException e) {
+            LoggerFactory.getLogger(AbstractFileUploadHandler.class)
+                    .warn("Could not delete the file of a rejected or failed "
+                            + "upload: {}", file.getAbsolutePath(), e);
+        }
     }
 
     @Override

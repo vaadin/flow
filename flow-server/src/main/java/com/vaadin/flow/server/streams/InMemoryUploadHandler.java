@@ -29,8 +29,7 @@ import com.vaadin.flow.server.communication.TransferUtil;
  * @since 24.8
  */
 public class InMemoryUploadHandler
-        extends TransferProgressAwareHandler<UploadEvent, InMemoryUploadHandler>
-        implements UploadHandler {
+        extends AbstractUploadHandler<InMemoryUploadHandler> {
     private final InMemoryUploadCallback successCallback;
 
     public InMemoryUploadHandler(InMemoryUploadCallback successCallback) {
@@ -40,36 +39,59 @@ public class InMemoryUploadHandler
     @Override
     public void handleUploadRequest(UploadEvent event) throws IOException {
         setTransferUI(event.getUI());
-        byte[] data;
+        byte[] data = null;
         try {
-            try (InputStream inputStream = event.getInputStream();
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                TransferUtil.transfer(inputStream, outputStream,
-                        getTransferContext(event), getListeners());
-                data = outputStream.toByteArray();
+            runMetadataValidators(event);
+            if (!event.isRejected()) {
+                try (InputStream raw = event.getInputStream();
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                    InputStream in = applyHeaderValidators(event, raw);
+                    if (!event.isRejected()) {
+                        TransferUtil.transfer(in, outputStream,
+                                getTransferContext(event), getListeners());
+                        data = outputStream.toByteArray();
+                    }
+                }
             }
         } catch (IOException e) {
             notifyError(event, e);
             throw e;
         }
+        if (hasValidators() && data != null && !event.isRejected()) {
+            // Complete phase runs after the transfer's onComplete has already
+            // fired, so any failure here is reported via onError.
+            try {
+                runCompleteValidators(event, new ByteArrayUploadContent(data));
+            } catch (IOException e) {
+                notifyError(event, e);
+                throw e;
+            } catch (RuntimeException e) {
+                notifyError(event, new IOException(e));
+                throw e;
+            }
+        }
+        if (event.isRejected()) {
+            // A validator rejected the upload; report it as a terminal error so
+            // progress listeners get a signal.
+            notifyError(event,
+                    new UploadRejectedException(event.getRejectionMessage()));
+        }
+        final byte[] delivered = data;
         event.getUI().access(() -> {
+            // A validator may have rejected the upload while it was received;
+            // the accumulated data must not be delivered in that case.
+            if (event.isRejected()) {
+                return;
+            }
             try {
                 successCallback.complete(
                         new UploadMetadata(event.getFileName(),
                                 event.getContentType(), event.getFileSize()),
-                        data);
+                        delivered);
             } catch (IOException e) {
                 throw new UncheckedIOException(
                         "Error in memory upload callback", e);
             }
         });
-    }
-
-    @Override
-    protected TransferContext getTransferContext(UploadEvent transferEvent) {
-        return new TransferContext(transferEvent.getRequest(),
-                transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(), transferEvent.getOwningElement(),
-                transferEvent.getFileSize());
     }
 }
