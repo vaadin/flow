@@ -15,12 +15,9 @@
  */
 
 // TypeScript port of the com.vaadin.client.communication.DefaultConnectionStateHandler.Type
-// enum, built alongside the Java version. It classifies a connection event by
-// transport (heartbeat / push / XHR) with a priority used to decide which
-// competing recoverable error takes precedence (a higher-priority error
-// supersedes a lower-priority one). The full DefaultConnectionStateHandler
-// reconnect state machine (which composes this) is the integration hub validated
-// by the cutover ITs.
+// enum. It classifies a connection event by transport (heartbeat / push / XHR)
+// with a priority used to decide which competing recoverable error takes
+// precedence (a higher-priority error supersedes a lower-priority one).
 
 export const ConnectionMessageType = {
   HEARTBEAT: 'HEARTBEAT',

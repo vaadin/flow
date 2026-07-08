@@ -15,9 +15,9 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.binding.ServerEventHandlerBinder,
-// built alongside the Java version on top of the TS ServerEventObject. It binds
-// the server event handler names from a node feature onto the element's $server
-// object and keeps them in sync as the feature's list changes.
+// built on top of the ServerEventObject. It binds the server event handler names
+// from a node feature onto the element's $server object and keeps them in sync
+// as the feature's list changes.
 
 import type { EventRemover } from '../reactive/reactive';
 import { NodeFeatures } from '../nodefeature/NodeFeatures';

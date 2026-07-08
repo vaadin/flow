@@ -15,11 +15,10 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.StateNode (with its node-unregister
-// event/listener), built alongside the Java version on top of the TS node
-// features. StateTree is Registry-coupled and not ported yet, so the slice
-// StateNode needs is declared here as a contract the future TS StateTree will
-// satisfy at cutover. The Java Class<?>-keyed nodeData map becomes a map keyed
-// by JS constructor function.
+// event/listener), on top of the TS node features. The slice of StateTree that
+// StateNode needs is declared here as a contract that StateTree satisfies. The
+// original Java Class<?>-keyed nodeData map becomes a map keyed by JS constructor
+// function.
 
 import { assert } from './assert';
 import type { EventRemover } from './reactive/reactive';

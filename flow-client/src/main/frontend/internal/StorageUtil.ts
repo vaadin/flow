@@ -14,9 +14,7 @@
  * the License.
  */
 
-// HTML Storage helpers migrated from StorageUtil.java, registered on
-// window.Vaadin.Flow.internal.StorageUtil by registerInternals; the Java
-// methods delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// HTML Storage helpers migrated from StorageUtil.java.
 
 /** Gets an item value from the local storage, or null if absent. */
 export function getLocalItem(key: string): string | null {

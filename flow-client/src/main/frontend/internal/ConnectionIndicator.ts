@@ -14,11 +14,9 @@
  * the License.
  */
 
-// Implementations migrated from ConnectionIndicator.java, registered on
-// window.Vaadin.Flow.internal.ConnectionIndicator by registerInternals; the Java
-// methods delegate here. These poke window.Vaadin.connectionState /
-// connectionIndicator, which are provided by the connection-state component.
-// Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from ConnectionIndicator.java. These poke
+// window.Vaadin.connectionState / connectionIndicator, which are provided by the
+// connection-state component.
 
 interface ConnectionStateApi {
   state: string;

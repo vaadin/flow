@@ -14,14 +14,11 @@
  * the License.
  */
 
-// Implementations migrated from ReactUtils.java, registered on
-// window.Vaadin.Flow.internal.ReactUtils by registerInternals; the Java methods
-// delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from ReactUtils.java.
 
 /**
  * Adds a callback to the React component that is invoked once it is ready for
- * Flow binding. No-op if the element exposes no addReadyCallback. The Java
- * caller passes an exception-guarded ($entry) callback.
+ * Flow binding. No-op if the element exposes no addReadyCallback.
  */
 export function addReadyCallback(element: Element, name: string, callback: () => void): void {
   const el = element as unknown as {

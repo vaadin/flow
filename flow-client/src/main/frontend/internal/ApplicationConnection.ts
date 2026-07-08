@@ -14,12 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.ApplicationConnection,
-// built alongside the Java version. The static create() mirrors the Java
-// constructor: it assembles the DefaultRegistry, binds the root state node to the
-// page body, and publishes the client API. The instance API
+// TypeScript port of com.vaadin.client.ApplicationConnection.
+// The static create() assembles the DefaultRegistry, binds the root state node to
+// the page body, and publishes the client API. The instance API
 // (start/isActive/poll/resolveUri/sendEventMessage/...) drives the application.
-// create() is the cutover entry; it is not yet wired into the live bootstrap.
+// create() is the entry point wired into the live bootstrap.
 
 import { bind } from './binding/Binder';
 import { observe as observeLoadingIndicator } from './communication/LoadingIndicatorConfigurator';

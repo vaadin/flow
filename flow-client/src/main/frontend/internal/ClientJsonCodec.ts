@@ -14,9 +14,7 @@
  * the License.
  */
 
-// Implementations migrated from ClientJsonCodec.java, registered on
-// window.Vaadin.Flow.internal.ClientJsonCodec by registerInternals; the Java
-// methods delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from ClientJsonCodec.java.
 
 type JsFunction = (...args: unknown[]) => unknown;
 

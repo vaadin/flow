@@ -14,9 +14,7 @@
  * the License.
  */
 
-// Helper migrated from MessageSender.java, registered on
-// window.Vaadin.Flow.internal.MessageSender by registerInternals; the Java
-// method delegates here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Helper migrated from MessageSender.java.
 
 /** Sends the payload to the url as a beacon, surviving page unload. */
 export function sendBeacon(url: string, payload: string): void {

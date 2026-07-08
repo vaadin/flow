@@ -14,11 +14,8 @@
  * the License.
  */
 
-// Browser-environment probes migrated from BrowserInfo.java, registered on
-// window.Vaadin.Flow.internal.BrowserInfo by registerInternals; the Java methods
-// delegate here. The user-agent parsing itself stays in the shared
-// BrowserDetails Java class. Also bundled to ES5 for the HtmlUnit used by
-// GwtTests.
+// Browser-environment probes migrated from BrowserInfo.java. The user-agent
+// parsing itself lives in the shared BrowserDetails class.
 
 /** Returns the browser's user-agent string. */
 export function getBrowserString(): string {

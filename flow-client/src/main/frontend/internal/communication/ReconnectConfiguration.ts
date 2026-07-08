@@ -14,12 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.ReconnectConfiguration,
-// built alongside the Java version. It exposes the reconnect configuration
-// stored in the root node's RECONNECT_DIALOG_CONFIGURATION feature and, via
-// bind(), re-runs the connection-state handler's configurationUpdated() whenever
-// the configuration changes (reactively). The Registry/ConnectionStateHandler
-// are contracts satisfied at cutover.
+// TypeScript port of com.vaadin.client.communication.ReconnectConfiguration.
+// It exposes the reconnect configuration stored in the root node's
+// RECONNECT_DIALOG_CONFIGURATION feature and, via bind(), re-runs the
+// connection-state handler's configurationUpdated() whenever the configuration
+// changes (reactively).
 
 import { NodeFeatures } from '../nodefeature/NodeFeatures';
 import { Reactive } from '../reactive/reactive';

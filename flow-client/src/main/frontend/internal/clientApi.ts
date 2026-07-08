@@ -15,21 +15,13 @@
  */
 
 /**
- * Typed contracts for the Java classes that the GWT-compiled flow-client bundle
- * exports to JavaScript through JsInterop.
- *
- * Exported classes are published under `window.Vaadin.Flow.internal.<Name>` and
- * only exist after the bundle's `init()` (see `FlowClient.js`) has run. As the
- * client engine is migrated from Java to TypeScript (see
- * `MIGRATION_STRATEGY.md`), the new TypeScript calls *into* these exports — the
- * boundary is always TypeScript → GWT, never the reverse. These interfaces type
- * the exported instances so callers never reach into `window` untyped.
+ * Type contracts for the client API. `ApplicationConnection` is the public
+ * surface of the running client engine; `ApplicationConfiguration` is the
+ * application configuration read from the DOM at startup. `publishClient` exposes
+ * an `ApplicationConnection` on `window.Vaadin.Flow.clients[appId]`.
  */
 
-/**
- * Mirrors the getters exported from `com.vaadin.client.ApplicationConfiguration`
- * — the translated application configuration read from the DOM at startup.
- */
+/** The application configuration read from the DOM at startup. */
 export interface ApplicationConfiguration {
   getApplicationId(): string;
   getUIId(): number;
@@ -40,15 +32,8 @@ export interface ApplicationConfiguration {
 }
 
 /**
- * Mirrors the client-API methods exported from
- * `com.vaadin.client.ApplicationConnection` — the operations published on
- * `window.Vaadin.Flow.clients[appId]`.
- *
- * Note: the constructor is intentionally not exported (`@JsIgnore` on the Java
- * side) — exporting a member whose body builds the engine pulls a `GWT.create`
- * rebind into the JsInterop export pass, which the GWT compiler cannot resolve.
- * The instance is therefore created on the GWT side; TypeScript only consumes
- * the exported methods below.
+ * The client-API methods published on `window.Vaadin.Flow.clients[appId]` — the
+ * public surface of the running client engine.
  */
 export interface ApplicationConnection {
   isActive(): boolean;

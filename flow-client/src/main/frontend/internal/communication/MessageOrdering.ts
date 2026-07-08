@@ -16,11 +16,9 @@
 
 // The server-/sync-id message-ordering kernel of
 // com.vaadin.client.communication.MessageHandler, extracted as a standalone,
-// pure-logic unit (built alongside the Java version). The server assigns a
-// strictly increasing id to each response; the client must process them in
-// order, queueing out-of-order / locked messages until the missing ones arrive.
-// The full MessageHandler (ported later) composes this; the network-bound rest
-// of MessageHandler is validated by the cutover ITs.
+// pure-logic unit. The server assigns a strictly increasing id to each response;
+// the client must process them in order, queueing out-of-order / locked messages
+// until the missing ones arrive. MessageHandler composes this.
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVER_SYNC_ID = 'syncId';

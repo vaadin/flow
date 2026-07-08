@@ -15,7 +15,7 @@
  */
 
 // TypeScript port of the com.vaadin.client.flow.dom package (DomApi, DomApiImpl,
-// DomNode, DomElement and PolymerDomApiImpl), built alongside the Java version.
+// DomNode, DomElement and PolymerDomApiImpl).
 // All DOM access in the binding layer goes through DomApi.wrap(node): by default
 // it returns the node itself (native DOM), but once Polymer 1.x ("polymer micro")
 // is detected it returns Polymer.dom(node) so the local-DOM/shadow traversal is

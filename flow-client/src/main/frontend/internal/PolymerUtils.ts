@@ -14,16 +14,13 @@
  * the License.
  */
 
-// DOM/Polymer probes and model-data writers migrated from PolymerUtils.java,
-// registered on window.Vaadin.Flow.internal.PolymerUtils by registerInternals;
-// the Java methods delegate here. The StateNode-coupled model-tree building
-// (createModelTree and the change handlers) is ported separately in
-// PolymerModelTree.ts. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// DOM/Polymer probes and model-data writers migrated from PolymerUtils.java. The
+// StateNode-coupled model-tree building (createModelTree and the change handlers)
+// is ported separately in PolymerModelTree.ts.
 //
 // The ready-listener registry and custom-element-by-path lookup
-// (addReadyListener/fireReadyEvent/getCustomElement) are build-alongside
-// additions used by the SimpleElementBindingStrategy attach machinery; they are
-// not registered (the Java versions stay live until cutover).
+// (addReadyListener/fireReadyEvent/getCustomElement) are used by the
+// SimpleElementBindingStrategy attach machinery.
 
 import { wrap } from './dom/DomApi';
 

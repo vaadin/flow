@@ -14,12 +14,10 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.LoadingIndicatorStateHandler,
-// built alongside the Java version. It shows/hides the loading indicator based
-// on active RPC requests and message types, muting it for high-frequency UI
-// events (mousemove etc.). The Registry/RequestResponseTracker are contracts
-// satisfied at cutover; the connection-indicator calls go through the ported
-// ConnectionIndicator.
+// TypeScript port of com.vaadin.client.communication.LoadingIndicatorStateHandler.
+// It shows/hides the loading indicator based on active RPC requests and message
+// types, muting it for high-frequency UI events (mousemove etc.). The
+// connection-indicator calls go through ConnectionIndicator.
 
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
 import { JsonConstants } from '../JsonConstants';

@@ -14,10 +14,10 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.UILifecycle, built alongside the Java
-// version. It manages a UI's lifecycle state, which may only advance forward
-// INITIALIZING -> RUNNING -> TERMINATED, firing a state-change event on each
-// transition. The GWT EventBus is replaced by a listener set.
+// TypeScript port of com.vaadin.client.UILifecycle. It manages a UI's lifecycle
+// state, which may only advance forward INITIALIZING -> RUNNING -> TERMINATED,
+// firing a state-change event on each transition. The GWT EventBus is replaced by
+// a listener set.
 
 import type { EventRemover } from './reactive/reactive';
 

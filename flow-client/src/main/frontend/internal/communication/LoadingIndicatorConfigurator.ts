@@ -14,10 +14,10 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.LoadingIndicatorConfigurator,
-// built alongside the Java version. It observes the loading-indicator delay /
-// theme properties in the node's LOADING_INDICATOR_CONFIGURATION feature and
-// applies them to the connection indicator singleton via ConnectionIndicator.
+// TypeScript port of com.vaadin.client.communication.LoadingIndicatorConfigurator.
+// It observes the loading-indicator delay / theme properties in the node's
+// LOADING_INDICATOR_CONFIGURATION feature and applies them to the connection
+// indicator singleton via ConnectionIndicator.
 
 import { setProperty } from '../ConnectionIndicator';
 import { NodeFeatures } from '../nodefeature/NodeFeatures';

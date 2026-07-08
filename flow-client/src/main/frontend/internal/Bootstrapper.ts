@@ -14,21 +14,13 @@
  * the License.
  */
 
-// Bootstrap-sequence helpers migrated from Bootstrapper.java, registered on
-// window.Vaadin.Flow.internal.Bootstrapper by registerInternals; the Java
-// methods delegate here. The callbacks into the GWT entry point
-// (doStartApplication / startApplication) are supplied from the Java side
-// already wrapped in $entry. vaadinBootstrapLoaded stays in Java: it checks
-// $wnd.Vaadin.Flow, which registerInternals itself creates, so a delegating
-// version would always report true. Also bundled to ES5 for the HtmlUnit used
-// by GwtTests.
+// Bootstrap-sequence helpers migrated from Bootstrapper.java.
 //
-// populateApplicationConfiguration below is the build-alongside TS port of the
+// populateApplicationConfiguration below is the TS port of the
 // Bootstrapper DOM-config reader: it fills an ApplicationConfiguration from the
-// bootstrap JsoConfiguration. doStartApplication is the cutover entry: it reads
+// bootstrap JsoConfiguration. doStartApplication is the bootstrap entry: it reads
 // the DOM config, assembles the TS engine via ApplicationConnection.create, and
-// starts it from the initial UIDL. The Java Bootstrapper.doStartApplication
-// delegates here, so the running engine is the TypeScript one.
+// starts it from the initial UIDL.
 
 import { ApplicationConfiguration } from './ApplicationConfiguration';
 import {

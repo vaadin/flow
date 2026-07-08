@@ -15,11 +15,11 @@
  */
 
 // TypeScript port of the com.vaadin.client.communication.PushConnection
-// interface and its PushConnectionFactory, built alongside the Java version.
+// interface and its PushConnectionFactory.
 // A PushConnection delivers messages to the server over a bidirectional (or
 // one-way) push transport; AtmospherePushConnection implements it. The factory
-// (GWT.create in Java) produces one for the registry. These are the canonical
-// contracts; MessageSender and ConnectionStateHandler reference them.
+// produces one for the registry. MessageSender and ConnectionStateHandler
+// reference these contracts.
 
 /** A push connection to the server; mirrors PushConnection.java. */
 export interface PushConnection {

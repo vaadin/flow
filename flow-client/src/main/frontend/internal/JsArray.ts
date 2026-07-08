@@ -14,12 +14,9 @@
  * the License.
  */
 
-// Bulk JsArray helpers migrated from the JsniHelper in JsArray.java, registered
-// on window.Vaadin.Flow.internal.JsArray by registerInternals; the Java helper
-// methods delegate here. These are per-mutation bulk operations. The
-// per-element getValueNative/setValueNative (array[i] read/write) stay in Java:
-// they are on the hottest path and delegating them would add a JS call per
-// element access. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Bulk JsArray helpers migrated from the JsniHelper in JsArray.java. These are
+// per-mutation bulk operations. Per-element reads and writes (array[i]) are done
+// inline on the arrays rather than through these helpers.
 
 /** Appends every value (spread) onto the array, returning the new length. */
 export function pushArray(array: unknown[], values: unknown[]): number {

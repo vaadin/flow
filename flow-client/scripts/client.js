@@ -21,16 +21,13 @@ const targetDir = 'target/classes/META-INF/frontend/';
 const toFile = 'FlowClient.js';
 
 // FlowClient.init() is the client entry point that Flow.ts imports and calls. It
-// registers the TypeScript implementations on window.Vaadin.Flow.internal, then
 // runs the TypeScript bootstrap (onModuleLoad): it registers the widgetset start
 // callback so the server bootstrap can start the application, which assembles and
 // starts the TypeScript engine (ApplicationConnection). This replaces the former
 // GWT engine bundle that used to be inlined here.
-const clientSource = `import { registerInternals } from './internal/registerInternals';
-import { onModuleLoad } from './internal/Bootstrapper';
+const clientSource = `import { onModuleLoad } from './internal/Bootstrapper';
 
 export function init() {
-  registerInternals();
   onModuleLoad();
 }
 `;

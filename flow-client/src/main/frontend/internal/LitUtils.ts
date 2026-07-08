@@ -14,9 +14,7 @@
  * the License.
  */
 
-// Implementations migrated from LitUtils.java, registered on
-// window.Vaadin.Flow.internal.LitUtils by registerInternals; the Java methods
-// delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from LitUtils.java.
 
 /** Checks whether the given element is a LitElement (duck-typed). */
 export function isLitElement(element: Node): boolean {
@@ -31,7 +29,6 @@ export function isLitElement(element: Node): boolean {
 
 /**
  * Invokes the callback once the given Lit element has rendered at least once.
- * The Java caller passes an exception-guarded ($entry) callback.
  */
 export function whenRendered(element: Element, callback: () => void): void {
   const el = element as unknown as { updateComplete: Promise<unknown> };

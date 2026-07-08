@@ -14,17 +14,12 @@
  * the License.
  */
 
-// Atmosphere-wiring helpers migrated from AtmospherePushConnection.java,
-// registered on window.Vaadin.Flow.internal.AtmospherePushConnection by
-// registerInternals; the Java methods delegate here. The AbstractJSO config
-// accessors stay in Java. Also bundled to ES5 for the HtmlUnit used by
-// GwtTests.
+// Atmosphere-wiring helpers migrated from AtmospherePushConnection.java.
 //
-// FragmentedMessage below is the build-alongside TS port of the websocket
+// FragmentedMessage below is the TS port of the websocket
 // message-fragmentation helper from AtmospherePushConnection.java (pure logic).
-// The rest of AtmospherePushConnection (the Atmosphere library connection state
-// machine, push/connect/disconnect/onMessage) is library/network-bound and
-// integration-validated at cutover.
+// The rest of AtmospherePushConnection is the Atmosphere library connection state
+// machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
 import { parseJSONResponse } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';

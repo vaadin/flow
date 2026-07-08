@@ -14,14 +14,11 @@
  * the License.
  */
 
-// Polymer model-property binding migrated from SimpleElementBindingStrategy.java,
-// registered on window.Vaadin.Flow.internal.SimpleElementBindingStrategy by
-// registerInternals; the Java bindPolymerModelProperties method delegates here.
+// Polymer model-property binding migrated from SimpleElementBindingStrategy.java.
 // The StateNode/StateTree-coupled callbacks (handlePropertiesChanged,
-// fireReadyEvent, handleListItemPropertyChange) are supplied from the Java side
-// already wrapped in $entry, with the node and tree captured in their closures;
-// here we only do the Polymer-specific DOM wiring. Also bundled to ES5 for the
-// HtmlUnit used by GwtTests.
+// fireReadyEvent, handleListItemPropertyChange) are supplied by the caller with
+// the node and tree captured in their closures; here we only do the
+// Polymer-specific DOM wiring.
 //
 // This code monkey-patches Polymer internals (_propertiesChanged, ready, the
 // dom-repeat prototype), so it manipulates loosely-typed objects and relies on
@@ -30,9 +27,9 @@
 
 import { isPolymerElement, mayBePolymerElement } from './PolymerUtils';
 
-// The StateNode/StateTree-coupled actions, supplied from Java already
-// $entry-wrapped with node/tree captured. fireReadyEvent receives the element;
-// the others receive only the Polymer-side arguments.
+// The StateNode/StateTree-coupled actions, supplied by the caller with node/tree
+// captured. fireReadyEvent receives the element; the others receive only the
+// Polymer-side arguments.
 interface PolymerBindingCallbacks {
   handlePropertiesChanged: (changedProps: unknown) => void;
   fireReadyEvent: (element: unknown) => void;

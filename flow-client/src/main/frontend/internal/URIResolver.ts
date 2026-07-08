@@ -15,10 +15,9 @@
  */
 
 // TypeScript port of com.vaadin.client.URIResolver (and the relevant part of its
-// superclass com.vaadin.flow.shared.VaadinUriResolver), built alongside the Java
-// version. It resolves Vaadin URI protocols (context:// -> context root,
-// base:// -> base URI) to browser-loadable URLs; other protocols pass through
-// unchanged. The Registry/ApplicationConfiguration is contracted.
+// superclass com.vaadin.flow.shared.VaadinUriResolver). It resolves Vaadin URI
+// protocols (context:// -> context root, base:// -> base URI) to
+// browser-loadable URLs; other protocols pass through unchanged.
 
 // com.vaadin.flow.shared.ApplicationConstants
 const CONTEXT_PROTOCOL_PREFIX = 'context://';

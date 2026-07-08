@@ -14,7 +14,7 @@
  * the License.
  */
 
-import type { ApplicationConfiguration, ApplicationConnection } from './gwtExports';
+import type { ApplicationConfiguration, ApplicationConnection } from './clientApi';
 
 /**
  * Builds the per-application client API object published on

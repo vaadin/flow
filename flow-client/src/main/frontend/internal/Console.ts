@@ -14,11 +14,7 @@
  * the License.
  */
 
-// Helper migrated from Console.java, registered on
-// window.Vaadin.Flow.internal.Console by registerInternals; the Java method
-// delegates here. The browser-console logging itself, its GWT.isScript()
-// gating and the uncaught-exception-handler machinery stay in Java. Also
-// bundled to ES5 for the HtmlUnit used by GwtTests.
+// Helper migrated from Console.java.
 
 /**
  * Whether the localStorage override flag `vaadin.browserLog` is set to "true".

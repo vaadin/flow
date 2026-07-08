@@ -15,13 +15,11 @@
  */
 
 // The resource bookkeeping + listener-fanout kernel of
-// com.vaadin.client.ResourceLoader, extracted as a standalone, testable unit
-// (built alongside the Java version). It dedupes resources by key (URL or
-// content), fans load/error notifications out to the listeners registered for a
-// key, and supports removing a resource by its dependency id. The DOM element
-// creation in ResourceLoader's loadScript/loadStylesheet/... composes this kernel
-// (and is integration-validated at cutover). The SystemErrorHandler is a
-// contract satisfied at cutover.
+// com.vaadin.client.ResourceLoader, extracted as a standalone, testable unit.
+// It dedupes resources by key (URL or content), fans load/error notifications
+// out to the listeners registered for a key, and supports removing a resource by
+// its dependency id. The DOM element creation in ResourceLoader's
+// loadScript/loadStylesheet/... composes this kernel.
 
 /** Information about a (loaded or failed) resource; mirrors ResourceLoadEvent. */
 export interface ResourceLoadEvent {

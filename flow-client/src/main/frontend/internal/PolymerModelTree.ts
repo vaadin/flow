@@ -15,11 +15,11 @@
  */
 
 // TypeScript port of the StateNode-coupled model-tree building from
-// com.vaadin.client.PolymerUtils (createModelTree and its change handlers),
-// built alongside the Java version. It is kept out of the window-registered
-// internal/PolymerUtils.ts (which holds the DOM/Polymer probes and model-data
-// writers) because it depends on the whole reactive state tree; it imports the
-// Polymer model-data writers (splice/setProperty/isPolymerElement) from there.
+// com.vaadin.client.PolymerUtils (createModelTree and its change handlers). It
+// is kept out of internal/PolymerUtils.ts (which holds the DOM/Polymer probes
+// and model-data writers) because it depends on the whole reactive state tree;
+// it imports the Polymer model-data writers (splice/setProperty/isPolymerElement)
+// from there.
 //
 // createModelTree converts a StateNode/MapProperty model into the plain JS model
 // object Polymer binds to, recursively, tagging each object with its nodeId and

@@ -14,10 +14,10 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.model.UpdatableModelProperties,
-// built alongside the Java version. Stored in a StateNode via setNodeData when
-// there is any data; SimpleElementBindingStrategy uses it to decide whether a
-// Polymer model-property update should be sent to the server.
+// TypeScript port of com.vaadin.client.flow.model.UpdatableModelProperties.
+// Stored in a StateNode via setNodeData when there is any data;
+// SimpleElementBindingStrategy uses it to decide whether a Polymer
+// model-property update should be sent to the server.
 
 /** The set of model properties the server allows the client to update. */
 export class UpdatableModelProperties {

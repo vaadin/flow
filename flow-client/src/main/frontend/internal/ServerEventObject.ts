@@ -17,24 +17,16 @@
 // TypeScript port of com.vaadin.client.flow.binding.ServerEventObject -- the
 // element.$server RPC object that sends event notifications to the server.
 //
-// A subset (initPromiseHandler/removeMethod/getMethods/rejectPromises and the
-// node-based getPolymerPropertyObject) was migrated earlier via the
-// import-direction pattern: it is registered on
-// window.Vaadin.Flow.internal.ServerEventObject by registerInternals and the
-// Java methods delegate here, passing the $server object as the first argument.
-// This module now also carries the rest of the class for the cutover -- the
-// $server lifecycle (get/getIfPresent), method definition (defineMethod) and
-// the server event-data collection (getEventData and its expression
-// evaluation). Those operate on the TypeScript StateNode/StateTree/ConstantPool;
-// the Java versions stay live (the build-alongside StateNode/StateTree are not
-// wired yet), so these are tested in isolation and registered at cutover.
+// It covers the $server lifecycle (get/getIfPresent), method definition
+// (defineMethod), method management (initPromiseHandler/removeMethod/getMethods/
+// rejectPromises), the node-based getPolymerPropertyObject, and the server
+// event-data collection (getEventData and its expression evaluation), operating
+// on the TypeScript StateNode/StateTree/ConstantPool.
 //
-// At cutover the Java defineMethod's $entry wrapper -- which routed handler
-// exceptions to GWT's uncaught-exception handler -- has no equivalent: GWT is
-// gone, so the handler is installed as a plain function and exceptions surface
-// through the browser. The handler reads `this`/`arguments`, so it must stay a
-// regular `function`, not an arrow. Also bundled to ES5 for the HtmlUnit used by
-// GwtTests.
+// The Java defineMethod's $entry wrapper -- which routed handler exceptions to
+// GWT's uncaught-exception handler -- has no equivalent: the handler is installed
+// as a plain function and exceptions surface through the browser. The handler
+// reads `this`/`arguments`, so it must stay a regular `function`, not an arrow.
 
 import { NodeFeatures } from './nodefeature/NodeFeatures';
 

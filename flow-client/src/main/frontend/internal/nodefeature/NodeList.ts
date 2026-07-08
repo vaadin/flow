@@ -15,8 +15,7 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeList (and its
-// splice event/listener), built alongside the Java version on top of the TS
-// reactive core.
+// splice event/listener), on top of the TS reactive core.
 
 import {
   ReactiveEventRouter,

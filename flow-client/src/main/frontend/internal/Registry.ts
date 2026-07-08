@@ -14,14 +14,13 @@
  * the License.
  */
 
-// TypeScript port of the container mechanism of com.vaadin.client.Registry,
-// built alongside the Java version. The Registry is a holder of singleton
-// services (MessageSender, StateTree, ...) looked up by a key; some are
-// resettable via a supplier so the whole set can be recreated. The Java class
-// keys by Class<?>; here a service is keyed by an opaque token (a string, symbol
-// or constructor) since some TS services are functions, not classes. The
-// concrete typed getters (getMessageSender, ...) and the registration of all
-// services belong to the cutover subclass, once every service is ported.
+// TypeScript port of the container mechanism of com.vaadin.client.Registry.
+// The Registry is a holder of singleton services (MessageSender, StateTree, ...)
+// looked up by a key; some are resettable via a supplier so the whole set can be
+// recreated. The original Java class keyed by Class<?>; here a service is keyed
+// by an opaque token (a string, symbol or constructor) since some TS services
+// are functions, not classes. The concrete typed getters (getMessageSender, ...)
+// and the registration of all services live in the subclass.
 
 /** A token identifying a registered service (its class/constructor, a symbol, or a name). */
 export type ServiceKey = unknown;

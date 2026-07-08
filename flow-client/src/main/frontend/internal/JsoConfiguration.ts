@@ -14,16 +14,9 @@
  * the License.
  */
 
-// Bootstrap configuration readers migrated from JsoConfiguration.java,
-// registered on window.Vaadin.Flow.internal.JsoConfiguration by
-// registerInternals; the Java methods delegate here, passing the configuration
-// object (the value returned by $wnd.Vaadin.Flow.getApp(appId), which exposes a
-// getConfig(name) accessor). getConfigInteger stays in Java because it returns a
-// boxed java.lang.Integer, and getAtmosphereJSVersion stays in Java because its
-// JSNI reference to AtmospherePushConnection.isAtmosphereLoaded keeps that class
-// reachable for the GWT deferred-binding of AtmospherePushConnection$Factory
-// (used in MessageSender); removing it breaks the production GWT compile. Also
-// bundled to ES5 for the HtmlUnit used by GwtTests.
+// Bootstrap configuration readers migrated from JsoConfiguration.java. They read
+// from the configuration object (the value returned by
+// $wnd.Vaadin.Flow.getApp(appId), which exposes a getConfig(name) accessor).
 
 // The bootstrap configuration object exposes a getConfig(name) accessor over the
 // values the server injected into the page.

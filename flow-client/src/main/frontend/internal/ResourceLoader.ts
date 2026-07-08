@@ -14,16 +14,11 @@
  * the License.
  */
 
-// Implementations migrated from ResourceLoader.java, registered on
-// window.Vaadin.Flow.internal.ResourceLoader by registerInternals; the Java
-// methods delegate here. Callbacks are passed in already $entry-guarded by the
-// Java caller. Also bundled to ES5 for the HtmlUnit used by GwtTests.
-//
-// The ResourceLoader class below is the build-alongside TS port of the rest of
-// ResourceLoader.java, composing the ResourceRegistry dedup/fanout kernel. This
-// installment covers the non-stylesheet loaders (script / inline-script /
-// dynamic-import) plus DOM init and clear-by-id; the stylesheet/HTML loaders
-// (which need the BrowserInfo Safari/Opera quirks) follow in a later installment.
+// TypeScript port of com.vaadin.client.ResourceLoader. The ResourceLoader class
+// below composes the ResourceRegistry dedup/fanout kernel. It covers the
+// non-stylesheet loaders (script / inline-script / dynamic-import) plus DOM init
+// and clear-by-id, as well as the stylesheet/HTML loaders (which need the
+// BrowserInfo Safari/Opera quirks).
 
 import { isOpera, isSafariOrIOS } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';

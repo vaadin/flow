@@ -14,12 +14,9 @@
  * the License.
  */
 
-// Self-contained profiler leaf helpers migrated from Profiler.java, registered
-// on window.Vaadin.Flow.internal.Profiler by registerInternals; the Java methods
-// delegate here. The GwtStatsEvent JSO accessors, the __gwtStatsEvent
-// logger setup (logGwtEvent/ensureLogger/ensureNoLogger) and the
-// RelativeTimeSupplier getRelativeTime implementations stay in Java for now.
-// Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Self-contained profiler leaf helpers migrated from Profiler.java: the
+// __gwtStatsEvent logger setup (logGwtEvent/ensureLogger/ensureNoLogger), the
+// performance-timing readers and the rounding helpers.
 
 interface PerformanceTiming {
   performance?: { timing?: Record<string, number>; now?: () => number };
@@ -32,11 +29,10 @@ interface GwtStats {
 
 /**
  * Reports a profiler event to the __gwtStatsEvent logger. The evtGroup,
- * moduleName and relativeMillis are computed on the Java side (EVT_GROUP
- * constant, GWT.getModuleName(), Profiler.getRelativeTimeMillis()) and passed
- * in; name/type identify the event.
+ * moduleName and relativeMillis are computed by the caller and passed in;
+ * name/type identify the event.
  */
-// eslint-disable-next-line @typescript-eslint/max-params -- positional JSNI delegation mirrors the Java-computed values
+// eslint-disable-next-line @typescript-eslint/max-params -- positional parameters mirror the __gwtStatsEvent payload fields
 export function logGwtEvent(
   evtGroup: string,
   moduleName: string,

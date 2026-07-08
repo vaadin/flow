@@ -14,9 +14,7 @@
  * the License.
  */
 
-// Implementations migrated from SystemErrorHandler.java, registered on
-// window.Vaadin.Flow.internal.SystemErrorHandler by registerInternals; the Java
-// methods delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from SystemErrorHandler.java.
 
 import { addGetParameters } from './SharedUtil';
 import { getScheduler } from './TrackingScheduler';

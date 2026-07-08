@@ -14,14 +14,12 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.DefaultConnectionStateHandler,
-// built alongside the Java version. It implements ConnectionStateHandler by
-// composing the ported ReconnectStateMachine (the reconnect-decision core) and
-// adding the retry mechanics (scheduleReconnect timer + doReconnect payload
-// re-send / heartbeat), the heartbeat/xhr/push handler methods, online/offline
-// handling, the reconnect dialog text, and unrecoverable-error handling. The
-// timer/network/online-offline parts are integration-validated at cutover; the
-// Registry members are contracts.
+// TypeScript port of com.vaadin.client.communication.DefaultConnectionStateHandler.
+// It implements ConnectionStateHandler by composing the ported
+// ReconnectStateMachine (the reconnect-decision core) and adding the retry
+// mechanics (scheduleReconnect timer + doReconnect payload re-send / heartbeat),
+// the heartbeat/xhr/push handler methods, online/offline handling, the reconnect
+// dialog text, and unrecoverable-error handling.
 
 import { setProperty, setState } from '../ConnectionIndicator';
 import { ConnectionMessageType } from './ConnectionMessageType';

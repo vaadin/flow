@@ -14,12 +14,10 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.RequestResponseTracker,
-// built alongside the Java version. It ensures a single active server request
-// at a time and fires request-starting / response-handling-started/ended and
-// reconnection-attempt events. The GWT EventBus is replaced by per-event-type
-// listener sets; the Registry/MessageSender/ServerRpcQueue are contracts
-// satisfied at cutover.
+// TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
+// It ensures a single active server request at a time and fires
+// request-starting / response-handling-started/ended and reconnection-attempt
+// events. The GWT EventBus is replaced by per-event-type listener sets.
 
 import type { EventRemover } from '../reactive/reactive';
 import { ResynchronizationState } from './ResynchronizationState';

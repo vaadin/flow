@@ -15,10 +15,9 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.nodefeature.MapProperty (and its
-// change event/listener), built alongside the Java version on top of the TS
-// reactive core. The state-tree classes it touches are not ported yet, so the
-// thin slice it needs is declared here as contracts that the future TS NodeMap,
-// StateNode and StateTree will satisfy at cutover.
+// change event/listener), on top of the TS reactive core. The thin slice of the
+// state-tree classes it touches is declared here as contracts that NodeMap,
+// StateNode and StateTree satisfy.
 
 import {
   Reactive,

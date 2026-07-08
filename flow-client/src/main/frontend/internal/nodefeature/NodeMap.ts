@@ -15,8 +15,7 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeMap (and its
-// property-add event/listener), built alongside the Java version on top of the
-// TS reactive core and MapProperty.
+// property-add event/listener), on top of the TS reactive core and MapProperty.
 
 import {
   ReactiveEventRouter,

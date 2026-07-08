@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { publishClient } from '../../main/frontend/internal/publishClient';
-import type { ApplicationConfiguration, ApplicationConnection } from '../../main/frontend/internal/gwtExports';
+import type { ApplicationConfiguration, ApplicationConnection } from '../../main/frontend/internal/clientApi';
 
 const $wnd = window as any;
 

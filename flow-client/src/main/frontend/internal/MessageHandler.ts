@@ -14,18 +14,16 @@
  * the License.
  */
 
-// Implementations migrated from MessageHandler.java, registered on
-// window.Vaadin.Flow.internal.MessageHandler by registerInternals; the Java
-// methods delegate here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
+// Implementations migrated from MessageHandler.java.
 //
-// The MessageHandler class below is the build-alongside TS port of the rest of
+// The MessageHandler class below is the TS port of the rest of
 // MessageHandler.java: it handles incoming UIDL messages in server-sync-id order
 // (queueing out-of-order / locked messages), then applies each (constants ->
 // ConstantPool, changes -> TreeChangeProcessor, executeJs, dependency loading,
 // session-expired/error handling). It composes the ported MessageOrdering
 // (PendingMessageQueue), TreeChangeProcessor, DomApi, Reactive,
-// EagerDependencyTracker, and the JSNI helpers above; everything else is a
-// Registry contract satisfied at cutover.
+// EagerDependencyTracker, and the helpers above; everything else is a
+// Registry contract.
 
 import { getServerId, isResynchronize, PendingMessageQueue } from './communication/MessageOrdering';
 import { ResynchronizationState } from './communication/ResynchronizationState';
@@ -379,7 +377,7 @@ export class MessageHandler {
     // changes; here a non-array would make `for...of` throw and abort before the
     // meta.appError handling runs, so coerce it to an empty list.
     const changes = Array.isArray(json.changes) ? (json.changes as Array<Record<string, unknown>>) : [];
-    // The real StateTree satisfies TreeChangeProcessor's contract at cutover.
+    // The StateTree satisfies TreeChangeProcessor's contract.
     const updatedNodes = applyTreeChanges(tree as never, changes);
     Reactive.addPostFlushListener(() =>
       setTimeout(() => updatedNodes.forEach((node) => this.afterServerUpdates(node as unknown as UpdatedNode)), 0)

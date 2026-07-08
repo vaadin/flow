@@ -15,11 +15,10 @@
  */
 
 // TypeScript port of the com.vaadin.client.communication.ConnectionStateHandler
-// interface, built alongside the Java version. It is notified of heartbeat /
-// XHR / push successes and failures and of reconnect-configuration changes, and
-// drives the reconnection UI/logic (DefaultConnectionStateHandler implements
-// it). Consolidates the contract previously inlined across Heartbeat,
-// XhrConnection and MessageSender.
+// interface. It is notified of heartbeat / XHR / push successes and failures and
+// of reconnect-configuration changes, and drives the reconnection UI/logic
+// (DefaultConnectionStateHandler implements it). Consolidates the contract
+// previously inlined across Heartbeat, XhrConnection and MessageSender.
 
 import type { PushConnection } from './PushConnection';
 import type { XhrConnectionError } from './XhrConnectionError';

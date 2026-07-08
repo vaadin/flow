@@ -14,16 +14,9 @@
  * the License.
  */
 
-// Implementation migrated from XhrConnection.java, registered on
-// window.Vaadin.Flow.internal.XhrConnection by registerInternals; the Java
-// method delegates here. Also bundled to ES5 for the HtmlUnit used by GwtTests.
-//
-// The XhrConnection class below is the build-alongside TS port of the rest of
-// XhrConnection.java: it sends UIDL requests to the server over XHR and routes
-// the response to the MessageHandler or, on failure, to the
-// ConnectionStateHandler. The Registry and its members are contracts satisfied
-// at cutover. The actual XHR round-trip is integration-validated; getUri and the
-// success/failure routing are the unit-tested logic.
+// TypeScript port of XhrConnection.java. The XhrConnection class below sends UIDL
+// requests to the server over XHR and routes the response to the MessageHandler
+// or, on failure, to the ConnectionStateHandler.
 
 import { XhrConnectionError } from './communication/XhrConnectionError';
 import { parseJSONResponse } from './MessageHandler';

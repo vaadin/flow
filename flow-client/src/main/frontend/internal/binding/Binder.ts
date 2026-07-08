@@ -15,10 +15,9 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.binding.Binder, the entry point for
-// binding DOM nodes to state nodes, built alongside the Java version. It owns
-// the binding-strategy list and the BinderContext implementation passed to the
-// strategies so they can create and bind child nodes without knowing the other
-// strategies.
+// binding DOM nodes to state nodes. It owns the binding-strategy list and the
+// BinderContext implementation passed to the strategies so they can create and
+// bind child nodes without knowing the other strategies.
 
 import { assert } from '../assert';
 import type { StateNode } from '../StateNode';

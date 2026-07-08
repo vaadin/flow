@@ -14,10 +14,7 @@
  * the License.
  */
 
-// Implementation migrated from ExecuteJavaScriptElementUtils.java, registered on
-// window.Vaadin.Flow.internal.ExecuteJavaScriptElementUtils by registerInternals;
-// the Java method delegates here. Also bundled to ES5 for the HtmlUnit used by
-// GwtTests.
+// Implementation migrated from ExecuteJavaScriptElementUtils.java.
 
 /**
  * Checks whether the node's element class declares the given property with a
@@ -29,12 +26,10 @@ export function isPropertyDefined(node: Node, property: string): boolean {
   return !!declared && typeof declared.value !== 'undefined';
 }
 
-// The JS-initializer cleanup registry of ExecuteJavaScriptElementUtils, ported
-// build-alongside. It stores per-node cleanup callbacks for JS initializers
+// The JS-initializer cleanup registry of ExecuteJavaScriptElementUtils. It
+// stores per-node cleanup callbacks for JS initializers
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
-// remaining DOM-coupled methods (attachExistingElement, populateModelProperties)
-// follow in a later installment and are integration-validated. The StateNode is
-// a contract (addUnregisterListener / setNodeData).
+// StateNode is a contract (addUnregisterListener / setNodeData).
 
 import { wrap } from './dom/DomApi';
 import { getTag, invokeWhenDefined } from './PolymerUtils';

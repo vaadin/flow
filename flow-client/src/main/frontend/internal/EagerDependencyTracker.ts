@@ -15,12 +15,11 @@
  */
 
 // The eager-dependency-loading gate of com.vaadin.client.DependencyLoader,
-// extracted as a standalone, pure-logic unit (built alongside the Java version).
-// It counts in-flight eager dependency loads and runs queued commands once all
-// of them have finished (e.g. MessageHandler defers processing the message until
-// its eager dependencies are loaded). The resource loading itself (the rest of
-// DependencyLoader, on ResourceLoader) is integration-validated at cutover; the
-// Java statics become module state here.
+// extracted as a standalone, pure-logic unit. It counts in-flight eager
+// dependency loads and runs queued commands once all of them have finished
+// (e.g. MessageHandler defers processing the message until its eager
+// dependencies are loaded). The resource loading itself lives in the rest of
+// DependencyLoader, on ResourceLoader.
 
 // Number of eager dependencies currently loading.
 let eagerDependenciesLoading = 0;

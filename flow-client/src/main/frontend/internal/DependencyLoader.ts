@@ -14,12 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.DependencyLoader, built alongside the Java
-// version. It loads stylesheet/script dependencies grouped by load mode (eager
-// load before lazy; inline counts as eager), routing each to the right
-// ResourceLoader method by dependency type, and resolves Vaadin URIs via the
-// URIResolver. Composes the ported EagerDependencyTracker (eager-load gate) and
-// ResourceLoader. The Registry members are contracts satisfied at cutover.
+// TypeScript port of com.vaadin.client.DependencyLoader. It loads
+// stylesheet/script dependencies grouped by load mode (eager load before lazy;
+// inline counts as eager), routing each to the right ResourceLoader method by
+// dependency type, and resolves Vaadin URIs via the URIResolver. Composes the
+// ported EagerDependencyTracker (eager-load gate) and ResourceLoader.
 
 import {
   endEagerDependencyLoading,

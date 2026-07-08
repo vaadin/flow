@@ -16,14 +16,12 @@
 
 // The reconnect-decision core of
 // com.vaadin.client.communication.DefaultConnectionStateHandler, extracted as a
-// testable unit (built alongside the Java version). It decides, when a
-// recoverable communication error occurs, which transport's failure is the
-// active reconnection cause (by ConnectionMessageType priority), counts the
-// attempts, gives up after the configured maximum, and resolves the temporary
-// error when a connection succeeds. The actual reconnect retry (timer + payload
-// re-send) and the full ConnectionStateHandler push/xhr handlers compose this
-// kernel and are integration-validated at cutover. ConnectionIndicator /
-// Registry members are contracts/the ported ConnectionIndicator.
+// testable unit. It decides, when a recoverable communication error occurs,
+// which transport's failure is the active reconnection cause (by
+// ConnectionMessageType priority), counts the attempts, gives up after the
+// configured maximum, and resolves the temporary error when a connection
+// succeeds. The actual reconnect retry (timer + payload re-send) and the full
+// ConnectionStateHandler push/xhr handlers compose this kernel.
 
 import { setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
