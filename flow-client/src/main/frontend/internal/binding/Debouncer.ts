@@ -273,7 +273,12 @@ export class Debouncer {
             // else: in queue with no command, likely a leading-only subscription
           } else if (debouncer.bufferedSendCommand !== null) {
             // otherwise an extra intermediate event; comes a bit early but
-            // better than out of order
+            // better than out of order.
+            // Deviation from Debouncer.java: Java runs runCommands here
+            // unconditionally and then restarts the intermediate timer. With no
+            // buffered command that runCommands NPEs on the null command, so we
+            // guard on bufferedSendCommand and skip; the timer restart is moot
+            // with nothing to fire.
             Debouncer.runCommands(
               EVENT_PHASE_INTERMEDIATE,
               debouncer.bufferedSendCommand,
