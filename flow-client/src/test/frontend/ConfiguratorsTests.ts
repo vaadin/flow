@@ -17,14 +17,21 @@ function fakeProperty() {
 }
 
 describe('PollConfigurator', () => {
-  it('configures the poller when the poll interval changes', () => {
+  it('configures the poller on each poll interval change but not on registration', () => {
     const property = fakeProperty();
     const node = { getMap: () => ({ getProperty: () => property }) };
     const intervals: number[] = [];
     observePoll(node, { setInterval: (i) => intervals.push(i) });
 
-    property.fire({ getNewValue: () => 3000 });
-    expect(intervals).to.deep.equal([3000]);
+    // Observing must not configure the poller until the property changes.
+    expect(intervals).to.deep.equal([]);
+
+    // Numbers are always passed as doubles from the server.
+    property.fire({ getNewValue: () => 100.0 });
+    expect(intervals).to.deep.equal([100]);
+
+    property.fire({ getNewValue: () => -1.0 });
+    expect(intervals).to.deep.equal([100, -1]);
   });
 });
 
