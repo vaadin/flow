@@ -43,11 +43,14 @@ import com.vaadin.flow.shared.util.SharedUtil;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class SpringServlet extends VaadinServlet {
 
     /**
      * Property names that are read from the application.properties file
+     *
+     * @since 12.0.2
      */
     protected static final List<String> PROPERTY_NAMES = Arrays
             .stream(InitParameters.class.getDeclaredFields())
@@ -87,6 +90,7 @@ public class SpringServlet extends VaadinServlet {
      * @param rootMapping
      *            the incoming HttpServletRequest is wrapped in
      *            ForwardingRequestWrapper if {@code true}
+     * @since 11.0
      */
     public SpringServlet(ApplicationContext context, boolean rootMapping) {
         this.context = context;

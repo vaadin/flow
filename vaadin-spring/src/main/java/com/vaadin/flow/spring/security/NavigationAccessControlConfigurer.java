@@ -91,6 +91,7 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  *
  * @see NavigationAccessControl
  * @see VaadinWebSecurity
+ * @since 24.3
  */
 public final class NavigationAccessControlConfigurer {
 

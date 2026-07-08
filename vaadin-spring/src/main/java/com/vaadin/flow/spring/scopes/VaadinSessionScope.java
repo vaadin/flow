@@ -24,6 +24,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class VaadinSessionScope extends AbstractScope {
 

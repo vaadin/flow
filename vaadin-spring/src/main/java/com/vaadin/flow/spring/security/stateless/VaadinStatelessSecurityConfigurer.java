@@ -80,6 +80,7 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
  *
  * @param <H>
  *            the concrete {@link HttpSecurityBuilder} subclass
+ * @since 19.0
  */
 public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         extends
@@ -101,6 +102,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      *             required configurations by calling
      *             {@link #apply(HttpSecurity, Customizer)}.
      * @see #apply(HttpSecurity, Customizer)
+     * @since 24.0
      */
     @Deprecated(since = "24.4", forRemoval = true)
     public void setSharedObjects(HttpSecurity http) {
@@ -126,6 +128,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @deprecated use
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.
+     * @since 24.3.8
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static void apply(HttpSecurity http,

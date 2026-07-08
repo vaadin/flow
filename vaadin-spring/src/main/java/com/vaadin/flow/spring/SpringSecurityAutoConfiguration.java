@@ -41,6 +41,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  *
  * @author Vaadin Ltd
  *
+ * @since 17.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(WebSecurityCustomizer.class)
@@ -62,6 +63,7 @@ public class SpringSecurityAutoConfiguration {
      * security configuration.
      *
      * @return the default navigation access control initializer
+     * @since 24.3
      */
     @Bean
     public NavigationAccessControlInitializer navigationAccessControlInitializer(
@@ -74,6 +76,7 @@ public class SpringSecurityAutoConfiguration {
      * configuration.
      *
      * @return the default navigation access control.
+     * @since 24.3
      */
     @Bean
     public NavigationAccessControl navigationAccessControl(
@@ -110,6 +113,7 @@ public class SpringSecurityAutoConfiguration {
      * @param accessAnnotationChecker
      *            the {@link AccessAnnotationChecker} bean to use
      * @return the default view access checker
+     * @since 24.3
      */
     @Bean
     public AnnotatedViewAccessChecker annotatedViewAccessChecker(
@@ -124,6 +128,7 @@ public class SpringSecurityAutoConfiguration {
      * @param accessPathChecker
      *            the {@link AccessPathChecker} bean to use
      * @return the default route path access checker
+     * @since 24.3
      */
     @Bean
     public RoutePathAccessChecker routePathAccessChecker(
@@ -140,6 +145,7 @@ public class SpringSecurityAutoConfiguration {
      * @param evaluator
      *            URI privileges evaluator
      * @return the default route path access checker
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean
@@ -158,6 +164,7 @@ public class SpringSecurityAutoConfiguration {
      * from the project, we make it available here
      *
      * @return the default access annotation checker
+     * @since 18.0
      */
     @Bean
     @ConditionalOnMissingBean
@@ -169,6 +176,7 @@ public class SpringSecurityAutoConfiguration {
      * Makes the request util available.
      *
      * @return the request util
+     * @since 18.0
      */
     @Bean
     public RequestUtil requestUtil() {
@@ -182,6 +190,7 @@ public class SpringSecurityAutoConfiguration {
      *            Optional granted authority defaults bean for the default role
      *            prefix
      * @return the role prefix holder
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean

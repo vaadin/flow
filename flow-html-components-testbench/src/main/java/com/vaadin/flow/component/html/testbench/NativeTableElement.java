@@ -14,7 +14,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;table&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Element("table")
 public class NativeTableElement extends TestBenchElement {

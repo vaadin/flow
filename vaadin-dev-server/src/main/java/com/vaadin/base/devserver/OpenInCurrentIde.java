@@ -32,6 +32,8 @@ import com.vaadin.open.Open;
  * Util for opening a file in the currently used IDE.
  * <p>
  * Supports detecting VS Code, Eclipse and IntelliJ.
+ *
+ * @since 24.0
  */
 public final class OpenInCurrentIde {
 
@@ -91,10 +93,16 @@ public final class OpenInCurrentIde {
 
     }
 
+    /**
+     * @since 24.6.7
+     */
     public enum Ide {
         ECLIPSE, VSCODE, INTELLIJ, OTHER
     }
 
+    /**
+     * @since 24.6.7
+     */
     public record IdeAndProcessInfo(Ide ide, Info processInfo) {
     }
 
@@ -102,6 +110,7 @@ public final class OpenInCurrentIde {
      * Gets the IDE and process info for the current process.
      *
      * @return the IDE and process info
+     * @since 24.6.7
      */
     public static IdeAndProcessInfo getIdeAndProcessInfo() {
         Optional<Info> maybeIdeCommand = findIdeCommandInfo();

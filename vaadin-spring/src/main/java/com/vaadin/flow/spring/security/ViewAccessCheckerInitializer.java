@@ -19,6 +19,7 @@ import com.vaadin.flow.server.auth.ViewAccessChecker;
  *
  * @deprecated ViewAccessChecker has been replaced by
  *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
+ * @since 18.0
  */
 @Deprecated(forRemoval = true, since = "24.3")
 public class ViewAccessCheckerInitializer implements VaadinServiceInitListener {

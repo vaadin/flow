@@ -40,6 +40,7 @@ import jakarta.servlet.MultipartConfigElement;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 @Configuration
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
@@ -81,6 +82,7 @@ public class SpringBootAutoConfiguration {
      * @param configurationProperties
      *            the vaadin configuration properties
      * @return a custom ServletRegistrationBean instance
+     * @since 23.0.1
      */
     @Bean
     @ConditionalOnMissingBean(value = SpringServlet.class, parameterizedContainer = ServletRegistrationBean.class)

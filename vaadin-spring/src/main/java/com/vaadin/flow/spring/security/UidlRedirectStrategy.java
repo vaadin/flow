@@ -22,7 +22,7 @@ import com.vaadin.flow.server.HandlerHelper;
  * A strategy to handle redirects which is aware of UIDL requests.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 23.3
  */
 public class UidlRedirectStrategy extends DefaultRedirectStrategy {
 

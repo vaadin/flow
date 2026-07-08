@@ -90,7 +90,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 8.0
  */
 public class DevModeInitializer implements Serializable {
 
@@ -208,6 +208,7 @@ public class DevModeInitializer implements Serializable {
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
+     * @since 24.7
      */
     public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
             VaadinContext context, Executor taskExecutor)

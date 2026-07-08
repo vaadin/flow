@@ -12,6 +12,8 @@ import java.io.Serializable;
 
 /**
  * A message sent to the debug window.
+ *
+ * @since 9.0
  */
 public class DebugWindowMessage implements Serializable {
 

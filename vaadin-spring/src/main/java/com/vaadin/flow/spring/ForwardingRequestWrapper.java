@@ -24,6 +24,7 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0.6
  */
 public class ForwardingRequestWrapper extends HttpServletRequestWrapper {
 

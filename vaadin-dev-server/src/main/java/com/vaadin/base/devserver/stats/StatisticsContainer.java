@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Wraps a JSON data structure and provides a slightly easier API for it.
+ *
+ * @since 9.0.2
  */
 public class StatisticsContainer {
 

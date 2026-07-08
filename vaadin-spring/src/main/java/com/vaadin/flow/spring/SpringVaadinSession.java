@@ -17,6 +17,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @author Vaadin Ltd
  * @deprecated No replacement planned
+ * @since 10.0
  */
 @Deprecated(forRemoval = true)
 public class SpringVaadinSession extends VaadinSession {

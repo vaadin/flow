@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Development more usage statistic storage and methods for updating the data.
+ *
+ * @since 9.0.2
  */
 public class StatisticsStorage {
 

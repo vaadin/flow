@@ -25,7 +25,7 @@ import com.vaadin.flow.internal.StringUtil;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 5.0
  *
  * @see LitTemplateParser
  */

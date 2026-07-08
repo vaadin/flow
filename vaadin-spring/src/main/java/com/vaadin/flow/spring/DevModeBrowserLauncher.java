@@ -28,6 +28,8 @@ import jakarta.servlet.ServletContext;
 
 /**
  * Utilities for launching a browser when running in development mode.
+ *
+ * @since 19.0
  */
 public class DevModeBrowserLauncher
         implements SpringApplicationRunListener, Serializable {

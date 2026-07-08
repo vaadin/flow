@@ -34,6 +34,7 @@ import com.vaadin.flow.server.Constants;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public abstract class VaadinMVCWebAppInitializer
         implements WebApplicationInitializer {

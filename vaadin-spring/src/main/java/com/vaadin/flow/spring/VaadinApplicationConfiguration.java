@@ -33,7 +33,7 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  * application if there is no developer provided factory available.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 16.0
  *
  */
 @Configuration
@@ -67,6 +67,7 @@ public class VaadinApplicationConfiguration {
      * {@link I18NProvider} bean declared.
      *
      * @return default I18N provider
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean(value = I18NProvider.class)
@@ -83,6 +84,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.4
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)
@@ -96,6 +98,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.5.1
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)

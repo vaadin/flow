@@ -52,6 +52,9 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 
+/**
+ * @since 24.0
+ */
 public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
 

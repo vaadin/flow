@@ -28,6 +28,7 @@ import java.io.IOException;
  *
  * @see com.vaadin.flow.function.DeploymentConfiguration#getMaxRequestBodySize()
  * @see SynchronizedRequestHandler#getRequestBody(java.io.Reader, long)
+ * @since 24.10
  */
 public class RequestBodyTooLargeException extends IOException {
 

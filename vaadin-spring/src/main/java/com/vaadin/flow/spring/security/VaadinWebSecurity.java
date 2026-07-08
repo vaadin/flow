@@ -115,6 +115,7 @@ import java.util.stream.Stream;
  *             Read more details in <a href=
  *             "https://vaadin.com/docs/latest/flow/security/vaadin-security-configurer">Security
  *             Configurer documentation.</a>
+ * @since 23.2
  */
 @Deprecated(since = "24.9", forRemoval = true)
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
@@ -179,6 +180,7 @@ public abstract class VaadinWebSecurity {
      * Gets the default authentication-context bean.
      *
      * @return the authentication-context bean
+     * @since 23.3
      */
     @Bean(name = "VaadinAuthenticationContext")
     public AuthenticationContext getAuthenticationContext() {
@@ -288,6 +290,7 @@ public abstract class VaadinWebSecurity {
      *
      * @return {@literal true} if navigation access control should be enabled,
      *         {@literal false} to disable it.
+     * @since 24.3
      */
     protected boolean enableNavigationAccessControl() {
         return true;
@@ -381,6 +384,7 @@ public abstract class VaadinWebSecurity {
      *         patterns.
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #pathMatchers(String...)} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] antMatchers(String... patterns) {
@@ -397,6 +401,7 @@ public abstract class VaadinWebSecurity {
      *         patterns.
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #routePathMatchers(String...)} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] routeMatchers(String... patterns) {
@@ -415,6 +420,7 @@ public abstract class VaadinWebSecurity {
      *         patterns.
      * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
      * @see org.springframework.web.util.pattern.PathPattern
+     * @since 24.8
      */
     public RequestMatcher[] pathMatchers(String... patterns) {
         PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
@@ -435,6 +441,7 @@ public abstract class VaadinWebSecurity {
      *         patterns.
      * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
      * @see org.springframework.web.util.pattern.PathPattern
+     * @since 24.8
      */
     public RequestMatcher[] routePathMatchers(String... patterns) {
         PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
@@ -592,6 +599,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             Re-throws the possible exceptions while activating
      *             OAuth2LoginConfigurer
+     * @since 23.2.3
      */
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
             throws Exception {
@@ -622,6 +630,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             Re-throws the possible exceptions while activating
      *             OAuth2LoginConfigurer
+     * @since 24.7
      */
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
             String postLogoutRedirectUri) throws Exception {
@@ -771,6 +780,7 @@ public abstract class VaadinWebSecurity {
      *
      * @return {@link NavigationAccessControl} bean used by this
      *         VaadinWebSecurity configuration.
+     * @since 24.3
      */
     protected NavigationAccessControl getNavigationAccessControl() {
         return accessControl;
@@ -782,6 +792,7 @@ public abstract class VaadinWebSecurity {
      *
      * @param registry
      *            used to add custom handlers.
+     * @since 23.3
      */
     protected void addLogoutHandlers(Consumer<LogoutHandler> registry) {
 

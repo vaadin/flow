@@ -48,6 +48,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 
@@ -257,6 +258,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
      * @param msg
      *            the message to broadcast
      * @deprecated Use {@link #broadcast(ObjectNode)} instead.
+     * @since 24.5
      */
     @Deprecated
     public void broadcast(JsonObject msg) {
@@ -268,6 +270,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
      *
      * @param msg
      *            the message to broadcast
+     * @since 24.8
      */
     public void broadcast(ObjectNode msg) {
         resources.keySet().forEach(resourceRef -> {

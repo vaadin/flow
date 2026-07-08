@@ -89,6 +89,8 @@ import java.util.function.Predicate;
  * }
  * }
  * </pre>
+ *
+ * @since 24.3
  */
 public class SpringAccessPathChecker implements AccessPathChecker {
 
@@ -147,6 +149,7 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      *            the original HTTP request transformer to be wrapped
      * @return a new HTTP request transformer that wraps the transformed request
      *         with enhanced security awareness
+     * @since 24.9.2
      */
     public static HttpServletRequestTransformer principalAwareRequestTransformer(
             HttpServletRequestTransformer transformer) {

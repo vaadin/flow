@@ -49,6 +49,7 @@ import org.springframework.util.ResourceUtils;
  * "vaadin.blocked-packages".
  *
  * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
+ * @since 24.5
  */
 public class FilterableResourceResolver
         extends PathMatchingResourcePatternResolver implements Serializable {
