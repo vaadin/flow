@@ -16,22 +16,21 @@
 
 const fs = require('fs');
 
-const fromDir = 'target/classes/META-INF/resources/VAADIN/static/client/';
-const fromFileRegex = /^client-.*\.cache\.js$/u;
-
 const sourceDir = 'src/main/frontend/';
 const targetDir = 'target/classes/META-INF/frontend/';
 const toFile = 'FlowClient.js';
 
-const fromFileName = fs.readdirSync(fromDir).find((filename) => fromFileRegex.exec(filename));
+// FlowClient.init() is the client entry point that Flow.ts imports and calls. It
+// runs the TypeScript bootstrap (onModuleLoad): it registers the widgetset start
+// callback so the server bootstrap can start the application, which assembles and
+// starts the TypeScript engine (ApplicationConnection). This replaces the former
+// GWT engine bundle that used to be inlined here.
+const clientSource = `import { onModuleLoad } from './internal/Bootstrapper';
 
-// Read from target
-let clientSource = fs.readFileSync(fromDir + fromFileName, 'utf8');
-
-// Wrap with ES module export
-clientSource = `export function init() {
-${clientSource}
-};`;
+export function init() {
+  onModuleLoad();
+}
+`;
 
 // Write to source
 fs.writeFileSync(sourceDir + toFile, clientSource, 'utf8');
