@@ -12,7 +12,11 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['src/test/frontend/*']
+          allowDefaultProject: ['src/test/frontend/*'],
+          // The migration adds a *Tests.ts per converted module; the test files
+          // use the default project, so raise its file cap (default 8) to keep
+          // linting working as the suite grows.
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 100
         }
       }
     },
