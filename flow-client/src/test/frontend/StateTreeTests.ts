@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { StateNode } from '../../main/frontend/internal/StateNode';
+import { type NodeUnregisterEvent, StateNode } from '../../main/frontend/internal/StateNode';
 import { StateTree, type Registry } from '../../main/frontend/internal/StateTree';
 import { NodeFeatures, NodeProperties } from '../../main/frontend/internal/nodefeature/NodeFeatures';
 
@@ -14,15 +14,19 @@ function makeTree(handlePropertyUpdateResult = false): {
   tree: StateTree;
   syncs: Sync[];
   getFlushCount: () => number;
+  getRegisteredNodes: () => StateNode[];
 } {
   const syncs: Sync[] = [];
   let flushCount = 0;
+  const registeredNodes: StateNode[] = [];
   const registry: Registry = {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {
         flushCount++;
       },
-      nodeRegistered: () => {},
+      nodeRegistered: (node) => {
+        registeredNodes.push(node);
+      },
       handlePropertyUpdate: () => handlePropertyUpdateResult
     }),
     getServerConnector: () => ({
@@ -33,7 +37,12 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendExistingElementWithIdAttachToServer: () => {}
     })
   };
-  return { tree: new StateTree(registry), syncs, getFlushCount: () => flushCount };
+  return {
+    tree: new StateTree(registry),
+    syncs,
+    getFlushCount: () => flushCount,
+    getRegisteredNodes: () => registeredNodes
+  };
 }
 
 function setVisible(node: StateNode, value: boolean): void {
@@ -54,12 +63,89 @@ describe('StateTree', () => {
     expect(node.isUnregistered()).to.equal(true);
   });
 
+  it('throws when registering an already-registered node', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    expect(() => tree.registerNode(node)).to.throw();
+  });
+
+  it('throws when unregistering a node that was never registered', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    expect(() => tree.unregisterNode(node)).to.throw();
+  });
+
+  it('throws when unregistering a node twice', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    tree.unregisterNode(node);
+    // Should run fine up to this point
+    expect(() => tree.unregisterNode(node)).to.throw();
+  });
+
+  it('fires the unregister event exactly once with the right node', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    expect(node.isUnregistered()).to.equal(false);
+
+    let lastEvent: NodeUnregisterEvent | null = null;
+    node.addUnregisterListener((event) => {
+      expect(lastEvent, 'Unexpected event fired').to.equal(null);
+      lastEvent = event;
+    });
+
+    tree.unregisterNode(node);
+
+    expect(lastEvent).to.not.equal(null);
+    expect(lastEvent!.getNode()).to.equal(node);
+    expect(node.isUnregistered()).to.equal(true);
+    expect(tree.getNode(node.getId())).to.equal(null);
+  });
+
+  it('does not fire a removed unregister listener', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+
+    const remover = node.addUnregisterListener(() => expect.fail('Should never run'));
+    remover.remove();
+
+    tree.unregisterNode(node);
+  });
+
   it('setUpdateInProgress flushes property updates', () => {
     const { tree, getFlushCount } = makeTree();
     expect(getFlushCount()).to.equal(0);
     tree.setUpdateInProgress(true);
     expect(tree.isUpdateInProgress()).to.equal(true);
     expect(getFlushCount()).to.equal(1);
+  });
+
+  it('setUpdateInProgress flushes property updates again when set to false', () => {
+    const { tree, getFlushCount } = makeTree();
+    tree.setUpdateInProgress(true);
+    expect(getFlushCount()).to.equal(1);
+    tree.setUpdateInProgress(false);
+    expect(getFlushCount()).to.equal(2);
+  });
+
+  it('does not call the property handler when registering while no update is in progress', () => {
+    const { tree, getFlushCount, getRegisteredNodes } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    expect(getFlushCount()).to.equal(0);
+    expect(getRegisteredNodes()).to.deep.equal([]);
+  });
+
+  it('notifies the property handler when registering while an update is in progress', () => {
+    const { tree, getRegisteredNodes } = makeTree();
+    tree.setUpdateInProgress(true);
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    expect(getRegisteredNodes()).to.deep.equal([node]);
   });
 
   describe('isVisible', () => {
