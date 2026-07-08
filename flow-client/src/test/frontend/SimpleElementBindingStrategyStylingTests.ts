@@ -1,5 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { bindClassList, updateStyleProperty } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
 
 function fakeStyleProperty(name: string, value: unknown, hasValue = true) {
   return {
@@ -64,5 +66,24 @@ describe('SimpleElementBindingStrategy styling binding', () => {
     remover.remove();
     list.fireSplice([], ['d']);
     expect(element.classList.contains('d')).to.be.false;
+  });
+
+  // Ported from GwtMultipleBindingTest.testAddStylesDoubleBind: binding the same
+  // node a second time must be a no-op that never re-reads the style feature.
+  it('binding twice does not re-read the style-properties feature', () => {
+    Reactive.reset();
+    const { tree } = makeCollectingTree();
+    const node = new BindGuardStateNode(2, tree, (m) => expect.fail(m));
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    const element = document.createElement('div');
+
+    bind(node, element);
+    node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty('foo').setValue('bar');
+    Reactive.flush();
+
+    node.setBound();
+    // A second bind must return immediately without touching any feature.
+    bind(node, element);
+    Reactive.flush();
   });
 });
