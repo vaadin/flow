@@ -17,6 +17,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
@@ -120,6 +121,10 @@ public class Image extends HtmlContainer
 
     /**
      * Sets the image URL.
+     * <p>
+     * Unlike {@link Anchor#setHref(String)} and {@link IFrame#setSrc(String)},
+     * image URLs are not validated against the
+     * {@value InitParameters#URL_SAFE_SCHEMES} configuration.
      *
      * @param src
      *            the image URL
