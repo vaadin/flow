@@ -1688,6 +1688,8 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getUrlSafeSchemes())
+                .thenReturn(Collections.singleton("*"));
     }
 
     @After

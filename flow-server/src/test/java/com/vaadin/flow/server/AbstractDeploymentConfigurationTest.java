@@ -8,8 +8,12 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -42,6 +46,33 @@ public class AbstractDeploymentConfigurationTest {
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
         Assert.assertEquals("Unexpected classLoader configuration option value",
                 classLoader, config.getClassLoaderName());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_propertyNotSet_returnsDefault() {
+        DeploymentConfiguration config = getConfig(null, null);
+        Assert.assertEquals(
+                Collections.singleton(Constants.URL_SAFE_SCHEMES_WILDCARD),
+                config.getUrlSafeSchemes());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_commaSeparated_isTrimmedAndLowerCased() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, " HTTPS , MyApp ");
+        Assert.assertEquals(new HashSet<>(Arrays.asList("https", "myapp")),
+                config.getUrlSafeSchemes());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_memoizedAcrossCalls() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, "custom");
+        Set<String> first = config.getUrlSafeSchemes();
+        Set<String> second = config.getUrlSafeSchemes();
+        Assert.assertEquals(Collections.singleton("custom"), first);
+        Assert.assertSame("Subsequent calls should return the cached instance",
+                first, second);
     }
 
     private DeploymentConfiguration getConfig(String property, String value) {

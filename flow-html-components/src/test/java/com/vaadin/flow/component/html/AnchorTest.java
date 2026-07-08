@@ -233,6 +233,40 @@ public class AnchorTest extends ComponentTest {
         Assert.assertNotEquals(href, anchor.getHref());
     }
 
+    @Test
+    public void setHref_unsafeScheme_throws() {
+        Anchor anchor = new Anchor();
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> anchor.setHref("javascript:alert(1)"));
+    }
+
+    @Test
+    public void setUnsafeHref_unsafeScheme_setsHrefWithoutValidation() {
+        Anchor anchor = new Anchor();
+        anchor.setUnsafeHref("javascript:alert(1)");
+        Assert.assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void constructor_stringHrefStringText_unsafeScheme_throws() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click"));
+    }
+
+    @Test
+    public void constructor_stringHrefStringTextTarget_unsafeScheme_throws() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)", "Click",
+                        AnchorTarget.BLANK));
+    }
+
+    @Test
+    public void constructor_stringHrefComponents_unsafeScheme_throws() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> new Anchor("javascript:alert(1)"));
+    }
+
     private void mockUI() {
         ui = new UI();
         UI.setCurrent(ui);
