@@ -10,6 +10,7 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -48,5 +49,25 @@ public class IFrameTest extends ComponentTest {
         iframe.reload();
 
         Mockito.verify(element).executeJs("this.src = this.src");
+    }
+
+    @Test
+    public void setSrc_unsafeScheme_throws() {
+        IFrame iframe = new IFrame();
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> iframe.setSrc("javascript:alert(1)"));
+    }
+
+    @Test
+    public void setUnsafeSrc_unsafeScheme_setsSrcWithoutValidation() {
+        IFrame iframe = new IFrame();
+        iframe.setUnsafeSrc("javascript:alert(1)");
+        Assert.assertEquals("javascript:alert(1)", iframe.getSrc());
+    }
+
+    @Test
+    public void constructor_unsafeSrc_throws() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> new IFrame("javascript:alert(1)"));
     }
 }
