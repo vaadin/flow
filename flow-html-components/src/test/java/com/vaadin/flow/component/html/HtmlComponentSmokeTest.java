@@ -224,6 +224,16 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().equals("setUnsafeSrc")) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setUnsafeHref")) {
+            return true;
+        }
+
         return false;
     }
 

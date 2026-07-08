@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
  */
 public interface DeploymentConfiguration
         extends AbstractConfiguration, Serializable {
-
     /**
      * Returns whether the server provides timing info to the client.
      *
@@ -263,6 +263,27 @@ public interface DeploymentConfiguration
                         POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
                 .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the set of URL schemes considered safe in URLs set on components
+     * such as {@code Anchor}, {@code IFrame} and in
+     * {@link com.vaadin.flow.component.page.Page#open(String, String)}.
+     * <p>
+     * Concrete implementations read this from the
+     * {@link InitParameters#URL_SAFE_SCHEMES} property; the default returns
+     * {@code Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD)}, which bypasses the
+     * validation and allows all URLs.
+     * <p>
+     * <strong>Note:</strong> the default changes in future Flow versions.
+     * Starting from Flow 25.2, the default safe schemes are "http", "https",
+     * "mailto", "tel", "ftp". Script-capable schemes such as {@code javascript}
+     * and {@code data} will be intentionally excluded.
+     *
+     * @return the set of safe URL schemes, never {@code null}
+     */
+    default Set<String> getUrlSafeSchemes() {
+        return Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD);
     }
 
     /**
