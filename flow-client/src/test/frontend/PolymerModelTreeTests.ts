@@ -4,6 +4,7 @@ import { Reactive } from '../../main/frontend/internal/reactive/reactive';
 import { StateNode } from '../../main/frontend/internal/StateNode';
 
 const ELEMENT_PROPERTIES = 1;
+const TEMPLATE_MODELLIST = 16;
 
 // A minimal StateTree stub sufficient to construct StateNodes.
 const treeStub: any = {
@@ -33,5 +34,23 @@ describe('PolymerModelTree.createModelTree', () => {
     node.getMap(ELEMENT_PROPERTIES).getProperty('label').setValue('Hi');
     node.getMap(ELEMENT_PROPERTIES).getProperty('count').setValue(2);
     expect(createModelTree(node)).to.deep.equal({ label: 'Hi', count: 2, nodeId: 7 });
+  });
+
+  // Ported from GwtPolymerModelTest.testPolymerUtilsStoreNodeIdNotAvailableAsListItem:
+  // a model-list node is converted to an array tagged with its nodeId, but the
+  // nodeId is stored as a non-index property so it never appears as a list item.
+  it('tags a model-list node with a nodeId that is not a serialized list item', () => {
+    const node = new StateNode(98, treeStub);
+    node.getList(TEMPLATE_MODELLIST).add(0, 'one');
+    node.getList(TEMPLATE_MODELLIST).add(1, 'two');
+
+    const modelTree = createModelTree(node);
+
+    // The converted value is the list array, tagged with the node id.
+    expect(Array.isArray(modelTree)).to.equal(true);
+    expect((modelTree as unknown as { nodeId: number }).nodeId).to.equal(98);
+    // The nodeId is not a real array element, so it is not serialized as a list item.
+    expect(JSON.stringify(modelTree)).to.not.contain('98');
+    expect(JSON.stringify(modelTree)).to.equal('["one","two"]');
   });
 });

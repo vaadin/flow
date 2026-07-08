@@ -3,6 +3,7 @@ import { Reactive } from '../../main/frontend/internal/reactive/reactive';
 import { StateNode } from '../../main/frontend/internal/StateNode';
 import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
 import { SimpleElementBindingStrategy } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
 
 const ELEMENT_DATA = 0;
 const TAG = 'tag';
@@ -108,5 +109,41 @@ describe('SimpleElementBindingStrategy class', () => {
 
     expect(element.children).to.have.length(1);
     expect(element.children[0].tagName.toLowerCase()).to.equal('span');
+  });
+
+  // Ported from GwtMultipleBindingTest.testAddClassListDoubleBind: a second bind
+  // must not re-read the class-list feature.
+  it('binding twice does not re-read the class-list feature', () => {
+    Reactive.reset();
+    const { tree } = makeCollectingTree();
+    const node = new BindGuardStateNode(2, tree, (m) => expect.fail(m));
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    node.getList(NodeFeatures.CLASS_LIST).add(0, 'foo');
+    const element = document.createElement('div');
+
+    bind(node, element);
+    Reactive.flush();
+
+    node.setBound();
+    bind(node, element);
+    Reactive.flush();
+  });
+
+  // Ported from GwtMultipleBindingTest.testClientCallableMethodDoubleBind: a
+  // second bind must not re-read the client-delegate-handlers feature.
+  it('binding twice does not re-read the client-callable feature', () => {
+    Reactive.reset();
+    const { tree } = makeCollectingTree();
+    const node = new BindGuardStateNode(2, tree, (m) => expect.fail(m));
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    node.getList(NodeFeatures.CLIENT_DELEGATE_HANDLERS).add(0, 'foo');
+    const element = document.createElement('div');
+
+    bind(node, element);
+    Reactive.flush();
+
+    node.setBound();
+    bind(node, element);
+    Reactive.flush();
   });
 });
