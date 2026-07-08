@@ -22,15 +22,21 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 
 public abstract class ComponentTest {
 
@@ -38,6 +44,28 @@ public abstract class ComponentTest {
     private List<ComponentProperty> properties = new ArrayList<>();
 
     private Set<String> WHITE_LIST = new HashSet<>();
+
+    private static MockedStatic<VaadinService> vaadinServiceMockedStatic;
+
+    @BeforeClass
+    public static void init() {
+        // Mock strict Flow 25.2+ safe URL scheme validation configuration
+        // for feature validation in component tests (AnchorTest, IFrameTest)
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.getUrlSafeSchemes())
+                .thenReturn(Set.of("http", "https", "mailto", "tel", "ftp"));
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        vaadinServiceMockedStatic = Mockito.mockStatic(VaadinService.class);
+        vaadinServiceMockedStatic.when(VaadinService::getCurrent)
+                .thenReturn(service);
+    }
+
+    @AfterClass
+    public static void clean() {
+        vaadinServiceMockedStatic.close();
+    }
 
     @Before
     public void setup() throws IntrospectionException, InstantiationException,
