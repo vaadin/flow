@@ -236,7 +236,10 @@ export function onModuleLoad(): void {
     console.warn('vaadinBootstrap.js was not loaded, skipping vaadin application configuration.');
     return;
   }
-  // Don't run twice for the same bootstrap context.
+  // Don't run twice for the same bootstrap context. GWT initModule logs a
+  // warning in the already-loaded case; we return silently because this guard is
+  // keyed per bootstrap context (window.Vaadin.Flow.clientBootstrapped), where
+  // benign re-entry is expected rather than a misconfiguration to warn about.
   if (flow.clientBootstrapped === true) {
     return;
   }
