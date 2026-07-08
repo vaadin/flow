@@ -63,4 +63,57 @@ describe('Debouncer', () => {
     // let the idle timer fire and unregister
     await delay(60);
   });
+
+  describe('flushAll', () => {
+    it('flushes a buffered trailing command and returns its send command', async () => {
+      const el = document.createElement('div');
+      // A long timeout so the idle timer never fires on its own during the test.
+      const debouncer = Debouncer.getOrCreate(el, 'flush-buffered', 1000);
+
+      let sentPhase: string | null = null;
+      let commandRan = false;
+      const sendCommand = (phase: string) => {
+        sentPhase = phase;
+      };
+      const commands = new Map<string, () => void>([
+        [
+          'prop',
+          () => {
+            commandRan = true;
+          }
+        ]
+      ]);
+
+      // A trailing event buffers the command instead of running it now.
+      const immediate = debouncer.trigger(new Set(['trailing']), sendCommand, commands);
+      expect(immediate).to.equal(false);
+      expect(commandRan).to.equal(false);
+
+      const executed = Debouncer.flushAll();
+
+      // The buffered command and its send command are flushed as a trailing event.
+      expect(commandRan).to.equal(true);
+      expect(sentPhase).to.equal('trailing');
+      expect(executed).to.deep.equal([sendCommand]);
+
+      // The buffered command is cleared, so a second flush does nothing.
+      expect(Debouncer.flushAll()).to.deep.equal([]);
+
+      // let the idle timer fire and unregister
+      await delay(1100);
+    });
+
+    it('skips a leading-only debouncer that has no buffered command', () => {
+      const el = document.createElement('div');
+      const debouncer = Debouncer.getOrCreate(el, 'flush-leading', 1000);
+
+      // A leading event fires immediately and buffers nothing; only an idle
+      // timer remains registered.
+      const immediate = debouncer.trigger(new Set(['leading']), () => expect.fail('should not send'), new Map());
+      expect(immediate).to.equal(true);
+
+      // Nothing buffered => flushAll returns no executed commands.
+      expect(Debouncer.flushAll()).to.deep.equal([]);
+    });
+  });
 });

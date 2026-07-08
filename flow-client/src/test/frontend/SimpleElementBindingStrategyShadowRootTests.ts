@@ -1,6 +1,14 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../main/frontend/internal/reactive/reactive';
 import { bindShadowRoot, BindingContext } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import {
+  BindGuardStateNode,
+  NodeFeatures,
+  NodeProperties,
+  StateNode,
+  bind,
+  makeCollectingTree
+} from './bindingTestHelpers';
 
 const ELEMENT_CHILDREN = 2;
 const SHADOW_ROOT_DATA = 20;
@@ -75,5 +83,26 @@ describe('SimpleElementBindingStrategy shadow root binding', () => {
     const element = document.createElement('div');
     bindShadowRoot(new BindingContext(fakeNode({}), element, binderContext()));
     expect(element.shadowRoot).to.equal(null);
+  });
+
+  // Ported from GwtMultipleBindingTest.testBindShadowRootDoubleBind: a second
+  // bind must not re-read the shadow-root feature.
+  it('binding twice does not re-read the shadow-root feature', () => {
+    Reactive.reset();
+    const { tree } = makeCollectingTree();
+    const node = new BindGuardStateNode(2, tree, (m) => expect.fail(m));
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    const element = document.createElement('div');
+
+    bind(node, element);
+
+    const shadowChild = new StateNode(3, tree);
+    shadowChild.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('div');
+    node.getMap(NodeFeatures.SHADOW_ROOT_DATA).getProperty(NodeProperties.SHADOW_ROOT).setValue(shadowChild);
+    Reactive.flush();
+
+    node.setBound();
+    bind(node, element);
+    Reactive.flush();
   });
 });

@@ -4,6 +4,7 @@ import { StateNode, type StateTree } from '../../main/frontend/internal/StateNod
 import { NodeFeatures, NodeProperties } from '../../main/frontend/internal/nodefeature/NodeFeatures';
 import { TextBindingStrategy } from '../../main/frontend/internal/binding/TextBindingStrategy';
 import type { BinderContext, BindingStrategy } from '../../main/frontend/internal/binding/BindingStrategy';
+import { BindGuardStateNode, bind, makeCollectingTree } from './bindingTestHelpers';
 
 const tree: StateTree = {
   getNode: () => null,
@@ -59,5 +60,23 @@ describe('TextBindingStrategy', () => {
     setText(node, 'ignored');
     Reactive.flush();
     expect(text.data).to.equal('world');
+  });
+
+  // Ported from GwtMultipleBindingTest.testBindTextNodeDoubleBind: a second bind
+  // of a text node must be a no-op that never re-reads the text feature.
+  it('binding a text node twice does not re-read the text feature', () => {
+    Reactive.reset();
+    const { tree: realTree } = makeCollectingTree();
+    const guarded = new BindGuardStateNode(3, realTree, (m) => expect.fail(m));
+    const textNode = document.createTextNode('');
+    guarded.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT);
+
+    bind(guarded, textNode);
+    guarded.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT).setValue('foo');
+    Reactive.flush();
+
+    guarded.setBound();
+    bind(guarded, textNode);
+    Reactive.flush();
   });
 });
