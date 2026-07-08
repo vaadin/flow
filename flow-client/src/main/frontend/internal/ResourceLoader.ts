@@ -20,7 +20,7 @@
 // and clear-by-id, as well as the stylesheet/HTML loaders (which need the
 // BrowserInfo Safari/Opera quirks).
 
-import { isOpera, isSafariOrIOS } from './BrowserInfo';
+import { isChrome, isEdge, isIE, isOpera, isSafariOrIOS } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
 
@@ -291,7 +291,18 @@ export class ResourceLoader {
       } else {
         addOnloadHandler(
           linkElement,
-          () => this.resources.fireLoad(event),
+          () => {
+            // Chrome, IE, Edge all fire load for errors, must check
+            // stylesheet data
+            if (isChrome() || isIE() || isEdge()) {
+              // Error if there's an empty stylesheet (typically a 404).
+              if (getStyleSheetLength(url) === 0) {
+                this.resources.fireError(event);
+                return;
+              }
+            }
+            this.resources.fireLoad(event);
+          },
           () => this.resources.fireError(event)
         );
         if (isOpera()) {
