@@ -49,6 +49,10 @@ export class ApplicationConfiguration {
 
   private atmosphereJSVersion = '';
 
+  // Java leaves these null when absent from the bootstrap config; we default to
+  // [] / '' to keep the published client API non-null (clientApi types
+  // getExportedWebComponents() as string[]) and to avoid an NPE in consumers
+  // that iterate exportedWebComponents (e.g. SystemErrorHandler).
   private exportedWebComponents: string[] = [];
 
   private devToolsEnabled = false;
