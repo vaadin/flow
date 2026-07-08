@@ -10,7 +10,7 @@ import {
 
 // Builds a MapProperty backed by mock state-tree contracts, recording the
 // properties synced to the server.
-function makeProperty(active = true): { property: MapProperty; synced: MapProperty[] } {
+function makeProperty(active = true, forceValueUpdate = false): { property: MapProperty; synced: MapProperty[] } {
   const synced: MapProperty[] = [];
   const tree: MapPropertyTree = {
     isActive: () => active,
@@ -18,7 +18,7 @@ function makeProperty(active = true): { property: MapProperty; synced: MapProper
   };
   const node: MapPropertyNode = { getTree: () => tree };
   const map: MapPropertyOwner = { getNode: () => node };
-  return { property: new MapProperty('foo', map), synced };
+  return { property: new MapProperty('foo', map, forceValueUpdate), synced };
 }
 
 // Mirrors the Java CountingComputation helper.
@@ -149,9 +149,113 @@ describe('MapProperty', () => {
     expect(synced).to.deep.equal([active]);
   });
 
-  it('syncToServer does not send when the node is inactive', () => {
+  it('syncToServer does not send when the node is inactive, fires an event and flushes', () => {
     const { property: inactive, synced } = makeProperty(false);
+
+    const capture: { value: MapPropertyChangeEvent | null } = { value: null };
+    inactive.addChangeListener((event) => {
+      capture.value = event;
+    });
+
+    const flushListener = { ran: false };
+    Reactive.addFlushListener(() => {
+      flushListener.ran = true;
+    });
+
     inactive.syncToServer('bar');
+
     expect(synced).to.deep.equal([]);
+    expect(capture.value).to.not.equal(null);
+    expect(capture.value!.getNewValue()).to.equal(null);
+    expect(flushListener.ran).to.equal(true);
+  });
+
+  it('setValue then syncToServer without flush does not update the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal('bar');
+  });
+
+  it('setValue, flush, then syncToServer updates the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    Reactive.flush();
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal('baz');
+  });
+
+  it('setValue then syncToServer twice updates the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    p.syncToServer('bar');
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal('baz');
+  });
+
+  it('removeValue then syncToServer without flush does not update the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    p.removeValue();
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal(null);
+  });
+
+  it('removeValue, flush, then syncToServer updates the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    p.removeValue();
+    Reactive.flush();
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal('baz');
+  });
+
+  it('removeValue then syncToServer twice updates the value', () => {
+    const { property: p } = makeProperty(true);
+    p.setValue('bar');
+    p.removeValue();
+    p.syncToServer(null);
+    p.syncToServer('baz');
+    expect(p.getValue()).to.equal('baz');
+  });
+
+  it('syncToServer syncs a property that has no value', () => {
+    const { property: p, synced } = makeProperty(true);
+    p.syncToServer(null);
+    expect(synced).to.deep.equal([p]);
+  });
+
+  it('setValue with forced update fires an event every time', () => {
+    const { property: p } = makeProperty(true, true);
+
+    const capture: { value: MapPropertyChangeEvent | null } = { value: null };
+    p.addChangeListener((event) => {
+      capture.value = event;
+    });
+
+    p.setValue('bar');
+    expect(capture.value).to.not.equal(null);
+
+    capture.value = null;
+    // set a different value again
+    p.setValue('foo');
+    expect(capture.value).to.not.equal(null);
+  });
+
+  it('setValue with default strategy fires an event only once for the same value', () => {
+    const { property: p } = makeProperty(true, false);
+
+    const capture: { value: MapPropertyChangeEvent | null } = { value: null };
+    p.addChangeListener((event) => {
+      capture.value = event;
+    });
+
+    p.setValue('bar');
+    expect(capture.value).to.not.equal(null);
+
+    capture.value = null;
+    // set the same value again
+    p.setValue('bar');
+    expect(capture.value).to.equal(null);
   });
 });
