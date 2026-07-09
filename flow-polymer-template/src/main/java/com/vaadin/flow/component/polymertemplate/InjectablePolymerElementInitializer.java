@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
  *             <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
+ * @since 5.0
  */
 @Deprecated
 public class InjectablePolymerElementInitializer

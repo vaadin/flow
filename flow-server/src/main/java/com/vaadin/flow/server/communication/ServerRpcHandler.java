@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -72,7 +73,6 @@ public class ServerRpcHandler implements Serializable {
      * side.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -212,7 +212,6 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {
@@ -227,6 +226,8 @@ public class ServerRpcHandler implements Serializable {
 
     /**
      * Exception thrown then the client side resynchronization is required.
+     * 
+     * @since 2.1
      */
     public static class ResynchronizationRequiredException
             extends RuntimeException {
@@ -241,6 +242,8 @@ public class ServerRpcHandler implements Serializable {
 
     /**
      * Exception thrown when the client side re-sends the same request.
+     * 
+     * @since 24.7
      */
     public static class ClientResentPayloadException extends RuntimeException {
 
@@ -322,8 +325,7 @@ public class ServerRpcHandler implements Serializable {
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException,
             MessageIdSyncException {
-        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
-                request);
+        handleRpc(ui, getMessage(reader, request), request);
     }
 
     /**
@@ -339,6 +341,7 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @since 24.5.6
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
@@ -692,20 +695,27 @@ public class ServerRpcHandler implements Serializable {
     }
 
     protected String getMessage(Reader reader) throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader);
+    }
 
-        StringBuilder sb = new StringBuilder(
-                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
-        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
-
-        while (true) {
-            int read = reader.read(buffer);
-            if (read == -1) {
-                break;
-            }
-            sb.append(buffer, 0, read);
-        }
-
-        return sb.toString();
+    /**
+     * Reads the RPC message from the given reader, enforcing the maximum
+     * request body size configured for the given request.
+     *
+     * @param reader
+     *            the reader to read the message from
+     * @param request
+     *            the request the message was received through
+     * @return the message as a string
+     * @throws IOException
+     *             if reading fails
+     * @throws RequestBodyTooLargeException
+     *             if the message exceeds the configured maximum size
+     */
+    protected String getMessage(Reader reader, VaadinRequest request)
+            throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader,
+                SynchronizedRequestHandler.getMaxRequestBodySize(request));
     }
 
     private static Logger getLogger() {

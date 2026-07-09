@@ -42,6 +42,7 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * @see AccessAnnotationChecker for security rules check implementation
+ * @since 7.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })

@@ -28,6 +28,7 @@ import com.vaadin.flow.component.UI;
  * parameters here.
  *
  * @author Vaadin Ltd
+ * @since 4.0
  */
 public class InitParameters implements Serializable {
 
@@ -60,10 +61,44 @@ public class InitParameters implements Serializable {
      * {@code SAMEORIGIN} (the default) and {@code DENY}. Set the parameter to
      * an empty value to disable sending the header, e.g. for applications that
      * are meant to be embedded in a frame.
+     * 
+     * @since 25.2
      */
     public static final String SERVLET_PARAMETER_FRAME_OPTIONS = "frameOptions";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
+
+    /**
+     * Configuration parameter name for the maximum size, in characters, that
+     * Flow reads from a client-to-server UIDL/RPC or push request body before
+     * rejecting the request with HTTP 413 (Request Entity Too Large). The
+     * default is 10&nbsp;MB; set the value to {@code -1} to disable the limit.
+     * <p>
+     * This limit does not apply to file uploads, which are streamed in chunks
+     * and have their own separate size limits (request size, file size and file
+     * count).
+     * <p>
+     * The body is read incrementally and the limit is enforced on the running
+     * total, so the request is rejected mid-stream once the limit is exceeded;
+     * even chunked ({@code Transfer-Encoding: chunked}) requests without a
+     * {@code Content-Length} header cannot bypass it. For this to hold, Flow
+     * must be the first component to read the body: if a filter or request
+     * wrapper in front of Flow buffers the whole body first, that memory cost
+     * is incurred before this check runs. As defense-in-depth, also configure a
+     * request body size limit and a request read timeout at the servlet
+     * container or reverse proxy (for example Tomcat {@code connectionTimeout}
+     * and {@code maxSwallowSize}, or nginx {@code client_max_body_size} and
+     * {@code client_body_timeout}).
+     * <p>
+     * Be careful not to set the limit too low: every Flow interaction adds a
+     * small protocol overhead (roughly 100&nbsp;bytes per request on top of the
+     * actual payload), and request bodies also grow with the size of component
+     * state changes and RPC arguments sent from the browser. A limit that is
+     * too low will reject legitimate interactions and make the application
+     * unusable. Choose a value that comfortably accommodates the largest
+     * expected UIDL/RPC payload produced by the application.
+     */
+    public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
@@ -90,11 +125,15 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the time waiting for the frontend build tool to
      * output a success or error pattern.
+     * 
+     * @since 24.0
      */
     public static final String SERVLET_PARAMETER_DEVMODE_TIMEOUT = "devmode.output.pattern.timeout";
 
     /**
      * Configuration name for adding extra options to the vite.
+     * 
+     * @since 9.0
      */
     public static final String SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS = "devmode.vite.options";
 
@@ -109,6 +148,8 @@ public class InitParameters implements Serializable {
      * A comma separated list of IP addresses, potentially with wildcards, which
      * can connect to the dev tools. If not specified, only localhost
      * connections are allowed.
+     * 
+     * @since 24.3
      */
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
@@ -118,18 +159,20 @@ public class InitParameters implements Serializable {
      * is supposed to contain a single address, and the HTTP request to have a
      * single occurrence of the header. If not specified, remote address are
      * read from the {@literal X-Forwarded-For} header.
+     * 
+     * @since 24.4
      */
     public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
     /**
      * Configuration parameter name for enabling pnpm.
-     *
-     * @since 2.2
      */
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
      * Configuration parameter name for enabling bun.
+     * 
+     * @since 24.3
      */
     public static final String SERVLET_PARAMETER_ENABLE_BUN = "bun.enable";
 
@@ -142,6 +185,8 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for using globally installed pnpm or default
      * one.
+     * 
+     * @since 9.0
      */
     public static final String SERVLET_PARAMETER_GLOBAL_PNPM = "pnpm.global";
 
@@ -158,7 +203,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for enabling dev tools.
      *
-     * @since 9.0
+     * @since 23.1
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS = "devmode.devTools.enabled";
 
@@ -168,6 +213,7 @@ public class InitParameters implements Serializable {
      * {@link com.vaadin.flow.component.UI} instances will be serialized.
      * Otherwise, it won't be serialized.
      *
+     * @since 8.0
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
@@ -175,12 +221,15 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for enabling component tracking in
      * development mode. If not set, tracking is enabled by default.
      *
+     * @since 24.4
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
     /**
      * Configuration parameter name for adding extra file extensions for stats
      * bundle to generate hashes for.
+     * 
+     * @since 24.6
      */
     public static final String FRONTEND_EXTRA_EXTENSIONS = "devmode.frontendExtraFileExtensions";
 
@@ -191,11 +240,15 @@ public class InitParameters implements Serializable {
 
     /**
      * Menu access control property.
+     * 
+     * @since 24.4
      */
     public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
     /**
      * Application-wide default {@code PageTitleGenerator} property.
+     * 
+     * @since 25.2
      */
     public static final String PAGE_TITLE_GENERATOR = "pageTitle.generator";
 
@@ -222,6 +275,8 @@ public class InitParameters implements Serializable {
      * alternative installations.
      * <p>
      * Example: "/usr/local/custom-node" or "C:\\custom\\node"
+     * 
+     * @since 25.0.4
      */
     public static final String NODE_FOLDER = "node.folder";
 
@@ -238,6 +293,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the build folder.
      *
+     * @since 7.0
      */
     public static final String BUILD_FOLDER = "build.folder";
 
@@ -245,6 +301,7 @@ public class InitParameters implements Serializable {
      * Packages, in addition to the internally used ones, to run postinstall
      * scripts for.
      *
+     * @since 23.0
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 
@@ -252,37 +309,51 @@ public class InitParameters implements Serializable {
      * Packages to exclude from running postinstall scripts. Used to skip
      * built-in entries (e.g. {@code esbuild}) when their postinstall step is
      * known to fail or is not needed.
+     * 
+     * @since 25.1.8
      */
     public static final String EXCLUDE_POSTINSTALL_PACKAGES = "npm.excludePostinstallPackages";
 
     /**
      * Configuration name for enabling development using the frontend
      * development server instead of using an application bundle.
+     * 
+     * @since 24.0
      */
     public static final String FRONTEND_HOTDEPLOY = "frontend.hotdeploy";
 
     /**
      * Configuration name for adding dependencies on other projects when using
      * the frontend development server.
+     * 
+     * @since 24.1
      */
     public static final String FRONTEND_HOTDEPLOY_DEPENDENCIES = "frontend.hotdeploy.dependencies";
 
     /**
      * Configuration name for enabling ci build for npm/pnpm.
+     * 
+     * @since 24.1
      */
     public static final String CI_BUILD = "vaadin.ci.build";
 
     /**
      * Configuration name for disabling dev bundle rebuild.
+     * 
+     * @since 24.1
      */
     public static final String SKIP_DEV_BUNDLE_REBUILD = "vaadin.skip.dev.bundle";
 
     /**
      * Configuration name for forcing optimized production bundle build.
+     * 
+     * @since 24.1
      */
     public static final String FORCE_PRODUCTION_BUILD = "vaadin.force.production.build";
     /**
      * Configuration name for forcing optimized production bundle build.
+     * 
+     * @since 24.3
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
 
@@ -290,11 +361,15 @@ public class InitParameters implements Serializable {
      * Configuration name to enable adding a commercial banner to the
      * application when commercial components are used without a valid license
      * key.
+     * 
+     * @since 24.9
      */
     public static final String COMMERCIAL_WITH_BANNER = "commercialWithBanner";
 
     /**
      * Configuration name for cleaning or leaving frontend files in build.
+     * 
+     * @since 24.4
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 
@@ -303,22 +378,30 @@ public class InitParameters implements Serializable {
      * new tab for the application in development mode.
      *
      * Time is given in minutes.
+     * 
+     * @since 24.4
      */
     public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
 
     /**
      * Configuration name for setting the application identifier.
+     * 
+     * @since 24.5
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
     /**
      * Configuration name for excluding npm packages for web components.
+     * 
+     * @since 24.6
      */
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
 
     /**
      * Configuration name for enabling browserless mode (e.g. for UI unit
      * tests). When enabled, dev server related warnings are suppressed.
+     * 
+     * @since 25.1
      */
     public static final String BROWSERLESS = "browserless";
 
@@ -326,6 +409,8 @@ public class InitParameters implements Serializable {
      * Configuration name for the minimum age (in days) a frontend (npm) package
      * version must have before npm, pnpm or bun is allowed to install it.
      * Defaults to {@code 1} day; set to {@code 0} to disable.
+     * 
+     * @since 25.1.6
      */
     public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";
 
@@ -342,7 +427,20 @@ public class InitParameters implements Serializable {
      * every scheme as safe, disabling scheme validation. URLs whose scheme is
      * not safe can still be set through the dedicated {@code setUnsafe*}
      * methods.
+     * 
+     * @since 25.2
      */
-    public static final String URL_SAFE_SCHEMES = "com.vaadin.safeUrlSchemes";
+    public static final String URL_SAFE_SCHEMES = "safeUrlSchemes";
+
+    /**
+     * Legacy name of the {@link #URL_SAFE_SCHEMES} configuration property, kept
+     * for backwards compatibility with applications configured against Vaadin
+     * 25.2.1. Use {@link #URL_SAFE_SCHEMES} instead; when both are present, the
+     * new name takes precedence.
+     *
+     * @deprecated use {@link #URL_SAFE_SCHEMES} instead
+     */
+    @Deprecated
+    public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
 
 }

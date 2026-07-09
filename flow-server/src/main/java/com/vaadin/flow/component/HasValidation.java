@@ -58,6 +58,7 @@ public interface HasValidation extends Serializable {
      *
      * @param enabled
      *            whether to enable manual validation mode.
+     * @since 24.2
      */
     default void setManualValidation(boolean enabled) {
     }

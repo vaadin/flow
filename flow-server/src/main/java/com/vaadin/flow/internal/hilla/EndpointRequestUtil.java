@@ -57,15 +57,38 @@ public interface EndpointRequestUtil extends Serializable {
 
     /**
      * Checks if Hilla is available.
+     * <p>
+     * The result is computed once on first access and cached, since the
+     * availability of the Hilla endpoint class cannot change during the
+     * lifetime of the classloader that loaded this interface.
      *
      * @return true if Hilla is available, false otherwise
+     * @since 24.0
      */
     static boolean isHillaAvailable() {
-        try {
-            Class.forName(HILLA_ENDPOINT_CLASS);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
+        return HillaAvailability.AVAILABLE;
+    }
+
+    /**
+     * Holder for the lazily-computed, cached Hilla availability flag.
+     * <p>
+     * Using a nested class defers the {@link Class#forName(String)} lookup
+     * until {@link #isHillaAvailable()} is first called and relies on the JVM
+     * class-initialization guarantees for thread safety.
+     */
+    class HillaAvailability {
+        private static final boolean AVAILABLE = computeAvailable();
+
+        private HillaAvailability() {
+        }
+
+        private static boolean computeAvailable() {
+            try {
+                Class.forName(HILLA_ENDPOINT_CLASS);
+                return true;
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
         }
     }
 

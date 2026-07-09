@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.WrappedSession;
@@ -69,6 +70,24 @@ public interface DeploymentConfiguration
     int getHeartbeatInterval();
 
     /**
+     * Returns the maximum size, in characters, that Flow reads from a
+     * client-to-server UIDL/RPC or push request body before rejecting the
+     * request with HTTP 413 (Request Entity Too Large).
+     * <p>
+     * The limit does not apply to file uploads, which are streamed in chunks
+     * and have their own separate size limits.
+     *
+     * @return the maximum request body size in characters, or a negative number
+     *         if the limit is disabled
+     */
+    default long getMaxRequestBodySize() {
+        return getApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                Long::parseLong);
+    }
+
+    /**
      * In certain cases, such as when combining XmlHttpRequests and push over
      * low bandwidth connections, messages may be received out of order by the
      * client. This property specifies the maximum time (in milliseconds) that
@@ -77,6 +96,7 @@ public interface DeploymentConfiguration
      * resynchronization of the application state from the server.
      *
      * @return The maximum message suspension timeout
+     * @since 3.0.1
      */
     int getMaxMessageSuspendTimeout();
 
@@ -85,6 +105,7 @@ public interface DeploymentConfiguration
      * reconnect before removing the server-side component from memory.
      *
      * @return time to wait after a disconnect has happened
+     * @since 2.0
      */
     int getWebComponentDisconnect();
 
@@ -129,6 +150,7 @@ public interface DeploymentConfiguration
      * communication should use.
      *
      * @return The push servlet mapping to use
+     * @since 23.3.5
      */
     default String getPushServletMapping() {
         return "";
@@ -248,6 +270,7 @@ public interface DeploymentConfiguration
      *
      * @return <code>true</code> to serve precompressed Brotli files,
      *         <code>false</code> to not serve Brotli files.
+     * @since 1.3
      */
     default boolean isBrotli() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI,
@@ -267,6 +290,7 @@ public interface DeploymentConfiguration
      * list of JS files to load.
      *
      * @return polyfills to load
+     * @since 2.0
      */
     default List<String> getPolyfills() {
         return Arrays
@@ -286,6 +310,7 @@ public interface DeploymentConfiguration
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}.
      *
      * @return the set of safe URL schemes, never {@code null}
+     * @since 25.2
      */
     default Set<String> getUrlSafeSchemes() {
         return Constants.DEFAULT_URL_SAFE_SCHEMES;
@@ -296,6 +321,7 @@ public interface DeploymentConfiguration
      * or through the classpath.
      *
      * @return true if stats.json is served from an external location
+     * @since 2.2
      */
     default boolean isStatsExternal() {
         return getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false);
@@ -306,6 +332,7 @@ public interface DeploymentConfiguration
      * this will default to '/vaadin-static/VAADIN/config/stats.json'
      *
      * @return external stats.json location
+     * @since 2.2
      */
     default String getExternalStatsUrl() {
         return getStringProperty(Constants.EXTERNAL_STATS_URL,
@@ -329,6 +356,7 @@ public interface DeploymentConfiguration
      * is actually requested by the user, saving some server resources.
      *
      * @return true if initial UIDL should be included in page
+     * @since 3.0
      */
     default boolean isEagerServerLoad() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
@@ -343,6 +371,7 @@ public interface DeploymentConfiguration
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false}
      *         otherwise
+     * @since 3.1
      */
     boolean isDevModeLiveReloadEnabled();
 
@@ -351,6 +380,7 @@ public interface DeploymentConfiguration
      * production mode. In development mode, it is enabled by default.
      *
      * @return {@code true} if dev tools are enabled, {@code false} otherwise
+     * @since 23.1
      */
     boolean isDevToolsEnabled();
 
@@ -361,6 +391,7 @@ public interface DeploymentConfiguration
      * By default, it returns {@link SessionLockCheckStrategy#ASSERT}.
      *
      * @return the lock checking strategy, never null.
+     * @since 24.4
      */
     default SessionLockCheckStrategy getSessionLockCheckStrategy() {
         return SessionLockCheckStrategy.ASSERT;
@@ -371,6 +402,7 @@ public interface DeploymentConfiguration
      * instead of Vaadin router.
      *
      * @return {@code true} if React is used, default is {@code true}
+     * @since 24.4
      */
     default boolean isReactEnabled() {
         return getBooleanProperty(InitParameters.REACT_ENABLE, true);
@@ -384,6 +416,7 @@ public interface DeploymentConfiguration
      * application.
      *
      * @return this application's name
+     * @since 24.5
      */
     default String getApplicationName() {
         return getStringProperty(InitParameters.APPLICATION_IDENTIFIER,

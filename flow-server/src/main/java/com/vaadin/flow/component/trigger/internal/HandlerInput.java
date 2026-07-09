@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @param <T>
  *            the runtime type of the value produced
+ * @since 25.2
  */
 public final class HandlerInput<T> extends Action.Input<T> {
 

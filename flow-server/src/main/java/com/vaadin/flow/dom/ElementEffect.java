@@ -164,6 +164,7 @@ public final class ElementEffect implements Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             EffectAction effectFunction) {
@@ -205,6 +206,7 @@ public final class ElementEffect implements Serializable {
      *            information about the trigger, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             ContextualEffectAction effectFunction) {
@@ -390,6 +392,7 @@ public final class ElementEffect implements Serializable {
      * @throws IllegalStateException
      *             thrown if parent element has default-slot children, or if the
      *             child factory produces elements with a {@code slot} attribute
+     * @since 25.1
      */
     public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,

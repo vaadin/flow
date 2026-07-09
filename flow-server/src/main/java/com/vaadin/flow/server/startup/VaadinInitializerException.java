@@ -18,6 +18,7 @@ package com.vaadin.flow.server.startup;
 /**
  * Indicates an issue during Vaadin initialization.
  *
+ * @since 6.0
  */
 public class VaadinInitializerException extends Exception {
 

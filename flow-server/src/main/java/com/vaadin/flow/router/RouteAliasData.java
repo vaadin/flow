@@ -65,6 +65,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *            navigation target path parameters
      * @param navigationTarget
      *            route navigation target
+     * @since 4.0
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,

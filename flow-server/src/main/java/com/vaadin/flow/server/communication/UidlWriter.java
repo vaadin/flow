@@ -89,6 +89,7 @@ public class UidlWriter implements Serializable {
          *
          * @param service
          *            the service which is resolving
+         * @since 25.0
          */
         public ResolveContext(VaadinService service) {
             this.service = Objects.requireNonNull(service);
@@ -116,6 +117,7 @@ public class UidlWriter implements Serializable {
      * @param resync
      *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
+     * @since 2.1
      */
     public ObjectNode createUidl(UI ui, boolean async, boolean resync) {
         ObjectNode response = JacksonUtils.createObjectNode();

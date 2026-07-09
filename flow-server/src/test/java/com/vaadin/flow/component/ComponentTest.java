@@ -2071,12 +2071,12 @@ public class ComponentTest {
         // Verify it uses parameter passing
         String expression = inv.getExpression();
         MatcherAssert.assertThat(expression,
-                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+                CoreMatchers.containsString("this.scrollIntoView($0)"));
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
                     CoreMatchers.containsString(expectedPart));

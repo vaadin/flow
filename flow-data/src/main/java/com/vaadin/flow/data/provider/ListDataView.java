@@ -33,6 +33,7 @@ import com.vaadin.flow.function.ValueProvider;
  *            data type
  * @param <V>
  *            ListDataView type
+ * @since 4.0
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
         extends DataView<T> {
@@ -298,6 +299,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @see #addItems(Collection)
      * @see #addItemsBefore(Collection, Object)
      * @see #addItemsAfter(Collection, Object)
+     * @since 24.9
      */
     V setItems(Collection<T> items);
 

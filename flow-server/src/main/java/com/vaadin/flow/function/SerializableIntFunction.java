@@ -24,6 +24,7 @@ import java.util.function.IntFunction;
  * @author Vaadin Ltd
  * @param <R>
  *            the type of the result of the function
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SerializableIntFunction<R>
