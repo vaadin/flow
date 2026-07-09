@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.ServletContext;
@@ -140,6 +148,18 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
+    public void streamResourceNameContainsPercent_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("percent in name", "file%.txt");
+    }
+
+    @Test
+    public void streamResourceNameContainsPercent_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("percent in name", "file%.txt");
+    }
+
+    @Test
     public void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
@@ -233,9 +253,10 @@ public class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -254,9 +275,10 @@ public class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -288,9 +310,10 @@ public class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getPathInfo()).thenReturn(String.format(
+                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
+                res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -303,6 +326,22 @@ public class StreamRequestHandlerTest {
                 argument.getValue());
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void sanitizeNameForUrl_percentIsReplaced() {
+        Assert.assertEquals("file_.txt",
+                StreamRequestHandler.sanitizeNameForUrl("file%.txt"));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_nullReturnsNull() {
+        Assert.assertNull(StreamRequestHandler.sanitizeNameForUrl(null));
+    }
+
+    @Test
+    public void sanitizeNameForUrl_emptyReturnsEmpty() {
+        Assert.assertEquals("", StreamRequestHandler.sanitizeNameForUrl(""));
     }
 
     private static final class TestElementHandlerBuilder {

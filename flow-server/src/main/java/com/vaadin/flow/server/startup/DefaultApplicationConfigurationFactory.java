@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.startup;
 
@@ -47,7 +40,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * Default implementation of {@link ApplicationConfigurationFactory}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 @Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING
@@ -124,6 +117,7 @@ public class DefaultApplicationConfigurationFactory
      * @param properties
      *            the context parameters, not {@code null}
      * @return a new application configuration instance
+     * @since 24.1
      */
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
             Map<String, String> properties) {
@@ -229,8 +223,30 @@ public class DefaultApplicationConfigurationFactory
         return FrontendUtils.streamToString(firstResource.openStream());
     }
 
+    /**
+     * Counts how many times {@code value} occurs as a non-overlapping substring
+     * within {@code input}.
+     * <p>
+     * Used to determine how many nested {@code jar!/} segments appear in a
+     * resource path, which indicates whether the resource is packaged inside
+     * one or several jars.
+     *
+     * @param input
+     *            the string to search within, not {@code null}
+     * @param value
+     *            the substring to count occurrences of, not {@code null} and
+     *            not empty
+     * @return the number of non-overlapping occurrences of {@code value} in
+     *         {@code input}, or {@code 0} if none are found
+     */
     private int countInstances(String input, String value) {
-        return input.split(value, -1).length - 1;
+        int count = 0;
+        int index = input.indexOf(value);
+        while (index != -1) {
+            count++;
+            index = input.indexOf(value, index + value.length());
+        }
+        return count;
     }
 
     private Logger getLogger() {

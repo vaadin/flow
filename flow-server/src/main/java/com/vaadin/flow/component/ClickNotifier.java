@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
@@ -58,6 +51,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
+     * @since 24.1
      */
     default Registration addDoubleClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
@@ -80,6 +74,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
+     * @since 24.1
      */
     default Registration addSingleClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
@@ -126,6 +121,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      *            with the {@code key} for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
+     * @since 1.3
      */
     default ShortcutRegistration addClickShortcut(Key key,
             KeyModifier... keyModifiers) {

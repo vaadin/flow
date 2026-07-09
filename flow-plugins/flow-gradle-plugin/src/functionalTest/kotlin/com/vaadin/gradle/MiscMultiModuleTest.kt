@@ -1,24 +1,17 @@
-/**
- *    Copyright 2000-2026 Vaadin Ltd
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.gradle
 
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
+import com.vaadin.flow.server.frontend.TaskUpdateSettingsFile
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
 import java.io.File
@@ -279,6 +272,60 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
         result2.expectTaskOutcome("web:vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
         assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    /**
+     * When the build directory is relocated outside the module project directory, the plugin must still write
+     * vaadin-dev-server-settings.json into that build directory.
+     */
+    @Test
+    fun `build dir relocated outside project dir writes settings into build dir`() {
+        testProject.settingsFile.writeText("include 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':web') {
+                apply plugin: 'war'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                // Relocate the build dir outside the :web project dir (here a sibling of
+                // the module, like builds that share one top-level build/ folder). The
+                // resulting value is absolute and is not a sub-directory of projectDir.
+                layout.buildDirectory = file("${'$'}{rootDir}/custom-build")
+
+                vaadin {
+                    eagerServerLoad = false
+                }
+            }
+        """.trimIndent())
+        testProject.newFolder("web")
+
+        testProject.build("web:vaadinPrepareFrontend")
+
+        // The settings file must be written into the relocated build dir...
+        val settingsInBuildDir = File(testProject.dir,
+                "custom-build/${TaskUpdateSettingsFile.DEV_SETTINGS_FILE}")
+        expect(true, "$settingsInBuildDir should exist") { settingsInBuildDir.exists() }
+
+        // ...and must not leak into a junk tree under the :web source directory.
+        val leaked = File(testProject.dir, "web").walkTopDown()
+                .filter { it.name == TaskUpdateSettingsFile.DEV_SETTINGS_FILE }
+                .toList()
+        expect(emptyList<File>(),
+                "vaadin-dev-server-settings.json leaked under the web source dir: $leaked") { leaked }
     }
 
 

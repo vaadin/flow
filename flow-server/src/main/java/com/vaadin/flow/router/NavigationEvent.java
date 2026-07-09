@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -84,6 +77,7 @@ public class NavigationEvent extends EventObject {
      * @param forwardTo
      *            indicates if this event is created as a result of
      *            {@link BeforeEvent#forwardTo} or not
+     * @since 4.0
      */
     @Deprecated
     public NavigationEvent(Router router, Location location, UI ui,
@@ -119,6 +113,7 @@ public class NavigationEvent extends EventObject {
      *            if set to {@code true}, the complete layout chain up to the
      *            navigation target will be re-instantiated. Requires
      *            {@code forceInstantiation} to be true to have an effect.
+     * @since 24.4
      */
     @Deprecated
     public NavigationEvent(Router router, Location location, UI ui,
@@ -150,6 +145,7 @@ public class NavigationEvent extends EventObject {
      * @param forwardTo
      *            indicates if this event is created as a result of
      *            {@link BeforeEvent#forwardTo} or not
+     * @since 24.8
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo) {
@@ -184,6 +180,7 @@ public class NavigationEvent extends EventObject {
      *            if set to {@code true}, the complete layout chain up to the
      *            navigation target will be re-instantiated. Requires
      *            {@code forceInstantiation} to be true to have an effect.
+     * @since 24.8
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo,
@@ -234,6 +231,7 @@ public class NavigationEvent extends EventObject {
      * the complete href of the RouterLink that triggers this navigation.
      *
      * @return the navigation state
+     * @since 4.0
      */
     public Optional<BaseJsonNode> getState() {
         return state == null ? Optional.empty() : Optional.of(state);
@@ -245,6 +243,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if this event is created as a result calling
      *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
+     * @since 4.0
      */
     public boolean isForwardTo() {
         return forwardTo;
@@ -256,6 +255,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if navigation target should be instantiated in any
      *         case
+     * @since 24.4
      */
     public boolean isForceInstantiation() {
         return forceInstantiation;
@@ -267,6 +267,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if layout chain up to the navigation target should
      *         be instantiated in any case
+     * @since 24.4
      */
     public boolean isRecreateLayoutChain() {
         return recreateLayoutChain;

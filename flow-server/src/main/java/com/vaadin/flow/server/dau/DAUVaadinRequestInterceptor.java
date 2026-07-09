@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
@@ -19,6 +27,8 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
  * in-memory cache.
  *
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.5
  */
 public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         VaadinServiceInitListener, ServiceDestroyListener {

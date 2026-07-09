@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -44,7 +37,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CH
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base class for resolving system properties and a set of init parameters.
  *
- * @since 1.2
+ * @since 1.2.1
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
@@ -69,6 +62,7 @@ public class PropertyDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @since 6.0
      */
     public PropertyDeploymentConfiguration(
             ApplicationConfiguration parentConfig,
@@ -244,6 +238,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public long getMaxRequestBodySize() {
+        return getApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                Long::parseLong);
+    }
+
+    @Override
     public int getMaxMessageSuspendTimeout() {
         return DefaultDeploymentConfiguration.DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
     }
@@ -305,6 +307,7 @@ public class PropertyDeploymentConfiguration
      *            a property name
      * @return whether the {@code property} is explicitly set in the
      *         configuration
+     * @since 6.0
      */
     protected boolean isOwnProperty(String property) {
         return getApplicationProperty(getProperties()::get, property) != null;
@@ -314,6 +317,7 @@ public class PropertyDeploymentConfiguration
      * Returns parent application configuration.
      *
      * @return the parent config
+     * @since 6.0
      */
     protected ApplicationConfiguration getParentConfiguration() {
         return parentConfig;

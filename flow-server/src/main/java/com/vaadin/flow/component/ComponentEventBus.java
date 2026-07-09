@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
@@ -134,6 +127,7 @@ public class ComponentEventBus implements Serializable {
      * @return an object which can be used to remove the event listener
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
+     * @since 1.1
      */
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener,
@@ -196,6 +190,7 @@ public class ComponentEventBus implements Serializable {
      *            the component event type
      * @return A collection with all registered listeners for a given event
      *         type. Empty if no listeners are found.
+     * @since 23.2
      */
     public Collection<?> getListeners(
             Class<? extends ComponentEvent> eventType) {

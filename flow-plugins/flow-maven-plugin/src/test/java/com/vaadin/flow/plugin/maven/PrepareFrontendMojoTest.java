@@ -1,24 +1,17 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +52,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static org.junit.Assert.assertEquals;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -277,5 +271,74 @@ public class PrepareFrontendMojoTest {
         assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
                 "@rollup/plugin-replace", "rollup-plugin-brotli",
                 "vite-plugin-checker");
+    }
+
+    @Test
+    public void buildFolder_buildDirInsideBasedir_returnsRelativeName()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                new File(projectBase, "target").getAbsolutePath());
+
+        assertEquals("target", mojo.buildFolder());
+    }
+
+    // buildFolder() is consumed as new File(npmFolder, buildFolder()), so the
+    // four absolute/relative combinations of basedir and build dir must all
+    // resolve back to the real build dir, never a nested junk path under the
+    // source tree. Only the absolute/absolute combination occurs in a real
+    // Maven build; the others guard exotic setups.
+
+    @Test
+    public void buildFolder_baseAbsolute_buildAbsolute_resolvesToBuildDir()
+            throws Exception {
+        File basedir = projectBase; // absolute
+        File buildDir = new File(projectBase.getParentFile(), "custom-build");
+        assertBuildFolderResolvesTo(basedir, buildDir.getAbsolutePath(),
+                buildDir);
+    }
+
+    @Test
+    public void buildFolder_baseAbsolute_buildRelative_resolvesToBuildDir()
+            throws Exception {
+        File basedir = projectBase; // absolute
+        String buildDir = "../custom-build"; // relative to basedir
+        assertBuildFolderResolvesTo(basedir, buildDir,
+                new File(basedir, buildDir));
+    }
+
+    @Test
+    public void buildFolder_baseRelative_buildAbsolute_resolvesToBuildDir()
+            throws Exception {
+        File basedir = new File("relative-base");
+        File buildDir = new File(projectBase.getParentFile(), "custom-build");
+        assertBuildFolderResolvesTo(basedir, buildDir.getAbsolutePath(),
+                buildDir);
+    }
+
+    @Test
+    public void buildFolder_baseRelative_buildRelative_resolvesToBuildDir()
+            throws Exception {
+        File basedir = new File("relative-base");
+        String buildDir = "../custom-build"; // relative to basedir
+        assertBuildFolderResolvesTo(basedir, buildDir,
+                new File(basedir, buildDir));
+    }
+
+    private void assertBuildFolderResolvesTo(File basedir,
+            String projectBuildDir, File expectedBuildDir) throws Exception {
+        // npmFolder always equals basedir in a real project.
+        ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
+                basedir);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                basedir);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                projectBuildDir);
+
+        File resolved = new File(mojo.npmFolder(), mojo.buildFolder());
+        assertEquals(normalize(expectedBuildDir), normalize(resolved));
+    }
+
+    private static Path normalize(File file) {
+        return file.getAbsoluteFile().toPath().normalize();
     }
 }

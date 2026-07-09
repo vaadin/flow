@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -56,6 +49,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.1
  */
 public class FrontendTools {
 
@@ -63,10 +57,14 @@ public class FrontendTools {
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     *
+     * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v22.22.2";
+    public static final String DEFAULT_NODE_VERSION = "v22.23.1";
     /**
      * This is the version shipped with the default Node version.
+     *
+     * @since 9.0
      */
     public static final String DEFAULT_NPM_VERSION = "10.9.7";
 
@@ -190,6 +188,7 @@ public class FrontendTools {
      *
      * @param settings
      *            tooling settings to use
+     * @since 9.0
      */
     public FrontendTools(FrontendToolsSettings settings) {
         this.baseDir = Objects.requireNonNull(settings.getBaseDir());
@@ -211,6 +210,7 @@ public class FrontendTools {
      *            the project root directory
      * @param applicationConfiguration
      *            the configuration for the application
+     * @since 23.0
      */
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
@@ -238,6 +238,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 6.0.8
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -275,6 +276,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 4.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -316,6 +318,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 9.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -362,6 +365,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 9.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -589,7 +593,13 @@ public class FrontendTools {
         List<String> pnpmCommand = getSuitablePnpm();
         assert !pnpmCommand.isEmpty();
         pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
+        // Force hoisted (flat npm-style) layout. CLI takes precedence over
+        // .npmrc, so this is unambiguous even if the project lacks the
+        // generated .npmrc. Replaces the previous --shamefully-hoist=true,
+        // which only controls the partial-hoist heuristic on top of the
+        // default isolated layout and did not consistently expose every
+        // transitive at the project root.
+        pnpmCommand.add("--config.node-linker=hoisted");
         return pnpmCommand;
     }
 
@@ -598,6 +608,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have bun running
+     * @since 24.3
      */
     public List<String> getBunExecutable() {
         List<String> bunCommand = getSuitableBun();
@@ -650,6 +661,8 @@ public class FrontendTools {
 
     /**
      * Gets the version of the node executable.
+     *
+     * @since 8.0.5
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();
@@ -786,6 +799,7 @@ public class FrontendTools {
      * @return the version of npm.
      * @throws UnknownVersionException
      *             if the npm command fails or returns unexpected output.
+     * @since 9.0
      */
     public FrontendVersion getNpmVersion() throws UnknownVersionException {
         List<String> npmVersionCommand = new ArrayList<>(
@@ -807,6 +821,7 @@ public class FrontendTools {
      * @return the path to the executable.
      * @throws CommandExecutionException
      *             if the node resolution fails.
+     * @since 24.8
      */
     public Path getNpmPackageExecutable(String packageName, String binName,
             File cwd) throws CommandExecutionException {
@@ -832,6 +847,7 @@ public class FrontendTools {
      * @return the flags
      * @deprecated Webpack is not used anymore, this method is obsolete and have
      *             no replacements.
+     * @since 9.0.4
      */
     @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
@@ -1092,6 +1108,7 @@ public class FrontendTools {
      * part of a process builder command.
      *
      * @return the path to the node binary
+     * @since 23.0
      */
     public String getNodeBinary() {
         if (forceAlternativeNode) {

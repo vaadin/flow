@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.di;
 
@@ -74,6 +67,7 @@ public interface Instantiator extends Serializable {
      *
      * @return a stream of all Index HTML request listeners to use, not
      *         <code>null</code>
+     * @since 3.0
      */
     default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
             Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
@@ -126,6 +120,7 @@ public interface Instantiator extends Serializable {
      * @param instance
      *            the instance to check
      * @return the user-defined class
+     * @since 24.3.9
      */
     default Class<?> getApplicationClass(Object instance) {
         Objects.requireNonNull(instance, "Instance cannot be null");
@@ -140,6 +135,7 @@ public interface Instantiator extends Serializable {
      * @param clazz
      *            the class to check
      * @return the user-defined class
+     * @since 24.3.9
      */
     default Class<?> getApplicationClass(Class<?> clazz) {
         Class<?> appClass = clazz;
@@ -212,6 +208,7 @@ public interface Instantiator extends Serializable {
      * Get the MenuAccessControl.
      *
      * @return MenuAccessControl instance
+     * @since 24.4
      */
     default MenuAccessControl getMenuAccessControl() {
         return getOrCreate(MenuAccessControl.class);

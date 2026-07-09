@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.html;
 
@@ -24,6 +17,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
@@ -110,6 +104,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 24.8
      */
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
@@ -127,6 +122,10 @@ public class Image extends HtmlContainer
 
     /**
      * Sets the image URL.
+     * <p>
+     * Unlike {@link Anchor#setHref(String)} and {@link IFrame#setSrc(String)},
+     * image URLs are not validated against the
+     * {@value InitParameters#URL_SAFE_SCHEMES} configuration.
      *
      * @param src
      *            the image URL
@@ -156,8 +155,15 @@ public class Image extends HtmlContainer
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      *
+     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
+     * that the image is still served when the component, or one of its
+     * ancestors, is disabled. The browser fetches the image as part of
+     * rendering rather than as a user action, so blocking the request on the
+     * disabled state would leave the icon broken.
+     *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
@@ -165,7 +171,7 @@ public class Image extends HtmlContainer
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler);
+        getElement().setAttribute("src", downloadHandler.allowDisabled());
     }
 
     /**

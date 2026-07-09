@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.html;
 
@@ -35,7 +28,7 @@ import com.vaadin.flow.server.StreamResourceRegistry;
  * Component representing a <code>&lt;object&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 9.0
  *
  */
 @Tag(Tag.OBJECT)
@@ -156,6 +149,7 @@ public class HtmlObject extends HtmlContainer implements
      *            the callback for providing resource data, not null
      * @param type
      *            a type attribute value
+     * @since 24.8
      */
     public HtmlObject(DownloadHandler data, String type) {
         setData(data);
@@ -182,6 +176,7 @@ public class HtmlObject extends HtmlContainer implements
      *            a type attribute value
      * @param params
      *            parameter components
+     * @since 24.8
      */
     public HtmlObject(DownloadHandler data, String type, Param... params) {
         setData(data);
@@ -208,6 +203,7 @@ public class HtmlObject extends HtmlContainer implements
      *            component
      * @param params
      *            parameter components
+     * @since 24.8
      */
     public HtmlObject(DownloadHandler data, Param... params) {
         setData(data);
@@ -231,6 +227,7 @@ public class HtmlObject extends HtmlContainer implements
      * @param data
      *            a handler that defines the data to be set to this object
      *            component
+     * @since 24.8
      */
     public HtmlObject(DownloadHandler data) {
         setData(data);
@@ -321,6 +318,7 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            a "data" attribute value, not {@code null}
+     * @since 24.8
      */
     public void setData(DownloadHandler data) {
         if (data instanceof AbstractDownloadHandler<?> handler) {

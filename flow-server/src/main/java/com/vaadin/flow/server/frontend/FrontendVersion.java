@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -25,7 +18,7 @@ import java.util.regex.Pattern;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
+ * @since 2.1
  */
 public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {
@@ -139,6 +132,7 @@ public class FrontendVersion
      *            in error message to help discover the issue
      * @param version
      *            version string as "major.minor.revision[.build]"
+     * @since 7.0
      */
     public FrontendVersion(String name, String version) {
         Objects.requireNonNull(version);
@@ -242,6 +236,7 @@ public class FrontendVersion
      * @param otherVersion
      *            version to check against
      * @return true if this is older than otherVersion
+     * @since 2.2
      */
     public boolean isOlderThan(FrontendVersion otherVersion) {
         return compareTo(otherVersion) < 0;
@@ -254,6 +249,7 @@ public class FrontendVersion
      * @param otherVersion
      *            version to check against
      * @return true if this is newer than otherVersion
+     * @since 2.2
      */
     public boolean isNewerThan(FrontendVersion otherVersion) {
         return compareTo(otherVersion) > 0;
@@ -266,6 +262,7 @@ public class FrontendVersion
      * @param otherVersion
      *            version to check against
      * @return true if this is newer than or equal to otherVersion
+     * @since 24.3
      */
     public boolean isEqualOrNewer(FrontendVersion otherVersion) {
         return compareTo(otherVersion) >= 0;
@@ -277,6 +274,7 @@ public class FrontendVersion
      * @param otherVersion
      *            version to test equals with
      * @return true if parsed version parts are exactly the same
+     * @since 2.2
      */
     public boolean isEqualTo(FrontendVersion otherVersion) {
         return compareTo(otherVersion) == 0;
@@ -315,6 +313,7 @@ public class FrontendVersion
      * @param other
      *            version to compare against this version
      * @return -1 this is older, 0 versions equal, 1 this is newer
+     * @since 2.2
      */
     @Override
     public int compareTo(FrontendVersion other) {

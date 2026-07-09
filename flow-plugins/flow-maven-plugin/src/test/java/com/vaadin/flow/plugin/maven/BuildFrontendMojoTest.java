@@ -1,18 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.plugin.maven;
 
@@ -77,7 +69,6 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.pro.licensechecker.LicenseException;
 
-import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -618,33 +609,6 @@ public class BuildFrontendMojoTest {
         Assert.assertEquals(
                 "Custom application identifier not written on token file",
                 appId, buildInfo.get(APPLICATION_IDENTIFIER).textValue());
-    }
-
-    @Test
-    public void commercialComponent_noLicenseKey_commercialBannerEnabled_buildsWithCommercialBannerFlag()
-            throws Throwable {
-
-        ObjectNode initialBuildInfo = JacksonUtils.createObjectNode();
-        tokenFile.getParentFile().mkdirs();
-        Files.writeString(tokenFile.toPath(),
-                initialBuildInfo.toPrettyString() + "\n",
-                StandardCharsets.UTF_8);
-
-        DefaultArtifact commercialComponent = createCommercialComponent();
-        mojo.project.getArtifacts().add(commercialComponent);
-        ReflectionUtils.setVariableValueInObject(mojo, "commercialWithBanner",
-                true);
-
-        runWithoutLicenseKeys(() -> {
-            mojo.execute();
-
-            String json = Files.readString(tokenFile.toPath(),
-                    StandardCharsets.UTF_8);
-            ObjectNode buildInfo = JacksonUtils.readTree(json);
-            Assert.assertTrue(
-                    "Commercial banner build token not written on token file",
-                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue());
-        });
     }
 
     @Test

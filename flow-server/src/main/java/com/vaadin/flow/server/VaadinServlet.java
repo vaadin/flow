@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -37,6 +30,9 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -63,6 +59,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class VaadinServlet extends HttpServlet {
 
     public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
+
+    private static final String PROJECT_NAME = "flow";
 
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
@@ -130,6 +128,8 @@ public class VaadinServlet extends HttpServlet {
 
             try {
                 servletService = createServletService();
+                verifyLicense(servletService.getDeploymentConfiguration()
+                        .isProductionMode());
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -145,6 +145,25 @@ public class VaadinServlet extends HttpServlet {
             servletInitialized();
         } finally {
             CurrentInstance.clearAll();
+        }
+    }
+
+    private void verifyLicense(boolean productionMode) {
+        String frameworkVersion = Version.getFullVersion();
+        if (productionMode) {
+            try {
+                LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                        BuildType.PRODUCTION, null);
+            } catch (LicenseException e) {
+                getLogger().error(
+                        "This Vaadin version requires an extended maintenance subscription."
+                                + "Provide either a server key or an online license checking key,"
+                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        e);
+            }
+        } else {
+            LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                    BuildType.DEVELOPMENT);
         }
     }
 
@@ -216,6 +235,7 @@ public class VaadinServlet extends HttpServlet {
      *
      * @param runnable
      *            the runnable to run
+     * @since 24.0
      */
     public static void whenFrontendMappingAvailable(Runnable runnable) {
         synchronized (VaadinServlet.class) {
@@ -247,6 +267,7 @@ public class VaadinServlet extends HttpServlet {
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
+     * @since 7.0
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
@@ -654,9 +675,9 @@ public class VaadinServlet extends HttpServlet {
      * For internal use only.
      *
      * @return the vaadin servlet used for frontend files in development mode
+     * @since 23.2
      */
     public static String getFrontendMapping() {
         return frontendMapping;
     }
-
 }

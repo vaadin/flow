@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.gradle
 
@@ -263,10 +256,19 @@ internal class GradlePluginAdapter private constructor(
 
     override fun buildFolder(): String {
         val projectBuildDir = config.projectBuildDir.get()
-        if (projectBuildDir.startsWith(projectDir.toString())) {
-            return File(projectBuildDir).relativeTo(projectDir).toString()
+        val buildDirFile = File(projectBuildDir)
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // projectDir. When the build dir is outside projectDir this yields a "../"
+        // path. Returning the absolute path would instead append it to the project
+        // folder and point outside the build dir.
+        // relativeToOrNull() needs a shared root; projectDir is always absolute
+        // in a real build, absoluteFile only guards exotic setups.
+        return when {
+            !buildDirFile.isAbsolute -> projectBuildDir
+            else -> buildDirFile.relativeToOrNull(projectDir.absoluteFile)
+                    ?.toString() ?: projectBuildDir
         }
-        return projectBuildDir
     }
 
     override fun postinstallPackages(): List<String> =
@@ -329,7 +331,10 @@ internal class GradlePluginAdapter private constructor(
         config.frontendIgnoreVersionChecks.get()
 
     override fun isCommercialBannerEnabled(): Boolean {
-        return config.commercialWithBanner.get()
+        // The commercial banner is permanently disabled since this Vaadin
+        // version always requires a license. The commercialWithBanner
+        // configuration is kept for backwards compatibility but has no effect.
+        return false
     }
 
 }

@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.component;
 
 import java.net.URI;
@@ -158,6 +150,7 @@ public class UI extends Component
      *
      * @param internalsHandler
      *            an implementation of UIInternalsHandler.
+     * @since 3.0
      */
     protected UI(UIInternalUpdater internalsHandler) {
         super(null);
@@ -241,6 +234,7 @@ public class UI extends Component
      *            the application id
      *
      * @see #getUIId()
+     * @since 23.3
      */
     public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
@@ -629,6 +623,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a runnable that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
             SerializableRunnable detachHandler) {
@@ -656,6 +651,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a consumer that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
@@ -840,6 +836,7 @@ public class UI extends Component
      *
      * @param direction
      *            the direction to use, not {@code null}
+     * @since 3.1
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
@@ -996,6 +993,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 4.0
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
@@ -1032,6 +1030,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1.1
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParam... parameters) {
@@ -1072,6 +1071,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
@@ -1121,6 +1121,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1
      */
     @SuppressWarnings("unchecked")
     public <C extends Component> Optional<C> navigate(
@@ -1156,6 +1157,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> Optional<T> navigate(
@@ -1257,6 +1259,7 @@ public class UI extends Component
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         getInternals().refreshCurrentRoute(refreshRouteChain);
@@ -1270,6 +1273,7 @@ public class UI extends Component
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
+     * @since 5.0
      */
     public boolean isNavigationSupported() {
         // By default any UI supports navigation. Override this to return false
@@ -1292,6 +1296,7 @@ public class UI extends Component
      * @return the currently active route instance if available
      * @throws IllegalStateException
      *             if current view is not yet available
+     * @since 24.0
      */
     public Component getCurrentView() {
         if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
@@ -1472,6 +1477,7 @@ public class UI extends Component
      * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...) for
      *      registering a listener which receives a {@link ShortcutEvent}
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(Command command, Key key,
             KeyModifier... keyModifiers) {
@@ -1506,6 +1512,7 @@ public class UI extends Component
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
@@ -1536,6 +1543,7 @@ public class UI extends Component
      * @param listener
      *            the heartbeat listener
      * @return handler to remove the heartbeat listener
+     * @since 23.0
      */
     public Registration addHeartbeatListener(HeartbeatListener listener) {
         Objects.requireNonNull(listener, NULL_LISTENER);
@@ -1583,6 +1591,7 @@ public class UI extends Component
      * @param component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
+     * @since 23.0
      */
     public void addModal(Component component) {
         add(component);
@@ -1624,6 +1633,7 @@ public class UI extends Component
      * Check if UI has a defined modal component.
      *
      * @return {@code true} if a modal component has been set
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return getInternals().hasModalComponent();
@@ -1639,6 +1649,7 @@ public class UI extends Component
      *
      * @param component
      *            component to add to modal component
+     * @since 23.0
      */
     public void addToModalComponent(Component component) {
         if (hasModalComponent()) {
@@ -1677,6 +1688,7 @@ public class UI extends Component
      * the servlet mapping used for serving the related UI.
      *
      * @return the view location, not <code>null</code>
+     * @since 24.3
      */
     public Location getActiveViewLocation() {
         return getInternals().getActiveViewLocation();
@@ -1687,6 +1699,7 @@ public class UI extends Component
      *
      * @return a list of active router target and parent layout instances,
      *         starting from the innermost part
+     * @since 24.3
      */
     public List<HasElement> getActiveRouterTargetsChain() {
         return getInternals().getActiveRouterTargetsChain();
@@ -1711,11 +1724,15 @@ public class UI extends Component
      * Gets the new forward url.
      *
      * @return the new forward url
+     * @since 24.0
      */
     public String getForwardToClientUrl() {
         return forwardToClientUrl;
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-leave-navigation";
@@ -1739,6 +1756,9 @@ public class UI extends Component
         }
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-navigate";
@@ -1764,6 +1784,7 @@ public class UI extends Component
          * @param trigger
          *            navigation trigger
          *
+         * @since 24.8
          */
         public BrowserNavigateEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
@@ -1790,6 +1811,7 @@ public class UI extends Component
      * the route chain if the {@code fullRefresh} event flag is active.
      *
      * @see #refreshCurrentRoute(boolean)
+     * @since 24.5
      */
     @DomEvent(BrowserRefreshEvent.EVENT_NAME)
     public static class BrowserRefreshEvent extends ComponentEvent<UI> {
@@ -1836,6 +1858,7 @@ public class UI extends Component
      * @deprecated(forRemoval=true) method is not enabled for client side
      *                              anymore and connectClient is triggered by
      *                              DOM event, to be removed in next major 25
+     * @since 24.1
      */
     @Deprecated
     public void connectClient(String flowRoutePath, String flowRouteQuery,
@@ -1851,6 +1874,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void browserNavigate(BrowserNavigateEvent event) {
 
@@ -1943,6 +1967,7 @@ public class UI extends Component
      * @deprecated(forRemoval=true) method is not enabled for client side
      *                              anymore and leave navigation is triggered by
      *                              DOM event, to be removed in next major 25
+     * @since 24.0
      */
     @Deprecated
     public void leaveNavigation(String route, String query) {
@@ -1960,6 +1985,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void leaveNavigation(BrowserLeaveNavigationEvent event) {
         navigateToPlaceholder(new Location(PathUtil.trimPath(event.route),
@@ -2086,6 +2112,8 @@ public class UI extends Component
     /**
      * Placeholder view when navigating from server-side views to client-side
      * views.
+     *
+     * @since 24.0
      */
     @Tag(Tag.DIV)
     @AnonymousAllowed

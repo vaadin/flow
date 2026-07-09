@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -67,6 +75,8 @@ public class ServerRpcHandlerTest {
         deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
+        Mockito.when(deploymentConfiguration.getMaxRequestBodySize())
+                .thenReturn(-1L);
 
         uiTree = new StateTree(uiInternals);
         Mockito.when(uiInternals.getStateTree()).thenReturn(uiTree);

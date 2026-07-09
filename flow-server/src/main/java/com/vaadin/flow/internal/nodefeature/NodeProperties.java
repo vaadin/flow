@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal.nodefeature;
 
@@ -37,6 +30,8 @@ public final class NodeProperties {
 
     /**
      * Key for {@link ElementData#getJavaClass()}.
+     *
+     * @since 24.4
      */
     public static final String JAVA_CLASS = "jc";
 
@@ -70,6 +65,8 @@ public final class NodeProperties {
 
     /**
      * JsonObject {@code @name} type value for {@link VirtualChildrenList}.
+     *
+     * @since 24.5
      */
     public static final String INJECT_BY_NAME = "@name";
 
@@ -105,6 +102,8 @@ public final class NodeProperties {
      * property to be able to restore when making a hidden element visible
      * again. Used only when the element is inside a shadow root, and the CSS
      * "display: none" is set in addition the "hidden" attribute.
+     *
+     * @since 5.0
      */
     public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
 
@@ -113,6 +112,8 @@ public final class NodeProperties {
      * transmitting URI (not just any string).
      * <p>
      * Used in the {@link ElementAttributeMap}.
+     *
+     * @since 3.1.7
      */
     public static final String URI_ATTRIBUTE = "uri";
 

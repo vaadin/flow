@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -22,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -145,17 +138,21 @@ public class CompressUtil {
 
     private static File newFile(File destinationDir, ZipEntry zipEntry)
             throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
+        // Canonicalize the destination directory once. Resolving each entry
+        // lexically against this base (instead of canonicalizing the
+        // not-yet-created target file) avoids inconsistent path forms, e.g. on
+        // Windows mapped network drives where getCanonicalPath() returns the
+        // UNC form for an existing directory but the drive-letter form for a
+        // non-existent child, which made a legitimate entry look "outside".
+        Path destDir = destinationDir.getCanonicalFile().toPath();
+        Path destFile = destDir.resolve(zipEntry.getName()).normalize();
 
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+        if (!destFile.startsWith(destDir)) {
             throw new IOException("Entry is outside of the target dir: "
                     + zipEntry.getName());
         }
 
-        return destFile;
+        return destFile.toFile();
     }
 
     /**

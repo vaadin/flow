@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal;
 
@@ -34,6 +27,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * Helper methods for use in bootstrapping.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 4.0
  */
 public final class BootstrapHandlerHelper implements Serializable {
 
@@ -147,6 +142,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @param pushServletMapping
      *            Original pushServletMapping value
      * @return cleaned-up value, or null if the original value is blank.
+     * @since 23.3.5
      */
     public static String getCleanedPushServletMapping(
             String pushServletMapping) {
@@ -174,6 +170,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletConfig} to find the registration for.
      * @return an optional {@link ServletRegistration}, or an empty optional if
      *         a registration is not available.
+     * @since 23.3.5
      */
     public static Optional<ServletRegistration> getServletRegistration(
             ServletConfig servletConfig) {
@@ -198,6 +195,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletRegistration} from which to look up the
      *            mappings.
      * @return first URL mapping, ignoring '/VAADIN/*' and '/vaadinServlet/*'
+     * @since 23.3.5
      */
     public static String findFirstUrlMapping(ServletRegistration registration) {
         String firstMapping = registration.getMappings().stream()

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend.scanner;
 
@@ -75,7 +68,7 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
@@ -158,6 +151,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @deprecated Use
      *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
      *             instead.
+     * @since 24.0
      */
     @Deprecated
     public FrontendDependencies(ClassFinder finder,
@@ -339,6 +333,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get the PWA configuration of the application.
      *
      * @return the PWA configuration
+     * @since 6.0
      */
     @Override
     public PwaConfiguration getPwaConfiguration() {
@@ -364,6 +359,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all JS modules needed in development mode.
      *
      * @return list of JS modules
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getModulesDevelopment() {
@@ -402,6 +398,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all the JS files needed in development mode.
      *
      * @return the set of JS files
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getScriptsDevelopment() {
@@ -442,6 +439,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all entryPoints in the application.
      *
      * @return the set of JS files
+     * @since 24.1
      */
     public Collection<EntryPointData> getEntryPoints() {
         return entryPoints.values();

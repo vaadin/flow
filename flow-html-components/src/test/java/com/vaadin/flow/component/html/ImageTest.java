@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.html;
 
@@ -20,8 +13,10 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
@@ -50,6 +45,29 @@ public class ImageTest extends ComponentTest {
         img.setAlt(null);
         Assert.assertEquals(Optional.empty(), img.getAlt());
         Assert.assertFalse(img.getElement().hasAttribute("alt"));
+    }
+
+    @Test
+    public void setSrc_downloadHandler_disabledUpdateModeIsAlways() {
+        Element element = Mockito.mock(Element.class);
+        class TestImage extends Image {
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+        // Plain lambda DownloadHandler, not an AbstractDownloadHandler subclass
+        DownloadHandler lambda = event -> {
+        };
+
+        new TestImage().setSrc(lambda);
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        Mockito.verify(element).setAttribute(Mockito.eq("src"),
+                captor.capture());
+        Assert.assertEquals(DisabledUpdateMode.ALWAYS,
+                captor.getValue().getDisabledUpdateMode());
     }
 
     @Test

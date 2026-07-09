@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -69,6 +62,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *
      * @param navigationTarget
      *            navigation target
+     * @since 23.2
      */
     public RouterLink(Class<? extends Component> navigationTarget) {
         this(navigationTarget, RouteParameters.empty());
@@ -100,6 +94,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 23.2
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Class<? extends C> navigationTarget, T parameter) {
@@ -135,6 +130,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 23.2
      */
     public RouterLink(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -152,6 +148,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public RouterLink(String text, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -169,6 +166,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
+     * @since 23.2
      */
     public RouterLink(Router router,
             Class<? extends Component> navigationTarget)
@@ -209,6 +207,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 23.2
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Router router, Class<? extends C> navigationTarget, T parameter) {
@@ -250,6 +249,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 23.2
      */
     public RouterLink(Router router,
             Class<? extends Component> navigationTarget,
@@ -270,6 +270,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget,
@@ -323,6 +324,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget,
@@ -346,6 +348,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
+     * @since 2.1
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
         setRoute(getRouter(), navigationTarget);
@@ -362,6 +365,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 2.1
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
@@ -375,6 +379,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public void setRoute(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.page;
 
@@ -33,8 +26,10 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -203,6 +198,7 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @since 2.0
      */
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
@@ -225,6 +221,7 @@ public class Page implements Serializable {
      *
      * @param expression
      *            the JavaScript expression which return a Promise
+     * @since 2.1
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
@@ -269,6 +266,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
@@ -310,6 +308,7 @@ public class Page implements Serializable {
      *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see Registration
+     * @since 1.2
      */
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
@@ -349,6 +348,14 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #openUnsafe(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 2.0
      */
     public void open(String url) {
         open(url, "_blank");
@@ -391,8 +398,66 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #openUnsafe(String, String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 2.2
      */
     public void open(String url, String windowName) {
+        if (url == null) {
+            throw new IllegalArgumentException("URL must not be null");
+        }
+        if (!UrlUtil.isSafeUrl(url)) {
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "URL", url, "openUnsafe(String, String)"));
+        }
+        openInternal(url, windowName);
+    }
+
+    /**
+     * Opens the given url in a new tab without validating its scheme.
+     * <p>
+     * Unlike {@link #open(String)}, this method does not reject URLs based on
+     * the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it only
+     * for URLs that are fully under your control and known to be safe. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #open(String)
+     *
+     * @param url
+     *            the URL to open.
+     */
+    public void openUnsafe(String url) {
+        openInternal(url, "_blank");
+    }
+
+    /**
+     * Opens the given URL in a window with the given name without validating
+     * its scheme.
+     * <p>
+     * Unlike {@link #open(String, String)}, this method does not reject URLs
+     * based on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use
+     * it only for URLs that are fully under your control and known to be safe.
+     * Passing untrusted input here can expose the application to cross-site
+     * scripting (XSS) attacks.
+     *
+     * @see #open(String, String)
+     *
+     * @param url
+     *            the URL to open.
+     * @param windowName
+     *            the name of the window.
+     */
+    public void openUnsafe(String url, String windowName) {
+        openInternal(url, windowName);
+    }
+
+    private void openInternal(String url, String windowName) {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
@@ -408,6 +473,14 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
+     *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
+     *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
+     * @since 2.0
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -419,6 +492,15 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; call
+     *             {@code openUnsafe(uri.toString(), "_self")} to bypass scheme
+     *             validation, and see the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 2.0
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
@@ -431,6 +513,8 @@ public class Page implements Serializable {
 
     /**
      * Callback for receiving extended client-side details.
+     *
+     * @since 2.0
      */
     @FunctionalInterface
     public interface ExtendedClientDetailsReceiver extends Serializable {
@@ -451,6 +535,7 @@ public class Page implements Serializable {
      *
      * @param receiver
      *            the callback to which the details are provided
+     * @since 2.0
      */
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
@@ -531,6 +616,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the url is resolved.
+     * @since 7.0
      */
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
@@ -561,6 +647,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the direction is resolved.
+     * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
         executeJs("return document.dir").then(String.class, dir -> {

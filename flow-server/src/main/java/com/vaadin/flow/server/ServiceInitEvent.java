@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -75,6 +68,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
+     * @since 3.0
      */
     public void addIndexHtmlRequestListener(
             IndexHtmlRequestListener indexHtmlRequestListener) {
@@ -101,6 +95,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param vaadinRequestInterceptor
      *            the request interceptor to add, not <code>null</code>
+     * @since 24.3
      */
     public void addVaadinRequestInterceptor(
             VaadinRequestInterceptor vaadinRequestInterceptor) {
@@ -126,6 +121,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param executor
      *            the executor to set.
+     * @since 24.8
      */
     public void setExecutor(Executor executor) {
         this.executor = executor;
@@ -146,6 +142,7 @@ public class ServiceInitEvent extends EventObject {
      * for the service.
      *
      * @return the stream of added Index HTML request listeners
+     * @since 3.0
      */
     public Stream<IndexHtmlRequestListener> getAddedIndexHtmlRequestListeners() {
         return addedIndexHtmlRequestListeners.stream();
@@ -166,6 +163,7 @@ public class ServiceInitEvent extends EventObject {
      * the service.
      *
      * @return the stream of added request interceptors
+     * @since 24.3
      */
     public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
         return addedVaadinRequestInterceptors.stream();
@@ -177,6 +175,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @return an {@link Optional} containing the {@link Executor}, or an empty
      *         {@link Optional} if no executor is set.
+     * @since 24.8
      */
     public Optional<Executor> getExecutor() {
         return Optional.ofNullable(executor);

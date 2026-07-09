@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -71,6 +63,8 @@ public class AtmospherePushConnection
          * <p>
          * Immediately reads the length of the message (up until
          * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
+         *
+         * @since 24.3.1
          */
         public FragmentedMessage() {
         }
@@ -204,6 +198,20 @@ public class AtmospherePushConnection
             }
         } else {
             synchronized (lock) {
+                // A concurrent disconnect() may have cleared the
+                // resource and transitioned state to DISCONNECTED while
+                // this thread was waiting to enter the monitor. In that
+                // case treat the push as if disconnecting had been
+                // observed above: defer it and skip sendMessage, which
+                // would otherwise NPE on the null resource.
+                if (!isConnected()) {
+                    if (async && state != State.RESPONSE_PENDING) {
+                        state = State.PUSH_PENDING;
+                    } else {
+                        state = State.RESPONSE_PENDING;
+                    }
+                    return;
+                }
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
@@ -249,6 +257,7 @@ public class AtmospherePushConnection
      *             if an IO error occurred
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
+     * @since 24.3.1
      */
     protected static Reader receiveMessage(AtmosphereResource resource,
             Reader reader, FragmentedMessageHolder holder) throws IOException {
@@ -336,15 +345,16 @@ public class AtmospherePushConnection
             return;
         }
 
-        synchronized (lock) {
-            if (!isConnected() || resource == null) {
-                // Already disconnected. Should not happen but if it does,
-                // we don't want to cause NPEs
-                getLogger().debug(
-                        "Disconnection already happened, ignoring request");
-                return;
-            }
-            try {
+        AtmosphereResource resourceToClose;
+        try {
+            synchronized (lock) {
+                if (!isConnected() || resource == null) {
+                    // Already disconnected. Should not happen but if it does,
+                    // we don't want to cause NPEs
+                    getLogger().debug(
+                            "Disconnection already happened, ignoring request");
+                    return;
+                }
                 if (resource.isResumed()) {
                     // This can happen for long polling because of
                     // http://dev.vaadin.com/ticket/16919
@@ -373,15 +383,27 @@ public class AtmospherePushConnection
                     }
                     outgoingMessage = null;
                 }
+                // Capture the resource and transition this connection to
+                // the disconnected state BEFORE releasing the monitor, so
+                // concurrent push() callers observe an already-closed
+                // connection and skip sendMessage. The actual
+                // resource.close() call is performed outside of
+                // synchronized(lock) below, to avoid a lock-ordering
+                // deadlock between this monitor and the HTTP session
+                // lock that the servlet container may acquire while
+                // closing the AtmosphereResource.
+                resourceToClose = resource;
+                connectionLost();
+            }
+            if (resourceToClose != null) {
                 try {
-                    resource.close();
+                    resourceToClose.close();
                 } catch (IOException e) {
                     getLogger().info("Error when closing push connection", e);
                 }
-                connectionLost();
-            } finally {
-                disconnecting.set(false);
             }
+        } finally {
+            disconnecting.set(false);
         }
     }
 

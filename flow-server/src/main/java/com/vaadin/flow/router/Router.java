@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -78,6 +71,7 @@ public class Router implements Serializable {
      *            the UI that navigation should be set up for
      * @param location
      *            the location object of the route
+     * @since 3.0
      */
     public void initializeUI(UI ui, Location location) {
         ui.getPage().getHistory()
@@ -117,6 +111,7 @@ public class Router implements Serializable {
      * @param location
      *            the location object of the route
      * @return NavigationTarget for the given location if found
+     * @since 3.0
      */
     public Optional<NavigationState> resolveNavigationTarget(
             Location location) {
@@ -137,6 +132,7 @@ public class Router implements Serializable {
      *
      * @return an instance of {@link NavigationState} for NotFoundException or
      *         empty if there is none in the application.
+     * @since 3.0
      */
     public Optional<NavigationState> resolveRouteNotFoundNavigationTarget() {
         Optional<ErrorTargetEntry> errorTargetEntry = getErrorNavigationTarget(
@@ -193,6 +189,7 @@ public class Router implements Serializable {
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
+     * @since 24.8
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
             BaseJsonNode state) {
@@ -226,6 +223,7 @@ public class Router implements Serializable {
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
+     * @since 24.8
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
             BaseJsonNode state, boolean forceInstantiation,
@@ -270,6 +268,7 @@ public class Router implements Serializable {
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
+     * @since 4.0
      */
     @Deprecated
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
@@ -304,6 +303,7 @@ public class Router implements Serializable {
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
+     * @since 24.4
      */
     @Deprecated
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
@@ -376,6 +376,7 @@ public class Router implements Serializable {
      *            navigation state info
      * @return the HTTP status code to return to the client if handling an
      *         initial rendering request
+     * @since 24.9.11
      */
     public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
@@ -458,6 +459,7 @@ public class Router implements Serializable {
      *            optional callback to run after successful navigation (before
      *            clearing navigation state), may be {@code null}
      * @return the HTTP status code resulting from the navigation
+     * @since 24.9.11
      */
     public int executeNavigation(UI ui, Location location,
             NavigationEvent navigationEvent, NavigationHandler handler,
@@ -498,6 +500,7 @@ public class Router implements Serializable {
      * @param exception
      *            exception to search error view for
      * @return optional error target entry corresponding to the given exception
+     * @since 1.3
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {

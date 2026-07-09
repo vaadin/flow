@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.File;
@@ -76,11 +68,21 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Default value for {@link #getMaxMessageSuspendTimeout()} ()} = {@value} .
+     *
+     * @since 3.0.1
      */
     public static final int DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT = 5000;
 
     /**
+     * Default value for {@link #getMaxRequestBodySize()} = {@value} characters
+     * (10&nbsp;MB).
+     */
+    public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = 10L * 1024 * 1024;
+
+    /**
      * Default value for {@link #getWebComponentDisconnect()} = {@value}.
+     *
+     * @since 2.0
      */
     public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
 
@@ -99,6 +101,7 @@ public class DefaultDeploymentConfiguration
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
+    private long maxRequestBodySize;
     private int maxMessageSuspendTimeout;
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
@@ -125,6 +128,7 @@ public class DefaultDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @since 6.0
      */
     public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
             Class<?> systemPropertyBaseClass, Properties initParameters) {
@@ -137,6 +141,7 @@ public class DefaultDeploymentConfiguration
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
+        checkMaxRequestBodySize();
         checkMaxMessageSuspendTimeout();
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
@@ -211,7 +216,19 @@ public class DefaultDeploymentConfiguration
     /**
      * {@inheritDoc}
      * <p>
+     * The default is 10&nbsp;MB.
+     */
+    @Override
+    public long getMaxRequestBodySize() {
+        return maxRequestBodySize;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * The default max message suspension time is 5000 milliseconds.
+     *
+     * @since 3.0.1
      */
     @Override
     public int getMaxMessageSuspendTimeout() {
@@ -267,6 +284,8 @@ public class DefaultDeploymentConfiguration
      * {@inheritDoc}
      * <p>
      * The default mode is <code>""</code> which uses the service mapping.
+     *
+     * @since 23.3.5
      */
     @Override
     public String getPushServletMapping() {
@@ -355,6 +374,20 @@ public class DefaultDeploymentConfiguration
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+        }
+    }
+
+    private void checkMaxRequestBodySize() {
+        try {
+            maxRequestBodySize = getApplicationOrSystemProperty(
+                    InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE,
+                    DEFAULT_MAX_REQUEST_BODY_SIZE, Long::parseLong);
+        } catch (NumberFormatException e) {
+            String warning = "WARNING: maxRequestBodySize has been set to an illegal value."
+                    + " The default of " + DEFAULT_MAX_REQUEST_BODY_SIZE
+                    + " characters will be used.";
+            warnings.add(warning);
+            maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE;
         }
     }
 

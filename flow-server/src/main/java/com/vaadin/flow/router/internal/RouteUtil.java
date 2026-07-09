@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router.internal;
 
@@ -91,6 +84,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle
      * @return parent layouts for target
+     * @since 9.0
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             VaadinContext context, Class<?> component, String path) {
@@ -130,6 +124,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle
      * @return parent layouts for target
+     * @since 24.5
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             RouteRegistry handledRegistry, Class<?> component, String path) {
@@ -167,6 +162,7 @@ public class RouteUtil {
      * @param component
      *            navigation target component to get route path for
      * @return actual path for given route target
+     * @since 9.0
      */
     public static String getRoutePath(VaadinContext context,
             Class<?> component) {
@@ -254,6 +250,7 @@ public class RouteUtil {
      *            the layout class for which the parent layouts are collected.
      * @return a list of all parent layout classes starting from the given
      *         layout and including all ancestors in the hierarchy.
+     * @since 24.5
      */
     public static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
             Class<? extends RouterLayout> layout) {
@@ -302,6 +299,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle or null for error views.
      * @return top parent layout for target or null if none found
+     * @since 9.0
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             VaadinContext context, final Class<?> component,
@@ -354,6 +352,7 @@ public class RouteUtil {
      *            the component where the route points to
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
+     * @since 9.0
      */
     public static String resolve(VaadinContext context, Class<?> component) {
         RoutePathProvider provider = null;
@@ -394,6 +393,7 @@ public class RouteUtil {
      *            modified classes
      * @param deletedClasses
      *            deleted classes
+     * @since 3.1
      */
     public static void updateRouteRegistry(RouteRegistry registry,
             Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
@@ -571,6 +571,7 @@ public class RouteUtil {
      *            path to determine if we are targeting a {@link RouteAlias}
      *            instead of {@link Route}
      * @return {@code true} if auto layout can be used
+     * @since 24.5
      */
     public static boolean isAutolayoutEnabled(Class<?> target, String path) {
         if (target.isAnnotationPresent(RouteAlias.class)
@@ -612,6 +613,7 @@ public class RouteUtil {
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
+     * @since 24.5.1
      */
     public static void checkForClientRouteCollisions(VaadinService service,
             List<RouteData> flowRoutes)
@@ -633,6 +635,7 @@ public class RouteUtil {
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
+     * @since 24.5.1
      */
     public static void checkForClientRouteCollisions(VaadinService service,
             String... flowRouteTemplates)
@@ -673,6 +676,7 @@ public class RouteUtil {
      * @param registry
      *            the registry to check
      * @return {@code true} if the registry has any auto layouts
+     * @since 24.5
      */
     public static boolean hasAutoLayout(AbstractRouteRegistry registry) {
         return !registry.getLayouts().isEmpty();
@@ -685,6 +689,7 @@ public class RouteUtil {
      * @param configuration
      *            deployment configuration
      * @return {@code true} if any client route has auto layout
+     * @since 24.5
      */
     public static boolean hasClientRouteWithAutoLayout(
             AbstractConfiguration configuration) {
@@ -698,6 +703,7 @@ public class RouteUtil {
      * @param registry
      *            the registry to check
      * @return {@code true} if the registry has any auto layouts
+     * @since 24.5
      */
     public static boolean hasServerRouteWithAutoLayout(
             AbstractRouteRegistry registry) {
@@ -731,6 +737,7 @@ public class RouteUtil {
      *            instance of UI, not {@code null}
      * @return dynamic page title found in the routes chain, or empty optional
      *         if no implementor of {@link HasDynamicTitle} was found
+     * @since 24.5
      */
     public static Optional<String> getDynamicTitle(UI ui) {
         return Objects.requireNonNull(ui).getInternals()
@@ -749,6 +756,7 @@ public class RouteUtil {
      *
      * @return a {@link Optional} containing the template of the client route
      *         target or an empty {@link Optional}.
+     * @since 24.5.1
      */
     public static Optional<String> getClientNavigationRouteTargetTemplate(
             String url) {

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -31,7 +24,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XS
  * servlet level,...).
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 public interface AbstractConfiguration extends Serializable {
@@ -48,6 +41,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return true if dev server should be used
      * @deprecated Use {@link #getMode()} instead
+     * @since 24.0
      */
     @Deprecated
     default boolean frontendHotdeploy() {
@@ -77,6 +71,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return custom production bundle, pre-compiled production bundle,
      *         development using livereload or development using bundle
+     * @since 24.0.1
      **/
     default Mode getMode() {
         if (isProductionMode()) {
@@ -146,6 +141,7 @@ public interface AbstractConfiguration extends Serializable {
      * Returns whether bun is enabled or not.
      *
      * @return {@code true} if enabled, {@code false} if not
+     * @since 24.3
      */
     default boolean isBunEnabled() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN,
@@ -158,6 +154,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return {@code true} if globally installed pnpm is used, {@code false} if
      *         the default one is used.
+     * @since 9.0
      */
     default boolean isGlobalPnpm() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM,
@@ -172,6 +169,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @see #isProductionMode()
      * @return {@code true} if enabled, {@code false} if not collected.
+     * @since 9.0.2
      */
     default boolean isUsageStatisticsEnabled() {
         return !isProductionMode() && getBooleanProperty(
@@ -196,6 +194,7 @@ public interface AbstractConfiguration extends Serializable {
      * will set it to <code>build</code>.
      *
      * @return build folder name, default {@code target}
+     * @since 7.0
      */
     default String getBuildFolder() {
         return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
@@ -207,6 +206,7 @@ public interface AbstractConfiguration extends Serializable {
      * Only available in development mode.
      *
      * @return the project root folder, or {@code null} if unknown
+     * @since 24.0
      */
     default File getProjectFolder() {
         if (isProductionMode()) {
@@ -253,6 +253,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return the folder where resources are stored, typically
      *         {@code src/main/resources}.
+     * @since 9.0
      */
     default File getJavaResourceFolder() {
         File folder = new File(getStringProperty(
@@ -270,6 +271,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return the folder where source files are stored, typically
      *         {@code src/main/java}.
+     * @since 24.0
      */
     default File getJavaSourceFolder() {
         File folder = new File(getStringProperty(

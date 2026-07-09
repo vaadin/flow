@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.dom;
 
@@ -153,6 +146,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @since 23.2
      */
     public N appendChild(Collection<Element> children) {
         if (children == null) {
@@ -197,6 +191,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @since 23.2
      */
     public N appendVirtualChild(Collection<Element> children) {
         if (children == null) {
@@ -348,6 +343,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to insert
      * @return this element
+     * @since 23.2
      */
     public N insertChild(int index, Collection<Element> children) {
         if (children == null) {
@@ -477,6 +473,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to remove
      * @return this element
+     * @since 23.2
      */
     public N removeChild(Collection<Element> children) {
         if (children == null) {

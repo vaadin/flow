@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -127,6 +120,7 @@ public interface RouteRegistry extends Serializable {
      * @param accessControls
      *            the access controls to use for checking access
      * @return list of accessible menu routes available for this registry
+     * @since 24.4
      */
     List<RouteData> getRegisteredAccessibleMenuRoutes(
             VaadinRequest vaadinRequest,
@@ -142,6 +136,7 @@ public interface RouteRegistry extends Serializable {
      *         {@link RouteTarget} and {@link RouteParameters} extracted from
      *         the <code>url</code> argument according with the route
      *         configuration.
+     * @since 4.0
      */
     NavigationRouteTarget getNavigationRouteTarget(String url);
 
@@ -155,6 +150,7 @@ public interface RouteRegistry extends Serializable {
      *            parameter values that may be used with given target.
      * @return the {@link RouteTarget} instance matching the given target
      *         component and route parameters.
+     * @since 4.0
      */
     RouteTarget getRouteTarget(Class<? extends Component> target,
             RouteParameters parameters);
@@ -205,6 +201,7 @@ public interface RouteRegistry extends Serializable {
      *            parameters for the target url.
      * @return {@link Optional} navigation target url string or
      *         {@link Optional#empty()} if navigation target was not found
+     * @since 4.0
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters);
@@ -221,6 +218,7 @@ public interface RouteRegistry extends Serializable {
      *            {@code null}
      * @return {@link Optional} navigation target template string or
      *         {@link Optional#empty()} if navigation target was not found
+     * @since 4.0
      */
     Optional<String> getTemplate(Class<? extends Component> navigationTarget);
 
@@ -256,6 +254,7 @@ public interface RouteRegistry extends Serializable {
      * Gets the Vaadin context which the registry belongs to.
      *
      * @return the Vaadin context
+     * @since 9.0
      */
     VaadinContext getContext();
 
@@ -267,6 +266,7 @@ public interface RouteRegistry extends Serializable {
      * @throws NotFoundException
      *             if given navigation target is not registered
      * @return {@code true} if parameters are required
+     * @since 9.0
      */
     boolean hasMandatoryParameter(Class<? extends Component> navigationTarget);
 
@@ -275,6 +275,7 @@ public interface RouteRegistry extends Serializable {
      *
      * @param layout
      *            {@link RouterLayout} class
+     * @since 24.5
      */
     void setLayout(Class<? extends RouterLayout> layout);
 
@@ -284,6 +285,7 @@ public interface RouteRegistry extends Serializable {
      * @param path
      *            current path
      * @return {@link RouterLayout} component or null
+     * @since 24.5
      */
     Class<? extends RouterLayout> getLayout(String path);
 
@@ -293,6 +295,7 @@ public interface RouteRegistry extends Serializable {
      * @param path
      *            current path
      * @return {@code true} if layout exists
+     * @since 24.5
      */
     boolean hasLayout(String path);
 }

@@ -5,13 +5,11 @@
     "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.3.2"
+    "lit": "3.3.3"
   },
   "devDependencies": {
     "glob": "12.0.0",
     "typescript": "5.9.3",
-    "workbox-core": "7.4.0",
-    "workbox-precaching": "7.4.0",
     "strip-css-comments": "5.0.0"
   }
 }

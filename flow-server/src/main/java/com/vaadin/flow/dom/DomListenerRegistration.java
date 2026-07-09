@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.dom;
 
@@ -235,6 +228,7 @@ public interface DomListenerRegistration extends Registration {
      *
      * @return timeout in milliseconds, or <code>0</code> if debouncing is
      *         disabled
+     * @since 2.0
      */
     default int getDebounceTimeout() {
         /*
@@ -252,6 +246,7 @@ public interface DomListenerRegistration extends Registration {
      * @see #throttle(int)
      *
      * @return debounce phases
+     * @since 2.0
      */
     default Set<DebouncePhase> getDebouncePhases() {
         /*
@@ -265,6 +260,7 @@ public interface DomListenerRegistration extends Registration {
      * Gets the event type that the listener is registered for.
      *
      * @return DOM event type of the listener
+     * @since 2.0
      */
     default String getEventType() {
         /*
@@ -304,6 +300,7 @@ public interface DomListenerRegistration extends Registration {
      *            the name of the property to synchronize, not <code>null</code>
      *            or <code>""</code>
      * @return this registration, for chaining
+     * @since 1.3
      */
     default DomListenerRegistration synchronizeProperty(String propertyName) {
         if (propertyName == null || propertyName.isEmpty()) {
@@ -373,6 +370,7 @@ public interface DomListenerRegistration extends Registration {
      *      docs for related JS DOM API</a>
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.2
      */
     default public DomListenerRegistration stopPropagation() {
         addEventData("event.stopPropagation()");
@@ -393,6 +391,7 @@ public interface DomListenerRegistration extends Registration {
      *      docs for related JS DOM API</a>
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.2
      */
     default public DomListenerRegistration preventDefault() {
         addEventData("event.preventDefault()");
@@ -406,6 +405,7 @@ public interface DomListenerRegistration extends Registration {
      * events.
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.4
      */
     public DomListenerRegistration allowInert();
 

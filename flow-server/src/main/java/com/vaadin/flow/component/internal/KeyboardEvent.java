@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.internal;
 
@@ -75,6 +68,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * @param composing
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
+     * @since 1.3
      */
     public KeyboardEvent(Component source, boolean fromClient, String key,
             String code, int location, boolean ctrlKey, boolean shiftKey,
@@ -125,6 +119,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            the key for this event
      * @param code
      *            the code for this event
+     * @since 1.3
      */
     public KeyboardEvent(Component source, String key, String code) {
         this(source, false, key, code, 0, false, false, false, false, false,
@@ -145,6 +140,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * empty Optional will be given.
      *
      * @return the optional code of the event as a {@link Key}
+     * @since 1.3
      */
     public Optional<Key> getCode() {
         return Optional.ofNullable(code);

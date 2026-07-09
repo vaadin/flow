@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal;
 
@@ -23,6 +16,9 @@ import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
 
+/**
+ * @since 8.0
+ */
 public interface DevModeHandler extends RequestHandler {
 
     /**
@@ -69,6 +65,7 @@ public interface DevModeHandler extends RequestHandler {
      * Gets the project root folder.
      *
      * @return the project root folder
+     * @since 9.0
      */
     File getProjectRoot();
 
@@ -76,6 +73,7 @@ public interface DevModeHandler extends RequestHandler {
      * Get the listening port of the dev server.
      *
      * @return the listening port
+     * @since 23.1
      */
     int getPort();
 }

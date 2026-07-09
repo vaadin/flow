@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -33,10 +25,14 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.PwaConfiguration;
+
 /**
  * Updates the Vite configuration files according with current project settings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 9.0
  */
 public class TaskUpdateVite implements FallibleCommand, Serializable {
 
@@ -121,6 +117,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
         String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
 
+        // First apply plugin insertions that use #buildFolder# placeholder
+        template = updateServiceWorkerVitePlugin(template);
+        template = updateFileSystemRouterVitePlugin(template);
+
+        // Then replace placeholders with actual values
         template = template
                 .replace("#settingsImport#",
                         "./" + options.getBuildDirectoryName() + "/"
@@ -133,7 +134,6 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                                 : String.join(";", webComponentTags))
                 .replace("#frontendExtraFileExtensions#",
                         getFrontendExtraFileExtensions());
-        template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
@@ -151,6 +151,19 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     .collect(Collectors.joining("', '", ", '", "'"));
         }
         return "";
+    }
+
+    private String updateServiceWorkerVitePlugin(String template) {
+        final PwaConfiguration pwaConfiguration = options
+                .getFrontendDependenciesScanner().getPwaConfiguration();
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
+            return template.replace("//#serviceWorkerPluginImport#",
+                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")
+                    .replace("//#serviceWorkerPlugin#",
+                            "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),");
+        }
+        return template.replace("//#serviceWorkerPluginImport#", "")
+                .replace("//#serviceWorkerPlugin#", "");
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {

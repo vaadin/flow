@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.menu;
 
 import java.io.IOException;
@@ -63,6 +55,7 @@ import com.vaadin.flow.router.MenuData;
  * @param detail
  *            additional information to be used in the menu, encoded in JSON
  *            format
+ * @since 24.5
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
@@ -121,6 +114,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + routeParameters + ", detail=" + detail + '}';
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailDeserializer extends JsonDeserializer<String> {
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt)
@@ -133,6 +129,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         }
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailSerializer extends JsonSerializer<String> {
         @Override
         public void serialize(String value, JsonGenerator gen,

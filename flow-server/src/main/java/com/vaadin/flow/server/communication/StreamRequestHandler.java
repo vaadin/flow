@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.communication;
 
@@ -63,6 +56,8 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Dynamic resource URI prefix.
+     *
+     * @since 4.0
      */
     public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
@@ -244,8 +239,29 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
+        // Replace '%' with '_' to avoid ambiguous percent-encoding (%25)
+        // rejected by Jetty 12. The actual download filename is preserved
+        // in the Content-Disposition header, so this only affects the URL
+        // path used for resource lookup.
+        String safeName = sanitizeNameForUrl(name);
         return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
-                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
+                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(safeName);
+    }
+
+    /**
+     * Replaces characters that would produce ambiguous percent-encodings in URL
+     * path segments.
+     *
+     * @param name
+     *            the resource name to sanitize
+     * @return the sanitized name, or the original value if {@code null} or
+     *         empty
+     */
+    static String sanitizeNameForUrl(String name) {
+        if (name == null || name.isEmpty()) {
+            return name;
+        }
+        return name.replace("%", "_");
     }
 
     private static Optional<URI> getPathUri(String path) {
@@ -273,6 +289,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to -1 (no limit).
      *
      * @return maximum request size for upload
+     * @since 23.3.5
      */
     protected long getRequestSizeMax() {
         return DEFAULT_REQUEST_SIZE_MAX;
@@ -283,6 +300,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to -1 (no limit).
      *
      * @return maximum file size for upload
+     * @since 23.3.5
      */
     protected long getFileSizeMax() {
         return DEFAULT_FILE_SIZE_MAX;
@@ -293,6 +311,7 @@ public class StreamRequestHandler implements RequestHandler {
      * default. Defaults to 10000.
      *
      * @return maximum file part count for upload
+     * @since 23.3.5
      */
     protected long getFileCountMax() {
         return DEFAULT_FILE_COUNT_MAX;

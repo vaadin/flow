@@ -1,23 +1,17 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -50,6 +44,32 @@ public class AbstractDeploymentConfigurationTest {
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
         Assert.assertEquals("Unexpected classLoader configuration option value",
                 classLoader, config.getClassLoaderName());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_propertyNotSet_returnsDefault() {
+        DeploymentConfiguration config = getConfig(null, null);
+        Assert.assertEquals(Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD),
+                config.getUrlSafeSchemes());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_commaSeparated_isTrimmedAndLowerCased() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, " HTTPS , MyApp ");
+        Assert.assertEquals(Set.of("https", "myapp"),
+                config.getUrlSafeSchemes());
+    }
+
+    @Test
+    public void getUrlSafeSchemes_memoizedAcrossCalls() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, "custom");
+        Set<String> first = config.getUrlSafeSchemes();
+        Set<String> second = config.getUrlSafeSchemes();
+        Assert.assertEquals(Set.of("custom"), first);
+        Assert.assertSame("Subsequent calls should return the cached instance",
+                first, second);
     }
 
     private DeploymentConfiguration getConfig(String property, String value) {
@@ -93,6 +113,11 @@ public class AbstractDeploymentConfigurationTest {
         @Override
         public int getHeartbeatInterval() {
             return 0;
+        }
+
+        @Override
+        public long getMaxRequestBodySize() {
+            return -1;
         }
 
         @Override

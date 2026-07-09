@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -103,6 +96,7 @@ public class NodeTasks implements FallibleCommand {
      *
      * @param options
      *            the options
+     * @since 23.3
      */
     public NodeTasks(Options options) {
         FrontendDependenciesScanner frontendDependencies = options
@@ -197,8 +191,7 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(frontendDependencies,
-                        options);
+                packageUpdater = new TaskUpdatePackages(options);
                 commands.add(packageUpdater);
             }
 
@@ -235,7 +228,7 @@ public class NodeTasks implements FallibleCommand {
         // available)
         addEndpointServicesTasks(options);
 
-        commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
+        commands.add(new TaskGenerateBootstrap(options));
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
@@ -273,7 +266,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(frontendDependencies, options));
+            commands.add(new TaskUpdateImports(options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));
@@ -439,6 +432,9 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
+    /**
+     * @since 24.3
+     */
     public record NodeTasksLockInfo(long pid,
             String commandLine) implements Serializable {
     }

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.shared;
 
@@ -50,7 +43,7 @@ public interface Registration extends Serializable {
      *            not <code>null</code>
      * @return a registration that will invoke the command once, not
      *         <code>null</code>
-     * @since
+     * @since 3.1
      */
     @GwtIncompatible("Command is not in a package available to GWT")
     static Registration once(Command command) {
@@ -75,7 +68,7 @@ public interface Registration extends Serializable {
      *            the registrations to remove, not <code>null</code>
      * @return a registration that removes all provided registrations, not
      *         <code>null</code>
-     * @since
+     * @since 3.1
      */
     static Registration combine(Registration... registrations) {
         Objects.requireNonNull(registrations);
@@ -99,7 +92,7 @@ public interface Registration extends Serializable {
      *            the item to add and remove
      * @return a registration that will remove the item from the collection, not
      *         <code>null</code>
-     * @since
+     * @since 3.1
      */
     static <T> Registration addAndRemove(Collection<T> collection, T item) {
         collection.add(item);

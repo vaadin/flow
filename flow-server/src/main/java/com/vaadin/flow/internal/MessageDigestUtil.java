@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal;
 
@@ -56,6 +49,7 @@ public class MessageDigestUtil {
      *            the string to hash
      *
      * @return 32 bytes making up the hash
+     * @since 24.0
      */
     public static byte[] sha256(String string, Charset charset) {
         return getSha256(null).digest(string.getBytes(charset));
@@ -71,6 +65,7 @@ public class MessageDigestUtil {
      *            salt to be added into hash calculation
      *
      * @return 32 bytes making up the hash
+     * @since 24.5
      */
     public static byte[] sha256(String string, byte[] salt, Charset charset) {
         return getSha256(salt).digest(string.getBytes(charset));
@@ -83,6 +78,7 @@ public class MessageDigestUtil {
      *            the byte array to hash
      *
      * @return sha256 hash string
+     * @since 24.7
      */
     public static String sha256Hex(byte[] content) {
         return sha256Hex(content, null);
@@ -96,6 +92,7 @@ public class MessageDigestUtil {
      * @param salt
      *            salt to be added to the calculation
      * @return sha256 hash string
+     * @since 24.7
      */
     public static String sha256Hex(byte[] content, byte[] salt) {
         byte[] digest = getSha256(salt).digest(content);

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.internal;
 
@@ -256,6 +249,7 @@ public class UIInternals implements Serializable {
      *            the UI to use
      * @param internalsHandler
      *            an implementation of {@link UIInternalUpdater}
+     * @since 3.0
      */
     public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
         this.internalsHandler = internalsHandler;
@@ -321,6 +315,7 @@ public class UIInternals implements Serializable {
      *
      * @param lastRequestResponse
      *            The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
@@ -330,6 +325,7 @@ public class UIInternals implements Serializable {
      * Returns the response created for the last UIDL request.
      *
      * @return The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public String getLastRequestResponse() {
         return lastRequestResponse;
@@ -597,6 +593,7 @@ public class UIInternals implements Serializable {
      * @param <E>
      *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
+     * @since 2.0
      */
     public <E> List<E> getListeners(Class<E> handler) {
         List<E> registeredListeners = (List<E>) listeners
@@ -611,6 +608,7 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @since 2.0
      */
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
@@ -719,6 +717,7 @@ public class UIInternals implements Serializable {
      * @param containsFilter
      *            string to filter invocation expressions with
      * @return true if any invocation with given expression is found.
+     * @since 24.4
      */
     public boolean containsPendingJavascript(String containsFilter) {
         return getPendingJavaScriptInvocations().anyMatch(js -> js
@@ -770,6 +769,7 @@ public class UIInternals implements Serializable {
      *
      * @param appShellTitle
      *            the appShellTitle to set
+     * @since 4.0.4
      */
     public void setAppShellTitle(String appShellTitle) {
         this.appShellTitle = appShellTitle;
@@ -795,6 +795,7 @@ public class UIInternals implements Serializable {
      * <b>NOTE</b> Intended for internal use, you should not call this method.
      *
      * @return the app shell title
+     * @since 4.0.4
      */
     public String getAppShellTitle() {
         return appShellTitle;
@@ -822,6 +823,7 @@ public class UIInternals implements Serializable {
      *
      * @param layouts
      *            stored router target chain to set as last navigated chain
+     * @since 24.8
      */
     public void setRouterTargetChain(List<RouterLayout> layouts) {
         if (routerTargetChain.isEmpty()) {
@@ -841,6 +843,7 @@ public class UIInternals implements Serializable {
      *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
+     * @since 4.0
      */
     public void showRouteTarget(Location viewLocation, Component target,
             List<RouterLayout> layouts) {
@@ -949,6 +952,7 @@ public class UIInternals implements Serializable {
      *
      * @param otherUI
      *            the other UI to transfer content from.
+     * @since 3.0
      */
     public void moveElementsFrom(UI otherUI) {
         internalsHandler.moveToNewUI(otherUI, ui);
@@ -1146,6 +1150,7 @@ public class UIInternals implements Serializable {
      *
      * @param location
      *            current location.
+     * @since 24.7.1
      */
     public void setLocationForRefresh(Location location) {
         locationForRefresh = location;
@@ -1164,6 +1169,7 @@ public class UIInternals implements Serializable {
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         if (locationForRefresh == null) {
@@ -1181,6 +1187,7 @@ public class UIInternals implements Serializable {
      * component that implements HasErrorParameter.
      *
      * @return true if showing an error view, false otherwise
+     * @since 24.9.12
      */
     public boolean isShowingErrorView() {
         if (routerTargetChain.isEmpty()) {
@@ -1235,6 +1242,7 @@ public class UIInternals implements Serializable {
      * @param fullAppId
      *            the (full, not stripped) id of the application tied with this
      *            UI
+     * @since 24.1
      */
     public void setFullAppId(String fullAppId) {
         this.fullAppId = fullAppId;
@@ -1257,6 +1265,7 @@ public class UIInternals implements Serializable {
      * will be gone.
      *
      * @return the full app id
+     * @since 24.1
      */
     public String getFullAppId() {
         return fullAppId;
@@ -1342,6 +1351,7 @@ public class UIInternals implements Serializable {
      *
      * @return the extended client details, or {@literal null} if not yet
      *         received.
+     * @since 2.0
      */
     public ExtendedClientDetails getExtendedClientDetails() {
         return extendedClientDetails;
@@ -1352,6 +1362,7 @@ public class UIInternals implements Serializable {
      *
      * @param details
      *            the updated extended client details.
+     * @since 2.0
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
@@ -1361,6 +1372,7 @@ public class UIInternals implements Serializable {
      * Check if we have a modal component defined for the UI.
      *
      * @return {@code true} if modal component is defined
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return modalComponentStack != null && !modalComponentStack.isEmpty();
@@ -1370,6 +1382,7 @@ public class UIInternals implements Serializable {
      * Get the active modal component if modal components set.
      *
      * @return the current active modal component
+     * @since 23.0
      */
     public Component getActiveModalComponent() {
         if (hasModalComponent()) {
@@ -1391,6 +1404,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @since 23.0
      */
     public void setChildModal(Component child) {
         if (modalComponentStack == null) {
@@ -1433,6 +1447,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to make modeless
+     * @since 23.0
      */
     public void setChildModeless(Component child) {
         if (modalComponentStack == null) {
@@ -1487,6 +1502,7 @@ public class UIInternals implements Serializable {
      * Returns the Deployment Configuration for the application
      *
      * @return The Deployment Configuration
+     * @since 24.8
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();

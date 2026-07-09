@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.data.provider;
 
@@ -32,6 +25,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *            data type
+ * @since 4.0
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
@@ -126,6 +120,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      *            data provider to be verified
      * @throws IllegalStateException
      *             if data provider type is incompatible with data view type
+     * @since 24.4
      */
     protected final void verifyDataProviderType(
             DataProvider<T, ?> dataProvider) {
@@ -204,6 +199,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @param listener
      *            identifier provider change listener to register
      * @return registration for removing the listener
+     * @since 23.2
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Registration addIdentifierProviderChangeListener(
@@ -231,6 +227,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @param stream
      *            the stream to get index from
      * @return the index of the item in the stream, or -1 if not found
+     * @since 24.4
      */
     protected int getItemIndex(T item, Stream<T> stream) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -34,7 +27,6 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * The action to resume a postponed {@link BeforeEnterEvent}.
      *
      * @author Vaadin Ltd
-     * @since 1.0.
      */
     public class ContinueNavigationAction implements Serializable {
 
@@ -93,6 +85,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
          * <p>
          * This is so that the client router pending promise closes. Also
          * updates the correct url on back navigation if blocking back.
+         *
+         * @since 24.1.13
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
@@ -114,6 +108,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            navigation target, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 2.0
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
@@ -131,6 +126,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            route parameters, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 4.0
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
             RouteParameters parameters,
@@ -155,6 +151,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 2.0
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui,
@@ -181,6 +178,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 4.0
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,

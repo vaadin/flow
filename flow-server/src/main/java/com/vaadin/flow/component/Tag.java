@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
@@ -56,10 +49,14 @@ public @interface Tag {
     String BUTTON = "button";
     /**
      * Tag for an <code>&lt;caption&gt;</code>.
+     *
+     * @since 24.5
      */
     String CAPTION = "caption";
     /**
      * Tag for a <code>&lt;code&gt;</code>.
+     *
+     * @since 24.9
      */
     String CODE = "code";
     /**
@@ -68,6 +65,8 @@ public @interface Tag {
     String DD = "dd";
     /**
      * Tag for an <code>&lt;details&gt;</code>.
+     *
+     * @since 6.0
      */
     String DETAILS = "details";
     /**
@@ -124,6 +123,8 @@ public @interface Tag {
     String HR = "hr";
     /**
      * Tag for an <code>&lt;iframe&gt;</code>.
+     *
+     * @since 1.3
      */
     String IFRAME = "iframe";
     /**
@@ -153,6 +154,8 @@ public @interface Tag {
 
     /**
      * Tag for an <code>&lt;object&gt;</code>.
+     *
+     * @since 9.0
      */
     String OBJECT = "object";
     /**
@@ -170,6 +173,8 @@ public @interface Tag {
 
     /**
      * Tag for an <code>&lt;param&gt;</code>.
+     *
+     * @since 9.0
      */
     String PARAM = "param";
     /**
@@ -194,18 +199,26 @@ public @interface Tag {
     String STRONG = "strong";
     /**
      * Tag for an <code>&lt;summary&gt;</code>.
+     *
+     * @since 6.0
      */
     String SUMMARY = "summary";
     /**
      * Tag for a <code>&lt;table&gt;</code>.
+     *
+     * @since 24.5
      */
     String TABLE = "table";
     /**
      * Tag for a <code>&lt;tbody&gt;</code>.
+     *
+     * @since 24.5
      */
     String TBODY = "tbody";
     /**
      * Tag for a <code>&lt;td&gt;</code>.
+     *
+     * @since 24.5
      */
     String TD = "td";
     /**
@@ -214,18 +227,26 @@ public @interface Tag {
     String TEXTAREA = "textarea";
     /**
      * Tag for a <code>&lt;tfoot&gt;</code>.
+     *
+     * @since 24.5
      */
     String TFOOT = "tfoot";
     /**
      * Tag for a <code>&lt;th&gt;</code>.
+     *
+     * @since 24.5
      */
     String TH = "th";
     /**
      * Tag for a <code>&lt;thead&gt;</code>.
+     *
+     * @since 24.5
      */
     String THEAD = "thead";
     /**
      * Tag for a <code>&lt;tr&gt;</code>.
+     *
+     * @since 24.5
      */
     String TR = "tr";
     /**

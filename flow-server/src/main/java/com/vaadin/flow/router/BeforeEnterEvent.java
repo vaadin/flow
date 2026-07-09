@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -38,6 +31,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            navigation target, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 2.0
      */
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
@@ -56,6 +50,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            route parameters, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
+     * @since 4.0
      */
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
             RouteParameters parameters,
@@ -81,6 +76,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 2.0
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui,
@@ -108,6 +104,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            the layout chain for the navigation target, not
      *            <code>null</code>
+     * @since 4.0
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,
@@ -122,6 +119,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Check if event is for a refresh of a preserveOnRefresh view.
      *
      * @return true if refresh of a preserve on refresh view
+     * @since 23.2.8
      */
     public boolean isRefreshEvent() {
         return getTrigger().equals(NavigationTrigger.REFRESH);
@@ -131,6 +129,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Check if the event is fired by an error handler.
      *
      * @return {@literal true} if the event is fired by an error handler.
+     * @since 24.3
      */
     public boolean isErrorEvent() {
         return errorEvent;

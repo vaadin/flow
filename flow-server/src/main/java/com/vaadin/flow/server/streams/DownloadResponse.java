@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.InputStream;
@@ -130,6 +122,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, Exception exception) {
         DownloadResponse downloadResponse = new DownloadResponse(null, null,
@@ -164,6 +157,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, String message,
             Exception exception) {
@@ -195,6 +189,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             Exception exception) {
@@ -231,6 +226,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             String message, Exception exception) {
@@ -266,6 +262,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, Exception exception) {
         this.error = error;
@@ -294,6 +291,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, String errorMessage, Exception exception) {
         setError(error, errorMessage);
@@ -317,6 +315,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, Exception exception) {
         this.error = error.getCode();
@@ -345,6 +344,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, String errorMessage,
             Exception exception) {
@@ -378,6 +378,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return the exception or null if no exception occurred
      * @see TransferContext#exception()
+     * @since 24.9
      */
     public Exception getException() {
         return exception;

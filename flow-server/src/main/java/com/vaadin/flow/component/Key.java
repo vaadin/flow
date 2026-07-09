@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
@@ -1969,6 +1962,8 @@ public interface Key extends Serializable {
      * hankaku/zenkaku/kanji ) key on Japanese keyboards
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key BACKQUOTE = Key.of("Backquote");
 
@@ -1979,6 +1974,8 @@ public interface Key extends Serializable {
      * a UK (102) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key BACKSLASH = Key.of("Backslash");
 
@@ -1986,6 +1983,8 @@ public interface Key extends Serializable {
      * <code>[{</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key BRACKET_LEFT = Key.of("BracketLeft");
 
@@ -1993,6 +1992,8 @@ public interface Key extends Serializable {
      * <code>]}</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key BRACKET_RIGHT = Key.of("BracketRight");
 
@@ -2000,6 +2001,8 @@ public interface Key extends Serializable {
      * <code>,&lt;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key COMMA = Key.of("Comma");
 
@@ -2007,6 +2010,8 @@ public interface Key extends Serializable {
      * <code>0)</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_0 = Key.of("Digit0");
 
@@ -2014,6 +2019,8 @@ public interface Key extends Serializable {
      * <code>1!</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_1 = Key.of("Digit1");
 
@@ -2021,6 +2028,8 @@ public interface Key extends Serializable {
      * <code>2@</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_2 = Key.of("Digit2");
 
@@ -2028,6 +2037,8 @@ public interface Key extends Serializable {
      * <code>3#</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_3 = Key.of("Digit3");
 
@@ -2035,6 +2046,8 @@ public interface Key extends Serializable {
      * <code>4$</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_4 = Key.of("Digit4");
 
@@ -2042,6 +2055,8 @@ public interface Key extends Serializable {
      * <code>5%</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_5 = Key.of("Digit5");
 
@@ -2049,6 +2064,8 @@ public interface Key extends Serializable {
      * <code>6^</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_6 = Key.of("Digit6");
 
@@ -2056,6 +2073,8 @@ public interface Key extends Serializable {
      * <code>7&amp;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_7 = Key.of("Digit7");
 
@@ -2063,6 +2082,8 @@ public interface Key extends Serializable {
      * <code>8*</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_8 = Key.of("Digit8");
 
@@ -2070,6 +2091,8 @@ public interface Key extends Serializable {
      * <code>9(</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key DIGIT_9 = Key.of("Digit9");
 
@@ -2077,6 +2100,8 @@ public interface Key extends Serializable {
      * <code>=+</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key EQUAL = Key.of("Equal");
 
@@ -2085,6 +2110,8 @@ public interface Key extends Serializable {
      * keys.Labelled <code>\|</code> on a UK keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key INTL_BACKSLASH = Key.of("IntlBackslash");
 
@@ -2093,6 +2120,8 @@ public interface Key extends Serializable {
      * keys.Labelled <code>\ろ</code> ( ro ) on a Japanese keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key INTL_RO = Key.of("IntlRo");
 
@@ -2102,6 +2131,8 @@ public interface Key extends Serializable {
      * <code>\/</code> on a Russian keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key INTL_YEN = Key.of("IntlYen");
 
@@ -2110,6 +2141,8 @@ public interface Key extends Serializable {
      * (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_A = Key.of("KeyA");
 
@@ -2117,6 +2150,8 @@ public interface Key extends Serializable {
      * <code>b</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_B = Key.of("KeyB");
 
@@ -2124,6 +2159,8 @@ public interface Key extends Serializable {
      * <code>c</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_C = Key.of("KeyC");
 
@@ -2131,6 +2168,8 @@ public interface Key extends Serializable {
      * <code>d</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_D = Key.of("KeyD");
 
@@ -2138,6 +2177,8 @@ public interface Key extends Serializable {
      * <code>e</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_E = Key.of("KeyE");
 
@@ -2145,6 +2186,8 @@ public interface Key extends Serializable {
      * <code>f</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_F = Key.of("KeyF");
 
@@ -2152,6 +2195,8 @@ public interface Key extends Serializable {
      * <code>g</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_G = Key.of("KeyG");
 
@@ -2159,6 +2204,8 @@ public interface Key extends Serializable {
      * <code>h</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_H = Key.of("KeyH");
 
@@ -2166,6 +2213,8 @@ public interface Key extends Serializable {
      * <code>i</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_I = Key.of("KeyI");
 
@@ -2173,6 +2222,8 @@ public interface Key extends Serializable {
      * <code>j</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_J = Key.of("KeyJ");
 
@@ -2180,6 +2231,8 @@ public interface Key extends Serializable {
      * <code>k</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_K = Key.of("KeyK");
 
@@ -2187,6 +2240,8 @@ public interface Key extends Serializable {
      * <code>l</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_L = Key.of("KeyL");
 
@@ -2194,6 +2249,8 @@ public interface Key extends Serializable {
      * <code>m</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_M = Key.of("KeyM");
 
@@ -2201,6 +2258,8 @@ public interface Key extends Serializable {
      * <code>n</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_N = Key.of("KeyN");
 
@@ -2208,6 +2267,8 @@ public interface Key extends Serializable {
      * <code>o</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_O = Key.of("KeyO");
 
@@ -2215,6 +2276,8 @@ public interface Key extends Serializable {
      * <code>p</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_P = Key.of("KeyP");
 
@@ -2223,6 +2286,8 @@ public interface Key extends Serializable {
      * (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_Q = Key.of("KeyQ");
 
@@ -2230,6 +2295,8 @@ public interface Key extends Serializable {
      * <code>r</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_R = Key.of("KeyR");
 
@@ -2237,6 +2304,8 @@ public interface Key extends Serializable {
      * <code>s</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_S = Key.of("KeyS");
 
@@ -2244,6 +2313,8 @@ public interface Key extends Serializable {
      * <code>t</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_T = Key.of("KeyT");
 
@@ -2251,6 +2322,8 @@ public interface Key extends Serializable {
      * <code>u</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_U = Key.of("KeyU");
 
@@ -2258,6 +2331,8 @@ public interface Key extends Serializable {
      * <code>v</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_V = Key.of("KeyV");
 
@@ -2266,6 +2341,8 @@ public interface Key extends Serializable {
      * (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_W = Key.of("KeyW");
 
@@ -2273,6 +2350,8 @@ public interface Key extends Serializable {
      * <code>x</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_X = Key.of("KeyX");
 
@@ -2281,6 +2360,8 @@ public interface Key extends Serializable {
      * (e.g., German) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_Y = Key.of("KeyY");
 
@@ -2290,6 +2371,8 @@ public interface Key extends Serializable {
      * keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key KEY_Z = Key.of("KeyZ");
 
@@ -2297,6 +2380,8 @@ public interface Key extends Serializable {
      * <code>-_</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key MINUS = Key.of("Minus");
 
@@ -2304,6 +2389,8 @@ public interface Key extends Serializable {
      * <code>.&gt;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key PERIOD = Key.of("Period");
 
@@ -2311,6 +2398,8 @@ public interface Key extends Serializable {
      * <code>'"</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key QUOTE = Key.of("Quote");
 
@@ -2318,6 +2407,8 @@ public interface Key extends Serializable {
      * <code>;:</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SEMICOLON = Key.of("Semicolon");
 
@@ -2325,6 +2416,8 @@ public interface Key extends Serializable {
      * <code>/?</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SLASH = Key.of("Slash");
 
@@ -2332,6 +2425,8 @@ public interface Key extends Serializable {
      * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key ALT_LEFT = Key.of("AltLeft");
 
@@ -2340,6 +2435,8 @@ public interface Key extends Serializable {
      * labelled <code>AltGr</code> key on many keyboard layouts.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key ALT_RIGHT = Key.of("AltRight");
 
@@ -2347,6 +2444,8 @@ public interface Key extends Serializable {
      * <code>Control</code> or <code>⌃</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key CONTROL_LEFT = Key.of("ControlLeft");
 
@@ -2354,6 +2453,8 @@ public interface Key extends Serializable {
      * <code>Control</code> or <code>⌃</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key CONTROL_RIGHT = Key.of("ControlRight");
 
@@ -2362,6 +2463,8 @@ public interface Key extends Serializable {
      * key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key META_LEFT = Key.of("MetaLeft");
 
@@ -2370,6 +2473,8 @@ public interface Key extends Serializable {
      * key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key META_RIGHT = Key.of("MetaRight");
 
@@ -2377,6 +2482,8 @@ public interface Key extends Serializable {
      * <code>Shift</code> or <code>⇧</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SHIFT_LEFT = Key.of("ShiftLeft");
 
@@ -2384,6 +2491,8 @@ public interface Key extends Serializable {
      * <code>Shift</code> or <code>⇧</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SHIFT_RIGHT = Key.of("ShiftRight");
 
@@ -2392,6 +2501,8 @@ public interface Key extends Serializable {
      * keyboard): <code>かな</code> ( kana )
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LANG_1 = Key.of("Lang1");
 
@@ -2400,6 +2511,8 @@ public interface Key extends Serializable {
      * <code>英数</code> ( eisu )
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LANG_2 = Key.of("Lang2");
 
@@ -2407,6 +2520,8 @@ public interface Key extends Serializable {
      * Japanese (word-processing keyboard): Katakana
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LANG_3 = Key.of("Lang3");
 
@@ -2414,6 +2529,8 @@ public interface Key extends Serializable {
      * Japanese (word-processing keyboard): Hiragana
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LANG_4 = Key.of("Lang4");
 
@@ -2421,6 +2538,8 @@ public interface Key extends Serializable {
      * Japanese (word-processing keyboard): Zenkaku/Hankaku
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LANG_5 = Key.of("Lang5");
 
@@ -2429,6 +2548,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_0 = Key.of("Numpad0");
 
@@ -2437,6 +2558,8 @@ public interface Key extends Serializable {
      * phone orremote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_1 = Key.of("Numpad1");
 
@@ -2445,6 +2568,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_2 = Key.of("Numpad2");
 
@@ -2453,6 +2578,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_3 = Key.of("Numpad3");
 
@@ -2461,6 +2588,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_4 = Key.of("Numpad4");
 
@@ -2469,6 +2598,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_5 = Key.of("Numpad5");
 
@@ -2477,6 +2608,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_6 = Key.of("Numpad6");
 
@@ -2485,6 +2618,8 @@ public interface Key extends Serializable {
      * PRS</code> on a phoneor remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_7 = Key.of("Numpad7");
 
@@ -2493,6 +2628,8 @@ public interface Key extends Serializable {
      * control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_8 = Key.of("Numpad8");
 
@@ -2501,6 +2638,8 @@ public interface Key extends Serializable {
      * WXY</code> on a phoneor remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_9 = Key.of("Numpad9");
 
@@ -2508,6 +2647,8 @@ public interface Key extends Serializable {
      * <code>+</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_ADD = Key.of("NumpadAdd");
 
@@ -2515,6 +2656,8 @@ public interface Key extends Serializable {
      * Found on the Microsoft Natural Keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_BACKSPACE = Key.of("NumpadBackspace");
 
@@ -2525,6 +2668,8 @@ public interface Key extends Serializable {
      * should always be encoded as " NumLock " .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_CLEAR = Key.of("NumpadClear");
 
@@ -2532,6 +2677,8 @@ public interface Key extends Serializable {
      * <code>CE</code> (Clear Entry)
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_CLEAR_ENTRY = Key.of("NumpadClearEntry");
 
@@ -2541,6 +2688,8 @@ public interface Key extends Serializable {
      * .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_COMMA = Key.of("NumpadComma");
 
@@ -2549,6 +2698,8 @@ public interface Key extends Serializable {
      * (e.g.,Brazil), this key may generate a <code>,</code> .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_DECIMAL = Key.of("NumpadDecimal");
 
@@ -2556,11 +2707,15 @@ public interface Key extends Serializable {
      * <code>/</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_DIVIDE = Key.of("NumpadDivide");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_ENTER = Key.of("NumpadEnter");
 
@@ -2568,6 +2723,8 @@ public interface Key extends Serializable {
      * <code>=</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_EQUAL = Key.of("NumpadEqual");
 
@@ -2577,6 +2734,8 @@ public interface Key extends Serializable {
      * key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_HASH = Key.of("NumpadHash");
 
@@ -2584,6 +2743,8 @@ public interface Key extends Serializable {
      * <code>M+</code> Add current entry to the value stored in memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MEMORY_ADD = Key.of("NumpadMemoryAdd");
 
@@ -2591,6 +2752,8 @@ public interface Key extends Serializable {
      * <code>MC</code> Clear the value stored in memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MEMORY_CLEAR = Key.of("NumpadMemoryClear");
 
@@ -2599,6 +2762,8 @@ public interface Key extends Serializable {
      * memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MEMORY_RECALL = Key.of("NumpadMemoryRecall");
 
@@ -2607,6 +2772,8 @@ public interface Key extends Serializable {
      * entry.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MEMORY_STORE = Key.of("NumpadMemoryStore");
 
@@ -2614,6 +2781,8 @@ public interface Key extends Serializable {
      * <code>M-</code> Subtract current entry from the value stored in memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MEMORY_SUBTRACT = Key.of("NumpadMemorySubtract");
 
@@ -2624,6 +2793,8 @@ public interface Key extends Serializable {
      * phones and remote controls.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_MULTIPLY = Key.of("NumpadMultiply");
 
@@ -2631,6 +2802,8 @@ public interface Key extends Serializable {
      * <code>(</code> Found on the Microsoft Natural Keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_PAREN_LEFT = Key.of("NumpadParenLeft");
 
@@ -2638,6 +2811,8 @@ public interface Key extends Serializable {
      * <code>)</code> Found on the Microsoft Natural Keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_PAREN_RIGHT = Key.of("NumpadParenRight");
 
@@ -2648,6 +2823,8 @@ public interface Key extends Serializable {
      * keypads.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_STAR = Key.of("NumpadStar");
 
@@ -2655,6 +2832,8 @@ public interface Key extends Serializable {
      * <code>-</code>
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key NUMPAD_SUBTRACT = Key.of("NumpadSubtract");
 
@@ -2662,6 +2841,8 @@ public interface Key extends Serializable {
      * Sometimes labelled <code>My Computer</code> on the keyboard
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LAUNCH_APP_1 = Key.of("LaunchApp1");
 
@@ -2669,42 +2850,58 @@ public interface Key extends Serializable {
      * Sometimes labelled <code>Calculator</code> on the keyboard
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key LAUNCH_APP_2 = Key.of("LaunchApp2");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key MEDIA_SELECT = Key.of("MediaSelect");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SLEEP = Key.of("Sleep");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key TURBO = Key.of("Turbo");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key ABORT = Key.of("Abort");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key RESUME = Key.of("Resume");
 
     /**
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @since 1.3
      */
     Key SUSPEND = Key.of("Suspend");
 
     /**
      * This value is reserved for corner cases of no key value present in event
      * e.g. when browser autosuggest is used.
+     *
+     * @since 23.0.1
      */
     Key NONE = Key.of("None");
 
@@ -2801,6 +2998,7 @@ public interface Key extends Serializable {
      * @param key
      *            a {@link Key} instance.
      * @return true if the key argument is a modifier, otherwise false.
+     * @since 1.3
      */
     static boolean isModifier(Key key) {
         return Stream.of(KeyModifier.values())

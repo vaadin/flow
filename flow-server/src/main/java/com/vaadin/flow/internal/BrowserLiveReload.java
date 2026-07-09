@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal;
 
@@ -28,6 +21,7 @@ import com.vaadin.flow.server.communication.FragmentedMessageHolder;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.1
  */
 public interface BrowserLiveReload extends FragmentedMessageHolder {
 
@@ -92,6 +86,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      * @param refreshLayouts
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route component
+     * @since 24.5
      */
     default void refresh(boolean refreshLayouts) {
         reload();
@@ -104,6 +99,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the path of the file to update, relative to the servlet path
      * @param content
      *            the new content of the file
+     * @since 24.1
      */
     void update(String path, String content);
 
@@ -114,6 +110,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the atmosphere resource that received the message
      * @param msg
      *            the received message
+     * @since 23.1
      */
     void onMessage(AtmosphereResource resource, String msg);
 
@@ -124,6 +121,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the event name
      * @param eventData
      *            the event data
+     * @since 24.8
      */
     void sendHmrEvent(String event, JsonNode eventData);
 

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.internal;
 
@@ -513,6 +506,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            instantiation target class
      * @return an IllegalArgumentException with descriptive message
+     * @since 24.5
      */
     public static IllegalArgumentException convertInstantiationException(
             Exception exception, Class<?> clazz) {
@@ -625,6 +619,7 @@ public class ReflectTools implements Serializable {
      * @param interfaceType
      *            class type of interface to get generic for
      * @return List of Class if found else empty List, never {@literal null}
+     * @since 23.1
      */
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
             Class<?> interfaceType) {
@@ -785,6 +780,7 @@ public class ReflectTools implements Serializable {
      *         if there is no shared ancestor. Or if the implementation treats
      *         bootstrap loaders as {@code null} (as per
      *         {@link ClassLoader#getParent()}).
+     * @since 2.0.1
      */
     public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(
             ClassLoader classLoaderA, ClassLoader classLoaderB) {
@@ -824,6 +820,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return {@code true} is {@code element} has annotation whose FQN is
      *         {@code annotationFqn}, {@code false} otherwise
+     * @since 5.0
      */
     public static boolean hasAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -840,6 +837,7 @@ public class ReflectTools implements Serializable {
      *            annotation simple name
      * @return {@code true} is {@code element} has annotation whose simple name
      *         is {@code simpleName}, {@code false} otherwise
+     * @since 6.0
      */
     public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
             String simpleName) {
@@ -856,6 +854,7 @@ public class ReflectTools implements Serializable {
      *            the method name
      * @return an optional value, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Object getAnnotationMethodValue(Annotation annotation,
             String methodName) {
@@ -881,6 +880,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return an optional annotation, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Optional<Annotation> getAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -899,6 +899,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            the class to check
      * @return true if the class can be instantiated, otherwise false
+     * @since 6.0
      */
     public static boolean isInstantiableService(Class<?> clazz) {
         if (clazz.isInterface()) {

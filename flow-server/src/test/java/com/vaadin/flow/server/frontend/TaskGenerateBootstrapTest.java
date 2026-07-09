@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -63,8 +56,7 @@ public class TaskGenerateBootstrapTest {
 
     public static class CustomModifier implements TypeScriptBootstrapModifier {
         @Override
-        public void modify(List<String> lines, Options options,
-                FrontendDependenciesScanner scanner) {
+        public void modify(List<String> lines, Options options) {
             lines.add(0, CUSTOM_MODIFIER_CONTENT);
         }
     }
@@ -78,9 +70,10 @@ public class TaskGenerateBootstrapTest {
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         options = new MockOptions(finder, null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+                .withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(frontDeps);
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
     }
 
     @Test
@@ -103,7 +96,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importDevTools_inDevMode()
             throws ExecutionFailedException {
         options.withProductionMode(false);
-        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains(DEV_TOOLS_IMPORT));
@@ -150,10 +143,10 @@ public class TaskGenerateBootstrapTest {
     @Test
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
-        options.withFrontendDirectory(frontendFolder).withProductionMode(true);
+        options.withFrontendDirectory(frontendFolder).withProductionMode(true)
+                .withFrontendDependenciesScanner(getThemedDependency());
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

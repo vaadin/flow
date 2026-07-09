@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -37,6 +29,7 @@ import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -102,8 +95,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        String requestBody = SynchronizedRequestHandler
-                .getRequestBody(request.getReader());
+        String requestBody;
+        try {
+            requestBody = SynchronizedRequestHandler.getRequestBody(
+                    request.getReader(),
+                    SynchronizedRequestHandler.getMaxRequestBodySize(request));
+        } catch (RequestBodyTooLargeException e) {
+            response.sendError(
+                    HttpStatusCode.REQUEST_ENTITY_TOO_LARGE.getCode(),
+                    e.getMessage());
+            return true;
+        }
         Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
                 session, request, response, requestBody);
         if (responseWriter.isPresent()) {

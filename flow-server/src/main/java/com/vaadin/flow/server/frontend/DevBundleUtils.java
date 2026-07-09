@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -30,6 +23,8 @@ import com.vaadin.flow.server.Constants;
  * Helpers related to the development bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.1
  */
 public class DevBundleUtils {
 
@@ -49,6 +44,7 @@ public class DevBundleUtils {
      *            the file name inside the bundle
      * @return a URL referring to the file inside the bundle or {@code null} if
      *         the file was not found
+     * @since 24.3
      */
     public static URL findBundleFile(File projectDir, String buildFolder,
             String filename) throws IOException {
@@ -72,6 +68,7 @@ public class DevBundleUtils {
      * @param buildFolder
      *            the project build folder name
      * @return the bundle directory
+     * @since 24.3
      */
     public static File getDevBundleFolder(File projectDir, String buildFolder) {
         return new File(new File(projectDir, buildFolder),
@@ -88,6 +85,7 @@ public class DevBundleUtils {
      * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
+     * @since 24.3
      */
     public static String findBundleStatsJson(File projectDir,
             String buildFolder) throws IOException {
@@ -113,6 +111,7 @@ public class DevBundleUtils {
      *            current project root directory
      * @param devBundleFolder
      *            dev bundle location
+     * @since 24.3
      */
     public static void compressBundle(File projectDir, File devBundleFolder) {
         File bundleFile = new File(projectDir,
@@ -133,6 +132,7 @@ public class DevBundleUtils {
      *            current project root directory
      * @param devBundleFolder
      *            unpacked dev bundle location
+     * @since 24.3
      */
     public static void unpackBundle(File projectDir, File devBundleFolder) {
         File bundleFile = new File(projectDir,

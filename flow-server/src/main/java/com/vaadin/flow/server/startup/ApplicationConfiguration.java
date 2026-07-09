@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.startup;
 
@@ -31,7 +24,7 @@ import com.vaadin.flow.server.VaadinContext;
  * container level configuration (e.g. Servlet).
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  */
 public interface ApplicationConfiguration extends AbstractConfiguration {
@@ -95,6 +88,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *
      * @return {@code true} if dev mode session serialization is enabled,
      *         {@code false} otherwise
+     * @since 8.0
      */
     boolean isDevModeSessionSerializationEnabled();
 
@@ -109,6 +103,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *
      * @return {@code true} if Flow should not automatically register servlets
      * @see com.vaadin.flow.server.startup.ServletDeployer
+     * @since 9.0
      */
     default boolean disableAutomaticServletRegistration() {
         return getBooleanProperty(

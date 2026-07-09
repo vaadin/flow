@@ -71,6 +71,8 @@ public class NpmTemplateParser implements TemplateParser {
      * The default constructor. Protected in order to prevent direct
      * instantiation, but not private in order to allow mocking/overrides for
      * testing purposes.
+     *
+     * @since 2.2
      */
     protected NpmTemplateParser() {
     }
@@ -175,6 +177,7 @@ public class NpmTemplateParser implements TemplateParser {
      *            {@code @vaadin/vaadin-button.js}.
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
+     * @since 6.0
      */
     protected String getSourcesFromTemplate(VaadinService service, String tag,
             String url) {

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -44,7 +37,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Contains helper methods for {@link VaadinServlet} and generally for handling
  * {@link VaadinRequest VaadinRequests}.
  *
- * @since 1.0
+ * @since 2.2
  */
 public class HandlerHelper implements Serializable {
 
@@ -97,6 +90,8 @@ public class HandlerHelper implements Serializable {
 
         /**
          * INIT requests.
+         *
+         * @since 3.0
          */
         INIT(ApplicationConstants.REQUEST_TYPE_INIT),
 
@@ -107,6 +102,8 @@ public class HandlerHelper implements Serializable {
 
         /**
          * WebComponent resynchronization requests.
+         *
+         * @since 23.3.2
          */
         WEBCOMPONENT_RESYNC(
                 ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC),
@@ -122,11 +119,15 @@ public class HandlerHelper implements Serializable {
 
         /**
          * Page showing that the browser is unsupported.
+         *
+         * @since 23.4
          */
         BROWSER_TOO_OLD("oldbrowser"),
 
         /**
          * Translation properties file requests.
+         *
+         * @since 24.4
          */
         TRANSLATION_FILE(ApplicationConstants.REQUEST_TYPE_TRANSLATION_FILE);
 
@@ -217,6 +218,7 @@ public class HandlerHelper implements Serializable {
      *            the servlet request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
+     * @since 7.0
      */
     public static boolean isFrameworkInternalRequest(String servletMappingPath,
             HttpServletRequest request) {
@@ -294,6 +296,7 @@ public class HandlerHelper implements Serializable {
      * @return an optional containing the path relative to the servlet if the
      *         request is inside the servlet mapping, an empty optional
      *         otherwise
+     * @since 8.0
      */
     public static Optional<String> getPathIfInsideServlet(
             String servletMappingPath, String requestedPath) {
@@ -384,6 +387,7 @@ public class HandlerHelper implements Serializable {
      *            the servlet request
      * @return the path inside the context root, not including the slash after
      *         the context root path
+     * @since 23.0.1
      */
     public static String getRequestPathInsideContext(
             HttpServletRequest request) {
@@ -495,6 +499,7 @@ public class HandlerHelper implements Serializable {
      *            the URL path to be verified.
      * @return {@code true}, if the given path has a directory change
      *         instruction, {@code false} otherwise.
+     * @since 5.0
      */
     public static boolean isPathUnsafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C,
@@ -516,6 +521,8 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      * <p>
      * These paths are relative to a potential Vaadin mapping
+     *
+     * @since 7.0
      */
     public static String[] getPublicResources() {
         return publicResources;
@@ -528,6 +535,8 @@ public class HandlerHelper implements Serializable {
      * <p>
      * These URLs are always relative to the root path and independent of any
      * Vaadin mapping
+     *
+     * @since 24.0.2
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
@@ -543,6 +552,7 @@ public class HandlerHelper implements Serializable {
      * @param iconPath
      *            path of the base icon.
      * @return list of paths of icon variants.
+     * @since 24.3.3
      */
     public static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
@@ -553,6 +563,8 @@ public class HandlerHelper implements Serializable {
      * URLs matching these patterns should be publicly available for
      * applications to work but might require a security context, i.e.
      * authentication information.
+     *
+     * @since 7.0
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
@@ -578,6 +590,7 @@ public class HandlerHelper implements Serializable {
      *            the HTTP servlet request to evaluate
      * @return {@code true} if the request is initiated by a non-HTML context;
      *         {@code false} otherwise
+     * @since 24.8
      */
     public static boolean isNonHtmlInitiatedRequest(
             HttpServletRequest request) {
@@ -599,6 +612,7 @@ public class HandlerHelper implements Serializable {
      *            the Vaadin request to evaluate
      * @return {@code true} if the request is initiated by a non-HTML context;
      *         {@code false} otherwise
+     * @since 24.8
      */
     public static boolean isNonHtmlInitiatedRequest(VaadinRequest request) {
         return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));

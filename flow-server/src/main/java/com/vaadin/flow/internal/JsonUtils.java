@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.internal;
 
 import java.util.AbstractList;
@@ -319,6 +311,7 @@ public final class JsonUtils {
      * @param bean
      *            the bean to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonObject beanToJson(Object bean) {
         Objects.requireNonNull(bean, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -336,6 +329,7 @@ public final class JsonUtils {
      * @param list
      *            the list to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonArray listToJson(List<?> list) {
         Objects.requireNonNull(list, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -352,6 +346,7 @@ public final class JsonUtils {
      * @param map
      *            the map to convert, not {@code null}
      * @return a JSON representation of the bean
+     * @since 4.0
      */
     public static JsonObject mapToJson(Map<String, ?> map) {
         Objects.requireNonNull(map, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
@@ -372,6 +367,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.1
      */
     public static <T> T readToObject(JsonObject jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -393,6 +389,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.4
      */
     public static <T> T readValue(JsonValue jsonValue, Class<T> tClass) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -414,6 +411,7 @@ public final class JsonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.4
      */
     public static <T> T readValue(JsonValue jsonValue,
             TypeReference<T> typeReference) {
@@ -432,6 +430,7 @@ public final class JsonUtils {
      * @param object
      *            Java object to convert
      * @return converted JSON value
+     * @since 24.4
      */
     public static JsonValue writeValue(Object object) {
         try {

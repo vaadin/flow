@@ -46,9 +46,8 @@
     <url>https://vaadin.com/flow</url>
     <licenses>
         <license>
-            <name>Apache License Version 2.0</name>
-            <distribution>repo</distribution>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <name>Vaadin Commercial License and Service Terms</name>
+            <url>https://vaadin.com/commercial-license-and-service-terms</url>
         </license>
     </licenses>
     <inceptionYear>2000</inceptionYear>
@@ -84,7 +83,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.5.13</spring.boot.version>
+        <spring.boot.version>3.5.15</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -106,7 +105,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.6.0</testbench.version>
+        <testbench.version>9.6.1</testbench.version>
         <jetty.version>12.0.27</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
@@ -146,6 +145,8 @@
         <failsafe.parallel>all</failsafe.parallel>
         <failsafe.threadCount>2</failsafe.threadCount>
         <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
+
+        <currentYear>2026</currentYear>
     </properties>
 
     <repositories>
@@ -679,6 +680,45 @@
                     <configuration>
                         <!-- Default is system -->
                         <excludedScopes>system,test</excludedScopes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>5.0.0</version>
+                    <configuration>
+                        <header>src/license/vclst/header.txt</header>
+                        <quiet>false</quiet>
+                        <failIfMissing>true</failIfMissing>
+                        <aggregate>false</aggregate>
+                        <useDefaultExcludes>true</useDefaultExcludes>
+                        <useDefaultMapping>true</useDefaultMapping>
+                        <encoding>UTF-8</encoding>
+                        <properties>
+                            <year>${currentYear}</year>
+                        </properties>
+                        <mapping>
+                            <ts>SLASHSTAR_STYLE</ts>
+                            <tsx>SLASHSTAR_STYLE</tsx>
+                        </mapping>
+                        <excludes>
+                            <exclude>eclipse/flow.importorder</exclude>
+                            <exclude>checkstyle/header</exclude>
+                            <exclude>**/target/**</exclude>
+                            <exclude>**/node_modules/**</exclude>
+                            <exclude>**/frontend/generated/**</exclude>
+                            <exclude>**/*.xml</exclude>
+                            <exclude>**/*.pom</exclude>
+                            <exclude>**/*.properties</exclude>
+                            <exclude>src/license/**/*</exclude>
+                            <exclude>**/*.txt</exclude>
+                            <exclude>scripts/*</exclude>
+                            <exclude>.github/*</exclude>
+                            <exclude>.dtrack.yml</exclude>
+                            <exclude>**/.dtrackignore</exclude>
+                            <exclude>.prettierrc.js</exclude>
+                            <exclude>.lift.toml</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>

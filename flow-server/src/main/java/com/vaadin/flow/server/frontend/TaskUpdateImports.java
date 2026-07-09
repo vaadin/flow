@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -19,7 +12,6 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -36,9 +28,8 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
         UpdateMainImportsFile(Options options,
-                FrontendDependenciesScanner scanner,
                 GeneratedFilesSupport generatedFilesSupport) {
-            super(options, scanner, generatedFilesSupport);
+            super(options, generatedFilesSupport);
         }
 
         @Override
@@ -58,14 +49,11 @@ public class TaskUpdateImports extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param frontendDepScanner
-     *            a reusable frontend dependencies scanner
      * @param options
      *            options for the task
      */
-    TaskUpdateImports(FrontendDependenciesScanner frontendDepScanner,
-            Options options) {
-        super(frontendDepScanner, options);
+    TaskUpdateImports(Options options) {
+        super(options);
     }
 
     @Override
@@ -76,7 +64,7 @@ public class TaskUpdateImports extends NodeUpdater {
     @Override
     public void execute() {
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options,
-                frontDeps, generatedFilesSupport);
+                generatedFilesSupport);
         mainUpdate.run();
     }
 

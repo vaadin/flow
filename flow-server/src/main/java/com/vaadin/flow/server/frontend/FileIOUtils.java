@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -37,6 +30,9 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @since 24.0.5
+ */
 public class FileIOUtils {
 
     private FileIOUtils() {
@@ -54,6 +50,7 @@ public class FileIOUtils {
      * @return true if the content was written to the file, false otherwise
      * @throws IOException
      *             if something went wrong
+     * @since 24.1
      */
     public static boolean writeIfChanged(File file, List<String> content)
             throws IOException {
@@ -72,6 +69,7 @@ public class FileIOUtils {
      * @return true if the content was written to the file, false otherwise
      * @throws IOException
      *             if something went wrong
+     * @since 24.1
      */
     public static boolean writeIfChanged(File file, String content)
             throws IOException {
@@ -139,6 +137,7 @@ public class FileIOUtils {
      * @param file
      *            the file to check
      * @return true if the file is likely a temporary file, false otherwise
+     * @since 24.1
      */
     public static boolean isProbablyTemporaryFile(File file) {
         return file.getName().endsWith("~");
@@ -155,6 +154,7 @@ public class FileIOUtils {
      * @throws IOException
      *             if an I/O error is thrown while walking through the tree in
      *             base directory
+     * @since 24.4
      */
     public static List<Path> getFilesByPattern(Path baseDir, String pattern)
             throws IOException {
@@ -194,6 +194,7 @@ public class FileIOUtils {
      * @param compareFn
      *            a function to compare the normalized strings
      * @return true if the normalized strings are equal, false otherwise
+     * @since 24.4
      */
     public static boolean compareIgnoringIndentationAndEOL(String content1,
             String content2, BiPredicate<String, String> compareFn) {
@@ -213,6 +214,7 @@ public class FileIOUtils {
      * @param compareFn
      *            a function to compare the normalized strings
      * @return true if the normalized strings are equal, false otherwise
+     * @since 24.4
      */
     public static boolean compareIgnoringIndentationEOLAndWhiteSpace(
             String content1, String content2,

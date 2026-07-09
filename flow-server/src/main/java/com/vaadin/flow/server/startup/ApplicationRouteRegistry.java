@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.startup;
 
@@ -58,6 +51,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
     /**
      * Creates a new uninitialized route registry.
+     *
+     * @since 9.0
      */
     protected ApplicationRouteRegistry(VaadinContext context) {
         this.context = context;
@@ -67,6 +62,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
     /**
      * RouteRegistry wrapper class for storing the ApplicationRouteRegistry.
+     *
+     * @since 2.2
      */
     protected static class ApplicationRouteRegistryWrapper
             implements Serializable {
@@ -102,6 +99,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
      * @return a registry instance for the given context, not <code>null</code>
+     * @since 2.2
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;

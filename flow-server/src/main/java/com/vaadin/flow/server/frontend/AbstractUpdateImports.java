@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server.frontend;
 
@@ -111,8 +104,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
 
-    private FrontendDependenciesScanner scanner;
-
     private ClassFinder classFinder;
 
     final File generatedFlowImports;
@@ -122,19 +113,17 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final GeneratedFilesSupport generatedFilesSupport;
 
-    AbstractUpdateImports(Options options,
-            FrontendDependenciesScanner scanner) {
-        this(options, scanner, new GeneratedFilesSupport());
+    AbstractUpdateImports(Options options) {
+        this(options, new GeneratedFilesSupport());
     }
 
-    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+    AbstractUpdateImports(Options options,
             GeneratedFilesSupport generatedFilesSupport) {
         this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
-        this.scanner = scanner;
         this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
-                scanner.getTheme());
+                options.getFrontendDependenciesScanner().getTheme());
 
         generatedFlowImports = FrontendUtils
                 .getFlowGeneratedImports(options.getFrontendDirectory());
@@ -155,7 +144,8 @@ abstract class AbstractUpdateImports implements Runnable {
         getLogger().debug("Start updating imports file and chunk files.");
         long start = System.nanoTime();
 
-        Map<ChunkInfo, List<CssData>> css = scanner.getCss();
+        Map<ChunkInfo, List<CssData>> css = options
+                .getFrontendDependenciesScanner().getCss();
         Map<ChunkInfo, List<String>> javascript = getMergedJavascript();
 
         Map<File, List<String>> output = process(css, javascript);
@@ -172,6 +162,8 @@ abstract class AbstractUpdateImports implements Runnable {
         long start = System.nanoTime();
 
         Map<ChunkInfo, List<String>> javascript;
+        final FrontendDependenciesScanner scanner = options
+                .getFrontendDependenciesScanner();
         Map<ChunkInfo, List<String>> modules = scanner.getModules();
         Map<ChunkInfo, List<String>> scripts = scanner.getScripts();
 
@@ -571,7 +563,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
-        AbstractTheme theme = scanner.getTheme();
+        AbstractTheme theme = options.getFrontendDependenciesScanner()
+                .getTheme();
 
         Set<String> visited = new HashSet<>();
 

@@ -1,33 +1,23 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.webpush;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.IOUtils;
 import java.security.spec.InvalidKeySpecException;
 
 import com.interaso.webpush.VapidKeys;
 import com.interaso.webpush.WebPush.SubscriptionState;
 import com.interaso.webpush.WebPushService;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,11 +100,11 @@ public class WebPush {
      *            <code>title</code> and <code>body</code>
      * @throws WebPushException
      *             if sending a notification fails
+     * @since 24.6
      */
     public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {
-        SubscriptionState status = null;
-        HttpResponse<String> response = null;
+        SubscriptionState status;
         try {
             status = pushService.send(message.toJson(), subscription.endpoint(),
                     subscription.keys().p256dh(), subscription.keys().auth(),
@@ -127,7 +117,6 @@ public class WebPush {
         if (!SubscriptionState.ACTIVE.equals(status)) {
             getLogger().error(
                     "Failed to send web push notification, received status code: 404 or 410");
-            getLogger().error(String.join("\n", response.body()));
             throw new WebPushException(
                     "Sending of web push notification failed with status code 404 or 410");
         }

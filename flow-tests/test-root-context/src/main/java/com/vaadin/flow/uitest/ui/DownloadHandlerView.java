@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -130,10 +123,27 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 
+        DownloadHandler percentDownloadHandler = new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                event.getWriter().print("foo");
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return "file%.jpg";
+            }
+        };
+
+        Anchor percentDownload = new Anchor("", "Percent DownloadHandler");
+        percentDownload.setHref(percentDownloadHandler);
+        percentDownload.setId("download-handler-percent");
+
         add(handlerDownload, fileDownload, fileDownloadUnicodeName,
                 fileDownloadUnicodeNameWithQuote, classDownload,
                 servletDownload, inputStreamDownload, inputStreamErrorDownload,
-                inputStreamExceptionDownload, inputStreamCallbackError);
+                inputStreamExceptionDownload, inputStreamCallbackError,
+                percentDownload);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {

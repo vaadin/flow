@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router.internal;
 
@@ -430,6 +423,7 @@ public abstract class AbstractNavigationStateRenderer
      * @param path
      *            request path
      * @return List of parent layouts
+     * @since 24.5
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -518,6 +512,7 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
+     * @since 1.3
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
@@ -851,6 +846,7 @@ public abstract class AbstractNavigationStateRenderer
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
      * @see HttpStatusCode
+     * @since 4.0
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
@@ -1226,6 +1222,7 @@ public abstract class AbstractNavigationStateRenderer
      *            the inactive UI
      * @throws IllegalStateException
      *             if the UI is not in closing state
+     * @since 24.3.11
      */
     public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
         if (!inactiveUI.isClosing()) {

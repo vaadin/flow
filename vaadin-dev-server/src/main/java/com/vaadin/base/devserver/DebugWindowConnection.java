@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.base.devserver;
 
@@ -43,12 +36,7 @@ import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.Capabilities;
-import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.PreTrial;
-import com.vaadin.pro.licensechecker.PreTrialCreationException;
-import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.JsonObject;
@@ -359,20 +347,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         String name = data.get("name").textValue();
         String version = data.get("version").textValue();
         Product product = new Product(name, version);
-        PreTrial preTrial = null;
         String command = null;
         String errorMessage = "";
 
         try {
             LicenseChecker.checkLicense(product.getName(), product.getVersion(),
-                    BuildType.DEVELOPMENT, null,
-                    Capabilities.of(Capability.PRE_TRIAL));
-        } catch (PreTrialLicenseValidationException e) {
-            DevModeUsageStatistics
-                    .collectEvent("pre-trial/" + product.getName());
-            errorMessage = e.getMessage();
-            preTrial = e.getPreTrial();
-            command = "license-check-nokey";
+                    BuildType.DEVELOPMENT, null);
         } catch (Exception e) {
             errorMessage = e.getMessage();
             command = "license-check-failed";
@@ -380,7 +360,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (command == null) {
             send(resource, "license-check-ok", product);
         } else {
-            ProductAndMessage pm = new ProductAndMessage(product, preTrial,
+            ProductAndMessage pm = new ProductAndMessage(product, null,
                     errorMessage);
             send(resource, command, pm);
         }
@@ -400,16 +380,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handlePreTrialStart(AtmosphereResource resource,
             JsonNode data) {
-        try {
-            PreTrial preTrial = LicenseChecker.startPreTrial();
-            DevModeUsageStatistics.collectEvent("pre-trial/activated");
-            send(resource, "license-pretrial-started", preTrial);
-        } catch (PreTrialCreationException.Expired ex) {
-            send(resource, "license-pretrial-expired", null);
-        } catch (Exception ex) {
-            DevModeUsageStatistics.collectEvent("pre-trial/activation-failed");
-            send(resource, "license-pretrial-failed", null);
-        }
+        // Pre-trial is disabled: never call LicenseChecker.startPreTrial() so a
+        // trial can never be created accidentally.
+        getLogger().debug("Pre-trial activation is disabled; ignoring request");
+        send(resource, "license-pretrial-failed", null);
     }
 
     private static Logger getLogger() {

@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.BufferedReader;
@@ -153,6 +145,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * @param pageBuilder
      *            Page builder to use.
+     * @since 2.0
      */
     protected BootstrapHandler(PageBuilder pageBuilder) {
         this.pageBuilder = pageBuilder;
@@ -162,6 +155,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Returns the current page builder object.
      *
      * @return Page builder in charge of constructing the resulting page.
+     * @since 2.0
      */
     protected PageBuilder getPageBuilder() {
         return pageBuilder;
@@ -205,6 +199,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param contextCallback
          *            a callback that is invoked to resolve the context root
          *            from the request
+         * @since 2.0
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
@@ -231,6 +226,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param routeCallback
          *            a callback that is invoked to resolve the route from the
          *            request
+         * @since 7.0
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
@@ -269,6 +265,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Gets the Vaadin service.
          *
          * @return the Vaadin/HTTP service
+         * @since 7.0
          */
         public VaadinService getService() {
             return request.getService();
@@ -287,6 +284,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Should custom theme be initialized.
          *
          * @return true if theme should be initialized
+         * @since 23.0
          */
         public boolean isInitTheme() {
             return initTheme;
@@ -297,6 +295,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @param initTheme
          *            enable or disable theme initialisation
+         * @since 23.0
          */
         public void setInitTheme(boolean initTheme) {
             this.initTheme = initTheme;
@@ -433,6 +432,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @return an optional pwa registry instance, or an empty optional if no
          *         pwa registry available for the context
+         * @since 2.2
          */
         protected Optional<PwaRegistry> getPwaRegistry() {
             VaadinService vaadinService = getSession().getService();
@@ -447,6 +447,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * bootstrap request.
          *
          * @return the route to activate
+         * @since 7.0
          */
         public Location getRoute() {
             return route;
@@ -479,6 +480,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            context root
          * @param session
          *            the vaadin session
+         * @since 2.0
          */
         public BootstrapUriResolver(String contextRootRelatiePath,
                 VaadinSession session) {
@@ -545,6 +547,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
+     * @since 7.0
      */
     public static boolean isFrameworkInternalRequest(VaadinRequest request) {
         if (request instanceof VaadinServletRequest) {
@@ -572,6 +575,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request
      * @return {@code true} if the request is for /VAADIN/*, {@code false}
      *         otherwise
+     * @since 23.0
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
         return request.getPathInfo() != null && HandlerHelper
@@ -587,6 +591,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return {@code true} if the request is potentially for HTML,
      *         {@code false} if it is certain that it is a request for a script,
      *         image or something else
+     * @since 23.0.2
      */
     protected boolean isRequestForHtml(VaadinRequest request) {
         if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
@@ -630,6 +635,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         {@code false} if not (location was valid)
      * @throws IOException
      *             in case writing to response fails
+     * @since 8.0
      */
     protected boolean writeErrorCodeIfRequestLocationIsInvalid(
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -657,6 +663,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Interface for objects capable of building the bootstrap page.
+     *
+     * @since 2.0
      */
     public interface PageBuilder extends Serializable {
         /**
@@ -673,6 +681,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Builds bootstrap pages.
      *
      * Do not subclass this, unless you really know why you are doing it.
+     *
+     * @since 2.0
      */
     protected static class BootstrapPageBuilder implements PageBuilder {
 
@@ -943,6 +953,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param chunks
          *            in the stat file
          * @return
+         * @since 24.8
          */
         protected List<String> getChunkKeys(ObjectNode chunks) {
             // include all chunks but the one used for exported
@@ -1385,6 +1396,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param ui
      *            the UI object
      * @return a new bootstrap context instance
+     * @since 2.0
      */
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
             VaadinResponse response, UI ui,
@@ -1461,6 +1473,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param ui
      *            the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
+     * @since 2.6
      */
     protected static ObjectNode getInitialUidl(UI ui) {
         ObjectNode json = new UidlWriter().createUidl(ui, false);
@@ -1580,6 +1593,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return the collection of link tags to be added to the page
      * @throws IOException
      *             if theme name cannot be extracted from file
+     * @since 24.1
      */
     protected static Collection<Element> getStylesheetTags(
             VaadinContext context, String fileName) throws IOException {
@@ -1604,6 +1618,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param fileName
      *            the stylesheet file name to add a reference to
      * @return the collection of links to be added to the page
+     * @since 24.1
      */
     protected static Collection<String> getStylesheetLinks(
             VaadinContext context, String fileName) {
@@ -1626,6 +1641,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the directory where project's frontend files are located.
      *
      * @return the collection of links to be added to the page
+     * @since 24.6.8
      */
     protected static Collection<String> getStylesheetLinks(
             VaadinContext context, String fileName, File frontendDirectory) {

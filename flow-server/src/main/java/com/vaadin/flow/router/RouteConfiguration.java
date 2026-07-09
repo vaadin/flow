@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -115,6 +108,7 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *            path to check for availability
      * @return true if there exists a route for the given path
+     * @since 4.0
      */
     public boolean isPathAvailable(String path) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
@@ -427,6 +421,7 @@ public class RouteConfiguration implements Serializable {
      * @param navigationTarget
      *            target class.
      * @return main template for the given target.
+     * @since 4.0
      */
     public Optional<String> getTemplate(
             Class<? extends Component> navigationTarget) {
@@ -494,6 +489,7 @@ public class RouteConfiguration implements Serializable {
      * @throws NotFoundException
      *             in case the navigationTarget is not registered with a url
      *             template matching the given parameters.
+     * @since 4.0
      */
     public String getUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -541,6 +537,7 @@ public class RouteConfiguration implements Serializable {
      * Automatically adds access controls from UI if available.
      *
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes() {
         UI ui = UI.getCurrent();
@@ -564,6 +561,7 @@ public class RouteConfiguration implements Serializable {
      * @param accessControls
      *            the access controls to use for checking access
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes(
             Collection<BeforeEnterListener> accessControls) {

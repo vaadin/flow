@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.html;
 
@@ -26,7 +19,10 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
@@ -69,6 +65,13 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param text
      *            the text content to set
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public Anchor(String href, String text) {
         setHref(href);
@@ -88,6 +91,14 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      * @param target
      *            the target window, tab or frame
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 8.0
      */
     public Anchor(String href, String text, AnchorTarget target) {
         setHref(href);
@@ -132,6 +143,7 @@ public class Anchor extends HtmlContainer
      *            the callback that handles data download, not null
      * @param text
      *            the text content to set
+     * @since 24.8
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
         AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
@@ -163,6 +175,7 @@ public class Anchor extends HtmlContainer
      *            {@code null} will set type to {@link AttachmentType#DOWNLOAD}
      * @param text
      *            the text content to set
+     * @since 24.8
      */
     public Anchor(DownloadHandler downloadHandler,
             AttachmentType attachmentType, String text) {
@@ -183,6 +196,14 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param components
      *            the components to add
+     * @throws IllegalArgumentException
+     *             if {@code href} uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 1.3
      */
     public Anchor(String href, Component... components) {
         setHref(href);
@@ -203,8 +224,42 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the href to set
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe
+     *             according to
+     *             {@link DeploymentConfiguration#getUrlSafeSchemes()}; see
+     *             {@link #setUnsafeHref(String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
      */
     public void setHref(String href) {
+        if (href == null) {
+            throw new IllegalArgumentException("Href must not be null");
+        }
+        if (!UrlUtil.isSafeUrl(href)) {
+            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
+                    "href", href, "setUnsafeHref(String)"));
+        }
+        this.href = href;
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to without validating its scheme.
+     * <p>
+     * Unlike {@link #setHref(String)}, this method does not reject URLs based
+     * on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it
+     * only for URLs that are fully under your control and known to be safe,
+     * such as a hard-coded {@code javascript:} or {@code data:} URL. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #setHref(String)
+     *
+     * @param href
+     *            the href to set
+     */
+    public void setUnsafeHref(String href) {
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }
@@ -217,6 +272,7 @@ public class Anchor extends HtmlContainer
      *
      * @see Anchor#setHref(String)
      *
+     * @since 1.2
      */
     public void removeHref() {
         getElement().removeAttribute("href");
@@ -248,6 +304,7 @@ public class Anchor extends HtmlContainer
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
+     * @since 24.8
      */
     public void setHref(DownloadHandler downloadHandler) {
         setHref(downloadHandler, getLinkMode(downloadHandler));
@@ -281,6 +338,7 @@ public class Anchor extends HtmlContainer
      *            set the correct attribute for anchor according to given mode,
      *            {@code null} will set the type to
      *            {@link AttachmentType#DOWNLOAD}
+     * @since 24.8
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {
@@ -303,6 +361,7 @@ public class Anchor extends HtmlContainer
      * @param download
      *            {@code true} to add the 'download' attribute and {@code false}
      *            to remove it
+     * @since 24.8
      */
     public void setDownload(boolean download) {
         if (download) {
@@ -316,6 +375,7 @@ public class Anchor extends HtmlContainer
      * Check if the anchor target will be downloaded for a click.
      *
      * @return {@code true} if download is set for this anchor
+     * @since 24.8
      */
     public boolean isDownload() {
         return getElement().hasAttribute("download");
@@ -330,6 +390,7 @@ public class Anchor extends HtmlContainer
      * @param ignore
      *            true if this link should not be intercepted by the single-page
      *            web application routing mechanism in Vaadin.
+     * @since 24.3
      */
     public void setRouterIgnore(boolean ignore) {
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, ignore);
@@ -338,6 +399,7 @@ public class Anchor extends HtmlContainer
     /**
      * @return true if this anchor should be ignored by the Vaadin router and
      *         behave normally.
+     * @since 24.3
      */
     public boolean isRouterIgnore() {
         return getElement().hasAttribute(ROUTER_IGNORE_ATTRIBUTE);
@@ -435,6 +497,7 @@ public class Anchor extends HtmlContainer
      *
      * @param target
      *            the target value, not null
+     * @since 8.0
      */
     public void setTarget(AnchorTargetValue target) {
         Objects.requireNonNull(target, "target cannot be null.");
@@ -449,6 +512,7 @@ public class Anchor extends HtmlContainer
      *
      * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
      *         target has been set
+     * @since 8.0
      */
     public AnchorTargetValue getTargetValue() {
         Optional<String> target = getTarget();

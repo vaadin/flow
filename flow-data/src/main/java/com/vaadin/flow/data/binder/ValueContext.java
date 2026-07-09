@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.data.binder;
 
@@ -42,6 +35,7 @@ public class ValueContext implements Serializable {
      *
      * @param binder
      *            the Binder using the value context
+     * @since 24.5
      */
     public ValueContext(Binder<?> binder) {
         this.binder = binder;
@@ -57,6 +51,7 @@ public class ValueContext implements Serializable {
      *            the Binder using the value context
      * @param locale
      *            The locale used with conversion. Can be null.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Locale locale) {
         this.binder = binder;
@@ -74,6 +69,7 @@ public class ValueContext implements Serializable {
      *            The component related to current value. Can be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
@@ -95,6 +91,7 @@ public class ValueContext implements Serializable {
      *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue) {
@@ -116,6 +113,7 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be
      *            {@code null}.
+     * @since 24.5
      */
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue, Locale locale) {
@@ -263,6 +261,7 @@ public class ValueContext implements Serializable {
      * context.
      *
      * @return the optional of {@code Binder}
+     * @since 24.5
      */
     public Optional<Binder<?>> getBinder() {
         return Optional.ofNullable(binder);

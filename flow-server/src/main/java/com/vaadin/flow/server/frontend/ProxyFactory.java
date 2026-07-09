@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -13,6 +21,9 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
+/**
+ * @since 24.5
+ */
 public class ProxyFactory {
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";

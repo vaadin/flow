@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.internal;
 
@@ -41,6 +34,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 /**
  * Tracks the location in source code where components were instantiated.
  *
+ * @since 24.0
  **/
 public class ComponentTracker {
 
@@ -129,6 +123,7 @@ public class ComponentTracker {
          * @param configuration
          *            the application configuration
          * @return the source file the location refers to, or {@code null}
+         * @since 24.4.9
          */
         public File findSourceFile(AbstractConfiguration configuration) {
             String cls = className();
@@ -171,6 +166,7 @@ public class ComponentTracker {
          *            the application configuration
          * @return the Java file the location refers to, or {@code null}
          * @deprecated use findSourceFile
+         * @since 24.2
          */
         @Deprecated
         public File findJavaFile(AbstractConfiguration configuration) {
@@ -202,6 +198,7 @@ public class ComponentTracker {
      * @param component
      *            the component to find
      * @return the locations involved in creating the component
+     * @since 24.5.5
      */
     public static Location[] findCreateLocations(Component component) {
         return createLocations.get(component);
@@ -250,6 +247,7 @@ public class ComponentTracker {
      * @param component
      *            the component to find
      * @return the locations involved in creating the component
+     * @since 24.5.5
      */
     public static Location[] findAttachLocations(Component component) {
         return attachLocations.get(component);
@@ -293,6 +291,7 @@ public class ComponentTracker {
      *            reference component location
      * @param offset
      *            difference in lines to be applied
+     * @since 24.1
      */
     public static void refreshLocation(Location location, int offset) {
         refreshLocation(createLocation, location, offset);

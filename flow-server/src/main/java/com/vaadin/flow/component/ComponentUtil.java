@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
@@ -77,6 +70,7 @@ public class ComponentUtil {
      *            The HTML tag associated with the component class.
      * @param componentClass
      *            The component class to be registered with the given tag.
+     * @since 24.5
      */
     public static void registerComponentClass(String tag,
             Class<? extends Component> componentClass) {
@@ -98,6 +92,7 @@ public class ComponentUtil {
      * @return A set of component classes associated with the specified HTML
      *         tag. Returns an empty set if no classes are associated with the
      *         tag or if running in production mode.
+     * @since 24.5
      */
     public static Set<Class<? extends Component>> getComponentsByTag(
             String tag) {
@@ -113,6 +108,7 @@ public class ComponentUtil {
      * @return An unmodifiable map of HTML tags to sets of component classes.
      *         This map is only populated in development mode and will be empty
      *         in production mode.
+     * @since 24.5
      */
     public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
         return Collections.unmodifiableMap(tagToComponentsMap);
@@ -445,6 +441,7 @@ public class ComponentUtil {
      * @return a handle that can be used for removing the listener
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
+     * @since 1.1
      */
     public static <T extends ComponentEvent<?>> Registration addListener(
             Component component, Class<T> eventType,
@@ -464,6 +461,7 @@ public class ComponentUtil {
      *            the event type for which the listener(s) are registered.
      * @return a boolean indicating whether at least one listener registered to
      *         the component for the given event type.
+     * @since 23.0.7
      */
     public static <T extends ComponentEvent<?>> boolean hasEventListener(
             Component component, Class<? extends T> eventType) {
@@ -477,6 +475,7 @@ public class ComponentUtil {
      *            the component event type
      * @return A collection with all registered listeners for a given event
      *         type. Empty if no listeners are found.
+     * @since 23.2
      */
     public static Collection<?> getListeners(Component component,
             Class<? extends ComponentEvent> eventType) {
@@ -713,6 +712,7 @@ public class ComponentUtil {
      * @return a router instance
      * @throws IllegalStateException
      *             if no router instance is available
+     * @since 23.2
      */
     public static Router getRouter(HasElement component) {
         Router router = null;
@@ -738,6 +738,7 @@ public class ComponentUtil {
      * @param component
      *            Component to find current route component for
      * @return Optional containing Route component if found
+     * @since 24.4.9
      */
     public static Optional<Component> getRouteComponent(Component component) {
         if (component.getClass().isAnnotationPresent(Route.class)) {
@@ -764,6 +765,7 @@ public class ComponentUtil {
      *            the parent component from which to get the child components
      *
      * @return the child components of the given parent component
+     * @since 24.10
      */
     public static Stream<Component> getChildren(Component parent) {
         // This should not ever be called for a Composite as it will return

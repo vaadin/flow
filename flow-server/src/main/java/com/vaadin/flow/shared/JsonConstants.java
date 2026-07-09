@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.shared;
 
@@ -217,12 +210,16 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used to hold the promise id for a server side method call.
+     *
+     * @since 2.2
      */
     public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
 
     /**
      * Name of the $server property that is used to track pending promises. The
      * name is chosen to avoid conflicts with genuine $server method names.
+     *
+     * @since 2.2
      */
     public static final String RPC_PROMISE_CALLBACK_NAME = "}p";
 
@@ -281,6 +278,8 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used when the message is sent asynchronously via push channel.
+     *
+     * @since 2.1.1
      */
     public static final String META_ASYNC = "async";
 
@@ -312,6 +311,8 @@ public class JsonConstants implements Serializable {
      * should be synchronized. The token is chosen to avoid collisions with
      * regular event data expressions by using a character that cannot be the
      * start of a valid JS expression.
+     *
+     * @since 1.3
      */
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 
@@ -331,16 +332,22 @@ public class JsonConstants implements Serializable {
 
     /**
      * RPC type value used for return channel messages.
+     *
+     * @since 2.0
      */
     public static final String RPC_TYPE_CHANNEL = "channel";
 
     /**
      * Key for the channel id in return channel messages.
+     *
+     * @since 2.0
      */
     public static final String RPC_CHANNEL = "channel";
 
     /**
      * Key for the arguments array in return channel messages.
+     *
+     * @since 2.0
      */
     public static final String RPC_CHANNEL_ARGUMENTS = "args";
 

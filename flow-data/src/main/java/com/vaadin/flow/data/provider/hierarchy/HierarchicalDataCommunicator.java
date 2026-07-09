@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
@@ -58,7 +51,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
@@ -608,6 +601,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             HierarchicalDataCommunicator will be <a href=
      *             "https://github.com/vaadin/platform/issues/7843">refactored</a>
      *             to handle hierarchy management entirely on the server side.
+     * @since 23.2.8
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
@@ -636,6 +630,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             HierarchicalDataCommunicator will be <a href=
      *             "https://github.com/vaadin/platform/issues/7843">refactored</a>
      *             to handle hierarchy management entirely on the server side.
+     * @since 24.5
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
@@ -691,6 +686,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimate(int itemCountEstimate) {
@@ -700,6 +697,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimate() {
@@ -709,6 +708,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
@@ -718,6 +719,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimateIncrease() {
@@ -727,6 +730,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     *
+     * @since 24.5
      */
     @Override
     public void setDefinedSize(boolean definedSize) {
@@ -737,6 +742,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Estimates are not supported in HierarchicalDataCommunicator. Therefore
      * this method will always return {@literal true}
+     *
+     * @since 24.5
      */
     @Override
     public boolean isDefinedSize() {

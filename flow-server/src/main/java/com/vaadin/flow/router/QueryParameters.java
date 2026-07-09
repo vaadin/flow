@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.router;
 
@@ -115,6 +108,7 @@ public class QueryParameters implements Serializable {
      * @param value
      *            the value
      * @return query parameters information
+     * @since 23.2
      */
     public static QueryParameters of(String key, String value) {
         return simple(Collections.singletonMap(key, value));
@@ -130,6 +124,7 @@ public class QueryParameters implements Serializable {
      * @param queryString
      *            the query string
      * @return query parameters information
+     * @since 7.0
      */
     public static QueryParameters fromString(String queryString) {
         if (queryString == null || queryString.isBlank()) {
@@ -205,6 +200,7 @@ public class QueryParameters implements Serializable {
      *            the key of query parameters to fetch
      * @return query parameters or an empty list if there are no parameters with
      *         the given key
+     * @since 24.2
      */
     public List<String> getParameters(String key) {
         return parameters.getOrDefault(key, Collections.emptyList());
@@ -220,6 +216,7 @@ public class QueryParameters implements Serializable {
      *            the key of query parameters to fetch
      * @return query parameter value or empty if there are no parameters with
      *         the given key
+     * @since 24.2
      */
     public Optional<String> getSingleParameter(String key) {
         return parameters.getOrDefault(key, Collections.emptyList()).stream()
@@ -249,6 +246,7 @@ public class QueryParameters implements Serializable {
      * @param keys
      *            Names of the parameters to be excluded
      * @return QueryParameters
+     * @since 24.2
      */
     public QueryParameters excluding(String... keys) {
         if (keys == null || keys.length == 0) {
@@ -266,6 +264,7 @@ public class QueryParameters implements Serializable {
      * @param keys
      *            Names of the parameters to be included
      * @return QueryParameters.
+     * @since 24.2
      */
     public QueryParameters including(String... keys) {
         if (keys == null || keys.length == 0) {
@@ -289,6 +288,7 @@ public class QueryParameters implements Serializable {
      * @param values
      *            Values for the parameter as Strings
      * @return QueryParameters.
+     * @since 24.2
      */
     public QueryParameters merging(String key, String... values) {
         if (key == null || key.isEmpty() || values == null
@@ -308,6 +308,7 @@ public class QueryParameters implements Serializable {
      * @param parameters
      *            Map of new parameters to be included
      * @return QueryParameters
+     * @since 24.2
      */
     public QueryParameters mergingAll(Map<String, List<String>> parameters) {
         Objects.requireNonNull(parameters);

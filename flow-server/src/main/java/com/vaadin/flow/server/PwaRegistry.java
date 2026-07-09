@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
@@ -63,7 +56,7 @@ import elemental.json.JsonObject;
  * <li>Service worker
  * </ul>
  *
- * @since 1.2
+ * @since 1.1
  */
 public class PwaRegistry implements Serializable {
 
@@ -95,6 +88,7 @@ public class PwaRegistry implements Serializable {
      *            the context
      * @throws IOException
      *             when icon or offline resources are not found.
+     * @since 3.0
      */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
@@ -431,6 +425,7 @@ public class PwaRegistry implements Serializable {
      * resources) as a String.
      *
      * @return contents of sw-runtime.js
+     * @since 6.0
      */
     public String getRuntimeServiceWorkerJs() {
         return runtimeServiceWorkerJs;
@@ -488,6 +483,7 @@ public class PwaRegistry implements Serializable {
      * @param baseName
      *            path of the base icon.
      * @return list of PWA icons variants.
+     * @since 24.6
      */
     public static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();

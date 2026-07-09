@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
@@ -32,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import elemental.json.Json;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -46,6 +39,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.Node;
@@ -55,7 +49,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
+
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -1288,6 +1284,28 @@ public class UITest {
         verifyInert(fixture.ui, true);
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void pollListener_uiInertDueToModalComponent_listenerStillInvoked() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges(); // the modal add makes the UI inert
+        verifyInert(fixture.ui, true);
+
+        AtomicInteger count = new AtomicInteger();
+        fixture.ui.addPollListener(event -> count.incrementAndGet());
+
+        firePollEvent(fixture.ui);
+
+        assertEquals("Poll listener should be invoked even while the UI is inert "
+                        + "because of an open modal component", 1, count.get());
+    }
+
+    private void firePollEvent(UI ui) {
+        DomEvent pollEvent = new DomEvent(ui.getElement(),
+                PollEvent.DOM_EVENT_NAME, Json.createObject());
+        ui.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(pollEvent);
     }
 
     @Test

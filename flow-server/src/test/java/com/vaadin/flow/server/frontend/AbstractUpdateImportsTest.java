@@ -1,20 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -126,8 +117,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private Map<File, List<String>> output;
         private List<String> webComponentImports;
 
-        UpdateImports(FrontendDependenciesScanner scanner, Options options) {
-            super(options, scanner);
+        UpdateImports(Options options) {
+            super(options);
         }
 
         @Override
@@ -180,8 +171,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         featureFlags = Mockito.mock(FeatureFlags.class);
         options = new MockOptions(classFinder, tmpRoot).withTokenFile(tokenFile)
                 .withProductionMode(true).withFeatureFlags(featureFlags)
-                .withBundleBuild(true);
-        updater = new UpdateImports(getScanner(classFinder), options);
+                .withBundleBuild(true)
+                .withFrontendDependenciesScanner(getScanner(classFinder));
+        updater = new UpdateImports(options);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(
@@ -245,7 +237,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         options.withTokenFile(null);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -446,7 +439,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Pattern injectGlobalCssPattern = Pattern
@@ -491,7 +485,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -513,7 +508,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -539,7 +535,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void themeForCssImports_eagerLoaded() throws Exception {
         Class<?>[] testClasses = { ThemeForCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -656,7 +653,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 DevelopmentAndProductionDependencies.class);
 
         options.withProductionMode(productionMode);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
     }
@@ -697,7 +695,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 LumoTest.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
         String output = String.join("\n", updater.getMergedOutput());
 
@@ -721,7 +720,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
 
         // Imports are collected as

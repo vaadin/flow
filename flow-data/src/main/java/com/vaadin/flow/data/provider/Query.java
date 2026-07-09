@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.data.provider;
 
@@ -126,6 +119,7 @@ public class Query<T, F> implements Serializable {
      * until it is. Updates the page size value if it has been raised.
      *
      * @return the zero-based page index
+     * @since 4.0
      */
     public int getPage() {
         int pageSize = getPageSize();
@@ -161,6 +155,7 @@ public class Query<T, F> implements Serializable {
      * item.
      *
      * @return the page size used for data access
+     * @since 4.0
      */
     public int getPageSize() {
         if (pageSize != null) {
@@ -232,6 +227,7 @@ public class Query<T, F> implements Serializable {
      * {@code getOffset() + getLimit()} where the end is exclusive.
      *
      * @return the requested range end
+     * @since 4.0
      */
     public int getRequestedRangeEnd() {
         return getOffset() + getLimit();

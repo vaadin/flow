@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -41,6 +33,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
@@ -165,9 +158,17 @@ public class PushHandler {
 
         try {
             new ServerRpcHandler().handleRpc(ui,
-                    SynchronizedRequestHandler.getRequestBody(reader),
+                    SynchronizedRequestHandler.getRequestBody(reader,
+                            SynchronizedRequestHandler
+                                    .getMaxRequestBodySize(vaadinRequest)),
                     vaadinRequest);
             connection.push(false);
+        } catch (RequestBodyTooLargeException e) {
+            getLogger().warn(
+                    "Rejected a push message with a body larger than the "
+                            + "configured maximum of {} characters",
+                    e.getMaxBodySize());
+            sendRefreshAndDisconnect(resource);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side

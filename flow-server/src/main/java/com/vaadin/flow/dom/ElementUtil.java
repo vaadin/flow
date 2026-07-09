@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.dom;
 
@@ -255,6 +248,7 @@ public class ElementUtil {
      * @param node
      *            JSoup node to convert
      * @return element with the matching hierarchy as the given node, or empty
+     * @since 2.2
      */
     public static Optional<Element> fromJsoup(Node node) {
         Element ret;
@@ -320,6 +314,7 @@ public class ElementUtil {
      *            {@code true} for ignoring parent inert, {@code false} for not
      *            ignoring
      * @see #setInert(Element, boolean)
+     * @since 23.0
      */
     public static void setIgnoreParentInert(Element element,
             boolean ignoreParentInert) {
@@ -346,6 +341,7 @@ public class ElementUtil {
      * @param inert
      *            {@code true} for inert
      * @see #setIgnoreParentInert(Element, boolean)
+     * @since 23.0
      */
     public static void setInert(Element element, boolean inert) {
         final Optional<InertData> optionalInertData = element.getNode()
@@ -367,6 +363,7 @@ public class ElementUtil {
      *            the state node, not <code>null</code>
      * @return the element for the node, or an empty Optional if the state node
      *         is not mapped to any particular element.
+     * @since 24.2.4
      */
     public static Optional<Element> from(StateNode node) {
         assert node != null;

@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.di;
 
@@ -56,7 +49,7 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  * Default implementation of {@link AbstractLookupInitializer}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 6.0
  *
  * @see AbstractLookupInitializer
  */
@@ -73,7 +66,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link Lookup}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class LookupImpl implements Lookup {
@@ -155,7 +147,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link ResourceProvider}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class ResourceProviderImpl implements ResourceProvider {
@@ -235,7 +226,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link AppShellPredicate}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class AppShellPredicateImpl implements AppShellPredicate {
@@ -344,6 +334,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * @param implementation
      *            service implementation class
      * @return an instantiated service implementation object
+     * @since 6.0.1
      */
     protected <T> T instantiate(Class<T> serviceClass,
             Class<?> implementation) {
@@ -361,6 +352,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * This method is public only for internal purposes.
      *
      * @return a set of classes
+     * @since 24.0
      */
     public static Set<Class<?>> getDefaultImplementations() {
         return Set.of(RegularOneTimeInitializerPredicate.class,

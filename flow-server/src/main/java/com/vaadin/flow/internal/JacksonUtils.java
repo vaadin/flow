@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.internal;
 
 import java.util.AbstractList;
@@ -101,6 +93,7 @@ public final class JacksonUtils {
      * Create a nullNode for null value.
      *
      * @return NullNode
+     * @since 24.8
      */
     public static ValueNode nullNode() {
         return (ValueNode) objectMapper.nullNode();
@@ -113,6 +106,7 @@ public final class JacksonUtils {
      *            JsonArray to change
      * @return ArrayNode of elemental json array object or null for null
      *         jsonArray
+     * @since 24.8
      */
     public static ArrayNode mapElemental(JsonArray jsonArray) {
         if (jsonArray == null || jsonArray instanceof JsonNull) {
@@ -132,6 +126,7 @@ public final class JacksonUtils {
      *            JsonObject to change
      * @return ObjectNode of elemental json object object or null for null
      *         jsonObject
+     * @since 24.8
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {
@@ -150,6 +145,7 @@ public final class JacksonUtils {
      * @param jsonValue
      *            JsonValue to change
      * @return ObjectNode of elemental json value
+     * @since 24.8
      */
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
         if (jsonValue == null || jsonValue instanceof JsonNull) {
@@ -177,6 +173,7 @@ public final class JacksonUtils {
      * @param jsonNodes
      *            ArrayNode to convert
      * @return JsonArray of ArrayNode content
+     * @since 24.8
      */
     public static JsonArray createElementalArray(ArrayNode jsonNodes) {
         return (JsonArray) parseNode(jsonNodes);
@@ -556,6 +553,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -577,6 +575,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
@@ -592,6 +591,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
@@ -631,5 +631,107 @@ public final class JacksonUtils {
                 Separators.createDefaultInstance()
                         .withObjectFieldValueSpacing(Spacing.AFTER));
         return objectMapper.writer().with(filePrinter).writeValueAsString(node);
+    }
+
+    /**
+     * Retrieves a nested JSON key from an object node based on a provided path.
+     *
+     * @param objectNode
+     *            the root object node to search within
+     * @param keyPath
+     *            the nested key path
+     * @return the value of the last key found, or {@code null}
+     * @since 24.10.3
+     */
+    public static JsonNode getNestedKey(ObjectNode objectNode,
+            List<String> keyPath) {
+        if (keyPath.isEmpty()) {
+            return null;
+        }
+        final String firstKey = keyPath.get(0);
+        final JsonNode value = objectNode.get(firstKey);
+        if (keyPath.size() == 1) {
+            return value;
+        } else if (value instanceof ObjectNode nestedObjectNode) {
+            return getNestedKey(nestedObjectNode,
+                    keyPath.subList(1, keyPath.size()));
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Sets a nested JSON key path in an {@code ObjectNode} with the provided
+     * value.
+     * <p>
+     * This method handles both direct and nested key assignments. If the
+     * current node at the specified top-level key does not exist not an
+     * {@code ObjectNode}, it converts it to one using the provided converter
+     * function, before proceeding with the remaining keys in the path.
+     *
+     * @param objectNode
+     *            the root object where the key path will be set
+     * @param keyPath
+     *            the nested key path
+     * @param valueNode
+     *            the value to be assigned
+     * @param plainValueConverter
+     *            a function that converts intermediate {@code null} and
+     *            non-{@code ObjectNode} values into {@code ObjectNode}s when
+     *            necessary for recursive traversal
+     * @since 24.10.3
+     */
+    public static void setNestedKey(ObjectNode objectNode, List<String> keyPath,
+            JsonNode valueNode,
+            Function<? super JsonNode, ? extends ObjectNode> plainValueConverter) {
+        if (keyPath.isEmpty()) {
+            return;
+        }
+        final String key = keyPath.get(0);
+        if (keyPath.size() == 1) {
+            objectNode.set(key, valueNode);
+            return;
+        }
+        final JsonNode currentValueNode = objectNode.get(key);
+        final ObjectNode nestedObjectNode;
+        if (currentValueNode instanceof ObjectNode currentObjectNode) {
+            nestedObjectNode = currentObjectNode;
+        } else {
+            nestedObjectNode = plainValueConverter.apply(currentValueNode);
+            objectNode.set(key, nestedObjectNode);
+        }
+        setNestedKey(nestedObjectNode, keyPath.subList(1, keyPath.size()),
+                valueNode, plainValueConverter);
+    }
+
+    /**
+     * Removes a nested key from an {@code ObjectNode} based on the provided
+     * path. Also removes nested objects, if they become empty after key
+     * removal.
+     *
+     * @param objectNode
+     *            the root object containing to process
+     * @param keyPath
+     *            the nested key path
+     * @since 24.10.3
+     */
+    public static void removeNestedKey(ObjectNode objectNode,
+            List<String> keyPath) {
+        if (keyPath.isEmpty()) {
+            return;
+        }
+        final String key = keyPath.get(0);
+        if (keyPath.size() == 1) {
+            objectNode.remove(key);
+            return;
+        }
+        final JsonNode currentValueNode = objectNode.get(key);
+        if (currentValueNode instanceof ObjectNode nestedObjectNode) {
+            removeNestedKey(nestedObjectNode,
+                    keyPath.subList(1, keyPath.size()));
+            if (nestedObjectNode.isEmpty()) {
+                objectNode.remove(key);
+            }
+        }
     }
 }

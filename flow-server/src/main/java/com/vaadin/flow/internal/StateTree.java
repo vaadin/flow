@@ -1,19 +1,11 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
@@ -479,6 +471,8 @@ public class StateTree implements NodeOwner {
      * Prepares the tree for resynchronization, meaning that the client will
      * receive the same changes as when the component tree was initially
      * attached, so that it can build the DOM tree from scratch.
+     *
+     * @since 3.1
      */
     public void prepareForResync() {
         preparingForResync = true;
@@ -499,6 +493,7 @@ public class StateTree implements NodeOwner {
      *
      * @return {@code true} if the tree is preparing for resynchronization,
      *         {@code false} otherwise
+     * @since 24.7.5
      */
     public boolean isPreparingForResync() {
         return preparingForResync;

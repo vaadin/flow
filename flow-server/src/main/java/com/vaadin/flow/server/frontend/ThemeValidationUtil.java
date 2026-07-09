@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -135,6 +143,7 @@ public class ThemeValidationUtil {
      * @return {@literal true} if the theme has legacy Shadow DOM stylesheets,
      *         and they are not included on the application bundle, otherwise
      *         {@literal false}.
+     * @since 24.7
      */
     public static boolean themeShadowDOMStylesheetsChanged(Options options,
             JsonNode statsJson,

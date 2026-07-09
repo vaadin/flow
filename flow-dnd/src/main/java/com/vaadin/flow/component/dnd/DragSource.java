@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component.dnd;
 
@@ -320,6 +313,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *      MDN web docs</a> for more information.
      * @param dragImage
      *            the image to be used as drag image or null to remove it
+     * @since 24.6
      */
     default void setDragImage(Component dragImage) {
         setDragImage(dragImage, 0, 0);
@@ -345,6 +339,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *            the x-offset of the drag image
      * @param offsetY
      *            the y-offset of the drag image
+     * @since 24.6
      */
     default void setDragImage(Component dragImage, int offsetX, int offsetY) {
         if (dragImage != null && !dragImage.isVisible()) {
@@ -405,6 +400,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * next drag start event in the browser.
      *
      * @return Server side drag image if set, otherwise {@literal null}.
+     * @since 24.6
      */
     default Component getDragImage() {
         return (Component) ComponentUtil.getData(getDragSourceComponent(),

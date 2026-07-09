@@ -1,31 +1,21 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
-
 package com.vaadin.flow.server;
 
 import jakarta.servlet.GenericServlet;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -267,6 +257,7 @@ public class VaadinServletService extends VaadinService {
      *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
+     * @since 3.0
      */
     public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
@@ -325,13 +316,15 @@ public class VaadinServletService extends VaadinService {
         URL url = servletContext.getResource(path);
         if (url != null && Optional.ofNullable(servletContext.getServerInfo())
                 .orElse("").contains("jetty/12.")) {
-            // Making sure that resource exists before returning it. Jetty
-            // 12 may return URL for non-existing resource.
-            try {
-                if (!Files.exists(Path.of(url.toURI()))) {
-                    url = null;
-                }
-            } catch (URISyntaxException e) {
+            // Jetty 12 may return URLs for non-existing resources. Probe the
+            // URL by opening a stream: this works uniformly for file: URLs
+            // and for jar:file:...!/entry URLs without requiring a NIO
+            // FileSystem to be mounted for the JAR (which Path.of(jarUri)
+            // would need, breaking on Jetty 12.1.9 where classpath JARs are
+            // no longer kept mounted in the JVM-wide cache).
+            try (InputStream probe = url.openStream()) {
+                // resource exists
+            } catch (IOException e) {
                 url = null;
             }
         }

@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -100,12 +108,16 @@ public class BundleValidationTest {
 
     private String bundleLocation;
 
+    private FrontendDependenciesScanner depScanner;
+
     @Before
     public void init() {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
+        depScanner = Mockito.mock(FrontendDependenciesScanner.class);
         options = new MockOptions(finder, temporaryFolder.getRoot())
-                .withBuildDirectory("target");
+                .withBuildDirectory("target")
+                .withFrontendDependenciesScanner(depScanner);
         options.copyResources(Collections.emptySet());
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
@@ -152,8 +164,7 @@ public class BundleValidationTest {
         stats.set(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
-        NodeUpdater nodeUpdater = new NodeUpdater(
-                Mockito.mock(FrontendDependenciesScanner.class), options) {
+        NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -177,7 +188,7 @@ public class BundleValidationTest {
     @Test
     public void noDevBundle_bundleCompilationRequires() {
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), mode);
+                options.getFrontendDependenciesScanner(), mode);
         Assert.assertTrue("Bundle should require creation if not available",
                 needsBuild);
     }
@@ -192,7 +203,7 @@ public class BundleValidationTest {
                 .thenReturn(null);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), mode);
+                options.getFrontendDependenciesScanner(), mode);
         Assert.assertTrue("Missing stats.json should require bundling",
                 needsBuild);
     }
@@ -208,8 +219,6 @@ public class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -237,8 +246,6 @@ public class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -270,8 +277,6 @@ public class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("@vaadin/router", "1.7.5");
         packages.put("@vaadin/text", "1.0.0");
@@ -308,8 +313,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -336,8 +339,6 @@ public class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
@@ -373,9 +374,6 @@ public class BundleValidationTest {
                   }
                 }
                 """, StandardCharsets.UTF_8);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         File versions = new File(temporaryFolder.getRoot(),
                 Constants.VAADIN_CORE_VERSIONS_JSON);
@@ -428,8 +426,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("@vaadin/router", "1.9.2");
         packages.put("@vaadin/text", "2.1.0");
@@ -468,8 +464,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
@@ -510,8 +504,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
@@ -546,8 +538,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -582,8 +572,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -626,8 +614,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -676,8 +662,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -696,8 +680,6 @@ public class BundleValidationTest {
 
     @Test
     public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded() {
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
@@ -723,8 +705,6 @@ public class BundleValidationTest {
 
     @Test
     public void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded() {
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
@@ -749,8 +729,6 @@ public class BundleValidationTest {
 
     @Test
     public void noPackageJson_defaultPackagesInStats_noBuildNeeded() {
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -790,8 +768,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules())
@@ -834,8 +810,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules())
@@ -879,8 +853,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules()).thenReturn(
@@ -926,8 +898,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
@@ -970,8 +940,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
@@ -1019,8 +987,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
@@ -1066,8 +1032,6 @@ public class BundleValidationTest {
         FileUtils.write(stylesheetFile, "body{color:yellow}",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/my-styles.css?inline")));
@@ -1093,8 +1057,6 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
@@ -1119,8 +1081,6 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
@@ -1144,8 +1104,6 @@ public class BundleValidationTest {
     public void projectFrontendFileDeleted_bundleRebuild() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
@@ -1168,9 +1126,6 @@ public class BundleValidationTest {
     public void reusedTheme_noReusedThemes_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
@@ -1197,9 +1152,6 @@ public class BundleValidationTest {
         boolean created = jarResourcesFolder.mkdirs();
         Assert.assertTrue(created);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         setupFrontendUtilsMock(getBasicStats());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -1217,9 +1169,6 @@ public class BundleValidationTest {
         File jarWithTheme = TestUtils
                 .getTestJar("jar-with-theme-json-and-assets.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         setupFrontendUtilsMock(getBasicStats());
 
@@ -1239,8 +1188,6 @@ public class BundleValidationTest {
                 .getTestJar("jar-with-theme-json-and-assets.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("other-theme",
                 "other-theme-hash");
@@ -1263,9 +1210,6 @@ public class BundleValidationTest {
         File jarWithTheme = TestUtils
                 .getTestJar("jar-with-theme-json-and-assets.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
@@ -1298,9 +1242,6 @@ public class BundleValidationTest {
         File jarWithTheme = TestUtils
                 .getTestJar("jar-with-theme-json-and-assets.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
@@ -1336,8 +1277,6 @@ public class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1365,8 +1304,6 @@ public class BundleValidationTest {
         new File(temporaryFolder.getRoot(),
                 DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1391,8 +1328,6 @@ public class BundleValidationTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1430,8 +1365,6 @@ public class BundleValidationTest {
                 }
                 """, "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1482,8 +1415,6 @@ public class BundleValidationTest {
                         """,
                 "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1525,8 +1456,6 @@ public class BundleValidationTest {
                         """,
                 "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1564,8 +1493,6 @@ public class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1593,8 +1520,6 @@ public class BundleValidationTest {
         createProjectThemeJsonStub("{\"parent\": \"parent-theme\"}",
                 "my-theme");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
@@ -1791,9 +1716,6 @@ public class BundleValidationTest {
 
         FileUtils.write(indexTs, "window.alert('');", StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
@@ -1815,9 +1737,6 @@ public class BundleValidationTest {
         indexTs.createNewFile();
 
         FileUtils.write(indexTs, "window.alert('');", StandardCharsets.UTF_8);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
@@ -1843,9 +1762,6 @@ public class BundleValidationTest {
     @Test
     public void indexTsDeleted_rebuildRequired() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
@@ -1877,9 +1793,6 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -1908,9 +1821,6 @@ public class BundleValidationTest {
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         setupFrontendUtilsMock(stats);
 
@@ -1942,9 +1852,6 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -1958,9 +1865,6 @@ public class BundleValidationTest {
     public void standardVaadinComponent_notAddedToProjectAsJar_noRebuildRequired()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
@@ -1983,9 +1887,6 @@ public class BundleValidationTest {
     public void cssImport_cssInMetaInfResources_notThrow_bundleRequired()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         CssData cssData = new CssData("./addons-styles/my-styles.css", null,
                 null, null);
@@ -2012,9 +1913,6 @@ public class BundleValidationTest {
         createPackageJsonStub(
                 "{\"dependencies\": {\"@vaadin/flow-frontend\": \"./target/flow-frontend\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
@@ -2031,9 +1929,6 @@ public class BundleValidationTest {
             throws IOException {
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
@@ -2054,9 +1949,6 @@ public class BundleValidationTest {
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
                 "./another-folder");
@@ -2076,9 +1968,6 @@ public class BundleValidationTest {
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
                 "1.0.0");
@@ -2097,9 +1986,6 @@ public class BundleValidationTest {
             throws IOException {
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"1.0.0\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
@@ -2134,8 +2020,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
@@ -2157,7 +2041,7 @@ public class BundleValidationTest {
         options.withForceProductionBuild(true);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Production bundle required due to force.production.bundle flag.",
                 needsBuild);
@@ -2182,8 +2066,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules())
@@ -2237,8 +2119,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules())
@@ -2290,8 +2170,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules())
@@ -2349,9 +2227,6 @@ public class BundleValidationTest {
         FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
@@ -2388,9 +2263,6 @@ public class BundleValidationTest {
                   }
                 }
                 """, StandardCharsets.UTF_8);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         ObjectNode stats = getBasicStats();
 
@@ -2431,8 +2303,6 @@ public class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages()).thenReturn(
                 Collections.singletonMap("@vaadin/button", "2.0.0"));
 
@@ -2491,9 +2361,6 @@ public class BundleValidationTest {
         FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
@@ -2515,8 +2382,6 @@ public class BundleValidationTest {
         Assume.assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         ObjectNode stats = getBasicStats();
         setupFrontendUtilsMock(stats);
 
@@ -2532,9 +2397,6 @@ public class BundleValidationTest {
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         String defaultCommercialBannerJS = new String(getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
@@ -2560,9 +2422,6 @@ public class BundleValidationTest {
         Assume.assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         String defaultCommercialBannerJS = new String(getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
                 .readAllBytes(), StandardCharsets.UTF_8);
@@ -2584,9 +2443,6 @@ public class BundleValidationTest {
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
         options.withCommercialBanner(false);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         File frontendGeneratedFolder = temporaryFolder.newFolder(
                 FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED);
@@ -2616,9 +2472,6 @@ public class BundleValidationTest {
         Assume.assumeTrue(!mode.isProduction());
         options.withCommercialBanner(true);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
         ObjectNode stats = getBasicStats();
         setupFrontendUtilsMock(stats);
 
@@ -2634,9 +2487,6 @@ public class BundleValidationTest {
             throws IOException {
         Assume.assumeTrue(!mode.isProduction());
         options.withCommercialBanner(true);
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
 
         String defaultCommercialBannerJS = new String(getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
@@ -2772,8 +2622,6 @@ public class BundleValidationTest {
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
         final ThemeDefinition themeDefinition = Mockito
                 .mock(ThemeDefinition.class);
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");

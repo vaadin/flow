@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2026 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.internal;
 
 import java.beans.IntrospectionException;
@@ -94,7 +102,9 @@ public class BeanUtilTest {
                 .orElse(null);
 
         Assert.assertNotNull("Should find 'value' property", valueDescriptor);
-        Assert.assertNotNull("Should have read method from parent interface", valueDescriptor.getReadMethod());
-        Assert.assertNotNull("Should have write method from child interface", valueDescriptor.getWriteMethod());
+        Assert.assertNotNull("Should have read method from parent interface",
+                valueDescriptor.getReadMethod());
+        Assert.assertNotNull("Should have write method from child interface",
+                valueDescriptor.getWriteMethod());
     }
 }
