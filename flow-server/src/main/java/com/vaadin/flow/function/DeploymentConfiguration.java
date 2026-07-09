@@ -79,6 +79,7 @@ public interface DeploymentConfiguration
      *
      * @return the maximum request body size in characters, or a negative number
      *         if the limit is disabled
+     * @since 25.2
      */
     default long getMaxRequestBodySize() {
         return getApplicationOrSystemProperty(

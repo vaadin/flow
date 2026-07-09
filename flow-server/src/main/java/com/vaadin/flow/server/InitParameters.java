@@ -97,6 +97,8 @@ public class InitParameters implements Serializable {
      * too low will reject legitimate interactions and make the application
      * unusable. Choose a value that comfortably accommodates the largest
      * expected UIDL/RPC payload produced by the application.
+     * 
+     * @since 25.2
      */
     public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
