@@ -27,6 +27,8 @@ import org.w3c.dom.NodeList;
 
 /**
  * Utilities for Maven based projects.
+ *
+ * @since 24.1
  */
 public class MavenUtils {
 

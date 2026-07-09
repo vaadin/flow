@@ -30,6 +30,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * {@link NavigationAccessControlConfigurer} bean.
  *
  * @see NavigationAccessControlConfigurer
+ * @since 24.3
  */
 public class SpringNavigationAccessControl extends NavigationAccessControl {
 

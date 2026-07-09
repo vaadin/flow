@@ -25,6 +25,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  *
  * @deprecated ViewAccessChecker has been replaced by
  *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
+ * @since 23.1
  */
 @Deprecated(forRemoval = true, since = "24.3")
 public class SpringViewAccessChecker extends ViewAccessChecker {

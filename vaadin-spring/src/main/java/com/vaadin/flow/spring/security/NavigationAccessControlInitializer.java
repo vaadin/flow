@@ -16,6 +16,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * Helper to register navigation access control.
  *
  * @see NavigationAccessControl
+ * @since 24.3
  */
 public class NavigationAccessControlInitializer
         implements VaadinServiceInitListener {

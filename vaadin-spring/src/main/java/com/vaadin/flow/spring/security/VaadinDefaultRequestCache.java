@@ -53,6 +53,8 @@ import com.vaadin.flow.server.HandlerHelper;
  * addition to the default exclusions. This is useful for ignoring
  * application-specific paths that should never be used as redirect targets
  * after authentication.
+ *
+ * @since 17.0
  */
 @Component
 public class VaadinDefaultRequestCache implements RequestCache {
@@ -160,6 +162,7 @@ public class VaadinDefaultRequestCache implements RequestCache {
      *
      * @param delegateRequestCache
      *            the delegate request cache
+     * @since 19.0
      */
     public void setDelegateRequestCache(RequestCache delegateRequestCache) {
         this.delegateRequestCache = delegateRequestCache;
@@ -173,6 +176,7 @@ public class VaadinDefaultRequestCache implements RequestCache {
      * @param requestMatcher
      *            a request matching strategy which defines which requests
      *            should not be cached.
+     * @since 24.8
      */
     public void ignoreRequests(RequestMatcher requestMatcher) {
         this.ignoreRequestMatcher = requestMatcher;

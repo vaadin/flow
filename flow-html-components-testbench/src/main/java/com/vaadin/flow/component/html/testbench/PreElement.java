@@ -14,6 +14,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;pre&gt;</code> element.
  *
+ * @since 2.1
  */
 @Element("pre")
 public class PreElement extends TestBenchElement {

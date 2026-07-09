@@ -29,6 +29,9 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+/**
+ * @since 24.1
+ */
 public class ExternalDependencyWatcher implements Closeable {
 
     final private static Set<FileWatcher> watchers = new HashSet<>();

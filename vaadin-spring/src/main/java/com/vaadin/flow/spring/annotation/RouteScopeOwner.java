@@ -27,7 +27,7 @@ import com.vaadin.flow.router.RouterLayout;
  * {@link RouterLayout}, or a {@link HasErrorParameter}.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 18.0
  *
  */
 @Qualifier

@@ -46,6 +46,8 @@ import java.util.stream.Stream;
 
 /**
  * Contains utility methods related to request handling.
+ *
+ * @since 17.0
  */
 @Component
 public class RequestUtil {
@@ -127,6 +129,7 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to an accessible Hilla
      *         view, {@code false} otherwise
+     * @since 24.4
      */
     public boolean isAllowedHillaView(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
@@ -143,6 +146,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting an anonymous route,
      *         {@code false} otherwise
+     * @since 18.0
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
@@ -167,6 +171,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting a custom PWA icon or a
      *         custom favicon path, {@code false} otherwise
+     * @since 24.3.3
      */
     public boolean isCustomWebIcon(HttpServletRequest request) {
         if (webIconsRequestMatcher == null) {
@@ -206,6 +211,7 @@ public class RequestUtil {
      * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
      *             removal. This method is deprecated without direct
      *             replacement; use {@code PathPatternRequestMatcher} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
@@ -235,6 +241,7 @@ public class RequestUtil {
      * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
      *             removal. This method is deprecated without direct
      *             replacement; use {@code PathPatternRequestMatcher} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
@@ -253,6 +260,7 @@ public class RequestUtil {
      * @return a {@link RequestMatcher} that processes requests using a
      *         {@link RequestUtil.PrincipalAwareRequestWrapper} for principal
      *         awareness
+     * @since 24.9.2
      */
     public static RequestMatcher principalAwareRequestMatcher(
             RequestMatcher matcher) {
@@ -346,6 +354,7 @@ public class RequestUtil {
      *
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
+     * @since 24.8
      */
     public String applyUrlMapping(String path) {
         return applyUrlMapping(configurationProperties.getUrlMapping(), path);

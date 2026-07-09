@@ -17,6 +17,8 @@ import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
  * application is run in an embedded container. Also triggered when running in a
  * real server but is not necessary in this scenario as
  * JSR356WebsocketInitializer is triggered by the servlet container.
+ *
+ * @since 10.0
  */
 public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
 

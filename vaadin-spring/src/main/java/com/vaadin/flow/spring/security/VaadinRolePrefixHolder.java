@@ -31,6 +31,8 @@ import com.vaadin.flow.server.VaadinServletRequest;
  * Security context aware environments to allow utilities like
  * {@link com.vaadin.flow.spring.AuthenticationUtil} to check roles in the same
  * way with same role prefix.
+ *
+ * @since 24.3
  */
 public class VaadinRolePrefixHolder implements Serializable {
 

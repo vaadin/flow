@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinService;
  * @see LitTemplateParserImpl
  *
  * @author Vaadin Ltd
- * @since
+ * @since 5.0
  *
  */
 @FunctionalInterface

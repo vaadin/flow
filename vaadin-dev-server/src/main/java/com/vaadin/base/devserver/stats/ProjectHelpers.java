@@ -30,6 +30,8 @@ import com.vaadin.base.devserver.MavenUtils;
 
 /**
  * Helper methods for extracting and updating project statistics data.
+ *
+ * @since 24.4
  */
 public class ProjectHelpers {
 

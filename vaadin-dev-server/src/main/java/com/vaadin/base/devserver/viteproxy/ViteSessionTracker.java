@@ -23,6 +23,8 @@ import com.vaadin.flow.shared.Registration;
  * This class is meant only for testing purposes. Do not use it in production.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 24.9.12
  */
 public class ViteSessionTracker {
 

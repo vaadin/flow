@@ -40,6 +40,7 @@ import com.vaadin.flow.spring.annotation.VaadinTaskExecutor;
  * Spring application context aware Vaadin servlet service implementation.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 public class SpringVaadinServletService extends VaadinServletService {
 

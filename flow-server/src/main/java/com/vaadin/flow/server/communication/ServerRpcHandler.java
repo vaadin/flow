@@ -600,6 +600,7 @@ public class ServerRpcHandler implements Serializable {
      *             if reading fails
      * @throws RequestBodyTooLargeException
      *             if the message exceeds the configured maximum size
+     * @since 24.10
      */
     protected String getMessage(Reader reader, VaadinRequest request)
             throws IOException {

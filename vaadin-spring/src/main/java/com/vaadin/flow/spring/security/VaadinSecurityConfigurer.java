@@ -125,6 +125,8 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
  * </ul>
+ *
+ * @since 24.8
  */
 public final class VaadinSecurityConfigurer
         extends AbstractHttpConfigurer<VaadinSecurityConfigurer, HttpSecurity> {
@@ -315,6 +317,7 @@ public final class VaadinSecurityConfigurer
      *            the default success url
      * @return the current configurer instance for method chaining
      * @see #defaultSuccessUrl(String, boolean)
+     * @since 24.9.8
      */
     public VaadinSecurityConfigurer defaultSuccessUrl(
             String defaultSuccessUrl) {
@@ -334,6 +337,7 @@ public final class VaadinSecurityConfigurer
      *            authentication, even when a protected page was previously
      *            accessed
      * @return the current configurer instance for method chaining
+     * @since 24.9.8
      */
     public VaadinSecurityConfigurer defaultSuccessUrl(String defaultSuccessUrl,
             boolean alwaysUse) {

@@ -38,6 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 9.0
  */
 public final class ViteHandler extends AbstractDevServerRunner {
     /**
@@ -167,6 +168,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * Gets the url path to the /VAADIN folder.
      *
      * @return the url path to the /VAADIN folder, relative to the host root
+     * @since 24.1.2
      */
     public String getPathToVaadin() {
         return getContextPath() + getPathToVaadinInContext();
@@ -176,6 +178,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * Gets the url path to the /VAADIN folder inside the context root.
      *
      * @return the url path to the /VAADIN folder, relative to the context root
+     * @since 24.0
      */
     public String getPathToVaadinInContext() {
         return FrontendUtils.getFrontendServletPath(

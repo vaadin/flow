@@ -27,6 +27,7 @@ import com.vaadin.flow.spring.annotation.EnableVaadin;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class VaadinScanPackagesRegistrar
         implements ImportBeanDefinitionRegistrar {

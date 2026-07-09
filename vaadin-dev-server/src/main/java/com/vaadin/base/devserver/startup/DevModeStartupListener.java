@@ -52,7 +52,7 @@ import com.vaadin.flow.theme.Theme;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 9.0
  */
 @HandlesTypes({ Route.class, UIInitListener.class,
         VaadinServiceInitListener.class, WebComponentExporter.class,

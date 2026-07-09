@@ -18,9 +18,14 @@ import com.vaadin.flow.server.Version;
 
 /**
  * Data for a info message to the debug window.
+ *
+ * @since 9.0
  */
 public class ServerInfo implements Serializable {
 
+    /**
+     * @since 24.2.1
+     */
     public record NameAndVersion(String name,
             String version) implements Serializable {
     };

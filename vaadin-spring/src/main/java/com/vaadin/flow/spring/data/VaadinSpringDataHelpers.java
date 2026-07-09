@@ -21,6 +21,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 /**
  * Contains helper methods to work with Spring Data based back-ends and Vaadin
  * components.
+ *
+ * @since 14.0
  */
 public interface VaadinSpringDataHelpers extends Serializable {
 
@@ -52,6 +54,7 @@ public interface VaadinSpringDataHelpers extends Serializable {
      *            the query object from Vaadin component
      * @return a {@link PageRequest} that can be passed for Spring Data based
      *         back-end
+     * @since 19.0
      */
     static PageRequest toSpringPageRequest(Query<?, ?> vaadinQuery) {
         Sort sort = VaadinSpringDataHelpers.toSpringDataSort(vaadinQuery);
@@ -71,6 +74,7 @@ public interface VaadinSpringDataHelpers extends Serializable {
      * @param repo
      *            the repository where the results should be fetched from
      * @return the FetchCallback that makes the lazy binding to {@code Grid}.
+     * @since 19.0
      */
     static <T> FetchCallback<T, Void> fromPagingRepository(
             PagingAndSortingRepository<T, ?> repo) {

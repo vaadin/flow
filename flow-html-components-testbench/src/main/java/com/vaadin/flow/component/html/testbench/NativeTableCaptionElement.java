@@ -14,7 +14,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;caption&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Element("caption")
 public class NativeTableCaptionElement extends TestBenchElement {

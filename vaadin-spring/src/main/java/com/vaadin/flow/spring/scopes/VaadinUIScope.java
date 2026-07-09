@@ -30,6 +30,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class VaadinUIScope extends AbstractScope {
 
