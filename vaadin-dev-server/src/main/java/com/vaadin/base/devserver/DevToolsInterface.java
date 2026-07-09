@@ -17,6 +17,8 @@ package com.vaadin.base.devserver;
 
 /**
  * For interfacing with the development tools by plugins.
+ * 
+ * @since 24.2
  */
 public interface DevToolsInterface {
 
@@ -27,6 +29,7 @@ public interface DevToolsInterface {
      *            the command to send
      * @param data
      *            data, specific to the command
+     * @since 24.8
      */
     void send(String command, Object data);
 }
