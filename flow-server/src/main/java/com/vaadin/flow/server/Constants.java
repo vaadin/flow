@@ -557,6 +557,13 @@ public final class Constants implements Serializable {
      */
     public static final long DEFAULT_FILE_COUNT_MAX = 10000;
 
+    /**
+     * Special {@link InitParameters#URL_SAFE_SCHEMES} entry that marks every
+     * scheme as safe, disabling scheme validation. Mixing this entry with other
+     * schemes still disables validation.
+     */
+    public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
+
     private Constants() {
         // prevent instantiation constants class only
     }
