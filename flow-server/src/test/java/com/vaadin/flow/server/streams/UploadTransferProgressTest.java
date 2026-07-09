@@ -17,6 +17,7 @@ package com.vaadin.flow.server.streams;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Part;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -76,12 +77,13 @@ class UploadTransferProgressTest {
     private StreamResourceRegistry streamResourceRegistry;
     private UI ui;
     private Element element;
+    private Part part;
     private UploadEvent uploadEvent;
     @TempDir
     Path temporaryFolder;
 
     @BeforeEach
-    void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException, IOException {
         VaadinService service = new MockVaadinServletService();
         session = new AlwaysLockedVaadinSession(service) {
             @Override
@@ -97,18 +99,11 @@ class UploadTransferProgressTest {
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         element = Mockito.mock(Element.class);
         response = Mockito.mock(VaadinResponse.class);
-        uploadEvent = Mockito.mock(UploadEvent.class);
-        Mockito.doReturn(DUMMY_FILE_NAME).when(uploadEvent).getFileName();
-        Mockito.when(uploadEvent.getContentType())
-                .thenReturn("application/octet-stream");
-        Mockito.when(uploadEvent.getFileSize())
-                .thenReturn((long) DUMMY_CONTENT_LENGTH);
-        Mockito.when(uploadEvent.getInputStream())
+        // The upload content is served through the multipart Part; individual
+        // tests re-stub this to control the bytes and reads they need.
+        part = Mockito.mock(Part.class);
+        Mockito.when(part.getInputStream())
                 .thenReturn(createRandomBytes(DUMMY_CONTENT_LENGTH));
-        Mockito.when(uploadEvent.getResponse()).thenReturn(response);
-        Mockito.when(uploadEvent.getSession()).thenReturn(session);
-        Mockito.when(uploadEvent.getOwningElement()).thenReturn(element);
-        Mockito.when(uploadEvent.getRequest()).thenReturn(request);
         Component componentOwner = Mockito.mock(Component.class);
         Mockito.when(element.getComponent())
                 .thenReturn(Optional.of(componentOwner));
@@ -119,11 +114,11 @@ class UploadTransferProgressTest {
             command.execute();
             return null;
         }).when(ui).access(Mockito.any(Command.class));
-        Mockito.when(uploadEvent.getUI()).thenReturn(ui);
-
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
-        Mockito.when(uploadEvent.getOwningComponent())
-                .thenReturn(componentOwner);
+
+        uploadEvent = new UploadEvent(request, response, session,
+                DUMMY_FILE_NAME, DUMMY_CONTENT_LENGTH,
+                "application/octet-stream", element, part);
     }
 
     @Test
@@ -195,7 +190,7 @@ class UploadTransferProgressTest {
         Mockito.doThrow(new IOException("Test exception")).when(inputStream)
                 .read(Mockito.any(byte[].class), Mockito.anyInt(),
                         Mockito.anyInt());
-        Mockito.when(uploadEvent.getInputStream()).thenReturn(inputStream);
+        Mockito.when(part.getInputStream()).thenReturn(inputStream);
 
         UploadHandler handler = UploadHandler.toTempFile((meta, file) -> {
         }, createErrorTransferProgressListener(invocations));
@@ -232,7 +227,7 @@ class UploadTransferProgressTest {
         Mockito.doThrow(new IOException("Test exception")).when(inputStream)
                 .read(Mockito.any(byte[].class), Mockito.anyInt(),
                         Mockito.anyInt());
-        Mockito.when(uploadEvent.getInputStream()).thenReturn(inputStream);
+        Mockito.when(part.getInputStream()).thenReturn(inputStream);
 
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
         }, createErrorTransferProgressListener(invocations));
@@ -248,7 +243,6 @@ class UploadTransferProgressTest {
     @Test
     void withValidator_rejectsAtStart_inMemory_callbackNotInvoked()
             throws IOException {
-        simulateReject();
         AtomicBoolean completed = new AtomicBoolean();
         List<String> events = new ArrayList<>();
         UploadHandler handler = UploadHandler
@@ -269,7 +263,6 @@ class UploadTransferProgressTest {
     @Test
     void withValidator_rejectsAtStart_toFile_noFileCreatedAndCallbackNotInvoked()
             throws IOException {
-        simulateReject();
         AtomicReference<File> createdFile = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean();
         List<String> events = new ArrayList<>();
@@ -316,7 +309,6 @@ class UploadTransferProgressTest {
     @Test
     void withValidator_multipleValidators_firstRejectionShortCircuits()
             throws IOException {
-        simulateReject();
         AtomicBoolean secondInvoked = new AtomicBoolean();
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
         }).validateMetadata(event -> event.reject("rejected"))
@@ -330,7 +322,6 @@ class UploadTransferProgressTest {
 
     @Test
     void validateHeader_rejects_stopsReadingEarly() throws IOException {
-        AtomicBoolean rejected = simulateReject();
         AtomicInteger bytesRead = new AtomicInteger();
         InputStream counting = new FilterInputStream(
                 createRandomBytes(DUMMY_CONTENT_LENGTH)) {
@@ -343,7 +334,7 @@ class UploadTransferProgressTest {
                 return n;
             }
         };
-        when(uploadEvent.getInputStream()).thenReturn(counting);
+        when(part.getInputStream()).thenReturn(counting);
         AtomicBoolean completed = new AtomicBoolean();
         UploadHandler handler = UploadHandler
                 .inMemory((meta, bytes) -> completed.set(true))
@@ -353,7 +344,7 @@ class UploadTransferProgressTest {
 
         assertFalse(completed.get(),
                 "Success callback must not run for a rejected upload");
-        assertTrue(rejected.get());
+        assertTrue(uploadEvent.isRejected());
         // Only the 4 header bytes are read; the rest of the upload is not.
         assertEquals(4, bytesRead.get(),
                 "Reading should stop after the header is validated");
@@ -406,7 +397,6 @@ class UploadTransferProgressTest {
     @Test
     void validateComplete_rejectsInMemory_callbackNotInvoked()
             throws IOException {
-        simulateReject();
         AtomicBoolean completed = new AtomicBoolean();
         long[] seenSize = { 0 };
         UploadHandler handler = UploadHandler
@@ -433,7 +423,6 @@ class UploadTransferProgressTest {
     @Test
     void validateComplete_rejectsFile_fileDeletedAndPathPresent()
             throws IOException {
-        simulateReject();
         AtomicReference<File> createdFile = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean pathPresent = new AtomicBoolean();
@@ -458,7 +447,6 @@ class UploadTransferProgressTest {
     @Test
     void validateComplete_notInvoked_whenRejectedDuringHeader()
             throws IOException {
-        simulateReject();
         AtomicBoolean completeRan = new AtomicBoolean();
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
         }).validateHeader(4, (event, header) -> event.reject("bad"))
@@ -474,7 +462,7 @@ class UploadTransferProgressTest {
     @Test
     void emptyUpload_headerInvokedWithEmpty_completeInvoked()
             throws IOException {
-        when(uploadEvent.getInputStream())
+        when(part.getInputStream())
                 .thenReturn(new ByteArrayInputStream(new byte[0]));
         AtomicBoolean headerRan = new AtomicBoolean();
         int[] headerRemaining = { -1 };
@@ -531,7 +519,7 @@ class UploadTransferProgressTest {
     @Test
     void validateHeader_seesExpectedLeadingBytes() throws IOException {
         byte[] content = deterministicBytes(100);
-        when(uploadEvent.getInputStream())
+        when(part.getInputStream())
                 .thenReturn(new ByteArrayInputStream(content));
         byte[][] seen = new byte[1][];
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
@@ -546,7 +534,7 @@ class UploadTransferProgressTest {
     void validateHeader_multipleValidators_eachSeesOwnSize()
             throws IOException {
         byte[] content = deterministicBytes(100);
-        when(uploadEvent.getInputStream())
+        when(part.getInputStream())
                 .thenReturn(new ByteArrayInputStream(content));
         byte[][] four = new byte[1][];
         byte[][] eight = new byte[1][];
@@ -573,7 +561,7 @@ class UploadTransferProgressTest {
                 return super.read(b, off, Math.min(len, 3));
             }
         };
-        when(uploadEvent.getInputStream()).thenReturn(shortReader);
+        when(part.getInputStream()).thenReturn(shortReader);
         byte[][] seen = new byte[1][];
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
         }).validateHeader(8, (event, header) -> seen[0] = toArray(header));
@@ -586,7 +574,7 @@ class UploadTransferProgressTest {
     @Test
     void validateHeader_accepted_fullContentDelivered() throws IOException {
         byte[] content = deterministicBytes(100);
-        when(uploadEvent.getInputStream())
+        when(part.getInputStream())
                 .thenReturn(new ByteArrayInputStream(content));
         AtomicReference<byte[]> received = new AtomicReference<>();
         long[] seenHeader = { -1 };
@@ -604,7 +592,6 @@ class UploadTransferProgressTest {
 
     @Test
     void validateHeader_rejects_toFile_noFileCreated() throws IOException {
-        simulateReject();
         AtomicReference<File> createdFile = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean();
         UploadHandler handler = UploadHandler
@@ -664,27 +651,6 @@ class UploadTransferProgressTest {
         byte[] array = new byte[buffer.remaining()];
         buffer.get(array);
         return array;
-    }
-
-    /**
-     * Makes the mocked {@link UploadEvent} honor {@code reject()} so that
-     * {@code isRejected()} reflects a rejection performed by a validator.
-     *
-     * @return flag that becomes {@code true} once the upload is rejected
-     */
-    private AtomicBoolean simulateReject() {
-        AtomicBoolean rejected = new AtomicBoolean();
-        Mockito.doAnswer(invocation -> {
-            rejected.set(true);
-            return null;
-        }).when(uploadEvent).reject(Mockito.anyString());
-        Mockito.doAnswer(invocation -> {
-            rejected.set(true);
-            return null;
-        }).when(uploadEvent).reject();
-        when(uploadEvent.isRejected()).thenAnswer(invocation -> rejected.get());
-        when(uploadEvent.getRejectionMessage()).thenReturn("rejected");
-        return rejected;
     }
 
     private FileFactory capturingFileFactory(
