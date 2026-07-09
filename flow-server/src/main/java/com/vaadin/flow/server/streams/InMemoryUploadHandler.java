@@ -41,18 +41,7 @@ public class InMemoryUploadHandler
         setTransferUI(event.getUI());
         byte[] data = null;
         try {
-            runMetadataValidators(event);
-            if (!event.isRejected()) {
-                try (InputStream raw = event.getInputStream();
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                    InputStream in = applyHeaderValidators(event, raw);
-                    if (!event.isRejected()) {
-                        TransferUtil.transfer(in, outputStream,
-                                getTransferContext(event), getListeners());
-                        data = outputStream.toByteArray();
-                    }
-                }
-            }
+            data = readContent(event);
         } catch (IOException e) {
             notifyError(event, e);
             throw e;
@@ -70,19 +59,19 @@ public class InMemoryUploadHandler
                 throw e;
             }
         }
+        // A validator may reject the upload during any phase (metadata, header
+        // or complete); all of them converge here. Rejection is fully settled
+        // by this point, since every validator has already run. The transfer's
+        // own onComplete may already have fired, so the rejection is surfaced
+        // as a terminal onError to give progress listeners a definitive signal,
+        // and the accumulated data is never delivered.
         if (event.isRejected()) {
-            // A validator rejected the upload; report it as a terminal error so
-            // progress listeners get a signal.
             notifyError(event,
                     new UploadRejectedException(event.getRejectionMessage()));
+            return;
         }
         final byte[] delivered = data;
         event.getUI().access(() -> {
-            // A validator may have rejected the upload while it was received;
-            // the accumulated data must not be delivered in that case.
-            if (event.isRejected()) {
-                return;
-            }
             try {
                 successCallback.complete(
                         new UploadMetadata(event.getFileName(),
@@ -93,5 +82,33 @@ public class InMemoryUploadHandler
                         "Error in memory upload callback", e);
             }
         });
+    }
+
+    /**
+     * Runs metadata and header validation and, if the upload survives both,
+     * reads the full content into memory.
+     *
+     * @param event
+     *            the upload being handled
+     * @return the received bytes, or {@code null} if a validator rejected the
+     *         upload before the transfer completed
+     * @throws IOException
+     *             if reading the content or a validator fails
+     */
+    private byte[] readContent(UploadEvent event) throws IOException {
+        runMetadataValidators(event);
+        if (event.isRejected()) {
+            return null;
+        }
+        try (InputStream raw = event.getInputStream();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            InputStream in = applyHeaderValidators(event, raw);
+            if (event.isRejected()) {
+                return null;
+            }
+            TransferUtil.transfer(in, outputStream, getTransferContext(event),
+                    getListeners());
+            return outputStream.toByteArray();
+        }
     }
 }

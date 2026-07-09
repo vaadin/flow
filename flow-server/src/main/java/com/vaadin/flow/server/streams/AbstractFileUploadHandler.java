@@ -101,20 +101,20 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
                 throw e;
             }
         }
+        // A validator may reject the upload during any phase (metadata, header
+        // or complete); all of them converge here. Rejection is fully settled
+        // by this point, since every validator has already run. The transfer's
+        // own onComplete may already have fired, so the rejection is surfaced
+        // as a terminal onError to give progress listeners a definitive signal,
+        // and the partially written file is discarded rather than delivered.
         if (event.isRejected()) {
-            // A validator rejected the upload; report it as a terminal error so
-            // progress listeners get a signal.
             notifyError(event,
                     new UploadRejectedException(event.getRejectionMessage()));
+            deleteQuietly(file);
+            return;
         }
         final File uploadedFile = file;
         event.getUI().access(() -> {
-            // A validator may have rejected the upload while it was received;
-            // discard the written file and skip the callback.
-            if (event.isRejected()) {
-                deleteQuietly(uploadedFile);
-                return;
-            }
             try {
                 successCallback.complete(metadata, uploadedFile);
             } catch (IOException e) {
