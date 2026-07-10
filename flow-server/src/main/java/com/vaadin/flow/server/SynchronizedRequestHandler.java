@@ -189,6 +189,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * @return the request body as a string
      * @throws IOException
      *             if reading fails
+     * @since 24.5.6
      */
     public static String getRequestBody(Reader reader) throws IOException {
         return getRequestBody(reader, -1L);
@@ -212,6 +213,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *             if reading fails
      * @throws RequestBodyTooLargeException
      *             if the body exceeds {@code maxBodySize} characters
+     * @since 25.3
      */
     public static String getRequestBody(Reader reader, long maxBodySize)
             throws IOException {
@@ -242,6 +244,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            the request being handled
      * @return the maximum request body size in characters, or a negative number
      *         if the limit is disabled
+     * @since 25.3
      */
     public static long getMaxRequestBodySize(VaadinRequest request) {
         return request.getService().getDeploymentConfiguration()

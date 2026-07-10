@@ -43,6 +43,14 @@
             com.vaadin.flow.testcategory.ScreenshotTests,
             com.vaadin.flow.testcategory.PushTests,</excludedGroups>
 
+    <!-- Surefire/Failsafe test framework provider for the IT modules. Defaults
+            to the JUnit 4 provider; modules running their ITs on JUnit Platform
+            (JUnit 5/6, e.g. test-default) override this to
+            surefire-junit-platform. Keeping a single provider on the failsafe
+            classpath avoids the "more than one test framework provider"
+            conflict. -->
+    <failsafe.provider.artifactId>surefire-junit47</failsafe.provider.artifactId>
+
     <jetty.scantrigger/>
 
     <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
@@ -271,16 +279,19 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <!-- Force the JUnit 4 provider for IT tests. TestBench's
+        <!-- Force a single test framework provider for IT tests. By default
+             this is the JUnit 4 provider (surefire-junit47): TestBench's
              ParallelRunner (@RunWith) handles browser parameterization
              ([any_Chrome_] suffixes) and is not compatible with the
-             JUnit Platform provider that is auto-selected when
-             junit-jupiter-engine or junit-vintage-engine are on the
-             classpath (inherited from root pom). -->
+             JUnit Platform provider that would otherwise be auto-selected when
+             junit-jupiter-engine or junit-vintage-engine are on the classpath
+             (inherited from root pom). Modules that run their ITs on JUnit
+             Platform (JUnit 5/6) override ${failsafe.provider.artifactId} to
+             surefire-junit-platform. -->
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit47</artifactId>
+            <artifactId>${failsafe.provider.artifactId}</artifactId>
             <version>${maven.failsafe.plugin.version}</version>
           </dependency>
           <dependency>
@@ -326,6 +337,7 @@
         </property>
       </activation>
       <modules>
+        <module>test-default</module>
         <module>test-dev-mode</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>

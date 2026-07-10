@@ -29,6 +29,9 @@ import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
+/**
+ * @since 25.1
+ */
 public class BundleBuildUtils {
 
     private static Logger getLogger() {

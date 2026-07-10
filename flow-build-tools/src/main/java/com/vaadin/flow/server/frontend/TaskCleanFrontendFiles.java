@@ -38,7 +38,7 @@ import com.vaadin.flow.server.Constants;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 24.1
  */
 public class TaskCleanFrontendFiles implements FallibleCommand {
 
@@ -63,6 +63,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      *
      * @param options
      *            options containing file paths and classfinder
+     * @since 24.7.1
      */
     public TaskCleanFrontendFiles(Options options) {
         this.projectRoot = options.getNpmFolder();

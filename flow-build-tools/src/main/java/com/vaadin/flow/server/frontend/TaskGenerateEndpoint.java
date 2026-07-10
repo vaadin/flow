@@ -19,6 +19,8 @@ package com.vaadin.flow.server.frontend;
  * Generate the TS files for endpoints, and the Client API file.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 23.0
  */
 public interface TaskGenerateEndpoint extends FallibleCommand {
 
