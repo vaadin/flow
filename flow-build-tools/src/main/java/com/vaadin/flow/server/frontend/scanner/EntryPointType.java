@@ -22,6 +22,8 @@ package com.vaadin.flow.server.frontend.scanner;
  * to those, there are a bunch of internal entry points that are also scanned.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.1
  */
 public enum EntryPointType {
     ROUTE, WEB_COMPONENT, INTERNAL, APP_SHELL;
