@@ -107,6 +107,7 @@ public class AuthenticationContext {
      *
      * @return an {@link Optional} containing the authenticated principal name
      *         or an empty optional if not available.
+     * @since 23.3.1
      */
     public Optional<String> getPrincipalName() {
         return getAuthentication().map(Principal::getName);
@@ -192,6 +193,7 @@ public class AuthenticationContext {
      *
      * @return an unmodifiable collection of {@link GrantedAuthority}s or an
      *         empty collection if there is no authenticated user.
+     * @since 24.4
      */
     public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
         return getAuthentication().filter(Authentication::isAuthenticated)
@@ -209,6 +211,7 @@ public class AuthenticationContext {
      *
      * @return an unmodifiable collection of role names (without the role
      *         prefix) or an empty collection if there is no authenticated user.
+     * @since 24.4
      */
     public Collection<String> getGrantedRoles() {
         return getGrantedRolesStream().collect(Collectors.toSet());
@@ -232,6 +235,7 @@ public class AuthenticationContext {
      *            the role to check, without the role prefix.
      * @return {@literal true} if the user holds the given role, otherwise
      *         {@literal false}.
+     * @since 24.4
      */
     public boolean hasRole(String role) {
         return getGrantedRolesStream().anyMatch(role::equals);
@@ -252,6 +256,7 @@ public class AuthenticationContext {
      *         roles, otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given collection is empty.
+     * @since 24.4
      */
     public boolean hasAnyRole(Collection<String> roles) {
         if (roles.isEmpty()) {
@@ -276,6 +281,7 @@ public class AuthenticationContext {
      *         roles, otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given array is empty.
+     * @since 24.4
      */
     public boolean hasAnyRole(String... roles) {
         return hasAnyRole(Set.of(roles));
@@ -296,6 +302,7 @@ public class AuthenticationContext {
      *         {@literal false}.
      * @throws IllegalArgumentException
      *             if the given collection is empty.
+     * @since 24.4
      */
     public boolean hasAllRoles(Collection<String> roles) {
         if (roles.isEmpty()) {
@@ -321,6 +328,7 @@ public class AuthenticationContext {
      *         {@literal false}.
      * @throws IllegalArgumentException
      *             if the given array is empty.
+     * @since 24.4
      */
     public boolean hasAllRoles(String... roles) {
         return hasAllRoles(Set.of(roles));
@@ -333,6 +341,7 @@ public class AuthenticationContext {
      *            the authority to check.
      * @return {@literal true} if the user holds the given authority, otherwise
      *         {@literal false}.
+     * @since 24.4
      */
     public boolean hasAuthority(String authority) {
         return getGrantedAuthoritiesStream().anyMatch(authority::equals);
@@ -348,6 +357,7 @@ public class AuthenticationContext {
      *         authorities, otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given collection is empty.
+     * @since 24.4
      */
     public boolean hasAnyAuthority(Collection<String> authorities) {
         if (authorities.isEmpty()) {
@@ -367,6 +377,7 @@ public class AuthenticationContext {
      *         authorities, otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given array is empty.
+     * @since 24.4
      */
     public boolean hasAnyAuthority(String... authorities) {
         return hasAnyAuthority(Set.of(authorities));
@@ -382,6 +393,7 @@ public class AuthenticationContext {
      *         otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given collection is empty.
+     * @since 24.4
      */
     public boolean hasAllAuthorities(Collection<String> authorities) {
         if (authorities.isEmpty()) {
@@ -402,6 +414,7 @@ public class AuthenticationContext {
      *         otherwise {@literal false}.
      * @throws IllegalArgumentException
      *             if the given array is empty.
+     * @since 24.4
      */
     public boolean hasAllAuthorities(String... authorities) {
         return hasAllAuthorities(Set.of(authorities));
@@ -465,6 +478,7 @@ public class AuthenticationContext {
      *            Spring {@link HttpSecurity} for security configuration
      * @param authCtx
      *            The authentication context of the application.
+     * @since 24.3
      */
     public static void applySecurityConfiguration(HttpSecurity httpSecurity,
             AuthenticationContext authCtx) {

@@ -51,6 +51,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * I/O and image scaling.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.6
  */
 public class TaskGeneratePWAIcons implements FallibleCommand {
 
