@@ -48,6 +48,7 @@ import com.vaadin.frontendtools.installer.VerificationException;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 3.1
  */
 public class NodeInstaller {
 
@@ -658,6 +659,7 @@ public class NodeInstaller {
      * 
      * @param platform
      *            platform to get download root for
+     * @since 25.1
      */
     public static String getDownloadRoot(Platform platform) {
         if (platform.isNodeSupportExperimental()) {

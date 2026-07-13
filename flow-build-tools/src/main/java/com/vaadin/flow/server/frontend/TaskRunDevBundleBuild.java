@@ -44,6 +44,8 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Only used when running in dev mode without a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.0
  */
 public class TaskRunDevBundleBuild implements FallibleCommand {
 
