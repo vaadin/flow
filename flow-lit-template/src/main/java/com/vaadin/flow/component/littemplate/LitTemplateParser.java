@@ -33,6 +33,7 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @author Vaadin Ltd
  *
+ * @since 5.0
  */
 @FunctionalInterface
 public interface LitTemplateParser {

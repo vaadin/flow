@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -42,7 +43,17 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      *
      * @param treeData
      *            the tree data to set
+     * @deprecated This method will change its behavior in Vaadin 26. It will
+     *             create a {@link TreeDataProvider} with
+     *             {@link HierarchyFormat#FLATTENED}, which may affect TreeGrid
+     *             methods whose behavior depends on the hierarchy format, such
+     *             as {@code scrollToIndex}. To preserve the current behavior,
+     *             create a {@link TreeDataProvider} manually with
+     *             {@link HierarchyFormat#NESTED} and set it via
+     *             {@link #setDataProvider(HierarchicalDataProvider)} instead of
+     *             using this shorthand method.
      */
+    @Deprecated(since = "25.3")
     public default void setTreeData(TreeData<T> treeData) {
         setDataProvider(new TreeDataProvider<>(treeData));
     }
@@ -99,7 +110,17 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      * @param childItemProvider
      *            the value provider used to recursively populate the given root
      *            items with child items, not {@code null}
+     * @deprecated This method will change its behavior in Vaadin 26. It will
+     *             create a {@link TreeDataProvider} with
+     *             {@link HierarchyFormat#FLATTENED}, which may affect TreeGrid
+     *             methods whose behavior depends on the hierarchy format, such
+     *             as {@code scrollToIndex}. To preserve the current behavior,
+     *             create a {@link TreeDataProvider} manually with
+     *             {@link HierarchyFormat#NESTED} and set it via
+     *             {@link #setDataProvider(HierarchicalDataProvider)} instead of
+     *             using this shorthand method.
      */
+    @Deprecated(since = "25.3")
     public default void setItems(Collection<T> rootItems,
             ValueProvider<T, Collection<T>> childItemProvider) {
         Objects.requireNonNull(rootItems, "Given root items may not be null");
@@ -143,7 +164,17 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      * @param childItemProvider
      *            the value provider used to recursively populate the given root
      *            items with child items, not {@code null}
+     * @deprecated This method will change its behavior in Vaadin 26. It will
+     *             create a {@link TreeDataProvider} with
+     *             {@link HierarchyFormat#FLATTENED}, which may affect TreeGrid
+     *             methods whose behavior depends on the hierarchy format, such
+     *             as {@code scrollToIndex}. To preserve the current behavior,
+     *             create a {@link TreeDataProvider} manually with
+     *             {@link HierarchyFormat#NESTED} and set it via
+     *             {@link #setDataProvider(HierarchicalDataProvider)} instead of
+     *             using this shorthand method.
      */
+    @Deprecated(since = "25.3")
     public default void setItems(Stream<T> rootItems,
             ValueProvider<T, Stream<T>> childItemProvider) {
         Objects.requireNonNull(rootItems, "Given root items may not be null");

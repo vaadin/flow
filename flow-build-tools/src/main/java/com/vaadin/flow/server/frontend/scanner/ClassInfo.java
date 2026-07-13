@@ -24,6 +24,8 @@ import java.util.Set;
  * Holds information about a class and its frontend dependencies.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.1
  */
 public class ClassInfo {
     String className;
