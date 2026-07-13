@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;
 
@@ -27,19 +25,15 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.service.BankService;
+import com.vaadin.flow.spring.test.LoanApplicationUpload;
 
 @Route(value = "private", layout = MainView.class)
 @RouteAlias(value = "privateAndForbiddenForAll")
@@ -72,24 +66,8 @@ public class PrivateView extends Div {
         globalRefresh.setId("sendRefresh");
         add(globalRefresh);
 
-        Upload upload = new Upload();
-        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-        upload.setReceiver((filename, mimeType) -> {
-            return imageStream;
-        });
-        upload.addSucceededListener(e -> {
-            Paragraph p = new Paragraph("Loan application uploaded by "
-                    + utils.getAuthenticatedUserInfo().getFullName());
-            p.setId("uploadText");
-            add(p);
-            Image image = new Image(new StreamResource("image.png",
-                    () -> new ByteArrayInputStream(imageStream.toByteArray())),
-                    "image");
-            image.setId("uploadImage");
-            add(image);
-        });
-        add(new H4("Upload your loan application"));
-        add(upload);
+        LoanApplicationUpload.addTo(this,
+                () -> utils.getAuthenticatedUserInfo().getFullName());
     }
 
     @Override
