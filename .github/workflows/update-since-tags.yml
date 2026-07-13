@@ -2,7 +2,7 @@ name: Update @since tags
 
 # Reconcile Javadoc @since tags for any branch against the published release
 # history, and open a PR with the result. The reconciliation engine and caching
-# live in the shared vaadin/reconcile-since-tags action; the target branch is
+# live in the shared vaadin/github-actions/reconcile-since-tags action; the target branch is
 # chosen at dispatch time (the version is derived from that branch's pom).
 
 on:
@@ -39,7 +39,7 @@ jobs:
           cache: maven
 
       - id: since
-        uses: vaadin/reconcile-since-tags@8b841d0837a7c2108ea4eb4fc62ef864321cd61b # v1.2.0
+        uses: vaadin/github-actions/reconcile-since-tags@8743430abc47b783add936899c41a10f1d6d9987
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -70,7 +70,7 @@ jobs:
       # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
       # of the framework. An isolated index-dir keeps vaadin-spring's versions off
       # the shared axis (a separate load + axis per invocation).
-      - uses: vaadin/reconcile-since-tags@8b841d0837a7c2108ea4eb4fc62ef864321cd61b # v1.2.0
+      - uses: vaadin/github-actions/reconcile-since-tags@8743430abc47b783add936899c41a10f1d6d9987
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -94,5 +94,5 @@ jobs:
           body: |
             Automated `@since` reconciliation for `${{ inputs.branch }}` (version `${{ steps.since.outputs.version }}`).
 
-            Generated via [`vaadin/reconcile-since-tags`](https://github.com/vaadin/reconcile-since-tags). See the run's job summary for counts.
+            Generated via [`vaadin/github-actions/reconcile-since-tags`](https://github.com/vaadin/github-actions/tree/main/reconcile-since-tags). See the run's job summary for counts.
           delete-branch: true

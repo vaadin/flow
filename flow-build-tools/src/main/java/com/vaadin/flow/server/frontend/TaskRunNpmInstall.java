@@ -610,6 +610,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
     /**
      * Check the lockfile lockversion to see if it is compatible with the used
      * npm version. If the lockfile is too old delete it.
+     * 
+     * @since 25.0
      */
     protected void verifyPackageLockAndClean() {
         File packageLockFile = packageUpdater.getPackageLockFile();

@@ -32,6 +32,8 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  * system properties, .npmrc files, and environment variables.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.5
  */
 public class ProxyFactory {
 
