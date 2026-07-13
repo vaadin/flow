@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.FrontendUtils;
  *
  * @see TaskRemoveOldFrontendGeneratedFiles
  * @see GeneratedFilesSupport
+ * @since 25.3
  */
 public class TaskWriteGeneratedFilesList implements FallibleCommand {
 

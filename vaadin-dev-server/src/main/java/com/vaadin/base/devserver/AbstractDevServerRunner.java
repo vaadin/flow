@@ -70,6 +70,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * This class is meant to be used during developing time.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 
@@ -310,6 +312,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @param tools
      *            the frontend tools object
      * @return the list of commands to start the dev server
+     * @since 23.0
      */
     protected abstract List<String> getServerStartupCommand(
             FrontendTools tools);
@@ -321,6 +324,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *            frontend tools metadata
      * @param environment
      *            the environment variables to use
+     * @since 9.0.3
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
@@ -362,6 +366,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarting pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartingPattern() {
         return null;
@@ -379,6 +384,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarted pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartedPattern() {
         return null;

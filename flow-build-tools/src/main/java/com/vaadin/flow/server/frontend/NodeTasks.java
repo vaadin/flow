@@ -108,6 +108,7 @@ public class NodeTasks implements FallibleCommand {
      *
      * @param options
      *            the options
+     * @since 23.3
      */
     public NodeTasks(Options options) {
         FrontendDependenciesScanner frontendDependencies = options
@@ -453,6 +454,9 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
+    /**
+     * @since 24.3
+     */
     public record NodeTasksLockInfo(long pid,
             String commandLine) implements Serializable {
     }
