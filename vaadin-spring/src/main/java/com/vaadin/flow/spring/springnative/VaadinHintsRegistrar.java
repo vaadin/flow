@@ -41,6 +41,8 @@ import com.vaadin.flow.shared.ui.Dependency;
 
 /**
  * Registers runtime hints for Spring 3 native support.
+ * 
+ * @since 24.0
  */
 public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
 

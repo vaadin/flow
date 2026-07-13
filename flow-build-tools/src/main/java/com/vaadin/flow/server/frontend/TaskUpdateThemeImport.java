@@ -49,6 +49,7 @@ import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 6.0
  */
 public class TaskUpdateThemeImport
         extends AbstractFileGeneratorFallibleCommand {
