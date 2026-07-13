@@ -70,6 +70,37 @@ export function isOpera(): boolean {
   return /opr\/|opera/i.test(getBrowserString());
 }
 
+// The following predicates mirror BrowserDetails.parseBrowserName(): a single
+// browser name is selected by a fixed priority order (Edge before Chrome,
+// Chrome excluding Opera, IE via MSIE/Trident), so the predicates are made
+// mutually exclusive to match the Java accessors isEdge()/isChrome()/isIE().
+
+/** Whether the browser is (Chromium- or legacy-) Edge. */
+export function isEdge(): boolean {
+  const ua = getBrowserString().toLowerCase();
+  return ua.includes(' edge/') || ua.includes(' edg/') || ua.includes(' edga/') || ua.includes(' edgios/');
+}
+
+/** Whether the browser is Chrome (excludes Edge and Opera). */
+export function isChrome(): boolean {
+  if (isEdge()) {
+    return false;
+  }
+  const ua = getBrowserString().toLowerCase();
+  return (
+    (ua.includes(' chrome/') || ua.includes(' crios/') || ua.includes(' headlesschrome/')) && !ua.includes(' opr/')
+  );
+}
+
+/** Whether the browser is Internet Explorer (MSIE, or Trident-based IE 11). */
+export function isIE(): boolean {
+  if (isEdge() || isChrome() || isOpera()) {
+    return false;
+  }
+  const ua = getBrowserString().toLowerCase();
+  return (ua.includes('msie') && !ua.includes('webtv')) || ua.includes('trident/');
+}
+
 /** Whether the browser is WebKit-based (excludes legacy Edge). */
 export function isWebkit(): boolean {
   const ua = getBrowserString();
