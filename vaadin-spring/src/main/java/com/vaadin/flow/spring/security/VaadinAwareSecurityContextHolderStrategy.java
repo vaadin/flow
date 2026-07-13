@@ -33,6 +33,8 @@ import static java.util.Objects.requireNonNull;
  * <p>
  * Falls back to the default thread specific security context when no
  * vaadinSession is available.
+ * 
+ * @since 19.0
  */
 public final class VaadinAwareSecurityContextHolderStrategy
         implements SecurityContextHolderStrategy {
