@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.FrontendUtils;
  *
  * @see NodeTasks
  * @see GeneratedFilesSupport
+ * @since 24.4
  */
 public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
 

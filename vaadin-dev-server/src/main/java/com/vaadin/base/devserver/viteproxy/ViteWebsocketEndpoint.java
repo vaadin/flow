@@ -41,6 +41,8 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * The websocket endpoint for Vite.
+ * 
+ * @since 24.0
  */
 public class ViteWebsocketEndpoint extends Endpoint {
 
@@ -55,6 +57,8 @@ public class ViteWebsocketEndpoint extends Endpoint {
      * Configurator that captures the HTTP session ID during the WebSocket
      * handshake. This allows tracking which WebSocket sessions are associated
      * with which HTTP sessions.
+     * 
+     * @since 25.0.6
      */
     public static class HttpSessionConfigurator
             extends ServerEndpointConfig.Configurator {

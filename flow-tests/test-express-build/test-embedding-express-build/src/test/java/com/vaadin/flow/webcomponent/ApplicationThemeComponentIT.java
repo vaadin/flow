@@ -202,8 +202,13 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         final WebElement documentHead = getDriver()
                 .findElement(By.xpath("/html/head"));
+        // Only stylesheet links matter here. The code-split TypeScript client
+        // engine (ApplicationConnection and its theme chunk are loaded lazily
+        // to
+        // stay out of the ES5/HtmlUnit bundle) makes the bundler add
+        // <link rel="modulepreload"> entries that are unrelated to the theme.
         final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
+                .findElements(By.cssSelector("link[rel='stylesheet']"));
         Assert.assertEquals(1, links.size());
         String documentCssURL = links.get(0).getAttribute("href");
         Assert.assertTrue(documentCssURL
