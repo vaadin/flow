@@ -33,7 +33,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public interface ClassFinder extends Serializable {
 
@@ -237,6 +237,7 @@ public interface ClassFinder extends Serializable {
      * Get class loader which is used to find classes.
      *
      * @return the class loader which is used to find classes..
+     * @since 3.0
      */
     ClassLoader getClassLoader();
 
@@ -270,6 +271,7 @@ public interface ClassFinder extends Serializable {
      *            the fully qualified name of the class
      * @return {@code true} if the class should be inspected, otherwise
      *         {@code false}
+     * @since 24.8
      */
     default boolean shouldInspectClass(String className) {
         return true;
