@@ -93,7 +93,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @author Vaadin Ltd
  * @see VaadinHotswapper
- * @since 24.5
+ * @since 25.1
  */
 public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         SessionDestroyListener, UIInitListener {

@@ -43,6 +43,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
  * registered. This implementation uses Spring beans.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 public class SpringInstantiator extends DefaultInstantiator {
 

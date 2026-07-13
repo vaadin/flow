@@ -50,6 +50,8 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * a "redirect" response. This is so that the TypeScript caller is able to read
  * the returned values. Additionally it sends the saved URL separately so the
  * client can decide where to redirect if no URL was saved.
+ * 
+ * @since 17.0
  */
 public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         extends SavedRequestAwareAuthenticationSuccessHandler {
@@ -90,6 +92,8 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     /**
      * Redirect strategy used by
      * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler}.
+     * 
+     * @since 18.0
      */
     public static class RedirectStrategy extends DefaultRedirectStrategy {
 
@@ -229,6 +233,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * @param response
      *            the http servlet response instance
      * @return the original requested path by the user before authentication.
+     * @since 23.2.3
      */
     @Override
     protected String determineTargetUrl(HttpServletRequest request,
@@ -285,6 +290,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      *
      * @param csrfTokenRepository
      *            the csrf token repository
+     * @since 24.0
      */
     public void setCsrfTokenRepository(
             CsrfTokenRepository csrfTokenRepository) {

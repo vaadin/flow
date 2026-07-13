@@ -39,6 +39,7 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class RootMappedCondition implements Condition {
 
@@ -59,6 +60,7 @@ public class RootMappedCondition implements Condition {
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined
+     * @since 23.1
      */
     public static String getUrlMapping(Environment environment) {
         if (SpringUtil.isSpringBoot()) {
