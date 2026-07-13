@@ -29,6 +29,7 @@ import java.util.Optional;
  * See: https://www.w3.org/TR/wai-aria/#usage_intro
  *
  * @author Vaadin Ltd
+ * @since 25.3
  */
 public interface HasAriaRole extends HasElement {
 

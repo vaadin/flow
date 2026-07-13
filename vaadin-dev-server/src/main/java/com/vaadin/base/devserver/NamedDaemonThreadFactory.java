@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class implements the {@link ThreadFactory} interface to provide a
  * mechanism for instantiating threads that are configured with specific
  * attributes such as name prefix, thread priority, and daemon status.
+ * 
+ * @since 24.7.6
  */
 public class NamedDaemonThreadFactory implements ThreadFactory {
     private final AtomicInteger threadNumber = new AtomicInteger(1);

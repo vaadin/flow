@@ -31,6 +31,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * Helpers related to the production bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.3
  */
 public class ProdBundleUtils {
 

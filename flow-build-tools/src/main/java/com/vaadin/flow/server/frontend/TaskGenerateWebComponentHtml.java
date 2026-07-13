@@ -28,7 +28,7 @@ import static com.vaadin.flow.internal.FrontendUtils.WEB_COMPONENT_HTML;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 23.1
  */
 public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
 
