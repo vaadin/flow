@@ -20,6 +20,8 @@ import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wraps a JSON data structure and provides a slightly easier API for it.
+ * 
+ * @since 9.0.2
  */
 public class StatisticsContainer {
 
@@ -132,6 +134,7 @@ public class StatisticsContainer {
      * @param name
      *            name of the field to check
      * @return {@code true} if the field is present, {@code false} otherwise
+     * @since 25.3
      */
     public boolean containsField(String name) {
         return json.has(name);

@@ -29,6 +29,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 
 /**
  * Watches for the file or sub-directory changes in the given directory.
+ * 
+ * @since 24.0
  */
 public class FileWatcher {
 
@@ -52,6 +54,7 @@ public class FileWatcher {
      *            the directory to watch for changes, cannot be empty
      * @throws IOException
      *             if an error occurs while setting up the watcher
+     * @since 24.1
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
             File watchDirectory) throws IOException {

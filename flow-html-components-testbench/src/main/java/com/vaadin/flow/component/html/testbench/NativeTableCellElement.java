@@ -21,7 +21,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;td&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  */
 @Element("td")
 public class NativeTableCellElement extends TestBenchElement {
