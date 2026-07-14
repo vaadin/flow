@@ -16,6 +16,7 @@
 package com.vaadin.viteapp.views.template;
 
 import org.vaadin.example.addon.AddonLitComponent;
+import org.vaadin.example.addon.AddonLitDecoratorComponent;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -38,6 +39,9 @@ public class TemplateView extends Div {
         AddonLitComponent addonLitComponent = new AddonLitComponent();
         add(addonLitComponent);
 
+        AddonLitDecoratorComponent addonLitDecoratorComponent = new AddonLitDecoratorComponent();
+        add(addonLitDecoratorComponent);
+
         Input setLabelInput = new Input();
         add(setLabelInput);
 
@@ -47,6 +51,7 @@ public class TemplateView extends Div {
             litComponent.setLabel(newLabel);
             polymerComponent.setLabel(newLabel);
             addonLitComponent.setLabel(newLabel);
+            addonLitDecoratorComponent.setLabel(newLabel);
         });
         add(setLabelButton);
 

@@ -457,6 +457,20 @@ export const vaadinConfig: UserConfigFn = (env) => {
     root: frontendFolder,
     base: '',
     publicDir: false,
+    // jar-resources (add-on) sources are excluded from tsconfig.json so that
+    // project TypeScript type-checking rules are not enforced on them. Since
+    // rolldown 1.1.3 that exclusion also disables the tsconfig-driven transform
+    // for those files: their decorators are left as raw syntax (browser
+    // SyntaxError) and they lose `useDefineForClassFields: false`, so class
+    // fields use define semantics and shadow Lit reactive property accessors.
+    // Reapply both behaviours globally, independent of tsconfig include/exclude.
+    // `setPublicClassFields` + `removeClassFieldsWithoutInitializer` together
+    // are the OXC equivalent of `useDefineForClassFields: false`.
+    oxc: {
+      decorator: { legacy: true },
+      assumptions: { setPublicClassFields: true },
+      typescript: { removeClassFieldsWithoutInitializer: true }
+    },
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
