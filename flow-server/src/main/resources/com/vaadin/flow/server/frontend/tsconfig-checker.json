@@ -3,10 +3,12 @@
 // checking. It inherits the project tsconfig.json but excludes the
 // generated/jar-resources folder, so add-on sources (which are outside the
 // project developer's control) are compiled by the bundler but not type
-// checked. This file is regenerated on every build; do not edit or commit it.
+// checked. %ROOT% is the relative path from the build directory back to the
+// project root. This file is regenerated on every build; do not edit or commit
+// it.
 {
-  "extends": "../tsconfig.json",
+  "extends": "%ROOT%/tsconfig.json",
   "exclude": [
-    "../%FRONTEND%/generated/jar-resources/**"
+    "%ROOT%/%FRONTEND%/generated/jar-resources/**"
   ]
 }

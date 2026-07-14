@@ -61,9 +61,22 @@ public class TaskGenerateCheckerTsConfig extends AbstractTaskClientGenerator {
                 .getResourceAsStream(CHECKER_TSCONFIG_JSON)) {
             String config = StringUtil.toUTF8String(stream);
 
+            // Relative path from the build directory (where this file is
+            // generated) back to the project root. The build directory is not
+            // guaranteed to be a direct child of the root, so this is computed
+            // instead of assuming a single '..'. Falls back to '.' when the
+            // build directory is the root itself.
+            String rootPath = options.getBuildDirectory().toPath()
+                    .relativize(options.getNpmFolder().toPath()).toString()
+                    .replace('\\', '/');
+            if (rootPath.isEmpty()) {
+                rootPath = ".";
+            }
             String frontendPath = options.getNpmFolder().toPath()
                     .relativize(options.getFrontendDirectory().toPath())
-                    .toString().replaceAll("\\\\", "/");
+                    .toString().replace('\\', '/');
+
+            config = config.replace("%ROOT%", rootPath);
             config = config.replace("%FRONTEND%/",
                     frontendPath.isEmpty() ? "" : frontendPath + "/");
             config = config.replace("%FRONTEND%", frontendPath);

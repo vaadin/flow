@@ -69,4 +69,39 @@ class TaskGenerateCheckerTsConfigTest {
         assertTrue(task.shouldGenerate(),
                 "checker tsconfig is a build artifact and must be regenerated");
     }
+
+    @Test
+    void directBuildDir_singleLevelRelativePathsToRoot() throws Exception {
+        task.execute();
+        String content = Files.readString(task.getGeneratedFile().toPath());
+        // build dir is <root>/target, so paths climb exactly one level
+        assertTrue(content.contains("\"../tsconfig.json\""),
+                "extends must point to the project tsconfig one level up: "
+                        + content);
+        assertTrue(
+                content.contains(
+                        "../src/main/frontend/generated/jar-resources/**"),
+                "exclude must resolve relative to the build dir: " + content);
+    }
+
+    @Test
+    void nestedBuildDir_climbsCorrectNumberOfLevels() throws Exception {
+        File npmFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "nested")
+                .toFile();
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withBuildDirectory("build/vaadin");
+        TaskGenerateCheckerTsConfig nested = new TaskGenerateCheckerTsConfig(
+                options);
+        nested.execute();
+
+        String content = Files.readString(nested.getGeneratedFile().toPath());
+        // build dir is <root>/build/vaadin, so paths must climb two levels
+        assertTrue(content.contains("\"../../tsconfig.json\""),
+                "extends must climb out of a nested build dir: " + content);
+        assertTrue(
+                content.contains(
+                        "../../src/main/frontend/generated/jar-resources/**"),
+                "exclude must climb out of a nested build dir: " + content);
+    }
 }
