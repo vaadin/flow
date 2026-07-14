@@ -78,6 +78,23 @@ class TaskUpdateViteTest {
     }
 
     @Test
+    void checkerUsesGeneratedCheckerTsConfig() throws IOException {
+        new TaskUpdateVite(options, null).execute();
+
+        String template = IOUtils.toString(
+                new File(temporaryFolder, FrontendUtils.VITE_GENERATED_CONFIG)
+                        .toURI(),
+                StandardCharsets.UTF_8);
+
+        assertFalse(template.contains("removeClassFieldsWithoutInitializer"),
+                "The oxc decorator/class-field override must be removed; "
+                        + "jar-resources are now handled via the main tsconfig.");
+        assertTrue(template.contains("./build/tsconfig-checker.json"),
+                "The type checker must be pointed at the generated "
+                        + "checker tsconfig in the build directory.");
+    }
+
+    @Test
     void configFileExists_fileNotOverwritten() throws IOException {
         File configFile = new File(temporaryFolder, FrontendUtils.VITE_CONFIG);
         final String importString = "Hello Fake configuration";
