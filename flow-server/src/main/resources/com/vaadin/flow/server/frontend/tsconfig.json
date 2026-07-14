@@ -4,7 +4,7 @@
 // You might want to change the configurations to fit your preferences
 // For more information about the configurations, please refer to http://www.typescriptlang.org/docs/handbook/tsconfig-json.html
 {
-  "_version": "9.2",
+  "_version": "9.3",
   "compilerOptions": {
     "sourceMap": true,
     "jsx": "react-jsx",
@@ -31,8 +31,5 @@
   "include": [
     "%FRONTEND%/**/*",
     "types.d.ts"
-  ],
-  "exclude": [
-    "%FRONTEND%/generated/jar-resources/**"
   ]
 }

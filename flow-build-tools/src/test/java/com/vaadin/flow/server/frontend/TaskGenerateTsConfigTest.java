@@ -47,7 +47,7 @@ class TaskGenerateTsConfigTest {
     private static final CharSequence DEFAULT_ES_TARGET = "es2023";
     private static final CharSequence NEWER_ES_TARGET = "es2024";
 
-    static private String LATEST_VERSION = "9.2";
+    static private String LATEST_VERSION = "9.3";
 
     @TempDir
     File temporaryFolder;
@@ -92,6 +92,18 @@ class TaskGenerateTsConfigTest {
                         StandardCharsets.UTF_8)
                 .contains("\"target\": \"es2019\""),
                 "The config file should not use es2019");
+    }
+
+    @Test
+    void generatedTsConfig_doesNotExcludeJarResources() throws Exception {
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        assertFalse(content.contains("jar-resources/**"),
+                "The main tsconfig must not exclude jar-resources; the bundler "
+                        + "needs to transpile them. Type checking is skipped via "
+                        + "the separate generated checker tsconfig.");
     }
 
     @Test
