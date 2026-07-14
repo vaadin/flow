@@ -71,6 +71,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateViteDevMode.class,
             TaskGenerateCommercialBanner.class,
             TaskGenerateTsConfig.class,
+            TaskGenerateCheckerTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
             TaskGenerateWebComponentHtml.class,
@@ -320,6 +321,8 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 options);
         commands.add(taskGenerateTsConfig);
+
+        commands.add(new TaskGenerateCheckerTsConfig(options));
 
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 options);
