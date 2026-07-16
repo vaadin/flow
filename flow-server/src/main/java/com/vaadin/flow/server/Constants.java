@@ -588,7 +588,7 @@ public final class Constants implements Serializable {
      * scheme as safe, disabling scheme validation. Mixing this entry with other
      * schemes still disables validation.
      * 
-     * @since 25.2
+     * @since 25.1.12
      */
     public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
 

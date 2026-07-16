@@ -50,7 +50,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 8.0
+ * @since 24.3.22
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 

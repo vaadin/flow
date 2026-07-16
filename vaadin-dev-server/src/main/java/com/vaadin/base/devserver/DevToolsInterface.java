@@ -18,7 +18,7 @@ package com.vaadin.base.devserver;
 /**
  * For interfacing with the development tools by plugins.
  * 
- * @since 24.2
+ * @since 24.3.22
  */
 public interface DevToolsInterface {
 

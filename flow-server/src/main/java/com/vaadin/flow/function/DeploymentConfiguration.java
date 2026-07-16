@@ -79,7 +79,7 @@ public interface DeploymentConfiguration
      *
      * @return the maximum request body size in characters, or a negative number
      *         if the limit is disabled
-     * @since 25.3
+     * @since 25.2.2
      */
     default long getMaxRequestBodySize() {
         return getApplicationOrSystemProperty(
@@ -311,7 +311,7 @@ public interface DeploymentConfiguration
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}.
      *
      * @return the set of safe URL schemes, never {@code null}
-     * @since 25.2
+     * @since 25.1.12
      */
     default Set<String> getUrlSafeSchemes() {
         return Constants.DEFAULT_URL_SAFE_SCHEMES;

@@ -20,7 +20,7 @@ import tools.jackson.databind.JsonNode;
 /**
  * Handles dev tools messages from the client.
  * 
- * @since 24.2
+ * @since 24.3.22
  */
 public interface DevToolsMessageHandler {
 
@@ -61,7 +61,6 @@ public interface DevToolsMessageHandler {
      * @param devToolsInterface
      *            for interaction with the development tools, e.g. sending a
      *            message
-     * @since 24.2.1
      */
     default void handleDisconnect(DevToolsInterface devToolsInterface) {
     }

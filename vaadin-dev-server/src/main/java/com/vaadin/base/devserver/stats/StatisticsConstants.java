@@ -21,7 +21,7 @@ package com.vaadin.base.devserver.stats;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 9.0.2
+ * @since 24.3.22
  */
 public class StatisticsConstants {
 

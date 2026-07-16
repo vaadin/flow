@@ -42,7 +42,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
- * @since 24.1
+ * @since 24.3.22
  */
 public class ExternalDependencyWatcher implements Closeable {
 
