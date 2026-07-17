@@ -65,17 +65,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Test components -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-upload-flow</artifactId>
-      <version>${component.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-upload-testbench</artifactId>
-      <version>${component.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-html-components-testbench</artifactId>
