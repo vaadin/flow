@@ -932,6 +932,222 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
+    fun buildFrontendBuildCacheRestoresProductionBundleForJar() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        File(testProject.dir, "build/libs").deleteRecursively()
+
+        result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+    }
+
+    /**
+     * Before the frontend output was moved to a task-owned directory, the
+     * production bundle was written into the `main` source set resources, so
+     * every archive task - including custom-named `Jar` tasks - triggered
+     * `vaadinBuildFrontend` and packaged the bundle. Restricting packaging to
+     * a fixed set of well-known task names must not silently drop the bundle
+     * (and the `vaadinBuildFrontend` dependency) from such custom archives.
+     */
+    @Test
+    fun buildFrontend_customArchiveTask_containsProductionBundle() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            tasks.register('appJar', Jar) {
+                archiveClassifier = 'app'
+                from sourceSets.main.output
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "appJar")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val appJar = testProject.folder("build/libs").find("*-app.jar").first()
+        expectArchiveContainsVaadinBundle(appJar, false)
+    }
+
+    /**
+     * Source and javadoc archives are identified by their classifier and
+     * must never carry the production frontend bundle, even though they are
+     * `Jar` tasks.
+     */
+    @Test
+    fun buildFrontend_sourcesAndJavadocJars_doNotContainProductionBundle() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            java {
+                withSourcesJar()
+                withJavadocJar()
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val libs = testProject.folder("build/libs")
+        val mainJar = libs.find("*.jar", 3..3).first {
+            !it.name.endsWith("-sources.jar") &&
+                    !it.name.endsWith("-javadoc.jar")
+        }
+        expectArchiveContainsVaadinBundle(mainJar, false)
+        expectArchiveDoesntContainVaadinBundle(
+            libs.find("*-sources.jar").first(), false
+        )
+        expectArchiveDoesntContainVaadinBundle(
+            libs.find("*-javadoc.jar").first(), false
+        )
+    }
+
+    /**
+     * A custom archive that would be packaged by default can be opted out
+     * via `vaadin.excludeArchiveTasks`. The frontend is still built (the
+     * `jar` task consumes it), but the excluded archive stays frontend-free.
+     */
+    @Test
+    fun buildFrontend_excludedArchiveTask_doesNotContainProductionBundle() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            vaadin {
+                excludeArchiveTasks = ['appJar']
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            tasks.register('appJar', Jar) {
+                archiveClassifier = 'app'
+                from sourceSets.main.output
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "build", "appJar")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val appJar = testProject.folder("build/libs").find("*-app.jar").first()
+        expectArchiveDoesntContainVaadinBundle(appJar, false)
+    }
+
+    /**
+     * A `tests`-classified archive is excluded by default, but can be forced
+     * to receive the frontend bundle via `vaadin.includeArchiveTasks`, which
+     * overrides the classifier-based exclusion.
+     */
+    @Test
+    fun buildFrontend_includedArchiveTask_overridesClassifierExclusion() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            vaadin {
+                includeArchiveTasks = ['fixtureJar']
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            tasks.register('fixtureJar', Jar) {
+                archiveClassifier = 'tests'
+                from sourceSets.main.output
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "fixtureJar")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val fixtureJar = testProject.folder("build/libs").find("*-tests.jar").first()
+        expectArchiveContainsVaadinBundle(fixtureJar, false)
+    }
+
+    @Test
     fun buildFrontendIncrementalBuilds_rerunsOnInputChange() {
         testProject.buildFile.writeText(
             """

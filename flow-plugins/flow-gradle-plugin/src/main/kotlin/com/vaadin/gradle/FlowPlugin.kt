@@ -31,6 +31,12 @@ import org.gradle.util.GradleVersion
 public class FlowPlugin : Plugin<Project> {
     public companion object {
         public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.14"
+
+        // Archive classifiers that never carry the production frontend
+        // bundle (source and javadoc distributions, test fixtures). Any
+        // other Jar/War/BootJar is treated as an application archive.
+        private val NON_APPLICATION_ARCHIVE_CLASSIFIERS =
+            setOf("sources", "javadoc", "test-sources", "tests")
     }
 
     override fun apply(project: Project) {
@@ -83,18 +89,23 @@ public class FlowPlugin : Plugin<Project> {
                 val sourceSetResourcesDirectory =
                     project.getBuildResourcesDir(config.sourceSetName.get())
 
+                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
+                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
+
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    if (task.isVaadinApplicationArchiveTask()) {
+                    if (task.isVaadinApplicationArchiveTask(
+                            includedArchiveTasks, excludedArchiveTasks)) {
                         task.dependsOn("vaadinBuildFrontend")
                         if (vaadinBuildFrontendOutputDirectory != null &&
                             vaadinBuildFrontendOutputDirectory.canonicalFile !=
                             sourceSetResourcesDirectory.canonicalFile
                         ) {
-                            task.from(vaadinBuildFrontendOutputDirectory) {
-                                task.vaadinBuildFrontendResourcesArchivePath()
-                                    ?.let { path ->
-                                        it.into(path)
-                                    }
+                            task.from(vaadinBuildFrontendOutputDirectory) { copySpec ->
+                                val archivePath =
+                                    task.vaadinBuildFrontendResourcesArchivePath()
+                                if (archivePath != null) {
+                                    copySpec.into(archivePath)
+                                }
                             }
                         }
                     }
@@ -164,8 +175,11 @@ public class FlowPlugin : Plugin<Project> {
                 // Ensure close() fires after vaadinBuildFrontend and
                 // all Jar/War packaging tasks have completed.
                 buildFrontendTask.usesService(tokenService)
+                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
+                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    if (task.isVaadinApplicationArchiveTask()) {
+                    if (task.isVaadinApplicationArchiveTask(
+                            includedArchiveTasks, excludedArchiveTasks)) {
                         task.usesService(tokenService)
                         // Restore the production token before packaging in
                         // case it was deleted by a previous build's cleanup.
@@ -200,8 +214,25 @@ public class FlowPlugin : Plugin<Project> {
         }
     }
 
-    private fun Jar.isVaadinApplicationArchiveTask(): Boolean =
-        name == JavaPlugin.JAR_TASK_NAME || this is War || isSpringBootJar()
+    // Whether the production frontend bundle should be packaged into this
+    // archive. By default every Jar/War/BootJar qualifies, except source,
+    // javadoc and test-fixture distributions (identified by their archive
+    // classifier). The default can be overridden per task via the
+    // `includeArchiveTasks` / `excludeArchiveTasks` plugin settings, with
+    // `excludeArchiveTasks` taking precedence.
+    private fun Jar.isVaadinApplicationArchiveTask(
+        includedTaskNames: Set<String>,
+        excludedTaskNames: Set<String>
+    ): Boolean {
+        if (name in excludedTaskNames) {
+            return false
+        }
+        if (name in includedTaskNames) {
+            return true
+        }
+        return archiveClassifier.orNull.orEmpty() !in
+                NON_APPLICATION_ARCHIVE_CLASSIFIERS
+    }
 
     private fun Jar.isSpringBootJar(): Boolean =
         generateSequence(javaClass as Class<*>) { it.superclass }

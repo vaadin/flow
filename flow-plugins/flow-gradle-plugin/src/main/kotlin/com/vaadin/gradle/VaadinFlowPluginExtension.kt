@@ -242,6 +242,22 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val excludePostinstallPackages: ListProperty<String>
 
+    /**
+     * Names of `Jar`/`War`/`BootJar` tasks that must NOT receive the
+     * production frontend bundle, even though they would be selected by
+     * default. Use this to keep custom archives frontend-free. Takes
+     * precedence over [includeArchiveTasks].
+     */
+    public abstract val excludeArchiveTasks: ListProperty<String>
+
+    /**
+     * Names of `Jar`/`War`/`BootJar` tasks that must receive the production
+     * frontend bundle even when their archive classifier (e.g. `sources`,
+     * `javadoc`) would normally exclude them. [excludeArchiveTasks] takes
+     * precedence over this list.
+     */
+    public abstract val includeArchiveTasks: ListProperty<String>
+
     public val classpathFilter: ClasspathFilter = ClasspathFilter()
 
     /**
@@ -580,6 +596,14 @@ public class PluginEffectiveConfiguration(
         extension.excludePostinstallPackages
             .convention(listOf())
 
+    public val excludeArchiveTasks: ListProperty<String> =
+        extension.excludeArchiveTasks
+            .convention(listOf())
+
+    public val includeArchiveTasks: ListProperty<String> =
+        extension.includeArchiveTasks
+            .convention(listOf())
+
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
     public val processResourcesTaskName: Property<String> =
@@ -757,6 +781,8 @@ public class PluginEffectiveConfiguration(
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
             "excludePostinstallPackages=${excludePostinstallPackages.get()}, " +
+            "excludeArchiveTasks=${excludeArchiveTasks.get()}, " +
+            "includeArchiveTasks=${includeArchiveTasks.get()}, " +
             "sourceSetName=${sourceSetName.get()}, " +
             "dependencyScope=${dependencyScope.get()}, " +
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
