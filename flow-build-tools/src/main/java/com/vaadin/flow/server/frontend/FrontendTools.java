@@ -314,6 +314,29 @@ public class FrontendTools {
     }
 
     /**
+     * Creates a {@link FrontendTools} instance configured from the given
+     * {@link Options}, using the node/pnpm related settings collected there.
+     *
+     * @param options
+     *            the task options to read the frontend tools configuration
+     *            from, not {@code null}
+     * @return a new {@link FrontendTools} instance
+     */
+    public static FrontendTools fromOptions(Options options) {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                options.getNpmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
+        return new FrontendTools(settings);
+    }
+
+    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable

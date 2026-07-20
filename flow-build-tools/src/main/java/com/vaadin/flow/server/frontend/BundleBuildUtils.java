@@ -26,7 +26,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 
@@ -46,7 +45,7 @@ public class BundleBuildUtils {
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
-        copyPackageLockFromBundle(options, createFrontendTools(options));
+        copyPackageLockFromBundle(options, FrontendTools.fromOptions(options));
     }
 
     static void copyPackageLockFromBundle(Options options,
@@ -82,20 +81,6 @@ public class BundleBuildUtils {
                     "Failed to copy existing `" + lockFile + "` to use", ioe);
         }
 
-    }
-
-    private static FrontendTools createFrontendTools(Options options) {
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                options.getNpmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
-        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
-        settings.setNodeFolder(options.getNodeFolder());
-        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setNodeVersion(options.getNodeVersion());
-        settings.setIgnoreVersionChecks(
-                options.isFrontendIgnoreVersionChecks());
-        return new FrontendTools(settings);
     }
 
     private static void copyAppropriatePackageLock(Options options,
