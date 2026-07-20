@@ -151,6 +151,18 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     internal fun configure(config: PluginEffectiveConfiguration) {
         adapter.set(GradlePluginAdapter(this, config, false))
 
+        // vaadinBuildFrontend builds the optimized production bundle and
+        // writes a flow-build-info.json token with productionMode=true; it
+        // is only meaningful for production builds. Skip it in development
+        // mode so that an explicit dependency on the task (e.g.
+        // jar.dependsOn('vaadinBuildFrontend')) cannot overwrite the
+        // development token and make the running application behave as in
+        // production, and so the build does not fail because the
+        // production-only token build service is not registered (the
+        // service is registered by FlowPlugin only in production mode).
+        val productionMode = config.productionMode
+        onlyIf("Vaadin production mode is enabled") { productionMode.get() }
+
         // Track user-written frontend source files, excluding the
         // generated/ subdirectory (modified by this task) and index.html
         // (may be created by this task when missing; tracked as an output
