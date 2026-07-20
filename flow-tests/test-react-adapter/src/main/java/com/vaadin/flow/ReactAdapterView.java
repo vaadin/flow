@@ -46,8 +46,35 @@ public class ReactAdapterView extends Div {
                 (event) -> getOutput.setText(input.getValue()));
         getValueButton.setId("getValueButton");
 
+        // Reproduces the dialog scenario where the adapter element is attached
+        // and then immediately moved in the DOM (disconnect + reconnect) within
+        // the same task, before React has committed the portal. A single React
+        // component must be rendered, not one per connect.
+        var moveTarget = new Div();
+        moveTarget.setId("moveTarget");
+        var moveButton = new NativeButton("Move while connecting");
+        moveButton.setId("moveWhileConnectingButton");
+        moveButton.getElement().addEventListener("click",
+                event -> moveTarget.getElement().executeJs(
+                        // language=JavaScript
+                        """
+                                const target = $0;
+                                target.textContent = '';
+                                const first = document.createElement('div');
+                                const second = document.createElement('div');
+                                target.append(first, second);
+                                const adapter = document.createElement('react-input');
+                                // First connect schedules a portal asynchronously.
+                                first.appendChild(adapter);
+                                // Moving it synchronously disconnects and reconnects it
+                                // before the portal is committed.
+                                second.appendChild(adapter);
+                                """,
+                        moveTarget.getElement()));
+
         add(new Div(input, listenerOutput), new Div(setValueButton),
-                new Div(setNullButton), new Div(getValueButton, getOutput));
+                new Div(setNullButton), new Div(getValueButton, getOutput),
+                new Div(moveButton), moveTarget);
     }
 
 }

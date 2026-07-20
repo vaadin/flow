@@ -208,22 +208,10 @@ type PortalEntry = {
 type FlowPortalProps = React.PropsWithChildren<
     Readonly<{
         domNode: HTMLElement;
-        onRemove(): void;
     }>
 >;
 
-function FlowPortal({ children, domNode, onRemove }: FlowPortalProps) {
-    useEffect(() => {
-        domNode.addEventListener(
-            'flow-portal-remove',
-            (event: Event) => {
-                event.preventDefault();
-                onRemove();
-            },
-            { once: true }
-        );
-    }, []);
-
+function FlowPortal({ children, domNode }: FlowPortalProps) {
     return createPortal(children, domNode);
 }
 
@@ -378,15 +366,27 @@ function Flow() {
         (event: CustomEvent<PortalEntry>) => {
             event.preventDefault();
 
+            const { domNode, children } = event.detail;
             const key = Math.random().toString(36).slice(2);
+
+            // Register the removal listener synchronously, not from an effect
+            // inside FlowPortal: the portal renders asynchronously, so a
+            // 'flow-portal-remove' dispatched before the portal is committed
+            // (e.g. when a dialog moves the element right after attaching it)
+            // would be missed, leaving a duplicate portal and a double render.
+            domNode.addEventListener(
+                'flow-portal-remove',
+                (removeEvent: Event) => {
+                    removeEvent.preventDefault();
+                    dispatchPortalAction(removeFlowPortal(key));
+                },
+                { once: true }
+            );
+
             dispatchPortalAction(
                 addFlowPortal(
-                    <FlowPortal
-                        key={key}
-                        domNode={event.detail.domNode}
-                        onRemove={() => dispatchPortalAction(removeFlowPortal(key))}
-                    >
-                        {event.detail.children}
+                    <FlowPortal key={key} domNode={domNode}>
+                        {children}
                     </FlowPortal>
                 )
             );
