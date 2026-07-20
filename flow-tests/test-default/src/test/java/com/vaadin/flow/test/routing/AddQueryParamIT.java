@@ -13,32 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class AddQueryParamIT extends ChromeBrowserTest {
+@TestFor(AddQueryParamView.class)
+public class AddQueryParamIT extends AbstractDefaultIT {
 
-    @Test
+    @BrowserTest
     public void validateReactInUse() {
         open();
-
-        waitForDevServer();
 
         $(NativeButtonElement.class).id(AddQueryParamView.PARAM_BUTTON_ID)
                 .click();
 
         waitForElementPresent(By.id(AddQueryParamView.QUERY_ID));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 $(DivElement.class).id(AddQueryParamView.QUERY_ID).getText(),
-                driver.getCurrentUrl());
+                getDriver().getCurrentUrl());
     }
-
 }

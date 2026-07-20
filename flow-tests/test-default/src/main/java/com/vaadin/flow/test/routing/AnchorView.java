@@ -13,12 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.ForwardTargetView")
-public class ForwardTargetView extends Div {
+@Route("com.vaadin.flow.AnchorView")
+public class AnchorView extends Div {
 
+    public AnchorView() {
+        Anchor navigation = new Anchor("com.vaadin.flow.NavigationView",
+                "Navigation");
+        navigation.setId(NavigationView.ANCHOR_ID);
+        add(new Span("AnchorView"), new Div(), navigation);
+    }
 }

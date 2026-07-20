@@ -13,20 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.react.ReactAdapterComponent;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
-/**
- * Test view for vaadin/flow#20404 Set network to slow 4G and quickly click on
- * button. No console exceptions should be shown.
- */
-@Route("com.vaadin.flow.ReactNavigateView")
-@Tag("navigate-view")
-@JsModule("NavigateView.tsx")
-public class ReactNavigateView extends ReactAdapterComponent {
+@Route("com.vaadin.flow.ForwardTargetView")
+public class ForwardTargetView extends Div {
 
 }

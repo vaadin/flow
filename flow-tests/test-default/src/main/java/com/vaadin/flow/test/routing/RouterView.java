@@ -13,19 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
-@Route("com.vaadin.flow.RouterLinkForwardingToParametersView")
-public class RouterLinkForwardingToParametersView extends Div {
+@Route("com.vaadin.flow.RouterView")
+public class RouterView extends Div {
 
-    public RouterLinkForwardingToParametersView() {
-        RouterLink link = new RouterLink("Forwarding view",
-                ForwardingToParametersView.class);
-        link.setId("forwardViewLink");
-        add(link);
+    public RouterView() {
+        RouterLink link = new RouterLink("RouterLink", NavigationView.class);
+        link.setId(NavigationView.ROUTER_LINK_ID);
+
+        add(new Span("RouterView"), new Div(), link);
     }
 }
