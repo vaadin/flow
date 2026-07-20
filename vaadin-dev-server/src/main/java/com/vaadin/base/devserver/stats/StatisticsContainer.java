@@ -134,7 +134,7 @@ public class StatisticsContainer {
      * @param name
      *            name of the field to check
      * @return {@code true} if the field is present, {@code false} otherwise
-     * @since 25.2
+     * @since 25.2.2
      */
     public boolean containsField(String name) {
         return json.has(name);

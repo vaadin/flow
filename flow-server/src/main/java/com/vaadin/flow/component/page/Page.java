@@ -644,7 +644,7 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
-     * @since 25.2
+     * @since 25.1.12
      */
     public void openUnsafe(String url) {
         openInternal(url, "_blank");
@@ -666,7 +666,7 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
-     * @since 25.2
+     * @since 25.1.12
      */
     public void openUnsafe(String url, String windowName) {
         openInternal(url, windowName);
