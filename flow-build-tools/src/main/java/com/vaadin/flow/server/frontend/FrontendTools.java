@@ -23,10 +23,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
@@ -540,24 +543,26 @@ public class FrontendTools {
     }
 
     /**
-     * Checks whether npm resolves package downloads against a registry other
-     * than the public npm registry.
+     * Returns the URLs of every configured registry that is not the public npm
+     * registry, i.e. the registries packages are expected to be downloaded
+     * from.
      * <p>
-     * The check delegates to npm itself, so it accounts for every configuration
-     * source and precedence rule npm applies (command line, environment
-     * variables, project/user/global/builtin {@code .npmrc}) and covers both
-     * the global {@code registry} and any scoped {@code @scope:registry}
-     * entries. If the configuration cannot be read the default registry is
-     * assumed.
+     * The configuration is read from npm itself, so it accounts for every
+     * configuration source and precedence rule npm applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc}) and
+     * covers both the global {@code registry} and any scoped
+     * {@code @scope:registry} entries. If the configuration cannot be read an
+     * empty set is returned. The returned URLs always end with a slash, so they
+     * can be matched as a prefix against package download URLs.
      *
      * @param workingDirectory
      *            the directory the configuration is resolved from, so that a
      *            project {@code .npmrc} is taken into account
-     * @return {@code true} if a custom global or scoped registry is configured
+     * @return the custom registry URLs, or an empty set if only the default
+     *         registry is configured
      */
-    boolean hasCustomNpmRegistry(File workingDirectory) {
-        return containsCustomRegistry(
-                getConfiguredRegistries(workingDirectory));
+    Set<String> getCustomNpmRegistries(File workingDirectory) {
+        return customRegistries(getConfiguredRegistries(workingDirectory));
     }
 
     /**
@@ -594,9 +599,16 @@ public class FrontendTools {
         return registries;
     }
 
-    static boolean containsCustomRegistry(Map<String, String> registries) {
+    /**
+     * Extracts the custom (non-default) registry URLs from the given
+     * configuration, normalized to always end with a slash so they can be
+     * matched as a prefix against package download URLs.
+     */
+    static Set<String> customRegistries(Map<String, String> registries) {
         return registries.values().stream()
-                .anyMatch(registry -> !isDefaultNpmRegistry(registry));
+                .filter(registry -> !isDefaultNpmRegistry(registry))
+                .map(FrontendTools::ensureTrailingSlash)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static boolean isDefaultNpmRegistry(String registry) {
@@ -604,6 +616,10 @@ public class FrontendTools {
                 ? registry.substring(0, registry.length() - 1)
                 : registry;
         return "https://registry.npmjs.org".equals(normalized);
+    }
+
+    private static String ensureTrailingSlash(String url) {
+        return url.endsWith("/") ? url : url + "/";
     }
 
     /**

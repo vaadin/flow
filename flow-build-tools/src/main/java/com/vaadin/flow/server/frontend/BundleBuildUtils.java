@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,29 +132,40 @@ public class BundleBuildUtils {
     }
 
     /**
-     * Writes the seeded lock file, stripping the hardcoded {@code resolved}
-     * download URLs for the npm {@code package-lock.json} when npm is
-     * configured with a custom registry, so that {@code npm install}
-     * re-resolves them against that registry instead of reusing the
-     * {@code npmjs.org} URLs baked into the dev-bundle template. The
-     * {@code integrity} content hashes are kept so npm still verifies the
-     * downloaded tarballs against the versions Vaadin tested. In all other
-     * cases the content is written verbatim.
+     * Writes the seeded lock file, stripping from the npm
+     * {@code package-lock.json} every {@code resolved} download URL that does
+     * not point at one of the configured custom registries, so that
+     * {@code npm install} re-resolves those against the current configuration
+     * instead of reusing the URLs baked into the seed. This drops both the
+     * {@code npmjs.org} URLs hardcoded in the dev-bundle template and any stale
+     * URLs from registries no longer configured. Entries already resolved
+     * against a configured custom registry (e.g. a lock seeded from a bundle
+     * previously built locally with that registry) are left untouched, keeping
+     * npm's fast path. The {@code integrity} content hashes are kept so npm
+     * still verifies the downloaded tarballs against the versions Vaadin
+     * tested. When no custom registry is configured the content is written
+     * verbatim.
      */
     private static void writePackageLock(String contents, File packageLock,
             Options options, FrontendTools frontendTools) throws IOException {
         String toWrite = contents;
-        if (!options.isEnablePnpm()
-                && frontendTools.hasCustomNpmRegistry(options.getNpmFolder())) {
-            toWrite = stripResolvedUrls(contents, packageLock);
+        if (!options.isEnablePnpm()) {
+            Set<String> customRegistries = frontendTools
+                    .getCustomNpmRegistries(options.getNpmFolder());
+            if (!customRegistries.isEmpty()) {
+                toWrite = stripForeignResolvedUrls(contents, packageLock,
+                        customRegistries);
+            }
         }
         Files.writeString(packageLock.toPath(), toWrite);
     }
 
-    private static String stripResolvedUrls(String contents, File packageLock) {
+    private static String stripForeignResolvedUrls(String contents,
+            File packageLock, Set<String> customRegistries) {
         try {
             ObjectNode root = JacksonUtils.readTree(contents);
-            removeResolvedEntries(root.get("packages"));
+            removeForeignResolvedEntries(root.get("packages"),
+                    customRegistries);
             return JacksonUtils.toFileJson(root);
         } catch (RuntimeException e) {
             getLogger().debug(
@@ -163,14 +175,33 @@ public class BundleBuildUtils {
         }
     }
 
-    private static void removeResolvedEntries(JsonNode section) {
+    private static void removeForeignResolvedEntries(JsonNode section,
+            Set<String> customRegistries) {
         if (section instanceof ObjectNode entries) {
             for (String name : entries.propertyNames()) {
-                if (entries.get(name) instanceof ObjectNode entry) {
+                if (entries.get(name) instanceof ObjectNode entry
+                        && !resolvesFromCustomRegistry(entry,
+                                customRegistries)) {
                     entry.remove("resolved");
                 }
             }
         }
+    }
+
+    /**
+     * Whether the entry's {@code resolved} URL points at one of the configured
+     * custom registries. Only such entries are kept, so npm keeps reusing their
+     * correct URLs; every other {@code resolved} URL (the public npm registry
+     * or a registry no longer configured) is stripped so npm re-resolves it
+     * against the current configuration. Entries without a {@code resolved} URL
+     * are treated as not matching, which is a no-op since there is nothing to
+     * remove.
+     */
+    private static boolean resolvesFromCustomRegistry(ObjectNode entry,
+            Set<String> customRegistries) {
+        return entry.get("resolved") instanceof JsonNode resolved
+                && resolved.isString() && customRegistries.stream()
+                        .anyMatch(resolved.asString()::startsWith);
     }
 
 }
