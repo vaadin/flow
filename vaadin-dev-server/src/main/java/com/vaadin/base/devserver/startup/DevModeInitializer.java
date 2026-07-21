@@ -94,7 +94,7 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 8.0
+ * @since 24.3.22
  */
 public class DevModeInitializer implements Serializable {
 

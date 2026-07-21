@@ -267,7 +267,7 @@ public class UrlUtil {
      * @param url
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
-     * @since 25.2
+     * @since 25.1.12
      */
     public static boolean isSafeUrl(String url) {
         VaadinService service = VaadinService.getCurrent();
@@ -304,7 +304,7 @@ public class UrlUtil {
      *            the signature of the method that bypasses validation, for
      *            example {@code "setUnsafeHref(String)"}
      * @return the exception message
-     * @since 25.2
+     * @since 25.1.12
      */
     public static String getUnsafeUrlMessage(String type, String url,
             String unsafeMethod) {

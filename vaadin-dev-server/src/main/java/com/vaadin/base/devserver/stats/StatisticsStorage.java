@@ -29,7 +29,7 @@ import com.vaadin.flow.server.Command;
 /**
  * Development more usage statistic storage and methods for updating the data.
  * 
- * @since 9.0.2
+ * @since 24.3.22
  */
 public class StatisticsStorage {
 

@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Triggers an event whenever a success or failure pattern is found on a row.
  * 
- * @since 9.0
+ * @since 24.3.22
  */
 public class DevServerOutputTracker {
 
@@ -225,7 +225,6 @@ public class DevServerOutputTracker {
      *            server has been restarted.
      * @return a {@link Runnable} instance that blocks execution during dev
      *         server restarts, never {@literal null}.
-     * @since 24.2
      */
     public Runnable serverRestartGuard(Pattern restartingPattern,
             Pattern restartedPattern) {

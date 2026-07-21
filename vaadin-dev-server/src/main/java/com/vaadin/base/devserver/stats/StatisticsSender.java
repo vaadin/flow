@@ -32,7 +32,7 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * Handles sending of telemetry data.
  * 
- * @since 9.0.2
+ * @since 24.3.22
  */
 public class StatisticsSender {
 

@@ -32,7 +32,7 @@ import static com.vaadin.flow.server.InitParameters.LAUNCH_BROWSER_DELAY;
 /**
  * Util for launching a browser instance.
  * 
- * @since 23.3
+ * @since 24.3.22
  */
 public class BrowserLauncher {
 

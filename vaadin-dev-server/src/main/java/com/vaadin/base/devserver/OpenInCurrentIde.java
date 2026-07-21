@@ -39,7 +39,7 @@ import com.vaadin.open.Open;
  * <p>
  * Supports detecting VS Code, Eclipse and IntelliJ.
  * 
- * @since 24.0
+ * @since 24.3.22
  */
 public final class OpenInCurrentIde {
 
