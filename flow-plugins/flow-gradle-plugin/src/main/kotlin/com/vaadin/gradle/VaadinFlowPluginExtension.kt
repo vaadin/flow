@@ -46,8 +46,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
      */
     @Deprecated(
         "use frontendOutputDirectory instead",
@@ -57,8 +57,15 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
+     *
+     * For the production bundle to be packaged into the application archive,
+     * this directory must follow the `META-INF/VAADIN/webapp` layout (as the
+     * default does). A custom value that does not end in `META-INF/VAADIN/webapp`
+     * cannot be packaged (it never produced a servable archive and, on Gradle 9,
+     * fails the build with an implicit task-dependency error), so the plugin
+     * rejects it with an error in production mode.
      */
     public abstract val frontendOutputDirectory: Property<File>
 
@@ -241,6 +248,22 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * step is known to fail or is not needed.
      */
     public abstract val excludePostinstallPackages: ListProperty<String>
+
+    /**
+     * Names of `Jar`/`War`/`BootJar` tasks that must NOT receive the
+     * production frontend bundle, even though they would be selected by
+     * default. Use this to keep custom archives frontend-free. Takes
+     * precedence over [includeArchiveTasks].
+     */
+    public abstract val excludeArchiveTasks: ListProperty<String>
+
+    /**
+     * Names of `Jar`/`War`/`BootJar` tasks that must receive the production
+     * frontend bundle even when their archive classifier (e.g. `sources`,
+     * `javadoc`) would normally exclude them. [excludeArchiveTasks] takes
+     * precedence over this list.
+     */
+    public abstract val includeArchiveTasks: ListProperty<String>
 
     public val classpathFilter: ClasspathFilter = ClasspathFilter()
 
@@ -434,12 +457,14 @@ public class PluginEffectiveConfiguration(
         extension.frontendOutputDirectory.convention(
             extension.webpackOutputDirectory
                 .convention(
-                    sourceSetName.map {
-                        File(
-                            project.getBuildResourcesDir(it),
-                            Constants.VAADIN_WEBAPP_RESOURCES
-                        )
-                    }
+                    project.layout.buildDirectory
+                        .dir("vaadin-build-frontend")
+                        .map {
+                            File(
+                                it.asFile,
+                                Constants.VAADIN_WEBAPP_RESOURCES
+                            )
+                        }
                 )
         )
 
@@ -576,6 +601,14 @@ public class PluginEffectiveConfiguration(
 
     public val excludePostinstallPackages: ListProperty<String> =
         extension.excludePostinstallPackages
+            .convention(listOf())
+
+    public val excludeArchiveTasks: ListProperty<String> =
+        extension.excludeArchiveTasks
+            .convention(listOf())
+
+    public val includeArchiveTasks: ListProperty<String> =
+        extension.includeArchiveTasks
             .convention(listOf())
 
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
@@ -755,6 +788,8 @@ public class PluginEffectiveConfiguration(
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
             "excludePostinstallPackages=${excludePostinstallPackages.get()}, " +
+            "excludeArchiveTasks=${excludeArchiveTasks.get()}, " +
+            "includeArchiveTasks=${includeArchiveTasks.get()}, " +
             "sourceSetName=${sourceSetName.get()}, " +
             "dependencyScope=${dependencyScope.get()}, " +
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +

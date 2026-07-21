@@ -42,7 +42,11 @@ internal abstract class BuildFrontendTokenService
     : BuildService<BuildFrontendTokenService.Parameters>, AutoCloseable {
 
     interface Parameters : BuildServiceParameters {
-        /** Absolute path to the token file in build/resources/main/. */
+        /**
+         * Absolute path to the production token file, written under the
+         * servlet resource output directory (by default
+         * `build/vaadin-build-frontend/META-INF/VAADIN/config/`).
+         */
         fun getTokenFilePath(): Property<String>
         /** Absolute path to the cached copy in build/. */
         fun getCachedTokenFilePath(): Property<String>
