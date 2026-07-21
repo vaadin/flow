@@ -62,6 +62,7 @@ flow-tests/**/vite.config.ts
 flow-tests/**/generated/**
 flow-tests/**/pnpmfile.js
 flow-tests/**/.pnpmfile.cjs
+flow-tests/**/pnpm-workspace.yaml
 flow-tests/**/*.npmrc
 
 *.xml.versionsBackup
