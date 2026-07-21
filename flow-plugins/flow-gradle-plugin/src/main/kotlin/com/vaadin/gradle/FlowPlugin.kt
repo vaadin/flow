@@ -21,6 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.bundling.War
 import org.gradle.util.GradleVersion
 
 /**
@@ -30,6 +31,12 @@ import org.gradle.util.GradleVersion
 public class FlowPlugin : Plugin<Project> {
     public companion object {
         public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.14"
+
+        // Archive classifiers that never carry the production frontend
+        // bundle (source and javadoc distributions, test fixtures). Any
+        // other Jar/War/BootJar is treated as an application archive.
+        private val NON_APPLICATION_ARCHIVE_CLASSIFIERS =
+            setOf("sources", "javadoc", "test-sources", "tests")
     }
 
     override fun apply(project: Project) {
@@ -72,9 +79,36 @@ public class FlowPlugin : Plugin<Project> {
                 // In production mode, vaadinBuildFrontend is self-contained
                 // and performs its own frontend preparation, so there is no
                 // need for vaadinPrepareFrontend to run beforehand.
-                // this will also catch the War task since it extends from Jar
+                val buildFrontendTask = project.tasks.getByName("vaadinBuildFrontend")
+                val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
+                val vaadinServletResourcesDirectory =
+                    buildAdapter.servletResourceOutputDirectory()
+                val vaadinBuildFrontendOutputDirectory =
+                    vaadinServletResourcesDirectory.parentFile?.parentFile
+
+                val sourceSetResourcesDirectory =
+                    project.getBuildResourcesDir(config.sourceSetName.get())
+
+                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
+                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
+
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    task.dependsOn("vaadinBuildFrontend")
+                    if (task.isVaadinApplicationArchiveTask(
+                            includedArchiveTasks, excludedArchiveTasks)) {
+                        task.dependsOn("vaadinBuildFrontend")
+                        if (vaadinBuildFrontendOutputDirectory != null &&
+                            vaadinBuildFrontendOutputDirectory.canonicalFile !=
+                            sourceSetResourcesDirectory.canonicalFile
+                        ) {
+                            task.from(vaadinBuildFrontendOutputDirectory) { copySpec ->
+                                val archivePath =
+                                    task.vaadinBuildFrontendResourcesArchivePath()
+                                if (archivePath != null) {
+                                    copySpec.into(archivePath)
+                                }
+                            }
+                        }
+                    }
                 }
             } else if (config.alwaysExecutePrepareFrontend.get()) {
                 // In development mode, vaadinPrepareFrontend is not
@@ -141,14 +175,19 @@ public class FlowPlugin : Plugin<Project> {
                 // Ensure close() fires after vaadinBuildFrontend and
                 // all Jar/War packaging tasks have completed.
                 buildFrontendTask.usesService(tokenService)
+                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
+                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    task.usesService(tokenService)
-                    // Restore the production token before packaging in
-                    // case it was deleted by a previous build's cleanup.
-                    // Capture the service provider rather than the Project so
-                    // the action stays compatible with the configuration cache.
-                    task.doFirst {
-                        tokenService.get().ensureToken()
+                    if (task.isVaadinApplicationArchiveTask(
+                            includedArchiveTasks, excludedArchiveTasks)) {
+                        task.usesService(tokenService)
+                        // Restore the production token before packaging in
+                        // case it was deleted by a previous build's cleanup.
+                        // Capture the service provider rather than the Project so
+                        // the action stays compatible with the configuration cache.
+                        task.doFirst {
+                            tokenService.get().ensureToken()
+                        }
                     }
                 }
             }
@@ -166,4 +205,38 @@ public class FlowPlugin : Plugin<Project> {
             )
         }
     }
+
+    private fun Jar.vaadinBuildFrontendResourcesArchivePath(): String? {
+        return when {
+            this is War -> "WEB-INF/classes"
+            isSpringBootJar() -> "BOOT-INF/classes"
+            else -> null
+        }
+    }
+
+    // Whether the production frontend bundle should be packaged into this
+    // archive. By default every Jar/War/BootJar qualifies, except source,
+    // javadoc and test-fixture distributions (identified by their archive
+    // classifier). The default can be overridden per task via the
+    // `includeArchiveTasks` / `excludeArchiveTasks` plugin settings, with
+    // `excludeArchiveTasks` taking precedence.
+    private fun Jar.isVaadinApplicationArchiveTask(
+        includedTaskNames: Set<String>,
+        excludedTaskNames: Set<String>
+    ): Boolean {
+        if (name in excludedTaskNames) {
+            return false
+        }
+        if (name in includedTaskNames) {
+            return true
+        }
+        return archiveClassifier.orNull.orEmpty() !in
+                NON_APPLICATION_ARCHIVE_CLASSIFIERS
+    }
+
+    private fun Jar.isSpringBootJar(): Boolean =
+        generateSequence(javaClass as Class<*>) { it.superclass }
+            .any {
+                it.name == "org.springframework.boot.gradle.tasks.bundling.BootJar"
+            }
 }
