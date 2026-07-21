@@ -21,6 +21,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 
 /**
@@ -52,6 +53,8 @@ internal class BuildFrontendOutputProperties(
             VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE)
     private val generatedTsFolder: File =
         BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
+    private val servletResourceOutputDirectory: File =
+        adapter.servletResourceOutputDirectory()
     private val frontendIndexHtml: File =
         File(BuildFrontendUtil.getFrontendDirectory(adapter),
             FrontendUtils.INDEX_HTML)
@@ -62,6 +65,10 @@ internal class BuildFrontendOutputProperties(
     @OutputFile
     @Optional
     fun getFrontendIndexHtml(): File = frontendIndexHtml
+
+    @OutputDirectory
+    fun getServletResourceOutputDirectory(): File =
+        servletResourceOutputDirectory
 
     @LocalState
     fun getGeneratedTsFolder(): File = generatedTsFolder
