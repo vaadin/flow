@@ -84,6 +84,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -849,6 +850,42 @@ class UploadHandlerTest {
         // Should return 207 Multi-Status for mixed results
         Mockito.verify(response).setStatus(207);
         Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    void multipartUpload_inMemoryWithValidator_rejectsOnePart_returns207()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.png", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.zip", 3));
+
+        when(request.getParts()).thenReturn(parts);
+
+        List<String> processedFiles = new ArrayList<>();
+        UploadHandler uploadHandler = UploadHandler
+                .inMemory((meta, bytes) -> processedFiles.add(meta.fileName()))
+                .validateMetadata(event -> {
+                    if (event.getFileName().endsWith(".zip")) {
+                        event.reject("ZIP files are not allowed");
+                    }
+                });
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        assertEquals(List.of("file1.png"), processedFiles,
+                "Only the accepted part should reach the callback");
+        verify(response).setStatus(207);
+        verify(response).setContentType("application/json");
     }
 
     @Test
