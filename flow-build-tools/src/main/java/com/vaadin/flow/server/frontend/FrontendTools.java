@@ -23,20 +23,25 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.InitParameters;
@@ -311,6 +316,29 @@ public class FrontendTools {
     }
 
     /**
+     * Creates a {@link FrontendTools} instance configured from the given
+     * {@link Options}, using the node/pnpm related settings collected there.
+     *
+     * @param options
+     *            the task options to read the frontend tools configuration
+     *            from, not {@code null}
+     * @return a new {@link FrontendTools} instance
+     */
+    public static FrontendTools fromOptions(Options options) {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                options.getNpmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
+        return new FrontendTools(settings);
+    }
+
+    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable
@@ -511,6 +539,86 @@ public class FrontendTools {
                             String.join(" ", npmCacheCommand)));
         }
         return new File(output);
+    }
+
+    /**
+     * Returns the URLs of every configured registry that is not the public npm
+     * registry, i.e. the registries packages are expected to be downloaded
+     * from.
+     * <p>
+     * The configuration is read from npm itself, so it accounts for every
+     * configuration source and precedence rule npm applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc}) and
+     * covers both the global {@code registry} and any scoped
+     * {@code @scope:registry} entries. If the configuration cannot be read an
+     * empty set is returned. The returned URLs always end with a slash, so they
+     * can be matched as a prefix against package download URLs.
+     *
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return the custom registry URLs, or an empty set if only the default
+     *         registry is configured
+     */
+    Set<String> getCustomNpmRegistries(File workingDirectory) {
+        return customRegistries(getConfiguredRegistries(workingDirectory));
+    }
+
+    /**
+     * Reads the registry URLs npm resolves for the given directory by running
+     * {@code npm config ls --json}. The returned map contains the global
+     * {@code registry} entry and every scoped {@code @scope:registry} entry, as
+     * resolved by npm across all its configuration sources.
+     *
+     * @param workingDirectory
+     *            the directory to resolve the configuration from
+     * @return the configured registry keys mapped to their URLs, or an empty
+     *         map if the configuration cannot be read
+     */
+    Map<String, String> getConfiguredRegistries(File workingDirectory) {
+        List<String> command = new ArrayList<>(getNpmExecutable(false));
+        command.add("config");
+        command.add("ls");
+        command.add("--json");
+        Map<String, String> registries = new HashMap<>();
+        try {
+            String output = FrontendUtils.executeCommand(command,
+                    builder -> builder.directory(workingDirectory));
+            JsonNode config = JacksonUtils.readTree(output);
+            for (String key : config.propertyNames()) {
+                if ((key.equals("registry") || key.endsWith(":registry"))
+                        && config.get(key).isString()) {
+                    registries.put(key, config.get(key).asString());
+                }
+            }
+        } catch (CommandExecutionException | RuntimeException e) {
+            getLogger().debug("Could not read the npm registry configuration; "
+                    + "assuming the default registry.", e);
+        }
+        return registries;
+    }
+
+    /**
+     * Extracts the custom (non-default) registry URLs from the given
+     * configuration, normalized to always end with a slash so they can be
+     * matched as a prefix against package download URLs.
+     */
+    static Set<String> customRegistries(Map<String, String> registries) {
+        return registries.values().stream()
+                .filter(registry -> !isDefaultNpmRegistry(registry))
+                .map(FrontendTools::ensureTrailingSlash)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static boolean isDefaultNpmRegistry(String registry) {
+        String normalized = registry.endsWith("/")
+                ? registry.substring(0, registry.length() - 1)
+                : registry;
+        return "https://registry.npmjs.org".equals(normalized);
+    }
+
+    private static String ensureTrailingSlash(String url) {
+        return url.endsWith("/") ? url : url + "/";
     }
 
     /**

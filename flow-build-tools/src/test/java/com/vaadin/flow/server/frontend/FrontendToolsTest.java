@@ -25,8 +25,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -945,6 +947,41 @@ class FrontendToolsTest {
                 ? "node-" + nodeVersion + "\\node_modules\\npm\\bin\\npm-cli.js"
                 : "node-" + nodeVersion
                         + "/lib/node_modules/npm/bin/npm-cli.js";
+    }
+
+    @Test
+    void customRegistries_defaultRegistryOnly_isEmpty() {
+        assertTrue(FrontendTools
+                .customRegistries(
+                        Map.of("registry", "https://registry.npmjs.org/"))
+                .isEmpty());
+        // npm may report the default without a trailing slash
+        assertTrue(FrontendTools
+                .customRegistries(
+                        Map.of("registry", "https://registry.npmjs.org"))
+                .isEmpty());
+    }
+
+    @Test
+    void customRegistries_noRegistryResolved_isEmpty() {
+        assertTrue(FrontendTools.customRegistries(Map.of()).isEmpty());
+    }
+
+    @Test
+    void customRegistries_customGlobalRegistry_isReturnedWithTrailingSlash() {
+        assertEquals(Set.of("https://nexus.corp/repository/npm/"),
+                FrontendTools.customRegistries(Map.of("registry",
+                        "https://nexus.corp/repository/npm")),
+                "the custom registry URL should be returned normalized with a trailing slash");
+    }
+
+    @Test
+    void customRegistries_customScopedRegistryWithDefaultGlobal_onlyCustomReturned() {
+        assertEquals(Set.of("https://nexus.corp/repository/npm/"),
+                FrontendTools.customRegistries(Map.of("registry",
+                        "https://registry.npmjs.org/", "@vaadin:registry",
+                        "https://nexus.corp/repository/npm/")),
+                "only the non-default scoped registry should be returned");
     }
 
 }
