@@ -969,6 +969,52 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
+     * A custom `frontendOutputDirectory` that does not follow the
+     * `META-INF/VAADIN/webapp` layout cannot be packaged: the frontend outputs
+     * would fall back into the source set resources directory
+     * (`build/resources/main`), which drops the bundle from the archive and,
+     * on Gradle 9, breaks the build with an implicit task-dependency error.
+     * Such a misconfiguration never produced a servable archive, so the plugin
+     * rejects it during configuration with an actionable message.
+     */
+    @Test
+    fun buildFrontend_customFlatFrontendOutputDirectory_failsWithClearError() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            vaadin {
+                frontendOutputDirectory = layout.buildDirectory.dir("flat-frontend-output").get().asFile
+            }
+        """.trimIndent()
+        )
+
+        // 'help' triggers project configuration (and the production-mode
+        // afterEvaluate validation) without running the frontend build.
+        val result = testProject.buildAndFail("-Pvaadin.productionMode", "help")
+        expect(true, "Build should fail mentioning frontendOutputDirectory, " +
+            "was:\n${result.output}") {
+            result.output.contains("frontendOutputDirectory") &&
+                result.output.contains("META-INF/VAADIN/webapp")
+        }
+    }
+
+    /**
      * Before the frontend output was moved to a task-owned directory, the
      * production bundle was written into the `main` source set resources, so
      * every archive task - including custom-named `Jar` tasks - triggered

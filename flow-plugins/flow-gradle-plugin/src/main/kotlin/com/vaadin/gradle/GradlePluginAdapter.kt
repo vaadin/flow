@@ -23,6 +23,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.plugin.base.PluginAdapterBuild
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.scanner.ClassFinder
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
@@ -46,8 +47,6 @@ internal class GradlePluginAdapter private constructor(
 
     private val projectDir = config.projectDir
     private val projectName = config.projectName
-    private val buildResourcesDir =
-        project.getBuildResourcesDir(config.sourceSetName.get())
     private val jarProject: Boolean =
         project.tasks.withType(War::class.java).isEmpty()
     private val jarFiles: FileCollection
@@ -234,8 +233,10 @@ internal class GradlePluginAdapter private constructor(
         //
         // However, after processResources is done, anything generated into
         // build/vaadin-generated would simply be ignored. In such cases,
-        // production resources must either be generated to the task-owned
-        // frontend output tree or to the source set resources directory.
+        // production resources are generated into the task-owned frontend
+        // output tree, next to the webapp bundle, so that the whole
+        // META-INF/VAADIN tree is packaged into the application archive as a
+        // single, task-owned unit.
         if (isBeforeProcessResources) {
             return File(
                 config.resourceOutputDirectory.get(),
@@ -246,7 +247,27 @@ internal class GradlePluginAdapter private constructor(
         if (frontendOutputDirectory.hasVaadinWebappResourcesPath()) {
             return frontendOutputDirectory.parentFile
         }
-        return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
+        // The servlet resources (config, token, stats.json) must sit next to
+        // the webapp bundle so the whole META-INF/VAADIN tree can be packaged
+        // together, which is only possible when frontendOutputDirectory follows
+        // the META-INF/VAADIN/webapp layout. Falling back to the source set
+        // resources directory (build/resources/main) instead would make
+        // vaadinBuildFrontend share outputs with processResources/jar, which
+        // silently drops the bundle from the archive and, on Gradle 9, fails
+        // the build with an implicit task-dependency error. Such a
+        // frontendOutputDirectory is a misconfiguration that never produced a
+        // servable archive, so reject it with an actionable message instead of
+        // producing a broken package.
+        val webappResourcesPath =
+            Constants.VAADIN_WEBAPP_RESOURCES.removeSuffix("/")
+        throw GradleException(
+            "The Vaadin 'frontendOutputDirectory' is set to " +
+            "'${frontendOutputDirectory.path}', which does not end in " +
+            "'$webappResourcesPath'. The production frontend bundle can only " +
+            "be packaged when this directory follows the '$webappResourcesPath' " +
+            "layout. Either leave 'frontendOutputDirectory' at its default or " +
+            "set it to a path ending in '$webappResourcesPath'."
+        )
     }
 
     override fun webpackOutputDirectory(): File = frontendOutputDirectory()
@@ -264,11 +285,6 @@ internal class GradlePluginAdapter private constructor(
 
     override fun generateEmbeddableWebComponents(): Boolean =
         config.generateEmbeddableWebComponents.get()
-
-    private fun File.hasVaadinWebappResourcesPath(): Boolean =
-        path.replace(File.separatorChar, '/').removeSuffix("/").endsWith(
-            Constants.VAADIN_WEBAPP_RESOURCES.removeSuffix("/")
-        )
 
     override fun optimizeBundle(): Boolean = config.optimizeBundle.get()
 

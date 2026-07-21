@@ -59,6 +59,13 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * The folder where the frontend build tool should output index.js and other generated
      * files. Defaults to `null` which will use a task-owned build directory,
      * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
+     *
+     * For the production bundle to be packaged into the application archive,
+     * this directory must follow the `META-INF/VAADIN/webapp` layout (as the
+     * default does). A custom value that does not end in `META-INF/VAADIN/webapp`
+     * cannot be packaged (it never produced a servable archive and, on Gradle 9,
+     * fails the build with an implicit task-dependency error), so the plugin
+     * rejects it with an error in production mode.
      */
     public abstract val frontendOutputDirectory: Property<File>
 
