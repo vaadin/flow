@@ -90,6 +90,26 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
+    fun `vaadinBuildFrontend is skipped in development mode when explicitly required`() {
+        // Some projects wire vaadinBuildFrontend into the build graph, e.g.
+        // jar.dependsOn('vaadinBuildFrontend'). In development mode the task
+        // must be skipped rather than failing the build (the production-only
+        // token service is not registered) or writing a production token.
+        // See https://github.com/vaadin/flow/issues/25000
+        testProject.buildFile.appendText("""
+            tasks.named('jar') {
+                dependsOn('vaadinBuildFrontend')
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("jar", checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SKIPPED)
+
+        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        expect(false, build.toString()) { build.exists() }
+    }
+
+    @Test
     fun testBuildFrontendInProductionMode() {
         val result: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend is self-contained in production mode and

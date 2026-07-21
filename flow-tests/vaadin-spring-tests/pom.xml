@@ -72,10 +72,19 @@
       <artifactId>flow-html-components</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Faux Lumo replacements for the real vaadin-lumo-theme: the Lumo
+         class satisfies Flow's classpath detection for @Theme(name), and
+         test-lumo-theme ships the fake lumo/fake-lumo.css public resource.
+         Neither pulls any Vaadin component npm packages. -->
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-lumo-theme</artifactId>
-      <version>${component.version}</version>
+      <artifactId>flow-test-lumo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>test-lumo-theme</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
