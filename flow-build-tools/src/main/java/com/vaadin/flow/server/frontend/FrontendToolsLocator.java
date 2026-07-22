@@ -82,8 +82,8 @@ public class FrontendToolsLocator implements Serializable {
                 isWindows() ? "where" : "which", toolName)
                 .map(this::omitErrorResult).map(CommandResult::getStdout)
                 .orElseGet(() -> Arrays.asList(
-                        "/usr/bin/" + toolName,
                         // Add most common paths in unix #5611
+                        "/usr/bin/" + toolName,
                         "/usr/local/bin/" + toolName,
                         "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
