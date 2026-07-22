@@ -136,9 +136,17 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
         // Maven's task run in the LifecyclePhase.PROCESS_CLASSES phase
 
-        // We need access to the produced classes, to be able to analyze e.g.
-        // @CssImport annotations used by the project.
-        dependsOn("classes")
+        // We need access to the produced classes and resources, to analyze
+        // e.g. @CssImport annotations and to pick up frontend resources served
+        // from the classpath (META-INF/resources/frontend). Ordering is
+        // established granularly in configure(): after compilation via the
+        // @Classpath `projectClassesDirs` input, and after resource processing
+        // via an explicit dependency on the processResources task. We avoid
+        // depending on the `classes` lifecycle task because, in production
+        // mode, the bundle produced by this task is registered as an extra
+        // `main` source set output directory (so it reaches the runtime
+        // classpath and application archives), which makes `classes` depend on
+        // this task - depending back on `classes` would form a cycle.
 
         // Make sure to run this task before the `war`/`jar` tasks, so that
         // vite bundle will end up packaged in the war/jar archive. The inclusion
@@ -162,6 +170,15 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         // service is registered by FlowPlugin only in production mode).
         val productionMode = config.productionMode
         onlyIf("Vaadin production mode is enabled") { productionMode.get() }
+
+        // Frontend scanning reads resources served from the classpath (e.g.
+        // META-INF/resources/frontend), so this task must run after the source
+        // set resources have been processed. Compilation ordering is covered
+        // by the @Classpath projectClassesDirs input. Depending on the
+        // processResources task directly (rather than the `classes` lifecycle
+        // task) avoids the production-mode dependency cycle described in the
+        // constructor.
+        dependsOn(config.processResourcesTaskName)
 
         // Track user-written frontend source files, excluding the
         // generated/ subdirectory (modified by this task) and index.html

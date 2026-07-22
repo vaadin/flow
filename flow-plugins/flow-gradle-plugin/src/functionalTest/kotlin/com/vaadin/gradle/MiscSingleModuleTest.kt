@@ -1015,12 +1015,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
-     * Before the frontend output was moved to a task-owned directory, the
-     * production bundle was written into the `main` source set resources, so
-     * every archive task - including custom-named `Jar` tasks - triggered
-     * `vaadinBuildFrontend` and packaged the bundle. Restricting packaging to
-     * a fixed set of well-known task names must not silently drop the bundle
-     * (and the `vaadinBuildFrontend` dependency) from such custom archives.
+     * A custom-named archive task that packages the `main` source set output
+     * receives the production bundle (registered as an extra source set output
+     * directory) and transitively depends on `vaadinBuildFrontend` through the
+     * `builtBy` wiring, without any explicit task dependency.
      */
     @Test
     fun buildFrontend_customArchiveTask_containsProductionBundle() {
@@ -1058,9 +1056,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
-     * Source and javadoc archives are identified by their classifier and
-     * must never carry the production frontend bundle, even though they are
-     * `Jar` tasks.
+     * The production bundle is exposed as an extra `main` source set output
+     * directory, so it is packaged only into archives that include the source
+     * set output. Source and javadoc jars package `allSource`/javadoc output
+     * instead, so they must never carry the production frontend bundle.
      */
     @Test
     fun buildFrontend_sourcesAndJavadocJars_doNotContainProductionBundle() {
@@ -1108,16 +1107,26 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
-     * A custom archive that would be packaged by default can be opted out
-     * via `vaadin.excludeArchiveTasks`. The frontend is still built (the
-     * `jar` task consumes it), but the excluded archive stays frontend-free.
+     * The production bundle is registered as an extra `main` source set output
+     * directory, so it is on the runtime classpath. This is what lets an
+     * application served in place during a production build (e.g. gretty
+     * integration tests) run in production mode instead of falling back to the
+     * development bundle. Regression test for the bundle being written to a
+     * task-owned directory that was not on the runtime classpath.
+     *
+     * The check uses `stats.json` rather than `flow-build-info.json` because
+     * the token is intentionally removed from the bundle directory after the
+     * build and only restored while an application archive is being packaged;
+     * `stats.json` is a stable marker of the bundle directory's presence on the
+     * classpath.
      */
     @Test
-    fun buildFrontend_excludedArchiveTask_doesNotContainProductionBundle() {
+    fun buildFrontend_productionBundle_isOnMainRuntimeClasspath() {
         testProject.buildFile.writeText(
             """
             plugins {
-                id 'java'
+                id 'war'
+                id 'org.gretty' version '4.0.3'
                 id("com.vaadin.flow")
             }
             repositories {
@@ -1125,72 +1134,35 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            vaadin {
-                excludeArchiveTasks = ['appJar']
-            }
-            def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
-                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
-                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
-                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
             }
-            tasks.register('appJar', Jar) {
-                archiveClassifier = 'app'
-                from sourceSets.main.output
+            tasks.register('verifyBundleOnRuntimeClasspath') {
+                dependsOn 'vaadinBuildFrontend'
+                def runtimeClasspath = sourceSets.main.runtimeClasspath
+                doLast {
+                    def stats = runtimeClasspath.files.collect {
+                        new File(it, 'META-INF/VAADIN/config/stats.json')
+                    }.find { it.exists() }
+                    if (stats == null) {
+                        throw new GradleException(
+                            'production bundle (META-INF/VAADIN/config/stats.json) ' +
+                            'not found on main runtime classpath')
+                    }
+                    println 'PRODUCTION_BUNDLE_ON_CLASSPATH=' + stats
+                }
             }
         """.trimIndent()
         )
 
-        val result = testProject.build("-Pvaadin.productionMode", "build", "appJar")
+        val result = testProject.build(
+            "-Pvaadin.productionMode", "verifyBundleOnRuntimeClasspath")
         result.expectTaskSucceded("vaadinBuildFrontend")
-
-        val appJar = testProject.folder("build/libs").find("*-app.jar").first()
-        expectArchiveDoesntContainVaadinBundle(appJar, false)
-    }
-
-    /**
-     * A `tests`-classified archive is excluded by default, but can be forced
-     * to receive the frontend bundle via `vaadin.includeArchiveTasks`, which
-     * overrides the classifier-based exclusion.
-     */
-    @Test
-    fun buildFrontend_includedArchiveTask_overridesClassifierExclusion() {
-        testProject.buildFile.writeText(
-            """
-            plugins {
-                id 'java'
-                id("com.vaadin.flow")
-            }
-            repositories {
-                mavenLocal()
-                mavenCentral()
-                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
-            }
-            vaadin {
-                includeArchiveTasks = ['fixtureJar']
-            }
-            def jettyVersion = "11.0.12"
-            dependencies {
-                implementation("com.vaadin:flow:$flowVersion")
-                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
-                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
-                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
-                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
-            }
-            tasks.register('fixtureJar', Jar) {
-                archiveClassifier = 'tests'
-                from sourceSets.main.output
-            }
-        """.trimIndent()
-        )
-
-        val result = testProject.build("-Pvaadin.productionMode", "fixtureJar")
-        result.expectTaskSucceded("vaadinBuildFrontend")
-
-        val fixtureJar = testProject.folder("build/libs").find("*-tests.jar").first()
-        expectArchiveContainsVaadinBundle(fixtureJar, false)
+        expect(true) {
+            result.output.contains("PRODUCTION_BUNDLE_ON_CLASSPATH=")
+        }
     }
 
     @Test
