@@ -21,7 +21,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.bundling.War
 import org.gradle.util.GradleVersion
 
 /**
@@ -31,12 +30,6 @@ import org.gradle.util.GradleVersion
 public class FlowPlugin : Plugin<Project> {
     public companion object {
         public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.14"
-
-        // Archive classifiers that never carry the production frontend
-        // bundle (source and javadoc distributions, test fixtures). Any
-        // other Jar/War/BootJar is treated as an application archive.
-        private val NON_APPLICATION_ARCHIVE_CLASSIFIERS =
-            setOf("sources", "javadoc", "test-sources", "tests")
     }
 
     override fun apply(project: Project) {
@@ -86,29 +79,25 @@ public class FlowPlugin : Plugin<Project> {
                 val vaadinBuildFrontendOutputDirectory =
                     vaadinServletResourcesDirectory.parentFile?.parentFile
 
-                val sourceSetResourcesDirectory =
-                    project.getBuildResourcesDir(config.sourceSetName.get())
-
-                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
-                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
-
-                project.tasks.withType(Jar::class.java) { task: Jar ->
-                    if (task.isVaadinApplicationArchiveTask(
-                            includedArchiveTasks, excludedArchiveTasks)) {
-                        task.dependsOn("vaadinBuildFrontend")
-                        if (vaadinBuildFrontendOutputDirectory != null &&
-                            vaadinBuildFrontendOutputDirectory.canonicalFile !=
-                            sourceSetResourcesDirectory.canonicalFile
-                        ) {
-                            task.from(vaadinBuildFrontendOutputDirectory) { copySpec ->
-                                val archivePath =
-                                    task.vaadinBuildFrontendResourcesArchivePath()
-                                if (archivePath != null) {
-                                    copySpec.into(archivePath)
-                                }
-                            }
-                        }
-                    }
+                if (vaadinBuildFrontendOutputDirectory != null) {
+                    // Expose the production bundle (a task-owned tree laid out
+                    // as META-INF/VAADIN/...) as an extra output directory of
+                    // the source set. Through standard Gradle wiring this puts
+                    // it on the runtime classpath - so in-place runners (e.g.
+                    // gretty serving during a production build) find the bundle
+                    // and the production flow-build-info.json - and packages it
+                    // into every application archive (WEB-INF/classes for War,
+                    // the archive root for a plain or Spring Boot executable
+                    // jar), while archives that don't consume the source set
+                    // output (sources/javadoc jars) stay frontend-free. builtBy
+                    // wires every consumer to vaadinBuildFrontend, so no
+                    // explicit task dependency is needed. The bundle stays out
+                    // of build/resources/main, so vaadinBuildFrontend keeps its
+                    // own declared output and remains build-cache correct.
+                    project.getSourceSet(config.sourceSetName.get()).output.dir(
+                        mapOf("builtBy" to buildFrontendTask),
+                        vaadinBuildFrontendOutputDirectory
+                    )
                 }
             } else if (config.alwaysExecutePrepareFrontend.get()) {
                 // In development mode, vaadinPrepareFrontend is not
@@ -175,19 +164,14 @@ public class FlowPlugin : Plugin<Project> {
                 // Ensure close() fires after vaadinBuildFrontend and
                 // all Jar/War packaging tasks have completed.
                 buildFrontendTask.usesService(tokenService)
-                val includedArchiveTasks = config.includeArchiveTasks.get().toSet()
-                val excludedArchiveTasks = config.excludeArchiveTasks.get().toSet()
                 project.tasks.withType(Jar::class.java) { task: Jar ->
-                    if (task.isVaadinApplicationArchiveTask(
-                            includedArchiveTasks, excludedArchiveTasks)) {
-                        task.usesService(tokenService)
-                        // Restore the production token before packaging in
-                        // case it was deleted by a previous build's cleanup.
-                        // Capture the service provider rather than the Project so
-                        // the action stays compatible with the configuration cache.
-                        task.doFirst {
-                            tokenService.get().ensureToken()
-                        }
+                    task.usesService(tokenService)
+                    // Restore the production token before packaging in
+                    // case it was deleted by a previous build's cleanup.
+                    // Capture the service provider rather than the Project so
+                    // the action stays compatible with the configuration cache.
+                    task.doFirst {
+                        tokenService.get().ensureToken()
                     }
                 }
             }
@@ -205,38 +189,4 @@ public class FlowPlugin : Plugin<Project> {
             )
         }
     }
-
-    private fun Jar.vaadinBuildFrontendResourcesArchivePath(): String? {
-        return when {
-            this is War -> "WEB-INF/classes"
-            isSpringBootJar() -> "BOOT-INF/classes"
-            else -> null
-        }
-    }
-
-    // Whether the production frontend bundle should be packaged into this
-    // archive. By default every Jar/War/BootJar qualifies, except source,
-    // javadoc and test-fixture distributions (identified by their archive
-    // classifier). The default can be overridden per task via the
-    // `includeArchiveTasks` / `excludeArchiveTasks` plugin settings, with
-    // `excludeArchiveTasks` taking precedence.
-    private fun Jar.isVaadinApplicationArchiveTask(
-        includedTaskNames: Set<String>,
-        excludedTaskNames: Set<String>
-    ): Boolean {
-        if (name in excludedTaskNames) {
-            return false
-        }
-        if (name in includedTaskNames) {
-            return true
-        }
-        return archiveClassifier.orNull.orEmpty() !in
-                NON_APPLICATION_ARCHIVE_CLASSIFIERS
-    }
-
-    private fun Jar.isSpringBootJar(): Boolean =
-        generateSequence(javaClass as Class<*>) { it.superclass }
-            .any {
-                it.name == "org.springframework.boot.gradle.tasks.bundling.BootJar"
-            }
 }
