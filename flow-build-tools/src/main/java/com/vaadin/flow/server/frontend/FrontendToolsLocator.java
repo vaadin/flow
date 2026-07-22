@@ -85,9 +85,7 @@ public class FrontendToolsLocator implements Serializable {
                         "/usr/bin/" + toolName,
                         // Add most common paths in unix #5611
                         "/usr/local/bin/" + toolName,
-                        "/opt/local/bin/" + toolName, 
-                        "/opt/bin/" + toolName
-                ));
+                        "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
