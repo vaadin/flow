@@ -134,7 +134,8 @@ public class ResponseWriter implements Serializable {
         if (brotliEnabled && acceptsBrotliResource(request)) {
             String brotliFilenameWithPath = filenameWithPath + ".br";
             try {
-                url = getResource(request, brotliFilenameWithPath);
+                url = getPrecompressedResource(request, resourceUrl,
+                        brotliFilenameWithPath, ".br");
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -151,7 +152,8 @@ public class ResponseWriter implements Serializable {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
-                url = getResource(request, gzippedFilenameWithPath);
+                url = getPrecompressedResource(request, resourceUrl,
+                        gzippedFilenameWithPath, ".gz");
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -402,6 +404,58 @@ public class ResponseWriter implements Serializable {
                     VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return url;
+    }
+
+    /**
+     * Resolves a precompressed variant ({@code .br}/{@code .gz}) of a resource.
+     * <p>
+     * The compressed sibling is resolved relative to the already resolved
+     * {@code resourceUrl} of the uncompressed resource, so it is located the
+     * same way the original was, regardless of how the servlet container maps
+     * {@link jakarta.servlet.ServletContext#getResource(String)}. This matters
+     * for static resources served from the classpath {@code META-INF/resources}
+     * of a packaged application (for example a Spring Boot executable jar),
+     * where a path based lookup of the sibling returns {@code null} even though
+     * the original resource is found. Falls back to a path based lookup so the
+     * previous behavior is preserved when the sibling cannot be derived from
+     * the resource URL.
+     *
+     * @param request
+     *            the request, used for the path based fallback lookup
+     * @param resourceUrl
+     *            the resolved URL of the uncompressed resource
+     * @param compressedFilenameWithPath
+     *            the request path of the compressed resource, for the fallback
+     * @param suffix
+     *            the compression suffix, {@code .br} or {@code .gz}
+     * @return the URL of the precompressed resource, or {@code null} if none
+     */
+    private URL getPrecompressedResource(HttpServletRequest request,
+            URL resourceUrl, String compressedFilenameWithPath, String suffix)
+            throws MalformedURLException {
+        URL sibling = getCompressedSibling(resourceUrl, suffix);
+        if (sibling != null) {
+            return sibling;
+        }
+        return getResource(request, compressedFilenameWithPath);
+    }
+
+    private URL getCompressedSibling(URL resourceUrl, String suffix) {
+        if (resourceUrl == null) {
+            return null;
+        }
+        URL sibling;
+        try {
+            sibling = new URL(resourceUrl.toString() + suffix);
+        } catch (MalformedURLException e) {
+            return null;
+        }
+        // Only serve the sibling if it actually exists next to the resource.
+        try (InputStream probe = sibling.openStream()) {
+            return sibling;
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     /**

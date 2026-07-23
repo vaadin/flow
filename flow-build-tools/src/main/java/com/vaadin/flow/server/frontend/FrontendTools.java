@@ -361,6 +361,26 @@ public class FrontendTools {
     }
 
     /**
+     * Returns the path to a Node.js executable that can be used without
+     * downloading or installing one, either a Node.js that has already been
+     * resolved during this build or a globally available Node.js found on the
+     * system {@code PATH}. Unlike {@link #getNodeExecutable()}, this never
+     * triggers a Node.js installation.
+     *
+     * @return the path to an already available node executable, or {@code null}
+     *         if none is available without installation
+     */
+    public String getExistingNodeExecutable() {
+        NodeResolver.ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null) {
+            return active.nodeExecutable();
+        }
+        String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
+        return frontendToolsLocator.tryLocateTool(nodeCommand)
+                .map(File::getAbsolutePath).orElse(null);
+    }
+
+    /**
      * Ensures that node has been resolved and cached. Uses double-checked
      * locking to ensure thread-safe lazy initialization.
      *
