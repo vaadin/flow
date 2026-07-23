@@ -56,7 +56,7 @@ public class BackNavIT extends ChromeBrowserTest {
                     + BACK_NAV_FIRST_VIEW);
         }
 
-        navigationElement.get().click();
+        clickWhenReady(navigationElement);
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -92,7 +92,7 @@ public class BackNavIT extends ChromeBrowserTest {
                     + BACK_NAV_FIRST_VIEW);
         }
 
-        $(NativeButtonElement.class).first().click();
+        clickWhenReady(() -> $(NativeButtonElement.class).first());
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -134,7 +134,7 @@ public class BackNavIT extends ChromeBrowserTest {
                     + BACK_NAV_FIRST_VIEW);
         }
 
-        $(NativeButtonElement.class).first().click();
+        clickWhenReady(() -> $(NativeButtonElement.class).first());
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -146,6 +146,24 @@ public class BackNavIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Second view: 1",
                 $(SpanElement.class).id(BackNavSecondView.CALLS).getText());
+    }
+
+    /**
+     * Waits until the navigation element supplied is rendered and displayed
+     * before clicking it. {@code $(...).first()} queries the DOM immediately
+     * and throws {@code NoSuchElementException} if the Flow content has not
+     * been rendered yet, which is a source of flakiness right after a page
+     * load or refresh.
+     */
+    private void clickWhenReady(Supplier<TestBenchElement> navigationElement) {
+        waitUntil(arg -> {
+            try {
+                return navigationElement.get().isDisplayed();
+            } catch (RuntimeException e) {
+                return false;
+            }
+        });
+        navigationElement.get().click();
     }
 
 }
