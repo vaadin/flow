@@ -210,14 +210,15 @@ public class TaskCompressStaticResources implements FallibleCommand {
         if (!isCompressible(name)) {
             return;
         }
+
+        // Always delete br file if exists as we only remake the gzip
+        Files.deleteIfExists(file.resolveSibling(file.getFileName() + ".br"));
         Path gz = file.resolveSibling(file.getFileName() + ".gz");
         if (size < MIN_SIZE_BYTES) {
             // Remove any variants left by an earlier build where this file was
             // still above the threshold, so no stale compressed variant is
             // served now that it is served uncompressed.
             Files.deleteIfExists(gz);
-            Files.deleteIfExists(
-                    file.resolveSibling(file.getFileName() + ".br"));
             return;
         }
         try (InputStream in = Files.newInputStream(file);
