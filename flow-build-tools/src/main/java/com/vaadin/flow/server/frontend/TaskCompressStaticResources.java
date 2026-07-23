@@ -20,10 +20,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Locale;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,15 +47,35 @@ import com.vaadin.flow.internal.FrontendUtils;
  * <p>
  * Runs on every production build, independent of whether the frontend bundle is
  * rebuilt or reused, and after {@link TaskProcessStylesheetCss} so the already
- * minified and inlined CSS gets compressed. Compression is delegated to a small
- * Node script relying solely on Node's built-in {@code zlib}, so no extra
- * dependency is needed (Node is already required for the frontend build).
+ * minified and inlined CSS gets compressed.
+ * <p>
+ * The JDK cannot produce brotli, so brotli is delegated to a small Node script
+ * relying solely on Node's built-in {@code zlib}. Node is only used when it is
+ * already available, so it is never downloaded merely to compress resources;
+ * when Node is not available the task still produces gzip variants using the
+ * JDK. Both variants are pre-compressed so the server can serve whichever the
+ * client accepts.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskCompressStaticResources implements FallibleCommand {
 
     private static final String COMPRESSION_SCRIPT = "compress-static-resources.mjs";
+
+    /**
+     * File types that benefit from text compression. Kept in sync with the
+     * {@value #COMPRESSION_SCRIPT} Node script used for brotli.
+     */
+    private static final List<String> COMPRESSIBLE_EXTENSIONS = List.of(".css",
+            ".js", ".mjs", ".cjs", ".json", ".map", ".svg", ".html", ".htm",
+            ".xml", ".txt");
+
+    /**
+     * Below this size the compressed variant tends to be as large as, or larger
+     * than, the original, so serving precompressed brings no benefit. Kept in
+     * sync with the {@value #COMPRESSION_SCRIPT} Node script.
+     */
+    private static final long MIN_SIZE_BYTES = 1024;
 
     private final Options options;
 
@@ -76,22 +104,44 @@ public class TaskCompressStaticResources implements FallibleCommand {
             return;
         }
 
-        if (options.getNpmFolder() == null) {
-            getLogger().debug(
-                    "Node environment not configured, skipping static resource compression");
-            return;
-        }
-
         // Compression is a best-effort optimization: the uncompressed resource
         // is always available, so a failure here is logged as a warning and
         // never fails the build.
+
+        // Brotli requires Node, which the JDK cannot provide. Use Node only if
+        // it is already available so it is never downloaded solely for
+        // compression; otherwise fall back to gzip, which the JDK provides.
+        String nodeExecutable = findExistingNode();
+        if (nodeExecutable != null) {
+            compressWithNode(nodeExecutable, resourcesDir);
+        } else {
+            getLogger().debug(
+                    "Node is not available without installation, compressing static resources with gzip only");
+            gzipStaticResources(resourcesDir);
+        }
+    }
+
+    private String findExistingNode() {
+        try {
+            return FrontendTools.fromOptions(options)
+                    .getExistingNodeExecutable();
+        } catch (RuntimeException e) {
+            getLogger().debug("Could not determine whether Node is available",
+                    e);
+            return null;
+        }
+    }
+
+    /**
+     * Produces brotli and gzip siblings by running the Node compression script.
+     */
+    private void compressWithNode(String nodeExecutable, File resourcesDir) {
         File script = extractCompressionScript();
         if (script == null) {
             return;
         }
         try {
-            FrontendTools tools = FrontendTools.fromOptions(options);
-            List<String> command = List.of(tools.getNodeExecutable(),
+            List<String> command = List.of(nodeExecutable,
                     script.getAbsolutePath(), resourcesDir.getAbsolutePath());
 
             ProcessBuilder builder = FrontendUtils
@@ -130,6 +180,59 @@ public class TaskCompressStaticResources implements FallibleCommand {
         } finally {
             script.delete();
         }
+    }
+
+    /**
+     * Produces gzip siblings using only the JDK, for when Node is not available
+     * without an installation.
+     */
+    void gzipStaticResources(File resourcesDir) {
+        try {
+            Files.walkFileTree(resourcesDir.toPath(),
+                    new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file,
+                                BasicFileAttributes attrs) throws IOException {
+                            gzipIfNeeded(file, attrs.size());
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+        } catch (IOException e) {
+            getLogger().warn(
+                    "Failed to gzip static resources, they will be served "
+                            + "uncompressed",
+                    e);
+        }
+    }
+
+    private void gzipIfNeeded(Path file, long size) throws IOException {
+        String name = file.getFileName().toString().toLowerCase(Locale.ENGLISH);
+        if (!isCompressible(name)) {
+            return;
+        }
+        Path gz = file.resolveSibling(file.getFileName() + ".gz");
+        if (size < MIN_SIZE_BYTES) {
+            // Remove any variants left by an earlier build where this file was
+            // still above the threshold, so no stale compressed variant is
+            // served now that it is served uncompressed.
+            Files.deleteIfExists(gz);
+            Files.deleteIfExists(
+                    file.resolveSibling(file.getFileName() + ".br"));
+            return;
+        }
+        try (InputStream in = Files.newInputStream(file);
+                OutputStream out = new GZIPOutputStream(
+                        Files.newOutputStream(gz)) {
+                    {
+                        def.setLevel(Deflater.BEST_COMPRESSION);
+                    }
+                }) {
+            in.transferTo(out);
+        }
+    }
+
+    private static boolean isCompressible(String fileName) {
+        return COMPRESSIBLE_EXTENSIONS.stream().anyMatch(fileName::endsWith);
     }
 
     private File extractCompressionScript() {
