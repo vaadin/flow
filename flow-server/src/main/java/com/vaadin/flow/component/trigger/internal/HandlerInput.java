@@ -17,7 +17,11 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Input that reads a property from a trigger handler's {@code event} argument
@@ -72,5 +76,13 @@ public final class HandlerInput<T> extends Action.Input<T> {
         // event = the handler argument the framework passes in.
         return JsFunction.of("return event[$0]", propertyName)
                 .withArguments("event");
+    }
+
+    @Override
+    public JsonNode evaluate(@Nullable JsonNode eventData) {
+        // Reads event[propertyName] from the simulated event payload, mirroring
+        // the client-side `return event[$0]`.
+        return eventData == null ? JacksonUtils.nullNode()
+                : eventData.path(propertyName);
     }
 }

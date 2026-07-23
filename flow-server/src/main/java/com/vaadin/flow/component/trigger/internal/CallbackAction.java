@@ -145,6 +145,29 @@ public class CallbackAction<T> extends Action {
                 .withArguments("event");
     }
 
+    /**
+     * Delivers a value as if the client had forwarded it from the trigger's
+     * handler scope, running the callback on the calling thread. For
+     * browserless simulation of a trigger firing. Pass {@code null} for the
+     * value-less variant (where the trigger firing is the whole signal); a
+     * value-carrying action rejects a {@code null} exactly as it would a JSON
+     * null from the client.
+     *
+     * @param trigger
+     *            the trigger this action was armed on, not {@code null}
+     * @param value
+     *            the value to forward as a {@link JsonNode}, or {@code null}
+     *            for the value-less variant
+     */
+    public void deliver(Trigger trigger, @Nullable JsonNode value) {
+        Objects.requireNonNull(trigger, "trigger must not be null");
+        ArrayNode args = JacksonUtils.createArrayNode();
+        if (value != null) {
+            args.add(value);
+        }
+        channelFor(trigger.getHost().getNode()).invoke(args);
+    }
+
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
         return channelByNode.computeIfAbsent(hostNode, node -> node
                 .getFeature(ReturnChannelMap.class).registerChannel(dispatch));

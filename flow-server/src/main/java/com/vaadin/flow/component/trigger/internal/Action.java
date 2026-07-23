@@ -17,8 +17,10 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -138,5 +140,29 @@ public abstract class Action implements Serializable {
          * @return the input's JS function, not {@code null}
          */
         public abstract JsFunction toJs(Trigger trigger);
+
+        /**
+         * Reproduces on the server the value this input would produce on the
+         * client, for browserless simulation of a trigger firing. Returned as a
+         * {@link JsonNode} — the same wire form the value would take crossing
+         * to the server — so callers decode it as they need.
+         * <p>
+         * Only inputs whose value is observable on the server support this: a
+         * {@link LiteralInput literal}, a {@link PropertyInput synced element
+         * property}, or a {@link HandlerInput value read from the simulated
+         * event}. Inputs backed by genuinely client-only state (e.g. an image
+         * blob) cannot be reproduced and throw
+         * {@link UnsupportedOperationException}.
+         *
+         * @param eventData
+         *            the simulated event payload the firing supplies, or
+         *            {@code null} for inputs that do not read the event
+         * @return the input's value as a {@link JsonNode}, never {@code null}
+         *         (use a JSON null node for an absent value)
+         */
+        public JsonNode evaluate(@Nullable JsonNode eventData) {
+            throw new UnsupportedOperationException(getClass().getSimpleName()
+                    + " cannot be evaluated on the server");
+        }
     }
 }
