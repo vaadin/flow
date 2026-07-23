@@ -7,12 +7,11 @@ const globalStyles = `
   }
 
   /*
-   * Add the animation to the slotted input elements in checkbox.
-   * (checkbox logic adds the input elements).
+   * Match every input regardless of type. A plain Flow Input renders without a
+   * type attribute (the default "text" is omitted), so type-specific selectors
+   * would not detect its render.
    */
-  input[type='checkbox'],
-  input[type='text'],
-  input[type='radio'] {
+  input {
     animation: element-rendered;
   }
 `;
