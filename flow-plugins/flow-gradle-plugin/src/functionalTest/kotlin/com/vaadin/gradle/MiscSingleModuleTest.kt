@@ -974,6 +974,19 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      * checkouts at different paths. Building an identical copy of the project
      * at a different absolute path, against the same cache, must reuse the
      * bundle (FROM_CACHE) rather than re-running the frontend build.
+     *
+     * The relocated copy deliberately omits the frontend-root `index.html`
+     * that the first build generates. On 25.2 the default `index.html` is
+     * written into the frontend folder (on 25.3 it lives in
+     * `frontend/generated/`), and vaadinBuildFrontend declares it as an
+     * optional output. A copy of that file present in a fresh checkout has no
+     * task history, so Gradle treats it as an overlapping output and disables
+     * output caching for correctness - it rebuilds rather than restoring a
+     * bundle that may not match a user-edited `index.html`. That safe behavior
+     * is orthogonal to path relocation, so the file is left out to isolate
+     * what this test verifies. Its content is not part of the cache key (it is
+     * excluded from the task inputs), so omitting it does not affect the key
+     * comparison, and it is restored from the cache on a FROM_CACHE hit.
      */
     @Test
     fun buildFrontendBuildCacheIsRelocatable() {
@@ -1018,20 +1031,35 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
+        val frontendIndexHtml = "src/main/frontend/index.html"
+
         // 1. Populate the shared cache at the original location.
         var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
         result.expectTaskSucceded("vaadinBuildFrontend")
         expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+        // The first build generates index.html into the frontend root; the
+        // relocated copy below omits it on purpose, so guard against the file
+        // moving elsewhere and turning that omission into a no-op.
+        expect(true, "expected $frontendIndexHtml to be generated") {
+            File(testProject.dir, frontendIndexHtml).exists()
+        }
 
         // 2. Copy the project to a different absolute path, excluding build
         //    outputs, Gradle state and node_modules so the relocated copy is a
         //    clean checkout that can only satisfy vaadinBuildFrontend from the
-        //    shared cache.
+        //    shared cache. The generated frontend-root index.html is also
+        //    omitted (see the method Javadoc) so that a pre-existing output
+        //    without task history does not disable caching and mask the path
+        //    relocation this test checks.
         val relocated = TestProject()
         val excludedDirs = setOf("build", ".gradle", "node_modules")
         testProject.dir.walkTopDown()
             .onEnter { it.name !in excludedDirs }
             .filter { it.isFile }
+            .filter {
+                it.relativeTo(testProject.dir).invariantSeparatorsPath !=
+                    frontendIndexHtml
+            }
             .forEach { source ->
                 val target =
                     File(relocated.dir, source.relativeTo(testProject.dir).path)
