@@ -94,6 +94,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
         super("value", 0.0, false);
         setValueChangeMode(valueChangeMode);
         set(typeDescriptor, "range");
+        // Explicitly reflect the initial value to the DOM. A value-less
+        // range input defaults on the client to the midpoint of min and max,
+        // so without this the slider would render in the middle even though
+        // the server-side value is 0. Setting the value through setValue would
+        // be a no-op here because it equals the field's default model value.
+        getElement().setProperty("value", 0.0);
     }
 
     @Override
