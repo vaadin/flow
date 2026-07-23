@@ -3,7 +3,7 @@
 // the compression Vite applies to bundled assets. Invoked with the resource
 // root directory as the single argument. Uses only Node built-ins so the Flow
 // build needs no additional dependency.
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 
@@ -53,6 +53,11 @@ collectFiles(resolve(root), files);
 for (const file of files) {
   const size = statSync(file).size;
   if (size < MIN_SIZE_BYTES) {
+    // An earlier build may have produced .br/.gz siblings when this file was
+    // still above the threshold. Remove them so a stale compressed variant is
+    // not served now that the file is served uncompressed.
+    rmSync(`${file}.br`, { force: true });
+    rmSync(`${file}.gz`, { force: true });
     continue;
   }
   const contents = readFileSync(file);

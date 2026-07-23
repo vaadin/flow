@@ -15,16 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -32,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.internal.CssBundler;
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
@@ -83,108 +76,26 @@ public class TaskProcessStylesheetCss implements FallibleCommand {
         Set<String> referencedCssPaths = scanStyleSheetAnnotations();
         if (referencedCssPaths.isEmpty()) {
             getLogger().debug("No @StyleSheet annotations found");
-        } else {
-            getLogger().info("Found {} @StyleSheet reference(s)",
-                    referencedCssPaths.size());
-
-            for (String cssPath : referencedCssPaths) {
-                File cssFile = resolveCssFile(resourcesDir, cssPath);
-                if (cssFile != null && cssFile.exists()) {
-                    try {
-                        processCssFile(cssFile);
-                    } catch (IOException e) {
-                        getLogger().warn("Failed to process CSS file: {}",
-                                cssFile.getName(), e);
-                    }
-                } else {
-                    getLogger().debug(
-                            "CSS file not found in META-INF/resources: {}",
-                            cssPath);
-                }
-            }
-        }
-
-        // Pre-compress the processed CSS along with any other compressible
-        // static resource, so the server can serve brotli/gzip variants the
-        // same way it does for Vite-bundled assets. This runs on every
-        // production build, independent of whether the frontend bundle is
-        // rebuilt or reused.
-        compressStaticResources(resourcesDir);
-    }
-
-    /**
-     * Pre-compresses compressible static resources under the given directory
-     * into {@code .br} and {@code .gz} siblings by running a small Node script
-     * that relies solely on Node's built-in {@code zlib}. Node is already
-     * required for the frontend build, so no extra dependency is needed.
-     *
-     * @param resourcesDir
-     *            the META-INF/resources output directory to compress
-     */
-    private void compressStaticResources(File resourcesDir)
-            throws ExecutionFailedException {
-        if (options.getNpmFolder() == null) {
-            getLogger().debug(
-                    "Node environment not configured, skipping static resource compression");
             return;
         }
-        File script = extractCompressionScript();
-        try {
-            FrontendTools tools = FrontendTools.fromOptions(options);
-            List<String> command = List.of(tools.getNodeExecutable(),
-                    script.getAbsolutePath(), resourcesDir.getAbsolutePath());
 
-            ProcessBuilder builder = FrontendUtils
-                    .createProcessBuilder(command);
-            builder.redirectErrorStream(true);
-            Process process = builder.start();
+        getLogger().info("Found {} @StyleSheet reference(s)",
+                referencedCssPaths.size());
 
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append(System.lineSeparator());
+        for (String cssPath : referencedCssPaths) {
+            File cssFile = resolveCssFile(resourcesDir, cssPath);
+            if (cssFile != null && cssFile.exists()) {
+                try {
+                    processCssFile(cssFile);
+                } catch (IOException e) {
+                    getLogger().warn("Failed to process CSS file: {}",
+                            cssFile.getName(), e);
                 }
+            } else {
+                getLogger().debug(
+                        "CSS file not found in META-INF/resources: {}",
+                        cssPath);
             }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new ExecutionFailedException(
-                        "Compressing static resources failed with exit code "
-                                + exitCode + ":\n" + output);
-            }
-        } catch (IOException e) {
-            throw new ExecutionFailedException(
-                    "Failed to compress static resources", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ExecutionFailedException(
-                    "Interrupted while compressing static resources", e);
-        } finally {
-            script.delete();
-        }
-    }
-
-    private File extractCompressionScript() throws ExecutionFailedException {
-        try (InputStream in = getClass()
-                .getResourceAsStream("compress-static-resources.mjs")) {
-            if (in == null) {
-                throw new ExecutionFailedException(
-                        "Could not locate the static resource compression "
-                                + "script on the classpath");
-            }
-            File script = File
-                    .createTempFile("vaadin-compress-static-resources", ".mjs");
-            script.deleteOnExit();
-            Files.copy(in, script.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-            return script;
-        } catch (IOException e) {
-            throw new ExecutionFailedException(
-                    "Failed to prepare the static resource compression script",
-                    e);
         }
     }
 

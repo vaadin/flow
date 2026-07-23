@@ -33,8 +33,6 @@ import com.vaadin.flow.router.Route;
 @StyleSheet("styles/static-stylesheet.css")
 public class MainView extends Div {
 
-    public static final String STATIC_STYLESHEET = "/styles/static-stylesheet.css";
-
     public static final String PLANT = "plant";
     public static final String HIDEPLANT = "hideplant";
     public static final String OUTSIDE = "outsideButton";
