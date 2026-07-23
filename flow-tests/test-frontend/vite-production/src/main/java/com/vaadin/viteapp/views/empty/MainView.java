@@ -17,6 +17,7 @@ package com.vaadin.viteapp.views.empty;
 
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -29,7 +30,10 @@ import com.vaadin.flow.router.Route;
 @JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./toplevelawait-main.js")
 @CssImport("./image.css")
+@StyleSheet("styles/static-stylesheet.css")
 public class MainView extends Div {
+
+    public static final String STATIC_STYLESHEET = "/styles/static-stylesheet.css";
 
     public static final String PLANT = "plant";
     public static final String HIDEPLANT = "hideplant";

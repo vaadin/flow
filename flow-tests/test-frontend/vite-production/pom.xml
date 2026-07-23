@@ -72,6 +72,17 @@
       <plugin>
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <configuration>
+          <webApp>
+            <!-- Serve the application's own META-INF/resources from the build
+                 output, mirroring how a packaged application jar exposes them
+                 in production. Needed so the pre-compressed static resources
+                 are reachable over HTTP in the test. -->
+            <resourceBases>
+              <resourceBase>${project.build.outputDirectory}/META-INF/resources</resourceBase>
+            </resourceBases>
+          </webApp>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
