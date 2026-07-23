@@ -969,6 +969,119 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
+     * The vaadinBuildFrontend cache key must not depend on the project's
+     * absolute location, otherwise a shared build cache never hits across
+     * checkouts at different paths. Building an identical copy of the project
+     * at a different absolute path, against the same cache, must reuse the
+     * bundle (FROM_CACHE) rather than re-running the frontend build.
+     *
+     * The relocated copy deliberately omits the frontend-root `index.html`
+     * that the first build generates. On 25.2 the default `index.html` is
+     * written into the frontend folder (on 25.3 it lives in
+     * `frontend/generated/`), and vaadinBuildFrontend declares it as an
+     * optional output. A copy of that file present in a fresh checkout has no
+     * task history, so Gradle treats it as an overlapping output and disables
+     * output caching for correctness - it rebuilds rather than restoring a
+     * bundle that may not match a user-edited `index.html`. That safe behavior
+     * is orthogonal to path relocation, so the file is left out to isolate
+     * what this test verifies. Its content is not part of the cache key (it is
+     * excluded from the task inputs), so omitting it does not affect the key
+     * comparison, and it is restored from the cache on a FROM_CACHE hit.
+     */
+    @Test
+    fun buildFrontendBuildCacheIsRelocatable() {
+        // A shared local build cache used by both the original and the
+        // relocated copy. Declared in settings.gradle so it is independent of
+        // each project's own location.
+        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
+
+        // A fixed rootProject.name keeps the generated application identifier
+        // (written into the cached token) identical across both locations, so
+        // the only difference between them is the absolute project path.
+        testProject.settingsFile.writeText(
+            """
+            rootProject.name = 'reloc-test'
+            buildCache {
+                local {
+                    directory = '$buildCachePath'
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        val frontendIndexHtml = "src/main/frontend/index.html"
+
+        // 1. Populate the shared cache at the original location.
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+        // The first build generates index.html into the frontend root; the
+        // relocated copy below omits it on purpose, so guard against the file
+        // moving elsewhere and turning that omission into a no-op.
+        expect(true, "expected $frontendIndexHtml to be generated") {
+            File(testProject.dir, frontendIndexHtml).exists()
+        }
+
+        // 2. Copy the project to a different absolute path, excluding build
+        //    outputs, Gradle state and node_modules so the relocated copy is a
+        //    clean checkout that can only satisfy vaadinBuildFrontend from the
+        //    shared cache. The generated frontend-root index.html is also
+        //    omitted (see the method Javadoc) so that a pre-existing output
+        //    without task history does not disable caching and mask the path
+        //    relocation this test checks.
+        val relocated = TestProject()
+        val excludedDirs = setOf("build", ".gradle", "node_modules")
+        testProject.dir.walkTopDown()
+            .onEnter { it.name !in excludedDirs }
+            .filter { it.isFile }
+            .filter {
+                it.relativeTo(testProject.dir).invariantSeparatorsPath !=
+                    frontendIndexHtml
+            }
+            .forEach { source ->
+                val target =
+                    File(relocated.dir, source.relativeTo(testProject.dir).path)
+                target.parentFile.mkdirs()
+                source.copyTo(target, overwrite = true)
+            }
+
+        try {
+            // 3. Building at the new location must reuse the cached bundle.
+            result = relocated.build(
+                "--build-cache", "-Pvaadin.productionMode", "build"
+            )
+            result.expectTaskOutcome(
+                "vaadinBuildFrontend", TaskOutcome.FROM_CACHE
+            )
+            expectArchiveContainsVaadinBundle(relocated.builtJar, false)
+        } finally {
+            relocated.delete()
+        }
+    }
+
+    /**
      * A custom `frontendOutputDirectory` that does not follow the
      * `META-INF/VAADIN/webapp` layout cannot be packaged: the frontend outputs
      * would fall back into the source set resources directory
