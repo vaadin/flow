@@ -184,6 +184,7 @@ class ShortcutRegistrationTest {
         registration.setBrowserDefaultAllowed(true);
         registration.setEventPropagationAllowed(true);
         registration.setResetFocusOnActiveElement(true);
+        registration.setEventsFromNestedModalsAllowed(true);
 
         clientResponse();
 
@@ -193,10 +194,13 @@ class ShortcutRegistrationTest {
                 "Allow propagation was not set to true");
         assertTrue(registration.isResetFocusOnActiveElement(),
                 "Reset focus on active element was not set to true");
+        assertTrue(registration.isEventsFromNestedModalsAllowed(),
+                "Allow events from nested modals was not set to true");
 
         registration.setBrowserDefaultAllowed(false);
         registration.setEventPropagationAllowed(false);
         registration.setResetFocusOnActiveElement(false);
+        registration.setEventsFromNestedModalsAllowed(false);
 
         clientResponse();
 
@@ -206,6 +210,8 @@ class ShortcutRegistrationTest {
                 "Allow propagation was not set to false");
         assertFalse(registration.isResetFocusOnActiveElement(),
                 "Reset focus on active element was not set to false");
+        assertFalse(registration.isEventsFromNestedModalsAllowed(),
+                "Allow events from nested modals was not set to false");
     }
 
     @Test
@@ -460,6 +466,47 @@ class ShortcutRegistrationTest {
         assertTrue(expression.contains("window.Vaadin.Flow.resetFocus()"),
                 "JS execution string should have blur() and focus() on active element in it"
                         + expression);
+    }
+
+    @Test
+    void listenOnComponentHasElementLocatorJs_nestedModalGuardPresentByDefault() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        fixture.createNewShortcut(Key.KEY_A);
+
+        final String expression = fixture.writeResponse().get(0).getInvocation()
+                .getExpression();
+        assertTrue(expression.contains("composedPath()"),
+                "JS execution string should guard against events from nested "
+                        + "modals by default " + expression);
+    }
+
+    @Test
+    void listenOnComponentHasElementLocatorJs_allowEventsFromNestedModals_noGuard() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        fixture.createNewShortcut(Key.KEY_A).allowEventsFromNestedModals();
+
+        final String expression = fixture.writeResponse().get(0).getInvocation()
+                .getExpression();
+        assertFalse(expression.contains("composedPath()"),
+                "JS execution string should not guard against nested modal "
+                        + "events when explicitly allowed " + expression);
+    }
+
+    @Test
+    void eventsFromNestedModalsAllowedDefaultsToFalse() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        assertFalse(registration.isEventsFromNestedModalsAllowed());
+        registration.allowEventsFromNestedModals();
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
+        // Calling again is a no-op and must keep the value unchanged.
+        registration.allowEventsFromNestedModals();
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
+        // Setting the same value via the bean setter is also a no-op.
+        registration.setEventsFromNestedModalsAllowed(true);
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
     }
 
     @Test
