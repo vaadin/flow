@@ -31,6 +31,9 @@ import com.vaadin.flow.component.trigger.internal.Action.Input;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.Triggers.ArmingListener;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -49,19 +52,32 @@ class TriggerSimulationTest {
     private record Armed(Trigger trigger, List<Action> actions) {
     }
 
+    /**
+     * A {@link MockUI} whose service exposes a real attribute-backed
+     * {@link MockVaadinContext}, so the service-scoped arming registry actually
+     * persists (the default mock servlet context does not store attributes).
+     */
+    private static UI uiWithService() throws Exception {
+        MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
+        setup.getService().setContext(new MockVaadinContext());
+        return new MockUI(setup.getSession());
+    }
+
     // 1a — arming observation ------------------------------------------------
 
     @Test
-    void armingListener_notifiedPerTriggersCall_thenOnRemove() {
-        UI ui = new MockUI();
+    void armingListener_notifiedPerTriggersCall_thenOnRemove()
+            throws Exception {
+        UI ui = uiWithService();
+        VaadinService service = ui.getSession().getService();
         TagComponent button = new TagComponent("button");
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         List<Armed> armed = new ArrayList<>();
         AtomicReference<Trigger> disarmed = new AtomicReference<>();
-        Registration registration = Triggers
-                .addArmingListener(new ArmingListener() {
+        Registration registration = Triggers.addArmingListener(service,
+                new ArmingListener() {
                     @Override
                     public void onArmed(Trigger trigger, List<Action> actions) {
                         armed.add(new Armed(trigger, actions));
@@ -106,10 +122,11 @@ class TriggerSimulationTest {
     void armingRegistration_serializable_evenWithNonSerializableListener()
             throws Exception {
         // ArmingListener is not Serializable, so this anonymous instance is
-        // not either. The registration must still serialize (the listener is
-        // held transiently) rather than fail on it.
-        Registration registration = Triggers
-                .addArmingListener(new ArmingListener() {
+        // not either. The registration must still serialize (the service and
+        // listener are held transiently) rather than fail on it.
+        VaadinService service = uiWithService().getSession().getService();
+        Registration registration = Triggers.addArmingListener(service,
+                new ArmingListener() {
                     @Override
                     public void onArmed(Trigger trigger, List<Action> actions) {
                     }
