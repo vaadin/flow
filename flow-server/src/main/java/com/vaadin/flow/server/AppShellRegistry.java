@@ -86,8 +86,6 @@ public class AppShellRegistry implements Serializable {
     private Class<? extends AppShellConfigurator> appShellClass;
     private boolean auraAutoLoadWarningLogged = false;
 
-    private List<String> styleSheets;
-
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
      * servlet context.
