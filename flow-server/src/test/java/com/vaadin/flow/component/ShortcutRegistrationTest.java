@@ -184,6 +184,7 @@ class ShortcutRegistrationTest {
         registration.setBrowserDefaultAllowed(true);
         registration.setEventPropagationAllowed(true);
         registration.setResetFocusOnActiveElement(true);
+        registration.setEventsFromNestedModalsAllowed(true);
 
         clientResponse();
 
@@ -193,10 +194,13 @@ class ShortcutRegistrationTest {
                 "Allow propagation was not set to true");
         assertTrue(registration.isResetFocusOnActiveElement(),
                 "Reset focus on active element was not set to true");
+        assertTrue(registration.isEventsFromNestedModalsAllowed(),
+                "Allow events from nested modals was not set to true");
 
         registration.setBrowserDefaultAllowed(false);
         registration.setEventPropagationAllowed(false);
         registration.setResetFocusOnActiveElement(false);
+        registration.setEventsFromNestedModalsAllowed(false);
 
         clientResponse();
 
@@ -206,6 +210,8 @@ class ShortcutRegistrationTest {
                 "Allow propagation was not set to false");
         assertFalse(registration.isResetFocusOnActiveElement(),
                 "Reset focus on active element was not set to false");
+        assertFalse(registration.isEventsFromNestedModalsAllowed(),
+                "Allow events from nested modals was not set to false");
     }
 
     @Test
@@ -494,6 +500,12 @@ class ShortcutRegistrationTest {
 
         assertFalse(registration.isEventsFromNestedModalsAllowed());
         registration.allowEventsFromNestedModals();
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
+        // Calling again is a no-op and must keep the value unchanged.
+        registration.allowEventsFromNestedModals();
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
+        // Setting the same value via the bean setter is also a no-op.
+        registration.setEventsFromNestedModalsAllowed(true);
         assertTrue(registration.isEventsFromNestedModalsAllowed());
     }
 
