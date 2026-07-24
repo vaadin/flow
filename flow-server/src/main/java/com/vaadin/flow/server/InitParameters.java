@@ -97,6 +97,8 @@ public class InitParameters implements Serializable {
      * too low will reject legitimate interactions and make the application
      * unusable. Choose a value that comfortably accommodates the largest
      * expected UIDL/RPC payload produced by the application.
+     * 
+     * @since 25.2.2
      */
     public static final String SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE = "maxRequestBodySize";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
@@ -428,7 +430,7 @@ public class InitParameters implements Serializable {
      * not safe can still be set through the dedicated {@code setUnsafe*}
      * methods.
      * 
-     * @since 25.2
+     * @since 25.1.12
      */
     public static final String URL_SAFE_SCHEMES = "safeUrlSchemes";
 
@@ -439,6 +441,7 @@ public class InitParameters implements Serializable {
      * new name takes precedence.
      *
      * @deprecated use {@link #URL_SAFE_SCHEMES} instead
+     * @since 25.3
      */
     @Deprecated
     public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";

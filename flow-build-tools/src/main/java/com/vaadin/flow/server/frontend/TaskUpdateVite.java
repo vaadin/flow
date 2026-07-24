@@ -40,6 +40,8 @@ import com.vaadin.flow.server.PwaConfiguration;
  * Updates the Vite configuration files according with current project settings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public class TaskUpdateVite implements FallibleCommand, Serializable {
 

@@ -39,6 +39,7 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 24.3.22
  */
 public class DevModeUsageStatistics {
 
@@ -205,6 +206,7 @@ public class DevModeUsageStatistics {
      *
      * @param data
      *            the data from the browser
+     * @since 24.8
      */
     public static void handleBrowserData(JsonNode data) {
         getLogger().debug("Received client usage statistics from the browser");

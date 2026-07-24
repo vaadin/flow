@@ -45,6 +45,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * <li>src/main/webapp</li>
  * </ul>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.0
  */
 public final class PublicStyleSheetBundler {
 

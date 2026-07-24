@@ -85,6 +85,26 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskNotRan("vaadinPrepareFrontend")
         result.expectTaskNotRan("vaadinBuildFrontend")
 
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
+        expect(false, build.toString()) { build.exists() }
+    }
+
+    @Test
+    fun `vaadinBuildFrontend is skipped in development mode when explicitly required`() {
+        // Some projects wire vaadinBuildFrontend into the build graph, e.g.
+        // jar.dependsOn('vaadinBuildFrontend'). In development mode the task
+        // must be skipped rather than failing the build (the production-only
+        // token service is not registered) or writing a production token.
+        // See https://github.com/vaadin/flow/issues/25000
+        testProject.buildFile.appendText("""
+            tasks.named('jar') {
+                dependsOn('vaadinBuildFrontend')
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("jar", checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SKIPPED)
+
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(false, build.toString()) { build.exists() }
     }
@@ -97,7 +117,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // vaadinPrepareFrontend
         result.expectTaskNotRan("vaadinPrepareFrontend")
 
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
         build.find("*.br", 4..10)

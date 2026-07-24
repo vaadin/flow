@@ -50,7 +50,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public class TaskCopyFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {

@@ -256,7 +256,7 @@ public class FrontendUtils {
      * {@link #VITE_DEVMODE_TS}, recognize them as generated instead of deleting
      * them as stale.
      * 
-     * @since 25.2
+     * @since 25.2.2
      */
     public static final String GENERATED_FILES_LIST_NAME = "generated-flow-files.txt";
 
