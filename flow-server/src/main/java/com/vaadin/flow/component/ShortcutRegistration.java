@@ -67,6 +67,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
+    private boolean allowEventsFromNestedModals = false;
+
     private boolean resetFocusOnActiveElement = false;
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
@@ -262,6 +264,25 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * Allow the shortcut to trigger for keyboard events that originate from a
+     * modal or popover nested inside the shortcut's listening scope.
+     * <p>
+     * By default the shortcut does not trigger for such events. This restores
+     * behavior where a shortcut bound to a parent overlay would react to a
+     * keydown coming from a nested dialog/overlay that has focus.
+     *
+     * @return this <code>ShortcutRegistration</code>
+     * @see #setEventsFromNestedModalsAllowed(boolean)
+     */
+    public ShortcutRegistration allowEventsFromNestedModals() {
+        if (!allowEventsFromNestedModals) {
+            allowEventsFromNestedModals = true;
+            prepareForClientResponse();
+        }
+        return this;
+    }
+
+    /**
      * Reset focus on active element before triggering shortcut event handler.
      *
      * @return this <code>ShortcutRegistration</code>
@@ -448,6 +469,36 @@ public class ShortcutRegistration implements Registration, Serializable {
     public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
         if (allowEventPropagation != eventPropagationAllowed) {
             allowEventPropagation = eventPropagationAllowed;
+            prepareForClientResponse();
+        }
+    }
+
+    /**
+     * Checks if the shortcut triggers for keyboard events originating from a
+     * modal or popover nested inside the shortcut's listening scope. The
+     * default value is {@code false}.
+     *
+     * @return {@code true} if events from nested modals are allowed to trigger
+     *         the shortcut
+     */
+    public boolean isEventsFromNestedModalsAllowed() {
+        return allowEventsFromNestedModals;
+    }
+
+    /**
+     * Sets whether the shortcut triggers for keyboard events that originate
+     * from a modal or popover nested inside the shortcut's listening scope. The
+     * default value is {@code false}, meaning a keydown coming from a nested
+     * dialog/overlay does not trigger a shortcut bound to a parent scope.
+     *
+     * @param eventsFromNestedModalsAllowed
+     *            {@code true} to allow events from nested modals to trigger the
+     *            shortcut
+     */
+    public void setEventsFromNestedModalsAllowed(
+            boolean eventsFromNestedModalsAllowed) {
+        if (allowEventsFromNestedModals != eventsFromNestedModalsAllowed) {
+            allowEventsFromNestedModals = eventsFromNestedModalsAllowed;
             prepareForClientResponse();
         }
     }
@@ -686,6 +737,16 @@ public class ShortcutRegistration implements Registration, Serializable {
 
                 String filterText = filterText();
                 /*
+                 * Ignore keydown events that originate from a modal/popover
+                 * nested inside the listening element (#24974). The guard runs
+                 * before the preventDefault/stopPropagation side effects so
+                 * that those events are left untouched for the nested overlay.
+                 */
+                if (!allowEventsFromNestedModals) {
+                    filterText += " && "
+                            + generateNestedModalOriginFilter("element");
+                }
+                /*
                  * Due to https://github.com/vaadin/flow/issues/4871 we are not
                  * able to use setEventData for these values, so we hack the
                  * filter.
@@ -872,6 +933,30 @@ public class ShortcutRegistration implements Registration, Serializable {
                 + ".indexOf(event.key) !== -1)";
     }
 
+    /**
+     * Builds a JS boolean expression that is {@code true} when the event does
+     * <em>not</em> originate from a modal or popover nested inside the boundary
+     * element, i.e. when the shortcut is allowed to fire.
+     * <p>
+     * It walks {@code event.composedPath()} from the event target up to the
+     * boundary element (the element the listener is bound to) and looks for an
+     * open popover or modal element in between. Such an element means the
+     * keydown came from a nested overlay that shadows the shortcut's scope.
+     *
+     * @param boundaryExpr
+     *            JS expression evaluating to the element the listener is bound
+     *            to (e.g. {@code "element"} or {@code "delegate"})
+     * @return the guard expression
+     */
+    private static String generateNestedModalOriginFilter(String boundaryExpr) {
+        return "!(function(){" + "var p=event.composedPath();"
+                + "var b=p.indexOf(" + boundaryExpr + ");"
+                + "if(b<0){return false;}" + "for(var i=0;i<b;i++){"
+                + "var n=p[i];" + "if(n&&n.nodeType===1&&n.matches&&"
+                + "(n.matches(':popover-open')||n.matches(':modal'))){"
+                + "return true;}" + "}" + "return false;" + "})()";
+    }
+
     /*
      * #7799, vaadin/vaadin-dialog#229 This could be changed to use a generic
      * feature for DOM events by either using existing DOM event handling or by
@@ -883,7 +968,15 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (elementLocatorJs != null) {
             // #10362 only prevent default when key filter matches to not block
             // typing or existing shortcuts
-            final String filterText = filterText();
+            String filterText = filterText();
+            // #24974 ignore keydown events bubbling from a modal/popover nested
+            // inside the delegate element (e.g. a nested dialog overlay). The
+            // delegate re-dispatches a clone that loses the origin, so the
+            // guard must run on the original event here, before the clone.
+            if (!allowEventsFromNestedModals) {
+                filterText += " && "
+                        + generateNestedModalOriginFilter("delegate");
+            }
             final String focusJs = resetFocusOnActiveElement
                     ? "window.Vaadin.Flow.resetFocus();"
                     : "";
