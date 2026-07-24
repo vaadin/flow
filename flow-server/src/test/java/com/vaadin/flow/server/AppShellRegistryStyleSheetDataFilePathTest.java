@@ -235,7 +235,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "Relative href should contain hash parameter");
         assertTrue(rel.attr("href").startsWith("./../relative/path.css"),
                 "Relative href should start with ./../");
-        assertEquals("", abs.attr("data-file-path"));
+        assertEquals("", rel.attr("data-file-path"));
 
         // 3) Context path: href is servlet-relative (context:// expanded),
         // hash appended, data-file-path unchanged
@@ -244,7 +244,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "Context href should contain hash parameter");
         assertTrue(ctx.attr("href").startsWith("./../from-context.css"),
                 "Context href should start with ./../");
-        assertEquals("", rel.attr("data-file-path"));
+        assertEquals("", ctx.attr("data-file-path"));
 
         // 4) External URL: no hash appended, data-file-path unchanged
         Element remote = links.get(3);
