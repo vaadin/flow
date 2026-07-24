@@ -50,6 +50,9 @@ import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
+import static com.vaadin.flow.shared.ApplicationConstants.BASE_PROTOCOL_PREFIX;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+
 /**
  * Registry for PWA data.
  *
@@ -279,6 +282,30 @@ public class PwaRegistry implements Serializable {
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
+        final AppShellRegistry appShellRegistry = AppShellRegistry
+                .getInstance(new VaadinServletContext(servletContext));
+        // Add stylesheets to precache
+        for (String styleSheet : appShellRegistry
+                .getStyleSheets(VaadinService.getCurrent())) {
+            String uri = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet);
+            if (uri == null) {
+                continue;
+            }
+            // Service worker resolves relative requests form context path.
+            // Normalize paths to relative format without prefix.
+            if (uri.startsWith("./")) {
+                uri = uri.substring(2);
+            } else if (uri.startsWith("/")) {
+                uri = uri.substring(1);
+            } else if (uri.startsWith(CONTEXT_PROTOCOL_PREFIX)) {
+                uri = uri.substring(CONTEXT_PROTOCOL_PREFIX.length());
+            } else if (uri.startsWith(BASE_PROTOCOL_PREFIX)) {
+                uri = uri.substring(BASE_PROTOCOL_PREFIX.length());
+            }
+            filesToCache.add(offlinePageCache(styleSheet));
+        }
+
         // Add user defined resources. Do not serve these via dev-server, as the
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
@@ -414,6 +441,7 @@ public class PwaRegistry implements Serializable {
      * @return contents of offline page
      */
     public String getOfflineHtml() {
+
         return offlineHtml;
     }
 

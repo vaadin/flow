@@ -19,7 +19,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -84,6 +85,8 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
     private boolean auraAutoLoadWarningLogged = false;
+
+    private List<String> styleSheets;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
@@ -197,6 +200,39 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
+    List<String> getStyleSheets(VaadinService service) {
+        var styleSheets = new LinkedHashSet<String>();
+        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
+            styleSheets.add(sheet.value());
+        }
+
+        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
+        // available
+        if (appShellClass == null) {
+            String defaultStylesheet = AURA_STYLESHEET;
+            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
+                styleSheets.add(defaultStylesheet);
+                if (!auraAutoLoadWarningLogged) {
+                    auraAutoLoadWarningLogged = true;
+                    log.info(
+                            """
+                                    There is no AppShellConfigurator implementation \
+                                    available, auto loading the Aura theme. Add an \
+                                    AppShellConfigurator to define the theme to use, e.g.
+
+                                    import com.vaadin.flow.theme.aura.Aura;
+
+                                    @StyleSheet(Aura.STYLESHEET)
+                                    public class Application implements AppShellConfigurator {
+                                    }
+                                    """);
+                }
+            }
+        }
+
+        return List.copyOf(styleSheets);
+    }
+
     private AppShellSettings createSettings(VaadinRequest request) {
         AppShellSettings settings = new AppShellSettings();
 
@@ -230,51 +266,14 @@ public class AppShellRegistry implements Serializable {
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
 
-        Map<String, String> stylesheets = new LinkedHashMap<>();
-        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
-            String href = resolveStyleSheetHref(sheet.value(), request);
-            if (href != null && !href.isBlank()) {
-                stylesheets.put(href, sheet.value());
-            }
-        }
-
-        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
-        // available
-        if (appShellClass == null) {
-            String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                    + AURA_STYLESHEET;
-            VaadinService service = request.getService();
-            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
-                String auraHref = resolveStyleSheetHref(defaultStylesheet,
-                        request);
-                if (auraHref != null) {
-                    stylesheets.put(auraHref, defaultStylesheet);
-                    if (!auraAutoLoadWarningLogged) {
-                        auraAutoLoadWarningLogged = true;
-                        log.info(
-                                """
-                                        There is no AppShellConfigurator implementation \
-                                        available, auto loading the Aura theme. Add an \
-                                        AppShellConfigurator to define the theme to use, e.g.
-
-                                        import com.vaadin.flow.theme.aura.Aura;
-
-                                        @StyleSheet(Aura.STYLESHEET)
-                                        public class Application implements AppShellConfigurator {
-                                        }
-                                        """);
-                    }
-                }
-            }
-        }
-
+        var styleSheets = getStyleSheets(request.getService());
         if (!request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             ActiveStyleSheetTracker.get(request.getService())
-                    .trackForAppShell(stylesheets.values());
+                    .trackForAppShell(styleSheets);
         }
 
-        addStyleSheets(request, stylesheets, settings);
+        addStyleSheets(request, styleSheets, settings);
         return settings;
     }
 
@@ -295,7 +294,20 @@ public class AppShellRegistry implements Serializable {
                 .getContextRootRelativePath(request);
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
                 servletPathToContextRoot, null);
-        return resolver.resolveVaadinUri(normalized);
+        String resolved = resolver.resolveVaadinUri(normalized);
+        if (resolved == null) {
+            return null;
+        }
+
+        VaadinService service = request.getService();
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (config.isProductionMode()) {
+            String hash = ResourceContentHash.getContentHash(service,
+                    normalized);
+            resolved = UrlUtil.appendQueryParameter(resolved,
+                    ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+        }
+        return resolved;
     }
 
     /**
@@ -395,39 +407,21 @@ public class AppShellRegistry implements Serializable {
     }
 
     private static void addStyleSheets(VaadinRequest request,
-            Map<String, String> stylesheets, AppShellSettings settings) {
-        VaadinService service = request.getService();
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode()) {
-            stylesheets.replaceAll((resolved, source) -> {
-                if (source.startsWith("/")) {
-                    source = source.substring(1);
+            List<String> styleSheets, AppShellSettings settings) {
+        final DeploymentConfiguration config = request.getService()
+                .getDeploymentConfiguration();
+        styleSheets.forEach((sourcePath) -> {
+            String href = resolveStyleSheetHref(sourcePath, request);
+            if (href != null) {
+                Map<String, String> attributes = new HashMap<>(
+                        Map.of("rel", "stylesheet"));
+                if (!config.isProductionMode()) {
+                    // Add metadata for StyleSheetHotswapper
+                    attributes.put("data-file-path", sourcePath);
+                    attributes.put("data-id", "appShell-" + sourcePath);
                 }
-                if (source.startsWith("./")) {
-                    source = source.substring(2);
-                }
-                if (source.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-                    source = source.substring(
-                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                                    .length());
-                }
-                return source;
-            });
-        }
-
-        stylesheets.forEach((href, sourcePath) -> {
-            String linkHref = href;
-            if (config.isProductionMode()) {
-                String hash = ResourceContentHash.getContentHash(service,
-                        sourcePath);
-                linkHref = UrlUtil.appendQueryParameter(href,
-                        ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+                settings.addLink(Position.APPEND, href, attributes);
             }
-            Map<String, String> attributes = Map.of("rel", "stylesheet",
-                    "data-file-path", sourcePath, "data-id",
-                    "appShell-" + sourcePath);
-            settings.addLink(Position.APPEND, linkHref, attributes);
         });
     }
 }

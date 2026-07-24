@@ -19,7 +19,10 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,6 +50,12 @@ class PwaRegistryTest {
 
     @PWA(name = "Custom Icon Path", shortName = "COP", offlinePath = "some/path.html")
     private static class PwaWithCustomOfflinePath {
+    }
+
+    @StyleSheet("app.css")
+    @PWA(name = "App Shell PWA", shortName = "ASP")
+    private static class PwaWithAppShellAndStyleSheet
+            implements AppShellConfigurator {
     }
 
     private static List<PwaIcon> splashIconsForAppleDevices;
@@ -80,6 +92,12 @@ class PwaRegistryTest {
     }
 
     private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
+        return preparePwaRegistry(pwa, null, Set.of());
+    }
+
+    private static PwaRegistry preparePwaRegistry(PWA pwa,
+            Class<? extends AppShellConfigurator> appShell,
+            Set<String> resources) throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
                 MockedStatic<ApplicationConfiguration> configuration = Mockito
@@ -89,14 +107,35 @@ class PwaRegistryTest {
 
             VaadinService vaadinServiceMocked = Mockito
                     .mock(VaadinService.class);
-            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            Mockito.when(vaadinServiceMocked
+                    .isResourceAvailable(Mockito.anyString()))
+                    .thenAnswer((InvocationOnMock invocation) -> {
+                        final String resourceUrl = (String) invocation
+                                .getArguments()[0];
+                        if (resources.contains(resourceUrl)) {
+                            return true;
+                        }
+                        return invocation.callRealMethod();
+                    });
+
+            final Map<String, Object> attributeMap = new HashMap<>();
+            ServletContext servletContext = Mockito.mock(ServletContext.class);
+            Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+                    .then(invocation -> attributeMap
+                            .get(invocation.getArguments()[0].toString()));
+            Mockito.doAnswer(invocation -> attributeMap.put(
+                    invocation.getArguments()[0].toString(),
+                    invocation.getArguments()[1])).when(servletContext)
+                    .setAttribute(Mockito.anyString(), Mockito.any());
+
+            final VaadinServletContext context = new VaadinServletContext(
+                    servletContext);
             ApplicationConfiguration applicationConfiguration = Mockito
                     .mock(ApplicationConfiguration.class);
 
             vaadinService.when(VaadinService::getCurrent)
                     .thenReturn(vaadinServiceMocked);
-            Mockito.when(vaadinServiceMocked.getContext())
-                    .thenReturn(vaadinContext);
+            Mockito.when(vaadinServiceMocked.getContext()).thenReturn(context);
             configuration
                     .when(() -> ApplicationConfiguration.get(Mockito.any()))
                     .thenReturn(applicationConfiguration);
@@ -105,8 +144,8 @@ class PwaRegistryTest {
             featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
                     .thenReturn(flags);
 
-            ServletContext context = Mockito.mock(ServletContext.class);
-            return new PwaRegistry(pwa, context);
+            AppShellRegistry.getInstance(context).setShell(appShell);
+            return new PwaRegistry(pwa, servletContext);
         }
     }
 
@@ -316,6 +355,38 @@ class PwaRegistryTest {
                 PwaRegistryTest.class.getAnnotation(PWA.class));
         assertTrue(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    void pwaWithAppShellAndStyleSheet_getRuntimeServiceWorkerJs_includesAppCss()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, Set.of("/aura/aura.css"));
+        // AppShellRegistry skips adding Aura when app shell exists
+        assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: 'aura/aura.css', revision:"));
+        assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: 'app.css', revision:"));
+    }
+
+    @Test
+    void pwaWithoutAppShell_getRuntimeServiceWorkerJs_doesNotIncludeAuraCss()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), null, Set.of());
+        assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: 'aura/aura.css', revision:"));
+    }
+
+    @Test
+    void pwaWithoutAppShell_AuraIsOnClassPath_getRuntimeServiceWorkerJs_includesAuraCss()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), null,
+                Set.of("/aura/aura.css"));
+        assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: 'aura/aura.css', revision:"));
     }
 
 }
