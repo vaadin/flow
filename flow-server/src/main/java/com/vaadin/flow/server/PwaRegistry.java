@@ -303,7 +303,7 @@ public class PwaRegistry implements Serializable {
             } else if (uri.startsWith(BASE_PROTOCOL_PREFIX)) {
                 uri = uri.substring(BASE_PROTOCOL_PREFIX.length());
             }
-            filesToCache.add(offlinePageCache(styleSheet));
+            filesToCache.add(offlinePageCache(uri));
         }
 
         // Add user defined resources. Do not serve these via dev-server, as the

@@ -53,6 +53,10 @@ class PwaRegistryTest {
     }
 
     @StyleSheet("app.css")
+    @StyleSheet("./relative.css")
+    @StyleSheet("/absolute.css")
+    @StyleSheet("context://context.css")
+    @StyleSheet("base://base.css")
     @PWA(name = "App Shell PWA", shortName = "ASP")
     private static class PwaWithAppShellAndStyleSheet
             implements AppShellConfigurator {
@@ -368,6 +372,22 @@ class PwaRegistryTest {
                 .contains("{ url: 'aura/aura.css', revision:"));
         assertTrue(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: 'app.css', revision:"));
+        assertTrue(
+                registry.getRuntimeServiceWorkerJs()
+                        .contains("{ url: 'absolute.css', revision:"),
+                "expected to contain normalized 'absolute.css' path");
+        assertTrue(
+                registry.getRuntimeServiceWorkerJs()
+                        .contains("{ url: 'relative.css', revision:"),
+                "expected to contain normalized 'relative.css' path");
+        assertTrue(
+                registry.getRuntimeServiceWorkerJs()
+                        .contains("{ url: 'base.css', revision:"),
+                "expected to contain normalized 'base.css' path");
+        assertTrue(
+                registry.getRuntimeServiceWorkerJs()
+                        .contains("{ url: 'context.css', revision:"),
+                "expected to contain normalized 'context.css' path");
     }
 
     @Test
