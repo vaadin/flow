@@ -86,8 +86,11 @@ public final class Clipboard implements Serializable {
     // without a DataTransfer; `|| null` collapses the empty string (the
     // browser's value for an absent MIME type) and the optional-chain
     // short-circuit into JSON null.
-    private static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
-    private static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
+    // Package-visible (not private) so the browserless ClipboardSimulator,
+    // which shares this package, can build a simulated paste event whose data
+    // uses the exact same keys this listener reads back.
+    static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
+    static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
 
     // Walks event.composedPath() so the check sees through open shadow DOMs
     // (e.g. a Vaadin web component's internal <input>). Matches input,
