@@ -463,6 +463,41 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void listenOnComponentHasElementLocatorJs_nestedModalGuardPresentByDefault() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        fixture.createNewShortcut(Key.KEY_A);
+
+        final String expression = fixture.writeResponse().get(0).getInvocation()
+                .getExpression();
+        assertTrue(expression.contains("composedPath()"),
+                "JS execution string should guard against events from nested "
+                        + "modals by default " + expression);
+    }
+
+    @Test
+    void listenOnComponentHasElementLocatorJs_allowEventsFromNestedModals_noGuard() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        fixture.createNewShortcut(Key.KEY_A).allowEventsFromNestedModals();
+
+        final String expression = fixture.writeResponse().get(0).getInvocation()
+                .getExpression();
+        assertFalse(expression.contains("composedPath()"),
+                "JS execution string should not guard against nested modal "
+                        + "events when explicitly allowed " + expression);
+    }
+
+    @Test
+    void eventsFromNestedModalsAllowedDefaultsToFalse() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        assertFalse(registration.isEventsFromNestedModalsAllowed());
+        registration.allowEventsFromNestedModals();
+        assertTrue(registration.isEventsFromNestedModalsAllowed());
+    }
+
+    @Test
     void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
