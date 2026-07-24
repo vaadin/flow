@@ -99,13 +99,21 @@ public final class Clipboard implements Serializable {
     private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
             + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
 
+    // Prefix of the element attribute holding a file-paste UploadHandler's
+    // stream URL (see registerFilePaste). Package-visible so the browserless
+    // ClipboardSimulator, which shares this package, can locate the handler to
+    // simulate pasted-file uploads.
+    static final String PASTE_UPLOAD_ATTRIBUTE_PREFIX = "_vaadin-paste-upload-";
+
     // DOM event the client paste-upload helper dispatches once every upload of
     // a paste has settled. A server-side listener for it (registered in
     // registerFilePaste) does nothing but force a Flow round trip, which
     // flushes the UI changes the per-file UploadHandler queued via UI.access —
     // so onFilePaste updates reach the client without @Push. Must stay in sync
-    // with the literal dispatched in flow-client/Clipboard.ts.
-    private static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
+    // with the literal dispatched in flow-client/Clipboard.ts. Package-visible
+    // so the browserless ClipboardSimulator can fire it to complete a simulated
+    // file paste.
+    static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
 
     /**
      * Request header set by the client-side paste-upload helper on every fetch
@@ -345,7 +353,8 @@ public final class Clipboard implements Serializable {
         // UUID scopes the slot per-registration (the same approach as
         // StreamResource) so multiple file-paste listeners on the same element
         // resolve to independent upload URLs.
-        String attributeName = "_vaadin-paste-upload-" + UUID.randomUUID();
+        String attributeName = PASTE_UPLOAD_ATTRIBUTE_PREFIX
+                + UUID.randomUUID();
         element.setAttribute(attributeName, handler);
 
         // Attach a native paste listener in the browser via the TS helper
