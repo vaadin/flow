@@ -969,6 +969,91 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
+     * The vaadinBuildFrontend cache key must not depend on the project's
+     * absolute location, otherwise a shared build cache never hits across
+     * checkouts at different paths. Building an identical copy of the project
+     * at a different absolute path, against the same cache, must reuse the
+     * bundle (FROM_CACHE) rather than re-running the frontend build.
+     */
+    @Test
+    fun buildFrontendBuildCacheIsRelocatable() {
+        // A shared local build cache used by both the original and the
+        // relocated copy. Declared in settings.gradle so it is independent of
+        // each project's own location.
+        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
+
+        // A fixed rootProject.name keeps the generated application identifier
+        // (written into the cached token) identical across both locations, so
+        // the only difference between them is the absolute project path.
+        testProject.settingsFile.writeText(
+            """
+            rootProject.name = 'reloc-test'
+            buildCache {
+                local {
+                    directory = '$buildCachePath'
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        // 1. Populate the shared cache at the original location.
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+
+        // 2. Copy the project to a different absolute path, excluding build
+        //    outputs, Gradle state and node_modules so the relocated copy is a
+        //    clean checkout that can only satisfy vaadinBuildFrontend from the
+        //    shared cache.
+        val relocated = TestProject()
+        val excludedDirs = setOf("build", ".gradle", "node_modules")
+        testProject.dir.walkTopDown()
+            .onEnter { it.name !in excludedDirs }
+            .filter { it.isFile }
+            .forEach { source ->
+                val target =
+                    File(relocated.dir, source.relativeTo(testProject.dir).path)
+                target.parentFile.mkdirs()
+                source.copyTo(target, overwrite = true)
+            }
+
+        try {
+            // 3. Building at the new location must reuse the cached bundle.
+            result = relocated.build(
+                "--build-cache", "-Pvaadin.productionMode", "build"
+            )
+            result.expectTaskOutcome(
+                "vaadinBuildFrontend", TaskOutcome.FROM_CACHE
+            )
+            expectArchiveContainsVaadinBundle(relocated.builtJar, false)
+        } finally {
+            relocated.delete()
+        }
+    }
+
+    /**
      * A custom `frontendOutputDirectory` that does not follow the
      * `META-INF/VAADIN/webapp` layout cannot be packaged: the frontend outputs
      * would fall back into the source set resources directory
