@@ -294,9 +294,7 @@ public class PwaRegistry implements Serializable {
             }
             // Service worker resolves relative requests form context path.
             // Normalize paths to relative format without prefix.
-            if (uri.startsWith("./")) {
-                uri = uri.substring(2);
-            } else if (uri.startsWith("/")) {
+            if (uri.startsWith("/") && !uri.startsWith("//")) {
                 uri = uri.substring(1);
             } else if (uri.startsWith(CONTEXT_PROTOCOL_PREFIX)) {
                 uri = uri.substring(CONTEXT_PROTOCOL_PREFIX.length());
@@ -441,7 +439,6 @@ public class PwaRegistry implements Serializable {
      * @return contents of offline page
      */
     public String getOfflineHtml() {
-
         return offlineHtml;
     }
 

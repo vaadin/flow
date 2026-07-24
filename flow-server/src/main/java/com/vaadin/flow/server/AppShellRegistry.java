@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -207,9 +206,8 @@ public class AppShellRegistry implements Serializable {
         // Auto-load Aura if no AppShellConfigurator is defined and Aura is
         // available
         if (appShellClass == null) {
-            String defaultStylesheet = AURA_STYLESHEET;
             if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
-                styleSheets.add(defaultStylesheet);
+                styleSheets.add(AURA_STYLESHEET);
                 if (!auraAutoLoadWarningLogged) {
                     auraAutoLoadWarningLogged = true;
                     log.info(
@@ -411,13 +409,11 @@ public class AppShellRegistry implements Serializable {
         styleSheets.forEach((sourcePath) -> {
             String href = resolveStyleSheetHref(sourcePath, request);
             if (href != null) {
-                Map<String, String> attributes = new HashMap<>(
-                        Map.of("rel", "stylesheet"));
-                if (!config.isProductionMode()) {
-                    // Add metadata for StyleSheetHotswapper
-                    attributes.put("data-file-path", sourcePath);
-                    attributes.put("data-id", "appShell-" + sourcePath);
-                }
+                Map<String, String> attributes = config.isProductionMode()
+                        ? Map.of("rel", "stylesheet")
+                        : Map.of("rel", "stylesheet", "data-file-path",
+                                sourcePath, "data-id",
+                                "appShell-" + sourcePath);
                 settings.addLink(Position.APPEND, href, attributes);
             }
         });
