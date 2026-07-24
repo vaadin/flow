@@ -180,6 +180,55 @@ public abstract class PromiseAction<T> extends Action {
                 .withArguments("event");
     }
 
+    /**
+     * Delivers a resolved value as if the client had reported that the action's
+     * promise resolved, running {@code onSuccess} on the calling thread. For
+     * browserless simulation of a trigger firing. A no-op for a fire-and-forget
+     * action, which has no channel and reports nothing.
+     *
+     * @param trigger
+     *            the trigger this action was armed on, not {@code null}
+     * @param value
+     *            the resolved value as a {@link JsonNode}, or {@code null} for
+     *            a promise that resolved with no value
+     */
+    public void deliverSuccess(Trigger trigger, @Nullable JsonNode value) {
+        Objects.requireNonNull(trigger, "trigger must not be null");
+        if (onSuccess == null) {
+            return;
+        }
+        invokeChannel(trigger, new Outcome(true, value, null));
+    }
+
+    /**
+     * Delivers a rejection as if the client had reported that the action's
+     * promise rejected, running {@code onError} on the calling thread. For
+     * browserless simulation of a trigger firing. A no-op for a fire-and-forget
+     * action.
+     *
+     * @param trigger
+     *            the trigger this action was armed on, not {@code null}
+     * @param error
+     *            the rejection to deliver, not {@code null}
+     */
+    public void deliverError(Trigger trigger, Error error) {
+        Objects.requireNonNull(trigger, "trigger must not be null");
+        Objects.requireNonNull(error, "error must not be null");
+        if (onError == null) {
+            return;
+        }
+        invokeChannel(trigger, new Outcome(false, null, error));
+    }
+
+    private void invokeChannel(Trigger trigger, Outcome outcome) {
+        // Serialise the same Outcome record dispatch() reads back, then route
+        // through the genuine return channel so decoding and the callback run
+        // exactly as for a real client message.
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(JacksonUtils.writeValue(outcome));
+        channelFor(trigger.getHost().getNode()).invoke(args);
+    }
+
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
         return channelByNode.computeIfAbsent(hostNode,
                 node -> node.getFeature(ReturnChannelMap.class)
