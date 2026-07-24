@@ -225,7 +225,73 @@ class StyleSheetHotswapperTest {
         assertTrue(hasStylesheet("styles/modified.css"),
                 "Should have modified.css stylesheet");
         assertEquals(1, countStylesheets(), "Should add one stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
 
+        // Absolute path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellAbsolute.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("styles/modified.css");
+        assertTrue(hasStylesheet("/styles/absolute.css"),
+                "Should have absolute.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Relative path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellRelative.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("/styles/absolute.css");
+        assertTrue(hasStylesheet("./styles/relative.css"),
+                "Should have relative.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Context path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellContext.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("./styles/relative.css");
+        assertTrue(hasStylesheet("context://styles/context.css"),
+                "Should have context.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Return to original app.css to verify context path stylesheet removal
+
+        appShell = TestAppShell.class;
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("context://styles/context.css");
+        assertTrue(hasStylesheet("styles/app.css"),
+                "Should have app.css stylesheet");
         assertFalse(event.anyUIRequiresPageReload(),
                 "Should not require page reload");
         assertEquals(UIUpdateStrategy.REFRESH,
@@ -635,6 +701,18 @@ class StyleSheetHotswapperTest {
 
     @StyleSheet("styles/modified.css")
     public static class TestAppShellModified implements AppShellConfigurator {
+    }
+
+    @StyleSheet("/styles/absolute.css")
+    public static class TestAppShellAbsolute implements AppShellConfigurator {
+    }
+
+    @StyleSheet("./styles/relative.css")
+    public static class TestAppShellRelative implements AppShellConfigurator {
+    }
+
+    @StyleSheet("context://styles/context.css")
+    public static class TestAppShellContext implements AppShellConfigurator {
     }
 
     // Test classes for Components

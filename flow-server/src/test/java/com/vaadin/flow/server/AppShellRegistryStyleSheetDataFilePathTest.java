@@ -78,22 +78,22 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         // the browser). With the test request's empty servletPath, the
         // context:// prefix expands to "./".
 
-        // 1) Absolute path: href preserved, data-file-path drops leading '/'
+        // 1) Absolute path: href preserved, data-file-path preserved
         Element abs = links.get(0);
         assertEquals("/absolute.css", abs.attr("href"));
-        assertEquals("absolute.css", abs.attr("data-file-path"));
+        assertEquals("/absolute.css", abs.attr("data-file-path"));
 
-        // 2) Relative with './': href is servlet-relative,
-        // data-file-path drops './'
+        // 2) Relative with './': href is servlet-relative, data-file-path
+        // preserved
         Element rel = links.get(1);
         assertEquals("./relative/path.css", rel.attr("href"));
-        assertEquals("relative/path.css", rel.attr("data-file-path"));
+        assertEquals("./relative/path.css", rel.attr("data-file-path"));
 
-        // 3) context:// expands to servlet-relative path; data-file-path
-        // strips the context protocol prefix
+        // 3) context:// expands to servlet-relative path; data-file-path strips
+        // the context protocol prefix
         Element ctx = links.get(2);
         assertEquals("./from-context.css", ctx.attr("href"));
-        assertEquals("from-context.css", ctx.attr("data-file-path"));
+        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
 
         // 4) Remote http(s) URL unchanged, data-file-path remains original
         Element remote = links.get(3);
@@ -129,42 +129,39 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 .compile("\\?" + ApplicationConstants.CONTENT_HASH_PARAMETER
                         + "=[0-9a-f]{8}$");
 
-        // In production mode, data-file-path uses the original annotation
-        // value (no stripping like dev mode does)
+        // In production mode, data-file-path is not used
 
-        // 1) Absolute path: href has hash appended, data-file-path unchanged
+        // 1) Absolute path: href has hash appended
         Element abs = links.get(0);
         assertTrue(hashPattern.matcher(abs.attr("href")).find(),
                 "Absolute href should contain hash parameter");
         assertTrue(abs.attr("href").startsWith("/absolute.css"),
                 "Absolute href should start with /absolute.css");
-        assertEquals("/absolute.css", abs.attr("data-file-path"));
+        assertEquals("", abs.attr("data-file-path"));
 
-        // 2) Relative path: href is servlet-relative, hash appended,
-        // data-file-path unchanged
+        // 2) Relative path: href is servlet-relative, hash appended
         Element rel = links.get(1);
         assertTrue(hashPattern.matcher(rel.attr("href")).find(),
                 "Relative href should contain hash parameter");
         assertTrue(rel.attr("href").startsWith("./relative/path.css"),
                 "Relative href should start with ./");
-        assertEquals("./relative/path.css", rel.attr("data-file-path"));
+        assertEquals("", rel.attr("data-file-path"));
 
         // 3) Context path: href is servlet-relative (context:// expanded),
-        // hash appended, data-file-path unchanged
+        // hash appended
         Element ctx = links.get(2);
         assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
                 "Context href should contain hash parameter");
         assertTrue(ctx.attr("href").startsWith("./from-context.css"),
-                "Context href should start with ./");
-        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
+                "Context href should start without");
+        assertEquals("", ctx.attr("data-file-path"));
 
         // 4) External URL: no hash appended, data-file-path unchanged
         Element remote = links.get(3);
         assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
         assertFalse(hashPattern.matcher(remote.attr("href")).find(),
                 "External href should not have hash");
-        assertEquals("https://cdn.example.com/remote.css",
-                remote.attr("data-file-path"));
+        assertEquals("", remote.attr("data-file-path"));
     }
 
     @Test
@@ -221,13 +218,15 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(4, links.size());
 
+        // In production mode, data-file-path is not used
+
         // 1) Absolute path: href has hash appended, data-file-path unchanged
         Element abs = links.get(0);
         assertTrue(hashPattern.matcher(abs.attr("href")).find(),
                 "Absolute href should contain hash parameter");
         assertTrue(abs.attr("href").startsWith("/absolute.css"),
                 "Absolute href should start with /absolute.css");
-        assertEquals("/absolute.css", abs.attr("data-file-path"));
+        assertEquals("", abs.attr("data-file-path"));
 
         // 2) Relative path: href is servlet-relative, hash appended,
         // data-file-path unchanged
@@ -236,7 +235,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "Relative href should contain hash parameter");
         assertTrue(rel.attr("href").startsWith("./../relative/path.css"),
                 "Relative href should start with ./../");
-        assertEquals("./relative/path.css", rel.attr("data-file-path"));
+        assertEquals("", abs.attr("data-file-path"));
 
         // 3) Context path: href is servlet-relative (context:// expanded),
         // hash appended, data-file-path unchanged
@@ -245,15 +244,14 @@ class AppShellRegistryStyleSheetDataFilePathTest {
                 "Context href should contain hash parameter");
         assertTrue(ctx.attr("href").startsWith("./../from-context.css"),
                 "Context href should start with ./../");
-        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
+        assertEquals("", rel.attr("data-file-path"));
 
         // 4) External URL: no hash appended, data-file-path unchanged
         Element remote = links.get(3);
         assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
         assertFalse(hashPattern.matcher(remote.attr("href")).find(),
                 "External href should not have hash");
-        assertEquals("https://cdn.example.com/remote.css",
-                remote.attr("data-file-path"));
+        assertEquals("", remote.attr("data-file-path"));
     }
 
     @Test
