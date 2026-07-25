@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
  * patterns while copying the dev server output to standard output.
  * <p>
  * Triggers an event whenever a success or failure pattern is found on a row.
+ * 
+ * @since 24.3.22
  */
 public class DevServerOutputTracker {
 

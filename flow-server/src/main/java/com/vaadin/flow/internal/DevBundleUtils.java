@@ -28,6 +28,8 @@ import com.vaadin.flow.server.Constants;
  * Helpers related to the development bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 public class DevBundleUtils {
 

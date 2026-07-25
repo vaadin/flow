@@ -214,6 +214,7 @@ public abstract class AbstractRpcInvocationHandler
      *            the JsonObject containing invocation properties.
      * @return a boolean indicating that the inert status should be ignored for
      *         the current invocation or not.
+     * @since 25.0
      */
     protected boolean allowInert(UI ui, JsonNode invocationJson) {
         return isValidPollInvocation(ui, invocationJson);
@@ -228,6 +229,7 @@ public abstract class AbstractRpcInvocationHandler
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
      * @return an optional runnable
+     * @since 25.0
      */
     protected abstract Optional<Runnable> handleNode(StateNode node,
             JsonNode invocationJson);

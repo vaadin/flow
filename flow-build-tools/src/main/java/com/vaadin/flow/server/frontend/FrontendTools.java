@@ -23,20 +23,25 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.InitParameters;
@@ -56,6 +61,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.1
  */
 public class FrontendTools {
 
@@ -63,10 +69,14 @@ public class FrontendTools {
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     * 
+     * @since 4.0
      */
     public static final String DEFAULT_NODE_VERSION = "v24.17.0";
     /**
      * This is the version shipped with the default Node version.
+     * 
+     * @since 9.0
      */
     public static final String DEFAULT_NPM_VERSION = "11.13.0";
 
@@ -99,6 +109,8 @@ public class FrontendTools {
     /**
      * Maximum supported Node.js major version. Versions with a higher major
      * version are not tested and may not be compatible.
+     * 
+     * @since 25.0
      */
     public static final int MAX_SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
@@ -111,6 +123,8 @@ public class FrontendTools {
      * Minimum Node.js version for auto-installed versions in ~/.vaadin. Global
      * installations are accepted if they meet SUPPORTED_NODE_VERSION, but
      * auto-installed versions must meet this higher threshold.
+     * 
+     * @since 25.0
      */
     public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
             24, 10, 0);
@@ -199,6 +213,7 @@ public class FrontendTools {
      *
      * @param settings
      *            tooling settings to use
+     * @since 9.0
      */
     public FrontendTools(FrontendToolsSettings settings) {
         this.baseDir = Objects.requireNonNull(settings.getBaseDir());
@@ -220,6 +235,7 @@ public class FrontendTools {
      *            the project root directory
      * @param applicationConfiguration
      *            the configuration for the application
+     * @since 23.0
      */
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
@@ -259,6 +275,7 @@ public class FrontendTools {
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
      *             gives the default values to configuration parameters.
+     * @since 9.0
      */
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
@@ -312,12 +329,55 @@ public class FrontendTools {
     }
 
     /**
+     * Creates a {@link FrontendTools} instance configured from the given
+     * {@link Options}, using the node/pnpm related settings collected there.
+     *
+     * @param options
+     *            the task options to read the frontend tools configuration
+     *            from, not {@code null}
+     * @return a new {@link FrontendTools} instance
+     */
+    public static FrontendTools fromOptions(Options options) {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                options.getNpmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
+        return new FrontendTools(settings);
+    }
+
+    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable
      */
     public String getNodeExecutable() {
         return ensureNodeResolved().nodeExecutable();
+    }
+
+    /**
+     * Returns the path to a Node.js executable that can be used without
+     * downloading or installing one, either a Node.js that has already been
+     * resolved during this build or a globally available Node.js found on the
+     * system {@code PATH}. Unlike {@link #getNodeExecutable()}, this never
+     * triggers a Node.js installation.
+     *
+     * @return the path to an already available node executable, or {@code null}
+     *         if none is available without installation
+     */
+    public String getExistingNodeExecutable() {
+        NodeResolver.ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null) {
+            return active.nodeExecutable();
+        }
+        String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
+        return frontendToolsLocator.tryLocateTool(nodeCommand)
+                .map(File::getAbsolutePath).orElse(null);
     }
 
     /**
@@ -390,6 +450,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have bun running
+     * @since 24.3
      */
     public List<String> getBunExecutable() {
         List<String> bunCommand = getSuitableBun();
@@ -451,6 +512,7 @@ public class FrontendTools {
      * @return the version of the node executable
      * @throws UnknownVersionException
      *             if the node version cannot be determined
+     * @since 8.0.5
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();
@@ -515,11 +577,92 @@ public class FrontendTools {
     }
 
     /**
+     * Returns the URLs of every configured registry that is not the public npm
+     * registry, i.e. the registries packages are expected to be downloaded
+     * from.
+     * <p>
+     * The configuration is read from npm itself, so it accounts for every
+     * configuration source and precedence rule npm applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc}) and
+     * covers both the global {@code registry} and any scoped
+     * {@code @scope:registry} entries. If the configuration cannot be read an
+     * empty set is returned. The returned URLs always end with a slash, so they
+     * can be matched as a prefix against package download URLs.
+     *
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return the custom registry URLs, or an empty set if only the default
+     *         registry is configured
+     */
+    Set<String> getCustomNpmRegistries(File workingDirectory) {
+        return customRegistries(getConfiguredRegistries(workingDirectory));
+    }
+
+    /**
+     * Reads the registry URLs npm resolves for the given directory by running
+     * {@code npm config ls --json}. The returned map contains the global
+     * {@code registry} entry and every scoped {@code @scope:registry} entry, as
+     * resolved by npm across all its configuration sources.
+     *
+     * @param workingDirectory
+     *            the directory to resolve the configuration from
+     * @return the configured registry keys mapped to their URLs, or an empty
+     *         map if the configuration cannot be read
+     */
+    Map<String, String> getConfiguredRegistries(File workingDirectory) {
+        List<String> command = new ArrayList<>(getNpmExecutable(false));
+        command.add("config");
+        command.add("ls");
+        command.add("--json");
+        Map<String, String> registries = new HashMap<>();
+        try {
+            String output = FrontendUtils.executeCommand(command,
+                    builder -> builder.directory(workingDirectory));
+            JsonNode config = JacksonUtils.readTree(output);
+            for (String key : config.propertyNames()) {
+                if ((key.equals("registry") || key.endsWith(":registry"))
+                        && config.get(key).isString()) {
+                    registries.put(key, config.get(key).asString());
+                }
+            }
+        } catch (CommandExecutionException | RuntimeException e) {
+            getLogger().debug("Could not read the npm registry configuration; "
+                    + "assuming the default registry.", e);
+        }
+        return registries;
+    }
+
+    /**
+     * Extracts the custom (non-default) registry URLs from the given
+     * configuration, normalized to always end with a slash so they can be
+     * matched as a prefix against package download URLs.
+     */
+    static Set<String> customRegistries(Map<String, String> registries) {
+        return registries.values().stream()
+                .filter(registry -> !isDefaultNpmRegistry(registry))
+                .map(FrontendTools::ensureTrailingSlash)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static boolean isDefaultNpmRegistry(String registry) {
+        String normalized = registry.endsWith("/")
+                ? registry.substring(0, registry.length() - 1)
+                : registry;
+        return "https://registry.npmjs.org".equals(normalized);
+    }
+
+    private static String ensureTrailingSlash(String url) {
+        return url.endsWith("/") ? url : url + "/";
+    }
+
+    /**
      * Executes <code>npm --version</code> to and parses the result.
      *
      * @return the version of npm.
      * @throws UnknownVersionException
      *             if the npm command fails or returns unexpected output.
+     * @since 9.0
      */
     public FrontendVersion getNpmVersion() throws UnknownVersionException {
         List<String> npmVersionCommand = new ArrayList<>(
@@ -541,6 +684,7 @@ public class FrontendTools {
      *            the npm command to invoke for {@code --version}
      * @return {@code true} if the installed npm is new enough; {@code false} if
      *         it is older or its version cannot be determined
+     * @since 25.2
      */
     public boolean npmSupportsMinReleaseAge(List<String> npmCommand) {
         List<String> versionCmd = new ArrayList<>(npmCommand);
@@ -570,6 +714,7 @@ public class FrontendTools {
      * @return the path to the executable.
      * @throws CommandExecutionException
      *             if the node resolution fails.
+     * @since 24.8
      */
     public Path getNpmPackageExecutable(String packageName, String binName,
             File cwd) throws CommandExecutionException {
@@ -595,6 +740,7 @@ public class FrontendTools {
      * @return the flags
      * @deprecated Webpack is not used anymore, this method is obsolete and have
      *             no replacements.
+     * @since 9.0.4
      */
     @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
@@ -790,6 +936,7 @@ public class FrontendTools {
      * part of a process builder command.
      *
      * @return the path to the node binary
+     * @since 23.0
      */
     public String getNodeBinary() {
         return getNodeExecutable();

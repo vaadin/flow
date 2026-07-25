@@ -29,6 +29,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <T>
  *            the value type
+ * @since 25.1
  */
 @FunctionalInterface
 public interface ValueModifier<T extends @Nullable Object>

@@ -22,6 +22,8 @@ package com.vaadin.flow.component.screenorientation;
  * the browser failure to one of these constants before reporting it to the
  * server, so application code can branch with an exhaustive {@code switch}
  * instead of inspecting browser-specific error strings.
+ * 
+ * @since 25.2
  */
 public enum ScreenOrientationLockErrorCode {
     /**
@@ -48,10 +50,9 @@ public enum ScreenOrientationLockErrorCode {
     ABORT,
 
     /**
-     * The browser rejected the request for a reason that does not match a more
-     * specific code, or the executeJs round-trip itself failed.
-     * {@link ScreenOrientationLockError#debugInfo()} holds the underlying
-     * browser message for diagnostics.
+     * The request failed for a reason that does not match a more specific code.
+     * See {@link ScreenOrientationLockError#debugInfo()} for the underlying
+     * browser message.
      */
     UNKNOWN;
 }

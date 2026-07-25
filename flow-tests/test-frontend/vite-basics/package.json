@@ -9,7 +9,7 @@
   "dependencies": {
     "@polymer/polymer": "3.5.2",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
-    "@vaadin/common-frontend": "0.0.22",
+    "@vaadin/common-frontend": "0.0.23",
     "@vaadin/test-package-outside-npm": "file:../vite-test-assets/packages/@vaadin/test-package-outside-npm",
     "@vaadin/test-package2-outside-npm": "../vite-test-assets/packages/@vaadin/test-package2-outside-npm",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
@@ -46,7 +46,7 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
-      "@vaadin/common-frontend": "0.0.22",
+      "@vaadin/common-frontend": "0.0.23",
       "lit": "3.3.3",
       "react": "19.2.7",
       "react-dom": "19.2.7",

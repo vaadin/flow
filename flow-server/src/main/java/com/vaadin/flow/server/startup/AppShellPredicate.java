@@ -23,6 +23,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 @FunctionalInterface
 public interface AppShellPredicate {

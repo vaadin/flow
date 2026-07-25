@@ -454,6 +454,7 @@ public abstract class AbstractNavigationStateRenderer
      * @param path
      *            request path
      * @return List of parent layouts
+     * @since 24.5
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -541,6 +542,7 @@ public abstract class AbstractNavigationStateRenderer
      *            used router instance
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
+     * @since 1.3
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
@@ -874,6 +876,7 @@ public abstract class AbstractNavigationStateRenderer
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
      * @see HttpStatusCode
+     * @since 4.0
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
@@ -1256,6 +1259,7 @@ public abstract class AbstractNavigationStateRenderer
      *            the inactive UI
      * @throws IllegalStateException
      *             if the UI is not in closing state
+     * @since 24.3.11
      */
     public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
         if (!inactiveUI.isClosing()) {

@@ -39,6 +39,8 @@ import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
  * locales.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.3
  */
 public final class I18NUtil {
 
@@ -54,6 +56,7 @@ public final class I18NUtil {
      * @param classLoader
      *            the class loader to use for finding the translation file
      * @return {@code true} if default property file found
+     * @since 24.3.9
      */
     public static boolean containsDefaultTranslation(ClassLoader classLoader) {
         URL resource = classLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER
@@ -75,6 +78,7 @@ public final class I18NUtil {
      * @param classLoader
      *            the class loader to use for finding translation files
      * @return List of locales parsed from property files.
+     * @since 24.3.9
      */
     public static List<Locale> getDefaultTranslationLocales(
             ClassLoader classLoader) {

@@ -26,6 +26,8 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
 /**
  * Interface for controlling access to routes in the application's menu
  * component.
+ * 
+ * @since 24.4
  */
 public interface MenuAccessControl extends Serializable {
 
@@ -82,6 +84,7 @@ public interface MenuAccessControl extends Serializable {
      *            view info
      * @return true if the view is accessible, false if something is not
      *         authenticated.
+     * @since 24.5.1
      */
     default boolean canAccessView(AvailableViewInfo viewInfo) {
         VaadinRequest request = VaadinRequest.getCurrent();
@@ -105,6 +108,7 @@ public interface MenuAccessControl extends Serializable {
      * @param roleChecker
      *            function to authenticate if user has role
      * @return true if accessible, false if something is not authenticated
+     * @since 24.5.1
      */
     static boolean canAccessView(AvailableViewInfo viewInfo,
             Principal principal, Predicate<String> roleChecker) {

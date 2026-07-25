@@ -59,6 +59,7 @@ public class InputStreamDownloadHandler
      *            used as a downloaded file name as a download request URL
      *            postfix, e.g.
      *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
+     * @since 25.2
      */
     public InputStreamDownloadHandler(InputStreamDownloadCallback callback,
             String fileNameOverride) {

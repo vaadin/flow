@@ -153,6 +153,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @since 23.2
      */
     public N appendChild(Collection<Element> children) {
         if (children == null) {
@@ -197,6 +198,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @since 23.2
      */
     public N appendVirtualChild(Collection<Element> children) {
         if (children == null) {
@@ -348,6 +350,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to insert
      * @return this element
+     * @since 23.2
      */
     public N insertChild(int index, Collection<Element> children) {
         if (children == null) {
@@ -477,6 +480,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to remove
      * @return this element
+     * @since 23.2
      */
     public N removeChild(Collection<Element> children) {
         if (children == null) {

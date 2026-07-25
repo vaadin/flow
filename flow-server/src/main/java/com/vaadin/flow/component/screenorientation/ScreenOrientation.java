@@ -47,6 +47,8 @@ import com.vaadin.flow.signals.Signal;
  *
  * All methods operate on the {@link UI#getCurrent() current UI}; the no-UI
  * overloads require a current UI to be available on the calling thread.
+ * 
+ * @since 25.2
  */
 public final class ScreenOrientation implements Serializable {
 

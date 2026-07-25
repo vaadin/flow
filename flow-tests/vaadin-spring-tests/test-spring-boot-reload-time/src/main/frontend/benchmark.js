@@ -1,15 +1,5 @@
-import { css } from '@vaadin/vaadin-themable-mixin/register-styles.js';
-
-const globalStyles = css`
+const globalStyles = `
   @keyframes element-rendered {
-  }
-
-  /*
-  * The attribute selector makes sure the element which animates isn't just a tag but an upgraded web component
-  * (button logic adds the role="button" attribute to the host element).
-  */
-  vaadin-button[role='button'] {
-    animation: element-rendered;
   }
 
   button {
@@ -17,18 +7,17 @@ const globalStyles = css`
   }
 
   /*
-   * Add the animation to the slotted input elements in checkbox.
-   * (checkbox logic adds the input elements).
+   * Match every input regardless of type. A plain Flow Input renders without a
+   * type attribute (the default "text" is omitted), so type-specific selectors
+   * would not detect its render.
    */
-  input[type='checkbox'],
-  input[type='text'],
-  input[type='radio'] {
+  input {
     animation: element-rendered;
   }
 `;
 
 const style = document.createElement('style');
-style.textContent = globalStyles.cssText;
+style.textContent = globalStyles;
 document.head.appendChild(style);
 window.layout = window.layout || {};
 

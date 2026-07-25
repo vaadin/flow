@@ -73,21 +73,30 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.generateBundle=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.generateBundle", defaultValue = "true")
     private boolean generateBundle;
 
     /**
      * Whether to run <code>npm install</code> after updating dependencies.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.runNpmInstall=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.runNpmInstall", defaultValue = "true")
     private boolean runNpmInstall;
 
     /**
      * Whether to generate embeddable web components from WebComponentExporter
      * inheritors.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.generateEmbeddableWebComponents=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.generateEmbeddableWebComponents", defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
     /**
@@ -101,8 +110,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.devmode.optimizeBundle=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
     private boolean optimizeBundle;
 
     /**

@@ -65,6 +65,7 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
  *
  * @see ClientCallable
  * @see BeanFactoryInitializationAotProcessor
+ * @since 24.9.8
  */
 public class ClientCallableAotProcessor
         implements BeanFactoryInitializationAotProcessor {

@@ -52,6 +52,7 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 @FunctionalInterface
 public interface Signal<T extends @Nullable Object> extends Serializable {
@@ -148,6 +149,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1.1
      */
     static Registration effect(Component owner, EffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
@@ -179,6 +181,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *            <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1.1
      */
     static Registration effect(Component owner,
             ContextualEffectAction effectFunction) {
@@ -264,8 +267,6 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * @param innerSignal
      *            the inner signal, not <code>null</code>
      * @return the cached signal not <code>null</code>
-     *
-     * @since 25.1
      */
     static <T extends @Nullable Object> Signal<T> cached(
             Signal<T> innerSignal) {

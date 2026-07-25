@@ -28,6 +28,8 @@ import com.vaadin.flow.signals.function.ValueSupplier;
 
 /**
  * Tracks signal value read operations while a task is run.
+ * 
+ * @since 25.1
  */
 public class UsageTracker {
     static final class CombinedUsage implements Usage {

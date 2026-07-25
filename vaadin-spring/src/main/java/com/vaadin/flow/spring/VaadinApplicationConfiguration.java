@@ -42,6 +42,7 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  *
  * @author Vaadin Ltd
  *
+ * @since 16.0
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 public class VaadinApplicationConfiguration {
@@ -76,6 +77,7 @@ public class VaadinApplicationConfiguration {
      * @param locationPattern
      *            the location pattern for i18n resource files
      * @return default I18N provider
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean(value = I18NProvider.class)
@@ -92,6 +94,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.4
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)
@@ -105,6 +108,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.5.1
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)

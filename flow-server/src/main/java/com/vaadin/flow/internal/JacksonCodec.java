@@ -205,6 +205,7 @@ public class JacksonCodec {
      * @param json
      *            the JSON value to decode
      * @return the decoded value
+     * @since 25.0
      */
     public static Serializable decodeWithoutTypeInfo(BaseJsonNode json) {
         assert json != null;
@@ -284,6 +285,7 @@ public class JacksonCodec {
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
      *             if deserialization failed
+     * @since 25.0
      */
     public static <T> T decodeAs(JsonNode json,
             TypeReference<T> typeReference) {

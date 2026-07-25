@@ -26,7 +26,7 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;code&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since 25.0
+ * @since 24.9
  */
 @Tag(Tag.CODE)
 public class Code extends HtmlContainer {
@@ -66,6 +66,7 @@ public class Code extends HtmlContainer {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Code(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

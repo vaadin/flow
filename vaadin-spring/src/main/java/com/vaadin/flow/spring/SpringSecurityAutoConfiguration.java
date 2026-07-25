@@ -48,10 +48,30 @@ import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
 /**
- * Spring boot auto-configuration class for Flow.
+ * Spring Boot auto-configuration class for the Flow Spring Security
+ * integration.
+ * <p>
+ * This configuration, together with the beans it exposes (such as
+ * {@link RequestUtil}), is only applied when Spring Security is on the
+ * classpath, as required by the {@link ConditionalOnClass} on
+ * {@link WebSecurityCustomizer}. The {@code spring-security-config} dependency
+ * is optional in the Vaadin Spring support, so an application that relies on
+ * these beans has to add it explicitly; otherwise the whole configuration is
+ * skipped and the beans are not created.
+ * <p>
+ * In a Spring Boot application this class is registered automatically through
+ * the auto-configuration import mechanism. A plain Spring application that does
+ * not use that mechanism (for example a Spring MVC application that registers
+ * the {@link com.vaadin.flow.spring.SpringServlet} itself, similarly to
+ * {@link VaadinMVCWebAppInitializer}) will not register it automatically; as an
+ * auto-configuration class it is not intended to be discovered through a
+ * component scan. Register it explicitly instead, e.g. with
+ * {@code @Import(SpringSecurityAutoConfiguration.class)}, and make sure
+ * {@code spring-security-config} is present.
  *
  * @author Vaadin Ltd
  *
+ * @since 17.0
  */
 @AutoConfiguration
 @ConditionalOnClass(WebSecurityCustomizer.class)
@@ -75,6 +95,7 @@ public class SpringSecurityAutoConfiguration {
      * @param accessControl
      *            the navigation access control
      * @return the default navigation access control initializer
+     * @since 24.3
      */
     @Bean
     public NavigationAccessControlInitializer navigationAccessControlInitializer(
@@ -91,6 +112,7 @@ public class SpringSecurityAutoConfiguration {
      * @param configurer
      *            the navigation access control configurer
      * @return the default navigation access control.
+     * @since 24.3
      */
     @Bean
     public NavigationAccessControl navigationAccessControl(
@@ -127,6 +149,7 @@ public class SpringSecurityAutoConfiguration {
      * @param accessAnnotationChecker
      *            the {@link AccessAnnotationChecker} bean to use
      * @return the default view access checker
+     * @since 24.3
      */
     @Bean
     public AnnotatedViewAccessChecker annotatedViewAccessChecker(
@@ -141,6 +164,7 @@ public class SpringSecurityAutoConfiguration {
      * @param accessPathChecker
      *            the {@link AccessPathChecker} bean to use
      * @return the default route path access checker
+     * @since 24.3
      */
     @Bean
     public RoutePathAccessChecker routePathAccessChecker(
@@ -157,6 +181,7 @@ public class SpringSecurityAutoConfiguration {
      * @param evaluator
      *            URI privileges evaluator
      * @return the default route path access checker
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean
@@ -175,6 +200,7 @@ public class SpringSecurityAutoConfiguration {
      * from the project, we make it available here
      *
      * @return the default access annotation checker
+     * @since 18.0
      */
     @Bean
     @ConditionalOnMissingBean
@@ -186,6 +212,7 @@ public class SpringSecurityAutoConfiguration {
      * Makes the request util available.
      *
      * @return the request util
+     * @since 18.0
      */
     @Bean
     public RequestUtil requestUtil() {
@@ -199,6 +226,7 @@ public class SpringSecurityAutoConfiguration {
      *            Optional granted authority defaults bean for the default role
      *            prefix
      * @return the role prefix holder
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean

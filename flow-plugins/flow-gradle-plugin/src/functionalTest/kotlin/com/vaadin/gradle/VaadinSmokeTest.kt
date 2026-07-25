@@ -85,6 +85,26 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskNotRan("vaadinPrepareFrontend")
         result.expectTaskNotRan("vaadinBuildFrontend")
 
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
+        expect(false, build.toString()) { build.exists() }
+    }
+
+    @Test
+    fun `vaadinBuildFrontend is skipped in development mode when explicitly required`() {
+        // Some projects wire vaadinBuildFrontend into the build graph, e.g.
+        // jar.dependsOn('vaadinBuildFrontend'). In development mode the task
+        // must be skipped rather than failing the build (the production-only
+        // token service is not registered) or writing a production token.
+        // See https://github.com/vaadin/flow/issues/25000
+        testProject.buildFile.appendText("""
+            tasks.named('jar') {
+                dependsOn('vaadinBuildFrontend')
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("jar", checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SKIPPED)
+
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(false, build.toString()) { build.exists() }
     }
@@ -97,7 +117,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // vaadinPrepareFrontend
         result.expectTaskNotRan("vaadinPrepareFrontend")
 
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        val build = File(testProject.dir, "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
         build.find("*.br", 4..10)
@@ -705,6 +725,27 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", "-Dvaadin.eagerServerLoad=true", checkTasksSuccessful = false)
         result2.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinBuildFrontend")
+    }
+
+    @Test
+    fun testWarPackaging_configurationCache_productionMode() {
+        // Regression test for https://github.com/vaadin/flow/issues/24794
+        // In production mode the token-restore action is attached to the
+        // Jar/War packaging task. If that action captures the Project, the
+        // configuration cache cannot serialize the War task and the build
+        // fails. The existing config-cache tests only run vaadinBuildFrontend,
+        // so they never exercise the packaging task; this test does.
+
+        // Create frontend folder, that will otherwise be created by the first
+        // execution, invalidating the cache on the second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war")
+        result.expectTaskSucceded("war")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war", checkTasksSuccessful = false)
+        assertContains(result2.output, "Reusing configuration cache")
     }
 
     private fun enableHilla() {

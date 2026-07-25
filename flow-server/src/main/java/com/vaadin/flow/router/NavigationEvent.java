@@ -81,6 +81,7 @@ public class NavigationEvent extends EventObject {
      * @param forwardTo
      *            indicates if this event is created as a result of
      *            {@link BeforeEvent#forwardTo} or not
+     * @since 24.8
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo) {
@@ -115,6 +116,7 @@ public class NavigationEvent extends EventObject {
      *            if set to {@code true}, the complete layout chain up to the
      *            navigation target will be re-instantiated. Requires
      *            {@code forceInstantiation} to be true to have an effect.
+     * @since 24.8
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo,
@@ -165,6 +167,7 @@ public class NavigationEvent extends EventObject {
      * the complete href of the RouterLink that triggers this navigation.
      *
      * @return the navigation state
+     * @since 4.0
      */
     public Optional<BaseJsonNode> getState() {
         return state == null ? Optional.empty() : Optional.of(state);
@@ -176,6 +179,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if this event is created as a result calling
      *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
+     * @since 4.0
      */
     public boolean isForwardTo() {
         return forwardTo;
@@ -187,6 +191,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if navigation target should be instantiated in any
      *         case
+     * @since 24.4
      */
     public boolean isForceInstantiation() {
         return forceInstantiation;
@@ -198,6 +203,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return {@code true} if layout chain up to the navigation target should
      *         be instantiated in any case
+     * @since 24.4
      */
     public boolean isRecreateLayoutChain() {
         return recreateLayoutChain;

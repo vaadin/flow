@@ -25,7 +25,7 @@ import com.vaadin.flow.di.Lookup;
 /**
  * {@link VaadinContext} that goes with {@link VaadinServletService}.
  *
- * @since 2.0.0
+ * @since 2.0
  */
 public class VaadinServletContext implements VaadinContext {
 

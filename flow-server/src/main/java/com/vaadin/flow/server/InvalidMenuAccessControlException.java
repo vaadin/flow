@@ -19,7 +19,7 @@ package com.vaadin.flow.server;
  * Exception indicating that the application's Menu access control has been
  * configured incorrectly.
  *
- * @since 1.0
+ * @since 24.4
  */
 public class InvalidMenuAccessControlException extends RuntimeException {
 

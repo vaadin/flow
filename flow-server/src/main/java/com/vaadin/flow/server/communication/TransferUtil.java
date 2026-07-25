@@ -53,6 +53,8 @@ import com.vaadin.flow.server.streams.UploadResult;
 /**
  * Utility class with methods for handling transfer of upload and download
  * requests.
+ * 
+ * @since 25.0
  */
 public final class TransferUtil {
 

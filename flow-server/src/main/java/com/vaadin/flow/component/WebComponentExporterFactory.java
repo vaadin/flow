@@ -58,6 +58,7 @@ import com.vaadin.flow.internal.ReflectTools;
  * @param <C>
  *            type of the component to export
  *
+ * @since 2.2
  */
 @FunctionalInterface
 public interface WebComponentExporterFactory<C extends Component>
