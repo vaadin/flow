@@ -54,6 +54,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * </ul>
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.0
  */
 public class PublicResourcesLiveUpdater implements Closeable {
     private final static Pattern THEME_URLS_PATTERN = Pattern

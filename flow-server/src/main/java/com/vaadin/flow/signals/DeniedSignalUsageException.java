@@ -19,6 +19,8 @@ package com.vaadin.flow.signals;
  * Thrown when a signal value is read in a context where signal usage is not
  * allowed. For example, bean-level validators in a {@code Binder} cannot use
  * signals since they are not run inside a reactive effect.
+ * 
+ * @since 25.1
  */
 public class DeniedSignalUsageException extends IllegalStateException {
     /**

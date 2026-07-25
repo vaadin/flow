@@ -51,17 +51,23 @@ public class DndUtil {
 
     /**
      * Key for storing drag start offset X coordinate.
+     * 
+     * @since 25.2
      */
     public static final String DRAG_START_OFFSET_X_KEY = "drag-start-offset-x";
 
     /**
      * Key for storing drag start offset Y coordinate.
+     * 
+     * @since 25.2
      */
     public static final String DRAG_START_OFFSET_Y_KEY = "drag-start-offset-y";
 
     /**
      * Key for storing server side drag image for a
      * {@link com.vaadin.flow.component.dnd.DragSource}.
+     * 
+     * @since 24.6
      */
     public static final String DRAG_SOURCE_IMAGE = "drag-source-image";
 
@@ -105,12 +111,12 @@ public class DndUtil {
      *            the drag source to update active status on
      * @param <T>
      *            the type of the drag source component
+     * @since 2.1
      */
     public static <T extends Component> void updateDragSourceActivation(
             DragSource<T> dragSource) {
         Command command = () -> dragSource.getDraggableElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDragSource($0)",
-                dragSource.getDraggableElement());
+                "window.Vaadin.Flow.dndConnector.updateDragSource(this)");
         runOnAttachBeforeResponse(dragSource.getDragSourceComponent(), command);
     }
 
@@ -124,12 +130,12 @@ public class DndUtil {
      *            the drop target to update active status on
      * @param <T>
      *            the type of the drop target component
+     * @since 2.1
      */
     public static <T extends Component> void updateDropTargetActivation(
             DropTarget<T> dropTarget) {
         Command command = () -> dropTarget.getElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDropTarget($0)",
-                dropTarget.getElement());
+                "window.Vaadin.Flow.dndConnector.updateDropTarget(this)");
 
         runOnAttachBeforeResponse(dropTarget.getDropTargetComponent(), command);
 
@@ -153,6 +159,8 @@ public class DndUtil {
 
     /**
      * Reports DnD feature usage from mixin interfaces.
+     * 
+     * @since 2.1
      */
     public static void reportUsage() {
         UsageStatistics.markAsUsed("flow/generic-dnd", null);

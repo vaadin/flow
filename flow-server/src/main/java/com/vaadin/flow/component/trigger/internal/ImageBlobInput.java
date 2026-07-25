@@ -34,6 +34,8 @@ import com.vaadin.flow.dom.JsFunction;
  * reference and the canvas conversion happens entirely on the client.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class ImageBlobInput extends Action.Input<Object> {
 

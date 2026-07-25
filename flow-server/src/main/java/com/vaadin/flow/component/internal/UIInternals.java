@@ -136,6 +136,7 @@ public class UIInternals implements Serializable {
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
+         * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
             /*
@@ -311,6 +312,7 @@ public class UIInternals implements Serializable {
      *            the UI to use
      * @param internalsHandler
      *            an implementation of {@link UIInternalUpdater}
+     * @since 3.0
      */
     public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
         this.internalsHandler = internalsHandler;
@@ -376,6 +378,7 @@ public class UIInternals implements Serializable {
      *
      * @param lastRequestResponse
      *            The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
@@ -385,6 +388,7 @@ public class UIInternals implements Serializable {
      * Returns the response created for the last UIDL request.
      *
      * @return The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public String getLastRequestResponse() {
         return lastRequestResponse;
@@ -652,6 +656,7 @@ public class UIInternals implements Serializable {
      * @param <E>
      *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
+     * @since 2.0
      */
     public <E> List<E> getListeners(Class<E> handler) {
         List<E> registeredListeners = (List<E>) listeners
@@ -666,6 +671,7 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @since 2.0
      */
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
@@ -680,6 +686,7 @@ public class UIInternals implements Serializable {
      * id alone on the client side.
      *
      * @return the next initializer id
+     * @since 25.2
      */
     public int nextJsInitializerId() {
         session.checkHasLock();
@@ -787,6 +794,7 @@ public class UIInternals implements Serializable {
      * @param containsFilter
      *            string to filter invocation expressions with
      * @return true if any invocation with given expression is found.
+     * @since 24.4
      */
     public boolean containsPendingJavascript(String containsFilter) {
         return getPendingJavaScriptInvocations().anyMatch(js -> js
@@ -838,6 +846,7 @@ public class UIInternals implements Serializable {
      *
      * @param appShellTitle
      *            the appShellTitle to set
+     * @since 4.0.4
      */
     public void setAppShellTitle(String appShellTitle) {
         this.appShellTitle = appShellTitle;
@@ -863,6 +872,7 @@ public class UIInternals implements Serializable {
      * <b>NOTE</b> Intended for internal use, you should not call this method.
      *
      * @return the app shell title
+     * @since 4.0.4
      */
     public String getAppShellTitle() {
         return appShellTitle;
@@ -890,6 +900,7 @@ public class UIInternals implements Serializable {
      *
      * @param layouts
      *            stored router target chain to set as last navigated chain
+     * @since 24.8
      */
     public void setRouterTargetChain(List<RouterLayout> layouts) {
         if (routerTargetChain.isEmpty()) {
@@ -909,6 +920,7 @@ public class UIInternals implements Serializable {
      *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
+     * @since 4.0
      */
     public void showRouteTarget(Location viewLocation, Component target,
             List<RouterLayout> layouts) {
@@ -1017,6 +1029,7 @@ public class UIInternals implements Serializable {
      *
      * @param otherUI
      *            the other UI to transfer content from.
+     * @since 3.0
      */
     public void moveElementsFrom(UI otherUI) {
         internalsHandler.moveToNewUI(otherUI, ui);
@@ -1048,6 +1061,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.UI#routerStateSignal()}.
      *
      * @return the read-only router state signal, not <code>null</code>
+     * @since 25.2
      */
     public Signal<RouterState> getRouterStateSignal() {
         return readonlyRouterStateSignal;
@@ -1061,6 +1075,7 @@ public class UIInternals implements Serializable {
      *
      * @param state
      *            the new router state, not <code>null</code>
+     * @since 25.2
      */
     public void updateRouterState(RouterState state) {
         routerStateSignal.set(state);
@@ -1099,6 +1114,7 @@ public class UIInternals implements Serializable {
      *
      * @param dependencyId
      *            the ID of the stylesheet dependency to remove
+     * @since 25.0
      */
     public void removeStyleSheet(String dependencyId) {
         // Always add to pending removals - the client gracefully handles
@@ -1114,6 +1130,7 @@ public class UIInternals implements Serializable {
      * Gets the pending stylesheet removals to be sent to the client.
      *
      * @return the set of dependency IDs to remove
+     * @since 25.0
      */
     public Set<String> getPendingStyleSheetRemovals() {
         return new HashSet<>(pendingStyleSheetRemovals);
@@ -1121,6 +1138,8 @@ public class UIInternals implements Serializable {
 
     /**
      * Clears the pending stylesheet removals.
+     * 
+     * @since 25.0
      */
     public void clearPendingStyleSheetRemovals() {
         pendingStyleSheetRemovals.clear();
@@ -1300,6 +1319,7 @@ public class UIInternals implements Serializable {
      *
      * @param location
      *            current location.
+     * @since 24.7.1
      */
     public void setLocationForRefresh(Location location) {
         locationForRefresh = location;
@@ -1318,6 +1338,7 @@ public class UIInternals implements Serializable {
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         if (locationForRefresh == null) {
@@ -1335,6 +1356,7 @@ public class UIInternals implements Serializable {
      * component that implements HasErrorParameter.
      *
      * @return true if showing an error view, false otherwise
+     * @since 25.0.6
      */
     public boolean isShowingErrorView() {
         if (routerTargetChain.isEmpty()) {
@@ -1389,6 +1411,7 @@ public class UIInternals implements Serializable {
      * @param fullAppId
      *            the (full, not stripped) id of the application tied with this
      *            UI
+     * @since 24.1
      */
     public void setFullAppId(String fullAppId) {
         this.fullAppId = fullAppId;
@@ -1411,6 +1434,7 @@ public class UIInternals implements Serializable {
      * will be gone.
      *
      * @return the full app id
+     * @since 24.1
      */
     public String getFullAppId() {
         return fullAppId;
@@ -1498,6 +1522,7 @@ public class UIInternals implements Serializable {
      * when the browser details are received.
      *
      * @return the extended client details (never {@code null})
+     * @since 2.0
      */
     public ExtendedClientDetails getExtendedClientDetails() {
         if (extendedClientDetails == null) {
@@ -1514,6 +1539,7 @@ public class UIInternals implements Serializable {
      *
      * @param details
      *            the updated extended client details.
+     * @since 2.0
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
@@ -1527,6 +1553,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilityHintSignal()}.
      *
      * @return the availability signal
+     * @since 25.2
      */
     public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
         return geolocationAvailabilitySignal;
@@ -1537,6 +1564,7 @@ public class UIInternals implements Serializable {
      *
      * @param availability
      *            the new availability
+     * @since 25.2
      */
     public void setGeolocationAvailability(
             GeolocationAvailability availability) {
@@ -1551,6 +1579,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.webshare.WebShare#supportSignal()}.
      *
      * @return the support signal
+     * @since 25.2
      */
     public Signal<WebShareSupport> getWebShareSupportSignalReadOnly() {
         return webShareSupportReadOnly;
@@ -1561,6 +1590,7 @@ public class UIInternals implements Serializable {
      *
      * @param support
      *            the new support state
+     * @since 25.2
      */
     public void setWebShareSupport(WebShareSupport support) {
         this.webShareSupportSignal.set(support);
@@ -1574,6 +1604,7 @@ public class UIInternals implements Serializable {
      * lazily installs a default client on first use.
      *
      * @return the installed geolocation client, or {@code null}
+     * @since 25.2
      */
     public GeolocationClient getGeolocationClient() {
         return geolocationClient;
@@ -1589,6 +1620,7 @@ public class UIInternals implements Serializable {
      *
      * @param client
      *            the client to install, never {@code null}
+     * @since 25.2
      */
     public void setGeolocationClient(GeolocationClient client) {
         if (geolocationClient != null) {
@@ -1609,6 +1641,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.wakelock.WakeLock#activeSignal()}.
      *
      * @return the read-only active signal
+     * @since 25.2
      */
     public Signal<Boolean> getWakeLockActiveSignalReadOnly() {
         return wakeLockActiveReadOnly;
@@ -1619,6 +1652,7 @@ public class UIInternals implements Serializable {
      *
      * @param active
      *            the new active state
+     * @since 25.2
      */
     public void setWakeLockActive(boolean active) {
         this.wakeLockActiveSignal.set(active);
@@ -1630,6 +1664,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.wakelock.WakeLock#availabilitySignal()}.
      *
      * @return the read-only availability signal
+     * @since 25.2
      */
     public Signal<WakeLockAvailability> getWakeLockAvailabilitySignalReadOnly() {
         return wakeLockAvailabilityReadOnly;
@@ -1640,6 +1675,7 @@ public class UIInternals implements Serializable {
      *
      * @param availability
      *            the new availability
+     * @since 25.2
      */
     public void setWakeLockAvailability(WakeLockAvailability availability) {
         this.wakeLockAvailabilitySignal.set(availability);
@@ -1652,6 +1688,7 @@ public class UIInternals implements Serializable {
      * framework use only.
      *
      * @return {@code true} if the listener has been installed
+     * @since 25.2
      */
     public boolean isWakeLockListenerInstalled() {
         return wakeLockListenerInstalled;
@@ -1661,6 +1698,8 @@ public class UIInternals implements Serializable {
      * Marks the per-UI wake-lock DOM listener as installed so subsequent
      * {@link com.vaadin.flow.component.wakelock.WakeLock} calls do not install
      * a duplicate. For framework use only.
+     * 
+     * @since 25.2
      */
     public void markWakeLockListenerInstalled() {
         this.wakeLockListenerInstalled = true;
@@ -1672,6 +1711,7 @@ public class UIInternals implements Serializable {
      * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#orientationSignal()}.
      *
      * @return the read-only screen orientation signal
+     * @since 25.2
      */
     public Signal<ScreenOrientationData> getScreenOrientationSignalReadOnly() {
         return screenOrientationReadOnly;
@@ -1682,6 +1722,8 @@ public class UIInternals implements Serializable {
      * {@code vaadin-screen-orientation-change} events into the screen
      * orientation signal. Guarded by a flag so repeated calls do not attach
      * duplicate listeners. For framework use only.
+     * 
+     * @since 25.2
      */
     public void ensureScreenOrientationWired() {
         if (screenOrientationListenerInstalled) {
@@ -1705,6 +1747,7 @@ public class UIInternals implements Serializable {
      *            the raw orientation type from the client, or {@code null}
      * @param angle
      *            the raw orientation angle from the client, or {@code null}
+     * @since 25.2
      */
     public void setScreenOrientationFromClient(@Nullable String type,
             @Nullable String angle) {
@@ -1749,6 +1792,7 @@ public class UIInternals implements Serializable {
      * Check if we have a modal component defined for the UI.
      *
      * @return {@code true} if modal component is defined
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return modalComponentStack != null && !modalComponentStack.isEmpty();
@@ -1758,6 +1802,7 @@ public class UIInternals implements Serializable {
      * Get the active modal component if modal components set.
      *
      * @return the current active modal component
+     * @since 23.0
      */
     public Component getActiveModalComponent() {
         if (hasModalComponent()) {
@@ -1779,6 +1824,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @since 23.0
      */
     public void setChildModal(Component child) {
         if (modalComponentStack == null) {
@@ -1821,6 +1867,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to make modeless
+     * @since 23.0
      */
     public void setChildModeless(Component child) {
         if (modalComponentStack == null) {
@@ -1875,6 +1922,7 @@ public class UIInternals implements Serializable {
      * Returns the Deployment Configuration for the application
      *
      * @return The Deployment Configuration
+     * @since 24.8
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
@@ -1883,6 +1931,8 @@ public class UIInternals implements Serializable {
     /**
      * Create flow reference for the client outlet element if not already
      * generated.
+     * 
+     * @since 25.1
      */
     public void createWrapperElement() {
         if (this.wrapperElement == null) {
@@ -1895,6 +1945,7 @@ public class UIInternals implements Serializable {
      * Get outlet element reference wrapper if set.
      * 
      * @return wrapperElement if set else {@code null}
+     * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;

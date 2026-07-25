@@ -32,6 +32,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * ordinary {@link com.vaadin.flow.component.Component}.
  * <p>
  * For internal framework use only.
+ * 
+ * @since 25.2
  */
 public final class FrontendDependencyUrlResolver implements Serializable {
 

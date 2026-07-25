@@ -85,6 +85,7 @@ public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
      * @param offsetY
      *            the y coordinate of the mouse pointer relative to the drop
      *            target element
+     * @since 25.2
      */
     public DropEvent(T source, boolean fromClient,
             @EventData("event.dataTransfer.effectAllowed") String effectAllowed,

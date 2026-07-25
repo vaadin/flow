@@ -13,6 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Server-side access to the browser's Fullscreen API.
+ * <p>
+ * Use
+ * {@link com.vaadin.flow.component.fullscreen.Fullscreen#onClick(com.vaadin.flow.component.Component)
+ * Fullscreen.onClick(component)} to make a button (or other clickable
+ * component) enter fullscreen, and
+ * {@link com.vaadin.flow.component.fullscreen.Fullscreen#stateSignal()} to
+ * observe the current
+ * {@link com.vaadin.flow.component.fullscreen.FullscreenState fullscreen
+ * state}. {@link com.vaadin.flow.component.fullscreen.Fullscreen#exit()} leaves
+ * fullscreen again.
+ * <p>
+ * Entering fullscreen goes through {@code onClick} rather than an ordinary
+ * server-side click listener because the browser only honours a fullscreen
+ * request while it is handling a genuine user gesture, which is no longer valid
+ * by the time a server round trip completes.
+ */
 @NullMarked
 package com.vaadin.flow.component.fullscreen;
 

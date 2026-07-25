@@ -20,13 +20,32 @@ else
   updateTarget="minor"
 fi
 
+# Packages to never auto-update on this branch (space separated patterns).
+# @vaadin/common-frontend releases newer than 0.0.19 are not compatible with
+# Vaadin 24, so it must never be auto-updated on the 24.x maintenance branches.
+reject=""
+case "$currentBranch" in
+  24.*) reject="@vaadin/common-frontend" ;;
+esac
+
+# @babel/* must stay on the 7.x line: Babel 8 is not compatible, so cap it at
+# minor on every branch. The packages are excluded from the main update pass
+# below and updated separately with a forced "minor" target, which keeps 7.x
+# patches/minors flowing while blocking the jump to 8.x.
+babelFilter="@babel/*"
+mainReject="$babelFilter${reject:+ $reject}"
+
 echo "Current branch: $currentBranch"
 echo "Update strategy: $updateTarget"
+echo "Rejected packages (main pass): $mainReject"
+echo "Capped at minor: $babelFilter"
 
 for a in "$depsFolder"/*
 do
   pushd $a
-  npx npm-check-updates@$ncuVersion -u -t "$updateTarget" --cooldown $cooldown
+  npx npm-check-updates@$ncuVersion -u -t "$updateTarget" --cooldown $cooldown --reject "$mainReject"
+  # Babel: never cross into the incompatible 8.x major.
+  npx npm-check-updates@$ncuVersion -u -t minor --cooldown $cooldown --filter "$babelFilter"
   popd
 done
 
@@ -42,7 +61,7 @@ do
   folderName=$(basename "$a")
 
   # Run npm-check-updates with --no-deprecated to find deprecated packages
-  deprecatedOutput=$(npx npm-check-updates@$ncuVersion --no-deprecated --cooldown $cooldown 2>&1)
+  deprecatedOutput=$(npx npm-check-updates@$ncuVersion --no-deprecated --cooldown $cooldown --reject "$mainReject" 2>&1)
 
   # Check if there are any deprecated packages (output will contain package names if found)
   if echo "$deprecatedOutput" | grep -q "deprecated"; then

@@ -114,6 +114,7 @@ public class Page implements Serializable {
      * @param colorScheme
      *            the color scheme to set (e.g., ColorScheme.Value.DARK,
      *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
+     * @since 25.0
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
@@ -139,6 +140,7 @@ public class Page implements Serializable {
      * developer tools.
      *
      * @return the color scheme value, never {@code null}
+     * @since 25.0
      */
     public ColorScheme.Value getColorScheme() {
         return getExtendedClientDetails().getColorScheme();
@@ -322,6 +324,7 @@ public class Page implements Serializable {
      * @deprecated use {@link #addJavaScript(String, LoadMode, JavaScript.Type)}
      *             with {@link JavaScript.Type#MODULE} instead. The new overload
      *             also accepts a {@link LoadMode}.
+     * @since 2.0
      */
     @Deprecated
     public void addJsModule(String url) {
@@ -345,6 +348,7 @@ public class Page implements Serializable {
      *
      * @param expression
      *            the JavaScript expression which return a Promise
+     * @since 2.1
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
@@ -394,6 +398,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -419,6 +424,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
@@ -453,6 +459,7 @@ public class Page implements Serializable {
      * The returned signal is read-only.
      *
      * @return a read-only signal with the current window size
+     * @since 25.1
      */
     public Signal<WindowSize> windowSizeSignal() {
         ensureWindowSizeSignal();
@@ -492,6 +499,7 @@ public class Page implements Serializable {
      *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see Registration
+     * @since 1.2
      */
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
@@ -605,6 +613,7 @@ public class Page implements Serializable {
      *             that is not considered safe; see {@link #openUnsafe(String)}
      *             and the {@value InitParameters#URL_SAFE_SCHEMES}
      *             configuration property
+     * @since 2.0
      */
     public void open(String url) {
         open(url, "_blank");
@@ -648,6 +657,7 @@ public class Page implements Serializable {
      *             {@link #openUnsafe(String, String)} and the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
+     * @since 2.2
      */
     public void open(String url, String windowName) {
         if (url == null) {
@@ -673,6 +683,7 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
+     * @since 25.1.12
      */
     public void openUnsafe(String url) {
         openInternal(url, "_blank");
@@ -694,6 +705,7 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
+     * @since 25.1.12
      */
     public void openUnsafe(String url, String windowName) {
         openInternal(url, windowName);
@@ -721,6 +733,7 @@ public class Page implements Serializable {
      *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
      *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
      *             configuration property
+     * @since 2.0
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -739,6 +752,7 @@ public class Page implements Serializable {
      *             validation, and see the
      *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
      *             property
+     * @since 2.0
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
@@ -751,6 +765,8 @@ public class Page implements Serializable {
 
     /**
      * Callback for receiving extended client-side details.
+     * 
+     * @since 2.0
      */
     @FunctionalInterface
     public interface ExtendedClientDetailsReceiver extends Serializable {
@@ -782,6 +798,7 @@ public class Page implements Serializable {
      * time, use {@link ExtendedClientDetails#refresh(SerializableConsumer)}.
      *
      * @return the extended client details (never {@code null})
+     * @since 25.0
      */
     public ExtendedClientDetails getExtendedClientDetails() {
         return ui.getInternals().getExtendedClientDetails();
@@ -798,6 +815,7 @@ public class Page implements Serializable {
      *             details, or
      *             {@link ExtendedClientDetails#refresh(SerializableConsumer)}
      *             to refresh the cached values.
+     * @since 2.0
      */
     @Deprecated
     public void retrieveExtendedClientDetails(
@@ -828,6 +846,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the url is resolved.
+     * @since 7.0
      */
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
@@ -858,6 +877,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the direction is resolved.
+     * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
         executeJs("return document.dir").then(String.class, dir -> {

@@ -29,7 +29,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *            data type
  * @param <F>
  *            filter type
- * @since 1.2
+ * @since 1.1
  */
 public abstract class AbstractHierarchicalDataProvider<T, F> extends
         AbstractDataProvider<T, F> implements HierarchicalDataProvider<T, F> {
@@ -37,6 +37,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * @throws UnsupportedOperationException
      *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
+     * @since 25.0
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {

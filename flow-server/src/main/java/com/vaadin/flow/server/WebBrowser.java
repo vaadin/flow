@@ -70,6 +70,7 @@ public class WebBrowser implements Serializable {
      * ua-parser/uap-java for instance.
      *
      * @return request User-Agent header
+     * @since 25.0
      */
     public String getUserAgent() {
         return userAgent;

@@ -13,6 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Server-side access to the browser's Screen Orientation API for observing and
+ * locking the device's screen orientation.
+ * <p>
+ * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#orientationSignal()}
+ * reports the current orientation (portrait, landscape, and its angle) and
+ * updates as the device rotates.
+ * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#lock(com.vaadin.flow.component.screenorientation.ScreenOrientationType)
+ * ScreenOrientation.lock(...)} pins the screen to a chosen orientation.
+ * <p>
+ * Locking is mainly relevant on mobile devices and typically only succeeds
+ * while the page is in fullscreen; it is commonly rejected on desktop browsers
+ * and on devices without an orientation sensor. A failed lock reports a
+ * {@link com.vaadin.flow.component.screenorientation.ScreenOrientationLockError}.
+ */
 @NullMarked
 package com.vaadin.flow.component.screenorientation;
 

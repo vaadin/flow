@@ -30,6 +30,8 @@ import com.vaadin.flow.signals.SignalCommand;
 
 /**
  * A list of signal commands together with their result handlers.
+ * 
+ * @since 25.1
  */
 public class CommandsAndHandlers implements Serializable {
     /**

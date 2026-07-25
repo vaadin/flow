@@ -96,15 +96,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"focusVisible\":true"),
                 "Should set focusVisible to true");
         assertFalse(paramJson.contains("preventScroll"),
@@ -123,15 +123,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"focusVisible\":false"),
                 "Should set focusVisible to false");
     }
@@ -148,15 +148,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"preventScroll\":true"),
                 "Should set preventScroll to true");
         assertFalse(paramJson.contains("focusVisible"),
@@ -175,15 +175,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"preventScroll\":false"),
                 "Should set preventScroll to false");
     }
@@ -200,15 +200,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"preventScroll\":true"),
                 "Should set preventScroll to true");
         assertTrue(paramJson.contains("\"focusVisible\":true"),
@@ -227,15 +227,15 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus($1)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.get(0).getInvocation()
                 .getParameters();
-        // First param is element, second param is the options object
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        // First param is the options object
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         assertTrue(paramJson.contains("\"preventScroll\":false"),
                 "Should set preventScroll to false");
         assertTrue(paramJson.contains("\"focusVisible\":false"),
@@ -257,13 +257,13 @@ class FocusableTest {
                 "Should contain setTimeout wrapper");
         assertTrue(expression.contains(".focus()"),
                 "Should contain focus call without parameters");
-        assertFalse(expression.contains(".focus($1)"),
+        assertFalse(expression.contains(".focus($0)"),
                 "Should not contain focus call with parameter");
 
         // Check the parameters
         List<Object> params = invocations.getFirst().getInvocation()
                 .getParameters();
-        assertEquals(2, params.size(),
-                "Should have exactly 1 parameter (the element node and wrapped parameter)");
+        assertEquals(1, params.size(),
+                "Should have exactly 1 wrapped parameter (no user-provided parameters)");
     }
 }

@@ -72,16 +72,32 @@ public class FlowPlugin : Plugin<Project> {
                 // In production mode, vaadinBuildFrontend is self-contained
                 // and performs its own frontend preparation, so there is no
                 // need for vaadinPrepareFrontend to run beforehand.
-                // this will also catch the War task since it extends from Jar
-                project.tasks.withType(Jar::class.java) { task: Jar ->
-                    task.dependsOn("vaadinBuildFrontend")
-                    // Restore the production token before packaging in
-                    // case it was deleted by a previous build's cleanup.
-                    task.doFirst {
-                        val svc = (project.tasks.getByName("vaadinBuildFrontend")
-                            as VaadinBuildFrontendTask).getTokenService().orNull
-                        svc?.ensureToken()
-                    }
+                val buildFrontendTask = project.tasks.getByName("vaadinBuildFrontend")
+                val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
+                val vaadinServletResourcesDirectory =
+                    buildAdapter.servletResourceOutputDirectory()
+                val vaadinBuildFrontendOutputDirectory =
+                    vaadinServletResourcesDirectory.parentFile?.parentFile
+
+                if (vaadinBuildFrontendOutputDirectory != null) {
+                    // Expose the production bundle (a task-owned tree laid out
+                    // as META-INF/VAADIN/...) as an extra output directory of
+                    // the source set. Through standard Gradle wiring this puts
+                    // it on the runtime classpath - so in-place runners (e.g.
+                    // gretty serving during a production build) find the bundle
+                    // and the production flow-build-info.json - and packages it
+                    // into every application archive (WEB-INF/classes for War,
+                    // the archive root for a plain or Spring Boot executable
+                    // jar), while archives that don't consume the source set
+                    // output (sources/javadoc jars) stay frontend-free. builtBy
+                    // wires every consumer to vaadinBuildFrontend, so no
+                    // explicit task dependency is needed. The bundle stays out
+                    // of build/resources/main, so vaadinBuildFrontend keeps its
+                    // own declared output and remains build-cache correct.
+                    project.getSourceSet(config.sourceSetName.get()).output.dir(
+                        mapOf("builtBy" to buildFrontendTask),
+                        vaadinBuildFrontendOutputDirectory
+                    )
                 }
             } else if (config.alwaysExecutePrepareFrontend.get()) {
                 // In development mode, vaadinPrepareFrontend is not
@@ -150,6 +166,13 @@ public class FlowPlugin : Plugin<Project> {
                 buildFrontendTask.usesService(tokenService)
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.usesService(tokenService)
+                    // Restore the production token before packaging in
+                    // case it was deleted by a previous build's cleanup.
+                    // Capture the service provider rather than the Project so
+                    // the action stays compatible with the configuration cache.
+                    task.doFirst {
+                        tokenService.get().ensureToken()
+                    }
                 }
             }
         }

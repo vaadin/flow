@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -49,6 +49,7 @@ public class PolymerPublishedEventRpcHandler
      * @param convertedType
      *            target type that value should be converted to
      * @return true if valid template model value
+     * @since 25.0
      */
     @Override
     public boolean isTemplateModelValue(Component instance, JsonNode argValue,
@@ -72,6 +73,7 @@ public class PolymerPublishedEventRpcHandler
      * @return the provided model value
      * @throws IllegalStateException
      *             if the component is not attached to the UI
+     * @since 25.0
      */
     @Override
     public Object getTemplateItem(Component template, JsonNode argValue,

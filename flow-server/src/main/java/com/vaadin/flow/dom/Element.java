@@ -285,6 +285,7 @@ public class Element extends Node<Element> {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
+     * @since 25.0
      */
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
@@ -429,6 +430,7 @@ public class Element extends Node<Element> {
      * @param requestHandler
      *            the resource value, not null
      * @return this element
+     * @since 24.8
      */
     public Element setAttribute(String attribute,
             ElementRequestHandler requestHandler) {
@@ -615,6 +617,7 @@ public class Element extends Node<Element> {
      * client.
      *
      * @return this element
+     * @since 2.0
      */
     public Element removeFromTree() {
         return removeFromTree(true);
@@ -632,6 +635,7 @@ public class Element extends Node<Element> {
      * @param sendDetach
      *            if the detach event should be sent to the client
      * @return this element
+     * @since 24.2
      */
     public Element removeFromTree(boolean sendDetach) {
         Node<?> parent = getParentNode();
@@ -848,6 +852,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public <T> Element setPropertyList(String name, List<T> value) {
         if (value == null) {
@@ -872,6 +877,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public Element setPropertyMap(String name, Map<String, ?> value) {
         if (value == null) {
@@ -952,6 +958,7 @@ public class Element extends Node<Element> {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
+     * @since 25.1
      */
     @SuppressWarnings("unchecked")
     public <T extends @Nullable Object> SignalBinding<T> bindProperty(
@@ -1227,6 +1234,7 @@ public class Element extends Node<Element> {
      *            <code>null</code>
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
+     * @since 25.0
      */
     public <T> T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
@@ -1266,6 +1274,7 @@ public class Element extends Node<Element> {
      *            <code>null</code>
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
+     * @since 25.0
      */
     public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
@@ -1410,6 +1419,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
+     * @since 25.0
      */
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
@@ -1525,6 +1535,7 @@ public class Element extends Node<Element> {
      *
      * @param className
      *            the CSS class name to flash, not <code>null</code>
+     * @since 25.1
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
@@ -1722,6 +1733,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
             Object... arguments) {
@@ -1758,6 +1770,7 @@ public class Element extends Node<Element> {
      *            the arguments to pass to the function
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1811,6 +1824,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -1845,6 +1859,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
@@ -1969,6 +1984,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
+     * @since 25.1
      */
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
@@ -2027,6 +2043,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
+     * @since 25.1
      */
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
@@ -2143,16 +2160,16 @@ public class Element extends Node<Element> {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
+     * @since 25.0
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
 
         // Use setTimeout to work on newly created elements
         if (json == null) {
-            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
         } else {
-            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
-                    json);
+            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
         }
 
         return getSelf();
@@ -2168,6 +2185,7 @@ public class Element extends Node<Element> {
      * @param scrollOptions
      *            the scroll options to pass to the method
      * @return the element
+     * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {

@@ -21,6 +21,8 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * Event fired when hotswap has been completed.
+ * 
+ * @since 25.1
  */
 public class HotswapCompleteEvent {
 

@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  *
+ * @since 5.0
  */
 public abstract class AbstractInjectableElementInitializer
         implements Consumer<Map<String, String>> {

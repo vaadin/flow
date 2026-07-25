@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 /**
  * Exception for access denied error view.
  *
+ * @since 24.3
  */
 public class AccessDeniedException extends RuntimeException {
 }

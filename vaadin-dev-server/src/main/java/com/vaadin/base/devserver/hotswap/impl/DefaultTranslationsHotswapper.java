@@ -35,7 +35,7 @@ import com.vaadin.flow.internal.JacksonUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 25.0
+ * @since 25.1
  */
 public class DefaultTranslationsHotswapper implements VaadinHotswapper {
 

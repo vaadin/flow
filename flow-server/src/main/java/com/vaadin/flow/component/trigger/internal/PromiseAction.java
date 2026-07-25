@@ -68,6 +68,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  *
  * @param <T>
  *            type the JS promise resolves with, decoded once on the server
+ * @since 25.2
  */
 public abstract class PromiseAction<T> extends Action {
 

@@ -31,6 +31,8 @@ import com.vaadin.flow.internal.JacksonUtils;
  * See <a href=
  * "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Element.scrollIntoView()</a>
  * for more information.
+ * 
+ * @since 25.0
  */
 public interface ScrollIntoViewOption extends Serializable {
 

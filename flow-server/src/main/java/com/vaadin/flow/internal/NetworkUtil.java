@@ -22,6 +22,8 @@ import java.net.ServerSocket;
  * Utility class for network related methods.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.0
  */
 public class NetworkUtil {
 

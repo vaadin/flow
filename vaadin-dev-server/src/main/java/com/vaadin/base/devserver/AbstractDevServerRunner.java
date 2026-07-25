@@ -70,6 +70,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * This class is meant to be used during developing time.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.3.22
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 

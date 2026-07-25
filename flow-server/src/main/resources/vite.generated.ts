@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, Stats } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync, Stats } from 'fs';
 import { createHash } from 'crypto';
 import * as net from 'net';
 
@@ -54,7 +54,17 @@ const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
-const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
+// Resolved by the Java side: points at the user's frontend/index.html when
+// they have one, otherwise at the default copy generated into the frontend
+// generated/ folder.
+const projectIndexHtml = path.resolve(__dirname, settings.clientIndexHtmlSource);
+// Path of the index.html relative to the vite root (frontendFolder). Used
+// to identify the HTML in `transformIndexHtml` and to normalize the
+// emitted asset back to `index.html` when the source lives in a subfolder.
+const indexHtmlRelativePath = path
+  .relative(frontendFolder, projectIndexHtml)
+  .replace(/\\/g, '/');
+const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -610,7 +620,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           order: 'pre',
           handler(_html, { path, server }) {
-            if (path !== '/index.html') {
+            if (path !== indexHtmlUrlPath) {
               return;
             }
 
@@ -637,6 +647,35 @@ export const vaadinConfig: UserConfigFn = (env) => {
             }
             return scripts;
           }
+        },
+        // When the default index.html source lives in frontend/generated/,
+        // rolldown emits it at the same relative path under outDir (HTML
+        // files are written outside the bundle object, so they cannot be
+        // renamed via `generateBundle`). Move the emitted file to the
+        // build output root so the stats plugin and the runtime (which
+        // both expect index.html at the root) find it, and strip the
+        // leading `../` that rolldown added to relative asset URLs to
+        // climb out of `generated/`. Runs before the stats plugin's
+        // `writeBundle` (which uses `enforce: 'post'`).
+        writeBundle() {
+          if (indexHtmlRelativePath === 'index.html') {
+            return;
+          }
+          const src = path.resolve(buildOutputFolder, indexHtmlRelativePath);
+          const dst = path.resolve(buildOutputFolder, 'index.html');
+          if (!existsSync(src)) {
+            return;
+          }
+          const depth = indexHtmlRelativePath.split('/').length - 1;
+          const upPrefix = '../'.repeat(depth);
+          const attrRegex = new RegExp(
+            `(\\b(?:src|href)=["'])${upPrefix.replace(/\./g, '\\.')}`,
+            'g'
+          );
+          const html = readFileSync(src, { encoding: 'utf-8' })
+            .replace(attrRegex, '$1');
+          writeFileSync(dst, html);
+          unlinkSync(src);
         }
       },
       //#vitePluginFileSystemRouter#

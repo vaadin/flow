@@ -78,6 +78,7 @@ public class FrontendWebComponentGenerator implements Serializable {
      * @return generated files
      * @throws java.lang.IllegalStateException
      *             if {@code finder} cannot locate required classes
+     * @since 6.0
      */
     public Set<File> generateWebComponents(File outputDirectory,
             ThemeDefinition theme) {

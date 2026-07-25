@@ -35,6 +35,8 @@ import tools.jackson.databind.JsonNode;
  * Utility methods to handle application theme CSS content.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 public class CssBundler {
 
@@ -215,6 +217,7 @@ public class CssBundler {
      *         rewritten URLs.
      * @throws IOException
      *             if filesystem resources cannot be read.
+     * @since 25.1.4
      */
     public static String inlineImportsForStaticResourcesRelative(
             File baseFolder, File cssFile, File nodeModulesFolder)

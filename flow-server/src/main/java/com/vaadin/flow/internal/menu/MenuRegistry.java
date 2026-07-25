@@ -42,19 +42,16 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitleGenerator;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.ParameterInfo;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -72,6 +69,8 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
  * that require path parameters.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.5
  */
 public class MenuRegistry {
 
@@ -280,16 +279,14 @@ public class MenuRegistry {
      *            the route parameters handed to a {@link PageTitleGenerator},
      *            not {@code null}
      * @return title to use for route
+     * @since 25.2
      */
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {
         VaadinService service = VaadinService.getCurrent();
-        Instantiator instantiator = service != null ? service.getInstantiator()
-                : null;
-        return RouteUtil
-                .resolvePageTitle(instantiator, target, parameters,
-                        QueryParameters.empty())
-                .orElseGet(target::getSimpleName);
+        return service == null ? target.getSimpleName()
+                : service.getRouter().resolvePageTitle(target, parameters)
+                        .orElseGet(target::getSimpleName);
     }
 
     /**

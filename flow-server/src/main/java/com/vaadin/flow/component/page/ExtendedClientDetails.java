@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
@@ -111,6 +111,7 @@ public class ExtendedClientDetails implements Serializable {
      *            the current color scheme
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
+     * @since 25.0
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -398,6 +399,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information from the browser is present
+     * @since 2.2
      */
     public boolean isIPad() {
         return navigatorPlatform != null && (navigatorPlatform
@@ -410,6 +412,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
+     * @since 2.2
      */
     public boolean isIOS() {
         return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
@@ -421,6 +424,7 @@ public class ExtendedClientDetails implements Serializable {
      * Gets the color scheme.
      *
      * @return the color scheme, never {@code null}
+     * @since 25.0
      */
     public ColorScheme.Value getColorScheme() {
         return colorScheme;
@@ -441,6 +445,7 @@ public class ExtendedClientDetails implements Serializable {
      * orientation lock button) without subscribing to the signal first.
      *
      * @return {@code true} if the Screen Orientation API is available
+     * @since 25.2
      */
     public boolean isScreenOrientationSupported() {
         if (ui == null) {
@@ -457,6 +462,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the theme name (e.g., "lumo", "aura"), or empty string if not
      *         detected
+     * @since 25.0
      */
     public String getThemeName() {
         return themeName;
@@ -489,26 +495,48 @@ public class ExtendedClientDetails implements Serializable {
      * @return the parsed details
      * @throws RuntimeException
      *             if the JSON is not a valid object
+     * @since 25.2
      */
     public static ExtendedClientDetails updateFromJson(UI ui, JsonNode json) {
         Objects.requireNonNull(ui, "UI must not be null");
-        if (!(json instanceof ObjectNode)) {
-            throw new RuntimeException("Expected a JSON object");
+        if (!(json instanceof ObjectNode jsonObj)) {
+            throw new IllegalArgumentException("Expected a JSON object");
         }
-        final ObjectNode jsonObj = (ObjectNode) json;
 
-        // Note that JSON returned is a plain string -> string map, the actual
-        // parsing of the fields happens in ExtendedClient's constructor. If a
-        // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
+        // The values are plain strings; the actual parsing of the fields
+        // happens in ExtendedClient's constructor. If a field is missing or
+        // the wrong type, pass on null for default.
+        return updateFromValues(ui, key -> {
             final JsonNode jsValue = jsonObj.get(key);
             if (jsValue != null
-                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                    && jsValue.getNodeType() == JsonNodeType.STRING) {
                 return jsValue.asString();
             } else {
                 return null;
             }
-        };
+        });
+    }
+
+    /**
+     * Updates the UI from browser details resolved through the given value
+     * provider, which maps a browser-detail key (e.g. {@code v-sw},
+     * {@code v-tzid}) to its raw string value, or {@code null} when the value
+     * is absent. Used to populate the details directly from individual request
+     * parameters during bootstrap, avoiding a JSON round-trip.
+     * <p>
+     * For internal use only.
+     *
+     * @param ui
+     *            the UI to update, not {@code null}
+     * @param getStringElseNull
+     *            resolves a browser-detail key to its raw string value, or
+     *            {@code null} if not present
+     * @return the parsed details
+     * @since 25.2.1
+     */
+    public static ExtendedClientDetails updateFromValues(UI ui,
+            UnaryOperator<String> getStringElseNull) {
+        Objects.requireNonNull(ui, "UI must not be null");
 
         ExtendedClientDetails details = new ExtendedClientDetails(ui,
                 getStringElseNull.apply("v-sw"),
@@ -571,6 +599,7 @@ public class ExtendedClientDetails implements Serializable {
      * @param callback
      *            a callback that will be invoked with the updated
      *            ExtendedClientDetails when the refresh is complete
+     * @since 25.0
      */
     public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";

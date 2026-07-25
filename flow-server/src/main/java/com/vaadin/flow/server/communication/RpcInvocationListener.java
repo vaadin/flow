@@ -45,6 +45,7 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  *
  * @see VaadinService#addRpcInvocationListener(RpcInvocationListener)
  * @see RpcInvocationEvent
+ * @since 25.2
  */
 public interface RpcInvocationListener extends Serializable {
 
