@@ -58,7 +58,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -359,13 +358,19 @@ public class FrontendUtils {
     public static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     public static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+    public static final String YELLOW = "\u001b[38;5;111m";
 
-    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+    public static final String RED = "\u001b[38;5;196m";
 
-    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
+    public static final String GREEN = "\u001b[38;5;35m";
 
-    public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+    public static final String BRIGHT_BLUE = "\u001b[94m";
+
+    /**
+     * ANSI escape sequence that resets the color applied by {@link #YELLOW},
+     * {@link #RED}, {@link #GREEN} or {@link #BRIGHT_BLUE}.
+     */
+    public static final String ANSI_RESET = "\u001b[0m";
 
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
@@ -1137,16 +1142,20 @@ public class FrontendUtils {
     /**
      * Intentionally send to console instead to log, useful when executing
      * external processes.
+     * <p>
+     * The message is printed as-is, wrapped with the given ANSI color escape
+     * sequence and {@link #ANSI_RESET}; it is never interpreted as a
+     * {@link String#format(String, Object...)} format string.
      *
-     * @param format
-     *            Format of the line to send to console, it must contain a `%s`
-     *            outlet for the message
+     * @param ansiColor
+     *            one of the ANSI color constants defined in this class, e.g.
+     *            {@link #GREEN} or {@link #RED}
      * @param message
-     *            the string to show
+     *            the message to show, printed literally
      */
     @SuppressWarnings("squid:S106")
-    public static void console(String format, Object message) {
-        System.out.print(format(format, message));
+    public static void console(String ansiColor, String message) {
+        System.out.print(ansiColor + message + ANSI_RESET);
     }
 
     /**
