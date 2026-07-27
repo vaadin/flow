@@ -15,11 +15,12 @@
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
+    "@vaadin/text-field": "25.2.0-beta1",
     "copy-to-clipboard": "^3.3.1",
     "lit": "3.3.3",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "react-router": "7.17.0"
+    "react-router": "8.1.0"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
@@ -30,10 +31,10 @@
     "@rolldown/plugin-babel": "0.2.3",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
-    "@types/node": "25.9.3",
+    "@types/node": "26.1.0",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-react": "6.0.3",
     "magic-string": "0.30.21",
     "rollup-plugin-brotli": "3.1.0",
     "rollup-plugin-visualizer": "7.0.1",
@@ -41,16 +42,17 @@
     "transform-ast": "2.4.4",
     "typescript": "6.0.3",
     "vite": "8.0.16",
-    "vite-plugin-checker": "0.14.1"
+    "vite-plugin-checker": "0.14.4"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.23",
+      "@vaadin/text-field": "25.2.0-beta1",
       "lit": "3.3.3",
       "react": "19.2.7",
       "react-dom": "19.2.7",
-      "react-router": "7.17.0"
+      "react-router": "8.1.0"
     },
     "devDependencies": {
       "@babel/core": "7.29.7",
@@ -61,10 +63,10 @@
       "@rolldown/plugin-babel": "0.2.3",
       "@rollup/plugin-replace": "6.0.3",
       "@rollup/pluginutils": "5.4.0",
-      "@types/node": "25.9.3",
+      "@types/node": "26.1.0",
       "@types/react": "19.2.17",
       "@types/react-dom": "19.2.3",
-      "@vitejs/plugin-react": "6.0.2",
+      "@vitejs/plugin-react": "6.0.3",
       "magic-string": "0.30.21",
       "rollup-plugin-brotli": "3.1.0",
       "rollup-plugin-visualizer": "7.0.1",
@@ -72,28 +74,8 @@
       "transform-ast": "2.4.4",
       "typescript": "6.0.3",
       "vite": "8.0.16",
-      "vite-plugin-checker": "0.14.1"
+      "vite-plugin-checker": "0.14.4"
     },
-    "hash": "29c171828258f518025ad858a690af1abb2d4389a081cbdd68dc7ab7b89bc0e6",
-    "overrides": {
-      "@polymer/polymer": "$@polymer/polymer",
-      "@vaadin/common-frontend": "$@vaadin/common-frontend",
-      "copy-to-clipboard": "$copy-to-clipboard",
-      "lit": "$lit",
-      "react": "$react",
-      "react-dom": "$react-dom",
-      "react-router": "$react-router"
-    }
-  },
-  "pnpm": {
-    "overrides": {
-      "@vaadin/common-frontend": "$@vaadin/common-frontend",
-      "react-dom": "$react-dom",
-      "lit": "$lit",
-      "@vaadin/text-field": "$@vaadin/text-field",
-      "@polymer/polymer": "$@polymer/polymer",
-      "react": "$react",
-      "react-router": "$react-router"
-    }
+    "hash": "a87d92a247c5108aaf15c4e06d87f858bf6dda000f23e5c14d28610bab7c4024"
   }
 }
