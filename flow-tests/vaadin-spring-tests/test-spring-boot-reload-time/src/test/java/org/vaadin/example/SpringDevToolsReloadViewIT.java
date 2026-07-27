@@ -26,6 +26,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
@@ -40,6 +41,10 @@ import com.vaadin.testbench.parallel.Browser;
 @NotThreadSafe
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
+    // The first reload of a run triggers a cold dev-server restart, which can
+    // take well over the default 10s wait before the result becomes visible.
+    private static final int RESULT_WAIT_SECONDS = 40;
+
     @Test
     public void testSpringBootReloadTime_withNativeButton() {
         String result = SpringDevToolsReloadUtils
@@ -48,7 +53,9 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
                     waitForElementPresent(By.id("start-button"));
                     triggerReload();
-                    waitForElementVisible(By.id("result"));
+                    waitUntil(ExpectedConditions
+                            .visibilityOfElementLocated(By.id("result")),
+                            RESULT_WAIT_SECONDS);
 
                     return assertAndGetReloadTimeResult();
                 });
@@ -68,7 +75,9 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
                     waitForElementPresent(By.id("start-button"));
                     triggerReload();
-                    waitForElementVisible(By.id("result"));
+                    waitUntil(ExpectedConditions
+                            .visibilityOfElementLocated(By.id("result")),
+                            RESULT_WAIT_SECONDS);
 
                     return assertAndGetReloadTimeResult();
                 });
