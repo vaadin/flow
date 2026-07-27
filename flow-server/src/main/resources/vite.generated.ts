@@ -437,7 +437,10 @@ function preserveUsageStats() {
         }
       }
 
-      return { code: src };
+      // Leave other modules untouched so their sourcemap is preserved;
+      // returning `{ code: src }` here would drop the map and hide the
+      // original sources in the debugger.
+      return;
     }
   };
 }
