@@ -510,6 +510,38 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void ownerScopeGuard_lifecycleOwnerMarkedByDefault() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        fixture.createNewShortcut(Key.KEY_A);
+
+        fixture.writeResponse();
+
+        assertNotNull(
+                fixture.owner.getElement().getAttribute(
+                        ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "lifecycle owner should be marked so the origin guard can locate it");
+    }
+
+    @Test
+    void ownerScopeGuard_lifecycleOwnerNotMarkedWhenAllowed() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        final ShortcutRegistration registration = fixture
+                .createNewShortcut(Key.KEY_A);
+
+        fixture.writeResponse();
+        assertNotNull(fixture.owner.getElement()
+                .getAttribute(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE));
+
+        registration.setEventsFromNestedModalsAllowed(true);
+        fixture.writeResponse();
+
+        assertNull(
+                fixture.owner.getElement().getAttribute(
+                        ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "owner marker should be removed when nested-modal events are allowed");
+    }
+
+    @Test
     void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 

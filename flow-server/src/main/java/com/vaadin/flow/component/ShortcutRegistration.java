@@ -21,16 +21,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
@@ -68,6 +71,16 @@ public class ShortcutRegistration implements Registration, Serializable {
     private boolean allowEventPropagation = false;
 
     private boolean allowEventsFromNestedModals = false;
+
+    private static final AtomicInteger OWNER_TOKEN_GENERATOR = new AtomicInteger();
+
+    // Marker attribute set on the lifecycle owner element so the client-side
+    // origin guard can locate it within the event's popover/modal scope
+    // (#24974). Unique per registration to avoid matching a different
+    // shortcut's owner.
+    static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
+    private final String ownerToken = "sc"
+            + OWNER_TOKEN_GENERATOR.incrementAndGet();
 
     private boolean resetFocusOnActiveElement = false;
 
@@ -135,6 +148,8 @@ public class ShortcutRegistration implements Registration, Serializable {
             for (int i = 0; i < listenOnComponents.length; i++) {
                 updateHandlerListenerRegistration(i);
             }
+
+            updateOwnerMarker();
 
             markClean();
         }
@@ -382,6 +397,9 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
         removeAllListenerRegistrations();
 
+        if (lifecycleOwner != null && lifecycleOwner.getElement() != null) {
+            removeOwnerToken(lifecycleOwner.getElement());
+        }
         lifecycleOwner = null;
         listenOnComponents = null;
 
@@ -738,13 +756,15 @@ public class ShortcutRegistration implements Registration, Serializable {
                 String filterText = filterText();
                 /*
                  * Ignore keydown events that originate from a modal/popover
-                 * nested inside the listening element (#24974). The guard runs
-                 * before the preventDefault/stopPropagation side effects so
-                 * that those events are left untouched for the nested overlay.
+                 * nested deeper than the shortcut's lifecycle owner (#24974).
+                 * The listener is often bound to the UI (body) while the owner
+                 * lives inside an overlay, so the guard is anchored on the
+                 * owner's own popover/modal scope, not the listener element. It
+                 * runs before the preventDefault/stopPropagation side effects
+                 * so that non-matching events are left untouched.
                  */
                 if (!allowEventsFromNestedModals) {
-                    filterText += " && "
-                            + generateNestedModalOriginFilter("element");
+                    filterText += " && " + generateOwnerScopeFilter();
                 }
                 /*
                  * Due to https://github.com/vaadin/flow/issues/4871 we are not
@@ -949,12 +969,114 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private static String generateNestedModalOriginFilter(String boundaryExpr) {
-        return "!(function(){" + "var p=event.composedPath();"
-                + "var b=p.indexOf(" + boundaryExpr + ");"
-                + "if(b<0){return false;}" + "for(var i=0;i<b;i++){"
-                + "var n=p[i];" + "if(n&&n.nodeType===1&&n.matches&&"
-                + "(n.matches(':popover-open')||n.matches(':modal'))){"
-                + "return true;}" + "}" + "return false;" + "})()";
+        //@formatter:off
+        return """
+                !(function() {
+                    var path = event.composedPath();
+                    var boundary = path.indexOf(%s);
+                    if (boundary < 0) {
+                        return false;
+                    }
+                    for (var i = 0; i < boundary; i++) {
+                        var node = path[i];
+                        if (node && node.nodeType === 1 && node.matches
+                                && (node.matches(':popover-open')
+                                        || node.matches(':modal'))) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })()""".formatted(boundaryExpr);
+        //@formatter:on
+    }
+
+    /**
+     * Builds a JS boolean expression that is {@code true} when the event does
+     * <em>not</em> originate from a modal/popover nested deeper than the
+     * shortcut's lifecycle owner, i.e. when the shortcut is allowed to fire.
+     * <p>
+     * It finds the nearest open popover/modal ancestor of the event target (the
+     * event's "scope") and fires only if that scope also contains the lifecycle
+     * owner element (located via its {@link #SHORTCUT_OWNER_ATTRIBUTE} marker).
+     * An event outside any popover fires; an event in a popover that does not
+     * contain the owner is treated as originating from a foreign or nested
+     * scope and is ignored.
+     *
+     * @return the guard expression
+     */
+    private String generateOwnerScopeFilter() {
+        //@formatter:off
+        return """
+                !(function() {
+                    var path = event.composedPath();
+                    var scope = null;
+                    for (var i = 0; i < path.length; i++) {
+                        var node = path[i];
+                        if (node && node.nodeType === 1 && node.matches
+                                && (node.matches(':popover-open')
+                                        || node.matches(':modal'))) {
+                            scope = node;
+                            break;
+                        }
+                    }
+                    if (!scope) {
+                        return false;
+                    }
+                    var owner = document.querySelector('[%s~="%s"]');
+                    return !(owner && scope.contains(owner));
+                })()""".formatted(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+        //@formatter:on
+    }
+
+    /**
+     * Marks or unmarks the lifecycle owner element so that
+     * {@link #generateOwnerScopeFilter()} can locate it on the client. The
+     * marker is only needed while the origin guard is active.
+     */
+    private void updateOwnerMarker() {
+        if (lifecycleOwner == null) {
+            return;
+        }
+        final Element element = lifecycleOwner.getElement();
+        if (element == null) {
+            return;
+        }
+        if (allowEventsFromNestedModals) {
+            removeOwnerToken(element);
+        } else {
+            addOwnerToken(element);
+        }
+    }
+
+    private void addOwnerToken(Element element) {
+        final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+        if (current == null || current.isBlank()) {
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+            return;
+        }
+        final Set<String> tokens = new LinkedHashSet<>(
+                Arrays.asList(current.trim().split("\\s+")));
+        if (tokens.add(ownerToken)) {
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
+                    String.join(" ", tokens));
+        }
+    }
+
+    private void removeOwnerToken(Element element) {
+        final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+        if (current == null || current.isBlank()) {
+            return;
+        }
+        final Set<String> tokens = new LinkedHashSet<>(
+                Arrays.asList(current.trim().split("\\s+")));
+        if (tokens.remove(ownerToken)) {
+            if (tokens.isEmpty()) {
+                element.removeAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+            } else {
+                element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
+                        String.join(" ", tokens));
+            }
+        }
     }
 
     /*
