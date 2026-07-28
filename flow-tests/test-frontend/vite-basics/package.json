@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "no-name",
   "license": "UNLICENSED",
   "type": "module",
@@ -15,7 +14,7 @@
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/text-field": "25.2.0-beta1",
+    "@vaadin/text-field": "25.3.0-alpha7",
     "copy-to-clipboard": "^3.3.1",
     "lit": "3.3.3",
     "react": "19.2.7",
@@ -48,7 +47,7 @@
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.23",
-      "@vaadin/text-field": "25.2.0-beta1",
+      "@vaadin/text-field": "25.3.0-alpha7",
       "lit": "3.3.3",
       "react": "19.2.7",
       "react-dom": "19.2.7",
@@ -76,6 +75,6 @@
       "vite": "8.0.16",
       "vite-plugin-checker": "0.14.4"
     },
-    "hash": "a87d92a247c5108aaf15c4e06d87f858bf6dda000f23e5c14d28610bab7c4024"
+    "hash": "ad7fd683c1436ea7fac6d9c687a1345ffee43f21b3766e588f28002726525912"
   }
 }
