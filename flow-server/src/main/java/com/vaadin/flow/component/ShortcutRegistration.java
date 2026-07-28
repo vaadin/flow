@@ -1014,22 +1014,41 @@ public class ShortcutRegistration implements Registration, Serializable {
         return """
                 !(function() {
                     try {
+                        // Nearest open popover/modal ancestor in the flattened
+                        // (composed) tree, so slotted light-DOM content is
+                        // matched to the overlay in the component's shadow root.
+                        var scopeOf = function(node) {
+                            while (node) {
+                                if (node.nodeType === 1 && node.matches
+                                        && (node.matches(':popover-open')
+                                                || node.matches(':modal'))) {
+                                    return node;
+                                }
+                                node = node.assignedSlot || node.parentNode
+                                        || node.host || null;
+                            }
+                            return null;
+                        };
                         var path = event.composedPath();
-                        var scope = null;
+                        var eventScope = null;
                         for (var i = 0; i < path.length; i++) {
                             var node = path[i];
                             if (node && node.nodeType === 1 && node.matches
                                     && (node.matches(':popover-open')
                                             || node.matches(':modal'))) {
-                                scope = node;
+                                eventScope = node;
                                 break;
                             }
                         }
-                        if (!scope) {
+                        var owner = document.querySelector('[%s~="%s"]');
+                        if (!owner) {
+                            // Owner not locatable: fail open (fire).
                             return false;
                         }
-                        var owner = document.querySelector('[%s~="%s"]');
-                        return !(owner && scope.contains(owner));
+                        // Fire only when the event and the owner share the same
+                        // popover/modal scope; a deeper or foreign scope means
+                        // the event came from a nested/other overlay.
+                        return eventScope !== scopeOf(owner);
                     } catch (e) {
                         // Fail open: never let guard evaluation kill the shortcut
                         return false;
