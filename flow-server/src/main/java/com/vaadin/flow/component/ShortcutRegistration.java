@@ -972,20 +972,25 @@ public class ShortcutRegistration implements Registration, Serializable {
         //@formatter:off
         return """
                 !(function() {
-                    var path = event.composedPath();
-                    var boundary = path.indexOf(%s);
-                    if (boundary < 0) {
+                    try {
+                        var path = event.composedPath();
+                        var boundary = path.indexOf(%s);
+                        if (boundary < 0) {
+                            return false;
+                        }
+                        for (var i = 0; i < boundary; i++) {
+                            var node = path[i];
+                            if (node && node.nodeType === 1 && node.matches
+                                    && (node.matches(':popover-open')
+                                            || node.matches(':modal'))) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    } catch (e) {
+                        // Fail open: never let guard evaluation kill the shortcut
                         return false;
                     }
-                    for (var i = 0; i < boundary; i++) {
-                        var node = path[i];
-                        if (node && node.nodeType === 1 && node.matches
-                                && (node.matches(':popover-open')
-                                        || node.matches(':modal'))) {
-                            return true;
-                        }
-                    }
-                    return false;
                 })()""".formatted(boundaryExpr);
         //@formatter:on
     }
@@ -1008,22 +1013,27 @@ public class ShortcutRegistration implements Registration, Serializable {
         //@formatter:off
         return """
                 !(function() {
-                    var path = event.composedPath();
-                    var scope = null;
-                    for (var i = 0; i < path.length; i++) {
-                        var node = path[i];
-                        if (node && node.nodeType === 1 && node.matches
-                                && (node.matches(':popover-open')
-                                        || node.matches(':modal'))) {
-                            scope = node;
-                            break;
+                    try {
+                        var path = event.composedPath();
+                        var scope = null;
+                        for (var i = 0; i < path.length; i++) {
+                            var node = path[i];
+                            if (node && node.nodeType === 1 && node.matches
+                                    && (node.matches(':popover-open')
+                                            || node.matches(':modal'))) {
+                                scope = node;
+                                break;
+                            }
                         }
-                    }
-                    if (!scope) {
+                        if (!scope) {
+                            return false;
+                        }
+                        var owner = document.querySelector('[%s~="%s"]');
+                        return !(owner && scope.contains(owner));
+                    } catch (e) {
+                        // Fail open: never let guard evaluation kill the shortcut
                         return false;
                     }
-                    var owner = document.querySelector('[%s~="%s"]');
-                    return !(owner && scope.contains(owner));
                 })()""".formatted(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
         //@formatter:on
     }
