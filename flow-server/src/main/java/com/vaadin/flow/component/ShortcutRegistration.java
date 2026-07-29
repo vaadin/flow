@@ -321,8 +321,9 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration bindLifecycleTo(Component component) {
-        // this does not require setDirty as the shortcut configuration is
-        // not affected by this change
+        // Changing the lifecycle owner moves the owner marker the origin guard
+        // relies on, so setLifecycleOwner re-runs the client update when the
+        // owner actually changes.
 
         if (component == null) {
             throw new IllegalArgumentException(
@@ -626,7 +627,19 @@ public class ShortcutRegistration implements Registration, Serializable {
             lifecycleRegistration.remove();
         }
 
+        final boolean ownerChanged = lifecycleOwner != null
+                && lifecycleOwner != owner;
+        if (ownerChanged && lifecycleOwner.getElement() != null) {
+            // Drop the marker from the previous owner; the new owner is marked
+            // by updateOwnerMarker on the client update triggered below.
+            removeOwnerToken(lifecycleOwner.getElement());
+        }
+
         registerLifecycleOwner(owner);
+
+        if (ownerChanged) {
+            prepareForClientResponse();
+        }
     }
 
     private void addKey(Key key) {
@@ -768,7 +781,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                  * not run on it.
                  */
                 final boolean hasEventDelegate = ComponentUtil.getData(
-                        listenOnComponents[listenOnIndex],
+                        getComponentEventSource(listenOnIndex),
                         Shortcuts.ELEMENT_LOCATOR_JS_KEY) != null;
                 if (!allowEventsFromNestedModals && !hasEventDelegate) {
                     filterText += " && " + generateOwnerScopeFilter();
@@ -963,9 +976,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     /**
      * Builds a JS boolean expression that is {@code true} when the event is
      * allowed to fire the shortcut, delegating to
-     * {@code window.Vaadin.Flow.shortcutEventWithinBoundary}. That helper walks
-     * {@code event.composedPath()} up to the boundary element and suppresses
-     * the shortcut when an open popover/modal shadows the boundary.
+     * {@code window.Vaadin.Flow.shortcut.eventWithinBoundary}. That helper
+     * walks {@code event.composedPath()} up to the boundary element and
+     * suppresses the shortcut when an open popover/modal shadows the boundary.
      *
      * @param boundaryExpr
      *            JS expression evaluating to the element the listener is bound
@@ -1107,6 +1120,9 @@ public class ShortcutRegistration implements Registration, Serializable {
         ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, Boolean.TRUE);
         try (InputStream stream = ShortcutRegistration.class.getClassLoader()
                 .getResourceAsStream(SHORTCUT_CLIENT_JS)) {
+            if (stream == null) {
+                throw new IOException("resource not found on the classpath");
+            }
             ui.getPage().executeJs(
                     StringUtil.removeComments(StringUtil.toUTF8String(stream)));
         } catch (IOException e) {
