@@ -53,9 +53,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
                     waitForElementPresent(By.id("start-button"));
                     triggerReload();
-                    waitUntil(ExpectedConditions
-                            .visibilityOfElementLocated(By.id("result")),
-                            RESULT_WAIT_SECONDS);
+                    waitUntil(ExpectedConditions.visibilityOfElementLocated(
+                            By.id("result")), RESULT_WAIT_SECONDS);
 
                     return assertAndGetReloadTimeResult();
                 });
@@ -75,9 +74,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
                     waitForElementPresent(By.id("start-button"));
                     triggerReload();
-                    waitUntil(ExpectedConditions
-                            .visibilityOfElementLocated(By.id("result")),
-                            RESULT_WAIT_SECONDS);
+                    waitUntil(ExpectedConditions.visibilityOfElementLocated(
+                            By.id("result")), RESULT_WAIT_SECONDS);
 
                     return assertAndGetReloadTimeResult();
                 });
