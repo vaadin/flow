@@ -15,14 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -58,22 +55,28 @@ public class NestedPopoverShortcutIT extends ChromeBrowserTest {
 
     @Test
     public void nestedPopoverFocused_parentShortcutFiresOnlyForParent() {
-        // Must NOT fire the parent shortcut.
+        // Press in the nested overlay — must NOT fire the parent shortcut.
         pressShortcut(NestedPopoverShortcutView.NESTED_INPUT_ID);
 
-        // Barrier: hide the nested overlay and fire the shortcut from the
-        // parent layer, which MUST fire.
+        // Hide the nested overlay and press from the parent layer — MUST fire.
         final DivElement nestedOverlay = $(DivElement.class)
                 .id(NestedPopoverShortcutView.NESTED_OVERLAY_ID);
         nestedOverlay.getCommandExecutor()
                 .executeScript("arguments[0].hidePopover();", nestedOverlay);
         pressShortcut(NestedPopoverShortcutView.PARENT_INPUT_ID);
 
-        waitUntil(driver -> countParentShortcut() >= 1);
+        // Ordered barrier: a plain round-trip issued after both keydowns. Flow
+        // serializes requests, so once the sync marker appears, both shortcut
+        // RPCs (including an erroneous one from the nested press) have been
+        // applied and the count is final.
+        $(NativeButtonElement.class).id(NestedPopoverShortcutView.SYNC_BUTTON)
+                .click();
+        waitUntil(driver -> count(NestedPopoverShortcutView.SYNC) >= 1);
+
         Assert.assertEquals(
                 "Parent shortcut must fire only for the parent-layer keydown, "
                         + "not for the keydown originating in the nested popover",
-                1, countParentShortcut());
+                1, count(NestedPopoverShortcutView.PARENT_SHORTCUT));
     }
 
     private void pressShortcut(String inputId) {
@@ -84,12 +87,8 @@ public class NestedPopoverShortcutIT extends ChromeBrowserTest {
         input.sendKeys(Keys.chord(Keys.ALT, "s"));
     }
 
-    private long countParentShortcut() {
-        final List<WebElement> entries = eventLog
-                .findElements(By.tagName("div"));
-        return entries.stream()
-                .filter(e -> e.getText()
-                        .contains(NestedPopoverShortcutView.PARENT_SHORTCUT))
-                .count();
+    private long count(String text) {
+        return eventLog.findElements(By.tagName("div")).stream()
+                .filter(e -> e.getText().contains(text)).count();
     }
 }

@@ -49,9 +49,13 @@ public class NestedPopoverShortcutView extends Div {
     public static final String NESTED_OVERLAY_ID = "nested-overlay";
     public static final String PARENT_INPUT_ID = "parent-input";
     public static final String NESTED_INPUT_ID = "nested-input";
+    public static final String SYNC_BUTTON = "sync";
 
     // Shortcut fired by the parent dialog, logged with this source label.
     public static final String PARENT_SHORTCUT = "parent-shortcut";
+    // Logged by the sync button; used by tests as an ordered round-trip
+    // barrier.
+    public static final String SYNC = "sync-done";
 
     public static final Key SHORTCUT_KEY = Key.KEY_S;
     public static final KeyModifier SHORTCUT_MODIFIER = KeyModifier.ALT;
@@ -101,7 +105,14 @@ public class NestedPopoverShortcutView extends Div {
                         .executeJs("this.showPopover();"));
         openNested.setId(OPEN_NESTED_BUTTON);
 
-        add(openParent, openNested, parentDialog, parentOverlay, eventLog);
+        // Plain server round-trip used by tests as an ordered barrier: Flow
+        // serializes requests, so once this logs, any earlier shortcut RPC has
+        // already been applied.
+        final NativeButton sync = new NativeButton("Sync", e -> log(SYNC));
+        sync.setId(SYNC_BUTTON);
+
+        add(openParent, openNested, sync, parentDialog, parentOverlay,
+                eventLog);
         setId("main-div");
     }
 
