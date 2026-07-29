@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.internal.UIInternals;
@@ -64,15 +64,14 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private boolean allowEventsFromNestedModals = false;
 
-    private static final AtomicInteger OWNER_TOKEN_GENERATOR = new AtomicInteger();
-
     // Marker attribute set on the lifecycle owner element so the client-side
     // origin guard can locate it within the event's popover/modal scope
-    // (#24974). Unique per registration to avoid matching a different
-    // shortcut's owner.
+    // (#24974). The token is a UUID rather than a JVM-local counter so it stays
+    // unique across session serialization/deserialization onto another JVM,
+    // where a counter would restart and new shortcuts could reuse a restored
+    // token.
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
-    private final String ownerToken = "sc"
-            + OWNER_TOKEN_GENERATOR.incrementAndGet();
+    private final String ownerToken = "sc-" + UUID.randomUUID();
 
     private boolean resetFocusOnActiveElement = false;
 
