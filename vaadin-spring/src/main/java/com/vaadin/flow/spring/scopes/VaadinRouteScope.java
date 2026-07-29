@@ -297,7 +297,7 @@ public class VaadinRouteScope extends AbstractScope {
         public void onComponentEvent(DetachEvent event) {
             assert getVaadinSession().hasLock();
             uiDetachRegistration.remove();
-            if (resetUI()) {
+            if (resetUI(event.getUI())) {
                 uiDetachRegistration = currentUI.addDetachListener(this);
             } else {
                 destroy();
@@ -334,8 +334,21 @@ public class VaadinRouteScope extends AbstractScope {
             return beanNames;
         }
 
-        private boolean resetUI() {
-            UI ui = findPreservingUI(currentUI);
+        /**
+         * Re-points this store to the UI that replaces the given detached UI on
+         * the same browser window, if any.
+         * <p>
+         * The detached UI is passed in explicitly because {@code currentUI} may
+         * already have been re-assigned to a newer UI by
+         * {@link RouteStoreWrapper#getBeanStore(UI)}, in which case it is not
+         * the UI this detach event originates from.
+         *
+         * @param detachedUI
+         *            the UI being detached
+         * @return {@code true} if a replacement UI was found
+         */
+        private boolean resetUI(UI detachedUI) {
+            UI ui = findPreservingUI(detachedUI);
             if (ui == null) {
                 return false;
             }
@@ -457,11 +470,26 @@ public class VaadinRouteScope extends AbstractScope {
         return ui;
     }
 
+    /**
+     * Finds the UI that took over the browser window of the given UI, e.g. on a
+     * page refresh.
+     *
+     * @param ui
+     *            the UI being detached
+     * @return the UI on the same browser window, or {@code null} if there is
+     *         none
+     */
     private static UI findPreservingUI(UI ui) {
         VaadinSession session = ui.getSession();
         String windowName = getWindowName(ui);
+        if (session == null || windowName == null) {
+            // Without a window name there is nothing to match the session UIs
+            // against, and a UI that has already been detached from the session
+            // cannot be matched at all.
+            return null;
+        }
         for (UI sessionUi : session.getUIs()) {
-            if (sessionUi != ui && windowName != null
+            if (sessionUi != ui
                     && windowName.equals(getWindowName(sessionUi))) {
                 return sessionUi;
             }
