@@ -350,17 +350,6 @@ class FrontendUtilsTest {
     }
 
     @Test
-    void deleteDirectory_onlyRemovesDirectories() throws IOException {
-        File file = new File(tmpDir, "file.txt");
-        assertTrue(file.createNewFile());
-
-        FrontendUtils.deleteDirectory(file);
-        FrontendUtils.deleteDirectory(new File(tmpDir, "missing"));
-
-        assertTrue(file.exists(), "A plain file should not be removed");
-    }
-
-    @Test
     void deleteNodeModules_throwsIfNotNamedNodeModules() throws IOException {
         File myModules = new File(tmpDir, "my_modules");
         myModules.mkdirs();

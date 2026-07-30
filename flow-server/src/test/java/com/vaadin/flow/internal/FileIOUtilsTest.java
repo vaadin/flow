@@ -269,6 +269,44 @@ class FileIOUtilsTest {
     }
 
     @Test
+    void delete_junctionInsideDirectoryIsRemovedAsLink(@TempDir File dir)
+            throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+
+        File external = new File(dir, "external");
+        assertTrue(external.mkdirs());
+        File externalFile = new File(external, "keep.txt");
+        assertTrue(externalFile.createNewFile());
+
+        File directory = new File(dir, "bundle");
+        assertTrue(directory.mkdirs());
+        Path junction = new File(directory, "junction").toPath();
+        Files.createSymbolicLink(junction, external.toPath());
+
+        // A junction encountered while walking the tree is reported as a
+        // directory that is also "other", see
+        // delete_junctionIsRemovedAsLink. Traversing into it would delete the
+        // linked contents instead of the link.
+        BasicFileAttributes junctionAttributes = Mockito
+                .mock(BasicFileAttributes.class);
+        Mockito.when(junctionAttributes.isDirectory()).thenReturn(true);
+        Mockito.when(junctionAttributes.isOther()).thenReturn(true);
+
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.readAttributes(junction,
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
+                    .thenReturn(junctionAttributes);
+
+            FileIOUtils.delete(directory);
+        }
+
+        assertFalse(directory.exists());
+        assertTrue(externalFile.exists(),
+                "Contents behind a junction should be kept");
+    }
+
+    @Test
     void delete_failureInsideDirectoryNamesTheBlockingFile(@TempDir File dir)
             throws Exception {
         File directory = new File(dir, "bundle");
@@ -304,23 +342,89 @@ class FileIOUtilsTest {
         // Simulate a file that cannot be removed, which on Windows typically
         // means that another process is keeping it open
         try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
-                Mockito.CALLS_REAL_METHODS)) {
+                Mockito.CALLS_REAL_METHODS);
+                MockedStatic<FrontendUtils> platform = Mockito.mockStatic(
+                        FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.deleteIfExists(file.toPath())).thenThrow(
                     new AccessDeniedException(file.getAbsolutePath()));
             // Registering the stub above invoked the real method, so the file
             // has to be created after it
             assertTrue(file.createNewFile());
 
+            platform.when(FrontendUtils::isWindows).thenReturn(true);
+            IOException windows = assertThrows(IOException.class,
+                    () -> FileIOUtils.delete(file));
+
+            assertTrue(windows.getMessage()
+                    .startsWith("Failed to delete " + file.toPath()));
+            assertTrue(windows.getMessage().contains("taskkill"),
+                    "The message should tell how to stop the process holding "
+                            + "the file: " + windows.getMessage());
+            assertTrue(windows.getMessage().contains(file.getAbsolutePath()),
+                    "The path placeholder should be replaced with the actual "
+                            + "path: " + windows.getMessage());
+
+            platform.when(FrontendUtils::isWindows).thenReturn(false);
+            IOException other = assertThrows(IOException.class,
+                    () -> FileIOUtils.delete(file));
+
+            assertTrue(other.getMessage().contains("lsof"),
+                    "The message should tell how to find the process using the "
+                            + "file: " + other.getMessage());
+        }
+    }
+
+    @Test
+    void delete_unreadableEntryReportsFailure(@TempDir File dir)
+            throws Exception {
+        File directory = new File(dir, "bundle");
+        assertTrue(directory.mkdirs());
+        File unreadable = new File(directory, "unreadable.txt");
+        assertTrue(unreadable.createNewFile());
+        AccessDeniedException cause = new AccessDeniedException(
+                unreadable.getAbsolutePath());
+
+        // An entry whose attributes cannot be read has to be reported the same
+        // way as one that cannot be deleted
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.readAttributes(unreadable.toPath(),
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
+                    .thenThrow(cause);
+
+            IOException exception = assertThrows(IOException.class,
+                    () -> FileIOUtils.delete(directory));
+
+            assertTrue(
+                    exception.getMessage().startsWith(
+                            "Failed to delete " + unreadable.toPath()),
+                    exception.getMessage());
+            assertEquals(cause, exception.getCause());
+        }
+    }
+
+    @Test
+    void delete_unreadableTargetReportsFailure(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "unreadable.txt");
+        assertTrue(file.createNewFile());
+        AccessDeniedException cause = new AccessDeniedException(
+                file.getAbsolutePath());
+
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.readAttributes(file.toPath(),
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
+                    .thenThrow(cause);
+
             IOException exception = assertThrows(IOException.class,
                     () -> FileIOUtils.delete(file));
 
-            assertTrue(exception.getMessage()
-                    .startsWith("Failed to delete " + file.toPath()));
             assertTrue(
-                    exception.getMessage().contains(
-                            FrontendUtils.isWindows() ? "taskkill" : "lsof"),
-                    "The message should tell how to find and stop the process "
-                            + "holding the file: " + exception.getMessage());
+                    exception.getMessage()
+                            .startsWith("Failed to delete " + file.toPath()),
+                    exception.getMessage());
+            assertEquals(cause, exception.getCause());
         }
     }
 
