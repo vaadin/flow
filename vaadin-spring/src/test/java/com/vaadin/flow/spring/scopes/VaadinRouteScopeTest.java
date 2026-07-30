@@ -10,6 +10,7 @@ package com.vaadin.flow.spring.scopes;
 
 import jakarta.servlet.ServletContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -217,6 +218,102 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         // the bean is not removed since it's already has been removed when the
         // first UI is detached.
         Assert.assertEquals(0, count.get());
+    }
+
+    @Test
+    public void detachUI_refreshedUIDetachedFirst_beanIsDestroyedWithoutReportingError() {
+        UI ui = mockUI();
+
+        UI anotherUI = makeAnotherUI(ui);
+
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ui.getInternals().setExtendedClientDetails(details);
+        anotherUI.getInternals().setExtendedClientDetails(details);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+        session.addUI(anotherUI);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::getAndIncrement);
+
+        navigateTo(ui, new NavigationTarget());
+
+        putObjectIntoScope(scope);
+
+        // Refresh: a request on the new UI re-points the store to it, while the
+        // store's detach listener stays on the first UI.
+        UI.setCurrent(anotherUI);
+        initScope(anotherUI);
+
+        List<Throwable> reportedErrors = new ArrayList<>();
+        Mockito.when(session.getErrorHandler())
+                .thenReturn(event -> reportedErrors.add(event.getThrowable()));
+
+        // Session expiration removes the UIs one by one. The refreshed UI, the
+        // one the store points at, goes first and loses its session.
+        session.removeUI(anotherUI);
+
+        // Detaching the UI that carries the store's detach listener must not
+        // fail, and must destroy the bean since the browser window is left
+        // without a UI.
+        UI.setCurrent(ui);
+        session.removeUI(ui);
+
+        Assert.assertEquals(List.of(), reportedErrors);
+        Assert.assertEquals(1, count.get());
+    }
+
+    @Test
+    public void detachUI_refreshedUIDetachedLast_beanIsDestroyedWhenRefreshedUIIsDetached() {
+        UI ui = mockUI();
+
+        UI anotherUI = makeAnotherUI(ui);
+
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ui.getInternals().setExtendedClientDetails(details);
+        anotherUI.getInternals().setExtendedClientDetails(details);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+        session.addUI(anotherUI);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
+
+        navigateTo(ui, new NavigationTarget());
+
+        putObjectIntoScope(scope);
+
+        // Refresh: a request on the new UI re-points the store to it, while the
+        // store's detach listener stays on the first UI.
+        UI.setCurrent(anotherUI);
+        initScope(anotherUI);
+
+        // The stale UI is closed later on, e.g. by the inactive UI cleanup.
+        UI.setCurrent(ui);
+        session.removeUI(ui);
+
+        // the bean is not removed since the refreshed UI still hosts it
+        Assert.assertEquals(0, count.get());
+
+        // Detaching the refreshed UI must destroy the bean.
+        UI.setCurrent(anotherUI);
+        session.removeUI(anotherUI);
+
+        Assert.assertEquals(1, count.get());
     }
 
     private void navigateTo(UI ui, Component component) {
