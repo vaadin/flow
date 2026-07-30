@@ -58,6 +58,23 @@ public class FileIOUtils {
     }
 
     /**
+     * Deletes file if it exists and eats exceptions.
+     *
+     * Note, this is an internal helper method, use only from framework code.
+     *
+     * @param file
+     *            to be deleted
+     * @return true if succeeded
+     * @deprecated use {@link #deleteQuietly(File)} instead, which also deletes
+     *             directory contents and logs why a deletion failed instead of
+     *             failing silently
+     */
+    @Deprecated
+    public static boolean deleteFileQuietly(File file) {
+        return deleteQuietly(file);
+    }
+
+    /**
      * Deletes a file, or a directory and its contents, logging a warning that
      * explains how to unblock the deletion if it fails.
      *
@@ -89,7 +106,7 @@ public class FileIOUtils {
             delete(path);
             return true;
         } catch (IOException | RuntimeException e) {
-            log().warn("{}", e.getMessage(), e);
+            log().warn(e.getMessage(), e);
             return false;
         }
     }

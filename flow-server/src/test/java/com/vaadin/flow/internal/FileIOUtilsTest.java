@@ -361,6 +361,19 @@ class FileIOUtilsTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    void deleteFileQuietly_delegatesToDeleteQuietly(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "file.txt");
+        assertTrue(file.createNewFile());
+
+        assertTrue(FileIOUtils.deleteFileQuietly(file));
+
+        assertFalse(file.exists());
+        assertFalse(FileIOUtils.deleteFileQuietly(null));
+    }
+
+    @Test
     void deleteQuietly_missingFileSucceedsAndNullFails(@TempDir File dir) {
         assertTrue(FileIOUtils.deleteQuietly(new File(dir, "missing.txt")));
         assertTrue(FileIOUtils

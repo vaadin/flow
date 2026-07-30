@@ -101,7 +101,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
             try {
                 FileIOUtils.delete(file);
             } catch (IOException ioe) {
-                log().warn("{}", ioe.getMessage());
+                log().warn(ioe.getMessage());
                 log().debug("Failed to remove file", ioe);
             }
         }
