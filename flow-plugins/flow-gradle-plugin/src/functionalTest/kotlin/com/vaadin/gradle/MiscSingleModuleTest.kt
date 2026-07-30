@@ -583,6 +583,132 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
     }
 
+    /**
+     * `vaadinPrepareFrontend` writes the development token into
+     * `resourceOutputDirectory`, which is registered as a resources source
+     * folder, so `processResources` consumes its output. Invoking the task
+     * directly together with `build` must not fail on a missing task
+     * dependency.
+     */
+    @Test
+    fun prepareFrontend_developmentMode_invokedWithBuild_succeeds() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        val build: BuildResult =
+            testProject.build("vaadinPrepareFrontend", "build")
+
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        // the development token must still reach the classpath
+        expectArchiveContains("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json") {
+            testProject.builtWar
+        }
+    }
+
+    /**
+     * `vaadinPrepareFrontend` is not needed in a production build - since Vaadin
+     * 25 `vaadinBuildFrontend` performs the frontend preparation itself - but
+     * pipelines carried over from earlier versions still invoke it. Doing so
+     * must not corrupt the archive: the production token written by
+     * `vaadinBuildFrontend` has to be the only one packaged, even though
+     * `vaadinPrepareFrontend` also generates one.
+     */
+    @Test
+    fun prepareFrontend_productionMode_invokedWithBuild_keepsProductionToken() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        val build: BuildResult = testProject.build(
+            "-Pvaadin.productionMode", "vaadinPrepareFrontend", "build"
+        )
+
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val war: File = testProject.builtWar
+        // asserts, among others, that there is exactly one flow-build-info.json
+        expectArchiveContainsVaadinBundle(war, false)
+        expectProductionToken(war, "WEB-INF/classes/")
+    }
+
+    /**
+     * A `resourceOutputDirectory` left behind by an earlier development-mode
+     * `vaadinPrepareFrontend` execution must not be packaged by a later
+     * production build: the token it holds always has `productionMode=false`,
+     * and `vaadinBuildFrontend` contributes its own token, so the archive
+     * would end up with two conflicting copies.
+     */
+    @Test
+    fun prepareFrontend_staleGeneratedResources_productionArchiveKeepsProductionToken() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        // development mode run, leaves the token in build/vaadin-generated
+        testProject.build("vaadinPrepareFrontend")
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode", "build")
+
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val war: File = testProject.builtWar
+        expectArchiveContainsVaadinBundle(war, false)
+        expectProductionToken(war, "WEB-INF/classes/")
+    }
+
+    /**
+     * Same as
+     * [prepareFrontend_staleGeneratedResources_productionArchiveKeepsProductionToken],
+     * for Spring Boot packaging: an executable jar keeps the production bundle
+     * at the archive root instead of under `WEB-INF/classes`, so the two source
+     * set contributions are merged differently there.
+     */
+    @Test
+    fun prepareFrontend_staleGeneratedResources_springBootArchiveKeepsProductionToken() {
+        doTestSpringProject()
+
+        // Development mode run, leaves the token in build/vaadin-generated.
+        // Spring Boot projects default to production mode - the convention keys
+        // on the presence of a bootJar task - so development mode is forced.
+        testProject.build("-Pvaadin.productionMode=false", "vaadinPrepareFrontend")
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode", "build")
+
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true)
+        expectProductionToken(jar, "")
+    }
+
+    private fun vaadinWarProject(): String = """
+            plugins {
+                id 'war'
+                id 'com.vaadin.flow'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """
+
+    /**
+     * @param resourcePackaging archive prefix the source set resources end up
+     *      under: `WEB-INF/classes/` for a War, empty for a Spring Boot jar.
+     */
+    private fun expectProductionToken(archive: File, resourcePackaging: String) {
+        val token: String? = archive.zipReadEntry(
+            "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json"
+        )
+        expect(true, "flow-build-info.json missing from $archive") {
+            token != null
+        }
+        expect(true, "expected a production token, was:\n$token") {
+            token!!.contains("\"productionMode\" : true")
+        }
+    }
+
     @Test
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
