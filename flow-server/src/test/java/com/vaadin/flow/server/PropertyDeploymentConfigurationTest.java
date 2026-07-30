@@ -28,6 +28,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PropertyDeploymentConfigurationTest {
@@ -57,6 +58,23 @@ class PropertyDeploymentConfigurationTest {
                 properties);
         assertTrue(config.isProductionMode());
         assertEquals(properties, config.getInitParameters());
+    }
+
+    @Test
+    void changingInitialProperty_throwsException() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+
+        Properties properties = new Properties();
+        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                Boolean.TRUE.toString());
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                properties);
+        assertThrows(UnsupportedOperationException.class,
+                () -> config.getInitParameters().setProperty(
+                        InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        Boolean.FALSE.toString()),
+                "Changing the initial property values of the configuration should not be possible.");
     }
 
     @Test
