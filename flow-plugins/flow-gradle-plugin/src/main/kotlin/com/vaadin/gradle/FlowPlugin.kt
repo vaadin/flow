@@ -62,11 +62,6 @@ public class FlowPlugin : Plugin<Project> {
 
         project.afterEvaluate {
 
-            // add a new source-set folder for generated stuff, by default `vaadin-generated`
-            it.getSourceSet(config.sourceSetName.get()).resources.srcDirs(
-                config.resourceOutputDirectory
-            )
-
             // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
             if (config.productionMode.get()) {
                 // In production mode, vaadinBuildFrontend is self-contained
@@ -99,7 +94,21 @@ public class FlowPlugin : Plugin<Project> {
                         vaadinBuildFrontendOutputDirectory
                     )
                 }
-            } else if (config.alwaysExecutePrepareFrontend.get()) {
+            } else {
+                // Add a new source-set folder for generated stuff, by default
+                // `vaadin-generated`, so that the IDE picks it up and the
+                // application can be run in place, e.g. in IntelliJ with Tomcat.
+                // Development mode only: the flow-build-info.json that
+                // vaadinPrepareFrontend writes there always has
+                // productionMode=false, while in production vaadinBuildFrontend
+                // generates the whole META-INF/VAADIN tree into its own output
+                // directory. Copying the development token through
+                // processResources as well would add a second, conflicting
+                // META-INF/VAADIN/config/flow-build-info.json to the archive.
+                it.getSourceSet(config.sourceSetName.get()).resources.srcDirs(
+                    config.resourceOutputDirectory
+                )
+
                 // In development mode, vaadinPrepareFrontend is not
                 // auto-triggered by default. Since Vaadin 25, the dev
                 // server handles frontend preparation at runtime, so
@@ -109,8 +118,24 @@ public class FlowPlugin : Plugin<Project> {
                 // However, if alwaysExecutePrepareFrontend is set,
                 // restore the old behavior and chain the task to
                 // processResources.
-                project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
+                if (config.alwaysExecutePrepareFrontend.get()) {
+                    project.tasks
+                        .getByPath(config.processResourcesTaskName.get())
+                        .dependsOn("vaadinPrepareFrontend")
+                }
             }
+
+            // vaadinPrepareFrontend is not part of the build by default, but
+            // when a project invokes it explicitly its outputs are consumed by
+            // these tasks: processResources reads the generated resources
+            // folder, and vaadinBuildFrontend reads package.json and the lock
+            // files. Declare the ordering - not a dependency, which would make
+            // the task execute on every build - so that Gradle does not report
+            // an implicit dependency validation problem.
+            project.tasks.getByPath(config.processResourcesTaskName.get())
+                .mustRunAfter("vaadinPrepareFrontend")
+            project.tasks.getByName("vaadinBuildFrontend")
+                .mustRunAfter("vaadinPrepareFrontend")
 
             val toolsService = project.gradle.sharedServices.registerIfAbsent(
                 "vaadinTools",
