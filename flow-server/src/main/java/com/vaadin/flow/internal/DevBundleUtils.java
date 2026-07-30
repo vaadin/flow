@@ -119,7 +119,7 @@ public class DevBundleUtils {
         File bundleFile = new File(projectDir,
                 Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (bundleFile.exists()) {
-            bundleFile.delete();
+            FileIOUtils.deleteQuietly(bundleFile);
         } else {
             bundleFile.getParentFile().mkdirs();
         }

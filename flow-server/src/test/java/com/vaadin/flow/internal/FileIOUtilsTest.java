@@ -16,7 +16,9 @@
 package com.vaadin.flow.internal;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +33,7 @@ import com.vaadin.open.OSUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -132,5 +135,90 @@ class FileIOUtilsTest {
         try (var entries = Files.list(dir.toPath())) {
             assertEquals(1, entries.count());
         }
+    }
+
+    @Test
+    void delete_removesDirectoryContentsRecursively(@TempDir File dir)
+            throws Exception {
+        File nested = new File(dir, "a/b");
+        assertTrue(nested.mkdirs());
+        assertTrue(new File(nested, "file.txt").createNewFile());
+
+        FileIOUtils.delete(new File(dir, "a"));
+
+        assertFalse(new File(dir, "a").exists());
+    }
+
+    @Test
+    void delete_nonExistingFileIsNoOp(@TempDir File dir) throws Exception {
+        FileIOUtils.delete(new File(dir, "missing.txt"));
+    }
+
+    @Test
+    void delete_symlinkedContentsAreLeftUntouched(@TempDir File dir)
+            throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+
+        File external = new File(dir, "external");
+        assertTrue(external.mkdirs());
+        File externalFile = new File(external, "keep.txt");
+        assertTrue(externalFile.createNewFile());
+
+        File toDelete = new File(dir, "toDelete");
+        assertTrue(toDelete.mkdirs());
+        Files.createSymbolicLink(new File(toDelete, "link").toPath(),
+                external.toPath());
+
+        FileIOUtils.delete(toDelete);
+
+        assertFalse(toDelete.exists());
+        assertTrue(externalFile.exists(),
+                "Contents of the symlinked directory should be kept");
+    }
+
+    @Test
+    void delete_failureExplainsHowToUnblockDeletion(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "locked.txt");
+
+        // Simulate a file that cannot be removed, which on Windows typically
+        // means that another process is keeping it open
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.deleteIfExists(file.toPath())).thenThrow(
+                    new AccessDeniedException(file.getAbsolutePath()));
+            // Registering the stub above invoked the real method, so the file
+            // has to be created after it
+            assertTrue(file.createNewFile());
+
+            IOException exception = assertThrows(IOException.class,
+                    () -> FileIOUtils.delete(file));
+
+            assertTrue(exception.getMessage()
+                    .startsWith("Failed to delete " + file.toPath()));
+            assertTrue(
+                    exception.getMessage().contains(
+                            FrontendUtils.isWindows() ? "taskkill" : "lsof"),
+                    "The message should tell how to find and stop the process "
+                            + "holding the file: " + exception.getMessage());
+        }
+    }
+
+    @Test
+    void deleteQuietly_reportsFailureWithoutThrowing(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "locked.txt");
+
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.deleteIfExists(file.toPath())).thenThrow(
+                    new AccessDeniedException(file.getAbsolutePath()));
+            assertTrue(file.createNewFile());
+
+            assertFalse(FileIOUtils.deleteQuietly(file));
+        }
+
+        assertTrue(FileIOUtils.deleteQuietly(file));
+        assertFalse(file.exists());
     }
 }
