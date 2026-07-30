@@ -24,6 +24,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
@@ -61,6 +62,10 @@ public abstract class AbstractScopeTest {
     @After
     public void clearSession() {
         session = null;
+        // mockSession() sets the current VaadinSession, which is stored in a
+        // thread local. Surefire reuses the JVM and its threads across test
+        // classes, so it has to be cleared to not leak into unrelated tests.
+        CurrentInstance.clearAll();
     }
 
     @Test(expected = IllegalStateException.class)
