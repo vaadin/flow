@@ -442,6 +442,34 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    void pnpmIsInUse_workspaceFileReformattedByPnpm_notReportedAsChange()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        File workspaceFile = new File(baseDir,
+                PnpmWorkspaceFile.WORKSPACE_FILE);
+        assertTrue(workspaceFile.exists(),
+                "Precondition: the run wrote the workspace file");
+
+        // pnpm rewrites the file while installing, adding its own block with
+        // scalars unquoted where Flow quotes them. The configuration Flow
+        // manages is unchanged, so the next run must not report a change: that
+        // would mark package.json as modified and run a package install.
+        Files.writeString(workspaceFile.toPath(), Files
+                .readString(workspaceFile.toPath(), StandardCharsets.UTF_8)
+                + "allowBuilds:\n  esbuild: set this to true or false\n",
+                StandardCharsets.UTF_8);
+
+        assertFalse(packageUpdater.lockVersionForNpm(packageJson),
+                "Reformatting by pnpm must not be reported as a dependency change");
+    }
+
+    @Test
     void pnpmIsInUse_legacyPnpmOverridesInPackageJson_migratedToWorkspace()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);

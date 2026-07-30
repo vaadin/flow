@@ -89,11 +89,10 @@ class PnpmWorkspaceFile {
     }
 
     /**
-     * Persists the file when its serialized content changed. When the whole
-     * document is empty the file is deleted, because an empty
-     * {@code pnpm-workspace.yaml} carries no configuration; user-authored
-     * override keys and other sections keep the document non-empty and thus
-     * keep the file alive.
+     * Persists the file when its content changed. When the whole document is
+     * empty the file is deleted, because an empty {@code pnpm-workspace.yaml}
+     * carries no configuration; user-authored override keys and other sections
+     * keep the document non-empty and thus keep the file alive.
      *
      * @return {@code true} if the file was written or deleted
      */
@@ -105,14 +104,16 @@ class PnpmWorkspaceFile {
             }
             return false;
         }
-        String yaml = YAML.writeValueAsString(document);
-        String current = file.isFile()
-                ? Files.readString(file.toPath(), StandardCharsets.UTF_8)
-                : null;
-        if (yaml.equals(current)) {
+        // The parsed content is compared instead of the serialized text, as a
+        // file holding the same configuration in a different layout, for
+        // example one pnpm has rewritten while installing, is not a change.
+        // Reporting it as one marks package.json as modified, which runs a
+        // package install on every dev-mode start.
+        if (document.equals(load())) {
             return false;
         }
-        Files.writeString(file.toPath(), yaml, StandardCharsets.UTF_8);
+        Files.writeString(file.toPath(), YAML.writeValueAsString(document),
+                StandardCharsets.UTF_8);
         return true;
     }
 }
