@@ -21,8 +21,10 @@ import java.net.URL;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -150,8 +152,36 @@ class FileIOUtilsTest {
     }
 
     @Test
+    void delete_removesPlainFileAndEmptyDirectory(@TempDir File dir)
+            throws Exception {
+        File file = new File(dir, "file.txt");
+        assertTrue(file.createNewFile());
+        File empty = new File(dir, "empty");
+        assertTrue(empty.mkdirs());
+
+        FileIOUtils.delete(file);
+        FileIOUtils.delete(empty);
+
+        assertFalse(file.exists());
+        assertFalse(empty.exists());
+    }
+
+    @Test
+    void delete_pathOverloadRemovesDirectoryContentsRecursively(
+            @TempDir File dir) throws Exception {
+        File nested = new File(dir, "a/b");
+        assertTrue(nested.mkdirs());
+        assertTrue(new File(nested, "file.txt").createNewFile());
+
+        FileIOUtils.delete(new File(dir, "a").toPath());
+
+        assertFalse(new File(dir, "a").exists());
+    }
+
+    @Test
     void delete_nonExistingFileIsNoOp(@TempDir File dir) throws Exception {
         FileIOUtils.delete(new File(dir, "missing.txt"));
+        FileIOUtils.delete(new File(dir, "missing/nested.txt"));
     }
 
     @Test
@@ -174,6 +204,96 @@ class FileIOUtilsTest {
         assertFalse(toDelete.exists());
         assertTrue(externalFile.exists(),
                 "Contents of the symlinked directory should be kept");
+    }
+
+    @Test
+    void delete_symlinkAsTargetIsRemovedAsLink(@TempDir File dir)
+            throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+
+        File external = new File(dir, "external");
+        assertTrue(external.mkdirs());
+        File externalFile = new File(external, "keep.txt");
+        assertTrue(externalFile.createNewFile());
+
+        Path link = new File(dir, "link").toPath();
+        Files.createSymbolicLink(link, external.toPath());
+
+        FileIOUtils.delete(link);
+
+        assertFalse(Files.exists(link, LinkOption.NOFOLLOW_LINKS));
+        assertTrue(externalFile.exists(),
+                "Contents of the symlinked directory should be kept");
+    }
+
+    @Test
+    void delete_junctionIsRemovedAsLink(@TempDir File dir) throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+
+        File external = new File(dir, "external");
+        assertTrue(external.mkdirs());
+        File externalFile = new File(external, "keep.txt");
+        assertTrue(externalFile.createNewFile());
+
+        Path junction = new File(dir, "junction").toPath();
+        Files.createSymbolicLink(junction, external.toPath());
+
+        // Junctions can only be created on Windows, where they are reported as
+        // a directory that is also "other". Deleting one has to remove the link
+        // itself instead of traversing into the linked contents.
+        BasicFileAttributes junctionAttributes = Mockito
+                .mock(BasicFileAttributes.class);
+        Mockito.when(junctionAttributes.isDirectory()).thenReturn(true);
+        Mockito.when(junctionAttributes.isOther()).thenReturn(true);
+
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.readAttributes(junction,
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
+                    .thenReturn(junctionAttributes);
+
+            FileIOUtils.delete(junction);
+
+            // The simulated attributes are what makes this meaningful: the
+            // junction is reported as a directory, so only the "other" check
+            // can be the reason its contents were not traversed
+            files.verify(() -> Files.readAttributes(junction,
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS));
+            files.verify(() -> Files.walkFileTree(Mockito.eq(junction),
+                    Mockito.any()), Mockito.never());
+        }
+
+        assertFalse(Files.exists(junction, LinkOption.NOFOLLOW_LINKS));
+        assertTrue(externalFile.exists(),
+                "Contents behind a junction should be kept");
+    }
+
+    @Test
+    void delete_failureInsideDirectoryNamesTheBlockingFile(@TempDir File dir)
+            throws Exception {
+        File directory = new File(dir, "bundle");
+        assertTrue(directory.mkdirs());
+        File locked = new File(directory, "locked.txt");
+        AccessDeniedException cause = new AccessDeniedException(
+                locked.getAbsolutePath());
+
+        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            files.when(() -> Files.deleteIfExists(locked.toPath()))
+                    .thenThrow(cause);
+            assertTrue(locked.createNewFile());
+
+            IOException exception = assertThrows(IOException.class,
+                    () -> FileIOUtils.delete(directory));
+
+            // The message has to point at the file that blocks the deletion,
+            // not at the directory the deletion was started from
+            assertTrue(
+                    exception.getMessage()
+                            .startsWith("Failed to delete " + locked.toPath()),
+                    exception.getMessage());
+            assertEquals(cause, exception.getCause());
+        }
     }
 
     @Test
@@ -220,5 +340,33 @@ class FileIOUtilsTest {
 
         assertTrue(FileIOUtils.deleteQuietly(file));
         assertFalse(file.exists());
+    }
+
+    @Test
+    void deleteQuietly_removesDirectoryContentsRecursively(@TempDir File dir)
+            throws Exception {
+        File nested = new File(dir, "a/b");
+        assertTrue(nested.mkdirs());
+        assertTrue(new File(nested, "file.txt").createNewFile());
+
+        assertTrue(FileIOUtils.deleteQuietly(new File(dir, "a")));
+        assertFalse(new File(dir, "a").exists());
+
+        File other = new File(dir, "c");
+        assertTrue(other.mkdirs());
+        assertTrue(new File(other, "file.txt").createNewFile());
+
+        assertTrue(FileIOUtils.deleteQuietly(other.toPath()));
+        assertFalse(other.exists());
+    }
+
+    @Test
+    void deleteQuietly_missingFileSucceedsAndNullFails(@TempDir File dir) {
+        assertTrue(FileIOUtils.deleteQuietly(new File(dir, "missing.txt")));
+        assertTrue(FileIOUtils
+                .deleteQuietly(new File(dir, "missing.txt").toPath()));
+
+        assertFalse(FileIOUtils.deleteQuietly((File) null));
+        assertFalse(FileIOUtils.deleteQuietly((Path) null));
     }
 }
