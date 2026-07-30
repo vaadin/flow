@@ -76,6 +76,9 @@
               <goal>start</goal>
             </goals>
             <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+            </configuration>
           </execution>
           <execution>
             <id>stop-server</id>
@@ -83,6 +86,9 @@
               <goal>stop</goal>
             </goals>
             <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+            </configuration>
           </execution>
         </executions>
       </plugin>
