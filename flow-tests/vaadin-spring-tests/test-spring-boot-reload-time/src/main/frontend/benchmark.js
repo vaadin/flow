@@ -6,12 +6,20 @@ const globalStyles = `
     animation: element-rendered;
   }
 
-  /*
-   * Match every input regardless of type. A plain Flow Input renders without a
-   * type attribute (the default "text" is omitted), so type-specific selectors
-   * would not detect its render.
-   */
   input {
+    animation: element-rendered;
+  }
+
+  /*
+   * Animate the measured element itself. Detection listens for animationstart
+   * on the component passed to measureRender; when that component is a plain
+   * container it must animate directly rather than relying on an animationstart
+   * bubbling up from a child. Plain <button>/<input> children animate the
+   * instant they are inserted, so a child's single animationstart can fire
+   * before the listener is attached and be missed - unlike the web components
+   * used previously, which animated only after their asynchronous upgrade.
+   */
+  .measure-render-target {
     animation: element-rendered;
   }
 `;
