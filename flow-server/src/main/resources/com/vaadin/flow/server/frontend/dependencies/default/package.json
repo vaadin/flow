@@ -3,11 +3,11 @@
   "description": "A list of default Flow dependencies",
   "dependencies": {
     "@polymer/polymer": "3.5.2",
-    "@vaadin/common-frontend": "0.0.24",
+    "@vaadin/common-frontend": "0.0.23",
     "lit": "3.3.3"
   },
   "devDependencies": {
-    "typescript": "7.0.2",
+    "typescript": "6.0.3",
     "strip-css-comments": "5.0.0"
   }
 }
