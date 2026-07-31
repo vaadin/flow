@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
@@ -62,7 +63,8 @@ import com.vaadin.flow.theme.Theme;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
         Template.class, LoadDependenciesOnStartup.class,
-        TypeScriptBootstrapModifier.class, Component.class, Layout.class })
+        TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
+        Component.class, Layout.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
