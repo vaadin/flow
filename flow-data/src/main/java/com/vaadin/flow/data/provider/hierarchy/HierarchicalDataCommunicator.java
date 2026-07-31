@@ -205,24 +205,37 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * item's sub-hierarchy is cleared from the cache and scheduled to be
      * re-fetched from the data provider once visible.
      * <p>
-     * WARNING: This method is only supported with data providers that use
-     * {@link HierarchyFormat#NESTED} and may cause visible range shift if the
-     * refreshed item contains <i>expanded</i> descendants. In such cases, they
-     * might not be re-fetched immediately if they are not visible. This can
-     * affect the flattened hierarchy size and result in the viewport range
-     * pointing to a different set of items than before the refresh.
+     * A {@code null} item is the virtual root (parent of root-level items,
+     * consistent with {@link TreeData#addItem(Object, Object)}). Refreshing it
+     * targets root-level data only and is <em>not</em> the same as
+     * {@link #reset()}: with {@code refreshChildren} {@code true}, root-level
+     * children are re-fetched (cache cleared and resized); with
+     * {@code false}, currently cached root items are re-rendered in place.
+     * <p>
+     * WARNING: For non-{@code null} items this method is only supported with
+     * data providers that use {@link HierarchyFormat#NESTED} when
+     * {@code refreshChildren} is {@code true}, and may cause visible range
+     * shift if the refreshed item contains <i>expanded</i> descendants. In such
+     * cases, they might not be re-fetched immediately if they are not visible.
+     * This can affect the flattened hierarchy size and result in the viewport
+     * range pointing to a different set of items than before the refresh.
      *
      * @since 25.0
      * @param item
-     *            the item to refresh
+     *            the item to refresh, or {@code null} for the virtual root
+     *            (parent of root-level items)
      * @param refreshChildren
      *            whether or not to refresh child items
      * @throws UnsupportedOperationException
-     *             if {@code refreshChildren} is true and the data provider's
-     *             hierarchy format is not {@link HierarchyFormat#NESTED}
+     *             if {@code refreshChildren} is true, {@code item} is not
+     *             {@code null}, and the data provider's hierarchy format is not
+     *             {@link HierarchyFormat#NESTED}
      */
     public void refresh(T item, boolean refreshChildren) {
-        Objects.requireNonNull(item, "Item cannot be null");
+        if (item == null) {
+            refreshVirtualRoot(refreshChildren);
+            return;
+        }
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
                 && refreshChildren) {
@@ -257,6 +270,42 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
 
         requestFlush().invalidateItem(item);
+    }
+
+    /**
+     * Refreshes root-level data for the virtual root ({@code null} parent).
+     * <p>
+     * When {@code refreshChildren} is {@code true}, behaves like refreshing
+     * children of a non-null parent: the root cache is cleared, its size is
+     * updated from the data provider, and the viewport is invalidated so
+     * root-level items are re-fetched. This is intentionally narrower than
+     * {@link #reset()}, which discards the entire cache and all generated data.
+     * <p>
+     * When {@code refreshChildren} is {@code false}, each currently cached
+     * root-level item is re-rendered in place without clearing descendant
+     * caches.
+     */
+    private void refreshVirtualRoot(boolean refreshChildren) {
+        if (rootCache == null) {
+            return;
+        }
+
+        if (refreshChildren) {
+            rootCache.clear();
+            rootCache.setSize(getDataProviderChildCount(null));
+            requestFlush().invalidateViewport();
+            return;
+        }
+
+        for (int i = 0; i < rootCache.getSize(); i++) {
+            if (!rootCache.hasItem(i)) {
+                continue;
+            }
+            T rootItem = rootCache.getItem(i);
+            keyMapper.refresh(rootItem);
+            dataGenerator.refreshData(rootItem);
+            requestFlush().invalidateItem(rootItem);
+        }
     }
 
     @Override

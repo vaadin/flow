@@ -35,13 +35,46 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
         AbstractDataProvider<T, F> implements HierarchicalDataProvider<T, F> {
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * A {@code null} item represents the virtual root of the hierarchy (the
+     * parent of root-level items, consistent with APIs such as
+     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root
+     * refreshes root-level items only; it is <em>not</em> equivalent to
+     * {@link #refreshAll()}. Use {@link #refreshItem(Object, boolean)
+     * refreshItem(null, true)} to also re-fetch the root-level children list,
+     * or {@link #refreshAll()} to rebuild the entire hierarchy (which may reset
+     * scroll position).
+     */
+    @Override
+    public void refreshItem(T item) {
+        super.refreshItem(item);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A {@code null} item represents the virtual root of the hierarchy (the
+     * parent of root-level items, consistent with APIs such as
+     * {@link TreeData#addItem(Object, Object)}). With {@code refreshChildren}
+     * {@code true}, root-level children are re-fetched from the data provider
+     * without performing a full {@link #refreshAll()}. With
+     * {@code refreshChildren} {@code false}, only currently cached root-level
+     * items are re-rendered in place.
+     *
      * @throws UnsupportedOperationException
      *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
+     *             and {@code item} is not {@code null} while
+     *             {@code refreshChildren} is {@code true}
      * @since 25.0
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {
-        if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+        // Virtual root (null) is always allowed: re-fetching root-level data is
+        // valid for every hierarchy format. Non-null items with refreshChildren
+        // remain NESTED-only (same as HierarchicalDataCommunicator).
+        if (item != null && refreshChildren
+                && !getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
             throw new UnsupportedOperationException(
                     """
                             Refreshing children of an item is only supported when the data provider \
