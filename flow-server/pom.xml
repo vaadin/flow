@@ -22,7 +22,6 @@
     <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
