@@ -34,6 +34,9 @@ const missingPrs = Object.keys(mainPrs)
   .filter((pr) => !ignoredTitlePatterns.some((pattern) => pattern.test(mainPrs[pr])))
   .map((pr) => {
     const labels = findLabels(pr);
+    // A null result means the number is not a PR (e.g. an issue reference that
+    // happened to be the last `(#NNN)` on the line); skip it.
+    if (labels === null) return null;
     const failedLabel = failedPickLabels.find((label) => labels.includes(label)) || null;
     const alreadyTargeted = labels.includes(targetLabel);
     return {
@@ -43,7 +46,8 @@ const missingPrs = Object.keys(mainPrs)
       failedLabel,
       alreadyTargeted,
     };
-  });
+  })
+  .filter(Boolean);
 
 if (missingPrs.length === 0) {
   console.log(`No PRs missing from ${otherBranch}`);
@@ -169,11 +173,21 @@ function selectPrs(items) {
   });
 }
 
+// Returns the label names for a PR, or null if the number does not resolve to a
+// PR. Issue and PR numbers share one namespace on GitHub, so a `(#NNN)` picked
+// from a commit title may be an issue; the pulls endpoint then returns 404 and
+// `gh` exits non-zero, which we treat as "not a PR" rather than a hard error.
 function findLabels(pr) {
-  const output = execSync(`gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/vaadin/flow/pulls/${pr}`, {
-    encoding: 'utf8',
-    maxBuffer: 256 * 1024 * 1024,
-  });
+  let output;
+  try {
+    output = execSync(`gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/vaadin/flow/pulls/${pr}`, {
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
   const json = JSON.parse(output);
   return json.labels.map(label => label.name);
 }
@@ -184,8 +198,13 @@ function findPrs(branch) {
     maxBuffer: 256 * 1024 * 1024,
   });
   const prAndLine = output.split('\n').flatMap((line) => {
+    // A commit title may contain several `(#NNN)` references: the original PR
+    // title can mention issues (e.g. `... workaround (#15086) (#24902)`), while
+    // the squash-merge always appends the PR number last. Only the last match
+    // is the PR; the earlier ones are issue references and are not PRs.
     const all = [...line.matchAll(/\(#(\d+)\)/g)];
-    return all.map((match) => ({ line, pr: match[1] }));
+    if (all.length === 0) return [];
+    return [{ line, pr: all[all.length - 1][1] }];
   });
 
   return Object.assign(...prAndLine.map((pr) => ({ [pr.pr]: pr.line })));
