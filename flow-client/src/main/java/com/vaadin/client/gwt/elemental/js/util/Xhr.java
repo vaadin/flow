@@ -167,7 +167,8 @@ public class Xhr {
      * @param requestData
      *            the data to be passed to XMLHttpRequest.send
      * @param contentType
-     *            a value for the Content-Type HTTP header
+     *            a value for the Content-Type HTTP header, or {@code null}
+     *            to send the request without a Content-Type header
      * @param callback
      *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
@@ -190,7 +191,8 @@ public class Xhr {
      * @param requestData
      *            the data to be passed to XMLHttpRequest.send
      * @param contentType
-     *            a value for the Content-Type HTTP header
+     *            a value for the Content-Type HTTP header, or {@code null}
+     *            to send the request without a Content-Type header
      * @param callback
      *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
@@ -221,7 +223,12 @@ public class Xhr {
         try {
             xhr.setOnReadyStateChange(new Handler(callback));
             xhr.open(method, url);
-            xhr.setRequestHeader("Content-type", contentType);
+            if (contentType != null) {
+                // Setting a null value would send the literal header
+                // "Content-Type: null" (the browser stringifies it), which
+                // strict server-side parsers reject as malformed.
+                xhr.setRequestHeader("Content-type", contentType);
+            }
             xhr.setWithCredentials(true);
             xhr.send(requestData);
         } catch (JavaScriptException e) {
