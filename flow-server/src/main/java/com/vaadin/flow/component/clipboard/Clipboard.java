@@ -135,16 +135,29 @@ public final class Clipboard implements Serializable {
     }
 
     /**
-     * Registers the given component as a clickable trigger for a clipboard
-     * action — the common shape for copy-to-clipboard buttons. Equivalent to
-     * {@code new ClickTrigger(component)}, without making callers reach for the
-     * trigger framework's internal types.
+     * Starts a clipboard action bound to clicks on the given component — the
+     * entry point for copy- and paste-to-clipboard buttons. Chain the action to
+     * perform onto the returned {@link ClipboardBinding}:
+     *
+     * <pre>{@code
+     * Button copy = new Button("Copy");
+     * Clipboard.onClick(copy).writeText(textField);
+     * }</pre>
+     *
+     * The browser only grants clipboard access while it is handling a genuine
+     * user gesture, and that activation is gone by the time a normal
+     * server-side click listener runs. Binding the action here makes it run
+     * inside the browser's own click handler, where the gesture is still valid
+     * — which is why clipboard actions go through {@code onClick} rather than
+     * an ordinary {@code addClickListener}.
      *
      * @param component
-     *            the component to listen for clicks on, not {@code null}
+     *            the component whose clicks trigger the clipboard action, not
+     *            {@code null}
      * @param <T>
      *            the component type, must implement {@link ClickNotifier}
-     * @return a new binding that can chain actions to this trigger
+     * @return a binding for chaining the clipboard action to perform on click
+     * @see ClipboardBinding
      */
     public static <T extends Component & ClickNotifier<?>> ClipboardBinding onClick(
             T component) {

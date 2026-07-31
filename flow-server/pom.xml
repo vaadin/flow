@@ -22,7 +22,6 @@
     <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
@@ -218,7 +217,7 @@
                 <path>
                   <groupId>com.uber.nullaway</groupId>
                   <artifactId>nullaway</artifactId>
-                  <version>0.13.6</version>
+                  <version>0.13.8</version>
                 </path>
               </annotationProcessorPaths>
               <fork>true</fork>
@@ -252,7 +251,7 @@
                 <path>
                   <groupId>com.uber.nullaway</groupId>
                   <artifactId>nullaway</artifactId>
-                  <version>0.13.6</version>
+                  <version>0.13.8</version>
                 </path>
               </annotationProcessorPaths>
               <fork>true</fork>

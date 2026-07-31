@@ -64,6 +64,7 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 public interface AbstractLookupInitializer {
 

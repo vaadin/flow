@@ -44,6 +44,8 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Only used when running in dev mode without a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.0
  */
 public class TaskRunDevBundleBuild implements FallibleCommand {
 
@@ -134,17 +136,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             throws ExecutionFailedException {
         Logger logger = getLogger();
 
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                options.getNpmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
-        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
-        settings.setNodeFolder(options.getNodeFolder());
-        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setNodeVersion(options.getNodeVersion());
-        settings.setIgnoreVersionChecks(
-                options.isFrontendIgnoreVersionChecks());
-        FrontendTools frontendTools = new FrontendTools(settings);
+        FrontendTools frontendTools = FrontendTools.fromOptions(options);
 
         File buildExecutable;
         try {

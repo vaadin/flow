@@ -35,6 +35,8 @@ import com.vaadin.flow.shared.Registration;
  * client DOM goes away (page reload, navigation, …) first.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class TimeoutTrigger extends Trigger {
 

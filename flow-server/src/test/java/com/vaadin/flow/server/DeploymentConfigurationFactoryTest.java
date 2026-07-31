@@ -595,26 +595,31 @@ class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
-        DeploymentConfiguration config = createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
+        servletConfigParams.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                Boolean.FALSE.toString());
+        servletConfigParams.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
+                Boolean.FALSE.toString());
 
-        config.getInitParameters().setProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                Boolean.FALSE.toString());
-        config.getInitParameters().setProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
-                Boolean.FALSE.toString());
-        config.getInitParameters().setProperty(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                Boolean.FALSE.toString());
+        DeploymentConfiguration config = createConfig(servletConfigParams);
 
         assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
-        assertEquals(Boolean.FALSE.toString(),
-                config.getInitParameters().getProperty(
-                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+    }
+
+    @Test
+    void createDeploymentConfiguration_initParametersAreNotModifiable()
+            throws Exception {
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> config.getInitParameters().setProperty(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                        Boolean.FALSE.toString()));
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

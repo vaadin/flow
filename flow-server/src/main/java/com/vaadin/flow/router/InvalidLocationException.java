@@ -21,6 +21,7 @@ package com.vaadin.flow.router;
  * @author Vaadin Ltd
  *
  * @see Location
+ * @since 8.0
  */
 public class InvalidLocationException extends RuntimeException {
 

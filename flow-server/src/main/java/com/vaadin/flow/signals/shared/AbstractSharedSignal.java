@@ -55,6 +55,7 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 public abstract class AbstractSharedSignal<T extends @Nullable Object>
         implements Signal<T> {

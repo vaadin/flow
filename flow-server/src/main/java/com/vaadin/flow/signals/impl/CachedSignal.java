@@ -49,6 +49,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  *
  * @param <T>
  *            the value type
+ * @since 25.1
  */
 public class CachedSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<T> {

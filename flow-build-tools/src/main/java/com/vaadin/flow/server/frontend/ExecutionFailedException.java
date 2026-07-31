@@ -19,7 +19,7 @@ package com.vaadin.flow.server.frontend;
  * Thrown by {@link FallibleCommand} if it's unable to complete its execution.
  *
  * @author Vaadin Ltd
- * @since 2.0
+ * @since 25.0
  *
  */
 public class ExecutionFailedException extends Exception {

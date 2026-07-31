@@ -41,6 +41,7 @@ public interface JsonSerializable extends Serializable {
      * @param value
      *            the JSON representation of the object
      * @return this instance, for method chaining
+     * @since 25.0
      */
     JsonSerializable readJson(JsonNode value);
 

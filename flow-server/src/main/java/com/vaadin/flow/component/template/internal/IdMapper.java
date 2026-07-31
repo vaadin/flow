@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 5.0
  */
 public class IdMapper implements Serializable {
 

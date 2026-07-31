@@ -436,13 +436,21 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      const browserDetailsParam = browserDetails
-        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+      // Browser details are appended as individual query parameters rather
+      // than as a single JSON-encoded value. A JSON payload in the URL
+      // produces many percent-encoded escape sequences (%7B, %22, %3A, ...)
+      // that some firewalls/WAFs (e.g. Sophos) flag and block, which would
+      // fail the bootstrap on the very first page load. Plain key=value pairs
+      // avoid that pattern entirely.
+      const browserDetailsParams = browserDetails
+        ? Object.entries(browserDetails)
+            .map(([key, value]) => `&${key}=${encodeURIComponent(value)}`)
+            .join('')
         : '';
 
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParams}`;
 
       httpRequest.open('GET', requestPath);
 

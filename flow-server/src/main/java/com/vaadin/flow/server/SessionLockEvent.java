@@ -30,6 +30,7 @@ import java.util.EventObject;
  * outermost lock-hold, so timing state can be kept in a thread local.
  *
  * @see SessionLockListener
+ * @since 25.2
  */
 public class SessionLockEvent extends EventObject {
 

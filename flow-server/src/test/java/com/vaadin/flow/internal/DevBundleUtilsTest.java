@@ -73,4 +73,30 @@ class DevBundleUtilsTest {
         assertEquals(packagesHash,
                 StringUtil.getHash(Files.readString(packages.toPath())));
     }
+
+    @Test
+    void compressBundle_existingBundleIsReplaced() throws IOException {
+        File projectBase = temporaryFolder.toFile();
+        File devFolder = new File(projectBase, "target/dev-bundle");
+        assertTrue(devFolder.mkdirs());
+        File packages = new File(devFolder, "package.json");
+        Files.writeString(packages.toPath(), "{ \"packages\": [\"first\"] }");
+
+        DevBundleUtils.compressBundle(projectBase, devFolder);
+
+        assertTrue(
+                new File(projectBase, "src/main/bundles/dev.bundle").exists(),
+                "Compressed bundle should have been created");
+
+        // Compressing again has to replace the existing bundle instead of
+        // leaving the previous content in place
+        Files.writeString(packages.toPath(), "{ \"packages\": [\"second\"] }");
+        DevBundleUtils.compressBundle(projectBase, devFolder);
+
+        FileIOUtils.delete(devFolder);
+        DevBundleUtils.unpackBundle(projectBase, devFolder);
+
+        assertEquals("{ \"packages\": [\"second\"] }",
+                Files.readString(packages.toPath()));
+    }
 }

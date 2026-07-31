@@ -32,7 +32,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
  *            bean type
  * @param <F>
  *            filter type
- * @since 1.2
+ * @since 1.1
  */
 public class HierarchicalQuery<T, F> extends Query<T, F> {
 
@@ -67,6 +67,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * @param parent
      *            the hierarchical parent object, <code>null</code>
      *            corresponding to the root node
+     * @since 25.0
      */
     public HierarchicalQuery(F filter, Set<Object> expandedItemIds, T parent) {
         super(filter);
@@ -119,6 +120,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * @param parent
      *            the hierarchical parent object, <code>null</code>
      *            corresponding to the root node
+     * @since 25.0
      */
     public HierarchicalQuery(int offset, int limit,
             List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
@@ -152,6 +154,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * Gets the set of item IDs that are currently expanded in the hierarchy.
      *
      * @return the set of expanded item IDs
+     * @since 25.0
      */
     public Set<Object> getExpandedItemIds() {
         return expandedItemIds;

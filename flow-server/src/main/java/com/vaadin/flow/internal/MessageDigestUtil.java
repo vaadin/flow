@@ -56,6 +56,7 @@ public class MessageDigestUtil {
      * @param charset
      *            the charset to use for encoding the string
      * @return 32 bytes making up the hash
+     * @since 24.0
      */
     public static byte[] sha256(String string, Charset charset) {
         return getSha256(null).digest(string.getBytes(charset));
@@ -72,6 +73,7 @@ public class MessageDigestUtil {
      * @param charset
      *            the charset to use for encoding the string
      * @return 32 bytes making up the hash
+     * @since 24.5
      */
     public static byte[] sha256(String string, byte[] salt, Charset charset) {
         return getSha256(salt).digest(string.getBytes(charset));
@@ -84,6 +86,7 @@ public class MessageDigestUtil {
      *            the byte array to hash
      *
      * @return sha256 hash string
+     * @since 24.7
      */
     public static String sha256Hex(byte[] content) {
         return sha256Hex(content, null);
@@ -97,6 +100,7 @@ public class MessageDigestUtil {
      * @param salt
      *            salt to be added to the calculation
      * @return sha256 hash string
+     * @since 24.7
      */
     public static String sha256Hex(byte[] content, byte[] salt) {
         byte[] digest = getSha256(salt).digest(content);

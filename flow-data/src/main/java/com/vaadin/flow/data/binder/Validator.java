@@ -86,6 +86,7 @@ public interface Validator<T>
      * @param errorMessage
      *            the error message to use for validation failures
      * @return an always-failing validator
+     * @since 25.0
      */
     static <T> Validator<T> alwaysFail(String errorMessage) {
         Objects.requireNonNull(errorMessage);

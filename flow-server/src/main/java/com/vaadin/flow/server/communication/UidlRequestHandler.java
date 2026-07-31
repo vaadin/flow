@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
@@ -103,8 +104,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        String requestBody = SynchronizedRequestHandler
-                .getRequestBody(request.getReader());
+        String requestBody;
+        try {
+            requestBody = SynchronizedRequestHandler.getRequestBody(
+                    request.getReader(),
+                    SynchronizedRequestHandler.getMaxRequestBodySize(request));
+        } catch (RequestBodyTooLargeException e) {
+            response.sendError(
+                    HttpStatusCode.REQUEST_ENTITY_TOO_LARGE.getCode(),
+                    e.getMessage());
+            return true;
+        }
         Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
                 session, request, response, requestBody);
         if (responseWriter.isPresent()) {

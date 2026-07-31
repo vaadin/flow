@@ -68,6 +68,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @param pushServletMapping
      *            The servlet mapping to use for push
+     * @since 23.3.5
      */
     void setPushServletMapping(String pushServletMapping);
 
@@ -79,6 +80,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @return the servlet mapping to use for push requests, or null to use to
      *         default
+     * @since 23.3.5
      */
     String getPushServletMapping();
 

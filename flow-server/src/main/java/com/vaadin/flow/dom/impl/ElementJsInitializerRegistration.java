@@ -39,6 +39,8 @@ import com.vaadin.flow.shared.Registration;
  * {@code executeJs} execution context.
  * <p>
  * For internal use only.
+ * 
+ * @since 25.2
  */
 public final class ElementJsInitializerRegistration implements Registration {
 

@@ -144,6 +144,60 @@ class RouteConfigurationTest {
     }
 
     @Test
+    void resolvePageTitle_resolvesStaticAndDynamicTitlesForHierarchy() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(OrdersView.class);
+            routeConfiguration.setAnnotatedRoute(OrderView.class);
+        });
+
+        Router router = new Router(registry);
+        List<String> titles = routeConfiguration
+                .getRouteHierarchy(OrderView.class,
+                        new RouteParameters("orderId", "1001"))
+                .stream()
+                .map(route -> router.resolvePageTitle(route.navigationTarget(),
+                        route.routeParameters()).orElseThrow())
+                .toList();
+
+        assertEquals(List.of("Orders", "Order 1001"), titles);
+    }
+
+    @Test
+    void resolvePageTitle_queryParametersPassedToGenerator() {
+        Optional<String> title = new Router(registry).resolvePageTitle(
+                QueryEchoView.class, RouteParameters.empty(),
+                QueryParameters.of("name", "Smith"));
+
+        assertEquals(Optional.of("Hello Smith"), title);
+    }
+
+    @Test
+    void resolvePageTitle_noTitleDeclared_returnsEmpty() {
+        Optional<String> title = new Router(registry)
+                .resolvePageTitle(MyRoute.class, RouteParameters.empty());
+
+        assertEquals(Optional.empty(), title);
+    }
+
+    @Test
+    void resolvePageTitle_instanceWithDynamicTitle_usesHasDynamicTitle() {
+        Optional<String> title = new Router(registry)
+                .resolvePageTitle(new LiveTitleView(), RouteParameters.empty());
+
+        assertEquals(Optional.of("Live title"), title);
+    }
+
+    @Test
+    void resolvePageTitle_instanceWithNullDynamicTitle_fallsBackToClassChain() {
+        Optional<String> title = new Router(registry).resolvePageTitle(
+                new NullDynamicTitleView(), RouteParameters.empty());
+
+        assertEquals(Optional.of("Fallback"), title);
+    }
+
+    @Test
     void routeConfigurationUpdateLock_configurationIsUpdatedOnlyAfterUnlock() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
@@ -591,13 +645,65 @@ class RouteConfigurationTest {
 
     @Tag("div")
     @Route("orders")
+    @PageTitle("Orders")
     private static class OrdersView extends Component {
     }
 
     @Tag("div")
     @Route("orders/:orderId")
     @RouteParent(OrdersView.class)
+    @DynamicPageTitle(OrderTitleGenerator.class)
     private static class OrderView extends Component {
+    }
+
+    public static class OrderTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Order "
+                    + context.routeParameters().get("orderId").orElseThrow();
+        }
+    }
+
+    @Tag("div")
+    @Route("hello")
+    @DynamicPageTitle(QueryEchoTitleGenerator.class)
+    private static class QueryEchoView extends Component {
+    }
+
+    public static class QueryEchoTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Hello " + context.queryParameters()
+                    .getSingleParameter("name").orElseThrow();
+        }
+    }
+
+    @Tag("div")
+    @Route("live")
+    private static class LiveTitleView extends Component
+            implements HasDynamicTitle {
+        @Override
+        public String getPageTitle() {
+            return "Live title";
+        }
+    }
+
+    public static class ConstantTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Fallback";
+        }
+    }
+
+    @Tag("div")
+    @Route("conditional")
+    @DynamicPageTitle(ConstantTitleGenerator.class)
+    private static class NullDynamicTitleView extends Component
+            implements HasDynamicTitle {
+        @Override
+        public String getPageTitle() {
+            return null;
+        }
     }
 
     @Tag("div")
