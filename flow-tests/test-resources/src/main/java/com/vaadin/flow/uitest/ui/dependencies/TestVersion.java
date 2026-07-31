@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 public class TestVersion {
 
-    public static final String VAADIN = "25.3.0-alpha7";
+    public static final String VAADIN = "25.3.0-alpha8";
     public static final String FONTAWESOME = "5.15.1";
 
 }
