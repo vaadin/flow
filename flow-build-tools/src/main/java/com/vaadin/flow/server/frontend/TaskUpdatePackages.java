@@ -878,7 +878,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // This feels like cleanup done in the wrong place but is left here
             // for historical reasons
             for (File file : jarResourcesFolder.listFiles()) {
-                file.delete();
+                FileIOUtils.deleteQuietly(file);
             }
         }
     }

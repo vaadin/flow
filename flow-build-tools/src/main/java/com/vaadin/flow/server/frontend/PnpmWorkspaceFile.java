@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
@@ -99,7 +100,7 @@ class PnpmWorkspaceFile {
     boolean save() throws IOException {
         if (document.isEmpty()) {
             if (file.isFile()) {
-                Files.delete(file.toPath());
+                FileIOUtils.delete(file);
                 return true;
             }
             return false;
