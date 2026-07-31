@@ -69,7 +69,7 @@ public class FileIOUtils {
      *             directory contents and logs why a deletion failed instead of
      *             failing silently
      */
-    @Deprecated
+    @Deprecated(since = "25.3", forRemoval = true)
     public static boolean deleteFileQuietly(File file) {
         return deleteQuietly(file);
     }
