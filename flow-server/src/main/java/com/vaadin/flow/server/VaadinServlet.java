@@ -388,7 +388,7 @@ public class VaadinServlet extends HttpServlet {
             return;
         }
 
-        if (serveStaticOrWebJarRequest(request, response)) {
+        if (staticFileHandler.serveStaticResource(request, response)) {
             return;
         }
 
@@ -428,15 +428,20 @@ public class VaadinServlet extends HttpServlet {
      * @exception IOException
      *                if an input or output error occurs while the servlet is
      *                handling the HTTP request
+     * @deprecated The name refers to WebJars, which are not handled here. This
+     *             method only delegates to
+     *             {@link StaticFileHandler#serveStaticResource(HttpServletRequest, HttpServletResponse)},
+     *             which
+     *             {@link #service(HttpServletRequest, HttpServletResponse)} now
+     *             calls directly, so overriding this method no longer affects
+     *             request handling. Override
+     *             {@link #createStaticFileHandler(VaadinService)} to customize
+     *             how static resources are served.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-
-        if (staticFileHandler.serveStaticResource(request, response)) {
-            return true;
-        }
-
-        return false;
+        return staticFileHandler.serveStaticResource(request, response);
     }
 
     /**
