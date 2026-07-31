@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -81,8 +82,8 @@ public class TaskUpdateThemeImport
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
             if (themeImportFile.exists()) {
-                themeImportFile.delete();
-                themeImportFileDefinition.delete();
+                FileIOUtils.deleteQuietly(themeImportFile);
+                FileIOUtils.deleteQuietly(themeImportFileDefinition);
             }
 
             try {

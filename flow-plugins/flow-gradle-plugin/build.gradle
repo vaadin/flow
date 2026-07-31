@@ -83,7 +83,11 @@ dependencies {
     implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.4.0")
+    // Use kotlin-test-junit instead of the bare kotlin-test artifact: it
+    // depends on kotlin-test and junit directly via its POM. The bare
+    // kotlin-test relies on Gradle Module Metadata (.module) to wire in JUnit,
+    // which fails to resolve when a repository only serves the POM.
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.0")
 }
 
 idea {

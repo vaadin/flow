@@ -143,13 +143,6 @@ public class SpringServlet extends VaadinServlet {
         Properties properties = new Properties();
         properties.putAll(initParameters);
         PROPERTY_NAMES.forEach(property -> setProperty(property, properties));
-        // transfer non-string init parameters (such as
-        // DeploymentConfigurationFactory.FALLBACK_CHUNK)
-        initParameters.forEach((key, value) -> {
-            if (!(key instanceof String)) {
-                properties.put(key, value);
-            }
-        });
         return properties;
     }
 
