@@ -261,7 +261,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(
                 InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"))
-                .thenReturn("6");
+                .thenReturn("7");
 
         assertEquals(7,
                 captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
