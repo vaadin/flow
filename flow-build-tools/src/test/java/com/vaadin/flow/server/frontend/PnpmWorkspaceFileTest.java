@@ -133,4 +133,24 @@ class PnpmWorkspaceFileTest {
         assertFalse(again.save(),
                 "Rewriting identical content should report no change");
     }
+
+    @Test
+    void save_isIdempotent_whenOnlyLayoutDiffers() throws Exception {
+        // The configuration Flow writes, in the layout pnpm leaves behind after
+        // an install: its own allowBuilds block, and scalars unquoted where
+        // Flow quotes them.
+        Files.writeString(workspaceFile().toPath(), """
+                allowBuilds:
+                  esbuild: set this to true or false
+                overrides:
+                  dep: 1.0.0
+                """, StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of("dep", "1.0.0"));
+
+        assertFalse(workspace.save(),
+                "A file holding the same content in a different layout is not a "
+                        + "change; reporting one triggers a needless package install");
+    }
 }
