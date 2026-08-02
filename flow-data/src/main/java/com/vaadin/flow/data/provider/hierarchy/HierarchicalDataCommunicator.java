@@ -209,8 +209,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * consistent with {@link TreeData#addItem(Object, Object)}). Refreshing it
      * targets root-level data only and is <em>not</em> the same as
      * {@link #reset()}: with {@code refreshChildren} {@code true}, root-level
-     * children are re-fetched (cache cleared and resized); with
-     * {@code false}, currently cached root items are re-rendered in place.
+     * children are re-fetched (cache cleared and resized); with {@code false},
+     * currently cached root items are re-rendered in place.
      * <p>
      * WARNING: For non-{@code null} items this method is only supported with
      * data providers that use {@link HierarchyFormat#NESTED} when

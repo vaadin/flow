@@ -85,8 +85,8 @@ public class DataChangeEvent<T> extends EventObject {
         /**
          * Gets the refreshed item.
          *
-         * @return the refreshed item, or {@code null} when the virtual root of a
-         *         hierarchical data provider is refreshed
+         * @return the refreshed item, or {@code null} when the virtual root of
+         *         a hierarchical data provider is refreshed
          */
         public T getItem() {
             return item;
