@@ -47,5 +47,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Deprecated(since = "25.1")
 public @interface NoTheme {
 }
