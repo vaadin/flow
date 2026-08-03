@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasAriaDescriptionTest {
 
@@ -31,10 +27,10 @@ class HasAriaDescriptionTest {
     }
 
     @Test
-    void withoutAriaDescription_getAriaDescriptionReturnsNull() {
+    void withoutAriaDescription_getAriaDescriptionReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
 
-        assertNull(component.getAriaDescription());
+        Assertions.assertFalse(component.getAriaDescription().isPresent());
     }
 
     @Test
@@ -42,7 +38,8 @@ class HasAriaDescriptionTest {
         TestComponent component = new TestComponent();
         component.setAriaDescription("test AriaDescription");
 
-        assertEquals("test AriaDescription", component.getAriaDescription());
+        Assertions.assertEquals("test AriaDescription",
+                component.getAriaDescription().get());
     }
 
     @Test
@@ -51,14 +48,14 @@ class HasAriaDescriptionTest {
         component.setAriaDescription("test AriaDescription");
 
         component.setAriaDescription(null);
-        assertNull(component.getAriaDescription());
+        Assertions.assertFalse(component.getAriaDescription().isPresent());
     }
 
     @Test
-    void withoutAriaDescribedBy_getAriaDescribedByReturnsNull() {
+    void withoutAriaDescribedBy_getAriaDescribedByReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
 
-        assertNull(component.getAriaDescribedBy());
+        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
     }
 
     @Test
@@ -66,7 +63,8 @@ class HasAriaDescriptionTest {
         TestComponent component = new TestComponent();
         component.setAriaDescribedBy("test AriaDescribedBy");
 
-        assertEquals("test AriaDescribedBy", component.getAriaDescribedBy());
+        Assertions.assertEquals("test AriaDescribedBy",
+                component.getAriaDescribedBy().get());
     }
 
     @Test
@@ -75,7 +73,7 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy("test AriaDescribedBy");
 
         component.setAriaDescribedBy((String) null);
-        assertNull(component.getAriaDescribedBy());
+        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
     }
 
     @Test
@@ -89,7 +87,8 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy(descriptionComponent);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals("the-description", component.getAriaDescribedBy());
+        Assertions.assertEquals("the-description",
+                component.getAriaDescribedBy().get());
     }
 
     @Test
@@ -97,16 +96,31 @@ class HasAriaDescriptionTest {
         UI ui = new UI();
         TestComponent component = new TestComponent();
         TestComponent descriptionComponent = new TestComponent();
-        assertFalse(descriptionComponent.getId().isPresent());
+        Assertions.assertFalse(descriptionComponent.getId().isPresent());
         ui.add(component, descriptionComponent);
 
         component.setAriaDescribedBy(descriptionComponent);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertTrue(descriptionComponent.getId().isPresent());
-        assertTrue(descriptionComponent.getId().get()
+        Assertions.assertTrue(descriptionComponent.getId().isPresent());
+        Assertions.assertTrue(descriptionComponent.getId().get()
                 .startsWith("ariadescribedby-"));
-        assertEquals(descriptionComponent.getId().get(),
-                component.getAriaDescribedBy());
+        Assertions.assertEquals(descriptionComponent.getId().get(),
+                component.getAriaDescribedBy().get());
+    }
+
+    @Test
+    void setAriaDescribedByComponent_idSetLater() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent descriptionComponent = new TestComponent();
+        ui.add(component, descriptionComponent);
+
+        component.setAriaDescribedBy(descriptionComponent);
+        descriptionComponent.setId("manually-set-id");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assertions.assertEquals("manually-set-id",
+                component.getAriaDescribedBy().get());
     }
 }

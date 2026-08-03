@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Optional;
+
 import com.vaadin.flow.dom.ElementConstants;
 
 /**
@@ -53,11 +55,12 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Gets the aria-description of the component.
      *
-     * @return the aria-description or {@code null} if none has been set
+     * @return an optional aria-description, or an empty optional if none has
+     *         been set
      */
-    default String getAriaDescription() {
-        return getElement()
-                .getAttribute(ElementConstants.ARIA_DESCRIPTION_ATTRIBUTE_NAME);
+    default Optional<String> getAriaDescription() {
+        return Optional.ofNullable(getElement().getAttribute(
+                ElementConstants.ARIA_DESCRIPTION_ATTRIBUTE_NAME));
     }
 
     /**
@@ -114,10 +117,11 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Gets the aria-describedby of the component.
      *
-     * @return the aria-describedby or {@code null} if none has been set
+     * @return an optional aria-describedby, or an empty optional if none has
+     *         been set
      */
-    default String getAriaDescribedBy() {
-        return getElement()
-                .getAttribute(ElementConstants.ARIA_DESCRIBEDBY_ATTRIBUTE_NAME);
+    default Optional<String> getAriaDescribedBy() {
+        return Optional.ofNullable(getElement().getAttribute(
+                ElementConstants.ARIA_DESCRIBEDBY_ATTRIBUTE_NAME));
     }
 }
