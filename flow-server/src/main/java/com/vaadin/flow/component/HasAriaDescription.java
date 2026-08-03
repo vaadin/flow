@@ -62,8 +62,7 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Gets the aria-description of the component.
      *
-     * @return the aria-description of the component or {@code null} if no
-     *         aria-description has been set
+     * @return the aria-description or {@code null} if none has been set
      */
     default String getAriaDescription() {
         return getElement()
@@ -71,11 +70,12 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Set the aria-describedby of the component. The value must be a valid id
-     * attribute of another element that describes the component. The
-     * description element must be in the same DOM scope of the component,
-     * otherwise screen readers may fail to announce the description content
-     * properly.
+     * Sets the aria-describedby of the component.
+     * <p>
+     * The value must be a valid id attribute of another element that describes
+     * the component. The description element must be in the same DOM scope of
+     * the component, otherwise screen readers will fail to announce the
+     * description content properly.
      * <p>
      * See: https://www.w3.org/TR/wai-aria/#aria-describedby
      *
@@ -104,7 +104,7 @@ public interface HasAriaDescription extends HasElement {
      * calling this method. If no id is set by then, one will be generated.
      * <p>
      * The description component must be in the same DOM scope as this
-     * component, otherwise screen readers may fail to announce the description
+     * component, otherwise screen readers will fail to announce the description
      * content properly.
      * <p>
      * See: https://www.w3.org/TR/wai-aria/#aria-describedby
@@ -125,8 +125,7 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Gets the aria-describedby of the component.
      *
-     * @return the aria-describedby of the component or {@code null} if no
-     *         aria-describedby has been set
+     * @return the aria-describedby or {@code null} if none has been set
      */
     default String getAriaDescribedBy() {
         return getElement()
