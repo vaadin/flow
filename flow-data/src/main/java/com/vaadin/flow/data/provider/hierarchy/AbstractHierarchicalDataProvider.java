@@ -39,15 +39,17 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
      * <p>
      * A {@code null} item represents the virtual root of the hierarchy (the
      * parent of root-level items, consistent with APIs such as
-     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root
-     * refreshes root-level items only; it is <em>not</em> equivalent to
-     * {@link #refreshAll()}. Use {@link #refreshItem(Object, boolean)
-     * refreshItem(null, true)} to also re-fetch the root-level children list,
-     * or {@link #refreshAll()} to rebuild the entire hierarchy (which may reset
-     * scroll position).
+     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root is
+     * equivalent to {@link #refreshAll()} (full hierarchy rebuild). Call sites
+     * that use {@code refreshItem(getParent(item), true)} on a root-level item
+     * therefore pass {@code null} and get a full refresh.
      */
     @Override
     public void refreshItem(T item) {
+        if (item == null) {
+            refreshAll();
+            return;
+        }
         super.refreshItem(item);
     }
 
@@ -56,11 +58,10 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
      * <p>
      * A {@code null} item represents the virtual root of the hierarchy (the
      * parent of root-level items, consistent with APIs such as
-     * {@link TreeData#addItem(Object, Object)}). With {@code refreshChildren}
-     * {@code true}, root-level children are re-fetched from the data provider
-     * without performing a full {@link #refreshAll()}. With
-     * {@code refreshChildren} {@code false}, only currently cached root-level
-     * items are re-rendered in place.
+     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root is
+     * always equivalent to {@link #refreshAll()}, regardless of
+     * {@code refreshChildren}. Differentiating on that flag for {@code null}
+     * would be inconsistent with non-null item semantics.
      *
      * @throws UnsupportedOperationException
      *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
@@ -70,10 +71,13 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {
-        // Virtual root (null) is always allowed: re-fetching root-level data is
-        // valid for every hierarchy format. Non-null items with refreshChildren
-        // remain NESTED-only (same as HierarchicalDataCommunicator).
-        if (item != null && refreshChildren
+        if (item == null) {
+            // Virtual root: always full hierarchy refresh. refreshChildren is
+            // intentionally ignored (same as HierarchicalDataCommunicator).
+            refreshAll();
+            return;
+        }
+        if (refreshChildren
                 && !getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
             throw new UnsupportedOperationException(
                     """

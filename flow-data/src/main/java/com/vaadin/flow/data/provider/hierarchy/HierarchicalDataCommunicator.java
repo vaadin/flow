@@ -207,10 +207,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * <p>
      * A {@code null} item is the virtual root (parent of root-level items,
      * consistent with {@link TreeData#addItem(Object, Object)}). Refreshing it
-     * targets root-level data only and is <em>not</em> the same as
-     * {@link #reset()}: with {@code refreshChildren} {@code true}, root-level
-     * children are re-fetched (cache cleared and resized); with {@code false},
-     * currently cached root items are re-rendered in place.
+     * is equivalent to {@link #reset()} / {@code refreshAll()} regardless of
+     * {@code refreshChildren}: the full hierarchy cache is discarded and the
+     * viewport is re-fetched. Differentiating on {@code refreshChildren} for
+     * the virtual root was intentionally avoided as inconsistent with non-null
+     * item semantics.
      * <p>
      * WARNING: For non-{@code null} items this method is only supported with
      * data providers that use {@link HierarchyFormat#NESTED} when
@@ -223,9 +224,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @since 25.0
      * @param item
      *            the item to refresh, or {@code null} for the virtual root
-     *            (parent of root-level items)
+     *            (parent of root-level items; equivalent to {@link #reset()})
      * @param refreshChildren
-     *            whether or not to refresh child items
+     *            whether or not to refresh child items (ignored when
+     *            {@code item} is {@code null})
      * @throws UnsupportedOperationException
      *             if {@code refreshChildren} is true, {@code item} is not
      *             {@code null}, and the data provider's hierarchy format is not
@@ -233,7 +235,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public void refresh(T item, boolean refreshChildren) {
         if (item == null) {
-            refreshVirtualRoot(refreshChildren);
+            // Virtual root: always full hierarchy refresh (same as reset /
+            // refreshAll). refreshChildren is intentionally ignored.
+            reset();
             return;
         }
 
@@ -270,42 +274,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
 
         requestFlush().invalidateItem(item);
-    }
-
-    /**
-     * Refreshes root-level data for the virtual root ({@code null} parent).
-     * <p>
-     * When {@code refreshChildren} is {@code true}, behaves like refreshing
-     * children of a non-null parent: the root cache is cleared, its size is
-     * updated from the data provider, and the viewport is invalidated so
-     * root-level items are re-fetched. This is intentionally narrower than
-     * {@link #reset()}, which discards the entire cache and all generated data.
-     * <p>
-     * When {@code refreshChildren} is {@code false}, each currently cached
-     * root-level item is re-rendered in place without clearing descendant
-     * caches.
-     */
-    private void refreshVirtualRoot(boolean refreshChildren) {
-        if (rootCache == null) {
-            return;
-        }
-
-        if (refreshChildren) {
-            rootCache.clear();
-            rootCache.setSize(getDataProviderChildCount(null));
-            requestFlush().invalidateViewport();
-            return;
-        }
-
-        for (int i = 0; i < rootCache.getSize(); i++) {
-            if (!rootCache.hasItem(i)) {
-                continue;
-            }
-            T rootItem = rootCache.getItem(i);
-            keyMapper.refresh(rootItem);
-            dataGenerator.refreshData(rootItem);
-            requestFlush().invalidateItem(rootItem);
-        }
     }
 
     @Override
