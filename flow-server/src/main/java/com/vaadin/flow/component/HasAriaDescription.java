@@ -18,17 +18,10 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.dom.ElementConstants;
 
 /**
- * A generic interface for components and other user interface objects that may
- * have an aria-description and an aria-describedby DOM attributes to set the
- * accessible description of the component.
- * <p>
- * The default implementation sets the aria-description and aria-describedby of
- * the component to the given {@link #getElement()}. Override all methods in
- * this interface if the aria-description and aria-describedby should be added
- * to some other element.
- * <p>
- * The purpose of these attributes is to provide the user with additional
- * descriptive text that complements the accessible name of the component.
+ * A generic interface for components that support setting the accessible
+ * description with the aria-description and aria-describedby DOM attributes.
+ * The description complements the accessible name of the component with
+ * additional descriptive text.
  *
  * @author Vaadin Ltd
  * @since 25.3
