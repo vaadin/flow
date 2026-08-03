@@ -93,13 +93,11 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Set the aria-describedby of the component to reference the given
-     * description component. If {@code descriptionComponent} does not have an
-     * id, one is generated automatically.
+     * Sets the aria-describedby of the component to reference the given
+     * description component.
      * <p>
-     * The id is resolved lazily before the next client response after this
-     * component is attached, so the description component's id can be set after
-     * calling this method. If no id is set by then, one will be generated.
+     * The description component does not need an id: if it has none by the time
+     * the value is sent to the client, one is generated automatically.
      * <p>
      * The description component must be in the same DOM scope as this
      * component, otherwise screen readers will fail to announce the description
