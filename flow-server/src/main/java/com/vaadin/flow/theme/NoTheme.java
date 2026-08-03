@@ -41,7 +41,20 @@ import java.lang.annotation.Target;
  * {@link NoTheme} annotation should be added to the AppShellConfigurator
  * implementation.
  *
+ * @see Theme
  * @since 1.0
+ * @deprecated As of Vaadin 25, this annotation is deprecated together with
+ *             {@link Theme}, since the theming system has been reworked and no
+ *             theme is applied to the application unless it is explicitly
+ *             requested. Omitting {@link Theme} has the same effect as using
+ *             this annotation, so it can simply be removed. Styles are now
+ *             loaded with
+ *             {@link com.vaadin.flow.component.dependency.StyleSheet} from
+ *             public static resources locations or
+ *             {@link com.vaadin.flow.component.dependency.CssImport} from a
+ *             {@code src/main/frontend/} folder, together with mechanisms
+ *             native to HTML, CSS and React (e.g.
+ *             {@code @import url("morestyles.css")} in CSS).
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
