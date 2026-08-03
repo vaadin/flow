@@ -29,11 +29,8 @@ import com.vaadin.flow.dom.ElementConstants;
  * <p>
  * The purpose of these attributes is to provide the user with additional
  * descriptive text that complements the accessible name of the component. If
- * the description text is visible on screen, aria-describedby <b>should</b> be
- * used and aria-description <b>should not</b> be used.
- * <p>
- * If both attributes are present on the same element, aria-describedby takes
- * precedence over aria-description.
+ * the description text is visible on screen, aria-describedby should be used
+ * and aria-description should not be used.
  *
  * @author Vaadin Ltd
  * @since 25.3
@@ -76,9 +73,9 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Set the aria-describedby of the component. The value must be a valid id
      * attribute of another element that describes the component. The
-     * description element <b>must</b> be in the same DOM scope of the
-     * component, otherwise screen readers may fail to announce the description
-     * content properly.
+     * description element must be in the same DOM scope of the component,
+     * otherwise screen readers may fail to announce the description content
+     * properly.
      * <p>
      * See: https://www.w3.org/TR/wai-aria/#aria-describedby
      *
@@ -106,7 +103,7 @@ public interface HasAriaDescription extends HasElement {
      * component is attached, so the description component's id can be set after
      * calling this method. If no id is set by then, one will be generated.
      * <p>
-     * The description component <b>must</b> be in the same DOM scope as this
+     * The description component must be in the same DOM scope as this
      * component, otherwise screen readers may fail to announce the description
      * content properly.
      * <p>
