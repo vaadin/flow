@@ -28,9 +28,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * to some other element.
  * <p>
  * The purpose of these attributes is to provide the user with additional
- * descriptive text that complements the accessible name of the component. If
- * the description text is visible on screen, aria-describedby should be used
- * and aria-description should not be used.
+ * descriptive text that complements the accessible name of the component.
  *
  * @author Vaadin Ltd
  * @since 25.3
