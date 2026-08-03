@@ -15,7 +15,7 @@
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.7",
+    "@babel/types": "7.29.8",
     "rollup-plugin-visualizer": "6.0.11",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.14.5",
