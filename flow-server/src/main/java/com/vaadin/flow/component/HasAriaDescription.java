@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * See: https://www.w3.org/TR/wai-aria/#aria-describedby
  *
  * @author Vaadin Ltd
+ * @since 25.3
  */
 public interface HasAriaDescription extends HasElement {
 
