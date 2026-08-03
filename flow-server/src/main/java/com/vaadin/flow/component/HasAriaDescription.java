@@ -25,9 +25,10 @@ import com.vaadin.flow.dom.ElementConstants;
  * component receives focus.
  * <p>
  * The description can be provided either as plain text with
- * {@link #setAriaDescription(String)}, or by referencing another element that
- * contains it with {@link #setAriaDescribedBy(String)}. If both are set, the
- * element reference takes precedence.
+ * {@link #setAriaDescription(String)}, or with
+ * {@link #setAriaDescribedBy(String)} by referencing another element whose
+ * content serves as the description. If both are set, the element reference
+ * takes precedence.
  *
  * @author Vaadin Ltd
  * @since 25.3
