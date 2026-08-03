@@ -13,28 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.test.routing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+@Route("com.vaadin.flow.ForwardTargetWithParametersView")
+public class ForwardTargetWithParametersView extends Div
+        implements HasUrlParameter<String> {
 
-public class BasePathIT extends ChromeBrowserTest {
     @Override
-    protected String getTestPath() {
-        return "/view/view/com.vaadin.flow.BasePathView";
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
+        add(new Span("setParameter"));
     }
-
-    @Test
-    public void navigationTo_routeWithBasePath_succeeds() {
-        open();
-
-        waitForDevServer();
-
-        Assert.assertTrue(
-                $(SpanElement.class).withText("BasePathView").exists());
-    }
-
 }
