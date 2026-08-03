@@ -21,9 +21,13 @@ import com.vaadin.flow.dom.ElementConstants;
 
 /**
  * A generic interface for components that support setting the accessible
- * description with the aria-description and aria-describedby DOM attributes.
- * The description complements the accessible name of the component with
- * additional descriptive text.
+ * description. The description is announced by screen readers when the
+ * component receives focus.
+ * <p>
+ * The description can be provided either as plain text with
+ * {@link #setAriaDescription(String)}, or by referencing another element that
+ * contains it with {@link #setAriaDescribedBy(String)}. If both are set, the
+ * element reference takes precedence.
  *
  * @author Vaadin Ltd
  * @since 25.3
