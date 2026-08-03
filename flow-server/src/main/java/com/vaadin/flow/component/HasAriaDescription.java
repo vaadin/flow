@@ -34,10 +34,6 @@ import com.vaadin.flow.dom.ElementConstants;
  * <p>
  * If both attributes are present on the same element, aria-describedby takes
  * precedence over aria-description.
- * <p>
- * See: https://www.w3.org/TR/wai-aria/#aria-description
- * <p>
- * See: https://www.w3.org/TR/wai-aria/#aria-describedby
  *
  * @author Vaadin Ltd
  * @since 25.3
@@ -49,6 +45,8 @@ public interface HasAriaDescription extends HasElement {
      * <p>
      * If both aria-description and aria-describedby are present,
      * aria-describedby takes precedence.
+     * <p>
+     * See: https://www.w3.org/TR/wai-aria/#aria-description
      *
      * @param ariaDescription
      *            the aria-description text to set or {@code null} to clear
@@ -81,6 +79,8 @@ public interface HasAriaDescription extends HasElement {
      * description element <b>must</b> be in the same DOM scope of the
      * component, otherwise screen readers may fail to announce the description
      * content properly.
+     * <p>
+     * See: https://www.w3.org/TR/wai-aria/#aria-describedby
      *
      * @param ariaDescribedBy
      *            the string with the id of the element that will be used as
@@ -109,6 +109,8 @@ public interface HasAriaDescription extends HasElement {
      * The description component <b>must</b> be in the same DOM scope as this
      * component, otherwise screen readers may fail to announce the description
      * content properly.
+     * <p>
+     * See: https://www.w3.org/TR/wai-aria/#aria-describedby
      *
      * @param descriptionComponent
      *            the component to use as the description, not {@code null}
