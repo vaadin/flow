@@ -32,8 +32,8 @@ import com.vaadin.flow.dom.ElementConstants;
  * the description text is visible on screen, aria-describedby <b>should</b> be
  * used and aria-description <b>should not</b> be used.
  * <p>
- * <b>Don't include both</b>. If both are present on the same element,
- * aria-describedby will take precedence over aria-description.
+ * If both attributes are present on the same element, aria-describedby takes
+ * precedence over aria-description.
  * <p>
  * See: https://www.w3.org/TR/wai-aria/#aria-description
  * <p>
@@ -47,9 +47,8 @@ public interface HasAriaDescription extends HasElement {
     /**
      * Set the aria-description of the component to the given text.
      * <p>
-     * This method should not be used if {@link #setAriaDescribedBy(String)} is
-     * also used. If both attributes are present, aria-describedby will take
-     * precedence over aria-description.
+     * If both aria-description and aria-describedby are present,
+     * aria-describedby takes precedence.
      *
      * @param ariaDescription
      *            the aria-description text to set or {@code null} to clear
