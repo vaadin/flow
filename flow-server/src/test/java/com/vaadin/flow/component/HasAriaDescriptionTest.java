@@ -27,100 +27,74 @@ class HasAriaDescriptionTest {
     }
 
     @Test
-    void withoutAriaDescription_getAriaDescriptionReturnsEmptyOptional() {
-        TestComponent component = new TestComponent();
-
-        Assertions.assertFalse(component.getAriaDescription().isPresent());
-    }
-
-    @Test
     void setAriaDescription() {
         TestComponent component = new TestComponent();
-        component.setAriaDescription("test AriaDescription");
+        Assertions.assertFalse(component.getAriaDescription().isPresent());
 
-        Assertions.assertEquals("test AriaDescription",
+        component.setAriaDescription("description text");
+        Assertions.assertEquals("description text",
                 component.getAriaDescription().get());
-    }
-
-    @Test
-    void withAriaDescription_setAriaDescriptionToNullClearsAriaDescription() {
-        TestComponent component = new TestComponent();
-        component.setAriaDescription("test AriaDescription");
 
         component.setAriaDescription(null);
         Assertions.assertFalse(component.getAriaDescription().isPresent());
     }
 
     @Test
-    void withoutAriaDescribedBy_getAriaDescribedByReturnsEmptyOptional() {
-        TestComponent component = new TestComponent();
-
-        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
-    }
-
-    @Test
     void setAriaDescribedBy() {
         TestComponent component = new TestComponent();
-        component.setAriaDescribedBy("test AriaDescribedBy");
+        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
 
-        Assertions.assertEquals("test AriaDescribedBy",
+        component.setAriaDescribedBy("description-id");
+        Assertions.assertEquals("description-id",
                 component.getAriaDescribedBy().get());
-    }
-
-    @Test
-    void withAriaDescribedBy_setAriaDescribedByToNullClearsAriaDescribedBy() {
-        TestComponent component = new TestComponent();
-        component.setAriaDescribedBy("test AriaDescribedBy");
 
         component.setAriaDescribedBy((String) null);
         Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
     }
 
     @Test
-    void setAriaDescribedByComponent_withExistingId() {
+    void setAriaDescribedByComponent_withoutId() {
         UI ui = new UI();
         TestComponent component = new TestComponent();
         TestComponent descriptionComponent = new TestComponent();
-        descriptionComponent.setId("the-description");
         ui.add(component, descriptionComponent);
 
         component.setAriaDescribedBy(descriptionComponent);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals("the-description",
+        String generatedId = descriptionComponent.getId().get();
+        Assertions.assertTrue(generatedId.startsWith("ariadescribedby-"));
+        Assertions.assertEquals(generatedId,
                 component.getAriaDescribedBy().get());
     }
 
     @Test
-    void setAriaDescribedByComponent_withoutId_generatesId() {
+    void setAriaDescribedByComponent_withIdSetBefore() {
         UI ui = new UI();
         TestComponent component = new TestComponent();
         TestComponent descriptionComponent = new TestComponent();
-        Assertions.assertFalse(descriptionComponent.getId().isPresent());
         ui.add(component, descriptionComponent);
 
+        descriptionComponent.setId("description-id");
         component.setAriaDescribedBy(descriptionComponent);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertTrue(descriptionComponent.getId().isPresent());
-        Assertions.assertTrue(descriptionComponent.getId().get()
-                .startsWith("ariadescribedby-"));
-        Assertions.assertEquals(descriptionComponent.getId().get(),
+        Assertions.assertEquals("description-id",
                 component.getAriaDescribedBy().get());
     }
 
     @Test
-    void setAriaDescribedByComponent_idSetLater() {
+    void setAriaDescribedByComponent_withIdSetAfter() {
         UI ui = new UI();
         TestComponent component = new TestComponent();
         TestComponent descriptionComponent = new TestComponent();
         ui.add(component, descriptionComponent);
 
         component.setAriaDescribedBy(descriptionComponent);
-        descriptionComponent.setId("manually-set-id");
+        descriptionComponent.setId("description-id");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals("manually-set-id",
+        Assertions.assertEquals("description-id",
                 component.getAriaDescribedBy().get());
     }
 }
