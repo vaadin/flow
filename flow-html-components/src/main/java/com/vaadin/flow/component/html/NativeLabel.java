@@ -90,10 +90,13 @@ public class NativeLabel extends HtmlContainer {
     /**
      * Sets the id of the component that this label describes. The id should be
      * defined in case the described component is not an ancestor of the label.
+     * <p>
+     * Passing an empty string clears the <code>for</code> attribute, so that
+     * {@link #getFor()} returns an empty optional.
      *
      * @param forId
-     *            the id of the described component, or <code>null</code> if
-     *            there is no value
+     *            the id of the described component, or an empty string to clear
+     *            the <code>for</code> attribute, not <code>null</code>
      */
     public void setFor(String forId) {
         set(forDescriptor, forId);
