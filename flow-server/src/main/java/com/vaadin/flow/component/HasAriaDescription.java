@@ -108,7 +108,16 @@ public interface HasAriaDescription extends HasElement {
      * the given description component.
      * <p>
      * The description component does not need an ID: if it has none by the time
-     * the value is sent to the client, one is generated automatically.
+     * the value is sent to the client, one is generated automatically. The
+     * attribute value is available right away, but a generated ID is only
+     * assigned to the description component before the next client response
+     * after this component is attached, so the value read with
+     * {@link #getAriaDescribedBy()} should not be cached within the same
+     * request.
+     * <p>
+     * Calling {@link #setAriaDescribedBy(String)}, also with {@code null} to
+     * remove the attribute, or referencing another component cancels a pending
+     * resolution, leaving the previously referenced component's ID untouched.
      * <p>
      * The description component must be in the same DOM scope as this
      * component, otherwise screen readers will fail to announce the description
@@ -129,7 +138,7 @@ public interface HasAriaDescription extends HasElement {
         }
         ComponentUtil.resolveOrGenerateIdLater(getElement(),
                 descriptionComponent, "ariadescribedby-",
-                this::setAriaDescribedBy);
+                this::getAriaDescribedBy, this::setAriaDescribedBy);
     }
 
     /**

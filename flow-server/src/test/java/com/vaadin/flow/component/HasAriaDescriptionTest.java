@@ -84,6 +84,55 @@ class HasAriaDescriptionTest {
     }
 
     @Test
+    void setAriaDescribedByComponent_explicitValueSetAfter_explicitValueWins() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent descriptionComponent = new TestComponent();
+        ui.add(component, descriptionComponent);
+
+        component.setAriaDescribedBy(descriptionComponent);
+        component.setAriaDescribedBy("explicit-id");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assertions.assertEquals("explicit-id",
+                component.getAriaDescribedBy().get());
+        Assertions.assertFalse(descriptionComponent.getId().isPresent());
+    }
+
+    @Test
+    void setAriaDescribedByComponent_removedAfter_attributeStaysRemoved() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent descriptionComponent = new TestComponent();
+        ui.add(component, descriptionComponent);
+
+        component.setAriaDescribedBy(descriptionComponent);
+        component.setAriaDescribedBy((String) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
+        Assertions.assertFalse(descriptionComponent.getId().isPresent());
+    }
+
+    @Test
+    void setAriaDescribedByComponent_calledTwice_lastComponentWins() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent firstDescription = new TestComponent();
+        TestComponent secondDescription = new TestComponent();
+        ui.add(component, firstDescription, secondDescription);
+
+        component.setAriaDescribedBy(firstDescription);
+        component.setAriaDescribedBy(secondDescription);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assertions.assertFalse(firstDescription.getId().isPresent(),
+                "The superseded description should keep its original id");
+        Assertions.assertEquals(secondDescription.getId().orElse(null),
+                component.getAriaDescribedBy().orElse(null));
+    }
+
+    @Test
     void setAriaDescribedByComponent_withIdSetAfter() {
         UI ui = new UI();
         TestComponent component = new TestComponent();
