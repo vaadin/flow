@@ -45,7 +45,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 public class RouteContextualStorageManagerTest extends AbstractWeldTest {
@@ -92,6 +94,49 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
     public static class Group2 extends HasElementTestBean {
     }
 
+    @Route("preserved")
+    @PreserveOnRefresh
+    public static class PreservedGroup extends HasElementTestBean {
+    }
+
+    @PreserveOnRefresh
+    public static class PreservedLayout extends HasElementTestBean
+            implements RouterLayout {
+    }
+
+    @RouteScoped
+    @RouteScopeOwner(PreservedGroup.class)
+    public static class MemberOfPreservedGroup extends HasElementTestBean {
+
+        boolean isDestroyed;
+
+        @PreDestroy
+        private void onDestroy() {
+            isDestroyed = true;
+        }
+    }
+
+    /**
+     * A layout without {@link PreserveOnRefresh}, shared by a preserved and a
+     * plain child. Flow reuses the same layout instance when navigating between
+     * the two, and preserves it on refresh together with the preserved child.
+     */
+    public static class SharedLayout extends HasElementTestBean
+            implements RouterLayout {
+    }
+
+    @RouteScoped
+    @RouteScopeOwner(SharedLayout.class)
+    public static class MemberOfSharedLayout extends HasElementTestBean {
+
+        boolean isDestroyed;
+
+        @PreDestroy
+        private void onDestroy() {
+            isDestroyed = true;
+        }
+    }
+
     @Route("")
     public static class InitialRoute extends HasElementTestBean {
 
@@ -121,7 +166,15 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
     private Provider<MemberOfGroup1> memberOfGroup1;
 
     @Inject
+    @RouteScopeOwner(PreservedGroup.class)
+    private Provider<MemberOfPreservedGroup> memberOfPreservedGroup;
+
+    @Inject
     private Provider<NoOwnerBean> noOwnerBean;
+
+    @Inject
+    @RouteScopeOwner(SharedLayout.class)
+    private Provider<MemberOfSharedLayout> memberOfSharedLayout;
 
     @Inject
     private Event<BeforeEnterEvent> beforeNavigationTrigger;
@@ -232,7 +285,64 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
     public void preserveOnRefresh_anotherUIHasSameWindowName_beanIsPreserved() {
         UI ui = doSetUp("foo", null);
         Mockito.when(event.getNavigationTarget())
+                .thenReturn((Class) PreservedGroup.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfPreservedGroup bean1 = memberOfPreservedGroup.get();
+        bean1.setState(STATE);
+
+        // set another UI instance with the same window name into the context
+        doSetUp("foo", ui.getSession());
+        Mockito.when(event.getNavigationTarget())
+                .thenReturn((Class) PreservedGroup.class);
+        beforeNavigationTrigger.fire(event);
+
+        ComponentUtil.onComponentDetach(ui);
+
+        Assertions.assertFalse(bean1.isDestroyed);
+        Assertions.assertSame(bean1, memberOfPreservedGroup.get());
+        Assertions.assertEquals(STATE, memberOfPreservedGroup.get().getState());
+    }
+
+    @Test
+    public void noPreserveOnRefresh_anotherUIHasSameWindowName_beanIsNotShared() {
+        UI ui = doSetUp("foo", null);
+        Mockito.when(event.getNavigationTarget())
                 .thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = memberOfGroup1.get();
+        bean1.setState(STATE);
+
+        // set another UI instance with the same window name into the context,
+        // simulating e.g. a page refresh or a duplicated browser tab
+        doSetUp("foo", ui.getSession());
+        Mockito.when(event.getNavigationTarget())
+                .thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean2 = memberOfGroup1.get();
+        Assertions.assertNotSame(bean1, bean2,
+                "Beans of a not preserved navigation chain must not be shared "
+                        + "between UIs of the same browser window");
+        Assertions.assertNotEquals(STATE, bean2.getState());
+
+        // the bean of the first UI is still bound to that UI only, and is
+        // destroyed together with it
+        Assertions.assertFalse(bean1.isDestroyed);
+        ComponentUtil.onComponentDetach(ui);
+        Assertions.assertTrue(bean1.isDestroyed);
+        Assertions.assertFalse(bean2.isDestroyed);
+    }
+
+    @Test
+    public void preserveOnRefreshLayout_anotherUIHasSameWindowName_beanIsPreserved() {
+        UI ui = doSetUp("foo", null);
+        Mockito.when(event.getNavigationTarget())
+                .thenReturn((Class) Group1.class);
+        Mockito.when(event.getLayouts()).thenReturn(
+                Collections.<Class<? extends RouterLayout>> singletonList(
+                        PreservedLayout.class));
         beforeNavigationTrigger.fire(event);
 
         MemberOfGroup1 bean1 = memberOfGroup1.get();
@@ -242,11 +352,15 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
         doSetUp("foo", ui.getSession());
         Mockito.when(event.getNavigationTarget())
                 .thenReturn((Class) Group1.class);
+        Mockito.when(event.getLayouts()).thenReturn(
+                Collections.<Class<? extends RouterLayout>> singletonList(
+                        PreservedLayout.class));
         beforeNavigationTrigger.fire(event);
 
         ComponentUtil.onComponentDetach(ui);
 
         Assertions.assertFalse(bean1.isDestroyed);
+        Assertions.assertSame(bean1, memberOfGroup1.get());
         Assertions.assertEquals(STATE, memberOfGroup1.get().getState());
     }
 
@@ -305,11 +419,126 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
     }
 
     @Test
+    public void sharedLayout_navigateFromPreservedChildToPlainChild_layoutBeanIsKept() {
+        doSetUp("foo", null);
+
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+        MemberOfSharedLayout bean1 = memberOfSharedLayout.get();
+        bean1.setState(STATE);
+
+        // the layout instance is reused by Flow, so its beans must survive
+        navigateTo(Group1.class, SharedLayout.class);
+
+        MemberOfSharedLayout bean2 = memberOfSharedLayout.get();
+        Assertions.assertFalse(bean1.isDestroyed,
+                "The layout owned bean must not be destroyed while the layout "
+                        + "stays in the navigation chain");
+        Assertions.assertSame(bean1, bean2,
+                "The layout owned bean must stay the same instance while the "
+                        + "layout is reused across navigations");
+        Assertions.assertEquals(STATE, bean2.getState());
+    }
+
+    @Test
+    public void sharedLayout_navigateFromPlainChildToPreservedChild_layoutBeanIsKept() {
+        doSetUp("foo", null);
+
+        navigateTo(Group1.class, SharedLayout.class);
+        MemberOfSharedLayout bean1 = memberOfSharedLayout.get();
+        bean1.setState(STATE);
+
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+
+        MemberOfSharedLayout bean2 = memberOfSharedLayout.get();
+        Assertions.assertFalse(bean1.isDestroyed,
+                "The layout owned bean must not be destroyed while the layout "
+                        + "stays in the navigation chain");
+        Assertions.assertSame(bean1, bean2,
+                "The layout owned bean must stay the same instance when the "
+                        + "navigation chain becomes preserved");
+        Assertions.assertEquals(STATE, bean2.getState());
+    }
+
+    @Test
+    public void sharedLayout_navigateBackAndForth_layoutBeanIsKept() {
+        doSetUp("foo", null);
+
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+        MemberOfSharedLayout bean = memberOfSharedLayout.get();
+        bean.setState(STATE);
+
+        navigateTo(Group1.class, SharedLayout.class);
+        MemberOfSharedLayout beanOnPlainChild = memberOfSharedLayout.get();
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+
+        Assertions.assertFalse(bean.isDestroyed);
+        Assertions.assertSame(bean, beanOnPlainChild,
+                "The layout owned bean must stay the same instance when the "
+                        + "navigation chain is not preserved anymore");
+        Assertions.assertSame(bean, memberOfSharedLayout.get(),
+                "The layout owned bean must stay the same instance when the "
+                        + "navigation chain is preserved again");
+        Assertions.assertEquals(STATE, memberOfSharedLayout.get().getState());
+    }
+
+    @Test
+    public void sharedLayout_beanReboundToUI_isDestroyedOnUIDetach() {
+        UI ui = doSetUp("foo", null);
+
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+        MemberOfSharedLayout bean = memberOfSharedLayout.get();
+
+        // the chain is not preserved anymore, so the bean is bound to this UI
+        navigateTo(Group1.class, SharedLayout.class);
+        Assertions.assertSame(bean, memberOfSharedLayout.get());
+
+        // set another UI instance with the same window name into the context,
+        // simulating e.g. a page refresh
+        doSetUp("foo", ui.getSession());
+        ComponentUtil.onComponentDetach(ui);
+
+        Assertions.assertTrue(bean.isDestroyed,
+                "The layout owned bean is not preserved anymore, so it must be "
+                        + "destroyed together with its UI");
+    }
+
+    @Test
+    public void sharedLayout_anotherUIHoldsPreservedChain_beanIsNotStolen() {
+        UI ui = doSetUp("foo", null);
+
+        navigateTo(PreservedGroup.class, SharedLayout.class);
+        MemberOfSharedLayout bean1 = memberOfSharedLayout.get();
+        bean1.setState(STATE);
+
+        // set another UI instance with the same window name into the context,
+        // both UIs being alive at the same time
+        doSetUp("foo", ui.getSession());
+        navigateTo(Group1.class, SharedLayout.class);
+
+        MemberOfSharedLayout bean2 = memberOfSharedLayout.get();
+        Assertions.assertNotSame(bean1, bean2,
+                "The beans of a not preserved navigation chain must not be "
+                        + "taken from a UI that may still hold the preserved "
+                        + "chain");
+        Assertions.assertNotEquals(STATE, bean2.getState());
+        Assertions.assertFalse(bean1.isDestroyed);
+    }
+
+    @Test
     public void onBeforeEnter_conditionalBean_doesNotThrow() {
         Mockito.when(event.getNavigationTarget())
                 .thenReturn((Class) InitialRoute.class);
         beforeNavigationTrigger.fire(event);
         customEventEventTrigger.fire(new CustomEvent());
+    }
+
+    private void navigateTo(Class navigationTarget,
+            Class<? extends RouterLayout> layout) {
+        Mockito.when(event.getNavigationTarget()).thenReturn(navigationTarget);
+        Mockito.when(event.getLayouts()).thenReturn(
+                Collections.<Class<? extends RouterLayout>> singletonList(
+                        layout));
+        beforeNavigationTrigger.fire(event);
     }
 
     private UI doSetUp(String windowName, VaadinSession session) {

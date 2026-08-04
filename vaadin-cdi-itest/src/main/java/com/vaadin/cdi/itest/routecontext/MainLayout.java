@@ -29,6 +29,8 @@ public class MainLayout extends Div implements RouterLayout {
     public static final String INVALID = "invalid";
     public static final String PARENT_NO_OWNER = "parent-no-owner";
     public static final String CHILD_NO_OWNER = "child-no-owner";
+    public static final String LAYOUT_PRESERVED = "layout-preserved";
+    public static final String LAYOUT_PLAIN = "layout-plain";
 
     private NativeLabel uiIdLabel;
 
@@ -36,7 +38,10 @@ public class MainLayout extends Div implements RouterLayout {
         add(new RouterLink(PRESERVE, PreserveOnRefreshView.class),
                 new RouterLink(INVALID, InvalidView.class),
                 new RouterLink(PARENT_NO_OWNER, ParentNoOwnerView.class),
-                new RouterLink(CHILD_NO_OWNER, ChildNoOwnerView.class));
+                new RouterLink(CHILD_NO_OWNER, ChildNoOwnerView.class),
+                new RouterLink(LAYOUT_PRESERVED,
+                        LayoutScopedPreservedView.class),
+                new RouterLink(LAYOUT_PLAIN, LayoutScopedPlainView.class));
         ;
     }
 
