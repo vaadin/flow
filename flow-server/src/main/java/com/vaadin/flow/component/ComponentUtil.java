@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -810,6 +811,37 @@ public class ComponentUtil {
     }
 
     /**
+     * Resolves the id of {@code targetComponent} lazily, as described in
+     * {@link #resolveOrGenerateIdLater(Element, Component, String, SerializableConsumer)},
+     * but accepts a consumer that is not necessarily serializable.
+     *
+     * @param sourceElement
+     *            the element whose attachment triggers the resolution, not
+     *            {@code null}
+     * @param targetComponent
+     *            the component whose id should be resolved, not {@code null}
+     * @param generatedIdPrefix
+     *            prefix used when an id needs to be generated, not {@code null}
+     * @param idConsumer
+     *            receives the resolved id at sync time, not {@code null}
+     * @since 25.2
+     * @deprecated use
+     *             {@link #resolveOrGenerateIdLater(Element, Component, String, SerializableConsumer)}
+     *             instead. The pending resolution is stored in the state tree,
+     *             or as an attach listener while {@code sourceElement} is
+     *             detached, so a consumer that is not serializable makes the
+     *             session fail to serialize.
+     */
+    @Deprecated(since = "25.3", forRemoval = true)
+    public static void resolveOrGenerateIdLater(Element sourceElement,
+            Component targetComponent, String generatedIdPrefix,
+            Consumer<String> idConsumer) {
+        resolveOrGenerateIdLater(sourceElement, targetComponent,
+                generatedIdPrefix,
+                (SerializableConsumer<String>) idConsumer::accept);
+    }
+
+    /**
      * Resolves the id of {@code targetComponent} lazily, before the next client
      * response after {@code sourceElement} is attached. If the target still
      * does not have an id at that point, one is generated using
@@ -829,11 +861,10 @@ public class ComponentUtil {
      *            prefix used when an id needs to be generated, not {@code null}
      * @param idConsumer
      *            receives the resolved id at sync time, not {@code null}
-     * @since 25.2
      */
     public static void resolveOrGenerateIdLater(Element sourceElement,
             Component targetComponent, String generatedIdPrefix,
-            Consumer<String> idConsumer) {
+            SerializableConsumer<String> idConsumer) {
         sourceElement.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(sourceElement.getNode(),

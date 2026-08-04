@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -246,6 +250,60 @@ class ComponentUtilTest {
         assertEquals(List.of(contentWithChild, grandchild),
                 ComponentUtil.streamDescendants(composite).toList(),
                 "streamDescendants must recurse through Composite content");
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_attached_pendingResolutionIsSerializable()
+            throws Exception {
+        UI ui = new UI();
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        target.setId("the-target");
+        ui.add(source, target);
+
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                id -> sourceElement.setAttribute("data-target", id));
+
+        UI uiCopy = serializeAndDeserialize(ui);
+        uiCopy.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        assertEquals("the-target", uiCopy.getChildren().findFirst()
+                .orElseThrow().getElement().getAttribute("data-target"));
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_detached_pendingResolutionIsSerializable()
+            throws Exception {
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        target.setId("the-target");
+
+        // not attached yet, so the resolution is kept as an attach listener
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                id -> sourceElement.setAttribute("data-target", id));
+
+        TestDiv sourceCopy = serializeAndDeserialize(source);
+        UI ui = new UI();
+        ui.add(sourceCopy);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("the-target",
+                sourceCopy.getElement().getAttribute("data-target"));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T serializeAndDeserialize(T instance) throws Exception {
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+            out.writeObject(instance);
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bs.toByteArray()))) {
+            return (T) in.readObject();
+        }
     }
 
 }
