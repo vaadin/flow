@@ -20,31 +20,39 @@ import java.util.Optional;
 import com.vaadin.flow.dom.ElementConstants;
 
 /**
- * A generic interface for components that support setting the accessible
- * description. The description is announced by screen readers when the
- * component receives focus.
+ * A generic interface for components that have an accessible description.
  * <p>
- * The description can be provided either as plain text with
- * {@link #setAriaDescription(String)}, or with
- * {@link #setAriaDescribedBy(String)} by referencing another element whose
- * content serves as the description. If both are set, the element reference
- * takes precedence.
+ * The accessible description provides supplementary information about the
+ * component to assistive technologies, such as screen readers.
+ * <p>
+ * It can be set as plain text with the {@code aria-description} attribute, or
+ * by referencing existing elements on the page with the
+ * {@code aria-describedby} attribute. Prefer the latter when the description is
+ * already visible to all users.
  *
  * @author Vaadin Ltd
  * @since 25.3
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-description">
+ *      MDN: aria-description</a>
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-describedby">
+ *      MDN: aria-describedby</a>
  */
 public interface HasAriaDescription extends HasElement {
 
     /**
-     * Set the aria-description of the component to the given text.
+     * Sets the {@code aria-description} attribute of the component to the given
+     * text.
      * <p>
-     * If both aria-description and aria-describedby are present,
-     * aria-describedby takes precedence.
-     * <p>
-     * See: https://www.w3.org/TR/wai-aria/#aria-description
+     * If both {@code aria-description} and {@code aria-describedby} are
+     * present, {@code aria-describedby} takes precedence.
      *
      * @param ariaDescription
-     *            the aria-description text to set or {@code null} to clear
+     *            the description text, or {@code null} to remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-description">
+     *      MDN: aria-description</a>
      */
     default void setAriaDescription(String ariaDescription) {
         if (ariaDescription != null) {
@@ -58,7 +66,7 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Gets the aria-description of the component.
+     * Gets the {@code aria-description} attribute of the component.
      *
      * @return an optional aria-description, or an empty optional if none has
      *         been set
@@ -69,18 +77,20 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Sets the aria-describedby of the component.
+     * Sets the {@code aria-describedby} attribute of the component to one or
+     * more element IDs, separated by spaces.
      * <p>
-     * The value must be a valid id attribute of another element that describes
-     * the component. The description element must be in the same DOM scope of
-     * the component, otherwise screen readers will fail to announce the
-     * description content properly.
-     * <p>
-     * See: https://www.w3.org/TR/wai-aria/#aria-describedby
+     * Each ID must match the {@code id} attribute of another element that
+     * describes the component. The description elements must be in the same DOM
+     * scope as the component, otherwise screen readers will fail to announce
+     * the description content properly.
      *
      * @param ariaDescribedBy
-     *            the string with the id of the element that will be used as
-     *            description or {@code null} to clear
+     *            a space-separated list of element IDs, or {@code null} to
+     *            remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-describedby">
+     *      MDN: aria-describedby</a>
      */
     default void setAriaDescribedBy(String ariaDescribedBy) {
         if (ariaDescribedBy != null) {
@@ -94,20 +104,23 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Sets the aria-describedby of the component to reference the given
-     * description component.
+     * Sets the {@code aria-describedby} attribute of the component to reference
+     * the given description component.
      * <p>
-     * The description component does not need an id: if it has none by the time
+     * The description component does not need an ID: if it has none by the time
      * the value is sent to the client, one is generated automatically.
      * <p>
      * The description component must be in the same DOM scope as this
      * component, otherwise screen readers will fail to announce the description
      * content properly.
-     * <p>
-     * See: https://www.w3.org/TR/wai-aria/#aria-describedby
      *
      * @param descriptionComponent
      *            the component to use as the description, not {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code descriptionComponent} is {@code null}; use
+     *             {@link #setAriaDescribedBy(String)} with {@code null} to
+     *             remove the attribute instead
+     * @see #setAriaDescribedBy(String)
      */
     default void setAriaDescribedBy(Component descriptionComponent) {
         if (descriptionComponent == null) {
@@ -120,7 +133,7 @@ public interface HasAriaDescription extends HasElement {
     }
 
     /**
-     * Gets the aria-describedby of the component.
+     * Gets the {@code aria-describedby} attribute of the component.
      *
      * @return an optional aria-describedby, or an empty optional if none has
      *         been set
