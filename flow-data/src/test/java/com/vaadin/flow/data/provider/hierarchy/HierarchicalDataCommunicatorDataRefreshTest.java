@@ -115,8 +115,9 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     void refreshNullItem_fullHierarchyRefresh() {
-        // refresh(null) is equivalent to reset(): full hierarchy re-fetch.
-        // Expanded descendant caches are discarded (unlike non-null refresh).
+        // refresh(null) is equivalent to reset(): cache discarded, viewport
+        // re-fetched. Expansion state is preserved by reset() (same as
+        // refreshAll), so still-expanded roots reappear with children.
         populateTreeData(treeData, 2, 1);
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 5);
@@ -133,16 +134,19 @@ class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.refresh(null, false);
         fakeClientCommunication();
 
-        assertArrayUpdateSize(3); // expansions cleared by reset()
+        // 3 roots + Item 0 still expanded → 4 flattened rows
+        assertArrayUpdateSize(4);
         assertArrayUpdateItems("name", Map.of( //
                 0, "Item 0", //
-                1, "Item 1", //
-                2, "Item 2"));
+                1, "Item 0-0", //
+                2, "Item 1", //
+                3, "Item 2"));
         assertArrayUpdateItems("state", Map.of( //
                 0, "refreshed", //
-                1, "refreshed", //
-                2, "refreshed"));
-        assertFalse(keyMapper.has(new Item("Item 0-0")));
+                1, "initial", // child not in getRootItems() refresh
+                2, "refreshed", //
+                3, "refreshed"));
+        assertTrue(keyMapper.has(new Item("Item 0-0")));
     }
 
     @Test
