@@ -456,12 +456,6 @@ public class ElementConstants {
      * @since 25.3
      */
     public static final String ARIA_DESCRIBEDBY_ATTRIBUTE_NAME = "aria-describedby";
-    /**
-     * The aria-description attribute.
-     *
-     * @since 25.3
-     */
-    public static final String ARIA_DESCRIPTION_ATTRIBUTE_NAME = "aria-description";
 
     private ElementConstants() {
         // Constants only
