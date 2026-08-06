@@ -23,6 +23,8 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.ReactAdapterView")
 public class ReactAdapterView extends Div {
 
+    public static final String TELEPORTED_VALUE = "teleported value";
+
     public ReactAdapterView() {
         var input = new ReactInput("initialValue");
 
@@ -46,35 +48,24 @@ public class ReactAdapterView extends Div {
                 (event) -> getOutput.setText(input.getValue()));
         getValueButton.setId("getValueButton");
 
-        // Reproduces the dialog scenario where the adapter element is attached
-        // and then immediately moved in the DOM (disconnect + reconnect) within
-        // the same task, before React has committed the portal. A single React
-        // component must be rendered, not one per connect.
-        var moveTarget = new Div();
-        moveTarget.setId("moveTarget");
-        var moveButton = new NativeButton("Move while connecting");
-        moveButton.setId("moveWhileConnectingButton");
-        moveButton.getElement().addEventListener("click",
-                event -> moveTarget.getElement().executeJs(
-                        // language=JavaScript
-                        """
-                                const target = $0;
-                                target.textContent = '';
-                                const first = document.createElement('div');
-                                const second = document.createElement('div');
-                                target.append(first, second);
-                                const adapter = document.createElement('react-input');
-                                // First connect schedules a portal asynchronously.
-                                first.appendChild(adapter);
-                                // Moving it synchronously disconnects and reconnects it
-                                // before the portal is committed.
-                                second.appendChild(adapter);
-                                """,
-                        moveTarget.getElement()));
+        // An overlay-based component such as a dialog moves its content into
+        // the overlay right after attaching it, so the adapter element is
+        // disconnected and reconnected within the same task, before React has
+        // committed the portal. A single React component must be rendered, not
+        // one per connect.
+        var teleportingContainer = new TeleportingContainer();
+        teleportingContainer.setId("teleportingContainer");
+
+        var openButton = new NativeButton("Open teleporting container",
+                (event) -> {
+                    teleportingContainer.add(new ReactInput(TELEPORTED_VALUE));
+                    teleportingContainer.open();
+                });
+        openButton.setId("openTeleportingContainerButton");
 
         add(new Div(input, listenerOutput), new Div(setValueButton),
                 new Div(setNullButton), new Div(getValueButton, getOutput),
-                new Div(moveButton), moveTarget);
+                new Div(openButton), teleportingContainer);
     }
 
 }

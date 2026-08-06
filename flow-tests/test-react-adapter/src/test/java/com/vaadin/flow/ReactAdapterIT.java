@@ -95,21 +95,26 @@ public class ReactAdapterIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void moveWhileConnecting_rendersComponentOnce() {
+    public void contentTeleportedWhileConnecting_rendersComponentOnce() {
         open();
 
         waitForDevServer();
 
-        $(NativeButtonElement.class).id("moveWhileConnectingButton").click();
+        $(NativeButtonElement.class).id("openTeleportingContainerButton")
+                .click();
 
-        TestBenchElement moveTarget = $(TestBenchElement.class)
-                .id("moveTarget");
-        waitUntil(driver -> !moveTarget.$("react-input").all().isEmpty());
+        TestBenchElement container = $(TestBenchElement.class)
+                .id("teleportingContainer");
+        waitUntil(driver -> !container.$("input").all().isEmpty());
 
         Assert.assertEquals(
-                "Adapter element moved while connecting must render exactly one "
-                        + "React component",
-                1, moveTarget.$("input").all().size());
+                "Adapter element teleported while connecting must render "
+                        + "exactly one React component",
+                1, container.$("input").all().size());
+        Assert.assertEquals(
+                "The rendered component must be bound to the server-side state",
+                ReactAdapterView.TELEPORTED_VALUE,
+                container.$("input").all().get(0).getPropertyString("value"));
     }
 
     private TestBenchElement getAdapterElement() {
