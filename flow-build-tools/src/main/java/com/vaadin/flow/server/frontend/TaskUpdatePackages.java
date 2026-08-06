@@ -143,15 +143,17 @@ public class TaskUpdatePackages extends NodeUpdater {
                 ? new PnpmOverridesStore(packageJson)
                 : new PackageJsonOverridesStore(packageJson);
         final Map<String, String> overrides = store.load();
-        final Map<String, String> overridesBefore = new LinkedHashMap<>(
-                overrides);
 
         removeManagedOverrides(overrides, managedOverrideKeys(platformVersions),
                 dependencies, devDependencies);
         overrides.putAll(flattenOverrides(vaadinOverrides));
 
-        boolean updated = store.save(overrides) || store.migrated()
-                || !overridesBefore.equals(overrides);
+        // Saving reports whether the stored overrides changed. Comparing the
+        // computed ones against the loaded ones instead would report changes
+        // that never get written, such as an override the user holds in a shape
+        // Flow leaves alone, marking package.json modified and installing
+        // packages on every single build.
+        boolean updated = store.save(overrides) || store.migrated();
         updated |= removeLegacyVaadinOverrides(packageJson);
         return updated;
     }
@@ -250,6 +252,11 @@ public class TaskUpdatePackages extends NodeUpdater {
             workspace = new PnpmWorkspaceFile(options.getNpmFolder());
             final Map<String, String> overrides = new LinkedHashMap<>(
                     workspace.getOverrides());
+            if (!workspace.canPersist()) {
+                // Migrating would take the overrides out of package.json with
+                // nowhere to put them, losing the user's configuration.
+                return overrides;
+            }
             // Fold in overrides still living in legacy package.json locations.
             migrated = foldLegacyPnpmOverrides(packageJson, overrides);
             final JsonNode legacyNpmOverrides = packageJson.get(OVERRIDES);

@@ -37,6 +37,11 @@ class PnpmWorkspaceFileTest {
         return new File(projectRoot, PnpmWorkspaceFile.WORKSPACE_FILE);
     }
 
+    private String content() throws Exception {
+        return Files.readString(workspaceFile().toPath(),
+                StandardCharsets.UTF_8);
+    }
+
     @Test
     void noFile_getOverridesEmpty_saveCreatesNothing() throws Exception {
         PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
@@ -112,14 +117,205 @@ class PnpmWorkspaceFileTest {
     }
 
     @Test
-    void getOverrides_coercesUnquotedNumericValue() throws Exception {
+    void getOverrides_readsUnquotedNumericValueAsText() throws Exception {
+        // Read as the number 1.0 the version would come back as "1.1" for
+        // 1.10, changing the package.json hash and forcing a package install.
         Files.writeString(workspaceFile().toPath(), """
                 overrides:
-                  dep: 1.0
+                  dep: 1.10
                 """, StandardCharsets.UTF_8);
 
         PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
-        assertEquals("1.0", workspace.getOverrides().get("dep"));
+        assertEquals("1.10", workspace.getOverrides().get("dep"));
+    }
+
+    @Test
+    void windowsLineEndings_arePreserved() throws Exception {
+        Files.writeString(workspaceFile().toPath(),
+                "packages:\r\n  - \"packages/*\"\r\noverrides:\r\n  dep: 1.0.0\r\n",
+                StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of("dep", "2.0.0"));
+        assertTrue(workspace.save());
+
+        assertEquals(
+                "packages:\r\n  - \"packages/*\"\r\noverrides:\r\n  dep: \"2.0.0\"\r\n",
+                content(),
+                "Rewriting every line as changed is not an edit to one override");
+    }
+
+    @Test
+    void addingOverride_preservesCommentsAndLayout() throws Exception {
+        // Everything here is the user's: comments, four-space indentation,
+        // quoting styles and entry order all have to come back out untouched.
+        String original = """
+                # Delay install of newly released packages
+                minimumReleaseAge: 180 # 3h
+                minimumReleaseAgeExclude:
+                    - "@xdevsoftware/*"
+                overrides:
+                    # Remove unused packages
+                    "yargs": "npm:empty-npm-package@1.0.0"
+                    'open': "npm:empty-npm-package@1.0.0"
+                packages:
+                    - "packages/*"
+                """;
+        Files.writeString(workspaceFile().toPath(), original,
+                StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        Map<String, String> overrides = workspace.getOverrides();
+        overrides.put("@vaadin/button", "25.2.6");
+        workspace.setOverrides(overrides);
+        assertTrue(workspace.save());
+
+        assertEquals("""
+                # Delay install of newly released packages
+                minimumReleaseAge: 180 # 3h
+                minimumReleaseAgeExclude:
+                    - "@xdevsoftware/*"
+                overrides:
+                    # Remove unused packages
+                    "yargs": "npm:empty-npm-package@1.0.0"
+                    'open': "npm:empty-npm-package@1.0.0"
+                    "@vaadin/button": "25.2.6"
+                packages:
+                    - "packages/*"
+                """, content(),
+                "Only the added override may differ from the original file");
+    }
+
+    @Test
+    void changedAndRemovedOverrides_touchOnlyAffectedEntries()
+            throws Exception {
+        Files.writeString(workspaceFile().toPath(), """
+                overrides:
+                  # keeps the versions Vaadin does not manage
+                  'yargs': "npm:empty-npm-package@1.0.0"
+                  '@vaadin/grid': "25.2.5" # pinned, see CVE-123
+                  '@vaadin/dropped': "25.2.5"
+                  nested:
+                    'glob': "10.4.5"
+                """, StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        Map<String, String> overrides = new LinkedHashMap<>();
+        overrides.put("yargs", "npm:empty-npm-package@1.0.0");
+        overrides.put("@vaadin/grid", "25.2.6");
+        workspace.setOverrides(overrides);
+        assertTrue(workspace.save());
+
+        assertEquals("""
+                overrides:
+                  # keeps the versions Vaadin does not manage
+                  'yargs': "npm:empty-npm-package@1.0.0"
+                  '@vaadin/grid': "25.2.6" # pinned, see CVE-123
+                  nested:
+                    'glob': "10.4.5"
+                """, content(),
+                "Unchanged entries keep their quoting, a changed entry keeps its "
+                        + "key and its note, removed entries disappear and an "
+                        + "entry Flow does not manage is left alone");
+    }
+
+    @Test
+    void emptyOverrides_keepEntriesFlowDoesNotManage() throws Exception {
+        Files.writeString(workspaceFile().toPath(), """
+                overrides:
+                  nested:
+                    'glob': "10.4.5"
+                  '@vaadin/grid': "25.2.5"
+                """, StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of());
+        assertTrue(workspace.save());
+
+        assertEquals("""
+                overrides:
+                  nested:
+                    'glob': "10.4.5"
+                """, content(),
+                "Clearing the overrides Flow manages must not take the user's "
+                        + "own entries with it");
+    }
+
+    @Test
+    void unusualIndentation_isWrittenWithoutFailing() throws Exception {
+        // The emitter refuses an indent above ten columns, so the indentation
+        // read from the file cannot be passed on unchecked.
+        Files.writeString(workspaceFile().toPath(), """
+                minimumReleaseAgeExclude: ["@vaadin/*",
+                                           "@types/*"]
+                """, StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of("dep", "1.0.0"));
+
+        assertTrue(workspace.save(),
+                "Deeply indented YAML must still be written");
+        assertTrue(content().contains("\"dep\": \"1.0.0\""),
+                "Override must be written");
+    }
+
+    @Test
+    void severalDocuments_leaveFileUntouched() throws Exception {
+        // A stream of documents cannot be represented as one editable document,
+        // and overwriting it would throw away everything but the first.
+        String original = """
+                overrides:
+                  dep: 1.0.0
+                ---
+                packages:
+                  - "packages/*"
+                """;
+        Files.writeString(workspaceFile().toPath(), original,
+                StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        assertFalse(workspace.canPersist(),
+                "Callers must be able to see that overrides cannot be stored, "
+                        + "as otherwise they redo the work on every build");
+        workspace.setOverrides(Map.of("@vaadin/button", "25.2.6"));
+
+        assertFalse(workspace.save());
+        assertEquals(original, content(), "File must be left untouched");
+    }
+
+    @Test
+    void aliasedOverrides_leavesFileUntouched() throws Exception {
+        // The overrides block is the very same node as 'shared', so editing its
+        // entries would silently rewrite that key as well.
+        String original = """
+                shared: &shared
+                  dep: 1.0.0
+                overrides: *shared
+                """;
+        Files.writeString(workspaceFile().toPath(), original,
+                StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of("@vaadin/button", "25.2.6"));
+
+        assertFalse(workspace.save(),
+                "An overrides block that cannot be edited safely is no change");
+        assertEquals(original, content(), "File must be left untouched");
+    }
+
+    @Test
+    void commentOnlyFile_writesOverridesWithoutFailing() throws Exception {
+        Files.writeString(workspaceFile().toPath(), "# just a comment\n",
+                StandardCharsets.UTF_8);
+
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(projectRoot);
+        workspace.setOverrides(Map.of("dep", "1.0.0"));
+        assertTrue(workspace.save());
+
+        assertEquals("""
+                overrides:
+                  "dep": "1.0.0"
+                """, content());
     }
 
     @Test
