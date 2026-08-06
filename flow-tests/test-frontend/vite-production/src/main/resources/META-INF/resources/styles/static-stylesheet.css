@@ -1,0 +1,120 @@
+/*
+ * Static stylesheet loaded via @StyleSheet from META-INF/resources.
+ * It is served straight from the classpath and never enters the Vite bundle,
+ * so the production build must pre-compress it into .br/.gz siblings for it to
+ * be delivered compressed. The @StyleSheet CSS is minified during the build
+ * before it is compressed, so enough rules are declared here to keep the
+ * minified output comfortably above the compression size threshold.
+ */
+.static-stylesheet-marker {
+  display: block;
+  color: rgb(18, 52, 86);
+  background-color: rgb(240, 240, 240);
+  border: 1px solid rgb(200, 200, 200);
+  padding: 16px;
+  margin: 8px;
+}
+
+.static-stylesheet-heading {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.static-stylesheet-body {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+.static-stylesheet-footer {
+  font-size: 12px;
+  color: rgb(120, 120, 120);
+  border-top: 1px solid rgb(220, 220, 220);
+  padding-top: 8px;
+}
+
+.static-stylesheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-gap: 12px;
+  align-items: stretch;
+}
+
+.static-stylesheet-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.static-stylesheet-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.28);
+}
+
+.static-stylesheet-primary {
+  color: rgb(25, 118, 210);
+  background-color: rgb(227, 242, 253);
+  border-color: rgb(25, 118, 210);
+}
+
+.static-stylesheet-success {
+  color: rgb(46, 125, 50);
+  background-color: rgb(232, 245, 233);
+  border-color: rgb(46, 125, 50);
+}
+
+.static-stylesheet-warning {
+  color: rgb(230, 81, 0);
+  background-color: rgb(255, 243, 224);
+  border-color: rgb(230, 81, 0);
+}
+
+.static-stylesheet-error {
+  color: rgb(198, 40, 40);
+  background-color: rgb(255, 235, 238);
+  border-color: rgb(198, 40, 40);
+}
+
+.static-stylesheet-flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.static-stylesheet-flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.static-stylesheet-spacing-small {
+  padding: 4px;
+  margin: 4px;
+}
+
+.static-stylesheet-spacing-medium {
+  padding: 8px;
+  margin: 8px;
+}
+
+.static-stylesheet-spacing-large {
+  padding: 16px;
+  margin: 16px;
+}
+
+.static-stylesheet-rounded {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.static-stylesheet-elevated {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16), 0 4px 8px rgba(0, 0, 0, 0.23);
+}

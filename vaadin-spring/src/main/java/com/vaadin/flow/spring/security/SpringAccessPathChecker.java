@@ -49,6 +49,8 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * }
  * }
  * </pre>
+ * 
+ * @since 24.3
  */
 public class SpringAccessPathChecker implements AccessPathChecker {
 

@@ -44,6 +44,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  * configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 

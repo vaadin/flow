@@ -29,6 +29,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 
 /**
  * Watches for the file or sub-directory changes in the given directory.
+ * 
+ * @since 24.3.22
  */
 public class FileWatcher {
 

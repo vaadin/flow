@@ -93,6 +93,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskProcessStylesheetCss.class,
+            TaskCompressStaticResources.class,
             TaskCleanFrontendFiles.class,
             TaskWriteGeneratedFilesList.class,
             TaskRemoveOldFrontendGeneratedFiles.class
@@ -108,6 +109,7 @@ public class NodeTasks implements FallibleCommand {
      *
      * @param options
      *            the options
+     * @since 23.3
      */
     public NodeTasks(Options options) {
         FrontendDependenciesScanner frontendDependencies = options
@@ -151,6 +153,9 @@ public class NodeTasks implements FallibleCommand {
                 }
                 // Process @StyleSheet CSS files (minify and inline @imports)
                 commands.add(new TaskProcessStylesheetCss(options));
+                // Pre-compress static resources (the processed CSS and other
+                // compressible assets) into brotli/gzip siblings
+                commands.add(new TaskCompressStaticResources(options));
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
                 // able to
@@ -405,7 +410,7 @@ public class NodeTasks implements FallibleCommand {
                     Thread.sleep(500);
                 } else {
                     // The process has died without removing the lock file
-                    lockFile.toFile().delete();
+                    FileIOUtils.deleteQuietly(lockFile);
                 }
             } catch (InterruptedException e) {
                 // Restore interrupted state
@@ -446,13 +451,16 @@ public class NodeTasks implements FallibleCommand {
                         pid, lockFile.toFile().getAbsolutePath());
                 return;
             }
-            lockFile.toFile().delete();
+            FileIOUtils.deleteQuietly(lockFile);
         } catch (Exception e) {
             getLogger().error("Error releasing lock file ({})",
                     lockFile.toFile().getAbsolutePath());
         }
     }
 
+    /**
+     * @since 24.3
+     */
     public record NodeTasksLockInfo(long pid,
             String commandLine) implements Serializable {
     }

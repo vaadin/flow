@@ -42,6 +42,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 24.3.22
  */
 public final class ViteHandler extends AbstractDevServerRunner {
     /**
