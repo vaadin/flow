@@ -85,6 +85,27 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public @interface JavaScript {
 
     /**
+     * The kind of {@code <script>} tag to render for the dependency.
+     */
+    enum Type {
+        /**
+         * Render a classic {@code <script>} tag. Functions declared in the
+         * loaded file become available in the global scope.
+         */
+        SCRIPT,
+        /**
+         * Render a {@code <script type="module">} tag. The loaded file is
+         * treated as an ES module: functions and variables declared in it are
+         * private to the module unless explicitly exported. The file is loaded
+         * at runtime and is not bundled, even when the URL is a bare relative
+         * path. Use this for hand-authored or CDN-hosted modules that should
+         * not go through Vite. For build-time bundled ES modules use
+         * {@link JsModule} instead.
+         */
+        MODULE
+    }
+
+    /**
      * JavaScript file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
@@ -99,10 +120,27 @@ public @interface JavaScript {
      * frontend directory. Such URLs are not bundled but included into the page
      * as standalone scripts in the same way as it's done by
      * {@link Page#addJavaScript(String)}.
+     * <p>
+     * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
+     * runtime regardless of whether it has a URL prefix; bare relative paths
+     * are normalized to {@code context://<value>} and served as static
+     * resources by the servlet container.
      *
      * @return a JavaScript file URL
      */
     String value();
+
+    /**
+     * The kind of {@code <script>} tag to use when loading the file. Defaults
+     * to {@link Type#SCRIPT} (a classic {@code <script>} element). Set to
+     * {@link Type#MODULE} to render a {@code <script type="module">} element
+     * instead, e.g. for hand-authored or CDN-hosted ES modules that should not
+     * go through Vite. For build-time bundled ES modules use {@link JsModule}
+     * instead.
+     *
+     * @return the kind of script tag to render
+     */
+    Type type() default Type.SCRIPT;
 
     /**
      * Defines if the JavaScript should be loaded only when running in
