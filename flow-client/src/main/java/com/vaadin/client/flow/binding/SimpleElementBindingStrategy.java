@@ -1105,8 +1105,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             /*
              * When a full clear event is fired, all nodes must be removed,
              * including the nodes the server doesn't know about.
+             *
+             * The state tree is already fully updated at this point, so a
+             * non-empty children list means the server is replacing the
+             * contents rather than only emptying them. In that case the old
+             * nodes are kept until the replacements have been inserted: a
+             * container that is momentarily empty loses the scroll position of
+             * the surrounding scrollable element, since the browser clamps the
+             * offset to the collapsed scroll range.
              */
-            removeAllChildren(htmlNode);
+            if (context.node.getList(NodeFeatures.ELEMENT_CHILDREN)
+                    .length() == 0) {
+                removeAllChildren(htmlNode);
+            } else {
+                removeAllChildrenAfterReplacement(context);
+            }
         } else {
             JsArray<?> remove = event.getRemove();
             for (int i = 0; i < remove.length(); i++) {
@@ -1138,6 +1151,56 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         DomElement wrap = DomApi.wrap(htmlNode);
         while (wrap.getFirstChild() != null) {
             wrap.removeChild(wrap.getFirstChild());
+        }
+    }
+
+    /**
+     * Removes the children the node has right now, but only once the whole
+     * change set has been applied so that the nodes replacing them are already
+     * in place.
+     *
+     * @param context
+     *            the binding context of the node whose children are replaced
+     */
+    private void removeAllChildrenAfterReplacement(BindingContext context) {
+        // getChildNodes returns the live DOM child list, so the nodes to remove
+        // are collected before anything is inserted
+        JsArray<Node> liveChildren = DomApi.wrap(context.htmlNode)
+                .getChildNodes();
+        JsArray<Node> replacedChildren = JsCollections.array();
+        for (int i = 0; i < liveChildren.length(); i++) {
+            replacedChildren.push(liveChildren.get(i));
+        }
+
+        Reactive.addPostFlushListener(
+                () -> removeReplacedChildren(context, replacedChildren));
+    }
+
+    private void removeReplacedChildren(BindingContext context,
+            JsArray<Node> replacedChildren) {
+        Node htmlNode = context.htmlNode;
+
+        NodeList nodeChildren = context.node
+                .getList(NodeFeatures.ELEMENT_CHILDREN);
+        JsSet<Node> keptChildren = JsCollections.set();
+        for (int i = 0; i < nodeChildren.length(); i++) {
+            Node domNode = ((StateNode) nodeChildren.get(i)).getDomNode();
+            if (domNode != null) {
+                keptChildren.add(domNode);
+            }
+        }
+
+        for (int i = 0; i < replacedChildren.length(); i++) {
+            Node child = replacedChildren.get(i);
+            /*
+             * A node that the server re-added to this same parent is part of
+             * the new contents, and a node that the server moved to another
+             * parent now belongs to that parent. Neither may be removed here.
+             */
+            if (!keptChildren.has(child)
+                    && DomApi.wrap(child).getParentNode() == htmlNode) {
+                DomApi.wrap(htmlNode).removeChild(child);
+            }
         }
     }
 
