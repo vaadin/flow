@@ -14,6 +14,21 @@ import sinon from 'sinon';
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
+/**
+ * Stubs window.Vaadin.Flow.ready and whenReady with sentinel values so the
+ * preservation test can verify that constructing a Flow instance does not
+ * overwrite definitions from the inline bootstrap script. The real
+ * implementations live in flow-server's whenReady.js and are not tested here.
+ */
+const READY_SENTINEL = () => {};
+const WHEN_READY_SENTINEL = () => {};
+function stubWhenReady() {
+  $wnd.Vaadin = $wnd.Vaadin || {};
+  $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+  $wnd.Vaadin.Flow.ready = READY_SENTINEL;
+  $wnd.Vaadin.Flow.whenReady = WHEN_READY_SENTINEL;
+}
+
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 let server: MockXhrServer;
 // A `changes` array that adds a div with 'Foo' text to body
@@ -655,6 +670,13 @@ describe('Flow', () => {
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
+  });
+
+  it('should preserve ready and whenReady defined by inline script after construction', () => {
+    stubWhenReady();
+    new Flow({ imports: () => {} });
+    expect($wnd.Vaadin.Flow.ready).to.equal(READY_SENTINEL);
+    expect($wnd.Vaadin.Flow.whenReady).to.equal(WHEN_READY_SENTINEL);
   });
 
   it('should pre-attach container element on every navigation', async () => {
