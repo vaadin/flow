@@ -51,6 +51,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
@@ -124,7 +125,7 @@ public class MenuRegistry {
     public static List<AvailableViewInfo> collectMenuItemsList() {
         // en-US is used by default here to match with Hilla's
         // createMenuItems.ts sorting algorithm.
-        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
+        return collectMenuItemsList(Locale.US);
     }
 
     /**
@@ -149,6 +150,132 @@ public class MenuRegistry {
                 (locale != null ? Collator.getInstance(locale)
                         : Collator.getInstance())))
                 .toList();
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * Uses {@code en-US} locale for ordering to match
+     * {@link #collectMenuItemsList()}.
+     *
+     * @return ordered root view infos, each with its nested children populated
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsTree(Locale.US);
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * The same set of views as {@link #collectMenuItemsList(Locale)} is
+     * returned, but instead of a flat list the views are nested according to
+     * the route hierarchy resolved by
+     * {@link RouteConfiguration#getRouteHierarchy(Class, RouteParameters)}
+     * &mdash; i.e. honouring
+     * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
+     * walking as fallback.
+     * <p>
+     * A view is attached to its nearest <em>included</em> ancestor; if none of
+     * its ancestors are part of the menu, it becomes a root entry. The children
+     * of each entry are ordered with the same comparator as the flat list.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered root view infos, each with its nested children populated
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forApplicationScope();
+
+        // Reuse the flat collection: it already normalizes each route to its
+        // menu link and sorts globally by (menu order, route). Because that
+        // order is global, grouping the list in-order yields correctly ordered
+        // siblings, so no further sorting is needed here.
+        List<AvailableViewInfo> menuItems = collectMenuItemsList(locale);
+
+        // Index each server view by its @Menu class so route-hierarchy
+        // ancestors can be resolved directly to the including menu entry.
+        Map<Class<?>, AvailableViewInfo> includedByClass = new HashMap<>();
+        for (AvailableViewInfo view : menuItems) {
+            if (isServerMenuView(view)) {
+                includedByClass.put(view.menu().menuClass(), view);
+            }
+        }
+
+        // Resolve each view's parent via the route hierarchy and group children
+        // under it. Iterating the already-sorted list keeps each child list in
+        // sibling order. Client views have no route hierarchy and stay roots.
+        Map<Class<?>, List<AvailableViewInfo>> childrenByParent = new HashMap<>();
+        List<AvailableViewInfo> roots = new ArrayList<>();
+        for (AvailableViewInfo view : menuItems) {
+            Optional<Class<?>> parent = isServerMenuView(view)
+                    ? resolveParentClass(view.menu().menuClass(),
+                            includedByClass, routeConfiguration)
+                    : Optional.empty();
+            if (parent.isPresent()) {
+                childrenByParent
+                        .computeIfAbsent(parent.get(), key -> new ArrayList<>())
+                        .add(view);
+            } else {
+                roots.add(view);
+            }
+        }
+
+        return roots.stream()
+                .map(root -> attachChildren(root, childrenByParent)).toList();
+    }
+
+    private static boolean isServerMenuView(AvailableViewInfo view) {
+        return view.menu() != null && view.menu().menuClass() != null;
+    }
+
+    /**
+     * Resolves the nearest ancestor of {@code menuClass} that is part of the
+     * menu, walking the route hierarchy (honouring {@code @RouteParent} with
+     * URL-prefix fallback).
+     */
+    private static Optional<Class<?>> resolveParentClass(
+            Class<? extends Component> menuClass,
+            Map<Class<?>, AvailableViewInfo> includedByClass,
+            RouteConfiguration routeConfiguration) {
+        List<RouteReference> hierarchy = routeConfiguration
+                .getRouteHierarchy(menuClass, RouteParameters.empty());
+        // Root-first and inclusive of menuClass itself (last element); walk
+        // from the immediate parent upwards and pick the first included
+        // ancestor.
+        for (int i = hierarchy.size() - 2; i >= 0; i--) {
+            Class<?> candidate = hierarchy.get(i).navigationTarget();
+            if (includedByClass.containsKey(candidate)) {
+                return Optional.of(candidate);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static AvailableViewInfo attachChildren(AvailableViewInfo view,
+            Map<Class<?>, List<AvailableViewInfo>> childrenByParent) {
+        List<AvailableViewInfo> children = isServerMenuView(view)
+                ? childrenByParent.get(view.menu().menuClass())
+                : null;
+        // Rebuild with the resolved children (null when none) so that any
+        // original child list is replaced uniformly by the resolved hierarchy.
+        List<AvailableViewInfo> nested = (children == null) ? null
+                : children.stream()
+                        .map(child -> attachChildren(child, childrenByParent))
+                        .toList();
+        return withChildren(view, nested);
+    }
+
+    private static AvailableViewInfo withChildren(AvailableViewInfo source,
+            List<AvailableViewInfo> children) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), source.menu(), children,
+                source.routeParameters(), source.flowLayout(), source.detail());
     }
 
     /**
