@@ -755,6 +755,7 @@ public class RouteUtil {
      *         if no implementor of {@link HasDynamicTitle} was found
      * @since 24.5
      */
+    @SuppressWarnings("deprecation")
     public static Optional<String> getDynamicTitle(UI ui) {
         return Objects.requireNonNull(ui).getInternals()
                 .getActiveRouterTargetsChain().stream()
