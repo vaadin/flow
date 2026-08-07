@@ -357,11 +357,10 @@ public class WebBrowser implements Serializable {
      *         no information on the browser is present
      */
     public boolean isIPhone() {
-        return userAgent != null
-                && (userAgent.contains("macintosh")
-                        || userAgent.contains("mac osx")
-                        || userAgent.contains("mac os x"))
-                && userAgent.contains("iphone");
+        if (getBrowserDetails() == null) {
+            return false;
+        }
+        return browserDetails.isIPhone();
     }
 
     /**
