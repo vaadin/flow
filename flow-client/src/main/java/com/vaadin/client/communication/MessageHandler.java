@@ -455,7 +455,9 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
-            Reactive.flush();
+            // Propagate the changes to the DOM, optionally wrapping the update
+            // in a view transition when the server requested one.
+            flushChanges(valueMap);
 
             ValueMap meta = valueMap.getValueMap("meta");
 
@@ -584,6 +586,30 @@ public class MessageHandler {
     /*-{
         if ( node && node.afterServerUpdate ) {
             node.afterServerUpdate();
+        }
+    }-*/;
+
+    /**
+     * Propagates all pending changes to the DOM by flushing the reactive tree.
+     * When the server requested it through the
+     * {@link JsonConstants#META_VIEW_TRANSITION} flag and the browser supports
+     * the View Transitions API, the flush is performed inside a view transition
+     * so that the resulting DOM updates can be animated. The flush callback is
+     * wrapped in {@code $entry} because the browser invokes it asynchronously,
+     * outside the GWT call stack.
+     */
+    private static native void flushChanges(ValueMap valueMap)
+    /*-{
+        var flush = $entry(function() {
+            @com.vaadin.client.flow.reactive.Reactive::flush()();
+        });
+        var meta = valueMap && valueMap.meta;
+        var viewTransitionKey = @com.vaadin.flow.shared.JsonConstants::META_VIEW_TRANSITION;
+        if (meta && meta[viewTransitionKey]
+                && typeof $doc.startViewTransition === "function") {
+            $doc.startViewTransition(flush);
+        } else {
+            flush();
         }
     }-*/;
 
