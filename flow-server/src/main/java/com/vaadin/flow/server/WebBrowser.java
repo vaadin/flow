@@ -356,13 +356,15 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPhone false if the user is not using IPhone or if
      *         no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated(since = "25.3")
     public boolean isIPhone() {
-        return userAgent != null
-                && (userAgent.contains("macintosh")
-                        || userAgent.contains("mac osx")
-                        || userAgent.contains("mac os x"))
-                && userAgent.contains("iphone");
+        if (getBrowserDetails() == null) {
+            return false;
+        }
+        return browserDetails.isIPhone();
     }
 
     /**
