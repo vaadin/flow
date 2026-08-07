@@ -1113,6 +1113,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
              * container that is momentarily empty loses the scroll position of
              * the surrounding scrollable element, since the browser clamps the
              * offset to the collapsed scroll range.
+             *
+             * The container then holds the old and the new contents at the same
+             * time, so a layout while both are attached measures roughly twice
+             * the final height. That is the trade for keeping the scroll range
+             * alive, and it is the harmless direction: the offset is clamped
+             * when the range shrinks, never when it grows.
              */
             if (context.node.getList(NodeFeatures.ELEMENT_CHILDREN)
                     .length() == 0) {
@@ -1180,15 +1186,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JsArray<Node> replacedChildren) {
         Node htmlNode = context.htmlNode;
 
-        NodeList nodeChildren = context.node
-                .getList(NodeFeatures.ELEMENT_CHILDREN);
-        JsSet<Node> keptChildren = JsCollections.set();
-        for (int i = 0; i < nodeChildren.length(); i++) {
-            Node domNode = ((StateNode) nodeChildren.get(i)).getDomNode();
-            if (domNode != null) {
-                keptChildren.add(domNode);
-            }
-        }
+        JsSet<Node> keptChildren = getMappedDomNodes(
+                context.node.getList(NodeFeatures.ELEMENT_CHILDREN));
 
         for (int i = 0; i < replacedChildren.length(); i++) {
             Node child = replacedChildren.get(i);
@@ -1249,18 +1248,36 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static Node getFirstNodeMappedAsStateNode(
             NodeList mappedNodeChildren, Node htmlNode) {
+        JsSet<Node> mappedDomNodes = getMappedDomNodes(mappedNodeChildren);
 
         JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
         for (int i = 0; i < clientList.length(); i++) {
             Node clientNode = clientList.get(i);
-            for (int j = 0; j < mappedNodeChildren.length(); j++) {
-                StateNode stateNode = (StateNode) mappedNodeChildren.get(j);
-                if (clientNode.equals(stateNode.getDomNode())) {
-                    return clientNode;
-                }
+            if (mappedDomNodes.has(clientNode)) {
+                return clientNode;
             }
         }
         return null;
+    }
+
+    /**
+     * Collects the DOM nodes of the given state nodes into a set, so that the
+     * nodes currently in the DOM can be matched against them without scanning
+     * the state node list for each of them.
+     *
+     * @param stateNodes
+     *            the state nodes to collect the DOM nodes of
+     * @return the DOM nodes of the state nodes that have one
+     */
+    private static JsSet<Node> getMappedDomNodes(NodeList stateNodes) {
+        JsSet<Node> domNodes = JsCollections.set();
+        for (int i = 0; i < stateNodes.length(); i++) {
+            Node domNode = ((StateNode) stateNodes.get(i)).getDomNode();
+            if (domNode != null) {
+                domNodes.add(domNode);
+            }
+        }
+        return domNodes;
     }
 
     private StateNode getPreviousSibling(int index, BindingContext context) {
