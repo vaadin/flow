@@ -22,7 +22,9 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 /**
  * Lumo theme stub used by tests that rely on Flow's classpath detection of
@@ -32,7 +34,16 @@ import com.vaadin.flow.theme.AbstractTheme;
  * {@link com.vaadin.flow.theme.AbstractTheme} contract without pulling in any
  * Vaadin Lumo npm packages — tests that need real Lumo styling must declare
  * those deps themselves.
+ * <p>
+ * Because {@code flow-test-lumo} is the shared dependency of every theme test
+ * module, it also declares {@code @vaadin/vaadin-themable-mixin} here. Flow's
+ * per-component theme CSS feature (a {@code theme/components/<tag>.css} file)
+ * generates an import of {@code @vaadin/vaadin-themable-mixin/register-styles},
+ * so the mixin must be installed even when no real Vaadin web component is
+ * present. Declaring it centrally keeps those modules free of real components
+ * while still resolving that import.
  */
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";
