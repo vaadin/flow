@@ -18,7 +18,11 @@ package com.vaadin.flow.i18n;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -30,6 +34,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.UrlUtil;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FILENAME;
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
@@ -139,15 +145,14 @@ public final class I18NUtil {
     protected static List<File> getTranslationFiles(URL resource) {
         List<File> files = new ArrayList<>();
 
-        File bundleFolder = new File(resource.getFile());
+        String protocol = resource.getProtocol();
 
-        if ("jar".equals(resource.getProtocol()) ||
+        if ("jar".equals(protocol) ||
         // wsjar check is for OpenLiberty
-                "wsjar".equals(resource.getProtocol())) {
-            String file = resource.getFile().substring("file:".length(),
-                    resource.getFile().indexOf('!'));
-            try {
-                Enumeration<JarEntry> entries = new JarFile(file).entries();
+                "wsjar".equals(protocol)) {
+            File jar = getJarFile(resource);
+            try (JarFile jarFile = new JarFile(jar)) {
+                Enumeration<JarEntry> entries = jarFile.entries();
                 entries.asIterator().forEachRemaining(entry -> {
                     String fileName = entry.getName();
                     if (fileName.contains(BUNDLE_FOLDER)
@@ -157,15 +162,71 @@ public final class I18NUtil {
                 });
             } catch (IOException ioe) {
                 getLogger().debug(
-                        "failed to read jar file '" + file + "' contents", ioe);
+                        "failed to read jar file '" + jar + "' contents", ioe);
             }
-        } else if ("vfs".equals(resource.getProtocol())) {
+        } else if ("vfs".equals(protocol)) {
             files.addAll(listJBossVfsDirectory(resource));
-        } else if (bundleFolder.exists() && bundleFolder.isDirectory()) {
-            Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
-                    .forEach(files::add);
+        } else {
+            File bundleFolder = toFile(resource);
+            if (bundleFolder.isDirectory()) {
+                Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
+                        .forEach(files::add);
+            } else {
+                getLogger().debug(
+                        "Translation folder '{}', resolved from resource '{}', is not an existing directory",
+                        bundleFolder, resource);
+            }
         }
         return files;
+    }
+
+    /**
+     * Converts a resource URL into a file.
+     * <p>
+     * A class loader returns percent-encoded URLs, so a path containing for
+     * example a space arrives as {@code %20}. Going through {@link URL#toURI()}
+     * decodes it back into a path that exists on disk.
+     *
+     * @param resource
+     *            the resource URL to convert
+     * @return the file the URL points to
+     */
+    private static File toFile(URL resource) {
+        try {
+            return new File(resource.toURI());
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            // Not an absolute file: URI, keep the previous behaviour
+            getLogger().debug("Cannot convert resource '{}' into a file path",
+                    resource, e);
+            return new File(UrlUtil.decodeURIComponent(resource.getFile()));
+        }
+    }
+
+    /**
+     * Resolves the jar file that a {@code jar:} or {@code wsjar:} resource
+     * lives in.
+     * <p>
+     * The jar location is the part of the URL before the {@code !} separator,
+     * and it is percent-encoded just like any other URL.
+     *
+     * @param resource
+     *            the resource URL to resolve the jar for
+     * @return the jar file containing the resource
+     */
+    private static File getJarFile(URL resource) {
+        String file = resource.getFile();
+        int separatorIndex = file.indexOf('!');
+        String jarUrl = separatorIndex == -1 ? file
+                : file.substring(0, separatorIndex);
+        try {
+            return Paths.get(URI.create(jarUrl)).toFile();
+        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+            // Not a plain file: URL, for example a jar nested inside a war
+            getLogger().debug(
+                    "Cannot resolve a file path for the jar of resource '{}'",
+                    resource, e);
+            return new File(UrlUtil.decodeURIComponent(jarUrl));
+        }
     }
 
     // Borrowed from DevModeInitializer
