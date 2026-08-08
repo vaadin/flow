@@ -43,10 +43,6 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
-import com.vaadin.client.flow.dom.DomApi;
-import com.vaadin.client.flow.dom.DomElement;
-import com.vaadin.client.flow.dom.DomElement.DomTokenList;
-import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
@@ -61,6 +57,7 @@ import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
+import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
@@ -855,7 +852,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 context.binderContext.createAndBind(childNode);
             } else {
                 child = context.binderContext.createAndBind(childNode);
-                DomApi.wrap(context.htmlNode).appendChild(child);
+                context.htmlNode.appendChild(child);
             }
         }
 
@@ -1115,8 +1112,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
                 assert child != null : "Can't find element to remove";
 
-                if (DomApi.wrap(child).getParentNode() == htmlNode) {
-                    DomApi.wrap(htmlNode).removeChild(child);
+                if (child.getParentNode() == htmlNode) {
+                    htmlNode.removeChild(child);
                 }
                 /*
                  * If the client-side element is not inside the parent the
@@ -1135,9 +1132,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void removeAllChildren(Node htmlNode) {
-        DomElement wrap = DomApi.wrap(htmlNode);
-        while (wrap.getFirstChild() != null) {
-            wrap.removeChild(wrap.getFirstChild());
+        while (htmlNode.getFirstChild() != null) {
+            htmlNode.removeChild(htmlNode.getFirstChild());
         }
     }
 
@@ -1155,8 +1151,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             StateNode previousSibling = getPreviousSibling(index, context);
             // Insert before the next sibling of the current node
             beforeRef = previousSibling == null ? null
-                    : DomApi.wrap(previousSibling.getDomNode())
-                            .getNextSibling();
+                    : previousSibling.getDomNode().getNextSibling();
         } else {
             // Insert at the end
             beforeRef = null;
@@ -1176,20 +1171,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             } else {
                 childNode = context.binderContext.createAndBind(newChild);
 
-                DomApi.wrap(context.htmlNode).insertBefore(childNode,
-                        beforeRef);
+                context.htmlNode.insertBefore(childNode, beforeRef);
             }
 
-            beforeRef = DomApi.wrap(childNode).getNextSibling();
+            beforeRef = childNode.getNextSibling();
         }
     }
 
     private static Node getFirstNodeMappedAsStateNode(
             NodeList mappedNodeChildren, Node htmlNode) {
 
-        JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
-        for (int i = 0; i < clientList.length(); i++) {
-            Node clientNode = clientList.get(i);
+        elemental.dom.NodeList clientList = htmlNode.getChildNodes();
+        for (int i = 0; i < clientList.getLength(); i++) {
+            Node clientNode = clientList.item(i);
             for (int j = 0; j < mappedNodeChildren.length(); j++) {
                 StateNode stateNode = (StateNode) mappedNodeChildren.get(j);
                 if (clientNode.equals(stateNode.getDomNode())) {
@@ -1492,12 +1486,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         NodeList classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
         for (int i = 0; i < classNodeList.length(); i++) {
-            DomApi.wrap(element).getClassList()
-                    .add((String) classNodeList.get(i));
+            element.getClassList().add((String) classNodeList.get(i));
         }
 
         return classNodeList.addSpliceListener(e -> {
-            DomTokenList classList = DomApi.wrap(element).getClassList();
+            DOMTokenList classList = element.getClassList();
 
             JsArray<?> remove = e.getRemove();
             for (int i = 0; i < remove.length(); i++) {
@@ -1577,7 +1570,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return -1;
         }
         try {
-            DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(target));
+            Node targetNode = WidgetUtil.crazyJsCast(target);
             JsArray<StateNode> stack = JsCollections.array();
             stack.push(topNode);
 
@@ -1594,7 +1587,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
             // no direct match, all child element state nodes collected.
             // bottom-up search elements until matching state node found
-            targetNode = DomApi.wrap(targetNode.getParentNode());
+            targetNode = targetNode.getParentNode();
             return getStateNodeForElement(stack, targetNode);
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
@@ -1607,7 +1600,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static int getStateNodeForElement(JsArray<StateNode> searchStack,
-            DomNode targetNode) {
+            Node targetNode) {
         while (targetNode != null) {
             for (int i = searchStack.length() - 1; i > -1; i--) {
                 final StateNode stateNode = searchStack.get(i);
@@ -1615,7 +1608,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     return stateNode.getId();
                 }
             }
-            targetNode = DomApi.wrap(targetNode.getParentNode());
+            targetNode = targetNode.getParentNode();
         }
         return -1;
     }
@@ -1626,15 +1619,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return -1;
         }
         try {
-            DomNode targetNode = DomApi
-                    .wrap(WidgetUtil.crazyJsCast(domNodeReference));
+            Node targetNode = WidgetUtil.crazyJsCast(domNodeReference);
             while (targetNode != null) {
                 StateNode stateNodeForDomNode = stateTree
                         .getStateNodeForDomNode(targetNode);
                 if (stateNodeForDomNode != null) {
                     return stateNodeForDomNode.getId();
                 }
-                targetNode = DomApi.wrap(targetNode.getParentNode());
+                targetNode = targetNode.getParentNode();
             }
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
