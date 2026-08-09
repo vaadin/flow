@@ -410,7 +410,7 @@ public class NodeTasks implements FallibleCommand {
                     Thread.sleep(500);
                 } else {
                     // The process has died without removing the lock file
-                    lockFile.toFile().delete();
+                    FileIOUtils.deleteQuietly(lockFile);
                 }
             } catch (InterruptedException e) {
                 // Restore interrupted state
@@ -451,7 +451,7 @@ public class NodeTasks implements FallibleCommand {
                         pid, lockFile.toFile().getAbsolutePath());
                 return;
             }
-            lockFile.toFile().delete();
+            FileIOUtils.deleteQuietly(lockFile);
         } catch (Exception e) {
             getLogger().error("Error releasing lock file ({})",
                     lockFile.toFile().getAbsolutePath());

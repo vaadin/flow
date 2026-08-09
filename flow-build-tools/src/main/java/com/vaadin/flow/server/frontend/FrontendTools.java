@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
@@ -80,7 +81,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.13.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.6.0";
+    public static final String DEFAULT_PNPM_VERSION = "11.19.0";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -782,7 +783,8 @@ public class FrontendTools {
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
-            if (new File(baseDir, "pnpm-lock.yaml").delete()) {
+            File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
+            if (pnpmLock.exists() && FileIOUtils.deleteQuietly(pnpmLock)) {
                 getLogger().debug(
                         "pnpm-lock.yaml file is removed from " + baseDir);
             }

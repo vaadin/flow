@@ -545,11 +545,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     private void removeRunningDevServerPort() {
-        try {
-            FileIOUtils.delete(devServerPortFile);
-        } catch (IOException e) {
-            // ignore
-        }
+        FileIOUtils.deleteQuietly(devServerPortFile);
     }
 
     @Override

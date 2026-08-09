@@ -20,10 +20,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
@@ -134,7 +134,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
             return;
         }
         try {
-            Files.delete(file.toPath());
+            FileIOUtils.delete(file);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractFileUploadHandler.class)
                     .warn("Could not delete the file of a rejected or failed "

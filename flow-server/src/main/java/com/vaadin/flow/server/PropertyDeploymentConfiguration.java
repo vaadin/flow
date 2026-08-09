@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.UnmodifiableProperties;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -279,6 +280,14 @@ public class PropertyDeploymentConfiguration
         return PushMode.DISABLED;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The returned properties contain the properties of this configuration
+     * merged with the ones of the parent {@link ApplicationConfiguration}. They
+     * are read-only: every operation which would change the contents throws
+     * {@link UnsupportedOperationException}.
+     */
     @Override
     public Properties getInitParameters() {
         return allProperties;
@@ -340,7 +349,7 @@ public class PropertyDeploymentConfiguration
             result.put(property, config.getStringProperty(property, null));
         }
         result.putAll(properties);
-        return result;
+        return new UnmodifiableProperties(result);
     }
 
     private static Map<String, String> filterStringProperties(
