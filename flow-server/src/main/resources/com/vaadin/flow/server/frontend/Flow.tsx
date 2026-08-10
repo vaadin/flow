@@ -373,16 +373,20 @@ function Flow() {
             // inside FlowPortal: the portal renders asynchronously, so a
             // 'flow-portal-remove' dispatched before the portal is committed
             // would be missed, leaving a duplicate portal and a double render.
-            // This happens whenever the element is moved in the DOM right
-            // after being attached, without yielding in between.
-            domNode.addEventListener(
-                'flow-portal-remove',
-                (removeEvent: Event) => {
-                    removeEvent.preventDefault();
-                    dispatchPortalAction(removeFlowPortal(key));
-                },
-                { once: true }
-            );
+            // This guards the case where the element is disconnected and
+            // reconnected within the same task, right after Flow attaches it.
+            const removeListener = (removeEvent: Event) => {
+                // 'flow-portal-remove' bubbles, so a nested adapter's removal
+                // reaches this listener too. Only react to this element's own
+                // removal, otherwise a child unmount would drop the parent.
+                if (removeEvent.target !== domNode) {
+                    return;
+                }
+                removeEvent.preventDefault();
+                domNode.removeEventListener('flow-portal-remove', removeListener);
+                dispatchPortalAction(removeFlowPortal(key));
+            };
+            domNode.addEventListener('flow-portal-remove', removeListener);
 
             dispatchPortalAction(
                 addFlowPortal(
