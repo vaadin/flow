@@ -1105,8 +1105,27 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             /*
              * When a full clear event is fired, all nodes must be removed,
              * including the nodes the server doesn't know about.
+             *
+             * The state tree is already fully updated at this point, so a
+             * non-empty children list means the server is replacing the
+             * contents rather than only emptying them. In that case the old
+             * nodes are kept until the replacements have been inserted: a
+             * container that is momentarily empty loses the scroll position of
+             * the surrounding scrollable element, since the browser clamps the
+             * offset to the collapsed scroll range.
+             *
+             * The container then holds the old and the new contents at the same
+             * time, so a layout while both are attached measures roughly twice
+             * the final height. That is the trade for keeping the scroll range
+             * alive, and it is the harmless direction: the offset is clamped
+             * when the range shrinks, never when it grows.
              */
-            removeAllChildren(htmlNode);
+            if (context.node.getList(NodeFeatures.ELEMENT_CHILDREN)
+                    .length() == 0) {
+                removeAllChildren(htmlNode);
+            } else {
+                removeAllChildrenAfterReplacement(context);
+            }
         } else {
             JsArray<?> remove = event.getRemove();
             for (int i = 0; i < remove.length(); i++) {
@@ -1138,6 +1157,49 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         DomElement wrap = DomApi.wrap(htmlNode);
         while (wrap.getFirstChild() != null) {
             wrap.removeChild(wrap.getFirstChild());
+        }
+    }
+
+    /**
+     * Removes the children the node has right now, but only once the whole
+     * change set has been applied so that the nodes replacing them are already
+     * in place.
+     *
+     * @param context
+     *            the binding context of the node whose children are replaced
+     */
+    private void removeAllChildrenAfterReplacement(BindingContext context) {
+        // getChildNodes returns the live DOM child list, so the nodes to remove
+        // are collected before anything is inserted
+        JsArray<Node> liveChildren = DomApi.wrap(context.htmlNode)
+                .getChildNodes();
+        JsArray<Node> replacedChildren = JsCollections.array();
+        for (int i = 0; i < liveChildren.length(); i++) {
+            replacedChildren.push(liveChildren.get(i));
+        }
+
+        Reactive.addPostFlushListener(
+                () -> removeReplacedChildren(context, replacedChildren));
+    }
+
+    private void removeReplacedChildren(BindingContext context,
+            JsArray<Node> replacedChildren) {
+        Node htmlNode = context.htmlNode;
+
+        JsSet<Node> keptChildren = getMappedDomNodes(
+                context.node.getList(NodeFeatures.ELEMENT_CHILDREN));
+
+        for (int i = 0; i < replacedChildren.length(); i++) {
+            Node child = replacedChildren.get(i);
+            /*
+             * A node that the server re-added to this same parent is part of
+             * the new contents, and a node that the server moved to another
+             * parent now belongs to that parent. Neither may be removed here.
+             */
+            if (!keptChildren.has(child)
+                    && DomApi.wrap(child).getParentNode() == htmlNode) {
+                DomApi.wrap(htmlNode).removeChild(child);
+            }
         }
     }
 
@@ -1186,18 +1248,36 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static Node getFirstNodeMappedAsStateNode(
             NodeList mappedNodeChildren, Node htmlNode) {
+        JsSet<Node> mappedDomNodes = getMappedDomNodes(mappedNodeChildren);
 
         JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
         for (int i = 0; i < clientList.length(); i++) {
             Node clientNode = clientList.get(i);
-            for (int j = 0; j < mappedNodeChildren.length(); j++) {
-                StateNode stateNode = (StateNode) mappedNodeChildren.get(j);
-                if (clientNode.equals(stateNode.getDomNode())) {
-                    return clientNode;
-                }
+            if (mappedDomNodes.has(clientNode)) {
+                return clientNode;
             }
         }
         return null;
+    }
+
+    /**
+     * Collects the DOM nodes of the given state nodes into a set, so that the
+     * nodes currently in the DOM can be matched against them without scanning
+     * the state node list for each of them.
+     *
+     * @param stateNodes
+     *            the state nodes to collect the DOM nodes of
+     * @return the DOM nodes of the state nodes that have one
+     */
+    private static JsSet<Node> getMappedDomNodes(NodeList stateNodes) {
+        JsSet<Node> domNodes = JsCollections.set();
+        for (int i = 0; i < stateNodes.length(); i++) {
+            Node domNode = ((StateNode) stateNodes.get(i)).getDomNode();
+            if (domNode != null) {
+                domNodes.add(domNode);
+            }
+        }
+        return domNodes;
     }
 
     private StateNode getPreviousSibling(int index, BindingContext context) {
