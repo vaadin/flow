@@ -27,19 +27,6 @@ class HasAriaDescriptionTest {
     }
 
     @Test
-    void setAriaDescription() {
-        TestComponent component = new TestComponent();
-        Assertions.assertFalse(component.getAriaDescription().isPresent());
-
-        component.setAriaDescription("description text");
-        Assertions.assertEquals("description text",
-                component.getAriaDescription().get());
-
-        component.setAriaDescription(null);
-        Assertions.assertFalse(component.getAriaDescription().isPresent());
-    }
-
-    @Test
     void setAriaDescribedBy() {
         TestComponent component = new TestComponent();
         Assertions.assertFalse(component.getAriaDescribedBy().isPresent());

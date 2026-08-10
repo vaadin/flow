@@ -23,58 +23,17 @@ import com.vaadin.flow.dom.ElementConstants;
  * A generic interface for components that have an accessible description.
  * <p>
  * The accessible description provides supplementary information about the
- * component to assistive technologies, such as screen readers.
- * <p>
- * It can be set as plain text with the {@code aria-description} attribute, or
- * by referencing existing elements on the page with the
- * {@code aria-describedby} attribute. Prefer the latter when the description is
- * already visible to all users.
+ * component to assistive technologies, such as screen readers. It is set by
+ * referencing existing elements on the page with the {@code aria-describedby}
+ * attribute.
  *
  * @author Vaadin Ltd
  * @since 25.3
- * @see <a href=
- *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-description">
- *      MDN: aria-description</a>
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-describedby">
  *      MDN: aria-describedby</a>
  */
 public interface HasAriaDescription extends HasElement {
-
-    /**
-     * Sets the {@code aria-description} attribute of the component to the given
-     * text.
-     * <p>
-     * If both {@code aria-description} and {@code aria-describedby} are
-     * present, {@code aria-describedby} takes precedence.
-     *
-     * @param ariaDescription
-     *            the description text, or {@code null} to remove the attribute
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-description">
-     *      MDN: aria-description</a>
-     */
-    default void setAriaDescription(String ariaDescription) {
-        if (ariaDescription != null) {
-            getElement().setAttribute(
-                    ElementConstants.ARIA_DESCRIPTION_ATTRIBUTE_NAME,
-                    ariaDescription);
-        } else {
-            getElement().removeAttribute(
-                    ElementConstants.ARIA_DESCRIPTION_ATTRIBUTE_NAME);
-        }
-    }
-
-    /**
-     * Gets the {@code aria-description} attribute of the component.
-     *
-     * @return an optional aria-description, or an empty optional if none has
-     *         been set
-     */
-    default Optional<String> getAriaDescription() {
-        return Optional.ofNullable(getElement().getAttribute(
-                ElementConstants.ARIA_DESCRIPTION_ATTRIBUTE_NAME));
-    }
 
     /**
      * Sets the {@code aria-describedby} attribute of the component to one or
