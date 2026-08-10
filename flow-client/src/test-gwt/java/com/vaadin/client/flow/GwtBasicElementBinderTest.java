@@ -504,6 +504,80 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(childElement.getParentElement());
     }
 
+    public void testClearAndAddChildren_replacementAddedBeforeOldChildRemoved() {
+        Binder.bind(node, element);
+
+        children.add(0, createChildNode("old"));
+        Reactive.flush();
+
+        Element oldElement = element.getFirstElementChild();
+
+        children.clear();
+        children.add(0, createChildNode("new"));
+
+        /*
+         * A flush listener registered after the splice events has run by the
+         * time the children handlers are done but before the old children are
+         * removed, which is where the container must not have been emptied: an
+         * empty container loses the scroll position of the scrollable element
+         * around it.
+         */
+        int[] childCountWhileReplacing = new int[1];
+        Reactive.addFlushListener(
+                () -> childCountWhileReplacing[0] = element
+                        .getChildElementCount());
+
+        Reactive.flush();
+
+        assertEquals(2, childCountWhileReplacing[0]);
+
+        assertEquals(1, element.getChildElementCount());
+        assertEquals("new", element.getFirstElementChild().getId());
+        assertNull(oldElement.getParentElement());
+    }
+
+    public void testClearChildrenWithoutReplacement_allNodesRemoved() {
+        Binder.bind(node, element);
+
+        children.add(0, createChildNode("child"));
+        Reactive.flush();
+
+        // a node the server does not know about
+        element.appendChild(Browser.getDocument().createAnchorElement());
+
+        children.clear();
+        Reactive.flush();
+
+        assertEquals(0, element.getChildElementCount());
+    }
+
+    public void testClearChildren_reAddedAndMovedChildrenKept() {
+        Binder.bind(node, element);
+
+        StateNode container = createChildNode(null, "div");
+        StateNode childNode = createChildNode("child");
+        children.add(0, container);
+        children.add(1, childNode);
+        Reactive.flush();
+
+        HTMLCollection initialChildren = element.getChildren();
+        Element containerElement = (Element) initialChildren.at(0);
+        Element childElement = (Element) initialChildren.at(1);
+
+        // the server empties the node, adds the container back and moves the
+        // child into the container
+        children.clear();
+        children.add(0, container);
+        container.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildElementCount());
+        assertSame(containerElement, element.getFirstElementChild());
+        assertEquals(1, containerElement.getChildElementCount());
+        assertSame(childElement, containerElement.getFirstElementChild());
+    }
+
     public void testRemoveChildPosition() {
         Binder.bind(node, element);
 
