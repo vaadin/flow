@@ -38,7 +38,7 @@ import com.vaadin.base.devserver.ViteHandler;
 /**
  * Communicates with a Vite server through a websocket connection.
  * 
- * @since 24.0
+ * @since 24.3.22
  */
 public class ViteWebsocketConnection implements Listener {
 

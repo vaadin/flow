@@ -238,8 +238,15 @@ function getFiles(files, folder, pattern) {
  */
 function setVersion(newVersion) {
   const pomContent = fs.readFileSync('pom.xml').toString();
-  const current = RegExp(regexVersion.replace('VERSION', '\\d+\\.\\d+\\-SNAPSHOT')).exec(pomContent)[2];
-  if (current && current != newVersion) {
+  // Match any SNAPSHOT version, including extra qualifier segments such as
+  // `25.3.tsclient-SNAPSHOT`, not just the `\d+\.\d+-SNAPSHOT` shape.
+  const match = RegExp(regexVersion.replace('VERSION', '[\\w.\\-]+?-SNAPSHOT')).exec(pomContent);
+  const current = match && match[2];
+  if (!current) {
+    console.log('No SNAPSHOT version found in pom.xml, nothing to replace');
+    return;
+  }
+  if (current != newVersion) {
     const regexChangeVersion = RegExp(regexVersion.replace('VERSION', current), 'g');
     const files = getFiles([], '.', /.*\/pom.*\.xml$/);
     files.forEach(file => {
