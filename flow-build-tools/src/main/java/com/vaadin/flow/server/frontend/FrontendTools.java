@@ -72,13 +72,13 @@ public class FrontendTools {
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.17.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.19.0";
     /**
      * This is the version shipped with the default Node version.
      * 
      * @since 9.0
      */
-    public static final String DEFAULT_NPM_VERSION = "11.13.0";
+    public static final String DEFAULT_NPM_VERSION = "11.17.0";
 
     public static final String DEFAULT_PNPM_VERSION = "11.6.0";
 
