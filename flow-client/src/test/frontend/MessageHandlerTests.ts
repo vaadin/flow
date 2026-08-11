@@ -44,7 +44,7 @@ function makeRegistry() {
     getLoadingIndicatorStateHandler: () => ({ stopLoading: () => log.stopLoadings++ }),
     getConstantPool: () => ({ importFromJson: (c: unknown) => log.constants.push(c) }),
     getExecuteJavaScriptProcessor: () => ({ execute: (c: unknown) => log.executed.push(c) }),
-    getDependencyLoader: () => ({ loadDependencies: () => {}, requireHtmlImportsReady: () => {} }),
+    getDependencyLoader: () => ({ loadDependencies: () => {} }),
     getSystemErrorHandler: () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} }),
     getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => 10000 }),
     getResourceLoader: () => ({ clearLoadedResourceById: () => {} })
