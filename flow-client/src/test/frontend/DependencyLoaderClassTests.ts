@@ -19,8 +19,7 @@ function makeRegistry() {
     inlineScript: record('inlineScript'),
     loadStylesheet: record('loadStylesheet'),
     inlineStyleSheet: record('inlineStyleSheet'),
-    loadDynamicImport: record('loadDynamicImport'),
-    runWhenHtmlImportsReady: (task: () => void) => task()
+    loadDynamicImport: record('loadDynamicImport')
   };
   const registry = {
     calls,

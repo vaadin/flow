@@ -1,10 +1,8 @@
 import { expect } from '@open-wc/testing';
 import {
-  addHtmlImportsReadyHandler,
   addOnloadHandler,
   getStyleSheetLength,
-  runPromiseExpression,
-  supportsHtmlWhenReady
+  runPromiseExpression
 } from '../../main/frontend/internal/ResourceLoader';
 
 type HandlerEl = {
@@ -14,37 +12,6 @@ type HandlerEl = {
 };
 
 describe('ResourceLoader', () => {
-  const win = window as unknown as { HTMLImports?: unknown };
-  let savedHtmlImports: unknown;
-  beforeEach(() => {
-    savedHtmlImports = win.HTMLImports;
-  });
-  afterEach(() => {
-    win.HTMLImports = savedHtmlImports;
-  });
-
-  it('supportsHtmlWhenReady reflects HTMLImports.whenReady', () => {
-    win.HTMLImports = undefined;
-    expect(supportsHtmlWhenReady()).to.be.false;
-    win.HTMLImports = { whenReady: () => {} };
-    expect(supportsHtmlWhenReady()).to.be.true;
-  });
-
-  it('addHtmlImportsReadyHandler forwards to HTMLImports.whenReady', () => {
-    let captured: (() => void) | undefined;
-    win.HTMLImports = {
-      whenReady: (cb: () => void) => {
-        captured = cb;
-      }
-    };
-    let ran = false;
-    addHtmlImportsReadyHandler(() => {
-      ran = true;
-    });
-    captured?.();
-    expect(ran).to.be.true;
-  });
-
   it('addOnloadHandler calls onLoad and clears the handlers', () => {
     const el = document.createElement('script') as unknown as HandlerEl;
     let loaded = false;
