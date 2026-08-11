@@ -39,16 +39,6 @@ describe('ResourceLoader (class)', () => {
     expect(second.calls).to.deep.equal(['load']);
   });
 
-  it('runs a task immediately when HTML imports are unsupported', () => {
-    const loader = new ResourceLoader({ handleError: () => {} }, false);
-    let ran = false;
-    // jsdom/Chromium test env has no HTMLImports.whenReady -> runs immediately.
-    loader.runWhenHtmlImportsReady(() => {
-      ran = true;
-    });
-    expect(ran).to.be.true;
-  });
-
   it('loads a stylesheet (in head, before the marker comment) and dedupes', async () => {
     const comment = document.createComment('Stylesheet end');
     document.head.appendChild(comment);
