@@ -20,7 +20,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -425,105 +425,123 @@ class UsageTrackerTest extends SignalTestBase {
     }
 
     // Regression test for #25166: a CombinedUsage that spans two usages on the
-    // same tree used to hold its monitor while registering the per-usage
-    // listeners (onNextChange -> tree lock). A concurrent committer holds the
-    // tree lock and, from notifyObservers, fires the first listener -> onChange
-    // -> wants the monitor. Opposite acquire orders deadlock (ABBA). Both
-    // racing
-    // operations run on their own threads so the deadlock is observed via a
-    // join
-    // timeout / ThreadMXBean rather than hanging the test thread.
+    // same tree must not hold its monitor while registering the per-usage
+    // listeners, because onNextChange acquires the dependency's SignalTree
+    // lock. A concurrent committer holds that tree lock and, from
+    // notifyObservers, fires an already-registered listener -> onChange, which
+    // then wants the monitor. Opposite acquire orders deadlock (ABBA).
+    //
+    // The interleaving is made deterministic with a control usage placed
+    // between two real usages on the same tree. While the CombinedUsage
+    // registers the control usage, it starts a committer that commits to the
+    // first signal -- so the committer holds the tree lock and (in the buggy
+    // code, where the registrar holds the monitor across the whole registration
+    // loop) blocks entering the monitor. The control usage waits until the
+    // committer is blocked, then lets registration proceed to the second usage,
+    // which needs the very tree lock the committer holds. Both operations run
+    // off the test thread, so the hang is observed via a join timeout /
+    // ThreadMXBean rather than freezing the test thread.
     @Test
-    void combinedUsage_registerRacesCommit_noDeadlock() throws Exception {
-        int iterations = 200;
-        long perIterationTimeoutMs = 3000;
+    void combinedUsage_registerWhileCommitting_noDeadlock() throws Exception {
+        SharedListSignal<String> list = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> c1 = list.insertLast("a").signal();
+        SharedValueSignal<String> c2 = list.insertLast("b").signal();
 
-        for (int i = 0; i < iterations; i++) {
-            SharedListSignal<String> list = new SharedListSignal<>(
-                    String.class);
-            SharedValueSignal<String> c1 = list.insertLast("a").signal();
-            SharedValueSignal<String> c2 = list.insertLast("b").signal();
+        AtomicReference<Thread> committerRef = new AtomicReference<>();
+        AtomicReference<Throwable> committerFailure = new AtomicReference<>();
+        AtomicReference<Throwable> registrarFailure = new AtomicReference<>();
 
-            // Two usages on the same tree produce a CombinedUsage.
-            Usage combined = UsageTracker.track(() -> {
-                c1.get();
-                c2.get();
-            });
-            assertInstanceOf(CombinedUsage.class, combined);
-
-            CountDownLatch ready = new CountDownLatch(1);
-            AtomicReference<Throwable> committerFailure = new AtomicReference<>();
-            AtomicReference<Throwable> registrarFailure = new AtomicReference<>();
-
-            Thread committer = new Thread(() -> {
-                try {
-                    ready.await();
-                    for (int k = 0; k < 60; k++) {
-                        c1.set("x" + k);
-                    }
-                } catch (Throwable t) {
-                    committerFailure.set(t);
-                }
-            }, "combined-committer-" + i);
-            committer.setDaemon(true);
-
-            Thread registrar = new Thread(() -> {
-                try {
-                    ready.await();
-                    for (int k = 0; k < 60; k++) {
-                        Registration reg = combined
-                                .onNextChange(new TransientListener() {
-                                    @Override
-                                    public boolean invoke(boolean immediate) {
-                                        return false;
-                                    }
-                                });
-                        reg.remove();
-                    }
-                } catch (Throwable t) {
-                    registrarFailure.set(t);
-                }
-            }, "combined-registrar-" + i);
-            registrar.setDaemon(true);
-
-            committer.start();
-            registrar.start();
-            ready.countDown();
-
-            committer.join(perIterationTimeoutMs);
-            registrar.join(perIterationTimeoutMs);
-
-            if (committer.isAlive() || registrar.isAlive()) {
-                ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
-                long[] deadlocked = tmx.findDeadlockedThreads();
-                StringBuilder sb = new StringBuilder(
-                        "CombinedUsage lock-order inversion between the "
-                                + "SignalTree lock and the CombinedUsage monitor "
-                                + "(see #25166) at iteration " + i
-                                + ", committer alive=" + committer.isAlive()
-                                + ", registrar alive=" + registrar.isAlive());
-                if (deadlocked != null) {
-                    sb.append(", deadlocked thread IDs=")
-                            .append(Arrays.toString(deadlocked));
-                    for (var info : tmx.getThreadInfo(deadlocked, true, true)) {
-                        sb.append("\n  ").append(info.getThreadName())
-                                .append(" waiting on ")
-                                .append(info.getLockName()).append(" owned by ")
-                                .append(info.getLockOwnerName());
-                    }
-                }
-                fail(sb.toString());
+        // Control usage registered between c1 and c2. When the CombinedUsage
+        // registers it, it starts a committer (commits c1 -> fires c1's
+        // already-registered listener -> onChange, which wants the monitor) and
+        // waits until that committer is blocked while holding the tree lock.
+        Usage control = new Usage() {
+            @Override
+            public boolean hasChanges() {
+                return false;
             }
-            if (committerFailure.get() != null) {
-                throw new AssertionError(
-                        "Committer thread failed at iteration " + i,
-                        committerFailure.get());
+
+            @Override
+            public Registration onNextChange(TransientListener listener) {
+                Thread committer = new Thread(() -> {
+                    try {
+                        c1.set("changed");
+                    } catch (Throwable t) {
+                        committerFailure.set(t);
+                    }
+                }, "combined-committer");
+                committer.setDaemon(true);
+                committerRef.set(committer);
+                committer.start();
+
+                // Wait until the committer holds the tree lock and is blocked
+                // trying to enter the monitor. Bounded so the fixed code --
+                // where the committer never stays blocked -- does not hang.
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+                while (committer.getState() != Thread.State.BLOCKED
+                        && System.nanoTime() < deadline) {
+                    Thread.onSpinWait();
+                }
+                return () -> {
+                };
             }
-            if (registrarFailure.get() != null) {
-                throw new AssertionError(
-                        "Registrar thread failed at iteration " + i,
-                        registrarFailure.get());
+        };
+
+        // Build the CombinedUsage on the test thread; registration (which
+        // triggers the control usage above) happens on the registrar thread.
+        Usage combined = UsageTracker.track(() -> {
+            c1.get();
+            UsageTracker.registerUsage(control);
+            c2.get();
+        });
+        assertInstanceOf(CombinedUsage.class, combined);
+
+        Thread registrar = new Thread(() -> {
+            try {
+                combined.onNextChange(new TransientListener() {
+                    @Override
+                    public boolean invoke(boolean immediate) {
+                        return false;
+                    }
+                });
+            } catch (Throwable t) {
+                registrarFailure.set(t);
             }
+        }, "combined-registrar");
+        registrar.setDaemon(true);
+        registrar.start();
+
+        registrar.join(10_000);
+
+        Thread committer = committerRef.get();
+        if (registrar.isAlive() || (committer != null && committer.isAlive())) {
+            ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+            long[] deadlocked = tmx.findDeadlockedThreads();
+            StringBuilder sb = new StringBuilder(
+                    "CombinedUsage lock-order inversion between the SignalTree "
+                            + "lock and the CombinedUsage monitor (see #25166): "
+                            + "registrar alive=" + registrar.isAlive()
+                            + ", committer alive="
+                            + (committer != null && committer.isAlive()));
+            if (deadlocked != null) {
+                sb.append(", deadlocked thread IDs=")
+                        .append(Arrays.toString(deadlocked));
+                for (var info : tmx.getThreadInfo(deadlocked, true, true)) {
+                    sb.append("\n  ").append(info.getThreadName())
+                            .append(" waiting on ").append(info.getLockName())
+                            .append(" owned by ")
+                            .append(info.getLockOwnerName());
+                }
+            }
+            fail(sb.toString());
+        }
+        if (committerFailure.get() != null) {
+            throw new AssertionError("Committer thread failed",
+                    committerFailure.get());
+        }
+        if (registrarFailure.get() != null) {
+            throw new AssertionError("Registrar thread failed",
+                    registrarFailure.get());
         }
     }
 }
