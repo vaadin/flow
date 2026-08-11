@@ -1159,8 +1159,28 @@ export function bindChildren(context: BindingContext): EventRemover {
 function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingContext): void {
   const htmlNode = context.htmlNode;
   if (event.isClear()) {
-    // A full clear removes all nodes, including ones the server doesn't know about.
-    removeAllChildren(htmlNode);
+    /*
+     * A full clear removes all nodes, including ones the server doesn't know
+     * about.
+     *
+     * The state tree is already fully updated at this point, so a non-empty
+     * children list means the server is replacing the contents rather than
+     * only emptying them. In that case the old nodes are kept until the
+     * replacements have been inserted: a container that is momentarily empty
+     * loses the scroll position of the surrounding scrollable element, since
+     * the browser clamps the offset to the collapsed scroll range.
+     *
+     * The container then holds the old and the new contents at the same time,
+     * so a layout while both are attached measures roughly twice the final
+     * height. That is the trade for keeping the scroll range alive, and it is
+     * the harmless direction: the offset is clamped when the range shrinks,
+     * never when it grows.
+     */
+    if (context.node.getList(NodeFeatures.ELEMENT_CHILDREN).length() === 0) {
+      removeAllChildren(htmlNode);
+    } else {
+      removeAllChildrenAfterReplacement(context);
+    }
   } else {
     for (const removed of event.getRemove()) {
       const childNode = removed as BindingStateNode;
@@ -1182,6 +1202,40 @@ function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingConte
 function removeAllChildren(htmlNode: Node): void {
   while (htmlNode.firstChild !== null) {
     htmlNode.removeChild(htmlNode.firstChild);
+  }
+}
+
+/**
+ * Removes the children the node has right now, but only once the whole change
+ * set has been applied so that the nodes replacing them are already in place.
+ */
+function removeAllChildrenAfterReplacement(context: BindingContext): void {
+  // childNodes is the live DOM child list, so the nodes to remove are collected
+  // before anything is inserted
+  const liveChildren = context.htmlNode.childNodes;
+  const replacedChildren: Node[] = [];
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of -- ArrayLike DOM child list, not iterable
+  for (let i = 0; i < liveChildren.length; i++) {
+    replacedChildren.push(liveChildren[i]);
+  }
+
+  Reactive.addPostFlushListener(() => removeReplacedChildren(context, replacedChildren));
+}
+
+function removeReplacedChildren(context: BindingContext, replacedChildren: Node[]): void {
+  const htmlNode = context.htmlNode;
+
+  const keptChildren = getMappedDomNodes(context.node.getList(NodeFeatures.ELEMENT_CHILDREN));
+
+  for (const child of replacedChildren) {
+    /*
+     * A node that the server re-added to this same parent is part of the new
+     * contents, and a node that the server moved to another parent now belongs
+     * to that parent. Neither may be removed here.
+     */
+    if (!keptChildren.has(child) && child.parentNode === htmlNode) {
+      htmlNode.removeChild(child);
+    }
   }
 }
 
@@ -1219,18 +1273,33 @@ function addChildren(index: number, context: BindingContext, add: unknown[]): vo
 }
 
 function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNode: Node): Node | null {
+  const mappedDomNodes = getMappedDomNodes(mappedNodeChildren);
+
   const clientList = htmlNode.childNodes;
   // eslint-disable-next-line @typescript-eslint/prefer-for-of -- ArrayLike DOM child list, not iterable
   for (let i = 0; i < clientList.length; i++) {
     const clientNode = clientList[i];
-    for (let j = 0; j < mappedNodeChildren.length(); j++) {
-      const stateNode = mappedNodeChildren.get(j) as BindingStateNode;
-      if (clientNode === stateNode.getDomNode()) {
-        return clientNode;
-      }
+    if (mappedDomNodes.has(clientNode)) {
+      return clientNode;
     }
   }
   return null;
+}
+
+/**
+ * Collects the DOM nodes of the given state nodes into a set, so that the nodes
+ * currently in the DOM can be matched against them without scanning the state
+ * node list for each of them.
+ */
+function getMappedDomNodes(stateNodes: ChildNodeList): Set<Node> {
+  const domNodes = new Set<Node>();
+  for (let i = 0; i < stateNodes.length(); i++) {
+    const domNode = (stateNodes.get(i) as BindingStateNode).getDomNode();
+    if (domNode !== null) {
+      domNodes.add(domNode);
+    }
+  }
+  return domNodes;
 }
 
 function getPreviousSibling(index: number, context: BindingContext): BindingStateNode | null {

@@ -136,6 +136,9 @@ describe('SimpleElementBindingStrategy children binding', () => {
     bindChildren(context);
     expect(parent.childNodes.length).to.be.greaterThan(0);
 
+    // A real clear with no replacement empties the children list, so the state
+    // node has no mapped children left when the splice is processed.
+    list.children.length = 0;
     list.fireSplice({ isClear: true });
     Reactive.flush();
     expect(parent.childNodes.length).to.equal(0);
@@ -268,6 +271,79 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     const statNode = children.get(1) as StateNode;
     expect(statNode).to.equal(childToReadd);
     expect(statNode.getDomNode()).to.equal(readdedDom);
+  });
+
+  it('adds the replacement before removing the old child on clear-and-replace', () => {
+    // Ported from testClearAndAddChildren_replacementAddedBeforeOldChildRemoved.
+    bind(node, element);
+
+    children.add(0, createChildNode('old'));
+    Reactive.flush();
+
+    const oldElement = element.firstElementChild!;
+
+    children.clear();
+    children.add(0, createChildNode('new'));
+
+    // A flush listener registered after the splices runs once the children
+    // handlers are done but before the old children are removed, which is where
+    // the container must not have been emptied: an empty container loses the
+    // scroll position of the scrollable element around it.
+    let childCountWhileReplacing = 0;
+    Reactive.addFlushListener(() => {
+      childCountWhileReplacing = element.childElementCount;
+    });
+
+    Reactive.flush();
+
+    expect(childCountWhileReplacing).to.equal(2);
+
+    expect(element.childElementCount).to.equal(1);
+    expect(element.firstElementChild!.id).to.equal('new');
+    expect(oldElement.parentElement).to.equal(null);
+  });
+
+  it('empties the container immediately on a clear with no replacement', () => {
+    // Ported from testClearChildrenWithoutReplacement_allNodesRemoved.
+    bind(node, element);
+
+    children.add(0, createChildNode('child'));
+    Reactive.flush();
+
+    // a node the server does not know about
+    appendClientSideChild('a');
+
+    children.clear();
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(0);
+  });
+
+  it('keeps re-added and moved children when the container is cleared', () => {
+    // Ported from testClearChildren_reAddedAndMovedChildrenKept.
+    bind(node, element);
+
+    const container = createChildNode(null, 'div');
+    const childNode = createChildNode('child');
+    children.add(0, container);
+    children.add(1, childNode);
+    Reactive.flush();
+
+    const containerElement = element.children[0];
+    const childElement = element.children[1];
+
+    // the server empties the node, adds the container back and moves the child
+    // into the container
+    children.clear();
+    children.add(0, container);
+    container.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(1);
+    expect(element.firstElementChild).to.equal(containerElement);
+    expect(containerElement.childElementCount).to.equal(1);
+    expect(containerElement.firstElementChild).to.equal(childElement);
   });
 
   // Ported from GwtMultipleBindingTest.testAddChildDoubleBind: a second bind must
