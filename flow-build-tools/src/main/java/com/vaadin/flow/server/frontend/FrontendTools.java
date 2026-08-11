@@ -727,9 +727,9 @@ public class FrontendTools {
      * the {@code --min-release-age} install flag (see
      * {@link #MIN_NPM_VERSION_FOR_RELEASE_AGE}). Used when building the
      * {@code npm install} command for the minimum-package-age check (see
-     * {@link Options#withMinimumFrontendPackageAgeDays(int)}) to decide between
-     * {@code --min-release-age} and the {@code --before=<date>} fallback
-     * supported by older npm versions.
+     * {@link Options#withMinimumFrontendPackageAgeDays(Integer)}) to decide
+     * between {@code --min-release-age} and the {@code --before=<date>}
+     * fallback supported by older npm versions.
      *
      * @param npmCommand
      *            the npm command to invoke for {@code --version}
