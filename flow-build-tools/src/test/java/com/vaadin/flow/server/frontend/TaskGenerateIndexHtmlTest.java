@@ -93,6 +93,25 @@ class TaskGenerateIndexHtmlTest {
     }
 
     @Test
+    void should_reserveTopSafeAreaInset_whenLaunchedAsStandaloneApp()
+            throws Exception {
+        String defaultContent = taskGenerateIndexHtml.getFileContent();
+
+        assertTrue(defaultContent.contains("viewport-fit=cover"),
+                "The default index.html is expected to opt into the display cutout area");
+
+        assertTrue(defaultContent.contains("safe-area-inset-top"),
+                """
+                        Because the default index.html opts into the display cutout area with \
+                        viewport-fit=cover, it must also reserve the top safe area inset when the \
+                        app runs in standalone mode. Otherwise the content of an installed PWA \
+                        that does not use a layout handling the insets itself (such as \
+                        vaadin-app-layout) renders underneath the notch / dynamic island and \
+                        cannot be interacted with. See \
+                        https://github.com/vaadin/flow/issues/25177""");
+    }
+
+    @Test
     void should_generateIndexHtml_whenNoUserIndexHtml() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(INDEX_HTML),
