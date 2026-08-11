@@ -96,6 +96,48 @@ class I18NUtilTest {
                 "Missing Finnish bundle");
     }
 
+    // A class loader percent-encodes the URL it returns, so a space in any
+    // parent folder arrives as %20 and must be decoded before use.
+    @Test
+    void resourceFolderPathContainsSpace_returnsExpectedLocales()
+            throws IOException {
+        File spacedResources = Files
+                .createDirectory(temporaryFolder.resolve("folder with space"))
+                .toFile();
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(spacedResources.toURI().toURL());
+
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME + ".properties")
+                        .toPath(),
+                "title=Default lang", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME + "_de.properties")
+                        .toPath(),
+                "title=deutsch", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME
+                                + "_fi_FI.properties")
+                        .toPath(),
+                "title=Suomi", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files should be found even though the path contains a space");
+        assertTrue(defaultTranslationLocales.contains(new Locale("de")),
+                "Missing German bundle");
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Missing Finnish bundle");
+    }
+
     @Test
     void noTranslationFiles_returnsEmptyList() throws IOException {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
@@ -169,6 +211,31 @@ class I18NUtilTest {
                 .getDefaultTranslationLocales(urlClassLoader);
         assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // The jar path is cut out of the percent-encoded URL, so a space in any
+    // parent folder must be decoded before the jar can be opened.
+    @Test
+    void jarPathContainsSpace_translationFilesInJar_findsLanguages()
+            throws IOException {
+        Path spacedFolder = Files
+                .createDirectory(temporaryFolder.resolve("folder with space"));
+        Path path = generateZipArchive(spacedFolder);
+
+        ClassLoader urlClassLoader = new URLClassLoader(
+                new URL[] { path.toUri().toURL() });
+
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a JAR should be resolved even though the path contains a space");
 
         assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");

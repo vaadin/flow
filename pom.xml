@@ -69,7 +69,6 @@
     <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <jsinterop.version>1.0.2</jsinterop.version>
     <sonar.java.source>21</sonar.java.source>
     <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
     <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
@@ -95,7 +94,7 @@
     <jaxb.version>4.0.9</jaxb.version>
     <guava.version>33.6.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
-    <junit.jupiter.version>6.1.2</junit.jupiter.version>
+    <junit.jupiter.version>6.1.3</junit.jupiter.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -107,8 +106,8 @@
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
-    <testbench.version>25.2.0</testbench.version>
-    <jetty.version>12.1.11</jetty.version>
+    <testbench.version>25.2.1</testbench.version>
+    <jetty.version>12.1.12</jetty.version>
     <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.16</maven.version>
@@ -179,14 +178,6 @@
       </dependency>
 
       <dependency>
-        <groupId>com.google.jsinterop</groupId>
-        <artifactId>jsinterop</artifactId>
-        <version>${jsinterop.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <dependency>
         <groupId>com.google.gwt</groupId>
         <artifactId>gwt-elemental</artifactId>
         <version>${gwt.version}</version>
@@ -223,12 +214,6 @@
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
         <version>3.1.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jspecify</groupId>
-        <artifactId>jspecify</artifactId>
-        <version>1.0.1</version>
       </dependency>
 
       <!-- Test dependencies -->
