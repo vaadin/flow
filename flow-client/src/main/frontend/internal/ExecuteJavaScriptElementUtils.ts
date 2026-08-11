@@ -31,7 +31,6 @@ export function isPropertyDefined(node: Node, property: string): boolean {
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
 // StateNode is a contract (addUnregisterListener / setNodeData).
 
-import { wrap } from './dom/DomApi';
 import { getTag, invokeWhenDefined } from './PolymerUtils';
 import { Reactive } from './reactive/reactive';
 import { getJsProperty } from './WidgetUtil';
@@ -138,7 +137,7 @@ export function attachExistingElement(
   id: number
 ): void {
   let existingElement: Element | null = null;
-  const childNodes = wrap(parent.getDomNode()).childNodes;
+  const childNodes = parent.getDomNode().childNodes;
   const indices = new Map<Node, number>();
   let afterSibling = previousSibling === null;
   let elementIndex = -1;

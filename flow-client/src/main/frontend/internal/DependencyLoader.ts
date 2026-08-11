@@ -52,7 +52,6 @@ interface DependencyResourceLoader {
     dependencyId?: string | null
   ): void;
   loadDynamicImport(expression: string, listener: ResourceLoadListener): void;
-  runWhenHtmlImportsReady(task: () => void): void;
 }
 
 /** The slice of Registry DependencyLoader uses. */
@@ -174,11 +173,5 @@ export class DependencyLoader {
       default:
         throw new Error(`Unknown dependency type ${resourceType}`);
     }
-  }
-
-  /** Prevents eager dependencies from being considered loaded until HTML imports are ready. */
-  requireHtmlImportsReady(): void {
-    startEagerDependencyLoading();
-    this.registry.getResourceLoader().runWhenHtmlImportsReady(() => endEagerDependencyLoading());
   }
 }
