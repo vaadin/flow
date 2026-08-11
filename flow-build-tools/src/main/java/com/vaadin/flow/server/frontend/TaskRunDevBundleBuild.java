@@ -136,17 +136,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             throws ExecutionFailedException {
         Logger logger = getLogger();
 
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                options.getNpmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
-        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
-        settings.setNodeFolder(options.getNodeFolder());
-        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setNodeVersion(options.getNodeVersion());
-        settings.setIgnoreVersionChecks(
-                options.isFrontendIgnoreVersionChecks());
-        FrontendTools frontendTools = new FrontendTools(settings);
+        FrontendTools frontendTools = FrontendTools.fromOptions(options);
 
         File buildExecutable;
         try {

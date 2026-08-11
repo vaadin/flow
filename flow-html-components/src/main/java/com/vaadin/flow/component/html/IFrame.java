@@ -196,7 +196,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            Source URL.
-     * @since 25.2
+     * @since 25.1.12
      */
     public void setUnsafeSrc(String src) {
         set(srcDescriptor, src);

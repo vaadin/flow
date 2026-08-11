@@ -260,14 +260,4 @@ public class DependencyLoader {
                     "Unknown dependency type " + resourceType);
         }
     }
-
-    /**
-     * Prevents eager dependencies from being considered as loaded until
-     * <code>HTMLImports.whenReady</code> has been run.
-     */
-    public void requireHtmlImportsReady() {
-        startEagerDependencyLoading();
-        registry.getResourceLoader().runWhenHtmlImportsReady(
-                DependencyLoader::endEagerDependencyLoading);
-    }
 }
