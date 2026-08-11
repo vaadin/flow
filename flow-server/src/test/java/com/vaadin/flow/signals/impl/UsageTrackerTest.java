@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.signals.impl;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +32,7 @@ import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -35,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class UsageTrackerTest extends SignalTestBase {
     @Test
@@ -414,6 +421,109 @@ class UsageTrackerTest extends SignalTestBase {
             listeners.add(listener);
 
             return () -> listeners.remove(listener);
+        }
+    }
+
+    // Regression test for #25166: a CombinedUsage that spans two usages on the
+    // same tree used to hold its monitor while registering the per-usage
+    // listeners (onNextChange -> tree lock). A concurrent committer holds the
+    // tree lock and, from notifyObservers, fires the first listener -> onChange
+    // -> wants the monitor. Opposite acquire orders deadlock (ABBA). Both
+    // racing
+    // operations run on their own threads so the deadlock is observed via a
+    // join
+    // timeout / ThreadMXBean rather than hanging the test thread.
+    @Test
+    void combinedUsage_registerRacesCommit_noDeadlock() throws Exception {
+        int iterations = 200;
+        long perIterationTimeoutMs = 3000;
+
+        for (int i = 0; i < iterations; i++) {
+            SharedListSignal<String> list = new SharedListSignal<>(
+                    String.class);
+            SharedValueSignal<String> c1 = list.insertLast("a").signal();
+            SharedValueSignal<String> c2 = list.insertLast("b").signal();
+
+            // Two usages on the same tree produce a CombinedUsage.
+            Usage combined = UsageTracker.track(() -> {
+                c1.get();
+                c2.get();
+            });
+            assertInstanceOf(CombinedUsage.class, combined);
+
+            CountDownLatch ready = new CountDownLatch(1);
+            AtomicReference<Throwable> committerFailure = new AtomicReference<>();
+            AtomicReference<Throwable> registrarFailure = new AtomicReference<>();
+
+            Thread committer = new Thread(() -> {
+                try {
+                    ready.await();
+                    for (int k = 0; k < 60; k++) {
+                        c1.set("x" + k);
+                    }
+                } catch (Throwable t) {
+                    committerFailure.set(t);
+                }
+            }, "combined-committer-" + i);
+            committer.setDaemon(true);
+
+            Thread registrar = new Thread(() -> {
+                try {
+                    ready.await();
+                    for (int k = 0; k < 60; k++) {
+                        Registration reg = combined
+                                .onNextChange(new TransientListener() {
+                                    @Override
+                                    public boolean invoke(boolean immediate) {
+                                        return false;
+                                    }
+                                });
+                        reg.remove();
+                    }
+                } catch (Throwable t) {
+                    registrarFailure.set(t);
+                }
+            }, "combined-registrar-" + i);
+            registrar.setDaemon(true);
+
+            committer.start();
+            registrar.start();
+            ready.countDown();
+
+            committer.join(perIterationTimeoutMs);
+            registrar.join(perIterationTimeoutMs);
+
+            if (committer.isAlive() || registrar.isAlive()) {
+                ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+                long[] deadlocked = tmx.findDeadlockedThreads();
+                StringBuilder sb = new StringBuilder(
+                        "CombinedUsage lock-order inversion between the "
+                                + "SignalTree lock and the CombinedUsage monitor "
+                                + "(see #25166) at iteration " + i
+                                + ", committer alive=" + committer.isAlive()
+                                + ", registrar alive=" + registrar.isAlive());
+                if (deadlocked != null) {
+                    sb.append(", deadlocked thread IDs=")
+                            .append(Arrays.toString(deadlocked));
+                    for (var info : tmx.getThreadInfo(deadlocked, true, true)) {
+                        sb.append("\n  ").append(info.getThreadName())
+                                .append(" waiting on ")
+                                .append(info.getLockName()).append(" owned by ")
+                                .append(info.getLockOwnerName());
+                    }
+                }
+                fail(sb.toString());
+            }
+            if (committerFailure.get() != null) {
+                throw new AssertionError(
+                        "Committer thread failed at iteration " + i,
+                        committerFailure.get());
+            }
+            if (registrarFailure.get() != null) {
+                throw new AssertionError(
+                        "Registrar thread failed at iteration " + i,
+                        registrarFailure.get());
+            }
         }
     }
 }
