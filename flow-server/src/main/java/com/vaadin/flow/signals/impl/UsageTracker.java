@@ -48,11 +48,16 @@ public class UsageTracker {
         public Registration onNextChange(TransientListener listener) {
             return new Registration() {
                 /*
-                 * Synchronize since listeners can fire at any time, e.g. before
+                 * A leaf lock since listeners can fire at any time, e.g. before
                  * all listeners have been registered, or while running the
-                 * action due to another listener being fired, or during cleanup
+                 * action due to another listener being fired, or during
+                 * cleanup. Being a LeafLock, it must never be held while
+                 * calling into a signal tree (usage.onNextChange /
+                 * listener.invoke / Registration.remove) -- doing so is the
+                 * ABBA ordering behind #25166 and is now caught by an assertion
+                 * in SignalTree.
                  */
-                final Object lock = new Object();
+                final LeafLock lock = new LeafLock("CombinedUsage");
                 final Collection<Registration> cleanups = new ArrayList<>();
 
                 boolean closed = false;
@@ -66,29 +71,24 @@ public class UsageTracker {
                                 return onChange(immediate);
                             }
                         };
-                        /*
-                         * Register outside the monitor: onNextChange acquires
-                         * the dependency's SignalTree lock, and a concurrent
-                         * committer holding that lock notifies observers -- one
-                         * of which is the listener registered here -- and then
-                         * needs this monitor. Holding the monitor across
-                         * onNextChange would invert those two locks and
-                         * deadlock (ABBA). See #25166.
-                         */
+                        // Register outside the leaf lock: onNextChange acquires
+                        // the dependency's tree lock.
                         Registration cleanup = usage
                                 .onNextChange(usageListener);
                         boolean removeNow;
-                        synchronized (lock) {
+                        lock.lock();
+                        try {
                             if (closed) {
                                 removeNow = true;
                             } else {
                                 cleanups.add(cleanup);
                                 removeNow = false;
                             }
+                        } finally {
+                            lock.unlock();
                         }
                         if (removeNow) {
-                            // Removed outside the monitor: remove() also
-                            // acquires the tree lock.
+                            // Removed outside the leaf lock (tree lock again).
                             cleanup.remove();
                             break;
                         }
@@ -96,17 +96,17 @@ public class UsageTracker {
                 }
 
                 private boolean onChange(boolean immediate) {
-                    synchronized (lock) {
+                    lock.lock();
+                    try {
                         if (closed) {
                             return false;
                         }
+                    } finally {
+                        lock.unlock();
                     }
-                    /*
-                     * Invoke the downstream listener outside the monitor: it
-                     * may read signals or register further usages, which
-                     * acquire tree locks. Holding the monitor across the
-                     * invocation is the same inversion as above.
-                     */
+                    // Invoke the downstream listener outside the leaf lock: it
+                    // may read signals / register usages, which take tree
+                    // locks.
                     boolean listenToNext = listener.invoke(immediate);
                     if (!listenToNext) {
                         close();
@@ -115,13 +115,17 @@ public class UsageTracker {
                 }
 
                 private void close() {
-                    synchronized (lock) {
+                    lock.lock();
+                    try {
                         if (closed) {
                             return;
                         }
                         closed = true;
+                    } finally {
+                        lock.unlock();
                     }
-                    // Important release the lock before calling signal methods
+                    // Important: release the leaf lock before calling signal
+                    // methods (Registration.remove acquires the tree lock).
                     cleanups.forEach(Registration::remove);
                     cleanups.clear();
                 }
