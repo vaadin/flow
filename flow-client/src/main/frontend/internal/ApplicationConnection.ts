@@ -25,7 +25,6 @@ import { observe as observeLoadingIndicator } from './communication/LoadingIndic
 import { observe as observePoll } from './communication/PollConfigurator';
 import { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import { DefaultRegistry } from './DefaultRegistry';
-import { wrap } from './dom/DomApi';
 import { NodeFeatures, NodeProperties } from './nodefeature/NodeFeatures';
 import { publishClient } from './publishClient';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
@@ -182,7 +181,7 @@ export class ApplicationConnection {
 
   /** The state node id bound to the given DOM element, or -1 if none. */
   getNodeId(element: Element): number {
-    const node = this.registry.getStateTree().getStateNodeForDomNode(wrap(element) as unknown as Node);
+    const node = this.registry.getStateTree().getStateNodeForDomNode(element);
     return node === null ? -1 : node.getId();
   }
 
