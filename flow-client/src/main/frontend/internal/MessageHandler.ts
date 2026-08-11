@@ -21,13 +21,12 @@
 // (queueing out-of-order / locked messages), then applies each (constants ->
 // ConstantPool, changes -> TreeChangeProcessor, executeJs, dependency loading,
 // session-expired/error handling). It composes the ported MessageOrdering
-// (PendingMessageQueue), TreeChangeProcessor, DomApi, Reactive,
+// (PendingMessageQueue), TreeChangeProcessor, Reactive,
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
 import { getServerId, isResynchronize, PendingMessageQueue } from './communication/MessageOrdering';
 import { ResynchronizationState } from './communication/ResynchronizationState';
-import { updateApiImplementation } from './dom/DomApi';
 import { runWhenEagerDependenciesLoaded } from './EagerDependencyTracker';
 import { Reactive } from './reactive/reactive';
 import { processChanges as applyTreeChanges } from './TreeChangeProcessor';
@@ -103,7 +102,6 @@ interface MessageHandlerRegistry {
   getExecuteJavaScriptProcessor(): { execute(commands: unknown): void };
   getDependencyLoader(): {
     loadDependencies(dependencies: Map<string, unknown[]>): void;
-    requireHtmlImportsReady(): void;
   };
   getSystemErrorHandler(): {
     handleSessionExpiredError(details: string | null): void;
@@ -262,11 +260,7 @@ export class MessageHandler {
     }
 
     this.handleDependencies(valueMap);
-    if (!this.initialMessageHandled) {
-      this.registry.getDependencyLoader().requireHtmlImportsReady();
-    }
 
-    runWhenEagerDependenciesLoaded(() => updateApiImplementation());
     runWhenEagerDependenciesLoaded(() => this.processMessage(valueMap, lock));
   }
 
