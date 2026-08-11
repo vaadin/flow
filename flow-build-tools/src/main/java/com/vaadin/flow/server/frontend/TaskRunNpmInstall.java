@@ -37,14 +37,17 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.internal.FrontendUtils.commandToString;
@@ -61,6 +64,17 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
  * @since 2.0
  */
 public class TaskRunNpmInstall implements FallibleCommand {
+
+    /**
+     * The minimum age, in days, a frontend package version must have before it
+     * is installed, used when neither Vaadin nor the package manager itself has
+     * been configured with a value. Mitigates supply-chain attacks where a
+     * compromised version is briefly available on the registry.
+     */
+    static final int DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = 1;
+
+    private static final Pattern BUNFIG_MINIMUM_RELEASE_AGE = Pattern
+            .compile("minimumReleaseAge\\s*=\\s*(\\S+)");
 
     private static final String MODULES_YAML = ".modules.yaml";
 
@@ -292,12 +306,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        boolean npmSupportsMinReleaseAge = options
-                .getMinimumFrontendPackageAgeDays() > 0
-                && !options.isEnableBun() && !options.isEnablePnpm()
-                && tools.npmSupportsMinReleaseAge(npmExecutable);
-        getMinimumFrontendPackageAgeArgument(options, npmSupportsMinReleaseAge)
-                .ifPresent(npmInstallCommand::add);
+        Integer configuredPackageAgeDays = options
+                .getMinimumFrontendPackageAgeDays();
+        if (configuredPackageAgeDays == null || configuredPackageAgeDays > 0) {
+            boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                    && !options.isEnablePnpm()
+                    && tools.npmSupportsMinReleaseAge(npmExecutable);
+            int packageAgeDays = resolveMinimumFrontendPackageAgeDays(options,
+                    tools, npmExecutable, npmSupportsMinReleaseAge, logger);
+            getMinimumFrontendPackageAgeArgument(options, packageAgeDays,
+                    npmSupportsMinReleaseAge).ifPresent(npmInstallCommand::add);
+        }
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
@@ -437,13 +456,127 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Builds the install argument that prevents npm, pnpm or bun from
-     * installing frontend package versions newer than
-     * {@link Options#getMinimumFrontendPackageAgeDays()} days. Returns an empty
-     * optional when the check is disabled.
+     * Resolves how old a frontend package version must be before the active
+     * package manager is allowed to install it.
+     * <p>
+     * A value configured through Vaadin is always used as is. When nothing is
+     * configured, the package manager is asked what it resolves for its own
+     * minimum release age setting; if it already has one, {@code 0} is returned
+     * so that no argument is passed and the package manager applies its own
+     * configuration. Only when neither is configured does
+     * {@link #DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} apply.
      *
      * @param options
      *            current build options
+     * @param tools
+     *            the frontend tools used to read the package manager
+     *            configuration
+     * @param toolCommand
+     *            the npm, pnpm or bun command used for the install
+     * @param npmSupportsMinReleaseAge
+     *            {@code true} if the active npm understands
+     *            {@code --min-release-age} (npm 11.10+)
+     * @param logger
+     *            the logger to report the resolved source of the value to
+     * @return the minimum age in days, or {@code 0} to not restrict the age
+     */
+    static int resolveMinimumFrontendPackageAgeDays(Options options,
+            FrontendTools tools, List<String> toolCommand,
+            boolean npmSupportsMinReleaseAge, Logger logger) {
+        Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
+        if (configuredDays != null) {
+            return configuredDays;
+        }
+        Optional<String> packageManagerValue = getPackageManagerMinimumReleaseAge(
+                options, tools, toolCommand, npmSupportsMinReleaseAge);
+        if (packageManagerValue.isPresent()) {
+            logger.info(
+                    "Keeping the minimum frontend package age configured for {} "
+                            + "({}) instead of applying the Vaadin default. Set the "
+                            + "'{}' parameter to override it.",
+                    getToolName(options), packageManagerValue.get(),
+                    InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
+            return 0;
+        }
+        return DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
+    }
+
+    /**
+     * Reads the minimum release age the active package manager resolves from
+     * its own configuration, so that Vaadin does not override it with a command
+     * line argument.
+     */
+    private static Optional<String> getPackageManagerMinimumReleaseAge(
+            Options options, FrontendTools tools, List<String> toolCommand,
+            boolean npmSupportsMinReleaseAge) {
+        File npmFolder = options.getNpmFolder();
+        if (options.isEnableBun()) {
+            // bun has no command for printing its resolved configuration
+            return getBunfigMinimumReleaseAge(npmFolder);
+        }
+        if (options.isEnablePnpm()) {
+            // pnpm reads this from .npmrc and pnpm-workspace.yaml alike
+            return tools.getConfiguredSetting(toolCommand,
+                    "minimum-release-age", npmFolder);
+        }
+        if (npmSupportsMinReleaseAge) {
+            return tools.getConfiguredSetting(toolCommand, "min-release-age",
+                    npmFolder);
+        }
+        // Older npm has no min-release-age setting, but the --before argument
+        // used as a fallback does have a configuration counterpart
+        return tools.getConfiguredSetting(toolCommand, "before", npmFolder);
+    }
+
+    /**
+     * Reads the {@code minimumReleaseAge} setting from the project and user
+     * {@code bunfig.toml} files. The setting is only valid in the
+     * {@code [install]} section, which is the only section it is looked for in.
+     */
+    private static Optional<String> getBunfigMinimumReleaseAge(File npmFolder) {
+        return Stream
+                .of(new File(npmFolder, "bunfig.toml"),
+                        new File(FileIOUtils.getUserDirectory(),
+                                ".bunfig.toml"))
+                .filter(File::canRead)
+                .map(TaskRunNpmInstall::getBunfigMinimumReleaseAgeFromFile)
+                .flatMap(Optional::stream).findFirst();
+    }
+
+    private static Optional<String> getBunfigMinimumReleaseAgeFromFile(
+            File bunfig) {
+        try {
+            boolean inInstallSection = false;
+            for (String line : Files.readAllLines(bunfig.toPath(),
+                    StandardCharsets.UTF_8)) {
+                String trimmed = line.trim();
+                if (trimmed.startsWith("[")) {
+                    inInstallSection = "[install]".equals(trimmed);
+                } else if (inInstallSection) {
+                    Matcher matcher = BUNFIG_MINIMUM_RELEASE_AGE
+                            .matcher(trimmed);
+                    if (matcher.lookingAt()) {
+                        return Optional.of(matcher.group(1));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            LoggerFactory.getLogger(TaskRunNpmInstall.class).debug(
+                    "Could not read the minimumReleaseAge setting from {}",
+                    bunfig, e);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Builds the install argument that prevents npm, pnpm or bun from
+     * installing frontend package versions newer than the given number of days.
+     * Returns an empty optional when the age is not restricted.
+     *
+     * @param options
+     *            current build options
+     * @param days
+     *            the minimum age in days, or {@code 0} to not restrict the age
      * @param npmSupportsMinReleaseAge
      *            {@code true} if the active npm understands
      *            {@code --min-release-age} (npm 11.10+); when {@code false} the
@@ -451,8 +584,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            when bun or pnpm is enabled.
      */
     static Optional<String> getMinimumFrontendPackageAgeArgument(
-            Options options, boolean npmSupportsMinReleaseAge) {
-        int days = options.getMinimumFrontendPackageAgeDays();
+            Options options, int days, boolean npmSupportsMinReleaseAge) {
         if (days <= 0) {
             return Optional.empty();
         }

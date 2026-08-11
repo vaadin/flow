@@ -373,7 +373,9 @@ internal class GradlePluginAdapter private constructor(
         return config.commercialWithBanner.get()
     }
 
-    override fun minimumFrontendPackageAgeDays(): Int =
-        config.minimumFrontendPackageAgeDays.get()
+    // Null when not configured, so that the value configured for the package
+    // manager itself is used instead of being overridden
+    override fun minimumFrontendPackageAgeDays(): Int? =
+        config.minimumFrontendPackageAgeDays.orNull
 
 }

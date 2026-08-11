@@ -360,8 +360,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Minimum age (in days) a frontend (npm) package version must have before
      * npm, pnpm or bun is allowed to install it. Mitigates supply-chain
      * attacks where a compromised version is briefly available on the
-     * registry. Defaults to {@code 1} day; set to {@code 0} to disable.
-     * Requires pnpm >= 10.16.0 or bun >= 1.3.0 when those tools are used.
+     * registry. Set to {@code 0} to disable. Requires pnpm >= 10.16.0 or bun
+     * >= 1.3.0 when those tools are used.
+     *
+     * When not set, the value configured for the package manager itself
+     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}) is
+     * used, so that a manually run {@code npm install} behaves the same way.
+     * Only when there is no such value does the check default to {@code 1}
+     * day.
      */
     public abstract val minimumFrontendPackageAgeDays: Property<Int>
 
@@ -677,7 +683,7 @@ public class PluginEffectiveConfiguration(
         project.getStringProperty(
             "vaadin.${InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}"
         ).map(String::toInt)
-            .orElse(extension.minimumFrontendPackageAgeDays.convention(1))
+            .orElse(extension.minimumFrontendPackageAgeDays)
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)

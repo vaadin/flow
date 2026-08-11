@@ -409,9 +409,13 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration name for the minimum age (in days) a frontend (npm) package
-     * version must have before npm, pnpm or bun is allowed to install it.
-     * Defaults to {@code 1} day; set to {@code 0} to disable.
-     * 
+     * version must have before npm, pnpm or bun is allowed to install it. Set
+     * to {@code 0} to disable.
+     * <p>
+     * When not set, the value configured for the package manager itself
+     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}) is
+     * used, defaulting to {@code 1} day if there is none.
+     *
      * @since 25.1.6
      */
     public static final String MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = "npm.minimumFrontendPackageAgeDays";

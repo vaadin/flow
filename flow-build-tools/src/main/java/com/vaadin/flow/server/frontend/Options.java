@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
@@ -175,11 +176,12 @@ public class Options implements Serializable {
 
     /**
      * Minimum age, in days, that an npm/pnpm/bun frontend package version must
-     * have before it is allowed to be installed. Defaults to {@code 1} day as a
-     * mitigation against malicious packages published to the registry; set to
-     * {@code 0} to disable.
+     * have before it is allowed to be installed, or {@code null} when nothing
+     * has been configured on the Vaadin side. In the latter case the value is
+     * resolved from the package manager configuration, falling back to
+     * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}.
      */
-    private int minimumFrontendPackageAgeDays = 1;
+    private @Nullable Integer minimumFrontendPackageAgeDays;
 
     private ApplicationConfiguration applicationConfiguration;
 
@@ -1179,21 +1181,34 @@ public class Options implements Serializable {
      * to avoid pulling in brand-new versions that may have been compromised by
      * a supply-chain attack but not yet detected and removed from the registry.
      * <p>
-     * For npm this is translated to a {@code --before=<date>} argument; for
-     * pnpm it becomes {@code --config.minimum-release-age=<minutes>} (requires
-     * pnpm &ge; 10.16.0); for bun it becomes
-     * {@code --minimum-release-age=<seconds>} (requires bun &ge; 1.3.0).
+     * For npm this is translated to a {@code --min-release-age=<days>}
+     * argument, or {@code --before=<date>} for npm older than 11.10.0; for pnpm
+     * it becomes {@code --config.minimum-release-age=<minutes>} (requires pnpm
+     * &ge; 10.16.0); for bun it becomes {@code --minimum-release-age=<seconds>}
+     * (requires bun &ge; 1.3.0). Since these are command line arguments, they
+     * take precedence over anything the package manager reads from its own
+     * configuration.
+     * <p>
+     * When set to {@code null}, no such argument is passed if the package
+     * manager already resolves a minimum release age from its own configuration
+     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}), so
+     * that a manually run {@code npm install} behaves the same way. Only if
+     * nothing is configured there,
+     * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} is
+     * used.
      *
      * @param minimumFrontendPackageAgeDays
-     *            minimum allowed age in days, or {@code 0} to disable the check
+     *            minimum allowed age in days, {@code 0} to disable the check,
+     *            or {@code null} to use the package manager configuration
      * @return this builder
      * @throws IllegalArgumentException
      *             if {@code minimumFrontendPackageAgeDays} is negative
      * @since 25.1.6
      */
     public Options withMinimumFrontendPackageAgeDays(
-            int minimumFrontendPackageAgeDays) {
-        if (minimumFrontendPackageAgeDays < 0) {
+            @Nullable Integer minimumFrontendPackageAgeDays) {
+        if (minimumFrontendPackageAgeDays != null
+                && minimumFrontendPackageAgeDays < 0) {
             throw new IllegalArgumentException(
                     "minimumFrontendPackageAgeDays must be >= 0");
         }
@@ -1204,12 +1219,15 @@ public class Options implements Serializable {
     /**
      * Gets the minimum age (in days) a frontend package version must have
      * before npm, pnpm or bun is allowed to install it. {@code 0} means the
-     * check is disabled.
+     * check is disabled and {@code null} means that nothing has been configured
+     * on the Vaadin side, in which case the package manager configuration
+     * decides. See {@link #withMinimumFrontendPackageAgeDays(Integer)}.
      *
-     * @return the minimum allowed age in days
+     * @return the minimum allowed age in days, or {@code null} if not
+     *         configured
      * @since 25.1.6
      */
-    public int getMinimumFrontendPackageAgeDays() {
+    public @Nullable Integer getMinimumFrontendPackageAgeDays() {
         return minimumFrontendPackageAgeDays;
     }
 

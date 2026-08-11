@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -632,6 +633,55 @@ public class FrontendTools {
                     + "assuming the default registry.", e);
         }
         return registries;
+    }
+
+    /**
+     * Reads the value the given npm or pnpm command resolves for a
+     * configuration key by running {@code config get <key>}.
+     * <p>
+     * The value is read from the tool itself, so it accounts for every
+     * configuration source and precedence rule the tool applies (command line,
+     * environment variables, project/user/global {@code .npmrc} and, for pnpm,
+     * {@code pnpm-workspace.yaml}).
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param key
+     *            the configuration key to read
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return the configured value, or an empty optional if the key is not
+     *         configured, is unknown to the tool, or the configuration cannot
+     *         be read
+     */
+    Optional<String> getConfiguredSetting(List<String> toolCommand, String key,
+            File workingDirectory) {
+        List<String> command = new ArrayList<>(toolCommand);
+        command.add("config");
+        command.add("get");
+        command.add(key);
+        try {
+            String output = FrontendUtils.executeCommand(command,
+                    builder -> builder.directory(workingDirectory));
+            // Both tools print the value on its own line. npm prints "null"
+            // for a key it knows but that is not configured and "undefined"
+            // for an unknown key (which is what an npm older than
+            // MIN_NPM_VERSION_FOR_RELEASE_AGE reports for min-release-age);
+            // pnpm prints "undefined" when the key is not configured.
+            String value = output.lines().map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .reduce((first, last) -> last).orElse("");
+            if (value.isEmpty() || "null".equals(value)
+                    || "undefined".equals(value)) {
+                return Optional.empty();
+            }
+            return Optional.of(value);
+        } catch (CommandExecutionException | RuntimeException e) {
+            getLogger().debug("Could not read the '{}' setting using '{}'", key,
+                    String.join(" ", command), e);
+            return Optional.empty();
+        }
     }
 
     /**
