@@ -50,6 +50,7 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -628,6 +629,49 @@ class ElementEffectTest {
         registration.remove();
         signal.set("test4");
         assertEquals(4, count.get(), "Effect should not be run after remove");
+    }
+
+    @Test
+    void effect_reattachedViaMoveToNewUI_detachDoesNotThrow() {
+        // Reproduces #24973: UIInternals.moveToNewUI (used for
+        // @PreserveOnRefresh) re-attaches an element via
+        // StateNode.removeFromTree(false) followed by appendChild. This fires
+        // the attach listener again without a detach event in between.
+        // ElementEffect must not accumulate multiple detach listeners sharing
+        // the single detachRegistration field, otherwise the next real detach
+        // throws a NullPointerException.
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+
+        // Simulate UIInternals.moveToNewUI: reset the node without firing
+        // detach listeners, then re-attach the element to a new UI.
+        MockUI newUi = new MockUI();
+        component.getElement().getNode().removeFromTree(false);
+        newUi.getElement().appendChild(component.getElement());
+
+        // An ordinary detach must not throw. Before the fix this raised a
+        // NullPointerException from a second, stale ElementEffect detach
+        // listener dereferencing the already-nulled registration.
+        assertDoesNotThrow(() -> component.getElement().removeFromParent());
+
+        // The effect keeps working after the move: it is disabled while
+        // detached and re-enabled (and re-run because the signal changed) on a
+        // fresh attach.
+        signal.set("while detached");
+        int countAfterDetach = count.get();
+        newUi.getElement().appendChild(component.getElement());
+        signal.set("after reattach");
+        assertTrue(count.get() > countAfterDetach,
+                "Effect should still run after re-attach following a move");
     }
 
     @Test

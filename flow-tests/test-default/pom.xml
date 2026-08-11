@@ -59,6 +59,12 @@
       <artifactId>vaadin-dev-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- React adapter (ReactAdapterComponent) for React-in-Flow views -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-react</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>

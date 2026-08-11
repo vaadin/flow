@@ -81,6 +81,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
@@ -94,7 +95,7 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 8.0
+ * @since 24.3.22
  */
 public class DevModeInitializer implements Serializable {
 
@@ -292,6 +293,9 @@ public class DevModeInitializer implements Serializable {
         boolean npmExcludeWebComponents = config
                 .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
 
+        int minimumFrontendPackageAgeDays = Integer.parseInt(config
+                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"));
+
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -314,6 +318,8 @@ public class DevModeInitializer implements Serializable {
                         getFrontendExtraFileExtensions(config))
                 .withReact(reactEnable)
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
+                .withMinimumFrontendPackageAgeDays(
+                        minimumFrontendPackageAgeDays)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
                         DEFAULT_NODE_VERSION))
                 .withNodeFolder(config.getStringProperty(NODE_FOLDER, null))

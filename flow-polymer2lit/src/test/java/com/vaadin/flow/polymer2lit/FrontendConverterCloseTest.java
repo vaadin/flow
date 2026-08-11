@@ -1,0 +1,53 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.polymer2lit;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendToolsSettings;
+
+/**
+ * Tests the temporary file handling of {@link FrontendConverter}. The
+ * conversion itself is covered by {@link FrontendConverterTest}, which needs a
+ * Node installation and is therefore tagged as a slow test.
+ */
+class FrontendConverterCloseTest {
+
+    @TempDir
+    File tmpDir;
+
+    @Test
+    void close_removesTempFilesAndIsRepeatable() throws IOException {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                tmpDir.getAbsolutePath(), tmpDir::getAbsolutePath);
+        FrontendConverter converter = new FrontendConverter(
+                new FrontendTools(settings));
+
+        // The extracted converter script has to be removed before the temporary
+        // directory holding it, otherwise deleting a non-empty directory would
+        // fail here
+        converter.close();
+
+        // Nothing is left to delete, which has to be a no-op instead of a
+        // failure
+        converter.close();
+    }
+}

@@ -17,6 +17,7 @@ package com.vaadin.flow.gradle
 
 
 import java.io.File
+import com.vaadin.flow.server.Constants
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
@@ -81,6 +82,21 @@ internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets
 internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!
 
 internal val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
+
+/**
+ * Whether this directory follows the standard `META-INF/VAADIN/webapp`
+ * layout that holds the production frontend bundle. When it does, the Vaadin
+ * servlet resources (config, token, `stats.json`) live in the parent
+ * `META-INF/VAADIN` directory, next to the `webapp` bundle, so the whole tree
+ * is a self-contained, task-owned unit that can be packaged into the
+ * application archive. A custom `frontendOutputDirectory` that does not follow
+ * this layout cannot be packaged that way and is rejected by
+ * [GradlePluginAdapter.servletResourceOutputDirectory].
+ */
+internal fun File.hasVaadinWebappResourcesPath(): Boolean =
+    path.replace(File.separatorChar, '/').removeSuffix("/").endsWith(
+        Constants.VAADIN_WEBAPP_RESOURCES.removeSuffix("/")
+    )
 
 /**
  * Passes the value through only when [block] returns `true`, otherwise the
