@@ -272,19 +272,18 @@ public class UrlUtil {
     public static boolean isSafeUrl(String url) {
         VaadinService service = VaadinService.getCurrent();
         Set<String> safeSchemes;
+
         if (service == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger()
-                        .debug("No VaadinService available on current thread; "
-                                + "falling back to default safe URL schemes. "
-                                + "Any custom {} configuration will not apply "
-                                + "here.", InitParameters.URL_SAFE_SCHEMES);
-            }
+            getLogger().warn("No VaadinService available on current thread; "
+                    + "falling back to default safe URL schemes. "
+                    + "Any custom {} configuration will not apply " + "here.",
+                    InitParameters.URL_SAFE_SCHEMES);
             safeSchemes = Constants.DEFAULT_URL_SAFE_SCHEMES;
         } else {
             safeSchemes = service.getDeploymentConfiguration()
                     .getUrlSafeSchemes();
         }
+
         return isSafeUrl(url, safeSchemes);
     }
 

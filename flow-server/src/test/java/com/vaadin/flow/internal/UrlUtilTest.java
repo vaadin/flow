@@ -307,4 +307,15 @@ class UrlUtilTest {
             assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)"));
         }
     }
+
+    @Test
+    void isSafeUrl_noVaadinService_fallsBackToDefaultSchemes() {
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(null);
+
+            assertTrue(UrlUtil.isSafeUrl("https://vaadin.com"));
+            assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)"));
+        }
+    }
 }
