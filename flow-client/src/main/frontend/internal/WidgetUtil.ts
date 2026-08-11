@@ -19,8 +19,6 @@
 // delegate here. This module is also bundled to ES5 for the (old) HtmlUnit used
 // by GwtTests, so it avoids newer syntax and the unicode regex flag.
 
-import { wrap } from './dom/DomApi';
-
 /**
  * Redirects the browser to the given URL, or reloads the page when `url` is
  * null.
@@ -84,14 +82,13 @@ export function isUndefined(value: unknown): boolean {
 
 /**
  * Sets the given attribute to the value on the element, or removes it when the
- * value is null, going through the DOM API abstraction. Mirrors
- * WidgetUtil.updateAttribute.
+ * value is null. Mirrors WidgetUtil.updateAttribute.
  */
 export function updateAttribute(element: Element, attribute: string, value: string | null): void {
   if (value === null) {
-    wrap(element).removeAttribute(attribute);
+    element.removeAttribute(attribute);
   } else {
-    wrap(element).setAttribute(attribute, value);
+    element.setAttribute(attribute, value);
   }
 }
 
