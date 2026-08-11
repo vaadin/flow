@@ -27,7 +27,6 @@
 // at cutover.
 
 import { assert } from '../assert';
-import { wrap } from '../dom/DomApi';
 import { getElementById, getElementByName, hasTag } from '../ElementUtil';
 import { isLitElement, whenRendered } from '../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
@@ -184,9 +183,7 @@ export function resolveFilters(
 // --- Slice 2: closest-state-node lookups -----------------------------------
 // Used by handleDomEvent to map an event target / a DOM node returned by a JS
 // expression to the nearest bound state node id (the MAP_STATE_NODE_EVENT_DATA
-// event data). DOM parents are walked with native parentNode/isSameNode; the
-// shadow-tree-aware DomApi wrapping (not ported yet) replaces the raw traversal
-// at cutover.
+// event data). DOM parents are walked with native parentNode/isSameNode.
 
 /** The slice of StateNode that the closest-node lookups read. */
 interface ClosestLookupNode {
@@ -357,11 +354,11 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
   const classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
   for (let i = 0; i < classNodeList.length(); i++) {
-    wrap(element).classList.add(classNodeList.get(i) as string);
+    element.classList.add(classNodeList.get(i) as string);
   }
 
   return classNodeList.addSpliceListener((e) => {
-    const classList = wrap(element).classList;
+    const classList = element.classList;
 
     e.getRemove().forEach((token) => classList.remove(token as string));
     e.getAdd().forEach((token) => classList.add(token as string));
@@ -371,7 +368,7 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
 // --- Slice 4: attribute binding --------------------------------------------
 // The element-attribute part of bind(). updateAttributeValue resolves a "uri"
 // model object against the application configuration (web-component mode); the
-// underlying attribute set/remove goes through WidgetUtil/DomApi.
+// underlying attribute set/remove goes through WidgetUtil.
 
 /** The slice of ApplicationConfiguration that attribute binding reads. */
 interface AttributeConfiguration {
@@ -1122,7 +1119,7 @@ export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: 
 // Binds the ELEMENT_CHILDREN feature to the element's DOM children, creating and
 // inserting child elements (or adopting existing ones) and keeping the DOM in
 // sync as the children list is spliced. Goes through the binder context to
-// create/bind child nodes and through DomApi for the DOM mutations.
+// create/bind child nodes and the native DOM for the DOM mutations.
 
 function createAndBindChild(context: BindingContext, childNode: BindingStateNode): Node {
   return context.binderContext.createAndBind(childNode as unknown as StateNode);
@@ -1148,7 +1145,7 @@ export function bindChildren(context: BindingContext): EventRemover {
       childNode.setDomNode(child);
       createAndBindChild(context, childNode);
     } else {
-      wrap(context.htmlNode).appendChild(createAndBindChild(context, childNode));
+      context.htmlNode.appendChild(createAndBindChild(context, childNode));
     }
   }
 
@@ -1170,8 +1167,8 @@ function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingConte
       const child = childNode.getDomNode();
       // If the client-side element is not inside the parent the server expected
       // (client-only DOM changes), nothing is done here.
-      if (child !== null && wrap(child).parentNode === htmlNode) {
-        wrap(htmlNode).removeChild(child);
+      if (child !== null && child.parentNode === htmlNode) {
+        htmlNode.removeChild(child);
       }
     }
   }
@@ -1183,9 +1180,8 @@ function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingConte
 }
 
 function removeAllChildren(htmlNode: Node): void {
-  const wrapped = wrap(htmlNode);
-  while (wrapped.firstChild !== null) {
-    wrapped.removeChild(wrapped.firstChild);
+  while (htmlNode.firstChild !== null) {
+    htmlNode.removeChild(htmlNode.firstChild);
   }
 }
 
@@ -1198,7 +1194,7 @@ function addChildren(index: number, context: BindingContext, add: unknown[]): vo
     beforeRef = getFirstNodeMappedAsStateNode(nodeChildren, context.htmlNode);
   } else if (index <= nodeChildren.length() && index > 0) {
     const previousSibling = getPreviousSibling(index, context);
-    beforeRef = previousSibling === null ? null : wrap(previousSibling.getDomNode()!).nextSibling;
+    beforeRef = previousSibling === null ? null : previousSibling.getDomNode()!.nextSibling;
   } else {
     // Insert at the end.
     beforeRef = null;
@@ -1215,15 +1211,15 @@ function addChildren(index: number, context: BindingContext, add: unknown[]): vo
       createAndBindChild(context, newChild);
     } else {
       childNode = createAndBindChild(context, newChild);
-      wrap(context.htmlNode).insertBefore(childNode, beforeRef);
+      context.htmlNode.insertBefore(childNode, beforeRef);
     }
 
-    beforeRef = wrap(childNode).nextSibling;
+    beforeRef = childNode.nextSibling;
   }
 }
 
 function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNode: Node): Node | null {
-  const clientList = wrap(htmlNode).childNodes;
+  const clientList = htmlNode.childNodes;
   // eslint-disable-next-line @typescript-eslint/prefer-for-of -- ArrayLike DOM child list, not iterable
   for (let i = 0; i < clientList.length; i++) {
     const clientNode = clientList[i];
