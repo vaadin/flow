@@ -22,8 +22,6 @@
 // (addReadyListener/fireReadyEvent/getCustomElement) are used by the
 // SimpleElementBindingStrategy attach machinery.
 
-import { wrap } from './dom/DomApi';
-
 // A node exposing the Polymer model-data API (set/get/splice).
 interface PolymerModelNode {
   set(path: string, value: unknown): void;
@@ -166,7 +164,7 @@ export function fireReadyEvent(polymerElement: Element): void {
 
 // Returns the index-th child element of parent, ignoring <style> children.
 function getChildIgnoringStyles(parent: Node, index: number): Node | null {
-  const children = wrap(parent).children;
+  const children = (parent as Element).children;
   let filteredIndex = -1;
   // eslint-disable-next-line @typescript-eslint/prefer-for-of -- indexed HTMLCollection access
   for (let i = 0; i < children.length; i++) {
