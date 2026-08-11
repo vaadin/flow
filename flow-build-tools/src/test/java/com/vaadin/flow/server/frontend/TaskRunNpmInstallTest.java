@@ -767,94 +767,82 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumFrontendPackageAge_zeroDisablesCheck_returnsEmpty() {
-        Options npmOptions = new MockOptions(npmFolder);
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, 0, true)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, 0, false)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder).withEnablePnpm(true), 0, false)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder).withEnableBun(true), 0, false)
-                .isPresent());
-    }
-
-    @Test
-    void minimumFrontendPackageAge_npmNewEnough_addsMinReleaseAgeArgument() {
-        Options npmOptions = new MockOptions(npmFolder);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, 2, true);
+    void minimumFrontendPackageAge_npmNewEnough_usesMinReleaseAgeArgument() {
         // npm 11.10+: --min-release-age takes a value in days
-        assertEquals("--min-release-age=2", arg.orElseThrow());
+        assertEquals("--min-release-age=2",
+                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder), 2, true));
     }
 
     @Test
     void minimumFrontendPackageAge_npmTooOld_fallsBackToBeforeArgument() {
-        Options npmOptions = new MockOptions(npmFolder);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, 2, false);
-        assertTrue(arg.isPresent());
-        assertTrue(arg.get().startsWith("--before="),
-                "Older npm should fall back to --before, was: " + arg.get());
+        String arg = TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), 2, false);
+        assertTrue(arg.startsWith("--before="),
+                "Older npm should fall back to --before, was: " + arg);
     }
 
     @Test
-    void minimumFrontendPackageAge_pnpm_addsMinimumReleaseAgeArgument() {
-        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(pnpmOptions, 2, false);
+    void minimumFrontendPackageAge_pnpm_usesMinimumReleaseAgeInMinutes() {
         // 2 days = 2880 minutes; pnpm setting form
-        assertEquals("--config.minimum-release-age=2880", arg.orElseThrow());
+        assertEquals("--config.minimum-release-age=2880",
+                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnablePnpm(true), 2,
+                        false));
     }
 
     @Test
-    void minimumFrontendPackageAge_bun_addsMinimumReleaseAgeInSeconds() {
-        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true);
+    void minimumFrontendPackageAge_bun_usesMinimumReleaseAgeInSeconds() {
         // 2 days = 172800 seconds
-        assertEquals("--minimum-release-age=172800", TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(bunOptions, 2, false)
-                .orElseThrow());
+        assertEquals("--minimum-release-age=172800",
+                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true), 2,
+                        false));
     }
 
     @Test
     void resolveMinimumFrontendPackageAge_nothingConfigured_usesDefault() {
-        FrontendTools tools = Mockito.mock(FrontendTools.class);
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.anyString(), Mockito.any()))
-                .thenReturn(Optional.empty());
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
 
-        assertEquals(
-                TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS,
-                resolveMinimumFrontendPackageAge(new MockOptions(npmFolder),
-                        tools));
+        assertEquals("--min-release-age="
+                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS,
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder), tools).orElseThrow());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_zeroConfigured_noArgument() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder).withMinimumFrontendPackageAgeDays(0),
+                tools).isPresent());
     }
 
     @Test
     void resolveMinimumFrontendPackageAge_npmrcValue_doesNotOverrideIt() {
-        FrontendTools tools = Mockito.mock(FrontendTools.class);
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
                 Mockito.eq("min-release-age"), Mockito.eq(npmFolder)))
                 .thenReturn(Optional.of("7"));
 
-        // 0 means no argument is passed, so npm applies its own configuration
-        assertEquals(0, resolveMinimumFrontendPackageAge(
-                new MockOptions(npmFolder), tools));
+        // No argument is passed, so npm applies its own configuration
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), tools).isPresent());
     }
 
     @Test
     void resolveMinimumFrontendPackageAge_configuredInVaadin_overridesNpmrcValue() {
-        FrontendTools tools = Mockito.mock(FrontendTools.class);
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
                 Mockito.eq("min-release-age"), Mockito.eq(npmFolder)))
                 .thenReturn(Optional.of("7"));
 
-        assertEquals(3, resolveMinimumFrontendPackageAge(
-                new MockOptions(npmFolder).withMinimumFrontendPackageAgeDays(3),
-                tools));
+        assertEquals("--min-release-age=3",
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder)
+                                .withMinimumFrontendPackageAgeDays(3),
+                        tools).orElseThrow());
     }
 
     @Test
@@ -866,16 +854,25 @@ class TaskRunNpmInstallTest {
                 minimumReleaseAge = 604800
                 """);
 
-        assertEquals(0,
-                resolveMinimumFrontendPackageAge(
-                        new MockOptions(npmFolder).withEnableBun(true),
-                        Mockito.mock(FrontendTools.class)));
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder).withEnableBun(true),
+                mockToolsWithoutMinimumReleaseAge()).isPresent());
     }
 
-    private int resolveMinimumFrontendPackageAge(Options options,
-            FrontendTools tools) {
-        return TaskRunNpmInstall.resolveMinimumFrontendPackageAgeDays(options,
-                tools, List.of("npm"), true,
+    private FrontendTools mockToolsWithoutMinimumReleaseAge() {
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+                .thenReturn(true);
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.anyString(), Mockito.any()))
+                .thenReturn(Optional.empty());
+        return tools;
+    }
+
+    private Optional<String> resolveMinimumFrontendPackageAgeArgument(
+            Options options, FrontendTools tools) {
+        return TaskRunNpmInstall.resolveMinimumFrontendPackageAgeArgument(
+                options, tools, List.of("npm"),
                 LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
     }
 

@@ -306,17 +306,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        Integer configuredPackageAgeDays = options
-                .getMinimumFrontendPackageAgeDays();
-        if (configuredPackageAgeDays == null || configuredPackageAgeDays > 0) {
-            boolean npmSupportsMinReleaseAge = !options.isEnableBun()
-                    && !options.isEnablePnpm()
-                    && tools.npmSupportsMinReleaseAge(npmExecutable);
-            int packageAgeDays = resolveMinimumFrontendPackageAgeDays(options,
-                    tools, npmExecutable, npmSupportsMinReleaseAge, logger);
-            getMinimumFrontendPackageAgeArgument(options, packageAgeDays,
-                    npmSupportsMinReleaseAge).ifPresent(npmInstallCommand::add);
-        }
+        resolveMinimumFrontendPackageAgeArgument(options, tools, npmExecutable,
+                logger).ifPresent(npmInstallCommand::add);
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
@@ -456,14 +447,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Resolves how old a frontend package version must be before the active
-     * package manager is allowed to install it.
+     * Resolves the install argument that stops the active package manager from
+     * installing frontend package versions that are too new, or nothing if the
+     * age should not be restricted from here.
      * <p>
-     * A value configured through Vaadin is always used as is. When nothing is
-     * configured, the package manager is asked what it resolves for its own
-     * minimum release age setting; if it already has one, {@code 0} is returned
-     * so that no argument is passed and the package manager applies its own
-     * configuration. Only when neither is configured does
+     * A value configured through Vaadin is always used as is, {@code 0}
+     * disabling the check. When nothing is configured, the package manager is
+     * asked what it resolves for its own minimum release age setting; if it
+     * already has one, no argument is passed so that the package manager
+     * applies its own configuration. Only when neither is configured does
      * {@link #DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} apply.
      *
      * @param options
@@ -473,32 +465,40 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            configuration
      * @param toolCommand
      *            the npm, pnpm or bun command used for the install
-     * @param npmSupportsMinReleaseAge
-     *            {@code true} if the active npm understands
-     *            {@code --min-release-age} (npm 11.10+)
      * @param logger
      *            the logger to report the resolved source of the value to
-     * @return the minimum age in days, or {@code 0} to not restrict the age
+     * @return the install argument, or an empty optional if none should be
+     *         passed
      */
-    static int resolveMinimumFrontendPackageAgeDays(Options options,
-            FrontendTools tools, List<String> toolCommand,
-            boolean npmSupportsMinReleaseAge, Logger logger) {
+    static Optional<String> resolveMinimumFrontendPackageAgeArgument(
+            Options options, FrontendTools tools, List<String> toolCommand,
+            Logger logger) {
         Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
+        if (configuredDays != null && configuredDays == 0) {
+            return Optional.empty();
+        }
+        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(toolCommand);
+        int days;
         if (configuredDays != null) {
-            return configuredDays;
+            days = configuredDays;
+        } else {
+            Optional<String> packageManagerValue = getPackageManagerMinimumReleaseAge(
+                    options, tools, toolCommand, npmSupportsMinReleaseAge);
+            if (packageManagerValue.isPresent()) {
+                logger.info(
+                        "Keeping the minimum frontend package age configured for {} "
+                                + "({}) instead of applying the Vaadin default. Set the "
+                                + "'{}' parameter to override it.",
+                        getToolName(options), packageManagerValue.get(),
+                        InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
+                return Optional.empty();
+            }
+            days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
         }
-        Optional<String> packageManagerValue = getPackageManagerMinimumReleaseAge(
-                options, tools, toolCommand, npmSupportsMinReleaseAge);
-        if (packageManagerValue.isPresent()) {
-            logger.info(
-                    "Keeping the minimum frontend package age configured for {} "
-                            + "({}) instead of applying the Vaadin default. Set the "
-                            + "'{}' parameter to override it.",
-                    getToolName(options), packageManagerValue.get(),
-                    InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
-            return 0;
-        }
-        return DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
+        return Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
+                npmSupportsMinReleaseAge));
     }
 
     /**
@@ -571,42 +571,38 @@ public class TaskRunNpmInstall implements FallibleCommand {
     /**
      * Builds the install argument that prevents npm, pnpm or bun from
      * installing frontend package versions newer than the given number of days.
-     * Returns an empty optional when the age is not restricted.
      *
      * @param options
      *            current build options
      * @param days
-     *            the minimum age in days, or {@code 0} to not restrict the age
+     *            the minimum age in days, always positive
      * @param npmSupportsMinReleaseAge
      *            {@code true} if the active npm understands
      *            {@code --min-release-age} (npm 11.10+); when {@code false} the
      *            legacy {@code --before=<date>} flag is used instead. Ignored
      *            when bun or pnpm is enabled.
      */
-    static Optional<String> getMinimumFrontendPackageAgeArgument(
-            Options options, int days, boolean npmSupportsMinReleaseAge) {
-        if (days <= 0) {
-            return Optional.empty();
-        }
+    static String getMinimumFrontendPackageAgeArgument(Options options,
+            int days, boolean npmSupportsMinReleaseAge) {
         if (options.isEnableBun()) {
             // bun: --minimum-release-age takes a value in seconds
             long seconds = (long) days * 24 * 60 * 60;
-            return Optional.of("--minimum-release-age=" + seconds);
+            return "--minimum-release-age=" + seconds;
         }
         if (options.isEnablePnpm()) {
             // pnpm: minimumReleaseAge is a setting (in minutes), so it has
             // to be passed via the --config.<name> CLI form, not as a
             // top-level option
             long minutes = (long) days * 24 * 60;
-            return Optional.of("--config.minimum-release-age=" + minutes);
+            return "--config.minimum-release-age=" + minutes;
         }
         if (npmSupportsMinReleaseAge) {
             // npm 11.10+: --min-release-age takes a value in days
-            return Optional.of("--min-release-age=" + days);
+            return "--min-release-age=" + days;
         }
         // Older npm: --before takes any Date.parse-able string
         String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();
-        return Optional.of("--before=" + before);
+        return "--before=" + before;
     }
 
     private void consumeProcessOutput(Process process,
