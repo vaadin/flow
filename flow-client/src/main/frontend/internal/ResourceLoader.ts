@@ -17,31 +17,12 @@
 // TypeScript port of com.vaadin.client.ResourceLoader. The ResourceLoader class
 // below composes the ResourceRegistry dedup/fanout kernel. It covers the
 // non-stylesheet loaders (script / inline-script / dynamic-import) plus DOM init
-// and clear-by-id, as well as the stylesheet/HTML loaders (which need the
+// and clear-by-id, as well as the stylesheet loaders (which need the
 // BrowserInfo Safari/Opera quirks).
 
 import { isChrome, isEdge, isIE, isOpera, isSafariOrIOS } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
-
-interface HtmlImports {
-  whenReady: (callback: () => void) => void;
-}
-
-function htmlImports(): HtmlImports | undefined {
-  return (window as unknown as { HTMLImports?: HtmlImports }).HTMLImports;
-}
-
-/** Whether the browser supports HTMLImports.whenReady. */
-export function supportsHtmlWhenReady(): boolean {
-  const imports = htmlImports();
-  return !!(imports && imports.whenReady);
-}
-
-/** Registers a handler to run once HTML imports are ready. */
-export function addHtmlImportsReadyHandler(handler: () => void): void {
-  htmlImports()?.whenReady(handler);
-}
 
 /**
  * Wires onLoad/onError handlers on a link or script element, clearing all
@@ -147,8 +128,6 @@ interface ResourceErrorHandler {
 export class ResourceLoader {
   private readonly resources: ResourceRegistry;
 
-  private readonly supportsHtmlWhenReadyValue = supportsHtmlWhenReady();
-
   constructor(errorHandler: ResourceErrorHandler, initFromDom: boolean) {
     this.resources = new ResourceRegistry(errorHandler);
     if (initFromDom) {
@@ -170,7 +149,7 @@ export class ResourceLoader {
     for (const link of Array.from(document.getElementsByTagName('link'))) {
       const rel = link.rel?.toLowerCase();
       const href = link.href;
-      if ((rel === 'stylesheet' || rel === 'import') && href) {
+      if (rel === 'stylesheet' && href) {
         this.resources.markLoaded(href);
         const dependencyId = link.getAttribute('data-id');
         if (dependencyId) {
@@ -250,15 +229,6 @@ export class ResourceLoader {
       () => resourceLoadListener.onLoad(event),
       () => resourceLoadListener.onError(event)
     );
-  }
-
-  /** Runs a task once HTML imports are ready, or immediately if unsupported. */
-  runWhenHtmlImportsReady(task: () => void): void {
-    if (this.supportsHtmlWhenReadyValue) {
-      addHtmlImportsReadyHandler(task);
-    } else {
-      task();
-    }
   }
 
   /** Loads an external stylesheet, optionally tracked by a dependency id (deduped). */
