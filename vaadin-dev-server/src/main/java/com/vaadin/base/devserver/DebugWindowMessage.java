@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * A message sent to the debug window.
  * 
- * @since 9.0
+ * @since 24.3.22
  */
 public class DebugWindowMessage implements Serializable {
 

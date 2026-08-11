@@ -82,7 +82,7 @@ public class DefaultDeploymentConfiguration
      * Default value for {@link #getMaxRequestBodySize()} = {@value} characters
      * (10&nbsp;MB).
      * 
-     * @since 25.3
+     * @since 25.2.2
      */
     public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = 10L * 1024 * 1024;
 
@@ -225,7 +225,7 @@ public class DefaultDeploymentConfiguration
      * <p>
      * The default is 10&nbsp;MB.
      * 
-     * @since 25.3
+     * @since 25.2.2
      */
     @Override
     public long getMaxRequestBodySize() {

@@ -42,7 +42,7 @@ import com.vaadin.flow.server.VaadinSession;
  * Most of the other methods should not be invoked, and they may throw an
  * exception if called.
  * 
- * @since 24.3
+ * @since 24.3.22
  */
 public final class DevBundleBuildingHandler implements DevModeHandler {
 
