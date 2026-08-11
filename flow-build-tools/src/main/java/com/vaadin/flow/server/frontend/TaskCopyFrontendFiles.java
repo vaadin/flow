@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
@@ -127,8 +128,8 @@ public class TaskCopyFrontendFiles
             }
         }
         existingFiles.removeAll(handledFiles);
-        existingFiles.forEach(
-                filename -> new File(targetDirectory, filename).delete());
+        existingFiles.forEach(filename -> FileIOUtils
+                .deleteQuietly(new File(targetDirectory, filename)));
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);

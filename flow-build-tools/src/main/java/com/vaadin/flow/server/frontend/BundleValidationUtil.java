@@ -374,8 +374,12 @@ public final class BundleValidationUtil {
                         dep.getKey(), dep.getValue());
             }
 
+            final Map<String, String> pnpmOverrides = options.isEnablePnpm()
+                    ? new PnpmWorkspaceFile(options.getNpmFolder())
+                            .getOverrides()
+                    : Map.of();
             final String hash = TaskUpdatePackages
-                    .generatePackageJsonHash(packageJson);
+                    .generatePackageJsonHash(packageJson, pnpmOverrides);
             ((ObjectNode) packageJson.get(NodeUpdater.VAADIN_DEP_KEY))
                     .put(NodeUpdater.HASH_KEY, hash);
 
@@ -1001,7 +1005,7 @@ public final class BundleValidationUtil {
                     "Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
-            FileIOUtils.deleteFileQuietly(needsBuildFile);
+            FileIOUtils.deleteQuietly(needsBuildFile);
         }
     }
 
