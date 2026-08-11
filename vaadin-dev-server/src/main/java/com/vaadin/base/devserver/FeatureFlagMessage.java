@@ -23,7 +23,7 @@ import com.vaadin.experimental.Feature;
 /**
  * Message with feature flags sent to the debug window.
  * 
- * @since 9.0
+ * @since 24.3.22
  */
 public class FeatureFlagMessage implements Serializable {
     private List<Feature> features;

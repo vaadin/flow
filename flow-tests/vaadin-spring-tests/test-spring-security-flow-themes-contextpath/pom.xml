@@ -31,11 +31,6 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>test-lumo-theme</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
       <artifactId>vaadin-test-spring-helpers</artifactId>
       <version>${project.version}</version>
     </dependency>

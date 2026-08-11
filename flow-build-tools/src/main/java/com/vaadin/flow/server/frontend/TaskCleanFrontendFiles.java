@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 
@@ -51,6 +52,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
             Constants.PACKAGE_LOCK_BUN_1_2, TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
+            PnpmWorkspaceFile.WORKSPACE_FILE,
             FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();
 
@@ -82,9 +84,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         }
         // If hilla is not used clean generated hilla files.
         if (!hillaUsed) {
-            hillaGenerated.forEach(
-                    file -> new File(options.getFrontendGeneratedFolder(), file)
-                            .delete());
+            hillaGenerated.forEach(file -> FileIOUtils.deleteQuietly(
+                    new File(options.getFrontendGeneratedFolder(), file)));
         }
     }
 
@@ -98,14 +99,9 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         for (File file : filesToRemove) {
             log().debug("Removing file {}", file);
             try {
-                if (file.isDirectory()) {
-                    FrontendUtils.deleteDirectory(file);
-                } else {
-                    file.delete();
-                }
+                FileIOUtils.delete(file);
             } catch (IOException ioe) {
-                log().warn("Could not delete file {} due to {}", file,
-                        ioe.getMessage());
+                log().warn(ioe.getMessage());
                 log().debug("Failed to remove file", ioe);
             }
         }
