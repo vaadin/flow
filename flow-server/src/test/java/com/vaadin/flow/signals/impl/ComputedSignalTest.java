@@ -15,11 +15,17 @@
  */
 package com.vaadin.flow.signals.impl;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jspecify.annotations.Nullable;
@@ -32,6 +38,7 @@ import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
+import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /*
  * The original computed signal was also a cached signal. For historical
@@ -46,6 +54,120 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * that do no caching.
  */
 class ComputedSignalTest extends SignalTestBase {
+
+    @Test
+    void cached_updateNotificationVsLastListenerDisposal_noDeadlock()
+            throws Exception {
+        // Regression test for #25166: a lock-order inversion between the
+        // CachedSignal monitor and a dependency's SignalTree lock.
+        //
+        // Committing thread: SharedValueSignal.set commits under the tree lock
+        // and, while still holding it, re-runs an effect that reads a cached
+        // signal. Registering that usage enters the CachedSignal monitor, so
+        // the committing thread wants the monitor while holding the tree lock.
+        //
+        // Disposer thread: disposing the last other listener of the cached
+        // signal runs the un-count callback, which (before the fix) removed the
+        // dependency registration -- acquiring the tree lock -- while holding
+        // the CachedSignal monitor. Opposite acquire orders form a deadlock.
+        var list = new SharedListSignal<>(String.class);
+        var child = list.insertLast("initial").signal();
+
+        // Like a typical derived list: depends on the list STRUCTURE only
+        // (peek does not track), so a child update does not invalidate it.
+        Signal<List<String>> cached = Signal.cached(Signal.computed(() -> list
+                .get().stream().map(SharedValueSignal::peek).toList()));
+
+        // Listener B subscribes to the cached signal only. Disposing it while
+        // effect A is mid-revalidation makes it the last active listener, so
+        // the un-count path takes monitor -> tree lock.
+        Effect listenerB = new Effect(cached::get, Runnable::run);
+
+        var insideNotification = new CountDownLatch(1);
+        var effectARuns = new AtomicInteger();
+
+        // Effect A depends on the child value directly (so an update re-runs it
+        // inline on the committing thread, under the tree lock) and on the
+        // cached signal (so the re-run wants the CachedSignal monitor).
+        new Effect(() -> {
+            if (effectARuns.incrementAndGet() == 2) {
+                // Now running on the committing thread while it holds the tree
+                // lock. Give the disposer time to enter the CachedSignal
+                // monitor before re-reading the cached signal.
+                insideNotification.countDown();
+                sleepQuietly(300);
+            }
+            child.get();
+            cached.get();
+        }, Runnable::run);
+
+        AtomicReference<Throwable> disposerFailure = new AtomicReference<>();
+        var disposer = new Thread(() -> {
+            try {
+                assertTrue(insideNotification.await(10, TimeUnit.SECONDS));
+                listenerB.dispose();
+            } catch (Throwable t) {
+                disposerFailure.set(t);
+            }
+        }, "effect-disposer");
+        disposer.setDaemon(true);
+
+        AtomicReference<Throwable> committerFailure = new AtomicReference<>();
+        // The commit runs on its own thread: with the bug the committing thread
+        // deadlocks inside set() too, so the test thread must stay free to
+        // observe the hang instead of blocking on the commit itself.
+        var committer = new Thread(() -> {
+            try {
+                child.set("changed");
+            } catch (Throwable t) {
+                committerFailure.set(t);
+            }
+        }, "effect-committer");
+        committer.setDaemon(true);
+
+        disposer.start();
+        committer.start();
+
+        committer.join(10_000);
+        disposer.join(10_000);
+
+        if (committer.isAlive() || disposer.isAlive()) {
+            ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+            long[] deadlocked = tmx.findDeadlockedThreads();
+            StringBuilder sb = new StringBuilder(
+                    "Lock-order inversion between the SignalTree lock and the "
+                            + "CachedSignal monitor (see #25166). committer alive="
+                            + committer.isAlive() + ", disposer alive="
+                            + disposer.isAlive());
+            if (deadlocked != null) {
+                sb.append(", deadlocked thread IDs=")
+                        .append(Arrays.toString(deadlocked));
+                for (var info : tmx.getThreadInfo(deadlocked, true, true)) {
+                    sb.append("\n  ").append(info.getThreadName())
+                            .append(" waiting on ").append(info.getLockName())
+                            .append(" owned by ")
+                            .append(info.getLockOwnerName());
+                }
+            }
+            fail(sb.toString());
+        }
+        if (committerFailure.get() != null) {
+            throw new AssertionError("Committer thread failed",
+                    committerFailure.get());
+        }
+        if (disposerFailure.get() != null) {
+            throw new AssertionError("Disposer thread failed",
+                    disposerFailure.get());
+        }
+    }
+
+    private static void sleepQuietly(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
     @Test
     void cached_constantCallback_throws() {
