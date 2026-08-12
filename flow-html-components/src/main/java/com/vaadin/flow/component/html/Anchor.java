@@ -313,7 +313,7 @@ public class Anchor extends HtmlContainer
         }
         this.href = href;
         assignHrefAttribute();
-        scheduleHrefValidation();
+        scheduleHrefValidation(href);
     }
 
     /**
@@ -361,13 +361,11 @@ public class Anchor extends HtmlContainer
      * when a component tree is created in a background thread without holding
      * the session lock, and only attached to the UI later on.
      */
-    private void scheduleHrefValidation() {
+    private void scheduleHrefValidation(String href) {
         cancelPendingHrefValidation();
         if (getUI().isEmpty()) {
             pendingHrefValidation = UrlUtil.validateUrlOnAttach(this, "href",
-                    "setUnsafeHref(String)",
-                    () -> href instanceof String hrefValue ? hrefValue : null,
-                    this::clearHref);
+                    "setUnsafeHref(String)", href, this::clearHref);
         }
     }
 

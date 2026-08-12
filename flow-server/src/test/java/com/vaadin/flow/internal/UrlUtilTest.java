@@ -18,21 +18,30 @@ package com.vaadin.flow.internal;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UrlUtilTest {
@@ -290,6 +299,118 @@ class UrlUtilTest {
             assertFalse(UrlUtil.isSafeUrl("mailto:a@b.com"));
             assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)"));
         }
+    }
+
+    @Test
+    void isSafeUrl_detachedComponentWithoutService_usesDefaults() {
+        TestComponent component = new TestComponent();
+
+        assertNull(VaadinService.getCurrent(),
+                "The scenario requires that no service is available on this thread");
+        assertTrue(UrlUtil.isSafeUrl("https://vaadin.com", component));
+        assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)", component));
+    }
+
+    @Test
+    void isSafeUrl_detachedComponentWithCurrentService_usesCurrentService() {
+        TestComponent component = new TestComponent();
+        VaadinService service = createService("custom");
+
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
+            assertTrue(UrlUtil.isSafeUrl("custom:foo", component));
+            assertFalse(UrlUtil.isSafeUrl("https://vaadin.com", component));
+        }
+    }
+
+    @Test
+    void isSafeUrl_attachedComponent_usesServiceOfOwnUi() {
+        TestComponent component = new TestComponent();
+        createUI("custom").add(component);
+
+        assertTrue(UrlUtil.isSafeUrl("custom:foo", component));
+        assertFalse(UrlUtil.isSafeUrl("https://vaadin.com", component));
+    }
+
+    @Test
+    void validateUrlOnAttach_unsafeInOwnUi_clearsValueAndThrowsOnAttach() {
+        TestComponent component = new TestComponent();
+        AtomicBoolean cleared = new AtomicBoolean();
+        UrlUtil.validateUrlOnAttach(component, "href", "setUnsafeHref(String)",
+                "http://example.com", () -> cleared.set(true));
+
+        UI ui = createUI("https");
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ui.add(component));
+
+        assertTrue(exception.getMessage().contains("http://example.com"));
+        assertTrue(exception.getMessage().contains("setUnsafeHref(String)"));
+        assertTrue(cleared.get(),
+                "The value should be cleared before the exception is thrown");
+    }
+
+    @Test
+    void validateUrlOnAttach_safeInOwnUi_attachSucceeds() {
+        TestComponent component = new TestComponent();
+        AtomicBoolean cleared = new AtomicBoolean();
+        UrlUtil.validateUrlOnAttach(component, "href", "setUnsafeHref(String)",
+                "https://example.com", () -> cleared.set(true));
+
+        createUI("https").add(component);
+
+        assertFalse(cleared.get());
+    }
+
+    @Test
+    void validateUrlOnAttach_canceledBeforeAttach_notValidated() {
+        TestComponent component = new TestComponent();
+        AtomicBoolean cleared = new AtomicBoolean();
+        Registration registration = UrlUtil.validateUrlOnAttach(component,
+                "href", "setUnsafeHref(String)", "http://example.com",
+                () -> cleared.set(true));
+
+        registration.remove();
+        createUI("https").add(component);
+
+        assertFalse(cleared.get());
+    }
+
+    @Test
+    void validateUrlOnAttach_canceledAfterAttach_doesNotFail() {
+        TestComponent component = new TestComponent();
+        Registration registration = UrlUtil.validateUrlOnAttach(component,
+                "href", "setUnsafeHref(String)", "https://example.com", () -> {
+                });
+
+        createUI("https").add(component);
+        // The listener has already removed itself through the attach event
+        registration.remove();
+    }
+
+    private static UI createUI(String safeUrlSchemes) {
+        VaadinService service = createService(safeUrlSchemes);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(session.getService()).thenReturn(service);
+
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        return ui;
+    }
+
+    private static VaadinService createService(String safeUrlSchemes) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        return service;
+    }
+
+    @Tag("div")
+    private static class TestComponent extends Component {
     }
 
     @Test

@@ -195,10 +195,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     private void scheduleSrcValidation(String src) {
         cancelPendingSrcValidation();
-        if (src != null && getUI().isEmpty()) {
+        if (getUI().isEmpty()) {
             pendingSrcValidation = UrlUtil.validateUrlOnAttach(this, "src",
-                    "setUnsafeSrc(String)", this::getSrc,
-                    () -> set(srcDescriptor, ""));
+                    "setUnsafeSrc(String)", src, () -> set(srcDescriptor, ""));
         }
     }
 

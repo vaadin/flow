@@ -33,7 +33,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
@@ -331,9 +330,8 @@ public class UrlUtil {
      * @param unsafeMethod
      *            the signature of the method that bypasses validation, for
      *            example {@code "setUnsafeHref(String)"}
-     * @param urlProvider
-     *            provides the URL to validate on attach, or {@code null} if
-     *            there is nothing to validate any more
+     * @param url
+     *            the URL to validate on attach, not {@code null}
      * @param urlClearer
      *            clears the URL value of the component
      * @return a registration for canceling the pending validation, for example
@@ -341,8 +339,7 @@ public class UrlUtil {
      * @since 25.3
      */
     public static Registration validateUrlOnAttach(Component component,
-            String type, String unsafeMethod,
-            SerializableSupplier<String> urlProvider,
+            String type, String unsafeMethod, String url,
             SerializableRunnable urlClearer) {
         AtomicBoolean listenerFired = new AtomicBoolean();
         Registration registration = component.addAttachListener(event -> {
@@ -352,8 +349,7 @@ public class UrlUtil {
             listenerFired.set(true);
             event.unregisterListener();
 
-            String url = urlProvider.get();
-            if (url != null && !isSafeUrl(url, component)) {
+            if (!isSafeUrl(url, component)) {
                 // Clear the value first so that an unsafe URL isn't sent to
                 // the client even if the exception is caught
                 urlClearer.run();
@@ -382,15 +378,11 @@ public class UrlUtil {
 
     private static Set<String> getSafeSchemes(VaadinService service) {
         if (service == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug(
-                        "No VaadinService available on current thread; "
-                                + "falling back to default safe URL schemes. "
-                                + "Any custom {} configuration will not apply "
-                                + "here, but components re-check the URL "
-                                + "against it when they are attached.",
-                        InitParameters.URL_SAFE_SCHEMES);
-            }
+            getLogger().debug("No VaadinService available on current thread; "
+                    + "falling back to default safe URL schemes. Any custom {} "
+                    + "configuration will not apply here, but components "
+                    + "re-check the URL against it when they are attached.",
+                    InitParameters.URL_SAFE_SCHEMES);
             return Constants.DEFAULT_URL_SAFE_SCHEMES;
         }
         return service.getDeploymentConfiguration().getUrlSafeSchemes();

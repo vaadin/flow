@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -182,6 +185,39 @@ class IFrameTest extends ComponentTest {
     }
 
     @Test
+    void setSrc_attachedWithSafeUrl_attachedAgainWithoutValidation() {
+        UI attachTo = createUI("https");
+        IFrame iframe = new IFrame();
+        attachTo.add(iframe);
+
+        // Validated immediately against the UI, so nothing is scheduled
+        iframe.setSrc("https://example.com");
+        attachTo.remove(iframe);
+        attachTo.add(iframe);
+
+        assertEquals("https://example.com", iframe.getSrc());
+    }
+
+    @Test
+    void setSrcStreamResource_afterSetSrc_cancelsValidationOnAttach() {
+        UI attachTo = createUI("https");
+        // Generating a URL for a stream resource needs a current UI
+        UI.setCurrent(attachTo);
+        try {
+            IFrame iframe = new IFrame();
+            iframe.setSrc("http://example.com");
+            iframe.setSrc(new StreamResource("file.txt",
+                    () -> new ByteArrayInputStream(new byte[0])));
+
+            attachTo.add(iframe);
+
+            assertTrue(iframe.getElement().hasAttribute("src"));
+        } finally {
+            UI.setCurrent(null);
+        }
+    }
+
+    @Test
     void setUnsafeSrc_afterSetSrc_cancelsValidationOnAttach() {
         IFrame iframe = new IFrame();
         iframe.setSrc("http://example.com");
@@ -207,6 +243,8 @@ class IFrameTest extends ComponentTest {
                 .thenReturn(configuration);
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(session.getResourceRegistry())
+                .thenReturn(new StreamResourceRegistry(session));
 
         UI attachTo = new UI();
         attachTo.getInternals().setSession(session);
