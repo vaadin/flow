@@ -15,40 +15,31 @@
  */
 package com.vaadin.flow.data.binder;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.Default;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.validator.BeanValidator;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Specification of the JSR-303 validation group support requested in
- * <a href="https://github.com/vaadin/flow/issues/7032">flow#7032</a>: an
- * application developer should be able to configure the validation group(s) a
- * {@link BeanValidationBinder} uses by default, and to run a single validation
- * pass against a different group.
- * <p>
- * The tests are split in two halves:
- * <ul>
- * <li>{@code current_*} tests pin down what the binder does today, i.e. the gap
- * the feature has to close. They pass on an unmodified binder.</li>
- * <li>{@code target_*} tests describe the semantics the new API has to
- * implement. Since that API does not exist yet, they use a hand-written,
- * group-aware validator plugged in through the protected
- * {@link BeanValidationBinder#configureBinding} hook - which is also the
- * workaround an application developer has to write today.</li>
- * </ul>
+ * Tests for the JSR-303 validation group support of
+ * {@link BeanValidationBinder}, see
+ * <a href="https://github.com/vaadin/flow/issues/7032">flow#7032</a>: the
+ * validation group(s) used by the binder can be configured, and a single
+ * validation can be run against other groups without changing the configured
+ * ones.
  */
 class BeanValidationGroupsTest {
 
@@ -56,6 +47,13 @@ class BeanValidationGroupsTest {
     }
 
     public interface Publish {
+    }
+
+    /**
+     * Group that inherits from {@link Publish}, i.e. validating against it also
+     * validates the constraints of the Publish group.
+     */
+    public interface FinalPublish extends Publish {
     }
 
     public static class Article implements Serializable {
@@ -103,27 +101,27 @@ class BeanValidationGroupsTest {
 
     /**
      * Baseline: without any group configuration only constraints belonging to
-     * the {@link Default} group are validated. Whatever the new API looks like,
-     * this must keep working exactly like this when no groups are configured.
+     * the {@link Default} group are validated.
      */
     @Test
-    void current_noGroupsConfigured_defaultGroupConstraintsAreValidated() {
-        Binder<Article> binder = bind(
+    void noGroupsConfigured_defaultGroupConstraintsAreValidated() {
+        BeanValidationBinder<Article> binder = bind(
                 new BeanValidationBinder<>(Article.class));
 
         titleField.setValue("");
 
         assertFalse(binder.isValid(),
                 "empty @NotEmpty title should be invalid");
+        assertEquals(0, binder.getValidationGroups().length);
     }
 
     /**
-     * The gap: constraints that declare an explicit group are silently never
-     * validated by the binder, and there is no supported way to opt in to them.
+     * Baseline: without any group configuration constraints that declare a
+     * group are not validated.
      */
     @Test
-    void current_noGroupsConfigured_groupScopedConstraintsAreIgnored() {
-        Binder<Article> binder = bind(
+    void noGroupsConfigured_groupScopedConstraintsAreIgnored() {
+        BeanValidationBinder<Article> binder = bind(
                 new BeanValidationBinder<>(Article.class));
 
         titleField.setValue("Flow 25");
@@ -133,35 +131,37 @@ class BeanValidationGroupsTest {
         bodyField.setValue("short");
 
         assertTrue(binder.isValid(),
-                "group scoped constraints are not validated today");
+                "group scoped constraints should not be validated");
     }
 
-    /**
-     * The required indicator ignores groups as well: a constraint that only
-     * applies to the Publish group marks the field as required even though that
-     * constraint is never validated. Once groups are configurable the indicator
-     * has to follow the groups that are actually in use.
-     */
     @Test
-    void current_requiredIndicator_ignoresConstraintGroups() {
-        bind(new BeanValidationBinder<>(Article.class));
-
-        assertTrue(titleField.isRequiredIndicatorVisible(),
-                "@NotEmpty in the Default group should mark the field required");
-        assertTrue(summaryField.isRequiredIndicatorVisible(),
-                "@NotEmpty(groups = Publish.class) marks the field required "
-                        + "even though it is never validated");
-    }
-
-    /**
-     * Target: the group configured on the binder is used for every validation,
-     * including the implicit one triggered by a field value change.
-     */
-    @Test
-    void target_configuredGroup_isUsedForAllValidation() {
-        GroupAwareBinder<Article> binder = bind(
-                new GroupAwareBinder<>(Article.class));
+    void configuredGroups_areUsedForAllValidation() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
         binder.setValidationGroups(Publish.class);
+
+        titleField.setValue("Flow 25");
+        summaryField.setValue("A summary");
+        bodyField.setValue("A long enough body");
+
+        assertTrue(binder.isValid());
+        assertFalse(summaryField.isInvalid());
+
+        summaryField.setValue("");
+
+        assertFalse(binder.isValid(),
+                "@NotEmpty(groups = Publish.class) should be validated");
+        assertTrue(summaryField.isInvalid(),
+                "the field should be marked invalid when its value changes");
+    }
+
+    @Test
+    void constructorGroups_areUsedForAllValidation() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, Publish.class));
+
+        assertArrayEquals(new Class<?>[] { Publish.class },
+                binder.getValidationGroups());
 
         titleField.setValue("Flow 25");
         summaryField.setValue("");
@@ -169,20 +169,17 @@ class BeanValidationGroupsTest {
 
         assertFalse(binder.isValid(),
                 "@NotEmpty(groups = Publish.class) should be validated");
-
-        summaryField.setValue("A summary");
-        assertTrue(binder.isValid());
     }
 
     /**
-     * Target: group selection follows the JSR-303 rules, i.e. configuring a
-     * group replaces the Default group instead of adding to it. Both groups
-     * have to be listed explicitly to validate both.
+     * Group selection follows the JSR-303 rules, i.e. configuring a group
+     * replaces the Default group instead of adding to it. Both groups have to
+     * be listed explicitly to validate both.
      */
     @Test
-    void target_configuredGroup_replacesDefaultGroup() {
-        GroupAwareBinder<Article> binder = bind(
-                new GroupAwareBinder<>(Article.class));
+    void configuredGroups_replaceDefaultGroup() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
         binder.setValidationGroups(Publish.class);
 
         // violates @NotEmpty, which is in the Default group
@@ -191,103 +188,191 @@ class BeanValidationGroupsTest {
         bodyField.setValue("A long enough body");
 
         assertTrue(binder.isValid(),
-                "Default group constraints are not validated when another "
-                        + "group is configured");
+                "Default group constraints should not be validated when "
+                        + "another group is configured");
 
         binder.setValidationGroups(Default.class, Publish.class);
+
         assertFalse(binder.isValid(),
-                "listing Default explicitly validates both groups");
+                "listing Default explicitly should validate both groups");
+    }
+
+    @Test
+    void configuredGroups_inheritedGroupsAreValidated() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, FinalPublish.class));
+
+        titleField.setValue("Flow 25");
+        summaryField.setValue("");
+        bodyField.setValue("A long enough body");
+
+        assertFalse(binder.isValid(),
+                "constraints of the inherited Publish group should be "
+                        + "validated");
+    }
+
+    @Test
+    void noGroupsConfigured_setValidationGroupsWithoutArgumentsRestoresDefault() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, Publish.class));
+        binder.setValidationGroups();
+
+        titleField.setValue("Flow 25");
+        summaryField.setValue("");
+        bodyField.setValue("short");
+
+        assertEquals(0, binder.getValidationGroups().length);
+        assertTrue(binder.isValid());
     }
 
     /**
-     * Target: a one-shot validation against an explicit group does not change
-     * the group configured on the binder.
+     * A one-shot validation uses the given groups without touching the
+     * configured ones, which is what makes it possible to only run e.g. slow or
+     * save time constraints when the user clicks a button.
      */
     @Test
-    void target_oneShotGroup_appliesOnlyToThatCall() {
-        GroupAwareBinder<Article> binder = bind(
-                new GroupAwareBinder<>(Article.class));
+    void oneShotGroups_appliesOnlyToThatValidation() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
 
         titleField.setValue("Flow 25");
         summaryField.setValue("");
         // violates @Size(min = 10) of the Draft group
         bodyField.setValue("short");
 
-        assertTrue(binder.isValid(), "Default group alone is happy");
+        assertTrue(binder.isValid(),
+                "the Default group alone should not be violated");
 
         assertFalse(binder.validate(Draft.class).isOk(),
                 "one-shot validation should use the given group");
 
+        assertEquals(0, binder.getValidationGroups().length,
+                "the configured groups should not be changed");
         assertTrue(binder.isValid(),
-                "the binder should be back to its configured groups");
-        assertEquals(0, binder.getValidationGroups().length);
+                "later validation should use the configured groups again");
     }
 
-    private <T extends Binder<Article>> T bind(T binder) {
+    @Test
+    void oneShotGroups_valueChangeUsesConfiguredGroups() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+
+        assertFalse(binder.validate(Draft.class).isOk());
+        assertTrue(bodyField.isInvalid(),
+                "one-shot validation should mark the field invalid");
+
+        // still too short for the Draft group, but that group is not configured
+        bodyField.setValue("short");
+
+        assertFalse(bodyField.isInvalid(),
+                "validation on value change should use the configured groups");
+    }
+
+    @Test
+    void oneShotGroups_withoutArgumentsUsesConfiguredGroups() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, Publish.class));
+
+        titleField.setValue("");
+        summaryField.setValue("A summary");
+        bodyField.setValue("A long enough body");
+
+        assertTrue(binder.validate(new Class<?>[0]).isOk());
+    }
+
+    /**
+     * Bean level validators, which are the only way to validate class level
+     * constraints with a Binder, can pick up the groups in effect from the
+     * binder.
+     */
+    @Test
+    void oneShotGroups_areVisibleToBeanLevelValidators() {
+        BeanValidationBinder<Article> binder = new BeanValidationBinder<>(
+                Article.class, Publish.class);
+        List<Class<?>[]> seenGroups = new ArrayList<>();
+        binder.withValidator((article, context) -> {
+            BeanValidationBinder<?> source = (BeanValidationBinder<?>) context
+                    .getBinder().orElseThrow();
+            seenGroups.add(source.getValidationGroups());
+            return ValidationResult.ok();
+        });
+        bind(binder);
+
+        titleField.setValue("Flow 25");
+        summaryField.setValue("A summary");
+        bodyField.setValue("A long enough body");
+
+        // a value change validates the bean as well when a bean is set
+        seenGroups.clear();
+
+        binder.validate();
+        binder.validate(Draft.class);
+
+        assertEquals(2, seenGroups.size());
+        assertArrayEquals(new Class<?>[] { Publish.class }, seenGroups.get(0));
+        assertArrayEquals(new Class<?>[] { Draft.class }, seenGroups.get(1));
+    }
+
+    @Test
+    void requiredIndicator_noGroupsConfigured_onlyDefaultGroupCounts() {
+        bind(new BeanValidationBinder<>(Article.class));
+
+        assertTrue(titleField.isRequiredIndicatorVisible(),
+                "@NotEmpty in the Default group should mark the field required");
+        assertFalse(summaryField.isRequiredIndicatorVisible(),
+                "a constraint of a group that is not validated should not "
+                        + "mark the field required");
+    }
+
+    @Test
+    void requiredIndicator_configuredGroupsAreTakenIntoAccount() {
+        bind(new BeanValidationBinder<>(Article.class, Publish.class));
+
+        assertFalse(titleField.isRequiredIndicatorVisible(),
+                "the Default group is not validated when another group is "
+                        + "configured");
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "@NotEmpty(groups = Publish.class) should mark the field "
+                        + "required when the Publish group is configured");
+    }
+
+    @Test
+    void requiredIndicator_followsInheritedGroups() {
+        bind(new BeanValidationBinder<>(Article.class, FinalPublish.class));
+
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "a constraint of an inherited group should mark the field "
+                        + "required");
+    }
+
+    @Test
+    void beanValidator_validatesGivenGroups() {
+        BeanValidator validator = new BeanValidator(Article.class, "summary",
+                Publish.class);
+
+        assertArrayEquals(new Class<?>[] { Publish.class },
+                validator.getValidationGroups());
+        assertTrue(validator.apply("", new ValueContext()).isError());
+        assertFalse(validator.apply("A summary", new ValueContext()).isError());
+        assertFalse(
+                new BeanValidator(Article.class, "summary")
+                        .apply("", new ValueContext()).isError(),
+                "without groups the Publish constraint should be ignored");
+    }
+
+    @Test
+    void binderWithGroupsIsSerializable() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, Publish.class));
+
+        BinderTestBase.testSerialization(binder);
+    }
+
+    private <T extends BeanValidationBinder<Article>> T bind(T binder) {
         binder.bind(titleField, "title");
         binder.bind(summaryField, "summary");
         binder.bind(bodyField, "body");
         binder.setBean(new Article());
         return binder;
-    }
-
-    /**
-     * Sketch of the behaviour the feature has to provide, implemented on top of
-     * the extension points that exist today. This is the workaround an
-     * application developer currently has to write, and it is what the tests
-     * above use as a stand-in for the real API.
-     */
-    private static class GroupAwareBinder<BEAN>
-            extends BeanValidationBinder<BEAN> {
-
-        private Class<?>[] validationGroups = new Class<?>[0];
-
-        private Class<?>[] oneShotGroups;
-
-        GroupAwareBinder(Class<BEAN> beanType) {
-            super(beanType);
-        }
-
-        void setValidationGroups(Class<?>... groups) {
-            validationGroups = groups;
-        }
-
-        Class<?>[] getValidationGroups() {
-            return validationGroups;
-        }
-
-        BinderValidationStatus<BEAN> validate(Class<?>... groups) {
-            oneShotGroups = groups;
-            try {
-                return validate();
-            } finally {
-                oneShotGroups = null;
-            }
-        }
-
-        private Class<?>[] getEffectiveGroups() {
-            return oneShotGroups != null ? oneShotGroups : validationGroups;
-        }
-
-        @Override
-        protected BindingBuilder<BEAN, ?> configureBinding(
-                BindingBuilder<BEAN, ?> binding,
-                PropertyDefinition<BEAN, ?> definition) {
-            // deliberately bypasses BeanValidator, which has no notion of
-            // validation groups
-            Class<?> holderType = definition.getPropertyHolderType();
-            String property = definition.getTopLevelName();
-            Validator<Object> validator = (value, context) -> {
-                Set<? extends ConstraintViolation<?>> violations = Validation
-                        .buildDefaultValidatorFactory().getValidator()
-                        .validateValue(holderType, property, value,
-                                getEffectiveGroups());
-                return violations.stream().findFirst()
-                        .map(violation -> ValidationResult
-                                .error(violation.getMessage()))
-                        .orElseGet(ValidationResult::ok);
-            };
-            return binding.withValidator(validator);
-        }
     }
 }
