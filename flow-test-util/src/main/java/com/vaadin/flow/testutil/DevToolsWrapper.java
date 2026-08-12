@@ -10,28 +10,37 @@ package com.vaadin.flow.testutil;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.devtools.Command;
 import org.openqa.selenium.devtools.Connection;
-import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.ConverterFunctions;
 import org.openqa.selenium.devtools.SeleniumCdpConnection;
-import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
-import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v148.network.Network;
-import org.openqa.selenium.remote.Augmenter;
+import org.openqa.selenium.json.Json;
 import org.openqa.selenium.remote.http.ClientConfig;
 
+/**
+ * Controls browser network conditions through the Chrome DevTools Protocol.
+ * <p>
+ * The CDP commands are built by hand rather than through the generated
+ * {@code org.openqa.selenium.devtools.vNNN} classes or the version-independent
+ * {@code Domains} facade in front of them. Selenium picks a generated
+ * implementation by matching the browser major version against the CDP
+ * implementations it bundles, and it only ever falls back to an implementation
+ * older than the browser. A Selenium release bundles the few newest Chrome
+ * versions, so a browser older than all of them matches nothing and resolves to
+ * a no-op implementation that throws on every call. The commands used here are
+ * part of the stable CDP surface and are sent over the raw connection, which
+ * makes them work with any Chrome version.
+ */
 public class DevToolsWrapper {
     private final WebDriver driver;
     private final Duration timeout = Duration.ofSeconds(3);
-    private final HashMap<TargetID, SessionID> attachedTargets = new HashMap<TargetID, SessionID>();
+    private final HashMap<String, SessionID> attachedTargets = new HashMap<>();
     private Connection connection = null;
-    private DevTools devTools = null;
-    private Domains domains = null;
 
     public DevToolsWrapper(WebDriver driver) {
         this.driver = driver;
@@ -45,11 +54,10 @@ public class DevToolsWrapper {
      *            whether to enable the offline mode.
      */
     public void setOfflineEnabled(Boolean isEnabled) {
-        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty()));
-        sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
-                Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty()));
+        sendToAllTargets(new Command<>("Network.enable", Map.of()));
+        sendToAllTargets(new Command<>("Network.emulateNetworkConditions",
+                Map.of("offline", isEnabled, "latency", -1,
+                        "downloadThroughput", -1, "uploadThroughput", -1)));
     }
 
     /**
@@ -60,27 +68,26 @@ public class DevToolsWrapper {
      *            whether to disable the browser cache.
      */
     public void setCacheDisabled(Boolean isDisabled) {
-        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty()));
-        sendToAllTargets(Network.setCacheDisabled(isDisabled));
+        sendToAllTargets(new Command<>("Network.enable", Map.of()));
+        sendToAllTargets(new Command<>("Network.setCacheDisabled",
+                Map.of("cacheDisabled", isDisabled)));
     }
 
     public void close() {
-        if (devTools != null) {
-            devTools.close();
-        }
         if (connection != null) {
             connection.close();
+            connection = null;
         }
+        attachedTargets.clear();
     }
 
     /**
      * Creates a custom DevTools CDP connection if there is not one yet.
      * <p>
-     * Note, there is already a CDP connection provided by {@link DevTools} but
-     * it allows sending commands only to the page session whereas we need to
-     * also send commands to service workers. Therefore a custom connection is
-     * necessary.
+     * Note, there is already a CDP connection provided by
+     * {@link org.openqa.selenium.devtools.DevTools} but it allows sending
+     * commands only to the page session whereas we need to also send commands
+     * to service workers. Therefore a custom connection is necessary.
      */
     private void createConnectionIfThereIsNotOne() {
         if (connection == null) {
@@ -102,19 +109,30 @@ public class DevToolsWrapper {
     private void attachToAllTargets() {
         createConnectionIfThereIsNotOne();
 
-        connection
-                .sendAndWait(null, getDomains().target().getTargets(), timeout)
-                .stream()
-                .filter((target) -> attachedTargets.keySet().stream()
-                        .noneMatch(t -> t.toString()
-                                .equals(target.getTargetId().toString())))
-                .forEach((target) -> {
-                    TargetID targetId = target.getTargetId();
-                    SessionID sessionId = connection.sendAndWait(null,
-                            getDomains().target().attachToTarget(targetId),
-                            timeout);
-                    attachedTargets.put(targetId, sessionId);
-                });
+        Command<List<Map<String, Object>>> getTargets = new Command<>(
+                "Target.getTargets", Map.of(),
+                ConverterFunctions.map("targetInfos", Json.LIST_OF_MAPS_TYPE));
+
+        connection.sendAndWait(null, getTargets, timeout).stream()
+                .map(target -> String.valueOf(target.get("targetId")))
+                .filter(targetId -> !attachedTargets.containsKey(targetId))
+                .forEach(targetId -> attachedTargets.put(targetId,
+                        attachToTarget(targetId)));
+    }
+
+    /**
+     * Attaches to a single target and returns the id of the created session.
+     * <p>
+     * The session is flattened so that commands for it can be sent over the
+     * same connection by setting the session id on the message, which is what
+     * {@link Connection#sendAndWait(SessionID, Command, Duration)} does.
+     */
+    private SessionID attachToTarget(String targetId) {
+        Command<SessionID> attachToTarget = new Command<>(
+                "Target.attachToTarget",
+                Map.of("targetId", targetId, "flatten", true),
+                ConverterFunctions.map("sessionId", SessionID.class));
+        return connection.sendAndWait(null, attachToTarget, timeout);
     }
 
     /**
@@ -126,20 +144,5 @@ public class DevToolsWrapper {
         for (SessionID sessionId : attachedTargets.values()) {
             connection.sendAndWait(sessionId, command, timeout);
         }
-    }
-
-    private DevTools getDevTools() {
-        if (devTools == null) {
-            WebDriver augmented = new Augmenter().augment(this.driver);
-            devTools = ((HasDevTools) augmented).getDevTools();
-        }
-        return devTools;
-    }
-
-    private Domains getDomains() {
-        if (domains == null) {
-            domains = getDevTools().getDomains();
-        }
-        return domains;
     }
 }
