@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 import com.vaadin.flow.tests.data.bean.ConvertibleValues;
@@ -215,6 +216,55 @@ class MethodReferencePropertyNameTest {
                         + "as required, as it does for a name based binding");
     }
 
+    @Test
+    void beanValidationBinder_methodReferenceBinding_isSilentlyUnvalidatedToday()
+            throws ValidationException {
+        BeanValidationBinder<BeanToValidate> binder = new BeanValidationBinder<>(
+                BeanToValidate.class);
+        BeanToValidate bean = new BeanToValidate();
+        bean.setFirstname("Johannes");
+        bean.setAge(32);
+
+        TestTextField field = new TestTextField();
+        binder.bind(field, BeanToValidate::getFirstname,
+                BeanToValidate::setFirstname);
+        binder.readBean(bean);
+
+        // violates @Size(min = 3, max = 16)
+        field.setValue("ab");
+        binder.writeBean(bean);
+
+        assertEquals("ab", bean.getFirstname(),
+                "a method reference binding is currently accepted by "
+                        + "BeanValidationBinder and silently skips the JSR-303 "
+                        + "constraints of the property instead of being "
+                        + "rejected");
+    }
+
+    @Test
+    void recordBinder_boundWithMethodReferences_recordCanBeWritten()
+            throws ValidationException {
+        Binder<Point> binder = new Binder<>(Point.class);
+        TestTextField labelField = new TestTextField();
+        TestTextField xField = new TestTextField();
+
+        binder.forField(xField)
+                .withConverter(
+                        new StringToIntegerConverter(0, "Failed to convert"))
+                .bindReadOnly(Point::x);
+        binder.bindReadOnly(labelField, Point::label);
+        binder.readBean(new Point(1, "one"));
+
+        labelField.setValue("two");
+        xField.setValue("2");
+
+        assertEquals(new Point(2, "two"), binder.writeRecord(),
+                "writeRecord() requires a binding per record component and "
+                        + "currently only finds the ones created with a "
+                        + "property name, so record forms cannot be built from "
+                        + "method references at all");
+    }
+
     /*
      * ------------------------------------------------------------------
      * Test-local stand-in for the resolution logic that production code would
@@ -261,6 +311,6 @@ class MethodReferencePropertyNameTest {
         }
     }
 
-    private record Point(int x, String label) {
+    public record Point(int x, String label) {
     }
 }
