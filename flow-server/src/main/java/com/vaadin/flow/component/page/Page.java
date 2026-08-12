@@ -624,7 +624,9 @@ public class Page implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("URL must not be null");
         }
-        if (!UrlUtil.isSafeUrl(url)) {
+        // The UI is always known here, so the configuration of the right
+        // application is used even without a session lock on this thread
+        if (!UrlUtil.isSafeUrl(url, ui)) {
             throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
                     "URL", url, "openUnsafe(String, String)"));
         }

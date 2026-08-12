@@ -22,11 +22,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -136,5 +141,75 @@ class IFrameTest extends ComponentTest {
     void constructor_unsafeSrc_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> new IFrame("javascript:alert(1)"));
+    }
+
+    @Test
+    void setSrc_detached_unsafeInApplicationConfiguration_throwsOnAttachAndClearsSrc() {
+        IFrame iframe = new IFrame();
+        // Safe according to the framework default, but not according to the
+        // configuration of the application that the iframe ends up in
+        iframe.setSrc("http://example.com");
+
+        UI attachTo = createUI("https");
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> attachTo.add(iframe));
+
+        assertTrue(exception.getMessage().contains("http://example.com"),
+                "The message should contain the rejected URL");
+        assertEquals("", iframe.getSrc(),
+                "The rejected src should be cleared so that it isn't sent to the client");
+    }
+
+    @Test
+    void setSrc_detached_safeInApplicationConfiguration_attachSucceeds() {
+        IFrame iframe = new IFrame();
+        iframe.setSrc("https://example.com");
+
+        createUI("https").add(iframe);
+
+        assertEquals("https://example.com", iframe.getSrc());
+    }
+
+    @Test
+    void setSrc_attached_usesConfigurationOfOwnUi() {
+        UI attachTo = createUI("https");
+        IFrame iframe = new IFrame();
+        attachTo.add(iframe);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> iframe.setSrc("http://example.com"));
+        assertEquals("", iframe.getSrc());
+    }
+
+    @Test
+    void setUnsafeSrc_afterSetSrc_cancelsValidationOnAttach() {
+        IFrame iframe = new IFrame();
+        iframe.setSrc("http://example.com");
+        iframe.setUnsafeSrc("javascript:alert(1)");
+
+        createUI("https").add(iframe);
+
+        assertEquals("javascript:alert(1)", iframe.getSrc());
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
+    private UI createUI(String safeUrlSchemes) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(session.getService()).thenReturn(service);
+
+        UI attachTo = new UI();
+        attachTo.getInternals().setSession(session);
+        return attachTo;
     }
 }
