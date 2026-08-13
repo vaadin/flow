@@ -460,6 +460,7 @@ public class UIInternals implements Serializable {
                     getLogger().warn("Error detaching closed UI {} ",
                             ui.getUIId(), e);
                 }
+                releasePendingJavaScriptInvocations();
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -644,6 +645,27 @@ public class UIInternals implements Serializable {
         return readyToSend;
     }
 
+    /**
+     * Discards the JavaScript invocations still queued for the related UI and
+     * unregisters the detach listeners tracking them.
+     * <p>
+     * Detaching the UI normally runs those detach listeners, which release the
+     * invocations they track. A listener that throws prevents the remaining
+     * ones on the same node from running, so the invocations are released here
+     * as well. This is called while the session is still available, since
+     * releasing an invocation requires the session lock.
+     */
+    private void releasePendingJavaScriptInvocations() {
+        session.checkHasLock();
+        // Copied because releasing an invocation unregisters its listener,
+        // which removes it from the map
+        List.copyOf(pendingJsInvocationDetachListeners.values())
+                .forEach(PendingJavaScriptInvocationDetachListener::execute);
+        // Invocations added after the last dump have no detach listener yet,
+        // and a closed UI can no longer send them
+        pendingJsInvocations.clear();
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void registerDetachListenerForPendingInvocation(
             PendingJavaScriptInvocation invocation) {
@@ -681,6 +703,13 @@ public class UIInternals implements Serializable {
 
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
+            if (session == null) {
+                // The UI has been closed, so its invocation queue has already
+                // been released. The handler this runs from stays attached to
+                // the invocation, so a component reusing the invocation in
+                // another UI can still reach this point.
+                return;
+            }
             session.checkHasLock();
             UIInternals.this.pendingJsInvocations.remove(invocation);
             if (invocationList.isEmpty() && registration != null) {
