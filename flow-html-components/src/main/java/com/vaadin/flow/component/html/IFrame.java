@@ -136,10 +136,10 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            Source URL
      * @throws IllegalArgumentException
-     *             if {@code src} uses a scheme that is not considered safe; see
-     *             {@link #setUnsafeSrc(String)} and the
-     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
-     *             property
+     *             if {@code src} uses a scheme that is not considered safe
+     *             according to the configuration of the application that the
+     *             iframe is attached to; see {@link #setSrc(String)} for when
+     *             the check is done
      */
     public IFrame(String src) {
         setSrc(src);
@@ -171,10 +171,13 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            Source URL.
      * @throws IllegalArgumentException
-     *             if the URL uses a scheme that is not considered safe; see
-     *             {@link #setUnsafeSrc(String)} and the
-     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
-     *             property
+     *             if the URL uses a scheme that is not considered safe. The
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration is
+     *             read from the application that this iframe is attached to, so
+     *             for an iframe that isn't attached yet the exception is
+     *             instead thrown when it is attached. See
+     *             {@link #setUnsafeSrc(String)} for setting a URL that
+     *             shouldn't be checked at all.
      */
     public void setSrc(String src) {
         if (src != null) {

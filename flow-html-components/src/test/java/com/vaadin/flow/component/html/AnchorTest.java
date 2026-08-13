@@ -445,10 +445,23 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void setHref_unsafeScheme_throws() {
+    void setHref_attached_unsafeScheme_throws() {
         Anchor anchor = new Anchor();
+        createUiWithDefaultSafeUrlSchemes().add(anchor);
+
         assertThrows(IllegalArgumentException.class,
                 () -> anchor.setHref("javascript:alert(1)"));
+    }
+
+    @Test
+    void setHref_detached_unsafeScheme_throwsOnAttach() {
+        Anchor anchor = new Anchor();
+        // The configuration of the application isn't known yet
+        anchor.setHref("javascript:alert(1)");
+
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(anchor));
     }
 
     @Test
@@ -460,29 +473,33 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void constructor_stringHrefStringText_unsafeScheme_throws() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Anchor("javascript:alert(1)", "Click"));
+    void constructor_stringHrefStringText_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(new Anchor("javascript:alert(1)", "Click"));
     }
 
     @Test
-    void constructor_stringHrefSignalText_unsafeScheme_throws() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Anchor("javascript:alert(1)",
-                        new ValueSignal<>("Click")));
+    void constructor_stringHrefSignalText_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(
+                new Anchor("javascript:alert(1)", new ValueSignal<>("Click")));
     }
 
     @Test
-    void constructor_stringHrefStringTextTarget_unsafeScheme_throws() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Anchor("javascript:alert(1)", "Click",
-                        AnchorTarget.BLANK));
+    void constructor_stringHrefStringTextTarget_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(
+                new Anchor("javascript:alert(1)", "Click", AnchorTarget.BLANK));
     }
 
     @Test
-    void constructor_stringHrefComponents_unsafeScheme_throws() {
+    void constructor_stringHrefComponents_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(new Anchor("javascript:alert(1)"));
+    }
+
+    private void assertThrowsOnAttach(Anchor anchor) {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
         assertThrows(IllegalArgumentException.class,
-                () -> new Anchor("javascript:alert(1)"));
+                () -> attachTo.add(anchor));
+        assertEquals("", anchor.getElement().getAttribute("href"),
+                "The rejected href should be cleared so that it isn't sent to the client");
     }
 
     @Test
@@ -623,10 +640,23 @@ class AnchorTest extends ComponentTest {
      * given URL schemes, without making the service available through
      * {@link VaadinService#getCurrent()}.
      */
+    private UI createUiWithDefaultSafeUrlSchemes() {
+        return createUi(new MockDeploymentConfiguration());
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
     private UI createUiWithSafeUrlSchemes(String safeUrlSchemes) {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
                 InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+        return createUi(configuration);
+    }
+
+    private UI createUi(MockDeploymentConfiguration configuration) {
         VaadinSession session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService(configuration));
 

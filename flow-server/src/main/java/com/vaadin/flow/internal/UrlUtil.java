@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -274,11 +275,11 @@ public class UrlUtil {
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
      * @since 25.1.12
-     * @deprecated use {@link #isSafeUrl(String, Component)} or
-     *             {@link #validateUrl(Component, String, String, String)}
-     *             instead, as those find the configuration of the application
-     *             that the component belongs to instead of relying on the
-     *             current thread having a locked session
+     * @deprecated use
+     *             {@link #validateUrl(Component, String, String, String, SerializableRunnable)}
+     *             instead, as it uses the configuration of the application that
+     *             the component belongs to instead of relying on the current
+     *             thread having a locked session
      */
     @Deprecated(since = "25.3")
     public static boolean isSafeUrl(String url) {
@@ -292,40 +293,15 @@ public class UrlUtil {
                     + "of the application. Check URLs through a component or "
                     + "a UI to have the configuration applied.", url,
                     InitParameters.URL_SAFE_SCHEMES);
+            return isSafeUrl(url, Constants.DEFAULT_URL_SAFE_SCHEMES);
         }
-        return isSafeUrl(url, getSafeSchemes(service));
+        return isSafeUrl(url,
+                service.getDeploymentConfiguration().getUrlSafeSchemes());
     }
 
     /**
-     * Checks whether the scheme of the given URL is considered safe by the
-     * configuration of the application that the given component belongs to.
-     * <p>
-     * The set of safe schemes is read from the {@link VaadinService} of the
-     * component's own {@link UI} when the component is attached, since that is
-     * the only source that is guaranteed to be the right one. For a component
-     * that isn't attached yet, this falls back to
-     * {@link VaadinService#getCurrent()} and further to
-     * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}; use
-     * {@link #validateUrl(Component, String, String, String, SerializableRunnable)}
-     * to make sure the URL is also checked against the application's own
-     * configuration once it becomes available.
-     * <p>
-     * See {@link #isSafeUrl(String)} for the validation rules.
-     *
-     * @param url
-     *            the URL to check, may be {@code null}
-     * @param component
-     *            the component that the URL is set for, not {@code null}
-     * @return {@code true} if the URL is safe, {@code false} otherwise
-     * @since 25.3
-     */
-    public static boolean isSafeUrl(String url, Component component) {
-        return isSafeUrl(url, getSafeSchemes(findService(component)));
-    }
-
-    /**
-     * Validates a URL that is set for a component that is already attached, or
-     * for which the value cannot be checked again later on.
+     * Validates a URL that is set for a component for which the value cannot be
+     * checked again later on, such as a {@link UI}.
      *
      * @see #validateUrl(Component, String, String, String,
      *      SerializableRunnable)
@@ -345,24 +321,27 @@ public class UrlUtil {
      */
     public static void validateUrl(Component component, String type, String url,
             String unsafeMethod) {
-        if (!isSafeUrl(url, component)) {
-            throw new IllegalArgumentException(
-                    getUnsafeUrlMessage(type, url, unsafeMethod));
-        }
+        findSafeSchemes(component).ifPresent(safeSchemes -> {
+            if (!isSafeUrl(url, safeSchemes)) {
+                throw new IllegalArgumentException(
+                        getUnsafeUrlMessage(type, url, unsafeMethod));
+            }
+        });
     }
 
     /**
-     * Validates a URL that is set for a component, and schedules the check to
-     * be repeated when the component is attached if the configuration of the
-     * application isn't available yet.
+     * Validates a URL that is set for a component, deferring the check until
+     * the component is attached if the configuration of the application isn't
+     * known yet.
      * <p>
-     * {@link VaadinService#getCurrent()} is only defined while a session is
-     * locked, which means that the application's own
-     * {@link InitParameters#URL_SAFE_SCHEMES} configuration isn't available
-     * when a component tree is created in a background thread and only attached
-     * to the UI later on. Attaching is the point where the right configuration
-     * is guaranteed to be known, and also the point where the value would first
-     * be sent to the browser.
+     * The set of safe schemes is only read from the {@link VaadinService} of
+     * the component's own {@link UI}, since that is the only source that is
+     * guaranteed to be the right one. A component that is created in a
+     * background thread and only attached to the UI later on is thus checked
+     * when it is attached, which is also the point where the value would first
+     * be sent to the browser. Nothing is checked against the framework defaults
+     * in the meantime, as that would reject URLs that the application has
+     * explicitly allowed.
      * <p>
      * If the URL isn't safe according to the configuration of the UI that the
      * component is attached to, then the value is cleared through
@@ -370,7 +349,7 @@ public class UrlUtil {
      * so that an unsafe URL isn't sent to the client even if the application
      * catches the exception.
      * <p>
-     * Any previously scheduled check for the same component and type is
+     * Any previously deferred check for the same component and type is
      * canceled. Use {@link #cancelUrlValidation(Component, String)} when the
      * value is replaced through a method that doesn't validate it.
      *
@@ -386,27 +365,33 @@ public class UrlUtil {
      * @param urlClearer
      *            clears the URL value of the component, not {@code null}
      * @throws IllegalArgumentException
-     *             if the URL already now uses a scheme that is not considered
-     *             safe
+     *             if the component is attached and the URL uses a scheme that
+     *             is not considered safe
      * @since 25.3
      */
     public static void validateUrl(Component component, String type, String url,
             String unsafeMethod, SerializableRunnable urlClearer) {
-        validateUrl(component, type, url, unsafeMethod);
-
-        // The check above used the framework defaults if the configuration of
-        // the application wasn't available, so it has to be repeated once the
-        // component knows which application it belongs to
         cancelUrlValidation(component, type);
-        if (component.getUI().isEmpty()) {
-            Registration registration = component.addAttachListener(event -> {
-                // Unregister before validating so that the same value isn't
-                // reported again if the application catches the exception and
-                // attaches the component another time
-                event.unregisterListener();
-                cancelUrlValidation(component, type);
 
-                if (!isSafeUrl(url, component)) {
+        Optional<Set<String>> safeSchemes = findSafeSchemes(component);
+        if (safeSchemes.isEmpty()) {
+            deferUrlValidation(component, type, url, unsafeMethod, urlClearer);
+        } else if (!isSafeUrl(url, safeSchemes.get())) {
+            throw new IllegalArgumentException(
+                    getUnsafeUrlMessage(type, url, unsafeMethod));
+        }
+    }
+
+    private static void deferUrlValidation(Component component, String type,
+            String url, String unsafeMethod, SerializableRunnable urlClearer) {
+        Registration registration = component.addAttachListener(event -> {
+            // Also unregisters this listener, so that the same value isn't
+            // reported again if the application catches the exception and
+            // attaches the component another time
+            cancelUrlValidation(component, type);
+
+            findSafeSchemes(component).ifPresent(safeSchemes -> {
+                if (!isSafeUrl(url, safeSchemes)) {
                     // Clear the value first so that an unsafe URL isn't sent
                     // to the client even if the exception is caught
                     urlClearer.run();
@@ -414,9 +399,8 @@ public class UrlUtil {
                             getUnsafeUrlMessage(type, url, unsafeMethod));
                 }
             });
-            ComponentUtil.setData(component, getValidationKey(type),
-                    registration);
-        }
+        });
+        ComponentUtil.setData(component, getValidationKey(type), registration);
     }
 
     /**
@@ -444,19 +428,15 @@ public class UrlUtil {
         return UrlUtil.class.getName() + "." + type;
     }
 
-    private static VaadinService findService(Component component) {
-        VaadinService service = component.getUI().map(UI::getSession)
-                .map(VaadinSession::getService).orElse(null);
-        if (service == null) {
-            // Not attached, so the thread local is the best that is available
-            service = VaadinService.getCurrent();
-        }
-        return service;
-    }
-
-    private static Set<String> getSafeSchemes(VaadinService service) {
-        return service == null ? Constants.DEFAULT_URL_SAFE_SCHEMES
-                : service.getDeploymentConfiguration().getUrlSafeSchemes();
+    /**
+     * Finds the safe schemes configured for the application that the given
+     * component belongs to, or an empty optional if the component isn't
+     * attached to a UI that knows its application.
+     */
+    private static Optional<Set<String>> findSafeSchemes(Component component) {
+        return component.getUI().map(UI::getSession)
+                .map(VaadinSession::getService).map(service -> service
+                        .getDeploymentConfiguration().getUrlSafeSchemes());
     }
 
     /**

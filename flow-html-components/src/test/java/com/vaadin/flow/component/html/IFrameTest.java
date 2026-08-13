@@ -130,10 +130,25 @@ class IFrameTest extends ComponentTest {
     }
 
     @Test
-    void setSrc_unsafeScheme_throws() {
+    void setSrc_attached_unsafeScheme_throws() {
         IFrame iframe = new IFrame();
+        createUiWithDefaultSafeUrlSchemes().add(iframe);
+
         assertThrows(IllegalArgumentException.class,
                 () -> iframe.setSrc("javascript:alert(1)"));
+    }
+
+    @Test
+    void setSrc_detached_unsafeScheme_throwsOnAttach() {
+        IFrame iframe = new IFrame();
+        // The configuration of the application isn't known yet
+        iframe.setSrc("javascript:alert(1)");
+
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(iframe));
+        assertEquals("", iframe.getSrc(),
+                "The rejected src should be cleared so that it isn't sent to the client");
     }
 
     @Test
@@ -144,9 +159,12 @@ class IFrameTest extends ComponentTest {
     }
 
     @Test
-    void constructor_unsafeSrc_throws() {
+    void constructor_unsafeSrc_throwsOnAttach() {
+        IFrame iframe = new IFrame("javascript:alert(1)");
+
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
         assertThrows(IllegalArgumentException.class,
-                () -> new IFrame("javascript:alert(1)"));
+                () -> attachTo.add(iframe));
     }
 
     @Test
@@ -236,10 +254,23 @@ class IFrameTest extends ComponentTest {
      * given URL schemes, without making the service available through
      * {@link VaadinService#getCurrent()}.
      */
+    private UI createUiWithDefaultSafeUrlSchemes() {
+        return createUi(new MockDeploymentConfiguration());
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
     private UI createUiWithSafeUrlSchemes(String safeUrlSchemes) {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
                 InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+        return createUi(configuration);
+    }
+
+    private UI createUi(MockDeploymentConfiguration configuration) {
         VaadinSession session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService(configuration));
 

@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class UrlUtilTest {
 
@@ -303,38 +304,6 @@ class UrlUtilTest {
     }
 
     @Test
-    void isSafeUrl_detachedComponentWithoutService_usesDefaults() {
-        TestComponent component = new TestComponent();
-
-        assertNull(VaadinService.getCurrent(),
-                "The scenario requires that no service is available on this thread");
-        assertTrue(UrlUtil.isSafeUrl("https://vaadin.com", component));
-        assertFalse(UrlUtil.isSafeUrl("javascript:alert(1)", component));
-    }
-
-    @Test
-    void isSafeUrl_detachedComponentWithCurrentService_usesCurrentService() {
-        TestComponent component = new TestComponent();
-        VaadinService service = createService("custom");
-
-        try (MockedStatic<VaadinService> mock = Mockito
-                .mockStatic(VaadinService.class)) {
-            mock.when(VaadinService::getCurrent).thenReturn(service);
-            assertTrue(UrlUtil.isSafeUrl("custom:foo", component));
-            assertFalse(UrlUtil.isSafeUrl("https://vaadin.com", component));
-        }
-    }
-
-    @Test
-    void isSafeUrl_attachedComponent_usesServiceOfOwnUi() {
-        TestComponent component = new TestComponent();
-        createUiWithSafeUrlSchemes("custom").add(component);
-
-        assertTrue(UrlUtil.isSafeUrl("custom:foo", component));
-        assertFalse(UrlUtil.isSafeUrl("https://vaadin.com", component));
-    }
-
-    @Test
     void validateUrl_attachedComponentWithUnsafeUrl_throwsImmediately() {
         TestComponent component = new TestComponent();
         createUiWithSafeUrlSchemes("https").add(component);
@@ -349,10 +318,49 @@ class UrlUtilTest {
     }
 
     @Test
+    void validateUrl_attachedComponentWithSchemeAllowedByConfiguration_doesNotThrow() {
+        TestComponent component = new TestComponent();
+        createUiWithSafeUrlSchemes("custom").add(component);
+
+        UrlUtil.validateUrl(component, "href", "custom:foo",
+                "setUnsafeHref(String)");
+    }
+
+    @Test
+    void validateUrl_detachedComponent_notCheckedAgainstDefaults() {
+        TestComponent component = new TestComponent();
+
+        // The application may allow schemes that the framework default doesn't,
+        // so nothing is rejected before the configuration is known
+        UrlUtil.validateUrl(component, "href", "custom:foo",
+                "setUnsafeHref(String)",
+                () -> fail("The value should not be cleared"));
+
+        createUiWithSafeUrlSchemes("custom").add(component);
+    }
+
+    @Test
+    void validateUrl_detachedComponentWithCurrentService_currentServiceNotUsed() {
+        TestComponent component = new TestComponent();
+        VaadinService service = createService("https");
+
+        try (MockedStatic<VaadinService> mock = Mockito
+                .mockStatic(VaadinService.class)) {
+            mock.when(VaadinService::getCurrent).thenReturn(service);
+            // The component may end up in an application other than the one
+            // that happens to be current while the value is being set
+            UrlUtil.validateUrl(component, "href", "custom:foo",
+                    "setUnsafeHref(String)",
+                    () -> fail("The value should not be cleared"));
+        }
+
+        createUiWithSafeUrlSchemes("custom").add(component);
+    }
+
+    @Test
     void validateUrl_unsafeInOwnUi_clearsValueAndThrowsOnAttach() {
         TestComponent component = new TestComponent();
         AtomicBoolean cleared = new AtomicBoolean();
-        // Safe according to the framework default, so this doesn't throw yet
         UrlUtil.validateUrl(component, "href", "http://example.com",
                 "setUnsafeHref(String)", () -> cleared.set(true));
 
@@ -379,7 +387,7 @@ class UrlUtilTest {
     }
 
     @Test
-    void validateUrl_scheduledTwice_onlyLatestValueValidated() {
+    void validateUrl_deferredTwice_onlyLatestValueValidated() {
         TestComponent component = new TestComponent();
         AtomicBoolean cleared = new AtomicBoolean();
         UrlUtil.validateUrl(component, "href", "http://example.com",
