@@ -212,8 +212,7 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
 
         // --- Wire up triggers ------------------------------------------
 
-        Action.Input<String> value = new PropertyInput<>(field, "value",
-                String.class);
+        Action.Input<String> value = new PropertyInput<>(field, "value");
         new ClickTrigger(copyButton).triggers(new WriteToClipboardAction(value,
                 null, copied -> status.setText("ok:" + copied), err -> status
                         .setText("err:" + err.name() + ":" + err.message())));

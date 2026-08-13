@@ -46,8 +46,7 @@ public class TriggerSetSignalView extends AbstractDivView {
         ValueSignal<String> signal = new ValueSignal<>("");
         Signal.effect(this, () -> status.setText(signal.get()));
 
-        new DomEventTrigger(field, "input")
-                .triggers(new SetSignalAction<>(signal, String.class,
-                        new PropertyInput<>(field, "value", String.class)));
+        new DomEventTrigger(field, "input").triggers(new SetSignalAction<>(
+                signal, String.class, new PropertyInput<>(field, "value")));
     }
 }

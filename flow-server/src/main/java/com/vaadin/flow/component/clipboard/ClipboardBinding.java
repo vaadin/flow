@@ -128,8 +128,8 @@ public final class ClipboardBinding implements Serializable {
     public <C extends Component & HasValue<?, String>> void writeText(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null));
+        bind(new WriteToClipboardAction(new PropertyInput<>(source, "value"),
+                null));
     }
 
     /**
@@ -152,9 +152,8 @@ public final class ClipboardBinding implements Serializable {
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         Objects.requireNonNull(source, "source must not be null");
-        bind(new WriteToClipboardAction(
-                new PropertyInput<>(source, "value", String.class), null,
-                onCopied, onError));
+        bind(new WriteToClipboardAction(new PropertyInput<>(source, "value"),
+                null, onCopied, onError));
     }
 
     /**

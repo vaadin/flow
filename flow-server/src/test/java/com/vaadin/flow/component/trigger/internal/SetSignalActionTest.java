@@ -40,7 +40,7 @@ class SetSignalActionTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         DomEventTrigger trigger = new DomEventTrigger(input, "input");
         trigger.triggers(new SetSignalAction<>(signal, String.class,
-                new PropertyInput<>(input, "value", String.class)));
+                new PropertyInput<>(input, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -63,7 +63,7 @@ class SetSignalActionTest {
         ValueSignal<Object> signal = new ValueSignal<>("");
         DomEventTrigger trigger = new DomEventTrigger(input, "input");
         trigger.triggers(new SetSignalAction<>(signal, String.class,
-                new PropertyInput<>(input, "value", String.class)));
+                new PropertyInput<>(input, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 

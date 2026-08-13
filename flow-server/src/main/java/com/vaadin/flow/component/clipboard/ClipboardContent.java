@@ -87,7 +87,7 @@ public final class ClipboardContent implements Serializable {
     public <C extends Component & HasValue<?, String>> ClipboardContent text(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        this.textInput = new PropertyInput<>(source, "value", String.class);
+        this.textInput = new PropertyInput<>(source, "value");
         return this;
     }
 

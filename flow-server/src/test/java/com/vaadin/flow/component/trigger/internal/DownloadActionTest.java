@@ -77,8 +77,8 @@ class DownloadActionTest {
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        new DomEventTrigger(button, "click").triggers(new DownloadAction(
-                new PropertyInput<>(field, "value", String.class)));
+        new DomEventTrigger(button, "click").triggers(
+                new DownloadAction(new PropertyInput<>(field, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 

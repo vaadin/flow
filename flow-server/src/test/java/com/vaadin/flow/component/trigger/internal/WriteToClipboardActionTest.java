@@ -47,9 +47,8 @@ class WriteToClipboardActionTest {
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class),
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new PropertyInput<>(field, "value"),
                         null));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -186,10 +185,9 @@ class WriteToClipboardActionTest {
         TagComponent field = new TagComponent("input");
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class), null,
-                        copied -> {
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new PropertyInput<>(field, "value"),
+                        null, copied -> {
                         }, err -> {
                         }));
 
@@ -239,10 +237,9 @@ class WriteToClipboardActionTest {
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         List<@Nullable String> copied = new ArrayList<>();
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class), null,
-                        copied::add, err -> {
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new PropertyInput<>(field, "value"),
+                        null, copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -265,10 +262,9 @@ class WriteToClipboardActionTest {
         ui.getElement().appendChild(button.getElement(), field.getElement());
 
         List<@Nullable String> copied = new ArrayList<>();
-        new DomEventTrigger(button, "click")
-                .triggers(new WriteToClipboardAction(
-                        new PropertyInput<>(field, "value", String.class), null,
-                        copied::add, err -> {
+        new DomEventTrigger(button, "click").triggers(
+                new WriteToClipboardAction(new PropertyInput<>(field, "value"),
+                        null, copied::add, err -> {
                         }));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

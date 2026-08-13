@@ -28,10 +28,16 @@ import com.vaadin.flow.dom.JsFunction;
  * Common targets and properties:
  * <ul>
  * <li>{@code TextField.value} →
- * {@code new PropertyInput<>(textField, "value", String.class)}
+ * {@code new PropertyInput<String>(textField, "value")}
  * <li>{@code Checkbox.checked} →
- * {@code new PropertyInput<>(checkbox, "checked", Boolean.class)}
+ * {@code new PropertyInput<Boolean>(checkbox, "checked")}
  * </ul>
+ * <p>
+ * The property is read on the client and the value is passed straight to the
+ * consuming action, so nothing on the server ever deserializes it. {@code T} is
+ * therefore only a compile-time witness of what the property is expected to
+ * hold, fixed at the call site; it is not checked against the value the browser
+ * actually produces.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -53,14 +59,10 @@ public class PropertyInput<T> extends Action.Input<T> {
      *            the component to read from, not {@code null}
      * @param propertyName
      *            the JS property name, not {@code null}
-     * @param valueType
-     *            runtime type of the produced value, not {@code null}
      */
-    public PropertyInput(Component target, String propertyName,
-            Class<T> valueType) {
+    public PropertyInput(Component target, String propertyName) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
-        Objects.requireNonNull(valueType);
     }
 
     @Override

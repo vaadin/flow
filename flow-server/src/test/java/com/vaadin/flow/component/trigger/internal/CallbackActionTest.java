@@ -45,7 +45,7 @@ class CallbackActionTest {
         List<String> received = new ArrayList<>();
         DomEventTrigger trigger = new DomEventTrigger(input, "input");
         trigger.triggers(new CallbackAction<>(String.class, received::add,
-                new PropertyInput<>(input, "value", String.class)));
+                new PropertyInput<>(input, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -64,7 +64,7 @@ class CallbackActionTest {
 
         DomEventTrigger trigger = new DomEventTrigger(input, "input");
         trigger.triggers(new CallbackAction<>(String.class, v -> {
-        }, new PropertyInput<>(input, "value", String.class)));
+        }, new PropertyInput<>(input, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -115,7 +115,7 @@ class CallbackActionTest {
 
         DomEventTrigger trigger = new DomEventTrigger(input, "input");
         trigger.triggers(new CallbackAction<>(String.class, v -> {
-        }, new PropertyInput<>(input, "value", String.class)));
+        }, new PropertyInput<>(input, "value")));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 

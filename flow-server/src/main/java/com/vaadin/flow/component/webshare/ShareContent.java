@@ -86,7 +86,7 @@ public final class ShareContent implements Serializable {
     public <C extends Component & HasValue<?, String>> ShareContent title(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        this.titleInput = new PropertyInput<>(source, "value", String.class);
+        this.titleInput = new PropertyInput<>(source, "value");
         return this;
     }
 
@@ -118,7 +118,7 @@ public final class ShareContent implements Serializable {
     public <C extends Component & HasValue<?, String>> ShareContent text(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        this.textInput = new PropertyInput<>(source, "value", String.class);
+        this.textInput = new PropertyInput<>(source, "value");
         return this;
     }
 
@@ -150,7 +150,7 @@ public final class ShareContent implements Serializable {
     public <C extends Component & HasValue<?, String>> ShareContent url(
             C source) {
         Objects.requireNonNull(source, "source must not be null");
-        this.urlInput = new PropertyInput<>(source, "value", String.class);
+        this.urlInput = new PropertyInput<>(source, "value");
         return this;
     }
 

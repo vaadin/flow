@@ -69,8 +69,7 @@ import com.vaadin.flow.dom.JsFunction;
  *         .triggers(new OpenInNewTabAction("https://vaadin.com/docs"));
  *
  * // Open whatever URL the user typed into a field.
- * Action.Input<String> urlInput = new PropertyInput<>(urlField, "value",
- *         String.class);
+ * Action.Input<String> urlInput = new PropertyInput<>(urlField, "value");
  * new ClickTrigger(button).triggers(new OpenInNewTabAction(urlInput));
  *
  * // Open a sized popup window with custom features. Note that supplying

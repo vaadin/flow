@@ -29,7 +29,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * ValueSignal<String> valueSignal = new ValueSignal<>("");
  * DomEventTrigger input = new DomEventTrigger(textField, "input");
  * input.triggers(new SetSignalAction<>(valueSignal, String.class,
- *         new PropertyInput<>(textField, "value", String.class)));
+ *         new PropertyInput<>(textField, "value")));
  * }</pre>
  *
  * <p>

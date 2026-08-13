@@ -73,8 +73,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  *         .triggers(new DownloadAction(DownloadHandler.forFile(reportFile)));
  *
  * // URL taken from a text field at fire time
- * Action.Input<String> currentUrl = new PropertyInput<>(urlField, "value",
- *         String.class);
+ * Action.Input<String> currentUrl = new PropertyInput<>(urlField, "value");
  * new ClickTrigger(button).triggers(new DownloadAction(currentUrl));
  * }</pre>
  *

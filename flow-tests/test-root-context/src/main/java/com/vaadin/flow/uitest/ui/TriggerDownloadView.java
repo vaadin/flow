@@ -84,7 +84,7 @@ public class TriggerDownloadView extends AbstractDivView {
                                 HANDLER_BODY.getBytes(StandardCharsets.UTF_8));
                     }
                 }));
-        new ClickTrigger(inputButton).triggers(new DownloadAction(
-                new PropertyInput<>(urlField, "value", String.class)));
+        new ClickTrigger(inputButton).triggers(
+                new DownloadAction(new PropertyInput<>(urlField, "value")));
     }
 }

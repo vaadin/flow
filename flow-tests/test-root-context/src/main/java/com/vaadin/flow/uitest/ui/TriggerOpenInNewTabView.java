@@ -66,9 +66,9 @@ public class TriggerOpenInNewTabView extends AbstractDivView {
                 .triggers(new OpenInNewTabAction("https://example.com/docs"));
         new ClickTrigger(urlWithFeaturesButton).triggers(new OpenInNewTabAction(
                 "https://example.com/help", CUSTOM_FEATURES));
-        new ClickTrigger(inputButton).triggers(new OpenInNewTabAction(
-                new PropertyInput<>(urlField, "value", String.class)));
-        new ClickTrigger(jsInputButton).triggers(new OpenInNewTabAction(
-                new PropertyInput<>(urlField, "value", String.class)));
+        new ClickTrigger(inputButton).triggers(
+                new OpenInNewTabAction(new PropertyInput<>(urlField, "value")));
+        new ClickTrigger(jsInputButton).triggers(
+                new OpenInNewTabAction(new PropertyInput<>(urlField, "value")));
     }
 }
