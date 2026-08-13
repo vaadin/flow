@@ -30,9 +30,6 @@ import { publishClient } from './publishClient';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
 
-// com.vaadin.flow.shared.NodeProperties.JAVA_CLASS (not in the TS NodeProperties).
-const JAVA_CLASS = 'class';
-
 /** A state node, as far as the published client API needs it. */
 interface NodeLike {
   getId(): number;
@@ -213,7 +210,7 @@ export class ApplicationConnection {
     }
     return node
       .getMap(NodeFeatures.ELEMENT_DATA)
-      .getProperty(JAVA_CLASS)
+      .getProperty(NodeProperties.JAVA_CLASS)
       .getValueOrDefault(null as never) as string | null;
   }
 

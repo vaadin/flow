@@ -61,6 +61,7 @@ export const NodeProperties = {
   SLOT_ATTRIBUTE: 'slot',
   TYPE: 'type',
   PAYLOAD: 'payload',
+  JAVA_CLASS: 'jc',
   IN_MEMORY_CHILD: 'inMemory',
   INJECT_BY_ID: '@id',
   INJECT_BY_NAME: '@name',
