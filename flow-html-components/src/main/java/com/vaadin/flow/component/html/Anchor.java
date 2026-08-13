@@ -33,7 +33,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -46,8 +45,10 @@ import com.vaadin.flow.signals.Signal;
 public class Anchor extends HtmlContainer
         implements Focusable<Anchor>, HasAriaLabel {
 
+    private static final String HREF = "href";
+
     private static final PropertyDescriptor<String, String> hrefDescriptor = PropertyDescriptors
-            .attributeWithDefault("href", "", false);
+            .attributeWithDefault(HREF, "", false);
 
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("target",
@@ -55,8 +56,6 @@ public class Anchor extends HtmlContainer
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
     private Serializable href;
-
-    private Registration pendingHrefValidation;
 
     /**
      * Creates a new empty anchor component.
@@ -307,13 +306,10 @@ public class Anchor extends HtmlContainer
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }
-        if (!UrlUtil.isSafeUrl(href, this)) {
-            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
-                    "href", href, "setUnsafeHref(String)"));
-        }
+        UrlUtil.validateUrl(this, HREF, href, "setUnsafeHref(String)",
+                this::clearHref);
         this.href = href;
         assignHrefAttribute();
-        scheduleHrefValidation(href);
     }
 
     /**
@@ -336,7 +332,7 @@ public class Anchor extends HtmlContainer
         if (href == null) {
             throw new IllegalArgumentException("Href must not be null");
         }
-        cancelPendingHrefValidation();
+        UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
         assignHrefAttribute();
     }
@@ -349,31 +345,9 @@ public class Anchor extends HtmlContainer
      * @since 1.2
      */
     public void removeHref() {
-        cancelPendingHrefValidation();
-        getElement().removeAttribute("href");
+        UrlUtil.cancelUrlValidation(this, HREF);
+        getElement().removeAttribute(HREF);
         href = null;
-    }
-
-    /**
-     * Schedules a re-check of the href against the application's own
-     * {@value InitParameters#URL_SAFE_SCHEMES} configuration, which isn't
-     * necessarily available at the time when the href is set. This is the case
-     * when a component tree is created in a background thread without holding
-     * the session lock, and only attached to the UI later on.
-     */
-    private void scheduleHrefValidation(String href) {
-        cancelPendingHrefValidation();
-        if (getUI().isEmpty()) {
-            pendingHrefValidation = UrlUtil.validateUrlOnAttach(this, "href",
-                    "setUnsafeHref(String)", href, this::clearHref);
-        }
-    }
-
-    private void cancelPendingHrefValidation() {
-        if (pendingHrefValidation != null) {
-            pendingHrefValidation.remove();
-            pendingHrefValidation = null;
-        }
     }
 
     private void clearHref() {
@@ -391,7 +365,7 @@ public class Anchor extends HtmlContainer
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public void setHref(AbstractStreamResource href) {
-        cancelPendingHrefValidation();
+        UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
         setRouterIgnore(true);
         assignHrefAttribute();
@@ -445,7 +419,7 @@ public class Anchor extends HtmlContainer
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {
-        cancelPendingHrefValidation();
+        UrlUtil.cancelUrlValidation(this, HREF);
         this.href = new StreamResourceRegistry.ElementStreamResource(
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
@@ -539,14 +513,14 @@ public class Anchor extends HtmlContainer
         if (isEnabled()) {
             if (href != null) {
                 if (href instanceof AbstractStreamResource) {
-                    getElement().setAttribute("href",
+                    getElement().setAttribute(HREF,
                             (AbstractStreamResource) href);
                 } else {
                     set(hrefDescriptor, (String) href);
                 }
             }
         } else {
-            getElement().removeAttribute("href");
+            getElement().removeAttribute(HREF);
         }
     }
 

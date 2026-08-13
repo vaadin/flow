@@ -26,20 +26,22 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -493,7 +495,7 @@ class AnchorTest extends ComponentTest {
         // configuration of the application that the anchor ends up in
         anchor.setHref("http://example.com");
 
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class, () -> attachTo.add(anchor));
 
@@ -510,14 +512,14 @@ class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setHref("https://example.com");
 
-        createUI("https").add(anchor);
+        createUiWithSafeUrlSchemes("https").add(anchor);
 
         assertEquals("https://example.com", anchor.getHref());
     }
 
     @Test
     void setHref_attached_usesConfigurationOfOwnUi() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         Anchor anchor = new Anchor();
         attachTo.add(anchor);
 
@@ -528,7 +530,7 @@ class AnchorTest extends ComponentTest {
 
     @Test
     void setHref_reattachedWithNewValue_validatedAgainOnAttach() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         Anchor anchor = new Anchor();
         anchor.setHref("https://example.com");
         attachTo.add(anchor);
@@ -545,7 +547,7 @@ class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setUnsafeHref("javascript:alert(1)");
 
-        createUI("https").add(anchor);
+        createUiWithSafeUrlSchemes("https").add(anchor);
 
         assertEquals("javascript:alert(1)",
                 anchor.getElement().getAttribute("href"));
@@ -557,7 +559,7 @@ class AnchorTest extends ComponentTest {
         anchor.setHref("http://example.com");
         anchor.setUnsafeHref("javascript:alert(1)");
 
-        createUI("https").add(anchor);
+        createUiWithSafeUrlSchemes("https").add(anchor);
 
         assertEquals("javascript:alert(1)",
                 anchor.getElement().getAttribute("href"));
@@ -569,14 +571,14 @@ class AnchorTest extends ComponentTest {
         anchor.setHref("http://example.com");
         anchor.removeHref();
 
-        createUI("https").add(anchor);
+        createUiWithSafeUrlSchemes("https").add(anchor);
 
         assertFalse(anchor.getElement().hasAttribute("href"));
     }
 
     @Test
     void setHrefStreamResource_afterSetHref_cancelsValidationOnAttach() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         // Generating a URL for a stream resource needs a current UI
         UI.setCurrent(attachTo);
 
@@ -606,7 +608,7 @@ class AnchorTest extends ComponentTest {
         }
 
         // The validation should still take place after deserialization
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         assertThrows(IllegalArgumentException.class,
                 () -> attachTo.add(deserialized));
     }
@@ -621,21 +623,17 @@ class AnchorTest extends ComponentTest {
      * given URL schemes, without making the service available through
      * {@link VaadinService#getCurrent()}.
      */
-    private UI createUI(String safeUrlSchemes) {
+    private UI createUiWithSafeUrlSchemes(String safeUrlSchemes) {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
                 InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(configuration));
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(session.getResourceRegistry())
-                .thenReturn(new StreamResourceRegistry(session));
-
-        UI attachTo = new UI();
-        attachTo.getInternals().setSession(session);
+        UI attachTo = new MockUI(session);
+        // The interesting scenarios are the ones where the configuration has
+        // to be found through the UI rather than through the current instances
+        CurrentInstance.clearAll();
         return attachTo;
     }
 }

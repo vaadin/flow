@@ -30,7 +30,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing a <code>&lt;iframe&gt;</code> element.
@@ -45,8 +44,10 @@ import com.vaadin.flow.shared.Registration;
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent implements HasAriaLabel {
 
+    private static final String SRC = "src";
+
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
-            .attributeWithDefault("src", "");
+            .attributeWithDefault(SRC, "");
 
     private static final PropertyDescriptor<String, Optional<String>> srcdocDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("srcdoc", "");
@@ -62,8 +63,6 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     private static final PropertyDescriptor<String, Optional<String>> importanceDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("importance", "auto");
-
-    private Registration pendingSrcValidation;
 
     /**
      * Importance types.
@@ -178,34 +177,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *             property
      */
     public void setSrc(String src) {
-        if (src != null && !UrlUtil.isSafeUrl(src, this)) {
-            throw new IllegalArgumentException(UrlUtil
-                    .getUnsafeUrlMessage("src", src, "setUnsafeSrc(String)"));
+        if (src != null) {
+            UrlUtil.validateUrl(this, SRC, src, "setUnsafeSrc(String)",
+                    () -> set(srcDescriptor, ""));
         }
         set(srcDescriptor, src);
-        scheduleSrcValidation(src);
-    }
-
-    /**
-     * Schedules a re-check of the src against the application's own
-     * {@value InitParameters#URL_SAFE_SCHEMES} configuration, which isn't
-     * necessarily available at the time when the src is set. This is the case
-     * when a component tree is created in a background thread without holding
-     * the session lock, and only attached to the UI later on.
-     */
-    private void scheduleSrcValidation(String src) {
-        cancelPendingSrcValidation();
-        if (getUI().isEmpty()) {
-            pendingSrcValidation = UrlUtil.validateUrlOnAttach(this, "src",
-                    "setUnsafeSrc(String)", src, () -> set(srcDescriptor, ""));
-        }
-    }
-
-    private void cancelPendingSrcValidation() {
-        if (pendingSrcValidation != null) {
-            pendingSrcValidation.remove();
-            pendingSrcValidation = null;
-        }
     }
 
     /**
@@ -225,7 +201,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @since 25.1.12
      */
     public void setUnsafeSrc(String src) {
-        cancelPendingSrcValidation();
+        UrlUtil.cancelUrlValidation(this, SRC);
         set(srcDescriptor, src);
     }
 
@@ -242,8 +218,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
-        cancelPendingSrcValidation();
-        getElement().setAttribute("src", src);
+        UrlUtil.cancelUrlValidation(this, SRC);
+        getElement().setAttribute(SRC, src);
     }
 
     /**
@@ -268,13 +244,13 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
-        cancelPendingSrcValidation();
+        UrlUtil.cancelUrlValidation(this, SRC);
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
             // change disposition to inline in pre-defined handlers,
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler.allowDisabled());
+        getElement().setAttribute(SRC, downloadHandler.allowDisabled());
     }
 
     /**

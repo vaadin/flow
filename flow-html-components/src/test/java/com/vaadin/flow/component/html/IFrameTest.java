@@ -26,15 +26,18 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -153,7 +156,7 @@ class IFrameTest extends ComponentTest {
         // configuration of the application that the iframe ends up in
         iframe.setSrc("http://example.com");
 
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class, () -> attachTo.add(iframe));
 
@@ -168,14 +171,14 @@ class IFrameTest extends ComponentTest {
         IFrame iframe = new IFrame();
         iframe.setSrc("https://example.com");
 
-        createUI("https").add(iframe);
+        createUiWithSafeUrlSchemes("https").add(iframe);
 
         assertEquals("https://example.com", iframe.getSrc());
     }
 
     @Test
     void setSrc_attached_usesConfigurationOfOwnUi() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         IFrame iframe = new IFrame();
         attachTo.add(iframe);
 
@@ -186,7 +189,7 @@ class IFrameTest extends ComponentTest {
 
     @Test
     void setSrc_attachedWithSafeUrl_attachedAgainWithoutValidation() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         IFrame iframe = new IFrame();
         attachTo.add(iframe);
 
@@ -200,7 +203,7 @@ class IFrameTest extends ComponentTest {
 
     @Test
     void setSrcStreamResource_afterSetSrc_cancelsValidationOnAttach() {
-        UI attachTo = createUI("https");
+        UI attachTo = createUiWithSafeUrlSchemes("https");
         // Generating a URL for a stream resource needs a current UI
         UI.setCurrent(attachTo);
         try {
@@ -223,7 +226,7 @@ class IFrameTest extends ComponentTest {
         iframe.setSrc("http://example.com");
         iframe.setUnsafeSrc("javascript:alert(1)");
 
-        createUI("https").add(iframe);
+        createUiWithSafeUrlSchemes("https").add(iframe);
 
         assertEquals("javascript:alert(1)", iframe.getSrc());
     }
@@ -233,21 +236,17 @@ class IFrameTest extends ComponentTest {
      * given URL schemes, without making the service available through
      * {@link VaadinService#getCurrent()}.
      */
-    private UI createUI(String safeUrlSchemes) {
+    private UI createUiWithSafeUrlSchemes(String safeUrlSchemes) {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
                 InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(configuration));
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(session.getResourceRegistry())
-                .thenReturn(new StreamResourceRegistry(session));
-
-        UI attachTo = new UI();
-        attachTo.getInternals().setSession(session);
+        UI attachTo = new MockUI(session);
+        // The interesting scenarios are the ones where the configuration has
+        // to be found through the UI rather than through the current instances
+        CurrentInstance.clearAll();
         return attachTo;
     }
 }

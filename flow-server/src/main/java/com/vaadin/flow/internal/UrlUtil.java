@@ -22,7 +22,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -274,9 +274,26 @@ public class UrlUtil {
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
      * @since 25.1.12
+     * @deprecated use {@link #isSafeUrl(String, Component)} or
+     *             {@link #validateUrl(Component, String, String, String)}
+     *             instead, as those find the configuration of the application
+     *             that the component belongs to instead of relying on the
+     *             current thread having a locked session
      */
+    @Deprecated(since = "25.3")
     public static boolean isSafeUrl(String url) {
-        return isSafeUrl(url, getSafeSchemes(VaadinService.getCurrent()));
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            // Nothing will re-check the URL later on, so this is the last
+            // chance to tell that the configuration wasn't applied
+            getLogger().warn("No VaadinService available on the current "
+                    + "thread, so the URL \"{}\" is checked against the "
+                    + "default safe schemes instead of the {} configuration "
+                    + "of the application. Check URLs through a component or "
+                    + "a UI to have the configuration applied.", url,
+                    InitParameters.URL_SAFE_SCHEMES);
+        }
+        return isSafeUrl(url, getSafeSchemes(service));
     }
 
     /**
@@ -289,8 +306,9 @@ public class UrlUtil {
      * that isn't attached yet, this falls back to
      * {@link VaadinService#getCurrent()} and further to
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES}; use
-     * {@link #validateUrlOnAttach} to make sure the URL is also checked against
-     * the application's own configuration once it becomes available.
+     * {@link #validateUrl(Component, String, String, String, SerializableRunnable)}
+     * to make sure the URL is also checked against the application's own
+     * configuration once it becomes available.
      * <p>
      * See {@link #isSafeUrl(String)} for the validation rules.
      *
@@ -306,8 +324,37 @@ public class UrlUtil {
     }
 
     /**
-     * Registers a listener that checks the given component's URL again when the
-     * component is attached, and then unregisters itself.
+     * Validates a URL that is set for a component that is already attached, or
+     * for which the value cannot be checked again later on.
+     *
+     * @see #validateUrl(Component, String, String, String,
+     *      SerializableRunnable)
+     *
+     * @param component
+     *            the component that the URL is set for, not {@code null}
+     * @param type
+     *            the kind of URL being set, for example {@code "href"}
+     * @param url
+     *            the URL to validate, not {@code null}
+     * @param unsafeMethod
+     *            the signature of the method that bypasses validation, for
+     *            example {@code "setUnsafeHref(String)"}
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe
+     * @since 25.3
+     */
+    public static void validateUrl(Component component, String type, String url,
+            String unsafeMethod) {
+        if (!isSafeUrl(url, component)) {
+            throw new IllegalArgumentException(
+                    getUnsafeUrlMessage(type, url, unsafeMethod));
+        }
+    }
+
+    /**
+     * Validates a URL that is set for a component, and schedules the check to
+     * be repeated when the component is attached if the configuration of the
+     * application isn't available yet.
      * <p>
      * {@link VaadinService#getCurrent()} is only defined while a session is
      * locked, which means that the application's own
@@ -322,48 +369,79 @@ public class UrlUtil {
      * {@code urlClearer} before an {@link IllegalArgumentException} is thrown,
      * so that an unsafe URL isn't sent to the client even if the application
      * catches the exception.
+     * <p>
+     * Any previously scheduled check for the same component and type is
+     * canceled. Use {@link #cancelUrlValidation(Component, String)} when the
+     * value is replaced through a method that doesn't validate it.
      *
      * @param component
-     *            the component to validate on attach, not {@code null}
+     *            the component that the URL is set for, not {@code null}
      * @param type
-     *            the kind of URL being validated, for example {@code "href"}
+     *            the kind of URL being set, for example {@code "href"}
+     * @param url
+     *            the URL to validate, not {@code null}
      * @param unsafeMethod
      *            the signature of the method that bypasses validation, for
      *            example {@code "setUnsafeHref(String)"}
-     * @param url
-     *            the URL to validate on attach, not {@code null}
      * @param urlClearer
-     *            clears the URL value of the component
-     * @return a registration for canceling the pending validation, for example
-     *         when the value is replaced through a method that doesn't validate
+     *            clears the URL value of the component, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the URL already now uses a scheme that is not considered
+     *             safe
      * @since 25.3
      */
-    public static Registration validateUrlOnAttach(Component component,
-            String type, String unsafeMethod, String url,
-            SerializableRunnable urlClearer) {
-        AtomicBoolean listenerFired = new AtomicBoolean();
-        Registration registration = component.addAttachListener(event -> {
-            // Unregister before validating so that the same value isn't
-            // reported again if the application catches the exception and
-            // attaches the component another time
-            listenerFired.set(true);
-            event.unregisterListener();
+    public static void validateUrl(Component component, String type, String url,
+            String unsafeMethod, SerializableRunnable urlClearer) {
+        validateUrl(component, type, url, unsafeMethod);
 
-            if (!isSafeUrl(url, component)) {
-                // Clear the value first so that an unsafe URL isn't sent to
-                // the client even if the exception is caught
-                urlClearer.run();
-                throw new IllegalArgumentException(
-                        getUnsafeUrlMessage(type, url, unsafeMethod));
-            }
-        });
-        // The listener removes itself through the attach event, so removing the
-        // same listener again would fail
-        return () -> {
-            if (!listenerFired.get()) {
-                registration.remove();
-            }
-        };
+        // The check above used the framework defaults if the configuration of
+        // the application wasn't available, so it has to be repeated once the
+        // component knows which application it belongs to
+        cancelUrlValidation(component, type);
+        if (component.getUI().isEmpty()) {
+            Registration registration = component.addAttachListener(event -> {
+                // Unregister before validating so that the same value isn't
+                // reported again if the application catches the exception and
+                // attaches the component another time
+                event.unregisterListener();
+                cancelUrlValidation(component, type);
+
+                if (!isSafeUrl(url, component)) {
+                    // Clear the value first so that an unsafe URL isn't sent
+                    // to the client even if the exception is caught
+                    urlClearer.run();
+                    throw new IllegalArgumentException(
+                            getUnsafeUrlMessage(type, url, unsafeMethod));
+                }
+            });
+            ComponentUtil.setData(component, getValidationKey(type),
+                    registration);
+        }
+    }
+
+    /**
+     * Cancels a check scheduled by
+     * {@link #validateUrl(Component, String, String, String, SerializableRunnable)},
+     * for example because the value has been replaced through a method that
+     * doesn't validate it. Does nothing if no check is scheduled.
+     *
+     * @param component
+     *            the component that the URL is set for, not {@code null}
+     * @param type
+     *            the kind of URL, for example {@code "href"}
+     * @since 25.3
+     */
+    public static void cancelUrlValidation(Component component, String type) {
+        String key = getValidationKey(type);
+        Object registration = ComponentUtil.getData(component, key);
+        if (registration != null) {
+            ((Registration) registration).remove();
+            ComponentUtil.setData(component, key, null);
+        }
+    }
+
+    private static String getValidationKey(String type) {
+        return UrlUtil.class.getName() + "." + type;
     }
 
     private static VaadinService findService(Component component) {
@@ -377,15 +455,8 @@ public class UrlUtil {
     }
 
     private static Set<String> getSafeSchemes(VaadinService service) {
-        if (service == null) {
-            getLogger().debug("No VaadinService available on current thread; "
-                    + "falling back to default safe URL schemes. Any custom {} "
-                    + "configuration will not apply here, but components "
-                    + "re-check the URL against it when they are attached.",
-                    InitParameters.URL_SAFE_SCHEMES);
-            return Constants.DEFAULT_URL_SAFE_SCHEMES;
-        }
-        return service.getDeploymentConfiguration().getUrlSafeSchemes();
+        return service == null ? Constants.DEFAULT_URL_SAFE_SCHEMES
+                : service.getDeploymentConfiguration().getUrlSafeSchemes();
     }
 
     /**
