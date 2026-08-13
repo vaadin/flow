@@ -1892,6 +1892,13 @@ public class Element extends Node<Element> {
      * function, {@code null}, or {@code undefined} (the latter being the
      * implicit value when there is no {@code return}). Returning any other
      * value, including a promise, is logged as an error on the client.
+     * <p>
+     * The parameters are retained for the lifetime of the registration so the
+     * initializer can be re-run on re-attach, which means they are held in the
+     * HTTP session between requests. A parameter that is not
+     * {@link java.io.Serializable} is stored as the JSON it encodes to, so the
+     * browser still receives the same value but mutations made to it after the
+     * session is serialized are not picked up.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>

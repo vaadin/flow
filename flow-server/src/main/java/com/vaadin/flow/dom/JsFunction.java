@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,13 @@ import com.vaadin.flow.internal.JacksonCodec;
  * {@link Element} (attached elements arrive as DOM nodes, detached ones as
  * {@code null}) and nested {@link JsFunction} instances. Capture types are
  * validated when the value is created.
+ * <p>
+ * A {@code JsFunction} can outlive the request that created it, for example
+ * when it is passed to {@link Element#addJsInitializer(String, Object...)
+ * addJsInitializer}, and is then written to the HTTP session. Captures that are
+ * not {@link Serializable} are stored as the JSON they encode to, so the
+ * browser still receives the same value; such a capture is snapshotted when the
+ * session is serialized and later mutations to it are not picked up.
  * <p>
  * Inside the body, {@code this} is whatever the caller of the materialised
  * function chooses (i.e. it follows normal JavaScript call semantics &ndash;
@@ -96,6 +104,42 @@ public final class JsFunction implements Serializable {
         return new JsFunction(body,
                 Collections.unmodifiableList(Arrays.asList(copy)),
                 Collections.emptyList());
+    }
+
+    /**
+     * Replaces this instance with a form whose captures Java serialization can
+     * write. Captures are only ever encoded for the client, so a capture that
+     * is not itself serializable can be stored as the JSON it encodes to
+     * without changing what the browser receives.
+     */
+    private Object writeReplace() {
+        return new SerializedForm(body, captures, argumentNames);
+    }
+
+    private static final class SerializedForm implements Serializable {
+
+        private final String body;
+        private final List<@Nullable Object> captures;
+        private final List<String> argumentNames;
+
+        private SerializedForm(String body, List<@Nullable Object> captures,
+                List<String> argumentNames) {
+            this.body = body;
+            this.argumentNames = argumentNames;
+
+            List<@Nullable Object> serializable = new ArrayList<>(
+                    captures.size());
+            for (@Nullable
+            Object capture : captures) {
+                serializable.add(JacksonCodec.serializableParameter(capture));
+            }
+            this.captures = serializable;
+        }
+
+        private Object readResolve() {
+            return new JsFunction(body, Collections.unmodifiableList(captures),
+                    argumentNames);
+        }
     }
 
     /**
