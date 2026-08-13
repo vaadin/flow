@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../scripts/register.js", "src/index.ts"],
+  "sourcesContent": ["export function __REGISTER__(feature, vaadinObj = (window.Vaadin ??= {})) {\n  vaadinObj.registrations ??= [];\n  vaadinObj.registrations.push({\n    is: feature ? `${__NAME__}/${feature}` : __NAME__,\n    version: __VERSION__,\n  });\n}\n", "export * from './ConnectionState.js';\nexport * from './ConnectionIndicator.js';\n\n// @ts-expect-error: esbuild injection\n// eslint-disable-next-line @typescript-eslint/no-unsafe-call\n__REGISTER__();\n"],
+  "mappings": "AAAO,SAAS,aAAa,SAAS,YAAa,OAAO,WAAW,CAAC,GAAI;AACxE,YAAU,kBAAkB,CAAC;AAC7B,YAAU,cAAc,KAAK;AAAA,IAC3B,IAAI,UAAU,GAAG,yBAAQ,IAAI,OAAO,KAAK;AAAA,IACzC,SAAS;AAAA,EACX,CAAC;AACH;ACNA,cAAc;AACd,cAAc;AAId,aAAa;",
+  "names": []
+}

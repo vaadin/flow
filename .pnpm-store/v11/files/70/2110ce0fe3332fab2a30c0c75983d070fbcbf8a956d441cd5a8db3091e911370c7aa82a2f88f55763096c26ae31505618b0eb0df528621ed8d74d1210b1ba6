@@ -1,0 +1,32 @@
+{
+  "name": "mutexify",
+  "version": "1.4.0",
+  "description": "mutex lock for javascript",
+  "main": "index.js",
+  "dependencies": {
+    "queue-tick": "^1.0.0"
+  },
+  "devDependencies": {
+    "standard": "^14.3.3",
+    "tape": "^3.0.2"
+  },
+  "scripts": {
+    "test": "tape test.js",
+    "posttest": "npm run lint",
+    "lint": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/mutexify.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/mutexify/issues"
+  },
+  "keywords": [
+    "mutex",
+    "lock"
+  ],
+  "homepage": "https://github.com/mafintosh/mutexify"
+}
