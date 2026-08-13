@@ -23,6 +23,7 @@
 // starts it from the initial UIDL.
 
 import { ApplicationConfiguration } from './ApplicationConfiguration';
+import { ApplicationConnection } from './ApplicationConnection';
 import {
   getAtmosphereVersion,
   getConfigBoolean,
@@ -143,13 +144,14 @@ export function doStartApplication(applicationId: string): void {
 
   const initialUidl = getConfigValueMap(rawConfig as RawConfigObject, 'uidl') as Record<string, unknown> | null;
 
-  // Load the engine lazily: this keeps ApplicationConnection/DefaultRegistry and
-  // the rest of the modern-JS engine out of the registerInternals bundle, which
-  // the HtmlUnit-based GwtTests also load and cannot run (no Array.from, etc.).
-  // The engine is only needed once a real application starts.
-  void import('./ApplicationConnection').then(({ ApplicationConnection }) => {
-    ApplicationConnection.create(conf).start(initialUidl ?? null);
-  });
+  // The engine is imported statically, matching the synchronous Java bootstrap.
+  // A dynamic import would split ApplicationConnection/DefaultRegistry and the
+  // rest of the engine into their own bundler chunk, adding a round-trip to the
+  // startup critical path for no benefit: Flow.ts only loads FlowClient when it
+  // is about to start a UI, so that chunk is always fetched. Note that this
+  // makes the whole engine module graph evaluate when FlowClient is imported,
+  // which is safe because no engine module has top-level side effects.
+  ApplicationConnection.create(conf).start(initialUidl ?? null);
 }
 
 interface WebComponentsGlobal {
