@@ -417,7 +417,7 @@ jobs:
             saved-workspace
   auto-merge:
     needs: api-diff-labeling
-    if: github.event_name == 'pull_request' && github.base_ref != 'main'
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     runs-on: ubuntu-24.04
     permissions:
