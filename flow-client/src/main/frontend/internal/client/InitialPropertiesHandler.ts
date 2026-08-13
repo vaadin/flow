@@ -14,17 +14,16 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.InitialPropertiesHandler, built alongside
-// the Java version on top of the TS reactive core. It prevents client-side
+// TypeScript port of com.vaadin.client.InitialPropertiesHandler, on top of the
+// TS reactive core. It prevents client-side
 // default property values of newly created nodes from overriding the initial
 // values the server sent: property updates for a node created during a server
 // update are queued, and on flush each is either reset to the server's initial
 // value or sent to the server (if the server had no initial value for it).
 //
-// The Registry/StateTree it talks to are not ported yet, so the slices it needs
-// are declared here as contracts the future TS Registry/StateTree satisfy at
-// cutover; this is the real implementation of the InitialPropertiesHandler
-// contract that StateTree.ts already declares.
+// The Registry/StateTree slices it needs are declared here as narrow contracts
+// rather than imported, to keep the dependency one-way; this is the
+// implementation of the InitialPropertiesHandler contract StateTree.ts declares.
 
 import { Reactive } from './flow/reactive/Reactive';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';

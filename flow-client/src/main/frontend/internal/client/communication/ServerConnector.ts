@@ -14,13 +14,12 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.ServerConnector, built
-// alongside the Java version. It builds RPC messages (plain JS objects, later
-// JSON-serialized by the transport) and enqueues them on the server RPC queue.
-// The Registry, ServerRpcQueue and LoadingIndicatorStateHandler are not ported
-// yet, so the slices it needs are declared here as contracts satisfied at
-// cutover; this is the real implementation of StateTree's ServerConnector
-// contract.
+// TypeScript port of com.vaadin.client.communication.ServerConnector. It builds
+// RPC messages (plain JS objects, later JSON-serialized by the transport) and
+// enqueues them on the server RPC queue. The Registry, ServerRpcQueue and
+// LoadingIndicatorStateHandler slices it needs are declared here as narrow
+// contracts rather than imported, to keep the dependency one-way; this is the
+// implementation of StateTree's ServerConnector contract.
 
 import { encodeWithoutTypeInfo } from '../flow/util/ClientJsonCodec';
 import { JsonConstants } from '../../flow/shared/JsonConstants';

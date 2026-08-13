@@ -134,13 +134,13 @@ export function handleError(
   return systemErrorContainer;
 }
 
-// The SystemErrorHandler class is the build-alongside TS port of the
-// orchestration in SystemErrorHandler.java, composing the DOM rendering above.
-// This installment covers the logging / web-component-mode / recreate-web-
-// components orchestration; the unrecoverable-error notification flow
-// (handleUnrecoverableError) and the web-component session resynchronization
-// (resynchronizeSession, XHR + heartbeat/push/reset) are DOM/network-bound and
-// IT-validated. The Registry is a contract satisfied at cutover.
+// The SystemErrorHandler class is the TS port of the orchestration in
+// SystemErrorHandler.java, composing the DOM rendering above: the logging /
+// web-component-mode / recreate-web-components handling, the unrecoverable-error
+// notification flow (handleUnrecoverableError) and the web-component session
+// resynchronization (resynchronizeSession, XHR + heartbeat/push/reset). The
+// latter two are DOM/network-bound and covered by ITs rather than unit tests. The
+// Registry is referenced through the narrow contract declared here.
 
 /** A system message (caption/message/url), as configured for unrecoverable errors. */
 interface SystemMessage {

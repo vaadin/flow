@@ -14,8 +14,8 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.TreeChangeProcessor, built alongside
-// the Java version on top of the TS state tree. It applies a batch of
+// TypeScript port of com.vaadin.client.flow.TreeChangeProcessor, on top of the
+// TS state tree. It applies a batch of
 // server-sent JSON changes (attach/detach, map put/remove, list splice/clear,
 // feature populate) to the StateTree. Changes are plain JS objects; values are
 // passed through ClientJsonCodec.decodeWithoutTypeInfo (a no-op in JS).

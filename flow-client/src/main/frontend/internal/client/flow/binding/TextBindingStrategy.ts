@@ -14,8 +14,8 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.binding.TextBindingStrategy, built
-// alongside the Java version on top of the TS reactive core and state node.
+// TypeScript port of com.vaadin.client.flow.binding.TextBindingStrategy, on top
+// of the TS reactive core and state node.
 
 import { assert } from '../../../assert';
 import type { Computation } from '../reactive/Computation';

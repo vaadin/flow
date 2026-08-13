@@ -163,12 +163,6 @@ public class ApplicationConstants implements Serializable {
     public static final String UI_ID_PARAMETER = "v-uiId";
 
     /**
-     * Path to the Vaadin client engine folder, relative to the context root.
-     */
-    public static final String CLIENT_ENGINE_PATH = VAADIN_STATIC_FILES_PATH
-            + "client";
-
-    /**
      * Parameter for the initial router location when JavaScript bootstrapping.
      * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
      * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value

@@ -14,13 +14,13 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.MessageSender, built
-// alongside the Java version. It sends UIDL requests to the server over XHR
-// and/or push, managing the client-to-server message id, the resynchronization
-// state machine, an outgoing message queue, and a resend timer. The
-// XhrConnection / PushConnection / MessageHandler and the rest of the Registry
-// are contracts satisfied at cutover; push connections are created through an
-// injected factory (GWT.create in the Java version).
+// TypeScript port of com.vaadin.client.communication.MessageSender. It sends
+// UIDL requests to the server over XHR and/or push, managing the
+// client-to-server message id, the resynchronization state machine, an outgoing
+// message queue, and a resend timer. The XhrConnection / PushConnection /
+// MessageHandler and the rest of the Registry are referenced through the narrow
+// contracts declared here; push connections are created through an injected
+// factory (GWT.create in the original).
 
 import { sendBeacon } from '../../MessageSender';
 import type { PushConnection, PushConnectionFactory } from './PushConnection';

@@ -14,11 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.ServerRpcQueue, built
-// alongside the Java version. It accumulates pending RPC invocations and flushes
-// them to the server (via the MessageSender) deferred, so all event handlers run
-// before the queue is sent. The Registry/UILifecycle/MessageSender are contracts
-// satisfied at cutover.
+// TypeScript port of com.vaadin.client.communication.ServerRpcQueue. It
+// accumulates pending RPC invocations and flushes them to the server (via the
+// MessageSender) deferred, so all event handlers run before the queue is sent.
+// The Registry/UILifecycle/MessageSender slices it needs are declared here as
+// narrow contracts rather than imported, to keep the dependency one-way.
 
 import { getScheduler } from '../TrackingScheduler';
 import { Console } from '../Console';

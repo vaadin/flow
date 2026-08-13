@@ -18,8 +18,8 @@
  * Misc internal utility methods used by both the server and the client package.
  *
  * TypeScript port of the full public API of
- * com.vaadin.flow.shared.util.SharedUtil, built alongside the Java version.
- * Java-private helpers are kept as non-exported module-local functions.
+ * com.vaadin.flow.shared.util.SharedUtil. Java-private helpers are kept as
+ * non-exported module-local functions.
  */
 
 /**
