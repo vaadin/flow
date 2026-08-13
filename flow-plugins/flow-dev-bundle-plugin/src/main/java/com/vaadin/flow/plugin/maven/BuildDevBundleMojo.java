@@ -218,10 +218,11 @@ public class BuildDevBundleMojo extends AbstractMojo
      * {@code 0} to disable. Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when
      * those tools are used.
      * <p>
-     * When not set, the value configured for the package manager itself
-     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}) is
-     * used, so that a manually run {@code npm install} behaves the same way.
-     * Only when there is no such value does the check default to {@code 1} day.
+     * When not set, the value configured for npm or pnpm itself ({@code .npmrc}
+     * or {@code pnpm-workspace.yaml}) is used, so that a manually run
+     * {@code npm install} behaves the same way. Only when there is no such
+     * value does the check default to {@code 1} day. The configuration of bun
+     * cannot be read, so the default always applies for it.
      */
     @Parameter(property = "vaadin."
             + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)

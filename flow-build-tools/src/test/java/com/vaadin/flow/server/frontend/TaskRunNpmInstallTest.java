@@ -846,17 +846,15 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void resolveMinimumFrontendPackageAge_bunfigValue_doesNotOverrideIt()
-            throws IOException {
-        Files.writeString(new File(npmFolder, "bunfig.toml").toPath(), """
-                [install]
-                # minimumReleaseAge = 1
-                minimumReleaseAge = 604800
-                """);
-
-        assertFalse(resolveMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder).withEnableBun(true),
-                mockToolsWithoutMinimumReleaseAge()).isPresent());
+    void resolveMinimumFrontendPackageAge_bun_configurationIsNotRead() {
+        // bun cannot report its resolved configuration, so the default is
+        // applied without looking at bunfig.toml
+        assertEquals("--minimum-release-age="
+                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS
+                        * 24 * 60 * 60,
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true),
+                        mockToolsWithoutMinimumReleaseAge()).orElseThrow());
     }
 
     private FrontendTools mockToolsWithoutMinimumReleaseAge() {

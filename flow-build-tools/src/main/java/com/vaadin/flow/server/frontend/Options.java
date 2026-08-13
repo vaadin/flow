@@ -1189,13 +1189,14 @@ public class Options implements Serializable {
      * take precedence over anything the package manager reads from its own
      * configuration.
      * <p>
-     * When set to {@code null}, no such argument is passed if the package
-     * manager already resolves a minimum release age from its own configuration
-     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}), so
-     * that a manually run {@code npm install} behaves the same way. Only if
-     * nothing is configured there,
+     * When set to {@code null}, no such argument is passed if npm or pnpm
+     * already resolves a minimum release age from its own configuration
+     * ({@code .npmrc} or {@code pnpm-workspace.yaml}), so that a manually run
+     * {@code npm install} behaves the same way. Only if nothing is configured
+     * there,
      * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} is
-     * used.
+     * used. The configuration of bun cannot be read, so the default always
+     * applies for it.
      *
      * @param minimumFrontendPackageAgeDays
      *            minimum allowed age in days, {@code 0} to disable the check,

@@ -412,9 +412,10 @@ public class InitParameters implements Serializable {
      * version must have before npm, pnpm or bun is allowed to install it. Set
      * to {@code 0} to disable.
      * <p>
-     * When not set, the value configured for the package manager itself
-     * ({@code .npmrc}, {@code pnpm-workspace.yaml} or {@code bunfig.toml}) is
-     * used, defaulting to {@code 1} day if there is none.
+     * When not set, the value configured for npm or pnpm itself ({@code .npmrc}
+     * or {@code pnpm-workspace.yaml}) is used, defaulting to {@code 1} day if
+     * there is none. The configuration of bun cannot be read, so the default
+     * always applies for it.
      *
      * @since 25.1.6
      */

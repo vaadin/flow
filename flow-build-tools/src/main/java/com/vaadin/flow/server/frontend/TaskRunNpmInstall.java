@@ -37,10 +37,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
@@ -72,9 +70,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * compromised version is briefly available on the registry.
      */
     static final int DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = 1;
-
-    private static final Pattern BUNFIG_MINIMUM_RELEASE_AGE = Pattern
-            .compile("minimumReleaseAge\\s*=\\s*(\\S+)");
 
     private static final String MODULES_YAML = ".modules.yaml";
 
@@ -505,14 +500,19 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Reads the minimum release age the active package manager resolves from
      * its own configuration, so that Vaadin does not override it with a command
      * line argument.
+     * <p>
+     * Only npm and pnpm are asked, as bun has no command for printing its
+     * resolved configuration (see <a href=
+     * "https://github.com/oven-sh/bun/issues/7140">oven-sh/bun#7140</a>). The
+     * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
+     * therefore not taken into account.
      */
     private static Optional<String> getPackageManagerMinimumReleaseAge(
             Options options, FrontendTools tools, List<String> toolCommand,
             boolean npmSupportsMinReleaseAge) {
         File npmFolder = options.getNpmFolder();
         if (options.isEnableBun()) {
-            // bun has no command for printing its resolved configuration
-            return getBunfigMinimumReleaseAge(npmFolder);
+            return Optional.empty();
         }
         if (options.isEnablePnpm()) {
             // pnpm reads this from .npmrc and pnpm-workspace.yaml alike
@@ -526,46 +526,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         // Older npm has no min-release-age setting, but the --before argument
         // used as a fallback does have a configuration counterpart
         return tools.getConfiguredSetting(toolCommand, "before", npmFolder);
-    }
-
-    /**
-     * Reads the {@code minimumReleaseAge} setting from the project and user
-     * {@code bunfig.toml} files. The setting is only valid in the
-     * {@code [install]} section, which is the only section it is looked for in.
-     */
-    private static Optional<String> getBunfigMinimumReleaseAge(File npmFolder) {
-        return Stream
-                .of(new File(npmFolder, "bunfig.toml"),
-                        new File(FileIOUtils.getUserDirectory(),
-                                ".bunfig.toml"))
-                .filter(File::canRead)
-                .map(TaskRunNpmInstall::getBunfigMinimumReleaseAgeFromFile)
-                .flatMap(Optional::stream).findFirst();
-    }
-
-    private static Optional<String> getBunfigMinimumReleaseAgeFromFile(
-            File bunfig) {
-        try {
-            boolean inInstallSection = false;
-            for (String line : Files.readAllLines(bunfig.toPath(),
-                    StandardCharsets.UTF_8)) {
-                String trimmed = line.trim();
-                if (trimmed.startsWith("[")) {
-                    inInstallSection = "[install]".equals(trimmed);
-                } else if (inInstallSection) {
-                    Matcher matcher = BUNFIG_MINIMUM_RELEASE_AGE
-                            .matcher(trimmed);
-                    if (matcher.lookingAt()) {
-                        return Optional.of(matcher.group(1));
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LoggerFactory.getLogger(TaskRunNpmInstall.class).debug(
-                    "Could not read the minimumReleaseAge setting from {}",
-                    bunfig, e);
-        }
-        return Optional.empty();
     }
 
     /**
