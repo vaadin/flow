@@ -20,8 +20,14 @@ const failedPickLabels = [
   `needs-manual-bp/${version}`,
 ];
 
-const mainPrs = findPrs(mainBranch);
-const otherPrs = findPrs(otherBranch);
+// Only commits that landed on main after the target branch diverged are
+// backport candidates; older commits are shared history and already present on
+// both branches, so there is no need to scan them.
+const mainPrs = findMainPrs(`origin/${otherBranch}..origin/${mainBranch}`);
+// Numbers referenced by the target branch since it diverged. A backport commit
+// keeps the original main PR number, so a candidate whose number appears here is
+// already on the branch.
+const backported = findReferencedNumbers(`origin/${mainBranch}..origin/${otherBranch}`);
 
 const ignoredTitlePatterns = [
   /Bump frontend dependencies/i,
@@ -30,7 +36,7 @@ const ignoredTitlePatterns = [
 ];
 
 const missingPrs = Object.keys(mainPrs)
-  .filter((pr) => !otherPrs[pr])
+  .filter((pr) => !backported.has(pr))
   .filter((pr) => !ignoredTitlePatterns.some((pattern) => pattern.test(mainPrs[pr])))
   .map((pr) => {
     const labels = findLabels(pr);
@@ -192,20 +198,38 @@ function findLabels(pr) {
   return json.labels.map(label => label.name);
 }
 
-function findPrs(branch) {
-  const output = execSync(`git log --oneline origin/${branch}`, {
+// Maps PR number -> `git log --oneline` line for each commit in the range. A
+// commit title may contain several `(#NNN)` references: the original PR title
+// can mention issues (e.g. `... workaround (#15086) (#24902)`), while the
+// squash-merge always appends the PR number last. Only the last match is the
+// PR; earlier ones are issue references.
+function findMainPrs(range) {
+  const output = execSync(`git log --oneline ${range}`, {
     encoding: 'utf8',
     maxBuffer: 256 * 1024 * 1024,
   });
-  const prAndLine = output.split('\n').flatMap((line) => {
-    // A commit title may contain several `(#NNN)` references: the original PR
-    // title can mention issues (e.g. `... workaround (#15086) (#24902)`), while
-    // the squash-merge always appends the PR number last. Only the last match
-    // is the PR; the earlier ones are issue references and are not PRs.
+  const entries = output.split('\n').flatMap((line) => {
     const all = [...line.matchAll(/\(#(\d+)\)/g)];
     if (all.length === 0) return [];
-    return [{ line, pr: all[all.length - 1][1] }];
+    return [[all[all.length - 1][1], line]];
   });
+  return Object.fromEntries(entries);
+}
 
-  return Object.assign(...prAndLine.map((pr) => ({ [pr.pr]: pr.line })));
+// Every `(#NNN)` referenced by any commit in the range, as a set. Used to tell
+// whether a main PR is already on the target branch: a backport commit reuses
+// the original PR number, but not necessarily as the last match (e.g.
+// `... (#22968) (CP: 24.9) (#22978)`), so all matches must be collected.
+function findReferencedNumbers(range) {
+  const output = execSync(`git log --oneline ${range}`, {
+    encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024,
+  });
+  const numbers = new Set();
+  for (const line of output.split('\n')) {
+    for (const match of line.matchAll(/\(#(\d+)\)/g)) {
+      numbers.add(match[1]);
+    }
+  }
+  return numbers;
 }
