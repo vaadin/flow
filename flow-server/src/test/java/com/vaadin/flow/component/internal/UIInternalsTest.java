@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,6 +38,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -54,6 +58,7 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -451,6 +456,124 @@ class UIInternalsTest {
 
         node.setParent(null);
         assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    void closedUI_retainedInvocationCanceled_noNullPointerException() {
+        UI closedUI = new UI();
+        UIInternals closedInternals = closedUI.getInternals();
+        closedInternals
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element element = new Element("div");
+        element.setVisible(false);
+        closedUI.getElement().appendChild(element);
+        PendingJavaScriptResult pending = element.executeJs("this.foo = $0",
+                "bar");
+
+        // The invocation is owned by an invisible component, so it is retained
+        // in the queue and gets a detach listener registered for it
+        closedInternals.getStateTree().runExecutionsBeforeClientResponse();
+        closedInternals.dumpPendingJavaScriptInvocations();
+
+        closedInternals.setSession(null);
+
+        // The component may be reused in another UI and cancel the invocation
+        // it still references, which triggers the handler registered by the
+        // closed UI
+        assertDoesNotThrow(pending::cancelExecution,
+                "Canceling an invocation retained by a closed UI should not fail");
+    }
+
+    @Test
+    void closedUI_detachListenerNotRun_pendingInvocationsCleanedUp()
+            throws Exception {
+        UI closedUI = new UI();
+        UIInternals closedInternals = closedUI.getInternals();
+        closedInternals
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element element = new Element("div");
+        element.setVisible(false);
+        closedUI.getElement().appendChild(element);
+
+        // Registered before the detach listener that dumping adds, and
+        // StateNode.fireDetachListeners has no per-listener guard, so this
+        // prevents the framework listener from running when the UI is closed
+        element.getNode().addDetachListener(() -> {
+            throw new IllegalStateException("detach listener failure");
+        });
+        element.executeJs("this.foo = $0", "bar");
+
+        closedInternals.getStateTree().runExecutionsBeforeClientResponse();
+        closedInternals.dumpPendingJavaScriptInvocations();
+
+        assertEquals(1, pendingInvocations(closedInternals).size(),
+                "Invocation of invisible component should be retained");
+        assertEquals(1, detachListeners(closedInternals).size(),
+                "Detach listener should be registered for retained invocation");
+
+        closedInternals.setSession(null);
+
+        assertEquals(0, pendingInvocations(closedInternals).size(),
+                "Closing the UI should discard retained invocations");
+        assertEquals(0, detachListeners(closedInternals).size(),
+                "Closing the UI should unregister the invocation detach listeners");
+    }
+
+    @Test
+    void elementRemovedFromTree_uiClosed_reusedInAnotherUI_invocationReleased()
+            throws Exception {
+        UI firstUI = new UI();
+        UIInternals firstInternals = firstUI.getInternals();
+        firstInternals.setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element element = new Element("div");
+        element.setVisible(false);
+        firstUI.getElement().appendChild(element);
+        PendingJavaScriptResult pending = element.executeJs("this.foo = $0",
+                "bar");
+
+        firstInternals.getStateTree().runExecutionsBeforeClientResponse();
+        firstInternals.dumpPendingJavaScriptInvocations();
+
+        // Detaches the element before resetting its node, which releases the
+        // invocation from the queue of the first UI. The handler registered for
+        // it stays attached to the invocation itself.
+        element.removeFromTree(false);
+
+        assertEquals(0, pendingInvocations(firstInternals).size(),
+                "Detaching the element should release the invocation");
+
+        firstInternals.setSession(null);
+
+        // The element is reused in a new UI and cancels the invocation it still
+        // references while attaching
+        UI secondUI = new UI();
+        secondUI.getInternals()
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
+        secondUI.getElement().appendChild(element);
+
+        assertDoesNotThrow(pending::cancelExecution,
+                "Canceling an invocation retained by a closed UI should not fail");
+    }
+
+    private static Collection<?> pendingInvocations(UIInternals internals)
+            throws Exception {
+        return (Collection<?>) readField(internals, "pendingJsInvocations");
+    }
+
+    private static Map<?, ?> detachListeners(UIInternals internals)
+            throws Exception {
+        return (Map<?, ?>) readField(internals,
+                "pendingJsInvocationDetachListeners");
+    }
+
+    private static Object readField(UIInternals internals, String name)
+            throws Exception {
+        Field field = UIInternals.class.getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(internals);
     }
 
     @Test
