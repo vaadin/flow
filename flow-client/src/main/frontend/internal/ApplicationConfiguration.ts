@@ -21,6 +21,8 @@
 // as window.Vaadin.Flow.internal.ApplicationConfiguration; the bootstrap
 // populates it via the setters before the engine starts.
 
+import { Console } from './Console';
+
 /** Holds the bootstrap configuration of a UI; mirrors ApplicationConfiguration.java. */
 export class ApplicationConfiguration {
   private applicationId = '';
@@ -157,6 +159,7 @@ export class ApplicationConfiguration {
 
   setProductionMode(productionMode: boolean): void {
     this.productionMode = productionMode;
+    Console.setProductionMode(productionMode);
   }
 
   isRequestTiming(): boolean {

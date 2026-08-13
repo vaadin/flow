@@ -33,6 +33,17 @@ export default [
     }
   },
   {
+    // Engine code must log through internal/Console, which suppresses browser
+    // logging in production mode (unless the vaadin.browserLog localStorage flag
+    // is set). Calling `console` directly bypasses that, so it is an error here;
+    // the few deliberately ungated sites carry an inline disable comment.
+    files: ['src/main/frontend/internal/**/*.ts'],
+    ignores: ['src/main/frontend/internal/Console.ts'],
+    rules: {
+      'no-console': 'error'
+    }
+  },
+  {
     files: ['src/**/frontend/**/*'],
     languageOptions: {
       globals: {

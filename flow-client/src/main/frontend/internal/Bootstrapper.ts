@@ -34,6 +34,7 @@ import {
 } from './JsoConfiguration';
 import { getScheduler } from './TrackingScheduler';
 import { getAbsoluteUrl } from './WidgetUtil';
+import { Console } from './Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVICE_URL = 'serviceUrl';
@@ -233,7 +234,7 @@ export function onModuleLoad(): void {
   // Don't continue if vaadinBootstrap.js was not executed (window.Vaadin.Flow
   // absent).
   if (flow == null) {
-    console.warn('vaadinBootstrap.js was not loaded, skipping vaadin application configuration.');
+    Console.warn('vaadinBootstrap.js was not loaded, skipping vaadin application configuration.');
     return;
   }
   // Don't run twice for the same bootstrap context. GWT initModule logs a

@@ -27,6 +27,7 @@ import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { PushConnection } from './PushConnection';
 import { ReconnectStateMachine } from './ReconnectStateMachine';
 import type { XhrConnectionError } from './XhrConnectionError';
+import { Console } from '../Console';
 
 const CONNECTION_LOST = 'connection-lost';
 const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
@@ -122,7 +123,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   private doReconnect(payload: unknown): void {
     if (!this.registry.getUILifecycle().isRunning()) {
-      console.warn('Trying to reconnect after application has been stopped. Giving up');
+      Console.warn('Trying to reconnect after application has been stopped. Giving up');
       return;
     }
     if (payload !== null && payload !== undefined) {
@@ -136,13 +137,13 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: heartbeat ---
 
   heartbeatException(_request: XMLHttpRequest, exception: Error): void {
-    console.error(`Heartbeat exception: ${exception.message}`);
+    Console.error(`Heartbeat exception: ${exception.message}`);
     this.machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
   }
 
   heartbeatInvalidStatusCode(xhr: XMLHttpRequest): void {
     const statusCode = xhr.status;
-    console.warn(`Heartbeat request returned ${statusCode}`);
+    Console.warn(`Heartbeat request returned ${statusCode}`);
     if (statusCode === SC_FORBIDDEN) {
       this.registry.getSystemErrorHandler().handleSessionExpiredError(null);
       this.stopApplication();
@@ -178,7 +179,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   xhrInvalidStatusCode(xhrConnectionError: XhrConnectionError): void {
     const statusCode = xhrConnectionError.getXhr().status;
-    console.warn(`Server returned ${statusCode} for xhr`);
+    Console.warn(`Server returned ${statusCode} for xhr`);
     if (statusCode === SC_UNAUTHORIZED) {
       this.registry.getRequestResponseTracker().endRequest();
       this.handleUnauthorized();
@@ -232,7 +233,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushClosed(_pushConnection: PushConnection, _response: unknown): void {
-    console.debug('Push connection closed');
+    Console.debug('Push connection closed');
   }
 
   pushInvalidContent(pushConnection: PushConnection, message: string): void {

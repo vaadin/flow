@@ -58,6 +58,7 @@ import {
 import type { BinderContext, BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames, type ServerEventHandlerNode } from './ServerEventHandlerBinder';
+import { Console } from '../Console';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -225,7 +226,7 @@ export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, t
     return getStateNodeForElement(stack, (target as unknown as Node).parentNode);
   } catch (e) {
     // not going to let event handling fail; just report nothing found
-    console.debug(
+    Console.debug(
       `An error occurred when Flow tried to find a state node matching the element ${String(
         target
       )}, which was the event.target. Error: ${(e as Error).message}`
@@ -276,7 +277,7 @@ export function getClosestStateNodeIdToDomNode(
     }
   } catch (e) {
     // not going to let event handling fail; just report nothing found
-    console.debug(
+    Console.debug(
       `An error occurred when Flow tried to find a state node matching the element ${String(
         domNodeReference
       )}, returned by an event data expression ${eventDataExpression}. Error: ${(e as Error).message}`
@@ -1047,7 +1048,7 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
   for (const subProperty of subProperties) {
     const elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
     if (!elementProperties.hasPropertyValue(subProperty) && i < size - 1) {
-      console.debug(`Ignoring property change for property '${fullPropertyName}' which isn't defined from server`);
+      Console.debug(`Ignoring property change for property '${fullPropertyName}' which isn't defined from server`);
       return;
     }
 
@@ -1561,7 +1562,7 @@ function verifyAttachRequest(
       continue;
     }
     if (JSON.stringify(getPayload(node)) === JSON.stringify(getPayload(child))) {
-      console.warn(
+      Console.warn(
         `There is already a request to attach element addressed by the ${address}. The existing request's node id='${child.getId()}'. Cannot attach the same element twice.`
       );
       node.getTree().sendExistingElementWithIdAttachToServer(parent, node.getId(), child.getId(), id);
@@ -1585,10 +1586,10 @@ function verifyAttachedElement(
   let failure = false;
   if (element === null) {
     failure = true;
-    console.warn(`${ELEMENT_ATTACH_ERROR_PREFIX}${address} is not found. The requested tag name is '${tag}'`);
+    Console.warn(`${ELEMENT_ATTACH_ERROR_PREFIX}${address} is not found. The requested tag name is '${tag}'`);
   } else if (!hasTag(element, tag as string)) {
     failure = true;
-    console.warn(
+    Console.warn(
       `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has the wrong tag name '${element.tagName}', the requested tag name is '${tag}'`
     );
   }
@@ -1618,7 +1619,7 @@ function verifyAttachedElement(
   }
 
   if (existingId !== null) {
-    console.warn(
+    Console.warn(
       `${ELEMENT_ATTACH_ERROR_PREFIX}${address} has been already attached previously via the node id='${existingId}'`
     );
     node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), existingId, id);
