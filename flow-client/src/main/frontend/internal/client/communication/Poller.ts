@@ -14,11 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.Poller, built alongside the
-// Java version. It polls the server at a configured interval by sending a poll
-// event on the root state node (the GWT repeating Timer maps to setInterval) and
-// stops when the UI lifecycle terminates. The Registry/StateTree are contracts
-// satisfied at cutover.
+// TypeScript port of com.vaadin.client.communication.Poller. It polls the server
+// at a configured interval by sending a poll event on the root state node (the
+// repeating GWT Timer of the original maps to setInterval) and stops when the UI
+// lifecycle terminates. The Registry/StateTree slices it needs are declared here
+// as narrow contracts rather than imported, to keep the dependency one-way.
 
 // com.vaadin.flow.component.PollEvent.DOM_EVENT_NAME
 const POLL_DOM_EVENT_NAME = 'ui-poll';

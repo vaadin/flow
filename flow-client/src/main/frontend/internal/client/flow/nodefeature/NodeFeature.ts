@@ -14,10 +14,9 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.nodefeature.NodeFeature, built
-// alongside the Java version. StateNode is not ported yet, so the slice the
-// node features need is declared here as a contract the future TS StateNode
-// will satisfy at cutover.
+// TypeScript port of com.vaadin.client.flow.nodefeature.NodeFeature. The slice
+// of StateNode the node features need is declared here as a narrow contract
+// rather than imported, to keep the dependency one-way.
 
 import type { MapPropertyNode } from './MapProperty';
 

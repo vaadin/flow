@@ -14,8 +14,8 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.PollConfigurator, built
-// alongside the Java version. It observes the poll-interval property in the
+// TypeScript port of com.vaadin.client.communication.PollConfigurator. It
+// observes the poll-interval property in the
 // node's POLL_CONFIGURATION feature and reconfigures the poller on change.
 
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';

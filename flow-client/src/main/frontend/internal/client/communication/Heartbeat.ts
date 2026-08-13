@@ -14,12 +14,12 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.Heartbeat, built alongside
-// the Java version. It periodically POSTs a heartbeat request to keep the
-// server-side UI alive, rescheduling after each response and disabling itself
-// when the UI terminates. The GWT Timer maps to setTimeout; the
+// TypeScript port of com.vaadin.client.communication.Heartbeat. It periodically
+// POSTs a heartbeat request to keep the server-side UI alive, rescheduling after
+// each response and disabling itself when the UI terminates. The GWT Timer of
+// the original maps to setTimeout; the
 // Registry/ApplicationConfiguration/UILifecycle/ConnectionStateHandler are
-// contracts satisfied at cutover.
+// referenced through the narrow contracts declared here.
 
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import { Console } from '../Console';

@@ -14,23 +14,15 @@
  * the License.
  */
 
-// The executeJs context-object builder migrated from
-// ExecuteJavaScriptProcessor.java, registered on
-// window.Vaadin.Flow.internal.ExecuteJavaScriptProcessor by registerInternals;
-// the Java method delegates here. The callbacks are supplied from the Java side
-// already wrapped in $entry (so exceptions thrown asynchronously from the
-// executed script still reach GWT's uncaught-exception handler). The element ->
-// node resolution (getNode) keeps its $entry boundary on the Java side; here we
-// only assemble the object the executed script runs against. Also bundled to
-// ES5 for the HtmlUnit used by GwtTests.
+// TypeScript port of com.vaadin.client.flow.ExecuteJavaScriptProcessor.
 //
-// The ExecuteJavaScriptProcessor class below is the build-alongside TS port of
-// the rest of ExecuteJavaScriptProcessor.java: it decodes the invocation
-// parameters, defers until any referenced node is bound, then manifests and runs
-// the expression against a context wired to the ExecuteJavaScriptElementUtils
-// callbacks. Composes the ported decoders / invokeJavaScript /
-// getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
-// are contracts satisfied at cutover.
+// getContextExecutionObject assembles the object a server-sent script runs
+// against (its `this`). The ExecuteJavaScriptProcessor class decodes the
+// invocation parameters, defers until any referenced node is bound, then
+// manifests and runs the expression against that context, wired to the
+// ExecuteJavaScriptElementUtils callbacks. The Registry/StateTree slices it needs
+// are declared here as narrow contracts rather than imported, to keep the
+// dependency one-way.
 
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
@@ -54,7 +46,7 @@ const TYPE_PROPERTY = 'type';
 const INJECT_BY_ID = '@id';
 const TEMPLATE_IN_TEMPLATE = 'subTemplate';
 
-// The $entry-wrapped callbacks the executed script invokes via its context.
+// The callbacks the executed script invokes via its context.
 // attachExistingElement / populateModelProperties / registerUpdatableModelProperties
 // take a resolved StateNode (looked up via getNode); the rest take their
 // arguments directly.

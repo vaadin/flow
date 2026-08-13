@@ -14,8 +14,7 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.TrackingScheduler, built alongside the
-// Java version. It defers commands and reports whether any deferred work is
+// TypeScript port of com.vaadin.client.TrackingScheduler. It defers commands and reports whether any deferred work is
 // queued or in progress (used e.g. by TestBench to know when the client is
 // idle). The GWT SchedulerImpl.scheduleDeferred maps to setTimeout(fn, 0); the
 // tracking decrement is scheduled right after the command so it runs once the

@@ -16,15 +16,12 @@
 
 // TypeScript port of com.vaadin.client.flow.binding.SimpleElementBindingStrategy,
 // the binding strategy for a simple (non-template) Element. It is the largest
-// client class, so it is built up across several build-alongside slices, each a
-// labelled section below: event-data resolution, closest-state-node lookups,
-// styling binding, attribute binding, creation & identity, and visibility
-// binding. The methods are currently standalone functions; they get assembled
-// into the BindingStrategy<Element> class once bind() and its remaining
-// DOM-structure/event/shadow machinery (which need the BindingContext type) are
-// ported. The Polymer model-property bridge stays in
-// internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
-// at cutover.
+// client class, so it is organized into the labelled sections below: event-data
+// resolution, closest-state-node lookups, styling, attributes, creation &
+// identity, DOM events, property binding, children, shadow root, virtual
+// children, visibility, and finally the BindingStrategy<Element> class that ties
+// them together. The Polymer model-property bridge lives in
+// internal/SimpleElementBindingStrategy.ts and is imported here.
 
 import { assert } from '../../../assert';
 import { getElementById, getElementByName, hasTag } from '../../ElementUtil';
@@ -184,7 +181,7 @@ export function resolveFilters(
   return noFilters || atLeastOneFilterMatched;
 }
 
-// --- Slice 2: closest-state-node lookups -----------------------------------
+// --- closest-state-node lookups ----------------------------------------------
 // Used by handleDomEvent to map an event target / a DOM node returned by a JS
 // expression to the nearest bound state node id (the MAP_STATE_NODE_EVENT_DATA
 // event data). DOM parents are walked with native parentNode/isSameNode.
@@ -289,11 +286,10 @@ export function getClosestStateNodeIdToDomNode(
   return -1;
 }
 
-// --- Slice 3: styling binding ----------------------------------------------
-// The class-list and style-property binding parts of bind(). Both go through
-// the ported DomApi/native CSS; the property and attribute binders
-// (updateProperty/updateAttribute) wait on PolymerUtils.createModelTree and
-// WidgetUtil.updateAttribute, which are not ported yet.
+// --- styling binding ---------------------------------------------------------
+// The class-list and style-property binding parts of bind(). Both go through the
+// native DOM/CSS APIs; the property and attribute binders
+// (updateProperty/updateAttribute) live in their own sections further down.
 
 /** The slice of MapProperty that updateStyleProperty reads. */
 interface StyleMapProperty {
@@ -369,7 +365,7 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
   });
 }
 
-// --- Slice 4: attribute binding --------------------------------------------
+// --- attribute binding -------------------------------------------------------
 // The element-attribute part of bind(). updateAttributeValue resolves a "uri"
 // model object against the application configuration (web-component mode); the
 // underlying attribute set/remove goes through WidgetUtil.
@@ -431,7 +427,7 @@ export function updateAttribute(mapProperty: AttributeMapProperty, element: Elem
   );
 }
 
-// --- Slice 5: element creation & identity ----------------------------------
+// --- element creation & identity ---------------------------------------------
 // The standalone, BindingContext-free parts of the strategy: creating the DOM
 // element for a state node, the applicability/tag/visibility checks and the
 // rebind check. They are assembled into the BindingStrategy<Element> class once
@@ -510,7 +506,7 @@ export function isVisible(node: CreationNode): boolean {
   return tree !== null && tree.isVisible(node);
 }
 
-// --- Slice 6: visibility binding -------------------------------------------
+// --- visibility binding ------------------------------------------------------
 // The element-visibility helpers of bind(): they capture the element's initial
 // hidden attribute and inline display once, hide an invisible element, restore
 // the captured state when it becomes visible again, and apply structural
@@ -603,7 +599,7 @@ export function applyStructuralAttributes(stateNode: StructuralAttributesNode, e
   }
 }
 
-// --- Slice 7: DOM event listeners ------------------------------------------
+// --- DOM event listeners -----------------------------------------------------
 // Binds the ELEMENT_LISTENERS feature to real DOM event listeners and dispatches
 // fired events to the server. handleDomEvent ties together the slice-1 filter/
 // debounce resolution, the slice-2 closest-node lookups and the event-expression
@@ -857,7 +853,7 @@ export function handleDomEvent(event: Event, context: BindingContext): void {
   }
 }
 
-// --- Slice 8: generic map/property binding ---------------------------------
+// --- generic map/property binding --------------------------------------------
 // The reactive binding of a NodeMap's properties to a "property user" callback
 // (which applies each property to the DOM, e.g. updateStyleProperty/
 // updateAttribute/updateProperty). createComputations tracks the per-feature
@@ -923,7 +919,7 @@ export function bindMap<P extends { getName(): string }>(
   return map.addPropertyAddListener((event) => bindProperty(user, event.getProperty(), bindings));
 }
 
-// --- Slice 9: Polymer model handlers ---------------------------------------
+// --- Polymer model handlers --------------------------------------------------
 // Handle changes coming from a Polymer element's model: a property change on the
 // element (handlePropertiesChanged/handlePropertyChange, gated by the node's
 // UpdatableModelProperties "security feature") and a list-item property change
@@ -1073,7 +1069,7 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
   mapProperty!.syncToServer(valueProvider());
 }
 
-// --- Slice 10: element property binding ------------------------------------
+// --- element property binding ------------------------------------------------
 // Applies a map property to a DOM-element JS property (the property user for the
 // ELEMENT_PROPERTIES feature). Values are converted through the Polymer model
 // tree; the previous DOM value guards against clobbering a user edit made during
@@ -1119,7 +1115,7 @@ export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: 
   mapProperty.clearPreviousDomValue();
 }
 
-// --- Slice 11: light-DOM children binding ----------------------------------
+// --- light-DOM children binding ----------------------------------------------
 // Binds the ELEMENT_CHILDREN feature to the element's DOM children, creating and
 // inserting child elements (or adopting existing ones) and keeping the DOM in
 // sync as the children list is spliced. Goes through the binder context to
@@ -1324,7 +1320,7 @@ function getPreviousSibling(index: number, context: BindingContext): BindingStat
   return node;
 }
 
-// --- Slice 12: shadow root binding -----------------------------------------
+// --- shadow root binding -----------------------------------------------------
 // Attaches (or reuses) the element's open shadow root, binds the shadow root
 // state node's DOM node and its children, and re-runs when the shadow-root data
 // is (re)added.
@@ -1354,7 +1350,7 @@ export function bindShadowRoot(context: BindingContext): EventRemover {
   return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
 }
 
-// --- Slice 13: bind lifecycle ----------------------------------------------
+// --- bind lifecycle ----------------------------------------------------------
 // The bind/unbind lifecycle glue: the weak set of already-bound nodes, the
 // re-bind helper that re-fires the dom-node-set event, the deferred initial
 // property update, and the teardown that stops computations and removes
@@ -1425,7 +1421,7 @@ export function remove(
   boundNodes.delete(context.node);
 }
 
-// --- Slice 14: virtual children / attach-existing-element ------------------
+// --- virtual children / attach-existing-element ------------------------------
 // Binds the VIRTUAL_CHILDREN feature: in-memory children are created/bound like
 // normal children, while inject-by-id/name and template-in-template virtual
 // children attach the state node to an existing DOM element found in the host's
@@ -1631,7 +1627,7 @@ function verifyAttachedElement(
   return true;
 }
 
-// --- Slice 15: visibility binding ------------------------------------------
+// --- visibility binding ------------------------------------------------------
 // Binds the node's visibility: tracks the bound state, hides invisible nodes
 // (preserving their initial hidden/display state), and rebinds an initially
 // invisible node once it becomes visible. The cross-slice helper calls cast the
@@ -1684,7 +1680,7 @@ export function bindVisibility(
     .addChangeListener(() => updateVisibility(listeners, context, computationsCollection, nodeFactory));
 }
 
-// --- Slice 16: bind() orchestrator + strategy class ------------------------
+// --- bind() orchestrator + strategy class ------------------------------------
 // Ties every binding slice together: the bind() entry creates the binding
 // context, binds the server handlers, DOM events, children, shadow root, class
 // list, the style/attribute/property maps and the Polymer model bridge (for a

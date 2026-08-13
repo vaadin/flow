@@ -14,9 +14,9 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.ExistingElementMap, built alongside the
-// Java version. Maps between a server-side node id requested to attach to an
-// existing client-side element and that element.
+// TypeScript port of com.vaadin.client.ExistingElementMap. Maps between a
+// server-side node id requested to attach to an existing client-side element
+// and that element.
 
 /** Bidirectional mapping between server-side node ids and existing elements. */
 export class ExistingElementMap {

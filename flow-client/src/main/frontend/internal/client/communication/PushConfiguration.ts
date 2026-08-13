@@ -14,12 +14,13 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.PushConfiguration, built
-// alongside the Java version. It exposes the push configuration stored in the
-// root node's UI_PUSHCONFIGURATION feature and, when the push mode changes,
-// informs the MessageSender to enable/disable push (deferred to a flush listener
-// so all parts of the configuration are updated first). The Registry/StateTree/
-// MessageSender are contracts satisfied at cutover.
+// TypeScript port of com.vaadin.client.communication.PushConfiguration. It
+// exposes the push configuration stored in the root node's UI_PUSHCONFIGURATION
+// feature and, when the push mode changes, informs the MessageSender to
+// enable/disable push (deferred to a flush listener so all parts of the
+// configuration are updated first). The Registry/StateTree/MessageSender slices
+// it needs are declared here as narrow contracts rather than imported, to keep
+// the dependency one-way.
 
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { Reactive } from '../flow/reactive/Reactive';

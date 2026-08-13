@@ -14,8 +14,7 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.ConstantPool, built alongside the
-// Java version.
+// TypeScript port of com.vaadin.client.flow.ConstantPool.
 
 import { assert } from '../../assert';
 

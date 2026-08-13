@@ -14,12 +14,11 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.ApplicationConfiguration, built alongside
-// the Java version. A holder for the per-UI bootstrap configuration (service /
-// context URLs, UI id, heartbeat / message-suspend timeouts, production mode,
-// versions, dev-tools / live-reload settings). In Java it is a @JsType exported
-// as window.Vaadin.Flow.internal.ApplicationConfiguration; the bootstrap
-// populates it via the setters before the engine starts.
+// TypeScript port of com.vaadin.client.ApplicationConfiguration. A holder for
+// the per-UI bootstrap configuration (service / context URLs, UI id, heartbeat /
+// message-suspend timeouts, production mode, versions, dev-tools / live-reload
+// settings). The bootstrap populates it via the setters before the engine
+// starts.
 
 import { Console } from './Console';
 
