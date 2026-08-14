@@ -1,100 +1,174 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import {
-  clearEventsList,
-  ensureLogger,
-  ensureNoLogger,
-  getGwtStatsEvents,
-  getPerformanceTiming,
-  hasHighPrecisionTime,
-  logGwtEvent,
-  round
+  enter,
+  getRelativeTimeMillis,
+  getRelativeTimeString,
+  initialize,
+  isEnabled,
+  leave,
+  logBootstrapTimings,
+  logTimings,
+  type Node,
+  reset,
+  setEnabled,
+  setProfilerResultConsumer
 } from '../../main/frontend/internal/Profiler';
 
+type Win = {
+  Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } };
+  __gwtStatsEvent?: (event?: unknown) => boolean;
+};
+const win = window as unknown as Win;
+
 describe('Profiler', () => {
-  it('round rounds to the given number of decimal places', () => {
-    expect(round(1.23456, 2)).to.equal(1.23);
-    expect(round(1.235, 2)).to.equal(1.24);
-    expect(round(10, 0)).to.equal(10);
-    expect(round(1.5, 0)).to.equal(2);
+  // The result consumer is a module-level singleton that may only be set once
+  // (setProfilerResultConsumer throws otherwise), so it is installed once and
+  // captures into holders that each test resets.
+  let lastProfilerData: { rootNode: Node; totals: Node[] } | undefined;
+  let lastBootstrapData: Map<string, number> | undefined;
+
+  before(() => {
+    setProfilerResultConsumer({
+      addProfilerData(rootNode, totals) {
+        lastProfilerData = { rootNode, totals };
+      },
+      addBootstrapData(timings) {
+        lastBootstrapData = timings;
+      }
+    });
   });
 
-  it('hasHighPrecisionTime reflects performance.now availability', () => {
-    // jsdom/Chromium provide performance.now.
-    expect(hasHighPrecisionTime()).to.equal(typeof window.performance?.now === 'function');
+  let savedVaadin: Win['Vaadin'];
+  let savedLogger: Win['__gwtStatsEvent'];
+
+  beforeEach(() => {
+    savedVaadin = win.Vaadin;
+    savedLogger = win.__gwtStatsEvent;
+    win.Vaadin = { Flow: {} };
+    win.__gwtStatsEvent = undefined;
+    lastProfilerData = undefined;
+    lastBootstrapData = undefined;
   });
 
-  it('getPerformanceTiming returns the named timing value or 0', () => {
-    const timing = window.performance?.timing as unknown as Record<string, number> | undefined;
-    if (timing && typeof timing.navigationStart === 'number') {
-      expect(getPerformanceTiming('navigationStart')).to.equal(timing.navigationStart);
-    }
-    expect(getPerformanceTiming('no-such-timing-entry')).to.equal(0);
+  afterEach(() => {
+    setEnabled(false);
+    win.Vaadin = savedVaadin;
+    win.__gwtStatsEvent = savedLogger;
   });
 
-  it('getGwtStatsEvents/clearEventsList read and reset the events list', () => {
-    const win = window as unknown as { Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } } };
-    const savedVaadin = win.Vaadin;
+  it('isEnabled reflects setEnabled', () => {
+    expect(isEnabled()).to.be.false;
+    setEnabled(true);
+    expect(isEnabled()).to.be.true;
+  });
+
+  it('getRelativeTimeMillis/getRelativeTimeString use performance.now and round to 3 decimals', () => {
+    const nowStub = sinon.stub(window.performance, 'now').returns(5.6789);
     try {
-      win.Vaadin = { Flow: { gwtStatsEvents: [{ a: 1 }] } };
-      expect(getGwtStatsEvents()).to.deep.equal([{ a: 1 }]);
-
-      clearEventsList();
-      expect(win.Vaadin.Flow?.gwtStatsEvents).to.deep.equal([]);
-
-      win.Vaadin = { Flow: {} };
-      expect(getGwtStatsEvents()).to.deep.equal([]);
+      initialize();
+      expect(getRelativeTimeMillis()).to.equal(5.6789);
+      expect(getRelativeTimeString(0)).to.equal('5.679');
+      expect(getRelativeTimeString(5)).to.equal('0.679');
     } finally {
-      win.Vaadin = savedVaadin;
+      nowStub.restore();
     }
   });
 
-  it('ensureLogger installs a collecting __gwtStatsEvent, ensureNoLogger removes it', () => {
-    const win = window as unknown as {
-      Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } };
-      __gwtStatsEvent?: (event?: unknown) => boolean;
+  it('enter/leave forward begin/end events through the installed logger', () => {
+    setEnabled(true);
+    initialize();
+
+    enter('bootstrap');
+    leave('bootstrap');
+
+    const events = win.Vaadin!.Flow!.gwtStatsEvents as Array<Record<string, unknown>>;
+    expect(events).to.have.length(2);
+    expect(events[0]).to.include({ evtGroup: 'VaadinProfiler', subSystem: 'bootstrap', type: 'begin' });
+    expect(events[1]).to.include({ evtGroup: 'VaadinProfiler', subSystem: 'bootstrap', type: 'end' });
+    expect(events[0].millis).to.be.a('number');
+    expect(events[0].relativeMillis).to.be.a('number');
+  });
+
+  it('does nothing on enter/leave when profiling is disabled', () => {
+    setEnabled(false);
+    initialize();
+
+    enter('x');
+    leave('x');
+
+    expect(win.Vaadin!.Flow!.gwtStatsEvents).to.be.undefined;
+  });
+
+  it('initialize removes and neutralizes a pre-existing page logger when disabled', () => {
+    win.Vaadin = { Flow: { gwtStatsEvents: [{ a: 1 }] } };
+    let pushed = false;
+    win.__gwtStatsEvent = () => {
+      pushed = true;
+      return true;
     };
-    const savedVaadin = win.Vaadin;
-    const savedLogger = win.__gwtStatsEvent;
-    try {
-      win.Vaadin = { Flow: {} };
-      win.__gwtStatsEvent = undefined;
 
-      ensureLogger();
-      expect(typeof win.__gwtStatsEvent).to.equal('function');
-      win.__gwtStatsEvent!({ x: 1 });
-      expect(win.Vaadin.Flow?.gwtStatsEvents).to.deep.equal([{ x: 1 }]);
+    setEnabled(false);
+    initialize();
 
-      ensureNoLogger();
-      expect(win.Vaadin.Flow?.gwtStatsEvents).to.equal(undefined);
-      // The logger is neutralized (still a function, but a no-op returning true).
-      expect(win.__gwtStatsEvent!()).to.be.true;
-    } finally {
-      win.Vaadin = savedVaadin;
-      win.__gwtStatsEvent = savedLogger;
-    }
+    expect(win.Vaadin.Flow!.gwtStatsEvents).to.be.undefined;
+    // Neutralized: still a function returning true, but no longer collecting.
+    expect(win.__gwtStatsEvent!({ b: 2 })).to.be.true;
+    expect(pushed).to.be.false;
   });
 
-  it('logGwtEvent forwards a well-formed event to __gwtStatsEvent', () => {
-    const win = window as unknown as { __gwtStatsEvent?: (event?: unknown) => boolean };
-    const saved = win.__gwtStatsEvent;
-    try {
-      const events: Array<Record<string, unknown>> = [];
-      win.__gwtStatsEvent = (event?: unknown) => {
-        events.push(event as Record<string, unknown>);
-        return true;
-      };
-      logGwtEvent('VaadinProfiler', 'com.example.App', 'bootstrap', 'begin', 12.5);
-      expect(events).to.have.length(1);
-      expect(events[0]).to.include({
-        evtGroup: 'VaadinProfiler',
-        moduleName: 'com.example.App',
-        subSystem: 'bootstrap',
-        type: 'begin',
-        relativeMillis: 12.5
-      });
-      expect(events[0].millis).to.be.a('number');
-    } finally {
-      win.__gwtStatsEvent = saved;
+  it('reset clears the collected events', () => {
+    setEnabled(true);
+    initialize();
+    enter('a');
+    leave('a');
+    expect((win.Vaadin!.Flow!.gwtStatsEvents as unknown[]).length).to.be.greaterThan(0);
+
+    reset();
+
+    expect(win.Vaadin!.Flow!.gwtStatsEvents).to.deep.equal([]);
+  });
+
+  it('logTimings builds a node tree and feeds the consumer', () => {
+    setEnabled(true);
+    initialize();
+    // Synthesize a begin/end pair for a single "foo" block spanning 30 ms.
+    win.Vaadin!.Flow!.gwtStatsEvents = [
+      { evtGroup: 'VaadinProfiler', subSystem: 'foo', type: 'begin', millis: 100 },
+      { evtGroup: 'VaadinProfiler', subSystem: 'foo', type: 'end', millis: 130 }
+    ];
+
+    logTimings();
+
+    expect(lastProfilerData).to.not.be.undefined;
+    const foo = lastProfilerData!.totals.find((node) => node.getName() === 'foo');
+    expect(foo).to.not.be.undefined;
+    expect(foo!.getCount()).to.equal(1);
+    expect(foo!.getTimeSpent()).to.equal(30);
+  });
+
+  it('logTimings does not feed the consumer when profiling is disabled', () => {
+    setEnabled(false);
+    win.Vaadin!.Flow!.gwtStatsEvents = [
+      { evtGroup: 'VaadinProfiler', subSystem: 'foo', type: 'begin', millis: 100 },
+      { evtGroup: 'VaadinProfiler', subSystem: 'foo', type: 'end', millis: 130 }
+    ];
+
+    logTimings();
+
+    expect(lastProfilerData).to.be.undefined;
+  });
+
+  it('logBootstrapTimings reads performance.timing without throwing', () => {
+    setEnabled(true);
+
+    logBootstrapTimings();
+
+    // performance.timing availability varies by environment; when entries are
+    // present the consumer receives a timings map. Either way the call must
+    // exercise the reader without throwing.
+    if (lastBootstrapData !== undefined) {
+      expect(lastBootstrapData).to.be.instanceOf(Map);
     }
   });
 });

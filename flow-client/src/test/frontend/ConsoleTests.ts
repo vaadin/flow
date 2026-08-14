@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { Console, isLocalStorageFlagEnabled } from '../../main/frontend/internal/Console';
+import { Console } from '../../main/frontend/internal/Console';
 
 type Level = 'debug' | 'log' | 'warn' | 'error';
 const LEVELS: Level[] = ['debug', 'log', 'warn', 'error'];
@@ -29,19 +29,6 @@ describe('Console', () => {
     } else {
       window.localStorage.setItem(KEY, saved);
     }
-  });
-
-  describe('isLocalStorageFlagEnabled', () => {
-    it('is true only when the flag is exactly "true"', () => {
-      window.localStorage.setItem(KEY, 'true');
-      expect(isLocalStorageFlagEnabled()).to.be.true;
-
-      window.localStorage.setItem(KEY, 'false');
-      expect(isLocalStorageFlagEnabled()).to.be.false;
-
-      window.localStorage.removeItem(KEY);
-      expect(isLocalStorageFlagEnabled()).to.be.false;
-    });
   });
 
   describe('production mode suppression', () => {
@@ -77,6 +64,17 @@ describe('Console', () => {
       });
     });
 
+    it('keeps logging suppressed in production mode when the flag is not exactly "true"', () => {
+      window.localStorage.setItem(KEY, 'false');
+      Console.setProductionMode(true);
+
+      LEVELS.forEach((level) => Console[level](`${level} message`));
+
+      LEVELS.forEach((level) => {
+        expect(stubs[level].called, level).to.be.false;
+      });
+    });
+
     it('starts logging again when production mode is turned off', () => {
       window.localStorage.removeItem(KEY);
       Console.setProductionMode(true);
@@ -85,6 +83,23 @@ describe('Console', () => {
       Console.warn('logged');
 
       expect(stubs.warn.calledOnceWithExactly('logged')).to.be.true;
+    });
+  });
+
+  describe('reportStacktrace', () => {
+    it('rethrows the exception asynchronously so the browser reports it', () => {
+      const setTimeoutStub = sinon.stub(window, 'setTimeout');
+      try {
+        const error = new Error('boom');
+        Console.reportStacktrace(error);
+
+        expect(setTimeoutStub.calledOnce).to.be.true;
+        expect(setTimeoutStub.firstCall.args[1]).to.equal(0);
+        const deferred = setTimeoutStub.firstCall.args[0] as () => void;
+        expect(deferred).to.throw(error);
+      } finally {
+        setTimeoutStub.restore();
+      }
     });
   });
 });

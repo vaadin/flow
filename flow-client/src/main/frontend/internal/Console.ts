@@ -28,8 +28,11 @@ let isProductionMode = false;
  * Whether the localStorage override flag `vaadin.browserLog` is set to "true".
  * Used to force browser-console logging on in production mode. Returns false if
  * localStorage is unavailable or inaccessible.
+ *
+ * Private in Console.java, so module-local here; exercised through the public
+ * logging methods rather than imported directly.
  */
-export function isLocalStorageFlagEnabled(): boolean {
+function isLocalStorageFlagEnabled(): boolean {
   try {
     return !!window.localStorage && window.localStorage.getItem('vaadin.browserLog') === 'true';
   } catch (e) {
@@ -92,5 +95,20 @@ export const Console = {
     if (shouldLogToBrowserConsole()) {
       console.error(message);
     }
+  },
+
+  /**
+   * Logs the stack trace of an exception to the browser console. The exception
+   * is rethrown asynchronously (after the current task) so the browser reports
+   * it through its global error handler with the highest possible fidelity.
+   * Mirrors Console.reportStacktrace; the GWT version deferred the throw to
+   * bypass GWT's own uncaught-exception handling, which has no equivalent here,
+   * so a plain deferred rethrow is the faithful port. Not gated by production
+   * mode, matching Console.java.
+   */
+  reportStacktrace(exception: unknown): void {
+    window.setTimeout(() => {
+      throw exception;
+    }, 0);
   }
 };
