@@ -35,6 +35,7 @@ import { isPolymerElement, setProperty, splice } from './PolymerUtils';
 import { Reactive, type EventRemover } from './reactive/reactive';
 import { StateNode } from './StateNode';
 import { setJsProperty } from './WidgetUtil';
+import { Console } from './Console';
 
 /**
  * Converts a model object (StateNode, MapProperty or scalar) into the plain JS
@@ -117,7 +118,7 @@ function doHandleListChange(event: ListSpliceEvent, value: JsonValue): void {
   const node = event.getSource().getNode() as StateNode;
   const root = getFirstParentWithDomNode(node);
   if (root === null) {
-    console.warn(`Root node for node ${node.getId()} could not be found`);
+    Console.warn(`Root node for node ${node.getId()} could not be found`);
     return;
   }
 
@@ -142,7 +143,7 @@ function doHandlePropertyChange(property: MapProperty, value: JsonValue): void {
   const node = property.getMap().getNode() as unknown as StateNode;
   const root = getFirstParentWithDomNode(node);
   if (root === null) {
-    console.warn(`Root node for node ${node.getId()} could not be found`);
+    Console.warn(`Root node for node ${node.getId()} could not be found`);
     return;
   }
   const modelTree = createModelTree(property.getValue());
