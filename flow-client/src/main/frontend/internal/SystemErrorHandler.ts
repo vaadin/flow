@@ -20,6 +20,7 @@ import { addGetParameters } from './SharedUtil';
 import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
 import { redirect } from './WidgetUtil';
+import { Console } from './Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -179,7 +180,7 @@ export class SystemErrorHandler {
 
   /** Logs the given error message. Mirrors SystemErrorHandler.handleError(String). */
   handleError(errorMessage: string): void {
-    console.error(errorMessage);
+    Console.error(errorMessage);
   }
 
   /** Logs the message of the given error/throwable. Mirrors handleError(Throwable). */
@@ -208,7 +209,7 @@ export class SystemErrorHandler {
    */
   private resynchronizeSession(): void {
     if (this.resyncInProgress) {
-      console.debug('Web components resynchronization already in progress');
+      Console.debug('Web components resynchronization already in progress');
       return;
     }
     this.resyncInProgress = true;
@@ -230,7 +231,7 @@ export class SystemErrorHandler {
     getWithCredentials(
       sessionResyncUri,
       (responseText) => {
-        console.log(`Received xhr HTTP session resynchronization message: ${responseText}`);
+        Console.log(`Received xhr HTTP session resynchronization message: ${responseText}`);
 
         // Make sure the heartbeat has not been restarted; especially important
         // if the uiId is reset after session expiration, to avoid multiple
@@ -241,7 +242,7 @@ export class SystemErrorHandler {
         const json = JSON.parse(responseText) as Record<string, unknown>;
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
-          console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
+          Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
           configuration.setUIId(newUiId);
         }
         this.registry.reset();
@@ -255,7 +256,7 @@ export class SystemErrorHandler {
           // so connected events can reach the server. Deferred so the current
           // request completes and the Set-Cookie header is processed first.
           getScheduler().scheduleDeferred(() => {
-            console.debug('Re-establish PUSH connection');
+            Console.debug('Re-establish PUSH connection');
             this.registry.getMessageSender().setPushEnabled(true);
             getScheduler().scheduleDeferred(() => this.recreateWebComponents());
           });

@@ -45,6 +45,7 @@ import { Reactive } from './reactive/reactive';
 import type { StateNode } from './StateNode';
 import type { StateTree } from './StateTree';
 import { UIState } from './UILifecycle';
+import { Console } from './Console';
 
 // NodeFeatures.ELEMENT_DATA / NodeProperties
 const ELEMENT_DATA = 0;
@@ -112,17 +113,20 @@ export function invokeJavaScript(
     const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
     fn.apply(context, parameters);
   } catch (exception) {
-    if (productionMode) {
-      // Mirror Console.shouldLogToBrowserConsole: in production the explanatory
-      // messages are suppressed and only the failure itself is surfaced, as a
-      // single console entry carrying the error message (matching the Java path
-      // where the rethrown error's message reaches the console).
-      console.error(exception instanceof Error ? exception.message : String(exception));
-    } else {
-      console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
-      console.error(exception);
+    // The failure itself is surfaced even in production mode. Java did this via
+    // Console.reportStacktrace, which rethrows asynchronously and so is not
+    // subject to the production-mode log suppression; rethrowing here would
+    // instead reach the window 'error' listener and pop the system error
+    // notification, so the message is logged directly.
+    // eslint-disable-next-line no-console -- deliberately ungated, see above
+    console.error(exception instanceof Error ? exception.message : String(exception));
+    // The explanatory messages went through Console in Java, so they are
+    // suppressed in production mode.
+    Console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
+    if (!productionMode) {
+      Console.error(exception);
       // Java brackets the snippets then strips the brackets, netting the join.
-      console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
+      Console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
     }
   }
 }
