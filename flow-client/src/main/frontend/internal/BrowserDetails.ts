@@ -17,41 +17,41 @@
 // User-agent parser migrated from com.vaadin.flow.shared.BrowserDetails. This is
 // a dependency-free leaf utility: it inspects only the lower-cased user-agent
 // string. The parsing is intentionally lazy (each aspect is parsed on first
-// access) to mirror the Java original exactly. Methods that were private in Java
-// stay private here; the enums and the browser/OS/engine predicates that were
-// public are exported. As in Java, diagnostics on parse failure are written
+// access) to mirror the Java original exactly. Members that were private in Java
+// use the JS-native `#` private prefix here; the enums and the browser/OS/engine
+// predicates that were public are exported. As in Java, diagnostics on parse failure are written
 // straight to the console rather than through the engine logging facade, so the
 // module stays a leaf with no imports.
 
 /** Detected operating systems. */
 export enum OperatingSystem {
-  UNKNOWN,
-  WINDOWS,
-  MACOSX,
-  LINUX,
-  IOS,
-  ANDROID,
-  CHROMEOS
+  UNKNOWN = 0,
+  WINDOWS = 1,
+  MACOSX = 2,
+  LINUX = 3,
+  IOS = 4,
+  ANDROID = 5,
+  CHROMEOS = 6
 }
 
 /** Detected browser families. */
 export enum BrowserName {
-  UNKNOWN,
-  SAFARI,
-  CHROME,
-  FIREFOX,
-  OPERA,
-  IE,
-  EDGE
+  UNKNOWN = 0,
+  SAFARI = 1,
+  CHROME = 2,
+  FIREFOX = 3,
+  OPERA = 4,
+  IE = 5,
+  EDGE = 6
 }
 
 /** Detected browser rendering engines. */
 export enum BrowserEngine {
-  UNKNOWN,
-  GECKO,
-  WEBKIT,
-  PRESTO,
-  TRIDENT
+  UNKNOWN = 0,
+  GECKO = 1,
+  WEBKIT = 2,
+  PRESTO = 3,
+  TRIDENT = 4
 }
 
 const CHROME = ' chrome/';
@@ -106,31 +106,31 @@ function getVersionStringLength(userAgent: string, startIndex: number): number {
  *             parsing library like ua-parser/uap-java
  */
 export class BrowserDetails {
-  private browserName?: BrowserName;
+  #browserName?: BrowserName;
 
-  private browserEngine?: BrowserEngine;
+  #browserEngine?: BrowserEngine;
 
-  private windowsPhone = false;
+  #windowsPhone = false;
 
-  private iPad = false;
+  #iPad = false;
 
-  private iPhone = false;
+  #iPhone = false;
 
-  private chromeOS = false;
+  #chromeOS = false;
 
-  private os?: OperatingSystem;
+  #os?: OperatingSystem;
 
-  private browserEngineVersion = -10.0;
+  #browserEngineVersion = -10.0;
 
-  private browserMajorVersion = NOT_PARSED;
+  #browserMajorVersion = NOT_PARSED;
 
-  private browserMinorVersion = NOT_PARSED;
+  #browserMinorVersion = NOT_PARSED;
 
-  private osMajorVersion = NOT_PARSED;
+  #osMajorVersion = NOT_PARSED;
 
-  private osMinorVersion = NOT_PARSED;
+  #osMinorVersion = NOT_PARSED;
 
-  private readonly userAgent: string;
+  readonly #userAgent: string;
 
   /**
    * Create an instance based on the given user agent.
@@ -139,77 +139,80 @@ export class BrowserDetails {
    *            User agent as provided by the browser.
    */
   constructor(userAgentString: string) {
-    this.userAgent = userAgentString.toLowerCase();
+    this.#userAgent = userAgentString.toLowerCase();
   }
 
-  private parseBrowserEngine(): void {
-    const ua = this.userAgent;
+  #parseBrowserEngine(): void {
+    const ua = this.#userAgent;
     // browser engine name
     if (ua.includes('gecko') && !ua.includes('webkit') && !ua.includes('trident/')) {
-      this.browserEngine = BrowserEngine.GECKO;
+      this.#browserEngine = BrowserEngine.GECKO;
     } else if (ua.includes(' presto/')) {
-      this.browserEngine = BrowserEngine.PRESTO;
+      this.#browserEngine = BrowserEngine.PRESTO;
     } else if (ua.includes('trident/')) {
-      this.browserEngine = BrowserEngine.TRIDENT;
+      this.#browserEngine = BrowserEngine.TRIDENT;
     } else if (!ua.includes('trident/') && ua.includes('applewebkit')) {
-      this.browserEngine = BrowserEngine.WEBKIT;
+      this.#browserEngine = BrowserEngine.WEBKIT;
     } else {
-      this.browserEngine = BrowserEngine.UNKNOWN;
+      this.#browserEngine = BrowserEngine.UNKNOWN;
     }
   }
 
-  private parseBrowserName(): void {
-    const ua = this.userAgent;
+  #parseBrowserName(): void {
+    const ua = this.#userAgent;
     // browser name
     if (ua.includes(' edge/') || ua.includes(' edg/') || ua.includes(' edga/') || ua.includes(' edgios/')) {
-      this.browserName = BrowserName.EDGE;
-    } else if ((ua.includes(CHROME) || ua.includes(' crios/') || ua.includes(HEADLESSCHROME)) && !ua.includes(' opr/')) {
-      this.browserName = BrowserName.CHROME;
+      this.#browserName = BrowserName.EDGE;
+    } else if (
+      (ua.includes(CHROME) || ua.includes(' crios/') || ua.includes(HEADLESSCHROME)) &&
+      !ua.includes(' opr/')
+    ) {
+      this.#browserName = BrowserName.CHROME;
     } else if (ua.includes('opera') || ua.includes(' opr/')) {
-      this.browserName = BrowserName.OPERA;
+      this.#browserName = BrowserName.OPERA;
     } else if ((ua.includes('msie') && !ua.includes('webtv')) || ua.includes('trident/')) {
       // check trident engine as IE 11 no longer contains MSIE in the user agent
-      this.browserName = BrowserName.IE;
+      this.#browserName = BrowserName.IE;
     } else if (ua.includes(' firefox/') || ua.includes('fxios/')) {
-      this.browserName = BrowserName.FIREFOX;
+      this.#browserName = BrowserName.FIREFOX;
     } else if (ua.includes('safari')) {
-      this.browserName = BrowserName.SAFARI;
+      this.#browserName = BrowserName.SAFARI;
     } else {
-      this.browserName = BrowserName.UNKNOWN;
+      this.#browserName = BrowserName.UNKNOWN;
     }
   }
 
-  private parseEngineVersion(): void {
-    const ua = this.userAgent;
+  #parseEngineVersion(): void {
+    const ua = this.#userAgent;
     // Rendering engine version
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
     try {
-      if (this.browserEngine === BrowserEngine.GECKO) {
+      if (this.#browserEngine === BrowserEngine.GECKO) {
         const rvPos = ua.indexOf('rv:');
         if (rvPos >= 0) {
           let tmp = ua.substring(rvPos + 3);
           tmp = tmp.replace(/(\.[0-9]+).+/, '$1');
-          this.browserEngineVersion = this.parseFloatOrThrow(tmp);
+          this.#browserEngineVersion = this.#parseFloatOrThrow(tmp);
         }
-      } else if (this.browserEngine === BrowserEngine.WEBKIT) {
+      } else if (this.#browserEngine === BrowserEngine.WEBKIT) {
         let tmp = ua.substring(ua.indexOf('webkit/') + 7);
         tmp = tmp.replace(/([0-9]+\.[0-9]+).*/, '$1');
-        this.browserEngineVersion = this.parseFloatOrThrow(tmp);
-      } else if (this.browserEngine === BrowserEngine.TRIDENT) {
+        this.#browserEngineVersion = this.#parseFloatOrThrow(tmp);
+      } else if (this.#browserEngine === BrowserEngine.TRIDENT) {
         let tmp = ua.substring(ua.indexOf('trident/') + 8);
         tmp = tmp.replace(/([0-9]+\.[0-9]+).*/, '$1');
-        this.browserEngineVersion = this.parseFloatOrThrow(tmp);
-        if (this.browserEngineVersion > 7) {
+        this.#browserEngineVersion = this.#parseFloatOrThrow(tmp);
+        if (this.#browserEngineVersion > 7) {
           // Windows 10 on launch reported Trident/8.0, now it does not
           // Due to Edge there shouldn't ever be an Trident 8.0 or IE12
-          this.browserEngineVersion = 7;
+          this.#browserEngineVersion = 7;
         }
-      } else if (this.browserName === BrowserName.EDGE) {
-        this.browserEngineVersion = 0;
+      } else if (this.#browserName === BrowserName.EDGE) {
+        this.#browserEngineVersion = 0;
       } else {
-        this.browserEngineVersion = -1.0;
+        this.#browserEngineVersion = -1.0;
       }
     } catch (e) {
       // Browser engine version parsing failed
@@ -217,84 +220,84 @@ export class BrowserDetails {
     }
   }
 
-  private parseBrowserVersion(): void {
-    const ua = this.userAgent;
-    this.browserMajorVersion = -1;
-    this.browserMinorVersion = -1;
+  #parseBrowserVersion(): void {
+    const ua = this.#userAgent;
+    this.#browserMajorVersion = -1;
+    this.#browserMinorVersion = -1;
 
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
     // Browser version
     try {
-      if (this.browserName === BrowserName.IE) {
+      if (this.#browserName === BrowserName.IE) {
         if (!ua.includes('msie')) {
           // IE 11+
           const rvPos = ua.indexOf('rv:');
           if (rvPos >= 0) {
             let tmp = ua.substring(rvPos + 3);
             tmp = tmp.replace(/(\.[0-9]+).+/, '$1');
-            this.parseVersionString(tmp, ua);
+            this.#parseVersionString(tmp, ua);
           }
-        } else if (this.browserEngine === BrowserEngine.TRIDENT) {
+        } else if (this.#browserEngine === BrowserEngine.TRIDENT) {
           // potentially IE 11 in compatibility mode
-          this.browserMajorVersion = 4 + Math.trunc(this.browserEngineVersion);
-          this.browserMinorVersion = 0;
+          this.#browserMajorVersion = 4 + Math.trunc(this.#browserEngineVersion);
+          this.#browserMinorVersion = 0;
         } else {
           let ieVersionString = ua.substring(ua.indexOf('msie ') + 5);
           ieVersionString = safeSubstring(ieVersionString, 0, ieVersionString.indexOf(';'));
-          this.parseVersionString(ieVersionString, ua);
+          this.#parseVersionString(ieVersionString, ua);
         }
-      } else if (this.browserName === BrowserName.FIREFOX) {
+      } else if (this.#browserName === BrowserName.FIREFOX) {
         let i = ua.indexOf(' fxios/');
         if (i !== -1) {
           i = ua.indexOf(' fxios/') + 7;
         } else {
           i = ua.indexOf(' firefox/') + 9;
         }
-        this.parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
-      } else if (this.browserName === BrowserName.CHROME) {
-        this.parseChromeVersion(ua);
-      } else if (this.browserName === BrowserName.SAFARI) {
+        this.#parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
+      } else if (this.#browserName === BrowserName.CHROME) {
+        this.#parseChromeVersion(ua);
+      } else if (this.#browserName === BrowserName.SAFARI) {
         let i = ua.indexOf(' version/');
         if (i >= 0) {
           i += 9;
-          this.parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
+          this.#parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
         } else {
-          if (this.browserEngineVersion === NOT_PARSED) {
-            this.parseEngineVersion();
+          if (this.#browserEngineVersion === NOT_PARSED) {
+            this.#parseEngineVersion();
           }
-          const engineVersion = Math.trunc(this.browserEngineVersion * 10);
+          const engineVersion = Math.trunc(this.#browserEngineVersion * 10);
           if (engineVersion >= 6010 && engineVersion < 6015) {
-            this.browserMajorVersion = 9;
-            this.browserMinorVersion = 0;
+            this.#browserMajorVersion = 9;
+            this.#browserMinorVersion = 0;
           } else if (engineVersion >= 6015 && engineVersion < 6018) {
-            this.browserMajorVersion = 9;
-            this.browserMinorVersion = 1;
+            this.#browserMajorVersion = 9;
+            this.#browserMinorVersion = 1;
           } else if (engineVersion >= 6020 && engineVersion < 6030) {
-            this.browserMajorVersion = 10;
-            this.browserMinorVersion = 0;
+            this.#browserMajorVersion = 10;
+            this.#browserMinorVersion = 0;
           } else if (engineVersion >= 6030 && engineVersion < 6040) {
-            this.browserMajorVersion = 10;
-            this.browserMinorVersion = 1;
+            this.#browserMajorVersion = 10;
+            this.#browserMinorVersion = 1;
           } else if (engineVersion >= 6040 && engineVersion < 6050) {
-            this.browserMajorVersion = 11;
-            this.browserMinorVersion = 0;
+            this.#browserMajorVersion = 11;
+            this.#browserMinorVersion = 0;
           } else if (engineVersion >= 6050 && engineVersion < 6060) {
-            this.browserMajorVersion = 11;
-            this.browserMinorVersion = 1;
+            this.#browserMajorVersion = 11;
+            this.#browserMinorVersion = 1;
           } else if (engineVersion >= 6060 && engineVersion < 6070) {
-            this.browserMajorVersion = 12;
-            this.browserMinorVersion = 0;
+            this.#browserMajorVersion = 12;
+            this.#browserMinorVersion = 0;
           } else if (engineVersion >= 6070) {
-            this.browserMajorVersion = 12;
-            this.browserMinorVersion = 1;
+            this.#browserMajorVersion = 12;
+            this.#browserMinorVersion = 1;
           }
         }
-      } else if (this.browserName === BrowserName.OPERA) {
+      } else if (this.#browserName === BrowserName.OPERA) {
         let i = ua.indexOf(' version/');
         if (i !== -1) {
           // Version present in Opera 10 and newer
@@ -304,8 +307,8 @@ export class BrowserDetails {
         } else {
           i = ua.indexOf('opera/') + 6;
         }
-        this.parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
-      } else if (this.browserName === BrowserName.EDGE) {
+        this.#parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
+      } else if (this.#browserName === BrowserName.EDGE) {
         let i = ua.indexOf(' edge/') + 6;
         if (ua.includes(' edg/')) {
           i = ua.indexOf(' edg/') + 5;
@@ -314,7 +317,7 @@ export class BrowserDetails {
         } else if (ua.includes(' edgios/')) {
           i = ua.indexOf(' edgios/') + 8;
         }
-        this.parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
+        this.#parseVersionString(safeSubstring(ua, i, i + getVersionStringLength(ua, i)), ua);
       }
     } catch (e) {
       // Browser version parsing failed
@@ -322,37 +325,37 @@ export class BrowserDetails {
     }
   }
 
-  private parseOperatingSystem(): void {
-    const ua = this.userAgent;
+  #parseOperatingSystem(): void {
+    const ua = this.#userAgent;
     // Operating system
     if (ua.includes('windows ')) {
-      this.os = OperatingSystem.WINDOWS;
-      this.windowsPhone = ua.includes('windows phone');
+      this.#os = OperatingSystem.WINDOWS;
+      this.#windowsPhone = ua.includes('windows phone');
     } else if (ua.includes('android')) {
-      this.os = OperatingSystem.ANDROID;
-      this.parseAndroidVersion(ua);
+      this.#os = OperatingSystem.ANDROID;
+      this.#parseAndroidVersion(ua);
     } else if (ua.includes('linux')) {
-      this.os = OperatingSystem.LINUX;
+      this.#os = OperatingSystem.LINUX;
     } else if (ua.includes('macintosh') || ua.includes('mac osx') || ua.includes('mac os x')) {
-      this.iPad = ua.includes('ipad');
-      this.iPhone = ua.includes('iphone');
-      if (this.iPad || this.iPhone) {
-        this.os = OperatingSystem.IOS;
-        this.parseIOSVersion(ua);
+      this.#iPad = ua.includes('ipad');
+      this.#iPhone = ua.includes('iphone');
+      if (this.#iPad || this.#iPhone) {
+        this.#os = OperatingSystem.IOS;
+        this.#parseIOSVersion(ua);
       } else {
-        this.os = OperatingSystem.MACOSX;
+        this.#os = OperatingSystem.MACOSX;
       }
     } else if (ua.includes('; cros ')) {
-      this.os = OperatingSystem.CHROMEOS;
-      this.chromeOS = true;
-      this.parseChromeOSVersion(ua);
+      this.#os = OperatingSystem.CHROMEOS;
+      this.#chromeOS = true;
+      this.#parseChromeOSVersion(ua);
     } else {
-      this.os = OperatingSystem.UNKNOWN;
+      this.#os = OperatingSystem.UNKNOWN;
     }
   }
 
   // (X11; CrOS armv7l 6946.63.0)
-  private parseChromeOSVersion(userAgent: string): void {
+  #parseChromeOSVersion(userAgent: string): void {
     const start = userAgent.indexOf('; cros ');
     if (start === -1) {
       return;
@@ -370,20 +373,20 @@ export class BrowserDetails {
     }
     const osVersionString = userAgent.substring(cur + 1, end);
     const parts = splitDroppingTrailingEmpty(osVersionString, '.');
-    this.parseChromeOsVersionParts(parts, userAgent);
+    this.#parseChromeOsVersionParts(parts, userAgent);
   }
 
-  private parseChromeOsVersionParts(parts: string[], userAgent: string): void {
-    this.osMajorVersion = -1;
-    this.osMinorVersion = -1;
+  #parseChromeOsVersionParts(parts: string[], userAgent: string): void {
+    this.#osMajorVersion = -1;
+    this.#osMinorVersion = -1;
 
     if (parts.length > 2) {
-      this.osMajorVersion = this.parseVersionPart(parts[0], OS_MAJOR, userAgent);
-      this.osMinorVersion = this.parseVersionPart(parts[1], OS_MINOR, userAgent);
+      this.#osMajorVersion = this.#parseVersionPart(parts[0], OS_MAJOR, userAgent);
+      this.#osMinorVersion = this.#parseVersionPart(parts[1], OS_MINOR, userAgent);
     }
   }
 
-  private parseChromeVersion(userAgent: string): void {
+  #parseChromeVersion(userAgent: string): void {
     const crios = ' crios/';
     let i = userAgent.indexOf(crios);
     if (i === -1) {
@@ -394,19 +397,19 @@ export class BrowserDetails {
         i += CHROME.length;
       }
       const versionBreak = getVersionStringLength(userAgent, i);
-      this.parseVersionString(safeSubstring(userAgent, i, i + versionBreak), userAgent);
+      this.#parseVersionString(safeSubstring(userAgent, i, i + versionBreak), userAgent);
     } else {
       i += crios.length; // move index to version string start
       const versionBreak = getVersionStringLength(userAgent, i);
-      this.parseVersionString(safeSubstring(userAgent, i, i + versionBreak), userAgent);
+      this.#parseVersionString(safeSubstring(userAgent, i, i + versionBreak), userAgent);
     }
   }
 
-  private parseAndroidVersion(userAgent: string): void {
+  #parseAndroidVersion(userAgent: string): void {
     // Android 5.1;
     if (!userAgent.includes('android ')) {
-      this.osMajorVersion = -1;
-      this.osMinorVersion = -1;
+      this.#osMajorVersion = -1;
+      this.#osMinorVersion = -1;
       return;
     }
 
@@ -418,7 +421,7 @@ export class BrowserDetails {
         userAgent.indexOf(' ', startIndex)
       );
       const parts = splitDroppingTrailingEmpty(osVersionString, '.');
-      this.parseOsVersion(parts, userAgent);
+      this.#parseOsVersion(parts, userAgent);
       return;
     }
 
@@ -428,64 +431,60 @@ export class BrowserDetails {
       const endIndex = userAgent.indexOf(';', startIndex);
       const osVersionString = safeSubstring(userAgent, startIndex, endIndex);
       const parts = splitDroppingTrailingEmpty(osVersionString, '.');
-      this.parseOsVersion(parts, userAgent);
+      this.#parseOsVersion(parts, userAgent);
       return;
     }
 
-    let osVersionString = safeSubstring(
-      userAgent,
-      userAgent.indexOf('android ') + 'android '.length,
-      userAgent.length
-    );
+    let osVersionString = safeSubstring(userAgent, userAgent.indexOf('android ') + 'android '.length, userAgent.length);
     const semicolonIndex = osVersionString.indexOf(';');
     const bracketIndex = osVersionString.indexOf(')');
     const endIndex = semicolonIndex !== -1 && semicolonIndex < bracketIndex ? semicolonIndex : bracketIndex;
     osVersionString = safeSubstring(osVersionString, 0, endIndex);
     const parts = splitDroppingTrailingEmpty(osVersionString, '.');
-    this.parseOsVersion(parts, userAgent);
+    this.#parseOsVersion(parts, userAgent);
   }
 
-  private parseIOSVersion(userAgent: string): void {
+  #parseIOSVersion(userAgent: string): void {
     // OS 5_1 like Mac OS X
     if (!userAgent.includes('os ') || !userAgent.includes(' like mac')) {
-      this.osMajorVersion = -1;
-      this.osMinorVersion = -1;
+      this.#osMajorVersion = -1;
+      this.#osMinorVersion = -1;
       return;
     }
 
     const osVersionString = safeSubstring(userAgent, userAgent.indexOf('os ') + 3, userAgent.indexOf(' like mac'));
     const parts = splitDroppingTrailingEmpty(osVersionString, '_');
-    this.parseOsVersion(parts, userAgent);
+    this.#parseOsVersion(parts, userAgent);
   }
 
-  private parseOsVersion(parts: string[], userAgent: string): void {
-    this.osMajorVersion = -1;
-    this.osMinorVersion = -1;
+  #parseOsVersion(parts: string[], userAgent: string): void {
+    this.#osMajorVersion = -1;
+    this.#osMinorVersion = -1;
 
     if (parts.length >= 1) {
-      this.osMajorVersion = this.parseVersionPart(parts[0], OS_MAJOR, userAgent);
+      this.#osMajorVersion = this.#parseVersionPart(parts[0], OS_MAJOR, userAgent);
     }
     if (parts.length >= 2) {
       // Some Androids report version numbers as "2.1-update1"
       const dashIndex = parts[1].indexOf('-');
       if (dashIndex > -1) {
         const dashlessVersion = parts[1].substring(0, dashIndex);
-        this.osMinorVersion = this.parseVersionPart(dashlessVersion, OS_MINOR, userAgent);
+        this.#osMinorVersion = this.#parseVersionPart(dashlessVersion, OS_MINOR, userAgent);
       } else {
-        this.osMinorVersion = this.parseVersionPart(parts[1], OS_MINOR, userAgent);
+        this.#osMinorVersion = this.#parseVersionPart(parts[1], OS_MINOR, userAgent);
       }
     }
   }
 
-  private parseVersionString(versionString: string, userAgent: string): void {
+  #parseVersionString(versionString: string, userAgent: string): void {
     let idx = versionString.indexOf('.');
     if (idx < 0) {
       idx = versionString.length;
     }
     const majorVersionPart = safeSubstring(versionString, 0, idx);
-    this.browserMajorVersion = this.parseVersionPart(majorVersionPart, BROWSER_MAJOR, userAgent);
+    this.#browserMajorVersion = this.#parseVersionPart(majorVersionPart, BROWSER_MAJOR, userAgent);
 
-    if (this.browserMajorVersion === -1) {
+    if (this.#browserMajorVersion === -1) {
       // no need to scan for minor if major version scanning failed.
       return;
     }
@@ -494,17 +493,17 @@ export class BrowserDetails {
     if (idx2 < 0) {
       // If string only contains major version, set minor to 0.
       if (versionString.substring(idx).length === 0) {
-        this.browserMinorVersion = 0;
+        this.#browserMinorVersion = 0;
         return;
       }
       idx2 = versionString.length;
     }
     const minorVersionPart = safeSubstring(versionString, idx + 1, idx2).replace(/[^0-9].*/, '');
-    this.browserMinorVersion = this.parseVersionPart(minorVersionPart, BROWSER_MINOR, userAgent);
+    this.#browserMinorVersion = this.#parseVersionPart(minorVersionPart, BROWSER_MINOR, userAgent);
   }
 
   /** Parses a float, throwing (like Java's Float.parseFloat) when not numeric. */
-  private parseFloatOrThrow(value: string): number {
+  #parseFloatOrThrow(value: string): number {
     const parsed = Number.parseFloat(value);
     if (Number.isNaN(parsed)) {
       throw new Error(`Not a number: "${value}"`);
@@ -512,7 +511,7 @@ export class BrowserDetails {
     return parsed;
   }
 
-  private parseVersionPart(versionString: string, partName: string, userAgent: string): number {
+  #parseVersionPart(versionString: string, partName: string, userAgent: string): number {
     // Mirror the strictness of Java's Integer.parseInt, which throws (rather
     // than parsing a prefix like the lenient JS parseInt) on non-integer input.
     if (/^[+-]?[0-9]+$/.test(versionString)) {
@@ -528,10 +527,10 @@ export class BrowserDetails {
    * @return true if it is Firefox, false otherwise
    */
   isFirefox(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.FIREFOX;
+    return this.#browserName === BrowserName.FIREFOX;
   }
 
   /**
@@ -540,10 +539,10 @@ export class BrowserDetails {
    * @return true if it is Gecko, false otherwise
    */
   isGecko(): boolean {
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
-    return this.browserEngine === BrowserEngine.GECKO;
+    return this.#browserEngine === BrowserEngine.GECKO;
   }
 
   /**
@@ -552,10 +551,10 @@ export class BrowserDetails {
    * @return true if it is WebKit, false otherwise
    */
   isWebKit(): boolean {
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
-    return this.browserEngine === BrowserEngine.WEBKIT;
+    return this.#browserEngine === BrowserEngine.WEBKIT;
   }
 
   /**
@@ -564,10 +563,10 @@ export class BrowserDetails {
    * @return true if it is Presto, false otherwise
    */
   isPresto(): boolean {
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
-    return this.browserEngine === BrowserEngine.PRESTO;
+    return this.#browserEngine === BrowserEngine.PRESTO;
   }
 
   /**
@@ -576,10 +575,10 @@ export class BrowserDetails {
    * @return true if it is Trident, false otherwise
    */
   isTrident(): boolean {
-    if (this.browserEngine === undefined) {
-      this.parseBrowserEngine();
+    if (this.#browserEngine === undefined) {
+      this.#parseBrowserEngine();
     }
-    return this.browserEngine === BrowserEngine.TRIDENT;
+    return this.#browserEngine === BrowserEngine.TRIDENT;
   }
 
   /**
@@ -588,10 +587,10 @@ export class BrowserDetails {
    * @return true if it is Safari, false otherwise
    */
   isSafari(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.SAFARI;
+    return this.#browserName === BrowserName.SAFARI;
   }
 
   /**
@@ -600,10 +599,10 @@ export class BrowserDetails {
    * @return true if it is Chrome, false otherwise
    */
   isChrome(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.CHROME;
+    return this.#browserName === BrowserName.CHROME;
   }
 
   /**
@@ -612,10 +611,10 @@ export class BrowserDetails {
    * @return true if it is Opera, false otherwise
    */
   isOpera(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.OPERA;
+    return this.#browserName === BrowserName.OPERA;
   }
 
   /**
@@ -624,10 +623,10 @@ export class BrowserDetails {
    * @return true if it is Internet Explorer, false otherwise
    */
   isIE(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.IE;
+    return this.#browserName === BrowserName.IE;
   }
 
   /**
@@ -636,10 +635,10 @@ export class BrowserDetails {
    * @return true if it is Edge, false otherwise
    */
   isEdge(): boolean {
-    if (this.browserName === undefined) {
-      this.parseBrowserName();
+    if (this.#browserName === undefined) {
+      this.#parseBrowserName();
     }
-    return this.browserName === BrowserName.EDGE;
+    return this.#browserName === BrowserName.EDGE;
   }
 
   /**
@@ -649,10 +648,10 @@ export class BrowserDetails {
    * @return The version of the browser engine
    */
   getBrowserEngineVersion(): number {
-    if (this.browserEngineVersion === NOT_PARSED) {
-      this.parseEngineVersion();
+    if (this.#browserEngineVersion === NOT_PARSED) {
+      this.#parseEngineVersion();
     }
-    return this.browserEngineVersion;
+    return this.#browserEngineVersion;
   }
 
   /**
@@ -662,10 +661,10 @@ export class BrowserDetails {
    * @return The major version of the browser.
    */
   getBrowserMajorVersion(): number {
-    if (this.browserMajorVersion === NOT_PARSED) {
-      this.parseBrowserVersion();
+    if (this.#browserMajorVersion === NOT_PARSED) {
+      this.#parseBrowserVersion();
     }
-    return this.browserMajorVersion;
+    return this.#browserMajorVersion;
   }
 
   /**
@@ -674,19 +673,19 @@ export class BrowserDetails {
    * @return The minor version of the browser, or -1 if not known/parsed.
    */
   getBrowserMinorVersion(): number {
-    if (this.browserMinorVersion === NOT_PARSED) {
-      this.parseBrowserVersion();
+    if (this.#browserMinorVersion === NOT_PARSED) {
+      this.#parseBrowserVersion();
     }
-    return this.browserMinorVersion;
+    return this.#browserMinorVersion;
   }
 
-  private getOs(): OperatingSystem {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+  #getOs(): OperatingSystem {
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
     // parseOperatingSystem always assigns os; the fallback only satisfies the
     // type checker.
-    return this.os ?? OperatingSystem.UNKNOWN;
+    return this.#os ?? OperatingSystem.UNKNOWN;
   }
 
   /**
@@ -695,7 +694,7 @@ export class BrowserDetails {
    * @return true if run on Windows, false otherwise
    */
   isWindows(): boolean {
-    return this.getOs() === OperatingSystem.WINDOWS;
+    return this.#getOs() === OperatingSystem.WINDOWS;
   }
 
   /**
@@ -704,7 +703,7 @@ export class BrowserDetails {
    * @return true if run on Windows Phone, false otherwise
    */
   isWindowsPhone(): boolean {
-    return this.windowsPhone;
+    return this.#windowsPhone;
   }
 
   /**
@@ -713,7 +712,7 @@ export class BrowserDetails {
    * @return true if run on Mac OSX, false otherwise
    */
   isMacOSX(): boolean {
-    return this.getOs() === OperatingSystem.MACOSX;
+    return this.#getOs() === OperatingSystem.MACOSX;
   }
 
   /**
@@ -722,7 +721,7 @@ export class BrowserDetails {
    * @return true if run on Linux, false otherwise
    */
   isLinux(): boolean {
-    return this.getOs() === OperatingSystem.LINUX;
+    return this.#getOs() === OperatingSystem.LINUX;
   }
 
   /**
@@ -731,7 +730,7 @@ export class BrowserDetails {
    * @return true if run on Android, false otherwise
    */
   isAndroid(): boolean {
-    return this.getOs() === OperatingSystem.ANDROID;
+    return this.#getOs() === OperatingSystem.ANDROID;
   }
 
   /**
@@ -740,10 +739,10 @@ export class BrowserDetails {
    * @return true if run on iPhone, false otherwise
    */
   isIPhone(): boolean {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
-    return this.iPhone;
+    return this.#iPhone;
   }
 
   /**
@@ -752,10 +751,10 @@ export class BrowserDetails {
    * @return true if run on iPad, false otherwise
    */
   isIPad(): boolean {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
-    return this.iPad;
+    return this.#iPad;
   }
 
   /**
@@ -764,10 +763,10 @@ export class BrowserDetails {
    * @return true if run on Chrome OS, false otherwise
    */
   isChromeOS(): boolean {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
-    return this.chromeOS;
+    return this.#chromeOS;
   }
 
   /**
@@ -777,10 +776,10 @@ export class BrowserDetails {
    * @return The major version or -1 if unknown
    */
   getOperatingSystemMajorVersion(): number {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
-    return this.osMajorVersion;
+    return this.#osMajorVersion;
   }
 
   /**
@@ -790,10 +789,10 @@ export class BrowserDetails {
    * @return The minor version or -1 if unknown
    */
   getOperatingSystemMinorVersion(): number {
-    if (this.os === undefined) {
-      this.parseOperatingSystem();
+    if (this.#os === undefined) {
+      this.#parseOperatingSystem();
     }
-    return this.osMinorVersion;
+    return this.#osMinorVersion;
   }
 
   /**
