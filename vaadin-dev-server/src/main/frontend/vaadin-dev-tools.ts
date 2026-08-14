@@ -806,7 +806,7 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
-    restoreScrollPositionsAfterReload();
+    restoreScrollPositionsAfterReload(lastReload !== null);
 
     registerRefreshUIHandler();
 

@@ -132,15 +132,21 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         AtomicReference<List<Integer>> previous = new AtomicReference<>(
                 getScrollPositions());
         AtomicReference<List<Integer>> stable = new AtomicReference<>();
-        waitUntil(d -> {
-            List<Integer> current = getScrollPositions();
-            if (current.equals(previous.get())) {
-                stable.set(current);
-                return true;
-            }
-            previous.set(current);
-            return false;
-        }, 10);
+        try {
+            waitUntil(d -> {
+                List<Integer> current = getScrollPositions();
+                if (current.equals(previous.get())) {
+                    stable.set(current);
+                    return true;
+                }
+                previous.set(current);
+                return false;
+            }, 10);
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "Scroll positions (window, outer container, inner container) kept changing, last seen "
+                            + describe(previous.get()));
+        }
         return stable.get();
     }
 
@@ -181,15 +187,20 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
      * original scroll positions.
      */
     private void waitForNewDocument() {
-        waitUntil(d -> {
-            try {
-                return !Boolean.TRUE.equals(
-                        executeScript("return window[arguments[0]] === true",
-                                DOCUMENT_MARKER));
-            } catch (WebDriverException e) {
-                // Script execution fails while the page is being replaced
-                return false;
-            }
-        }, 10);
+        try {
+            waitUntil(d -> {
+                try {
+                    return !Boolean.TRUE.equals(executeScript(
+                            "return window[arguments[0]] === true",
+                            DOCUMENT_MARKER));
+                } catch (WebDriverException e) {
+                    // Script execution fails while the page is being replaced
+                    return false;
+                }
+            }, 10);
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "The browser never loaded a new document, so the reload did not happen");
+        }
     }
 }
