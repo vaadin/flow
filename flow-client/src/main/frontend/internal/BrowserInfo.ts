@@ -15,15 +15,18 @@
  */
 
 // Browser-environment probes migrated from BrowserInfo.java. The user-agent
-// parsing itself lives in the shared BrowserDetails class.
+// parsing itself lives in the shared BrowserDetails class. Functions that were
+// private in BrowserInfo.java (getBrowserString, checkForTouchDevice, isIos)
+// stay module-local here; only the members that were public in Java are
+// exported.
 
 /** Returns the browser's user-agent string. */
-export function getBrowserString(): string {
+function getBrowserString(): string {
   return window.navigator.userAgent;
 }
 
 /** Detects whether the browser runs on a touch-capable device. */
-export function checkForTouchDevice(): boolean {
+function checkForTouchDevice(): boolean {
   const nav = navigator as unknown as { maxTouchPoints?: number; msMaxTouchPoints?: number };
   if ('maxTouchPoints' in nav) {
     return (nav.maxTouchPoints ?? 0) > 0;
@@ -43,10 +46,15 @@ export function checkForTouchDevice(): boolean {
 }
 
 /** Detects whether the browser runs on iOS (including iPadOS desktop mode). */
-export function isIos(): boolean {
+function isIos(): boolean {
   return (
     /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   );
+}
+
+/** Checks if the browser runs on a touch capable device. */
+export function isTouchDevice(): boolean {
+  return checkForTouchDevice();
 }
 
 // User-agent-based browser-family probes. The canonical parsing lives in the
