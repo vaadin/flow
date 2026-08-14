@@ -31,6 +31,7 @@ import { runWhenEagerDependenciesLoaded } from './EagerDependencyTracker';
 import { Reactive } from './reactive/reactive';
 import { processChanges as applyTreeChanges } from './TreeChangeProcessor';
 import { UIState } from './UILifecycle';
+import { Console } from './Console';
 
 /** Removes the link and style elements with the given dependency id. */
 export function removeStylesheetByIdFromDom(dependencyId: string): void {
@@ -161,7 +162,7 @@ export class MessageHandler {
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
       if (!meta || !(META_SESSION_EXPIRED in meta)) {
-        console.error(
+        Console.error(
           "Response didn't contain a server id. " +
             'Please verify that the server is up-to-date and that the response data has not been modified in transmission.'
         );
@@ -176,7 +177,7 @@ export class MessageHandler {
     if (state === UIState.RUNNING) {
       this.handleJSON(json);
     } else {
-      console.warn('Ignored received message because application has already been stopped');
+      Console.warn('Ignored received message because application has already been stopped');
     }
   }
 
@@ -192,13 +193,13 @@ export class MessageHandler {
         const commands = valueMap[UIDL_KEY_EXECUTE] as unknown[][];
         for (const command of commands) {
           if (command.length > 0 && command[0] === 'window.location.reload();') {
-            console.warn('Executing forced page reload while a resync request is ongoing.');
+            Console.warn('Executing forced page reload while a resync request is ongoing.');
             window.location.reload();
             return;
           }
         }
       }
-      console.warn('Queueing message from the server as a resync request is ongoing.');
+      Console.warn('Queueing message from the server as a resync request is ongoing.');
       this.ordering.push(valueMap);
       return;
     }
@@ -214,7 +215,7 @@ export class MessageHandler {
     if (locked || !this.ordering.isNextExpectedMessage(serverId)) {
       if (!locked) {
         if (this.ordering.isAlreadySeen(serverId)) {
-          console.warn(`Received message with server id ${serverId} but have already seen a newer one. Ignoring it`);
+          Console.warn(`Received message with server id ${serverId} but have already seen a newer one. Ignoring it`);
           this.endRequestIfResponse(valueMap);
           return;
         }
@@ -432,10 +433,10 @@ export class MessageHandler {
   private forceMessageHandling(): void {
     this.forceHandleMessage = null;
     if (this.responseHandlingLocks.size > 0) {
-      console.warn('WARNING: response handling was never resumed, forcibly removing locks...');
+      Console.warn('WARNING: response handling was never resumed, forcibly removing locks...');
       this.responseHandlingLocks.clear();
     } else {
-      console.warn(`Gave up waiting for message ${this.ordering.getExpectedServerId()} from the server`);
+      Console.warn(`Gave up waiting for message ${this.ordering.getExpectedServerId()} from the server`);
     }
     if (!this.handlePendingMessages() && !this.ordering.isEmpty()) {
       // Messages remain but the next id is missing (likely lost) -> resync.

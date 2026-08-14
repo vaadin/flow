@@ -25,6 +25,7 @@
 
 import { setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
+import { Console } from '../Console';
 
 // com.vaadin.client.ConnectionIndicator states
 const RECONNECTING = 'reconnecting';
@@ -108,7 +109,7 @@ export class ReconnectStateMachine {
     }
 
     this.reconnectAttempt++;
-    console.debug(`Reconnect attempt ${this.reconnectAttempt} for ${type}`);
+    Console.debug(`Reconnect attempt ${this.reconnectAttempt} for ${type}`);
     if (this.reconnectAttempt >= this.registry.getReconnectConfiguration().getReconnectAttempts()) {
       // Max attempts reached -> give up (CONNECTION_LOST).
       this.giveUp();
@@ -132,7 +133,7 @@ export class ReconnectStateMachine {
     } else {
       this.registry.getLoadingIndicatorStateHandler().stopLoading();
     }
-    console.debug('Re-established connection to server');
+    Console.debug('Re-established connection to server');
   }
 
   /** Stops reconnecting and goes to CONNECTION_LOST. Mirrors giveUp. */

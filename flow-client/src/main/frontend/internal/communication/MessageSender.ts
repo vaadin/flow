@@ -25,6 +25,7 @@
 import { sendBeacon } from '../MessageSender';
 import type { PushConnection, PushConnectionFactory } from './PushConnection';
 import { ResynchronizationState } from './ResynchronizationState';
+import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const RPC_INVOCATIONS = 'rpc';
@@ -82,7 +83,7 @@ export class MessageSender {
     this.registry = registry;
     this.pushConnectionFactory = pushConnectionFactory;
     this.registry.getRequestResponseTracker().addReconnectionAttemptHandler((attempt) => {
-      console.debug(`Re-sending queued messages to the server (attempt ${attempt}) ...`);
+      Console.debug(`Re-sending queued messages to the server (attempt ${attempt}) ...`);
       // Try to reconnect by sending queued messages; stop the resend timer since
       // it will not make any request during reconnection anyway.
       this.resetTimer();
@@ -101,7 +102,7 @@ export class MessageSender {
    */
   sendInvocationsToServer(): void {
     if (!this.registry.getUILifecycle().isRunning()) {
-      console.warn('Trying to send RPC from not yet started or stopped application');
+      Console.warn('Trying to send RPC from not yet started or stopped application');
       return;
     }
 
@@ -109,7 +110,7 @@ export class MessageSender {
     if (hasActiveRequest || (this.push !== null && !this.push.isActive())) {
       // Active request, or push enabled but not active: send when the current
       // request completes or push becomes active.
-      console.debug(
+      Console.debug(
         `Postpone sending invocations to server because of ${hasActiveRequest ? 'active request' : 'PUSH not active'}`
       );
     } else {
@@ -126,7 +127,7 @@ export class MessageSender {
       this.sendPayload(payload);
       return;
     } else if (this.hasQueuedMessages()) {
-      console.debug('Sending queued messages to server');
+      Console.debug('Sending queued messages to server');
       if (this.resendMessageTimer !== null) {
         this.resetTimer();
       }
@@ -144,14 +145,14 @@ export class MessageSender {
 
     if (reqJson.length === 0 && this.resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
       // Nothing to send, all invocations were filtered out.
-      console.warn('All RPCs filtered out, not sending anything to the server');
+      Console.warn('All RPCs filtered out, not sending anything to the server');
       return;
     }
 
     const extraJson: Payload = {};
     if (this.resynchronizationState === ResynchronizationState.SEND_TO_SERVER) {
       this.resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
-      console.warn('Resynchronizing from server');
+      Console.warn('Resynchronizing from server');
       this.messageQueue = [];
       this.resetTimer();
       extraJson[RESYNCHRONIZE_ID] = true;
@@ -306,7 +307,7 @@ export class MessageSender {
       return;
     }
     if (force) {
-      console.debug(`Forced update of clientId to ${this.clientToServerMessageId}`);
+      Console.debug(`Forced update of clientId to ${this.clientToServerMessageId}`);
       this.clientToServerMessageId = nextExpectedId;
       this.messageQueue = [];
       this.resetTimer();
@@ -317,9 +318,9 @@ export class MessageSender {
       if (this.clientToServerMessageId === 0) {
         // Never sent a message, so the server knows better (e.g. a refreshed
         // @PreserveOnRefresh UI).
-        console.debug(`Updating client-to-server id to ${nextExpectedId} based on server`);
+        Console.debug(`Updating client-to-server id to ${nextExpectedId} based on server`);
       } else {
-        console.warn(
+        Console.warn(
           `Server expects next client-to-server id to be ${nextExpectedId} but we were going to use ${this.clientToServerMessageId}. Will use ${nextExpectedId}.`
         );
       }
@@ -332,7 +333,7 @@ export class MessageSender {
   requestResynchronize(): boolean {
     switch (this.resynchronizationState) {
       case ResynchronizationState.NOT_ACTIVE:
-        console.debug('Resynchronize from server requested');
+        Console.debug('Resynchronize from server requested');
         this.resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
         return true;
       case ResynchronizationState.SEND_TO_SERVER:
