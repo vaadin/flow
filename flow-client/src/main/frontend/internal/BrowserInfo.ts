@@ -22,7 +22,6 @@
 // checkForTouchDevice, isIos) stay module-local here; only the members that were
 // public in Java are part of the class surface, with @deprecated marks preserved.
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated -- BrowserInfo wraps the deprecated BrowserDetails, mirroring BrowserInfo.java
 import { BrowserDetails } from './BrowserDetails';
 
 /** Returns the browser's user-agent string. */
@@ -72,17 +71,15 @@ export class BrowserInfo {
 
   static readonly ENGINE_TRIDENT = 'trident';
 
-  private static instance?: BrowserInfo;
+  static #instance?: BrowserInfo;
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- BrowserInfo intentionally wraps the deprecated BrowserDetails, as in BrowserInfo.java
-  private readonly browserDetails: BrowserDetails;
+  readonly #browserDetails: BrowserDetails;
 
-  private readonly touchDevice: boolean;
+  readonly #touchDevice: boolean;
 
   private constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- see field declaration above
-    this.browserDetails = new BrowserDetails(getBrowserString());
-    this.touchDevice = checkForTouchDevice();
+    this.#browserDetails = new BrowserDetails(getBrowserString());
+    this.#touchDevice = checkForTouchDevice();
   }
 
   /**
@@ -91,10 +88,10 @@ export class BrowserInfo {
    * @return instance of BrowserInfo object
    */
   static get(): BrowserInfo {
-    if (BrowserInfo.instance === undefined) {
-      BrowserInfo.instance = new BrowserInfo();
+    if (BrowserInfo.#instance === undefined) {
+      BrowserInfo.#instance = new BrowserInfo();
     }
-    return BrowserInfo.instance;
+    return BrowserInfo.#instance;
   }
 
   /**
@@ -104,7 +101,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isIE(): boolean {
-    return this.browserDetails.isIE();
+    return this.#browserDetails.isIE();
   }
 
   /**
@@ -114,7 +111,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isEdge(): boolean {
-    return this.browserDetails.isEdge();
+    return this.#browserDetails.isEdge();
   }
 
   /**
@@ -124,7 +121,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isFirefox(): boolean {
-    return this.browserDetails.isFirefox();
+    return this.#browserDetails.isFirefox();
   }
 
   /**
@@ -134,7 +131,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isSafari(): boolean {
-    return this.browserDetails.isSafari();
+    return this.#browserDetails.isSafari();
   }
 
   /**
@@ -145,7 +142,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isSafariOrIOS(): boolean {
-    return this.browserDetails.isSafari() || isIos();
+    return this.#browserDetails.isSafari() || isIos();
   }
 
   /**
@@ -155,7 +152,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isChrome(): boolean {
-    return this.browserDetails.isChrome();
+    return this.#browserDetails.isChrome();
   }
 
   /**
@@ -165,7 +162,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isGecko(): boolean {
-    return this.browserDetails.isGecko();
+    return this.#browserDetails.isGecko();
   }
 
   /**
@@ -175,7 +172,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isWebkit(): boolean {
-    return this.browserDetails.isWebKit();
+    return this.#browserDetails.isWebKit();
   }
 
   /**
@@ -186,10 +183,10 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getGeckoVersion(): number {
-    if (!this.browserDetails.isGecko()) {
+    if (!this.#browserDetails.isGecko()) {
       return -1;
     }
-    return this.browserDetails.getBrowserEngineVersion();
+    return this.#browserDetails.getBrowserEngineVersion();
   }
 
   /**
@@ -200,10 +197,10 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getWebkitVersion(): number {
-    if (!this.browserDetails.isWebKit()) {
+    if (!this.#browserDetails.isWebKit()) {
       return -1;
     }
-    return this.browserDetails.getBrowserEngineVersion();
+    return this.#browserDetails.getBrowserEngineVersion();
   }
 
   /**
@@ -213,7 +210,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isOpera(): boolean {
-    return this.browserDetails.isOpera();
+    return this.#browserDetails.isOpera();
   }
 
   /**
@@ -222,7 +219,7 @@ export class BrowserInfo {
    * @return true if the browser runs on a touch based device, false otherwise
    */
   isTouchDevice(): boolean {
-    return this.touchDevice;
+    return this.#touchDevice;
   }
 
   /**
@@ -232,7 +229,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isAndroid(): boolean {
-    return this.browserDetails.isAndroid();
+    return this.#browserDetails.isAndroid();
   }
 
   /**
@@ -245,13 +242,13 @@ export class BrowserInfo {
    */
   isAndroidWithBrokenScrollTop(): boolean {
     return (
-      this.browserDetails.isAndroid() &&
-      (this.getOperatingSystemMajorVersion() === 3 || this.getOperatingSystemMajorVersion() === 4)
+      this.#browserDetails.isAndroid() &&
+      (this.#getOperatingSystemMajorVersion() === 3 || this.#getOperatingSystemMajorVersion() === 4)
     );
   }
 
-  private getOperatingSystemMajorVersion(): number {
-    return this.browserDetails.getOperatingSystemMajorVersion();
+  #getOperatingSystemMajorVersion(): number {
+    return this.#browserDetails.getOperatingSystemMajorVersion();
   }
 
   /**
@@ -262,7 +259,7 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getBrowserMajorVersion(): number {
-    return this.browserDetails.getBrowserMajorVersion();
+    return this.#browserDetails.getBrowserMajorVersion();
   }
 
   /**
@@ -272,6 +269,6 @@ export class BrowserInfo {
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getBrowserMinorVersion(): number {
-    return this.browserDetails.getBrowserMinorVersion();
+    return this.#browserDetails.getBrowserMinorVersion();
   }
 }
