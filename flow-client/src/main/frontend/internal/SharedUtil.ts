@@ -14,9 +14,9 @@
  * the License.
  */
 
-// TypeScript port of the client-used part of
-// com.vaadin.flow.shared.util.SharedUtil (the GET-parameter helpers), built
-// alongside the Java version.
+// TypeScript port of the full public API of
+// com.vaadin.flow.shared.util.SharedUtil, built alongside the Java version.
+// Java-private helpers are kept as non-exported module-local functions.
 
 /**
  * Adds the given query parameters to a URI, before any fragment. Mirrors
@@ -50,4 +50,223 @@ export function addGetParameters(uri: string, extraParams: string | null): strin
  */
 export function addGetParameter(uri: string, parameter: string, value: string | number): string {
   return addGetParameters(uri, `${parameter}=${value}`);
+}
+
+/**
+ * Tells whether the given single character is an upper case letter, mirroring
+ * Java's Character.isUpperCase for the characters exercised by these helpers.
+ * Digits, spaces and other non-cased characters are not upper case because
+ * their upper and lower case forms are identical.
+ */
+function isUpperCase(c: string): boolean {
+  return c !== c.toLowerCase() && c === c.toUpperCase();
+}
+
+/**
+ * Splits a string on a literal separator, mirroring Java's
+ * String.split(regex) with the default (zero) limit: trailing empty strings
+ * are removed. The empty input string still yields a single empty element, as
+ * it does in Java.
+ */
+function splitRemovingTrailingEmpty(value: string, separator: string): string[] {
+  const parts = value.split(separator);
+  if (value === '') {
+    // Java's split returns a single empty string for empty input.
+    return parts;
+  }
+  let end = parts.length;
+  while (end > 0 && parts[end - 1] === '') {
+    end--;
+  }
+  return parts.slice(0, end);
+}
+
+/**
+ * Trims trailing slashes (if any) from a string.
+ */
+export function trimTrailingSlashes(value: string): string {
+  return value.replace(/\/*$/, '');
+}
+
+/**
+ * Tells whether a word ends at the given upper case character while splitting
+ * a camelCase string.
+ */
+function isWordComplete(camelCaseString: string, i: number): boolean {
+  if (i === 0) {
+    // Word can't end at the beginning
+    return false;
+  } else if (!isUpperCase(camelCaseString.charAt(i - 1))) {
+    // Word ends if previous char wasn't upper case
+    return true;
+  } else if (i + 1 < camelCaseString.length && !isUpperCase(camelCaseString.charAt(i + 1))) {
+    // Word ends if next char isn't upper case
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Splits a camelCaseString into an array of words with the casing preserved.
+ */
+export function splitCamelCase(camelCaseString: string): string[] {
+  let sb = '';
+  for (let i = 0; i < camelCaseString.length; i++) {
+    const c = camelCaseString.charAt(i);
+    if (isUpperCase(c) && isWordComplete(camelCaseString, i)) {
+      sb += ' ';
+    }
+    sb += c;
+  }
+  return splitRemovingTrailingEmpty(sb, ' ');
+}
+
+/**
+ * Joins the words in the input array together into a single string by
+ * inserting the separator string between each word.
+ */
+export function join(parts: string[], separator: string): string {
+  let sb = '';
+  for (const part of parts) {
+    sb += part;
+    sb += separator;
+  }
+  return sb.substring(0, sb.length - separator.length);
+}
+
+/**
+ * Capitalizes the first character in the given string in a way suitable for
+ * use in code (methods, properties etc).
+ */
+export function capitalize(string: string | null): string | null {
+  if (string === null) {
+    return null;
+  }
+
+  if (string.length <= 1) {
+    return string.toUpperCase();
+  }
+
+  return string.substring(0, 1).toUpperCase() + string.substring(1);
+}
+
+/**
+ * Changes the first character in the given string to lower case in a way
+ * suitable for use in code (methods, properties etc).
+ */
+export function firstToLower(string: string | null): string | null {
+  if (string === null) {
+    return null;
+  }
+
+  if (string.length <= 1) {
+    return string.toLowerCase();
+  }
+
+  return string.substring(0, 1).toLowerCase() + string.substring(1);
+}
+
+/**
+ * Converts a camelCaseString to a human friendly format (Camel case string).
+ * In general splits words when the casing changes but also handles special
+ * cases such as consecutive upper case characters. Examples:
+ * `MyBeanContainer` becomes `My Bean Container`, `AwesomeURLFactory` becomes
+ * `Awesome URL Factory`, `SomeUriAction` becomes `Some Uri Action`.
+ */
+export function camelCaseToHumanFriendly(camelCaseString: string): string {
+  const parts = splitCamelCase(camelCaseString);
+  for (let i = 0; i < parts.length; i++) {
+    parts[i] = capitalize(parts[i]) as string;
+  }
+  return join(parts, ' ');
+}
+
+/**
+ * Converts a property id to a human friendly format. Handles nested
+ * properties by only considering the last part, e.g. "address.streetName" is
+ * equal to "streetName" for this method.
+ */
+export function propertyIdToHumanFriendly(propertyId: unknown): string {
+  let string = String(propertyId);
+  if (string.length === 0) {
+    return '';
+  }
+
+  // For nested properties, only use the last part
+  const dotLocation = string.lastIndexOf('.');
+  if (dotLocation > 0 && dotLocation < string.length - 1) {
+    string = string.substring(dotLocation + 1);
+  }
+
+  return camelCaseToHumanFriendly(string);
+}
+
+/**
+ * Converts a dash ("-") separated string into camelCase. Examples: `foo`
+ * becomes `foo`, `foo-bar` becomes `fooBar`, `foo--bar` becomes `fooBar`.
+ */
+export function dashSeparatedToCamelCase(dashSeparated: string | null): string | null {
+  if (dashSeparated === null) {
+    return null;
+  }
+  const parts = splitRemovingTrailingEmpty(dashSeparated, '-');
+  for (let i = 1; i < parts.length; i++) {
+    parts[i] = capitalize(parts[i]) as string;
+  }
+
+  return join(parts, '');
+}
+
+/**
+ * Converts a camelCase string into dash ("-") separated. Examples: `foo`
+ * becomes `foo`, `fooBar` becomes `foo-bar`, `MyBeanContainer` becomes
+ * `-my-bean-container`, `AwesomeURLFactory` becomes `-awesome-uRL-factory`,
+ * `someUriAction` becomes `some-uri-action`.
+ */
+export function camelCaseToDashSeparated(camelCaseString: string | null): string | null {
+  if (camelCaseString === null) {
+    return null;
+  }
+  const parts = splitCamelCase(camelCaseString);
+  if (parts[0].length >= 1 && isUpperCase(parts[0].charAt(0))) {
+    // starts with upper case
+    parts[0] = `-${firstToLower(parts[0]) as string}`;
+  }
+  for (let i = 1; i < parts.length; i++) {
+    parts[i] = firstToLower(parts[i]) as string;
+  }
+  return join(parts, '-');
+}
+
+/**
+ * Converts a UpperCamelCase string into dash ("-") separated lowercase.
+ * Examples: `foo` becomes `foo`, `fooBar` becomes `foo-bar`,
+ * `MyBeanContainer` becomes `my-bean-container`, `AwesomeURLFactory` becomes
+ * `awesome-url-factory`, `someUriAction` becomes `some-uri-action`.
+ */
+export function upperCamelCaseToDashSeparatedLowerCase(upperCamelCaseString: string | null): string | null {
+  if (upperCamelCaseString === null) {
+    return null;
+  }
+  return (camelCaseToDashSeparated(firstToLower(upperCamelCaseString)) as string).toLowerCase();
+}
+
+/**
+ * Prepend the given url with the prefix if it is not absolute and doesn't have
+ * a protocol.
+ */
+export function prefixIfRelative(url: string, prefix: string): string {
+  // Absolute
+  if (url.startsWith('/')) {
+    return url;
+  }
+
+  // Has a protocol
+  // https://tools.ietf.org/html/rfc3986#section-3.1
+  if (/^[a-zA-Z0-9.\-+]+:.*$/.test(url)) {
+    return url;
+  }
+
+  return prefix + url;
 }

@@ -1,52 +1,52 @@
 import { expect } from '@open-wc/testing';
-import { isOpera, isSafari, isSafariOrIOS, isTouchDevice, isWebkit } from '../../main/frontend/internal/BrowserInfo';
+import { BrowserInfo } from '../../main/frontend/internal/BrowserInfo';
+
+// BrowserInfo is a thin singleton wrapper over BrowserDetails, detecting the
+// browser only once from the current navigator user agent. The user-agent
+// parsing matrix is covered by BrowserDetailsTests; here we verify the singleton
+// behavior, the touch probe, the engine-version helpers and the exported engine
+// constants against the actual test-runner browser.
 
 describe('BrowserInfo', () => {
+  it('get() returns a cached singleton', () => {
+    expect(BrowserInfo.get()).to.equal(BrowserInfo.get());
+  });
+
   it('isTouchDevice returns a boolean', () => {
-    expect(isTouchDevice()).to.be.a('boolean');
+    expect(BrowserInfo.get().isTouchDevice()).to.be.a('boolean');
   });
 
-  it('isSafariOrIOS returns a boolean', () => {
-    expect(isSafariOrIOS()).to.be.a('boolean');
+  it('the browser-family probes return booleans', () => {
+    const info = BrowserInfo.get();
+    expect(info.isSafari()).to.be.a('boolean');
+    expect(info.isSafariOrIOS()).to.be.a('boolean');
+    expect(info.isChrome()).to.be.a('boolean');
+    expect(info.isFirefox()).to.be.a('boolean');
+    expect(info.isOpera()).to.be.a('boolean');
+    expect(info.isWebkit()).to.be.a('boolean');
+    expect(info.isGecko()).to.be.a('boolean');
+    expect(info.isIE()).to.be.a('boolean');
+    expect(info.isEdge()).to.be.a('boolean');
+    expect(info.isAndroid()).to.be.a('boolean');
+    expect(info.isAndroidWithBrokenScrollTop()).to.be.a('boolean');
   });
 
-  describe('browser-family probes (by user agent)', () => {
-    const original = navigator.userAgent;
-    const setUserAgent = (ua: string) =>
-      Object.defineProperty(navigator, 'userAgent', { value: ua, configurable: true });
-    afterEach(() => Object.defineProperty(navigator, 'userAgent', { value: original, configurable: true }));
+  it('engine-version helpers return -1 unless the matching engine is in use', () => {
+    const info = BrowserInfo.get();
+    expect(info.getGeckoVersion()).to.equal(info.isGecko() ? info.getGeckoVersion() : -1);
+    expect(info.getWebkitVersion()).to.equal(info.isWebkit() ? info.getWebkitVersion() : -1);
+    if (!info.isGecko()) {
+      expect(info.getGeckoVersion()).to.equal(-1);
+    }
+    if (!info.isWebkit()) {
+      expect(info.getWebkitVersion()).to.equal(-1);
+    }
+  });
 
-    const CHROME =
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
-    const SAFARI =
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
-    const OPERA =
-      'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36 OPR/106.0';
-    const FIREFOX = 'Mozilla/5.0 (Windows NT 10.0; rv:121.0) Gecko/20100101 Firefox/121.0';
-
-    it('detects Safari but not Chrome/Opera as Safari', () => {
-      setUserAgent(SAFARI);
-      expect(isSafari()).to.be.true;
-      setUserAgent(CHROME);
-      expect(isSafari()).to.be.false;
-      setUserAgent(OPERA);
-      expect(isSafari()).to.be.false;
-    });
-
-    it('detects Opera', () => {
-      setUserAgent(OPERA);
-      expect(isOpera()).to.be.true;
-      setUserAgent(CHROME);
-      expect(isOpera()).to.be.false;
-    });
-
-    it('detects WebKit (Chrome/Safari) but not Firefox', () => {
-      setUserAgent(CHROME);
-      expect(isWebkit()).to.be.true;
-      setUserAgent(SAFARI);
-      expect(isWebkit()).to.be.true;
-      setUserAgent(FIREFOX);
-      expect(isWebkit()).to.be.false;
-    });
+  it('exposes the engine name constants', () => {
+    expect(BrowserInfo.ENGINE_GECKO).to.equal('gecko');
+    expect(BrowserInfo.ENGINE_WEBKIT).to.equal('webkit');
+    expect(BrowserInfo.ENGINE_PRESTO).to.equal('presto');
+    expect(BrowserInfo.ENGINE_TRIDENT).to.equal('trident');
   });
 });
