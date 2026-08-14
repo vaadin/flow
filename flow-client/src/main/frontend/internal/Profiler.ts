@@ -87,28 +87,28 @@ function roundToSignificantFigures(num: number): number {
  * <b>Warning!</b> This class is most likely to change in the future.
  */
 export class Node {
-  private readonly name: string | null;
+  readonly #name: string | null;
 
-  private readonly children = new Map<string, Node>();
+  readonly #children = new Map<string, Node>();
 
-  private time = 0;
+  #time = 0;
 
-  private count = 0;
+  #count = 0;
 
-  private enterTime = 0;
+  #enterTime = 0;
 
-  private minTime = 1000000000;
+  #minTime = 1000000000;
 
-  private maxTime = 0;
+  #maxTime = 0;
 
   /** Creates a new node with the given name. */
   constructor(name: string | null) {
-    this.name = name;
+    this.#name = name;
   }
 
   /** Gets the name of the node. */
   getName(): string | null {
-    return this.name;
+    return this.#name;
   }
 
   /**
@@ -116,40 +116,40 @@ export class Node {
    * total time and hit count.
    */
   enterChild(name: string, timestamp: number): Node {
-    let child = this.children.get(name);
+    let child = this.#children.get(name);
     if (child === undefined) {
       child = new Node(name);
-      this.children.set(name, child);
+      this.#children.set(name, child);
     }
-    child.enterTime = timestamp;
-    child.count++;
+    child.#enterTime = timestamp;
+    child.#count++;
     return child;
   }
 
   /** Gets the total time spent in this node, including sub nodes, in ms. */
   getTimeSpent(): number {
-    return this.time;
+    return this.#time;
   }
 
   /** Gets the minimum time spent for one invocation, including sub nodes, in ms. */
   getMinTimeSpent(): number {
-    return this.minTime;
+    return this.#minTime;
   }
 
   /** Gets the maximum time spent for one invocation, including sub nodes, in ms. */
   getMaxTimeSpent(): number {
-    return this.maxTime;
+    return this.#maxTime;
   }
 
   /** Gets the number of times this node has been entered. */
   getCount(): number {
-    return this.count;
+    return this.#count;
   }
 
   /** Gets the total time spent in this node, excluding sub nodes, in ms. */
   getOwnTime(): number {
     let time = this.getTimeSpent();
-    for (const node of this.children.values()) {
+    for (const node of this.#children.values()) {
       time -= node.getTimeSpent();
     }
     return time;
@@ -157,7 +157,7 @@ export class Node {
 
   /** Gets the child nodes of this node. */
   getChildren(): Node[] {
-    return Array.from(this.children.values());
+    return Array.from(this.#children.values());
   }
 
   toString(): string {
@@ -175,7 +175,7 @@ export class Node {
         ` ms per time, min ${roundToSignificantFigures(this.getMinTimeSpent())}` +
         ` ms, max ${roundToSignificantFigures(this.getMaxTimeSpent())} ms).`;
     }
-    if (this.children.size > 0) {
+    if (this.#children.size > 0) {
       const ownTime = this.getOwnTime();
       msg += ` ${roundToSignificantFigures(ownTime)} ms spent in own code`;
       if (this.getCount() > 1) {
@@ -195,26 +195,26 @@ export class Node {
         totals.set(name, totalNode);
       }
 
-      totalNode.time += this.getOwnTime();
-      totalNode.count += this.getCount();
-      totalNode.minTime = roundToSignificantFigures(Math.min(totalNode.minTime, this.getMinTimeSpent()));
-      totalNode.maxTime = roundToSignificantFigures(Math.max(totalNode.maxTime, this.getMaxTimeSpent()));
+      totalNode.#time += this.getOwnTime();
+      totalNode.#count += this.getCount();
+      totalNode.#minTime = roundToSignificantFigures(Math.min(totalNode.#minTime, this.getMinTimeSpent()));
+      totalNode.#maxTime = roundToSignificantFigures(Math.max(totalNode.#maxTime, this.getMaxTimeSpent()));
     }
-    for (const node of this.children.values()) {
+    for (const node of this.#children.values()) {
       node.sumUpTotals(totals);
     }
   }
 
   /** Marks the time spent in the child node. */
   leave(timestamp: number): void {
-    const elapsed = timestamp - this.enterTime;
-    this.time += elapsed;
-    this.enterTime = 0;
-    if (elapsed < this.minTime) {
-      this.minTime = elapsed;
+    const elapsed = timestamp - this.#enterTime;
+    this.#time += elapsed;
+    this.#enterTime = 0;
+    if (elapsed < this.#minTime) {
+      this.#minTime = elapsed;
     }
-    if (elapsed > this.maxTime) {
-      this.maxTime = elapsed;
+    if (elapsed > this.#maxTime) {
+      this.#maxTime = elapsed;
     }
   }
 }
