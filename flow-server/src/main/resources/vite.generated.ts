@@ -680,7 +680,19 @@ export const vaadinConfig: UserConfigFn = (env) => {
       },
       //#vitePluginFileSystemRouter#
       checker({
-        typescript: true
+        typescript: {
+          // tsconfig.json is generated next to package.json, not in the
+          // frontend folder Vite uses as its root. TypeScript 7 no longer
+          // exposes the compiler API to Node, so the checker falls back to
+          // running tsc as a separate process and resolves the config
+          // strictly against this root without searching parent folders.
+          // The root is relative because the checker passes it to tsc as
+          // "-p <root>" in a command line that is split on spaces, which
+          // would break for a project directory containing a space. Vite is
+          // always spawned with the project root as its working directory,
+          // which is this directory, so "." resolves to the same tsconfig.
+          root: '.'
+        }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
     ]
