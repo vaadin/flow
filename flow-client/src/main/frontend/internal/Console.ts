@@ -14,7 +14,15 @@
  * the License.
  */
 
-// Helper migrated from Console.java.
+// TypeScript port of com.vaadin.client.Console: the engine's logging facade.
+// Nothing is logged to the browser console in production mode, unless the
+// localStorage flag `vaadin.browserLog` is set to "true". Engine code must log
+// through this module rather than calling `console` directly, so the production
+// suppression applies everywhere; ApplicationConfiguration.setProductionMode
+// feeds the flag in.
+
+// Mirrors the static Console.isProductionMode field.
+let isProductionMode = false;
 
 /**
  * Whether the localStorage override flag `vaadin.browserLog` is set to "true".
@@ -29,3 +37,60 @@ export function isLocalStorageFlagEnabled(): boolean {
     return false;
   }
 }
+
+/**
+ * Whether logging to the browser console should be enabled: true if either not
+ * in production mode, or the `vaadin.browserLog` override flag is set. Mirrors
+ * Console.shouldLogToBrowserConsole.
+ */
+function shouldLogToBrowserConsole(): boolean {
+  if (!isProductionMode) {
+    return true;
+  }
+  // Check localStorage for the override flag in production mode.
+  return isLocalStorageFlagEnabled();
+}
+
+/**
+ * The engine's logging facade; mirrors the static Console.java. The log methods
+ * are no-ops in production mode unless the `vaadin.browserLog` localStorage flag
+ * is set, so that a production application does not write to the browser
+ * console.
+ */
+export const Console = {
+  /**
+   * Changes logger behavior, making it skip all browser logging for production
+   * mode. Mirrors Console.setProductionMode.
+   */
+  setProductionMode(productionMode: boolean): void {
+    isProductionMode = productionMode;
+  },
+
+  /** Logs the message using the debug log level, unless suppressed. */
+  debug(message: unknown): void {
+    if (shouldLogToBrowserConsole()) {
+      console.debug(message);
+    }
+  },
+
+  /** Logs the message using the info log level, unless suppressed. */
+  log(message: unknown): void {
+    if (shouldLogToBrowserConsole()) {
+      console.log(message);
+    }
+  },
+
+  /** Logs the message using the warning log level, unless suppressed. */
+  warn(message: unknown): void {
+    if (shouldLogToBrowserConsole()) {
+      console.warn(message);
+    }
+  },
+
+  /** Logs the message using the error log level, unless suppressed. */
+  error(message: unknown): void {
+    if (shouldLogToBrowserConsole()) {
+      console.error(message);
+    }
+  }
+};
