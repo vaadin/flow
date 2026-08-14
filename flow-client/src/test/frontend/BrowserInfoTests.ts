@@ -1,24 +1,13 @@
 import { expect } from '@open-wc/testing';
-import {
-  checkForTouchDevice,
-  getBrowserString,
-  isIos,
-  isOpera,
-  isSafari,
-  isWebkit
-} from '../../main/frontend/internal/BrowserInfo';
+import { isOpera, isSafari, isSafariOrIOS, isTouchDevice, isWebkit } from '../../main/frontend/internal/BrowserInfo';
 
 describe('BrowserInfo', () => {
-  it('getBrowserString returns the navigator user agent', () => {
-    expect(getBrowserString()).to.equal(navigator.userAgent);
+  it('isTouchDevice returns a boolean', () => {
+    expect(isTouchDevice()).to.be.a('boolean');
   });
 
-  it('checkForTouchDevice returns a boolean', () => {
-    expect(checkForTouchDevice()).to.be.a('boolean');
-  });
-
-  it('isIos returns a boolean', () => {
-    expect(isIos()).to.be.a('boolean');
+  it('isSafariOrIOS returns a boolean', () => {
+    expect(isSafariOrIOS()).to.be.a('boolean');
   });
 
   describe('browser-family probes (by user agent)', () => {
