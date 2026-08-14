@@ -18,6 +18,16 @@
 // window.Vaadin.Flow.internal.WidgetUtil by registerInternals; the Java methods
 // delegate here. This module is also bundled to ES5 for the (old) HtmlUnit used
 // by GwtTests, so it avoids newer syntax and the unicode regex flag.
+//
+// WidgetUtil.crazyJsCast and crazyJsoCast are intentionally not ported: they are
+// GWT-compiler-only artifacts whose sole purpose is to make the Java compiler
+// accept an unchecked cast. TypeScript casts are erased at runtime and its type
+// system needs no such trick, so they have no runtime or type-system equivalent.
+
+/** Refreshes the browser. */
+export function refresh(): void {
+  redirect(null);
+}
 
 /**
  * Redirects the browser to the given URL, or reloads the page when `url` is
@@ -120,6 +130,16 @@ export function createJsonObject(): object {
  */
 export function createJsonObjectWithoutPrototype(): object {
   return Object.create(null) as object;
+}
+
+/**
+ * Checks whether the objects are equal either as Java objects (considering
+ * types and identity) or as JS values. In TypeScript the Java `Objects.equals`
+ * check maps to reference/value identity, which is OR-ed with the loose JS
+ * equality of {@link equalsInJS}.
+ */
+export function equals(obj1: unknown, obj2: unknown): boolean {
+  return obj1 === obj2 || equalsInJS(obj1, obj2);
 }
 
 /**

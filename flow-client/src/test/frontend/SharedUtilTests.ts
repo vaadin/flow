@@ -1,5 +1,19 @@
 import { expect } from '@open-wc/testing';
-import { addGetParameter, addGetParameters } from '../../main/frontend/internal/SharedUtil';
+import {
+  addGetParameter,
+  addGetParameters,
+  camelCaseToDashSeparated,
+  camelCaseToHumanFriendly,
+  capitalize,
+  dashSeparatedToCamelCase,
+  firstToLower,
+  join,
+  prefixIfRelative,
+  propertyIdToHumanFriendly,
+  splitCamelCase,
+  trimTrailingSlashes,
+  upperCamelCaseToDashSeparatedLowerCase
+} from '../../main/frontend/internal/SharedUtil';
 
 describe('SharedUtil', () => {
   it('adds a parameter with ? to a bare URI', () => {
@@ -65,5 +79,81 @@ describe('SharedUtil', () => {
         expect(addGetParameters(`${uri}#`, 'a=b&c=d')).to.equal(withParamsAndFragment[i].replace('#fragment', '#'));
       }
     });
+  });
+
+  it('trims trailing slashes', () => {
+    expect(trimTrailingSlashes('foo')).to.equal('foo');
+    expect(trimTrailingSlashes('foo/')).to.equal('foo');
+    expect(trimTrailingSlashes('foo///')).to.equal('foo');
+    expect(trimTrailingSlashes('/')).to.equal('');
+  });
+
+  it('splits camelCase into words with casing preserved', () => {
+    expect(splitCamelCase('MyBeanContainer')).to.deep.equal(['My', 'Bean', 'Container']);
+    expect(splitCamelCase('AwesomeURLFactory')).to.deep.equal(['Awesome', 'URL', 'Factory']);
+    expect(splitCamelCase('SomeUriAction')).to.deep.equal(['Some', 'Uri', 'Action']);
+  });
+
+  it('converts camelCase to a human friendly format', () => {
+    expect(camelCaseToHumanFriendly('MyBeanContainer')).to.equal('My Bean Container');
+    expect(camelCaseToHumanFriendly('AwesomeURLFactory')).to.equal('Awesome URL Factory');
+    expect(camelCaseToHumanFriendly('SomeUriAction')).to.equal('Some Uri Action');
+  });
+
+  it('joins parts with a separator', () => {
+    expect(join(['a', 'b', 'c'], '-')).to.equal('a-b-c');
+    expect(join(['x'], '-')).to.equal('x');
+  });
+
+  it('capitalizes the first character', () => {
+    expect(capitalize('foo')).to.equal('Foo');
+    expect(capitalize('a')).to.equal('A');
+    expect(capitalize('')).to.equal('');
+    expect(capitalize(null)).to.equal(null);
+  });
+
+  it('lowercases the first character', () => {
+    expect(firstToLower('Foo')).to.equal('foo');
+    expect(firstToLower('A')).to.equal('a');
+    expect(firstToLower('')).to.equal('');
+    expect(firstToLower(null)).to.equal(null);
+  });
+
+  it('converts a property id to a human friendly format', () => {
+    expect(propertyIdToHumanFriendly('firstName')).to.equal('First Name');
+    expect(propertyIdToHumanFriendly('address.streetName')).to.equal('Street Name');
+    expect(propertyIdToHumanFriendly('')).to.equal('');
+  });
+
+  it('converts dash separated strings to camelCase', () => {
+    expect(dashSeparatedToCamelCase('foo')).to.equal('foo');
+    expect(dashSeparatedToCamelCase('foo-bar')).to.equal('fooBar');
+    expect(dashSeparatedToCamelCase('foo--bar')).to.equal('fooBar');
+    expect(dashSeparatedToCamelCase(null)).to.equal(null);
+  });
+
+  it('converts camelCase strings to dash separated', () => {
+    expect(camelCaseToDashSeparated('foo')).to.equal('foo');
+    expect(camelCaseToDashSeparated('fooBar')).to.equal('foo-bar');
+    expect(camelCaseToDashSeparated('MyBeanContainer')).to.equal('-my-bean-container');
+    expect(camelCaseToDashSeparated('AwesomeURLFactory')).to.equal('-awesome-uRL-factory');
+    expect(camelCaseToDashSeparated('someUriAction')).to.equal('some-uri-action');
+    expect(camelCaseToDashSeparated(null)).to.equal(null);
+  });
+
+  it('converts UpperCamelCase strings to dash separated lowercase', () => {
+    expect(upperCamelCaseToDashSeparatedLowerCase('foo')).to.equal('foo');
+    expect(upperCamelCaseToDashSeparatedLowerCase('fooBar')).to.equal('foo-bar');
+    expect(upperCamelCaseToDashSeparatedLowerCase('MyBeanContainer')).to.equal('my-bean-container');
+    expect(upperCamelCaseToDashSeparatedLowerCase('AwesomeURLFactory')).to.equal('awesome-url-factory');
+    expect(upperCamelCaseToDashSeparatedLowerCase('someUriAction')).to.equal('some-uri-action');
+    expect(upperCamelCaseToDashSeparatedLowerCase(null)).to.equal(null);
+  });
+
+  it('prefixes only relative urls without a protocol', () => {
+    expect(prefixIfRelative('foo', '/prefix/')).to.equal('/prefix/foo');
+    expect(prefixIfRelative('/foo', '/prefix/')).to.equal('/foo');
+    expect(prefixIfRelative('http://demo.vaadin.com/', '/prefix/')).to.equal('http://demo.vaadin.com/');
+    expect(prefixIfRelative('mailto:foo@bar.com', '/prefix/')).to.equal('mailto:foo@bar.com');
   });
 });

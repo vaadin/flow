@@ -14,14 +14,25 @@
  * the License.
  */
 
-// Bulk JsArray operations migrated from JsArray.java. These mirror the public
-// `@JsOverlay` methods pushArray/spliceArray/clear (exported here because they
-// are public in Java), implemented as free functions over native arrays since a
-// TypeScript array already is the "native JS Array" that JsArray wrapped. The
-// remaining public JsArray surface (get/set/push/length/splice/remove/isEmpty/
-// shift/forEach) is expressible directly with native array syntax, so it needs
-// no dedicated helper. The private `JsniHelper` statics behind these overlays
-// are not ported.
+// JsArray operations migrated from JsArray.java. `JsArray<T>` was a native JS
+// Array wrapper, so a plain TypeScript array already is the thing it wrapped.
+// The full public Java API maps as follows:
+//
+//   Native TypeScript array syntax (intentionally NOT wrapped here):
+//     get(index)                -> array[index]
+//     set(index, value)         -> array[index] = value
+//     push(...values)           -> array.push(...values)
+//     length()                  -> array.length
+//     splice(index, remove, ...add) -> array.splice(index, remove, ...add)
+//     shift()                   -> array.shift()
+//     forEach(callback)         -> array.forEach(callback)
+//
+//   Exported free-function helpers (below), because they are genuinely more
+//   than a native operation or bundle several native calls:
+//     pushArray, spliceArray, clear, isEmpty, remove, removeItem
+//
+// The private `JsniHelper` statics behind the Java `@JsOverlay` methods are not
+// ported.
 
 /**
  * Appends every value (spread) onto the array, returning the new length.
@@ -47,4 +58,37 @@ export function spliceArray(array: unknown[], index: number, remove: number, add
 export function clear(array: unknown[]): unknown[] {
   array.length = 0;
   return array;
+}
+
+/**
+ * Checks if the array is empty (length === 0). Mirrors the public
+ * JsArray.isEmpty overlay.
+ */
+export function isEmpty(array: unknown[]): boolean {
+  return array.length === 0;
+}
+
+/**
+ * Removes the item at the given index and returns it. Mirrors the public
+ * JsArray.remove(int index) overlay (which is `splice(index, 1).get(0)`).
+ */
+export function remove(array: unknown[], index: number): unknown {
+  return array.splice(index, 1)[0];
+}
+
+/**
+ * Removes the first item that is identical (`===`, matching Java reference
+ * `==`) to the given value, returning whether one was found and removed. Maps
+ * to the by-value Java overload JsArray.remove(T toRemove); it is named
+ * `removeItem` here because TypeScript cannot overload `remove` on a single
+ * argument whose type may itself be a number.
+ */
+export function removeItem(array: unknown[], toRemove: unknown): boolean {
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] === toRemove) {
+      array.splice(i, 1);
+      return true;
+    }
+  }
+  return false;
 }

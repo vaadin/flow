@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { clear, pushArray, spliceArray } from '../../main/frontend/internal/JsArray';
+import { clear, isEmpty, pushArray, remove, removeItem, spliceArray } from '../../main/frontend/internal/JsArray';
 
 describe('JsArray helpers', () => {
   it('pushArray appends all values and returns the new length', () => {
@@ -32,5 +32,28 @@ describe('JsArray helpers', () => {
     const arr = [1, 2, 3];
     clear(arr);
     expect(arr).to.deep.equal([]);
+  });
+
+  it('isEmpty reflects whether the array has elements', () => {
+    expect(isEmpty([])).to.equal(true);
+    expect(isEmpty([1])).to.equal(false);
+  });
+
+  it('remove returns the removed item and mutates the array', () => {
+    const arr = ['a', 'b', 'c'];
+    expect(remove(arr, 1)).to.equal('b');
+    expect(arr).to.deep.equal(['a', 'c']);
+  });
+
+  it('removeItem removes the first matching item and returns true', () => {
+    const arr = [1, 2, 3, 2];
+    expect(removeItem(arr, 2)).to.equal(true);
+    expect(arr).to.deep.equal([1, 3, 2]);
+  });
+
+  it('removeItem returns false when the item is absent', () => {
+    const arr = [1, 2, 3];
+    expect(removeItem(arr, 9)).to.equal(false);
+    expect(arr).to.deep.equal([1, 2, 3]);
   });
 });
