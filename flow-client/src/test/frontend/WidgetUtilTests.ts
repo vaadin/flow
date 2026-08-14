@@ -3,6 +3,7 @@ import {
   createJsonObject,
   createJsonObjectWithoutPrototype,
   deleteJsProperty,
+  equals,
   equalsInJS,
   getAbsoluteUrl,
   getJsProperty,
@@ -82,6 +83,14 @@ describe('WidgetUtil', () => {
 
   it('getKeys returns own enumerable keys', () => {
     expect(getKeys({ a: 1, b: 2 })).to.eql(['a', 'b']);
+  });
+
+  it('equals combines identity with loose JS equality', () => {
+    expect(equals(null, null)).to.be.true;
+    expect(equals(1, 1)).to.be.true;
+    // Loose equality: an empty string equals 0.
+    expect(equals('', 0)).to.be.true;
+    expect(equals('a', 'b')).to.be.false;
   });
 
   it('equalsInJS uses loose equality', () => {
