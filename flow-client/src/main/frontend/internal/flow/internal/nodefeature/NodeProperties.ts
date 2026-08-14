@@ -21,7 +21,7 @@
  *
  * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeProperties,
  * containing only the entries the ported client code needs so far. Absent Java
- * keys (e.g. `JAVA_CLASS`, `ID`) are added as later ports start to require them.
+ * keys (e.g. `ID`) are added as later ports start to require them.
  *
  * The per-member Javadoc below references server-side classes (e.g.
  * `ElementData`, `VirtualChildrenList`) from `com.vaadin.flow.internal.nodefeature`,
@@ -42,6 +42,11 @@ export const NodeProperties = {
    * Key for `ElementData#getPayload()`.
    */
   PAYLOAD: 'payload',
+
+  /**
+   * Key for `ElementData#getJavaClass()`.
+   */
+  JAVA_CLASS: 'jc',
 
   /**
    * Key for `TextNodeMap#getText()`.
