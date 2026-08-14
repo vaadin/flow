@@ -62,23 +62,42 @@ export function isTouchDevice(): boolean {
 // needs for browser-specific workarounds (e.g. ResourceLoader stylesheet load
 // detection on Safari/Opera).
 
-/** Whether the browser is Safari (and not a Chromium-family browser). */
+/**
+ * Whether the browser is Safari (and not a Chromium-family browser).
+ *
+ * @deprecated use a parsing library like ua-parser-js to parse the user agent
+ */
 export function isSafari(): boolean {
   const ua = getBrowserString();
   return /safari/i.test(ua) && !/chrome|chromium|crios|android/i.test(ua);
 }
 
-/** Whether the browser is Safari or running on iOS. */
+/**
+ * Whether the browser is Safari or running on iOS.
+ *
+ * @deprecated use a parsing library like ua-parser-js to parse the user agent
+ */
 export function isSafariOrIOS(): boolean {
+  // Mirrors BrowserInfo.isSafariOrIOS in Java, which delegates to the
+  // (also deprecated) isSafari check.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return isSafari() || isIos();
 }
 
-/** Whether the browser is Opera (Presto or Chromium-based OPR). */
+/**
+ * Whether the browser is Opera (Presto or Chromium-based OPR).
+ *
+ * @deprecated use a parsing library like ua-parser-js to parse the user agent
+ */
 export function isOpera(): boolean {
   return /opr\/|opera/i.test(getBrowserString());
 }
 
-/** Whether the browser is WebKit-based (excludes legacy Edge). */
+/**
+ * Whether the browser is WebKit-based (excludes legacy Edge).
+ *
+ * @deprecated use a parsing library like ua-parser-js to parse the user agent
+ */
 export function isWebkit(): boolean {
   const ua = getBrowserString();
   return /applewebkit/i.test(ua) && !/edge\//i.test(ua);
