@@ -5,7 +5,9 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are validated too, not only those targeting main.
+    # PRs against a maintenance branch run that branch's own copy of this file.
   merge_group:
 permissions:
   contents: read
