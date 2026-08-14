@@ -57,6 +57,12 @@ export default [
       globals: {
         ...globals.mocha
       }
+    },
+    rules: {
+      // Tests exercise the full public surface of each ported module, including
+      // members that are @deprecated to mirror their Java originals (e.g. the
+      // BrowserInfo browser-family probes). Calling them from tests is expected.
+      '@typescript-eslint/no-deprecated': 'off'
     }
   }
 ];
