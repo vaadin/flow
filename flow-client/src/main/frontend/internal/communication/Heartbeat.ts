@@ -22,6 +22,7 @@
 // contracts satisfied at cutover.
 
 import { addGetParameter } from '../SharedUtil';
+import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -98,11 +99,11 @@ export class Heartbeat {
   send(): void {
     this.timer.cancel();
     if (this.interval < 0) {
-      console.debug('Heartbeat terminated, skipping request');
+      Console.debug('Heartbeat terminated, skipping request');
       return;
     }
 
-    console.debug('Sending heartbeat request...');
+    Console.debug('Sending heartbeat request...');
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', this.uri, true);
@@ -116,7 +117,7 @@ export class Heartbeat {
         } else if (this.interval < 0) {
           // Heartbeat terminated before response processing (likely a session
           // expiration already handled elsewhere).
-          console.debug('Heartbeat terminated, ignoring failure.');
+          Console.debug('Heartbeat terminated, ignoring failure.');
         } else {
           this.registry.getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
         }
@@ -138,17 +139,17 @@ export class Heartbeat {
   /** Reschedules the heartbeat to match the interval; a negative interval disables it. */
   schedule(): void {
     if (this.interval > 0) {
-      console.debug(`Scheduling heartbeat in ${this.interval} seconds`);
+      Console.debug(`Scheduling heartbeat in ${this.interval} seconds`);
       this.timer.schedule(this.interval * 1000);
     } else {
-      console.debug('Disabling heartbeat');
+      Console.debug('Disabling heartbeat');
       this.timer.cancel();
     }
   }
 
   /** Changes the heartbeat interval (seconds) at runtime and applies it. */
   setInterval(heartbeatInterval: number): void {
-    console.debug(`Setting heartbeat interval to ${heartbeatInterval}sec.`);
+    Console.debug(`Setting heartbeat interval to ${heartbeatInterval}sec.`);
     this.interval = heartbeatInterval;
     this.schedule();
   }

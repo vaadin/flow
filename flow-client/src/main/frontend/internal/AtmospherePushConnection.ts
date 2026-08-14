@@ -25,6 +25,7 @@ import { parseJSONResponse } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
 import { addGetParameter } from './SharedUtil';
 import type { PushConnection } from './communication/PushConnection';
+import { Console } from './Console';
 
 // com.vaadin.flow.shared.communication.PushConstants
 const WEBSOCKET_FRAGMENT_SIZE = 16384 / 4 - 1; // 4095
@@ -434,7 +435,7 @@ export class AtmospherePushConnection implements PushConnection {
   }
 
   private onTransportFailure(): void {
-    console.warn('Push connection using the primary method failed. Trying the fallback transport.');
+    Console.warn('Push connection using the primary method failed. Trying the fallback transport.');
   }
 
   private onError(response: AtmosphereResponse): void {

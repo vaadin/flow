@@ -21,6 +21,7 @@
 // satisfied at cutover.
 
 import { getScheduler } from '../TrackingScheduler';
+import { Console } from '../Console';
 
 // Sentinel flush strategy; identity-compared to detect a scheduled flush.
 const NO_OP = (): void => {};
@@ -48,7 +49,7 @@ export class ServerRpcQueue {
   /** Adds an RPC invocation to the queue (ignored if the UI is not running). */
   add(invocation: unknown): void {
     if (!this.registry.getUILifecycle().isRunning()) {
-      console.warn('Trying to invoke method on not yet started or stopped application');
+      Console.warn('Trying to invoke method on not yet started or stopped application');
       return;
     }
     this.pendingInvocations.push(invocation);
