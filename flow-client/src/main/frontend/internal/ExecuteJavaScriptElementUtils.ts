@@ -35,6 +35,7 @@ import { getTag, invokeWhenDefined } from './PolymerUtils';
 import { Reactive } from './reactive/reactive';
 import { getJsProperty } from './WidgetUtil';
 import { UpdatableModelProperties } from './model/UpdatableModelProperties';
+import { Console } from './Console';
 
 // NodeFeatures.ELEMENT_PROPERTIES / ELEMENT_CHILDREN
 const ELEMENT_PROPERTIES = 1;
@@ -229,7 +230,7 @@ function invokeSafely(fn: JsCallback): void {
   try {
     fn();
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    Console.error(error instanceof Error ? error.message : String(error));
   }
 }
 

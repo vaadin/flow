@@ -26,6 +26,7 @@ import {
   startEagerDependencyLoading
 } from './EagerDependencyTracker';
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
+import { Console } from './Console';
 
 // com.vaadin.flow.shared.ui.Dependency
 const KEY_URL = 'url';
@@ -68,7 +69,7 @@ export class DependencyLoader {
   private readonly eagerListener: ResourceLoadListener = {
     onLoad: () => endEagerDependencyLoading(),
     onError: (event: ResourceLoadEvent) => {
-      console.error(`'${event.getResourceData()}' could not be loaded.`);
+      Console.error(`'${event.getResourceData()}' could not be loaded.`);
       // The show must go on.
       endEagerDependencyLoading();
     }
@@ -79,7 +80,7 @@ export class DependencyLoader {
       // Nothing to do on success; simply continue loading.
     },
     onError: (event: ResourceLoadEvent) => {
-      console.error(`${event.getResourceData()} could not be loaded.`);
+      Console.error(`${event.getResourceData()} could not be loaded.`);
     }
   };
 

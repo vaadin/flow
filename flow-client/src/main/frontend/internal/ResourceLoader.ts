@@ -23,6 +23,7 @@
 import { isChrome, isEdge, isIE, isOpera, isSafariOrIOS } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
+import { Console } from './Console';
 
 /**
  * Wires onLoad/onError handlers on a link or script element, clearing all
@@ -106,11 +107,17 @@ export function runPromiseExpression(
         onSuccess();
       },
       (error: unknown) => {
+        // Deliberately not Console.error: the Java version of this method was
+        // JSNI calling console.error directly, so a failing dynamic dependency
+        // is reported even in production mode.
+        // eslint-disable-next-line no-console -- see above
         console.error(error);
         onError();
       }
     );
   } catch (error) {
+    // Not Console.error, as above.
+    // eslint-disable-next-line no-console -- see above
     console.error(error);
     onError();
   }
@@ -360,7 +367,7 @@ export class ResourceLoader {
   private addInHeadBeforeComment(element: Element, comment: string): void {
     const commentNode = this.findCommentInHead(comment);
     if (commentNode === null) {
-      console.error(`Expected to find a '${comment}' comment inside <head> but none was found. Appending instead.`);
+      Console.error(`Expected to find a '${comment}' comment inside <head> but none was found. Appending instead.`);
     }
     document.head.insertBefore(element, commentNode);
   }
