@@ -14,24 +14,37 @@
  * the License.
  */
 
-// Bulk JsArray helpers migrated from the JsniHelper in JsArray.java. These are
-// per-mutation bulk operations. Per-element reads and writes (array[i]) are done
-// inline on the arrays rather than through these helpers.
+// Bulk JsArray operations migrated from JsArray.java. These mirror the public
+// `@JsOverlay` methods pushArray/spliceArray/clear (exported here because they
+// are public in Java), implemented as free functions over native arrays since a
+// TypeScript array already is the "native JS Array" that JsArray wrapped. The
+// remaining public JsArray surface (get/set/push/length/splice/remove/isEmpty/
+// shift/forEach) is expressible directly with native array syntax, so it needs
+// no dedicated helper. The private `JsniHelper` statics behind these overlays
+// are not ported.
 
-/** Appends every value (spread) onto the array, returning the new length. */
+/**
+ * Appends every value (spread) onto the array, returning the new length.
+ * Mirrors the public JsArray.pushArray overlay.
+ */
 export function pushArray(array: unknown[], values: unknown[]): number {
   return array.push(...values);
 }
 
 /**
  * Splices the array at index, removing `remove` elements and inserting the
- * `add` values (spread), returning the removed elements.
+ * `add` values (spread), returning the removed elements. Mirrors the public
+ * JsArray.spliceArray overlay.
  */
 export function spliceArray(array: unknown[], index: number, remove: number, add: unknown[]): unknown[] {
   return array.splice(index, remove, ...add);
 }
 
-/** Empties the array. */
-export function clear(array: unknown[]): void {
+/**
+ * Empties the array and returns it, mirroring the public JsArray.clear overlay
+ * (which returns the cleared array).
+ */
+export function clear(array: unknown[]): unknown[] {
   array.length = 0;
+  return array;
 }
