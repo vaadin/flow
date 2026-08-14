@@ -26,6 +26,7 @@ import { NodeList } from './nodefeature/NodeList';
 import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures, NodeProperties } from './nodefeature/NodeFeatures';
 import { StateNode, type StateTree as StateTreeContract } from './StateNode';
+import { Console } from './Console';
 
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
@@ -168,13 +169,13 @@ export class StateTree implements StateTreeContract {
   private isValidNode(node: StateNode | null): boolean {
     let isValid = true;
     if (node === null) {
-      console.warn('Node is null');
+      Console.warn('Node is null');
       isValid = false;
     } else if (node.getTree() !== this) {
-      console.warn('Node is not created for this tree');
+      Console.warn('Node is not created for this tree');
       isValid = false;
     } else if (node !== this.getNode(node.getId())) {
-      console.warn('Node id is not registered with this tree');
+      Console.warn('Node id is not registered with this tree');
       isValid = false;
     }
     return isValid;
