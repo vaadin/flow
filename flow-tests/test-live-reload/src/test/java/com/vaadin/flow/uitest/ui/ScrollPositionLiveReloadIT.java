@@ -39,11 +39,16 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
     // tell the reloaded page from the one the reload was triggered on
     private static final String DOCUMENT_MARKER = "__scrollPositionTestDocument";
 
+    // Reported instead of a scroll position for a container that is not in the
+    // DOM, which is a different thing from a container scrolled to the top
+    private static final int ELEMENT_MISSING = -1;
+
     private static final String SCROLL_POSITIONS_SCRIPT = """
             const inner = document.querySelector(arguments[0]);
             const outer = document.querySelector('#outer-scroll');
-            return [window.scrollY, outer ? outer.scrollTop : -1,
-                    inner ? inner.scrollTop : -1];
+            const missing = arguments[1];
+            return [window.scrollY, outer ? outer.scrollTop : missing,
+                    inner ? inner.scrollTop : missing];
             """;
 
     @Test
@@ -118,7 +123,7 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
     private List<Integer> getScrollPositions() {
         List<?> values = (List<?>) executeScript(SCROLL_POSITIONS_SCRIPT,
-                INNER_SCROLL_SELECTOR);
+                INNER_SCROLL_SELECTOR, ELEMENT_MISSING);
         return values.stream().map(value -> ((Number) value).intValue())
                 .toList();
     }
@@ -149,8 +154,15 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         } catch (TimeoutException e) {
             Assert.fail(
                     "Scroll positions (window, outer container, inner container) were not restored. Expected "
-                            + expected + " but was " + actual.get());
+                            + expected + " but was " + describe(actual.get()));
         }
+    }
+
+    private String describe(List<Integer> positions) {
+        return positions.stream()
+                .map(position -> position == ELEMENT_MISSING ? "<no element>"
+                        : position.toString())
+                .toList().toString();
     }
 
     private boolean isRestored(List<Integer> actual, List<Integer> expected) {

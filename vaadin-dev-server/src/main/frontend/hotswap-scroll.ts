@@ -9,15 +9,20 @@ const SNAPSHOT_KEY = 'vaadin-hotswap-scroll';
 // that wrote it. An older one is from a load that never restored it and is
 // ignored so that it cannot be applied to an unrelated page.
 const SNAPSHOT_MAX_AGE_MS = 30000;
-// How long restoring keeps trying before giving up. The positions can only be
+// How long waiting for the Flow clients to become idle is given before
+// applying the positions anyway. Kept separate from the budget for applying so
+// that clients which never report being idle still leave time for retries.
+const IDLE_TIMEOUT_MS = 3000;
+// How long applying keeps retrying before giving up. The positions can only be
 // applied once the view has rendered, which in dev mode can take a while.
 const RESTORE_TIMEOUT_MS = 10000;
 const IDLE_POLL_INTERVAL_MS = 50;
 // Scroll positions are fractional in browsers, so an exact match is not a
 // usable criterion for "restored".
 const SCROLL_TOLERANCE_PX = 1;
-// Scrolling the page by hand means the restored position is no longer wanted
-const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown'];
+// Scrolling the page by hand means the restored position is no longer wanted.
+// Includes pointerdown so that dragging the scrollbar counts as well.
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
 interface StoredScrollSnapshot {
   timestamp: number;
@@ -135,6 +140,10 @@ function isAt(actual: number, expected: number): boolean {
   return Math.abs(actual - expected) <= SCROLL_TOLERANCE_PX;
 }
 
+// Identifies the restore that is allowed to apply positions, so that an
+// earlier one stops instead of fighting it frame by frame
+let latestRestoreId = 0;
+
 /**
  * Restores scroll positions after a hot-swap UI refresh or a full page reload.
  * Waits until the Flow clients are idle so that the positions are not applied
@@ -155,42 +164,49 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
     onSettled?.();
     return;
   }
-  const deadline = performance.now() + RESTORE_TIMEOUT_MS;
 
   // A position that never becomes reachable, because the new version of the
   // view has less content, would otherwise be re-applied until the timeout and
-  // fight the user scrolling in the meantime.
+  // fight the user scrolling in the meantime. A later restore takes over from
+  // this one for the same reason.
+  const restoreId = ++latestRestoreId;
   let cancelled = false;
   const cancel = () => (cancelled = true);
   USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, cancel, { once: true, passive: true }));
+  const stopped = () => cancelled || restoreId !== latestRestoreId;
   const settle = () => {
     USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, cancel));
     onSettled?.();
   };
 
-  const applyUntilRestored = () => {
+  const applyUntilRestored = (deadline: number) => {
     requestAnimationFrame(() => {
+      if (stopped()) {
+        settle();
+        return;
+      }
       for (let i = pending.length - 1; i >= 0; i--) {
         const [key, pos] = pending[i];
         if (applyScrollPosition(key, pos)) {
           pending.splice(i, 1);
         }
       }
-      if (pending.length === 0 || cancelled || performance.now() > deadline) {
+      if (pending.length === 0 || performance.now() > deadline) {
         settle();
       } else {
-        applyUntilRestored();
+        applyUntilRestored(deadline);
       }
     });
   };
 
+  const idleDeadline = performance.now() + IDLE_TIMEOUT_MS;
   const waitForIdleClients = () => {
     const clients = getFlowClients();
     const allIdle = clients.length > 0 && clients.every((c: any) => !c.isActive());
-    if (cancelled) {
+    if (stopped()) {
       settle();
-    } else if (allIdle || performance.now() > deadline) {
-      applyUntilRestored();
+    } else if (allIdle || performance.now() > idleDeadline) {
+      applyUntilRestored(performance.now() + RESTORE_TIMEOUT_MS);
     } else {
       setTimeout(waitForIdleClients, IDLE_POLL_INTERVAL_MS);
     }
@@ -208,13 +224,17 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
  */
 export function saveScrollPositionsForReload(): void {
   const positions = captureScrollPositions();
-  if (Object.keys(positions).length === 0) {
-    window.sessionStorage.removeItem(SNAPSHOT_KEY);
-    return;
+  if (Object.keys(positions).length > 0) {
+    const stored: StoredScrollSnapshot = { timestamp: Date.now(), positions };
+    window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(stored));
   }
-  const stored: StoredScrollSnapshot = { timestamp: Date.now(), positions };
-  window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(stored));
-  history.scrollRestoration = 'manual';
+  // Nothing to capture also means that this reload interrupted a restore that
+  // had not landed yet, in which case the stored snapshot is still the one to
+  // restore and is left in place. A snapshot whose restore did finish has
+  // already been removed, and a stale one is caught when reading it.
+  if (window.sessionStorage.getItem(SNAPSHOT_KEY) !== null) {
+    history.scrollRestoration = 'manual';
+  }
 }
 
 /**
@@ -225,6 +245,10 @@ export function saveScrollPositionsForReload(): void {
 export function restoreScrollPositionsAfterReload(): void {
   const stored = window.sessionStorage.getItem(SNAPSHOT_KEY);
   if (stored === null) {
+    // Restoration is taken over from the browser before a reload, which leaves
+    // it disabled for this history entry when the reload had nothing to store.
+    // Hand it back rather than leaving the page with neither mechanism.
+    history.scrollRestoration = 'auto';
     return;
   }
   const snapshot = parseSnapshot(stored);
@@ -238,7 +262,7 @@ export function restoreScrollPositionsAfterReload(): void {
 function parseSnapshot(stored: string): StoredScrollSnapshot | undefined {
   try {
     const snapshot = JSON.parse(stored) as StoredScrollSnapshot;
-    return snapshot?.positions ? snapshot : undefined;
+    return snapshot?.positions && typeof snapshot.timestamp === 'number' ? snapshot : undefined;
   } catch {
     return undefined;
   }
