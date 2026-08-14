@@ -25,12 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Prototype for the leaf-lock ordering assertion discussed for #25166. The
- * {@code CombinedUsage} deadlock this enforcement is meant to catch is fixed
- * (and regression-tested) separately; here we only demonstrate that the
- * assertion itself fires on a violation.
+ * Verifies that the leaf-lock ordering assertion fires when a signal-tree lock
+ * is acquired while a {@link LeafLock} is held.
  */
-class LeafLockPrototypeTest extends SignalTestBase {
+class LeafLockTest extends SignalTestBase {
 
     private static boolean assertionsEnabled() {
         boolean enabled = false;
@@ -38,9 +36,9 @@ class LeafLockPrototypeTest extends SignalTestBase {
         return enabled;
     }
 
-    // Demonstrates the enforcement "in practice": acquiring a signal-tree lock
-    // while holding a LeafLock trips the assertion deterministically, on any
-    // thread, without needing the actual timing race to occur.
+    // Acquiring a signal-tree lock while holding a LeafLock trips the assertion
+    // deterministically, on any thread, without needing the actual timing race
+    // to occur.
     @Test
     void treeLockWhileHoldingLeafLock_assertionFires() {
         assumeTrue(assertionsEnabled(),
@@ -49,15 +47,12 @@ class LeafLockPrototypeTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("v");
         LeafLock leaf = new LeafLock("probe");
 
-        leaf.lock();
-        try {
+        try (var ignored = leaf.lock()) {
             // peek() -> getWithLock() -> assertNoLeafLockHeld() -> fails
             AssertionError error = assertThrows(AssertionError.class,
                     signal::peek);
             assertTrue(String.valueOf(error.getMessage()).contains("leaf lock"),
                     "unexpected message: " + error.getMessage());
-        } finally {
-            leaf.unlock();
         }
 
         // Reference direction (no leaf lock held) is fine.

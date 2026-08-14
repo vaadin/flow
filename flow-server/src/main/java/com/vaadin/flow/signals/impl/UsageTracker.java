@@ -76,16 +76,13 @@ public class UsageTracker {
                         Registration cleanup = usage
                                 .onNextChange(usageListener);
                         boolean removeNow;
-                        lock.lock();
-                        try {
+                        try (var ignored = lock.lock()) {
                             if (closed) {
                                 removeNow = true;
                             } else {
                                 cleanups.add(cleanup);
                                 removeNow = false;
                             }
-                        } finally {
-                            lock.unlock();
                         }
                         if (removeNow) {
                             // Removed outside the leaf lock (tree lock again).
@@ -96,13 +93,10 @@ public class UsageTracker {
                 }
 
                 private boolean onChange(boolean immediate) {
-                    lock.lock();
-                    try {
+                    try (var ignored = lock.lock()) {
                         if (closed) {
                             return false;
                         }
-                    } finally {
-                        lock.unlock();
                     }
                     // Invoke the downstream listener outside the leaf lock: it
                     // may read signals / register usages, which take tree
@@ -115,14 +109,11 @@ public class UsageTracker {
                 }
 
                 private void close() {
-                    lock.lock();
-                    try {
+                    try (var ignored = lock.lock()) {
                         if (closed) {
                             return;
                         }
                         closed = true;
-                    } finally {
-                        lock.unlock();
                     }
                     // Important: release the leaf lock before calling signal
                     // methods (Registration.remove acquires the tree lock).

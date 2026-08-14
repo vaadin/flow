@@ -26,28 +26,34 @@ import java.util.stream.Collectors;
  * state in signal-reactivity building blocks such as effects, cached signals
  * and usage trackers.
  * <p>
- * <b>Prototype (see #25166 discussion).</b> The repeated deadlocks in shared
- * signals all share one shape: a component holds its own monitor while calling
- * into a {@code SignalTree} (which grabs the tree lock), while another thread
- * holds the tree lock -- because {@code notifyObservers} invokes listeners
- * under it -- and then needs the component monitor. Opposite orders form an
- * ABBA deadlock.
+ * These building blocks are notified from within a {@code SignalTree} while the
+ * tree lock is held (through {@code notifyObservers}), and they also call back
+ * into signal trees while updating their own state. If such a component held
+ * its own lock while calling into a tree, two threads acquiring the component
+ * lock and the tree lock in opposite orders would form an ABBA deadlock.
  * <p>
  * The invariant that avoids this is: <em>a leaf lock is a leaf</em> -- never
  * acquire a signal-tree lock while holding one. This class makes that invariant
- * <em>enforceable</em>: every held leaf lock is recorded in a thread-local, and
- * {@code SignalTree} asserts that the set is empty (ignoring reentrant tree
+ * enforceable: every held leaf lock is recorded in a thread-local, and
+ * {@code SignalTree} asserts that none is held (ignoring reentrant tree
  * re-locks) before acquiring its lock. Because the tree cannot enumerate
  * arbitrary intrinsic monitors held by a caller, the leaf locks make themselves
  * known instead.
  * <p>
  * The check only runs under {@code -ea} (assertions), so it costs nothing in
  * production but turns a latent, timing-dependent ABBA into a deterministic
- * unit-test failure on any thread that violates the ordering.
- *
- * @since 25.1
+ * failure on any thread that violates the ordering.
  */
-public final class LeafLock implements Serializable {
+public class LeafLock implements Serializable {
+
+    /**
+     * Represents a held {@link LeafLock}. Closing the handle releases the lock,
+     * which makes it convenient to acquire the lock with try-with-resources.
+     */
+    public interface Handle extends AutoCloseable {
+        @Override
+        void close();
+    }
 
     /*
      * Leaf locks currently held by the running thread, most-recent last. Used
@@ -78,9 +84,13 @@ public final class LeafLock implements Serializable {
     }
 
     /**
-     * Acquires this lock, recording it as held by the current thread.
+     * Acquires this lock, recording it as held by the current thread. Close the
+     * returned handle to release the lock, typically using try-with-resources.
+     *
+     * @return a handle that releases the lock when closed, not
+     *         <code>null</code>
      */
-    public void lock() {
+    public Handle lock() {
         lock.lock();
         Deque<LeafLock> held = HELD.get();
         if (held == null) {
@@ -88,14 +98,12 @@ public final class LeafLock implements Serializable {
             HELD.set(held);
         }
         held.addLast(this);
+        return this::release;
     }
 
-    /**
-     * Releases this lock.
-     */
-    public void unlock() {
+    private void release() {
         Deque<LeafLock> held = HELD.get();
-        // Remove the most recent occurrence; with try/finally usage the held
+        // Remove the most recent occurrence; with try-with-resources the held
         // locks are perfectly nested so this is the tail.
         if (held != null) {
             held.removeLastOccurrence(this);
@@ -106,6 +114,15 @@ public final class LeafLock implements Serializable {
             }
         }
         lock.unlock();
+    }
+
+    /**
+     * Checks whether the current thread holds this specific leaf lock.
+     *
+     * @return <code>true</code> if the current thread holds this lock
+     */
+    public boolean isHeldByCurrentThread() {
+        return lock.isHeldByCurrentThread();
     }
 
     /**
