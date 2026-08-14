@@ -14,6 +14,8 @@
  * the License.
  */
 
+import { Console } from './Console';
+
 // DOM/Polymer probes and model-data writers migrated from PolymerUtils.java. The
 // StateNode-coupled model-tree building (createModelTree and the change handlers)
 // is ported separately in PolymerModelTree.ts.
@@ -191,9 +193,9 @@ export function getCustomElement(root: Node | null, path: unknown[]): Element | 
   if (current instanceof Element) {
     return current;
   } else if (current === null) {
-    console.warn(`There is no element addressed by the path '${JSON.stringify(path)}'`);
+    Console.warn(`There is no element addressed by the path '${JSON.stringify(path)}'`);
   } else {
-    console.warn(`The node addressed by path ${JSON.stringify(path)} is not an Element`);
+    Console.warn(`The node addressed by path ${JSON.stringify(path)} is not an Element`);
   }
   return null;
 }
