@@ -96,12 +96,14 @@ describe('ApplicationConnection', () => {
   });
 
   describe('published client API', () => {
-    // A state tree with one node (id 5) bound to a DOM element, carrying a
-    // 'class' (JAVA_CLASS), 'visible' property and one style property.
+    // A state tree with one node (id 5) bound to a DOM element, carrying the
+    // 'jc' (NodeProperties.JAVA_CLASS) and 'visible' properties and one style
+    // property. The keys are the wire names the server actually writes, so a
+    // wrong constant in the engine shows up here as a missing value.
     function makeRegistryWithNode() {
       const domNode = document.createElement('div');
       const properties: Record<number, Record<string, unknown>> = {
-        0: { class: 'com.example.MyView', visible: false }, // ELEMENT_DATA
+        0: { jc: 'com.example.MyView', visible: false }, // ELEMENT_DATA
         12: { color: 'red' } // ELEMENT_STYLE_PROPERTIES
       };
       let domListener: ((node: unknown) => boolean) | null = null;
