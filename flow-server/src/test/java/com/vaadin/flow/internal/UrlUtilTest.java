@@ -327,6 +327,33 @@ class UrlUtilTest {
     }
 
     @Test
+    void validateUrl_detachedComponent_throwsSinceConfigurationIsUnknown() {
+        TestComponent component = new TestComponent();
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> UrlUtil.validateUrl(component, "href",
+                        "https://example.com", "setUnsafeHref(String)"));
+
+        assertTrue(exception.getMessage()
+                .contains(InitParameters.URL_SAFE_SCHEMES));
+    }
+
+    @Test
+    void validateUrl_attachedToUiWithoutSession_throwsInsteadOfSkipping() {
+        TestComponent component = new TestComponent();
+        UrlUtil.validateUrl(component, "href", "https://example.com",
+                "setUnsafeHref(String)",
+                () -> fail("The value should not be cleared"));
+
+        // Without a session there is no configuration to validate against, so
+        // the deferred validation must not be silently skipped
+        UI uiWithoutSession = new UI();
+        assertThrows(IllegalStateException.class,
+                () -> uiWithoutSession.add(component));
+    }
+
+    @Test
     void validateUrl_detachedComponent_notCheckedAgainstDefaults() {
         TestComponent component = new TestComponent();
 

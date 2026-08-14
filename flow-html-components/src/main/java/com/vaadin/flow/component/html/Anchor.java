@@ -74,11 +74,6 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param text
      *            the text content to set
-     * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe
-     *             according to the configuration of the application that the
-     *             anchor is attached to; see {@link #setHref(String)} for when
-     *             the check is done
      */
     public Anchor(String href, String text) {
         setHref(href);
@@ -105,11 +100,6 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param textSignal
      *            the signal to bind, not {@code null}
-     * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe
-     *             according to the configuration of the application that the
-     *             anchor is attached to; see {@link #setHref(String)} for when
-     *             the check is done
      * @since 25.1
      */
     public Anchor(String href, Signal<String> textSignal) {
@@ -131,11 +121,6 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      * @param target
      *            the target window, tab or frame
-     * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe
-     *             according to the configuration of the application that the
-     *             anchor is attached to; see {@link #setHref(String)} for when
-     *             the check is done
      * @since 8.0
      */
     public Anchor(String href, String text, AnchorTarget target) {
@@ -270,11 +255,6 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param components
      *            the components to add
-     * @throws IllegalArgumentException
-     *             if {@code href} uses a scheme that is not considered safe
-     *             according to the configuration of the application that the
-     *             anchor is attached to; see {@link #setHref(String)} for when
-     *             the check is done
      * @since 1.3
      */
     public Anchor(String href, Component... components) {

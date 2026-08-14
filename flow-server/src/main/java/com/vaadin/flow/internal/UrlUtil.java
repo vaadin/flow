@@ -300,8 +300,9 @@ public class UrlUtil {
     }
 
     /**
-     * Validates a URL that is set for a component for which the value cannot be
-     * checked again later on, such as a {@link UI}.
+     * Validates a URL that is set for a component that is attached to a
+     * {@link UI} which belongs to a {@link VaadinSession}, such as a {@link UI}
+     * itself.
      *
      * @see #validateUrl(Component, String, String, String,
      *      SerializableRunnable)
@@ -317,39 +318,36 @@ public class UrlUtil {
      *            example {@code "setUnsafeHref(String)"}
      * @throws IllegalArgumentException
      *             if the URL uses a scheme that is not considered safe
+     * @throws IllegalStateException
+     *             if the configuration of the application cannot be found
+     *             through the given component
      * @since 25.3
      */
     public static void validateUrl(Component component, String type, String url,
             String unsafeMethod) {
-        findSafeSchemes(component).ifPresent(safeSchemes -> {
-            if (!isSafeUrl(url, safeSchemes)) {
-                throw new IllegalArgumentException(
-                        getUnsafeUrlMessage(type, url, unsafeMethod));
-            }
-        });
+        if (!isSafeUrl(url, getSafeSchemes(component))) {
+            throw new IllegalArgumentException(
+                    getUnsafeUrlMessage(type, url, unsafeMethod));
+        }
     }
 
     /**
-     * Validates a URL that is set for a component, deferring the check until
-     * the component is attached if the configuration of the application isn't
-     * known yet.
+     * Validates a URL that is set for a component, using the
+     * {@link InitParameters#URL_SAFE_SCHEMES} configuration of the application
+     * that the component belongs to.
      * <p>
-     * The set of safe schemes is only read from the {@link VaadinService} of
-     * the component's own {@link UI}, since that is the only source that is
-     * guaranteed to be the right one. A component that is created in a
-     * background thread and only attached to the UI later on is thus checked
-     * when it is attached, which is also the point where the value would first
-     * be sent to the browser. Nothing is checked against the framework defaults
-     * in the meantime, as that would reject URLs that the application has
-     * explicitly allowed.
+     * The set of safe schemes is read from the {@link VaadinService} of the
+     * component's own {@link UI}. A component that isn't attached yet is thus
+     * validated when it is attached, which is the first point where the
+     * application is known and also the point where the value would first be
+     * sent to the browser.
      * <p>
-     * If the URL isn't safe according to the configuration of the UI that the
-     * component is attached to, then the value is cleared through
+     * If the URL isn't safe, then the value is cleared through
      * {@code urlClearer} before an {@link IllegalArgumentException} is thrown,
      * so that an unsafe URL isn't sent to the client even if the application
      * catches the exception.
      * <p>
-     * Any previously deferred check for the same component and type is
+     * Any previously deferred validation for the same component and type is
      * canceled. Use {@link #cancelUrlValidation(Component, String)} when the
      * value is replaced through a method that doesn't validate it.
      *
@@ -390,15 +388,13 @@ public class UrlUtil {
             // attaches the component another time
             cancelUrlValidation(component, type);
 
-            findSafeSchemes(component).ifPresent(safeSchemes -> {
-                if (!isSafeUrl(url, safeSchemes)) {
-                    // Clear the value first so that an unsafe URL isn't sent
-                    // to the client even if the exception is caught
-                    urlClearer.run();
-                    throw new IllegalArgumentException(
-                            getUnsafeUrlMessage(type, url, unsafeMethod));
-                }
-            });
+            if (!isSafeUrl(url, getSafeSchemes(component))) {
+                // Clear the value first so that an unsafe URL isn't sent to
+                // the client even if the exception is caught
+                urlClearer.run();
+                throw new IllegalArgumentException(
+                        getUnsafeUrlMessage(type, url, unsafeMethod));
+            }
         });
         ComponentUtil.setData(component, getValidationKey(type), registration);
     }
@@ -426,6 +422,23 @@ public class UrlUtil {
 
     private static String getValidationKey(String type) {
         return UrlUtil.class.getName() + "." + type;
+    }
+
+    /**
+     * Gets the safe schemes configured for the application that the given
+     * component belongs to, or throws if they cannot be found. Used where the
+     * component is expected to be attached, so that a missing configuration
+     * means that validation would silently be skipped.
+     */
+    private static Set<String> getSafeSchemes(Component component) {
+        return findSafeSchemes(component)
+                .orElseThrow(() -> new IllegalStateException(String.format(
+                        "Cannot find the %s configuration for %s. A URL can "
+                                + "only be checked through a component that is "
+                                + "attached to a UI which belongs to a "
+                                + "VaadinSession.",
+                        InitParameters.URL_SAFE_SCHEMES,
+                        component.getClass().getName())));
     }
 
     /**
