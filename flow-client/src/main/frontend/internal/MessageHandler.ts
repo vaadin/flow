@@ -234,7 +234,7 @@ export class MessageHandler {
     }
 
     const lock = {};
-    this.suspendResponseHandling(lock);
+    this.suspendReponseHandling(lock);
 
     this.#registry.getRequestResponseTracker().fireResponseHandlingStarted();
     // Client id must be updated before server id (a server-id update can trigger
@@ -407,8 +407,11 @@ export class MessageHandler {
     return !meta || !(META_ASYNC in meta);
   }
 
-  /** Postpones response rendering until the lock is released. */
-  suspendResponseHandling(lock: object): void {
+  /**
+   * Postpones response rendering until the lock is released. The Java method
+   * name is misspelled; it is kept verbatim to preserve public API parity.
+   */
+  suspendReponseHandling(lock: object): void {
     this.#responseHandlingLocks.add(lock);
   }
 
