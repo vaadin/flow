@@ -41,32 +41,32 @@ interface ResourceErrorHandler {
 
 /** Tracks loaded resources and their listeners; the dedup/fanout kernel of ResourceLoader. */
 export class ResourceRegistry {
-  private readonly loadedResources = new Set<string>();
+  readonly #loadedResources = new Set<string>();
 
-  private readonly loadListeners = new Map<string, Array<ResourceLoadListener | null>>();
+  readonly #loadListeners = new Map<string, Array<ResourceLoadListener | null>>();
 
   // Maps a dependency id to its resource key (URL/content) for removal.
-  private readonly dependencyIdToResourceKey = new Map<string, string>();
+  readonly #dependencyIdToResourceKey = new Map<string, string>();
 
-  private readonly errorHandler: ResourceErrorHandler;
+  readonly #errorHandler: ResourceErrorHandler;
 
   constructor(errorHandler: ResourceErrorHandler) {
-    this.errorHandler = errorHandler;
+    this.#errorHandler = errorHandler;
   }
 
   /** Whether the resource identified by the given key has finished loading. */
   isLoaded(key: string): boolean {
-    return this.loadedResources.has(key);
+    return this.#loadedResources.has(key);
   }
 
   /** Marks a resource key as already loaded (e.g. discovered in the DOM). */
   markLoaded(key: string): void {
-    this.loadedResources.add(key);
+    this.#loadedResources.add(key);
   }
 
   /** Associates a dependency id with its resource key, for later removal. */
   registerDependencyId(dependencyId: string, resourceKey: string): void {
-    this.dependencyIdToResourceKey.set(dependencyId, resourceKey);
+    this.#dependencyIdToResourceKey.set(dependencyId, resourceKey);
   }
 
   /**
@@ -75,9 +75,9 @@ export class ResourceRegistry {
    * ResourceLoader.addListener.
    */
   addListener(resourceId: string, listener: ResourceLoadListener | null): boolean {
-    const listeners = this.loadListeners.get(resourceId);
+    const listeners = this.#loadListeners.get(resourceId);
     if (listeners === undefined) {
-      this.loadListeners.set(resourceId, [listener]);
+      this.#loadListeners.set(resourceId, [listener]);
       return true;
     }
     listeners.push(listener);
@@ -87,28 +87,28 @@ export class ResourceRegistry {
   /** Marks the resource loaded and notifies (then clears) its listeners. Mirrors fireLoad. */
   fireLoad(event: ResourceLoadEvent): void {
     const resource = event.getResourceData();
-    const listeners = this.loadListeners.get(resource);
-    this.loadedResources.add(resource);
-    this.loadListeners.delete(resource);
+    const listeners = this.#loadListeners.get(resource);
+    this.#loadedResources.add(resource);
+    this.#loadListeners.delete(resource);
     listeners?.forEach((listener) => listener?.onLoad(event));
   }
 
   /** Reports the error and notifies (then clears) the resource's listeners. Mirrors fireError. */
   fireError(event: ResourceLoadEvent): void {
-    this.errorHandler.handleError(`Error loading ${event.getResourceData()}`);
+    this.#errorHandler.handleError(`Error loading ${event.getResourceData()}`);
     const resource = event.getResourceData();
-    const listeners = this.loadListeners.get(resource);
-    this.loadListeners.delete(resource);
+    const listeners = this.#loadListeners.get(resource);
+    this.#loadListeners.delete(resource);
     listeners?.forEach((listener) => listener?.onError(event));
   }
 
   /** Clears a resource (loaded flag + listeners + mapping) by its dependency id. */
   clearLoadedResourceById(dependencyId: string): void {
-    const resourceKey = this.dependencyIdToResourceKey.get(dependencyId);
+    const resourceKey = this.#dependencyIdToResourceKey.get(dependencyId);
     if (resourceKey !== undefined) {
-      this.loadedResources.delete(resourceKey);
-      this.loadListeners.delete(resourceKey);
-      this.dependencyIdToResourceKey.delete(dependencyId);
+      this.#loadedResources.delete(resourceKey);
+      this.#loadListeners.delete(resourceKey);
+      this.#dependencyIdToResourceKey.delete(dependencyId);
     }
   }
 }

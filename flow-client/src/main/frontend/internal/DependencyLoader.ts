@@ -63,10 +63,10 @@ interface DependencyLoaderRegistry {
 
 /** Loads stylesheet/script dependencies; mirrors DependencyLoader.java. */
 export class DependencyLoader {
-  private readonly registry: DependencyLoaderRegistry;
+  readonly #registry: DependencyLoaderRegistry;
 
   // Loads the next eager dependency when the current one completes.
-  private readonly eagerListener: ResourceLoadListener = {
+  readonly #eagerListener: ResourceLoadListener = {
     onLoad: () => endEagerDependencyLoading(),
     onError: (event: ResourceLoadEvent) => {
       Console.error(`'${event.getResourceData()}' could not be loaded.`);
@@ -75,7 +75,7 @@ export class DependencyLoader {
     }
   };
 
-  private readonly lazyListener: ResourceLoadListener = {
+  readonly #lazyListener: ResourceLoadListener = {
     onLoad: () => {
       // Nothing to do on success; simply continue loading.
     },
@@ -85,23 +85,23 @@ export class DependencyLoader {
   };
 
   constructor(registry: DependencyLoaderRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
-  private loadLazyDependency(dependencyUrl: string, loader: Loader): void {
-    loader(dependencyUrl, this.lazyListener);
+  #loadLazyDependency(dependencyUrl: string, loader: Loader): void {
+    loader(dependencyUrl, this.#lazyListener);
   }
 
-  private loadDependencyEagerly(data: string, loader: Loader): void {
+  #loadDependencyEagerly(data: string, loader: Loader): void {
     startEagerDependencyLoading();
-    loader(data, this.eagerListener);
+    loader(data, this.#eagerListener);
   }
 
   /** Triggers loading of the given dependencies, grouped by load mode. */
   loadDependencies(clientDependencies: Map<LoadMode, Dependency[]>): void {
     const lazyDependencies = new Map<string, Loader>();
     clientDependencies.forEach((dependencies, mode) => {
-      this.extractLazyDependenciesAndLoadOthers(mode, dependencies).forEach((loader, url) => {
+      this.#extractLazyDependenciesAndLoadOthers(mode, dependencies).forEach((loader, url) => {
         lazyDependencies.set(url, loader);
       });
     });
@@ -111,31 +111,31 @@ export class DependencyLoader {
     if (lazyDependencies.size > 0) {
       runWhenEagerDependenciesLoaded(() => {
         setTimeout(() => {
-          lazyDependencies.forEach((loader, url) => this.loadLazyDependency(url, loader));
+          lazyDependencies.forEach((loader, url) => this.#loadLazyDependency(url, loader));
         }, 0);
       });
     }
   }
 
-  private extractLazyDependenciesAndLoadOthers(loadMode: LoadMode, dependencies: Dependency[]): Map<string, Loader> {
+  #extractLazyDependenciesAndLoadOthers(loadMode: LoadMode, dependencies: Dependency[]): Map<string, Loader> {
     const lazyDependencies = new Map<string, Loader>();
     for (const dependency of dependencies) {
       const type = dependency[KEY_TYPE] as DependencyType;
       const dependencyId = KEY_ID in dependency ? (dependency[KEY_ID] as string) : null;
-      const resourceLoader = this.getResourceLoader(type, loadMode, dependencyId);
+      const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId);
 
       if (type === 'DYNAMIC_IMPORT') {
-        this.loadDependencyEagerly(dependency[KEY_URL] as string, resourceLoader);
+        this.#loadDependencyEagerly(dependency[KEY_URL] as string, resourceLoader);
       } else {
         switch (loadMode) {
           case 'EAGER':
-            this.loadDependencyEagerly(this.getDependencyUrl(dependency), resourceLoader);
+            this.#loadDependencyEagerly(this.#getDependencyUrl(dependency), resourceLoader);
             break;
           case 'LAZY':
-            lazyDependencies.set(this.getDependencyUrl(dependency), resourceLoader);
+            lazyDependencies.set(this.#getDependencyUrl(dependency), resourceLoader);
             break;
           case 'INLINE':
-            this.loadDependencyEagerly(dependency[KEY_CONTENTS] as string, resourceLoader);
+            this.#loadDependencyEagerly(dependency[KEY_CONTENTS] as string, resourceLoader);
             break;
           default:
             throw new Error(`Unknown load mode = ${loadMode}`);
@@ -145,12 +145,12 @@ export class DependencyLoader {
     return lazyDependencies;
   }
 
-  private getDependencyUrl(dependency: Dependency): string {
-    return this.registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string) ?? '';
+  #getDependencyUrl(dependency: Dependency): string {
+    return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string) ?? '';
   }
 
-  private getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {
-    const resourceLoader = this.registry.getResourceLoader();
+  #getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {
+    const resourceLoader = this.#registry.getResourceLoader();
     const inline = loadMode === 'INLINE';
 
     switch (resourceType) {

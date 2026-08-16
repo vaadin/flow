@@ -170,12 +170,12 @@ interface SystemErrorRegistry {
 
 /** Handles system-level errors and web-component recreation; mirrors SystemErrorHandler.java. */
 export class SystemErrorHandler {
-  private readonly registry: SystemErrorRegistry;
+  readonly #registry: SystemErrorRegistry;
 
-  private resyncInProgress = false;
+  #resyncInProgress = false;
 
   constructor(registry: SystemErrorRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Logs the given error message. Mirrors SystemErrorHandler.handleError(String). */
@@ -190,15 +190,15 @@ export class SystemErrorHandler {
 
   /** Whether the application runs in web-component (embedded) mode. */
   isWebComponentMode(): boolean {
-    return this.registry.getApplicationConfiguration().isWebComponentMode();
+    return this.#registry.getApplicationConfiguration().isWebComponentMode();
   }
 
   /** Recreates every exported web component's elements (detaching stale ones). */
   recreateWebComponents(): void {
-    for (const elementName of this.registry.getApplicationConfiguration().getExportedWebComponents()) {
+    for (const elementName of this.#registry.getApplicationConfiguration().getExportedWebComponents()) {
       recreateNodes(elementName);
     }
-    this.resyncInProgress = false;
+    this.#resyncInProgress = false;
   }
 
   /**
@@ -207,20 +207,20 @@ export class SystemErrorHandler {
    * returned UIDL and re-establishes push, then recreates the exported web
    * components. Mirrors SystemErrorHandler.resynchronizeSession.
    */
-  private resynchronizeSession(): void {
-    if (this.resyncInProgress) {
+  #resynchronizeSession(): void {
+    if (this.#resyncInProgress) {
       Console.debug('Web components resynchronization already in progress');
       return;
     }
-    this.resyncInProgress = true;
+    this.#resyncInProgress = true;
 
-    const configuration = this.registry.getApplicationConfiguration();
+    const configuration = this.#registry.getApplicationConfiguration();
     const serviceUrl = `${configuration.getServiceUrl()}web-component/web-component-bootstrap.js`;
 
     // Stop the heartbeat to prevent requests during resynchronization.
-    this.registry.getHeartbeat().setInterval(-1);
-    if (this.registry.getPushConfiguration().isPushEnabled()) {
-      this.registry.getMessageSender().setPushEnabled(false, false);
+    this.#registry.getHeartbeat().setInterval(-1);
+    if (this.#registry.getPushConfiguration().isPushEnabled()) {
+      this.#registry.getMessageSender().setPushEnabled(false, false);
     }
 
     const sessionResyncUri = addGetParameters(
@@ -236,7 +236,7 @@ export class SystemErrorHandler {
         // Make sure the heartbeat has not been restarted; especially important
         // if the uiId is reset after session expiration, to avoid multiple
         // heartbeat requests for different UIs.
-        this.registry.getHeartbeat().setInterval(-1);
+        this.#registry.getHeartbeat().setInterval(-1);
 
         const uiId = configuration.getUIId();
         const json = JSON.parse(responseText) as Record<string, unknown>;
@@ -245,19 +245,19 @@ export class SystemErrorHandler {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
           configuration.setUIId(newUiId);
         }
-        this.registry.reset();
+        this.#registry.reset();
 
-        this.registry.getUILifecycle().setState(UIState.RUNNING);
-        this.registry.getMessageHandler().handleMessage(json);
+        this.#registry.getUILifecycle().setState(UIState.RUNNING);
+        this.#registry.getMessageHandler().handleMessage(json);
 
-        if (this.registry.getPushConfiguration().isPushEnabled()) {
+        if (this.#registry.getPushConfiguration().isPushEnabled()) {
           // The push connection may have been closed in response to server
           // session expiration. Reconnect before recreating the web components
           // so connected events can reach the server. Deferred so the current
           // request completes and the Set-Cookie header is processed first.
           getScheduler().scheduleDeferred(() => {
             Console.debug('Re-establish PUSH connection');
-            this.registry.getMessageSender().setPushEnabled(true);
+            this.#registry.getMessageSender().setPushEnabled(true);
             getScheduler().scheduleDeferred(() => this.recreateWebComponents());
           });
         } else {
@@ -265,7 +265,7 @@ export class SystemErrorHandler {
         }
       },
       (error) => {
-        this.registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
+        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
         this.handleError(error.message);
       }
     );
@@ -273,7 +273,7 @@ export class SystemErrorHandler {
 
   /** Shows the configured session-expired notification. Mirrors handleSessionExpiredError. */
   handleSessionExpiredError(details: string | null): void {
-    const message = this.registry.getApplicationConfiguration().getSessionExpiredError();
+    const message = this.#registry.getApplicationConfiguration().getSessionExpiredError();
     this.handleUnrecoverableError(
       message?.caption ?? null,
       message?.message ?? null,
@@ -301,7 +301,7 @@ export class SystemErrorHandler {
       if (!this.isWebComponentMode()) {
         redirect(url);
       } else {
-        this.resynchronizeSession();
+        this.#resynchronizeSession();
       }
       return;
     }

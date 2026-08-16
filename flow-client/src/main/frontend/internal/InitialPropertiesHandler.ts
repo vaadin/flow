@@ -66,14 +66,14 @@ interface InitialPropertiesRegistry {
  * them; mirrors InitialPropertiesHandler.java.
  */
 export class InitialPropertiesHandler {
-  private readonly registry: InitialPropertiesRegistry;
+  readonly #registry: InitialPropertiesRegistry;
 
-  private readonly newNodeDuringUpdate = new Set<number>();
+  readonly #newNodeDuringUpdate = new Set<number>();
 
-  private readonly propertyUpdateQueue: InitialPropertiesProperty[] = [];
+  readonly #propertyUpdateQueue: InitialPropertiesProperty[] = [];
 
   constructor(registry: InitialPropertiesRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /**
@@ -81,16 +81,16 @@ export class InitialPropertiesHandler {
    * end of tree change processing.
    */
   flushPropertyUpdates(): void {
-    if (!this.registry.getStateTree().isUpdateInProgress()) {
+    if (!this.#registry.getStateTree().isUpdateInProgress()) {
       const properties = new Map<number, Map<string, unknown>>();
-      this.newNodeDuringUpdate.forEach((node) => this.collectInitialProperties(node, properties));
-      Reactive.addPostFlushListener(() => this.doFlushPropertyUpdates(properties));
+      this.#newNodeDuringUpdate.forEach((node) => this.#collectInitialProperties(node, properties));
+      Reactive.addPostFlushListener(() => this.#doFlushPropertyUpdates(properties));
     }
   }
 
   /** Notifies the handler about a newly registered node. */
   nodeRegistered(node: InitialPropertiesNode): void {
-    this.newNodeDuringUpdate.add(node.getId());
+    this.#newNodeDuringUpdate.add(node.getId());
   }
 
   /**
@@ -99,14 +99,14 @@ export class InitialPropertiesHandler {
    * caller should send it normally.
    */
   handlePropertyUpdate(property: InitialPropertiesProperty): boolean {
-    if (this.isNodeNewlyCreated(property.getMap().getNode())) {
-      this.propertyUpdateQueue.push(property);
+    if (this.#isNodeNewlyCreated(property.getMap().getNode())) {
+      this.#propertyUpdateQueue.push(property);
       return true;
     }
     return false;
   }
 
-  private resetProperty(property: InitialPropertiesProperty, properties: Map<number, Map<string, unknown>>): boolean {
+  #resetProperty(property: InitialPropertiesProperty, properties: Map<number, Map<string, unknown>>): boolean {
     const ignoreProperties = properties.get(property.getMap().getNode().getId());
     if (ignoreProperties !== undefined && ignoreProperties.has(property.getName())) {
       property.setValue(ignoreProperties.get(property.getName()));
@@ -115,16 +115,16 @@ export class InitialPropertiesHandler {
     return false;
   }
 
-  private isNodeNewlyCreated(node: InitialPropertiesNode): boolean {
-    return this.newNodeDuringUpdate.has(node.getId());
+  #isNodeNewlyCreated(node: InitialPropertiesNode): boolean {
+    return this.#newNodeDuringUpdate.has(node.getId());
   }
 
-  private doFlushPropertyUpdates(properties: Map<number, Map<string, unknown>>): void {
-    this.newNodeDuringUpdate.clear();
-    while (this.propertyUpdateQueue.length > 0) {
-      const property = this.propertyUpdateQueue.shift()!;
-      if (!this.resetProperty(property, properties)) {
-        this.registry.getStateTree().sendNodePropertySyncToServer(property);
+  #doFlushPropertyUpdates(properties: Map<number, Map<string, unknown>>): void {
+    this.#newNodeDuringUpdate.clear();
+    while (this.#propertyUpdateQueue.length > 0) {
+      const property = this.#propertyUpdateQueue.shift()!;
+      if (!this.#resetProperty(property, properties)) {
+        this.#registry.getStateTree().sendNodePropertySyncToServer(property);
       }
       /*
        * Do flush after each property update. There may be several properties
@@ -135,8 +135,8 @@ export class InitialPropertiesHandler {
     }
   }
 
-  private collectInitialProperties(id: number, properties: Map<number, Map<string, unknown>>): void {
-    const node = this.registry.getStateTree().getNode(id);
+  #collectInitialProperties(id: number, properties: Map<number, Map<string, unknown>>): void {
+    const node = this.#registry.getStateTree().getNode(id);
     if (node !== null && node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
       const map = new Map<string, unknown>();
       node

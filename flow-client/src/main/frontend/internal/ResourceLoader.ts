@@ -133,34 +133,34 @@ interface ResourceErrorHandler {
  * listeners. Mirrors ResourceLoader.java; composes the ResourceRegistry kernel.
  */
 export class ResourceLoader {
-  private readonly resources: ResourceRegistry;
+  readonly #resources: ResourceRegistry;
 
   constructor(errorHandler: ResourceErrorHandler, initFromDom: boolean) {
-    this.resources = new ResourceRegistry(errorHandler);
+    this.#resources = new ResourceRegistry(errorHandler);
     if (initFromDom) {
-      this.initLoadedResourcesFromDom();
+      this.#initLoadedResourcesFromDom();
     }
   }
 
-  private makeEvent(resourceData: string): ResourceLoadEvent {
+  #makeEvent(resourceData: string): ResourceLoadEvent {
     return { getResourceLoader: () => this, getResourceData: () => resourceData };
   }
 
   // Marks scripts/stylesheets already present in the document as loaded.
-  private initLoadedResourcesFromDom(): void {
+  #initLoadedResourcesFromDom(): void {
     for (const script of Array.from(document.getElementsByTagName('script'))) {
       if (script.src) {
-        this.resources.markLoaded(script.src);
+        this.#resources.markLoaded(script.src);
       }
     }
     for (const link of Array.from(document.getElementsByTagName('link'))) {
       const rel = link.rel?.toLowerCase();
       const href = link.href;
       if (rel === 'stylesheet' && href) {
-        this.resources.markLoaded(href);
+        this.#resources.markLoaded(href);
         const dependencyId = link.getAttribute('data-id');
         if (dependencyId) {
-          this.resources.registerDependencyId(dependencyId, href);
+          this.#resources.registerDependencyId(dependencyId, href);
         }
       }
     }
@@ -176,12 +176,12 @@ export class ResourceLoader {
     type = 'text/javascript'
   ): void {
     const url = getAbsoluteUrl(scriptUrl);
-    const event = this.makeEvent(url);
-    if (this.resources.isLoaded(url)) {
+    const event = this.#makeEvent(url);
+    if (this.#resources.isLoaded(url)) {
       resourceLoadListener?.onLoad(event);
       return;
     }
-    if (this.resources.addListener(url, resourceLoadListener)) {
+    if (this.#resources.addListener(url, resourceLoadListener)) {
       const scriptTag = document.createElement('script');
       scriptTag.src = url;
       scriptTag.type = type;
@@ -189,8 +189,8 @@ export class ResourceLoader {
       scriptTag.defer = defer;
       addOnloadHandler(
         scriptTag,
-        () => this.resources.fireLoad(event),
-        () => this.resources.fireError(event)
+        () => this.#resources.fireLoad(event),
+        () => this.#resources.fireError(event)
       );
       document.head.appendChild(scriptTag);
     }
@@ -208,19 +208,19 @@ export class ResourceLoader {
 
   /** Inlines a script's contents, notifying the listener when loaded (deduped by contents). */
   inlineScript(scriptContents: string, resourceLoadListener: ResourceLoadListener | null): void {
-    const event = this.makeEvent(scriptContents);
-    if (this.resources.isLoaded(scriptContents)) {
+    const event = this.#makeEvent(scriptContents);
+    if (this.#resources.isLoaded(scriptContents)) {
       resourceLoadListener?.onLoad(event);
       return;
     }
-    if (this.resources.addListener(scriptContents, resourceLoadListener)) {
+    if (this.#resources.addListener(scriptContents, resourceLoadListener)) {
       const scriptElement = document.createElement('script');
       scriptElement.textContent = scriptContents;
       scriptElement.type = 'text/javascript';
       addOnloadHandler(
         scriptElement,
-        () => this.resources.fireLoad(event),
-        () => this.resources.fireError(event)
+        () => this.#resources.fireLoad(event),
+        () => this.#resources.fireError(event)
       );
       document.head.appendChild(scriptElement);
     }
@@ -228,7 +228,7 @@ export class ResourceLoader {
 
   /** Loads a dynamic import via a JS expression returning a Promise. */
   loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
-    const event = this.makeEvent(expression);
+    const event = this.#makeEvent(expression);
     const fn = new Function(expression) as () => unknown;
     runPromiseExpression(
       expression,
@@ -246,14 +246,14 @@ export class ResourceLoader {
   ): void {
     const url = getAbsoluteUrl(stylesheetUrl);
     if (dependencyId !== null) {
-      this.resources.registerDependencyId(dependencyId, url);
+      this.#resources.registerDependencyId(dependencyId, url);
     }
-    const event = this.makeEvent(url);
-    if (this.resources.isLoaded(url)) {
+    const event = this.#makeEvent(url);
+    if (this.#resources.isLoaded(url)) {
       resourceLoadListener?.onLoad(event);
       return;
     }
-    if (this.resources.addListener(url, resourceLoadListener)) {
+    if (this.#resources.addListener(url, resourceLoadListener)) {
       const linkElement = document.createElement('link');
       linkElement.rel = 'stylesheet';
       linkElement.type = 'text/css';
@@ -264,7 +264,7 @@ export class ResourceLoader {
 
       if (BrowserInfo.get().isSafariOrIOS()) {
         // Safari fires no events for link elements; poll the stylesheet rules.
-        this.pollStylesheet(url, event);
+        this.#pollStylesheet(url, event);
       } else {
         addOnloadHandler(
           linkElement,
@@ -274,40 +274,40 @@ export class ResourceLoader {
             if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE() || BrowserInfo.get().isEdge()) {
               // Error if there's an empty stylesheet (typically a 404).
               if (getStyleSheetLength(url) === 0) {
-                this.resources.fireError(event);
+                this.#resources.fireError(event);
                 return;
               }
             }
-            this.resources.fireLoad(event);
+            this.#resources.fireLoad(event);
           },
-          () => this.resources.fireError(event)
+          () => this.#resources.fireError(event)
         );
         if (BrowserInfo.get().isOpera()) {
           // Opera never fires onerror; assume error if not loaded within 5s.
           setTimeout(() => {
-            if (!this.resources.isLoaded(url)) {
-              this.resources.fireError(event);
+            if (!this.#resources.isLoaded(url)) {
+              this.#resources.fireError(event);
             }
           }, 5000);
         }
       }
-      this.addInHeadBeforeComment(linkElement, 'Stylesheet end');
+      this.#addInHeadBeforeComment(linkElement, 'Stylesheet end');
     }
   }
 
   // Polls a Safari/iOS stylesheet's rule count to detect load/error.
-  private pollStylesheet(url: string, event: ResourceLoadEvent): void {
+  #pollStylesheet(url: string, event: ResourceLoadEvent): void {
     const start = performance.now();
     const handle = setInterval(() => {
       const styleSheetLength = getStyleSheetLength(url);
       if (styleSheetLength > 0) {
-        this.resources.fireLoad(event);
+        this.#resources.fireLoad(event);
         clearInterval(handle);
       } else if (styleSheetLength === 0) {
         // "Loaded" empty sheet -> most likely a 404 error.
-        this.resources.fireError(event);
+        this.#resources.fireError(event);
       } else if (performance.now() - start > 60 * 1000) {
-        this.resources.fireError(event);
+        this.#resources.fireError(event);
         clearInterval(handle);
       }
     }, 10);
@@ -320,59 +320,55 @@ export class ResourceLoader {
     dependencyId: string | null = null
   ): void {
     if (dependencyId !== null) {
-      this.resources.registerDependencyId(dependencyId, styleSheetContents);
+      this.#resources.registerDependencyId(dependencyId, styleSheetContents);
     }
-    const event = this.makeEvent(styleSheetContents);
-    if (this.resources.isLoaded(styleSheetContents)) {
+    const event = this.#makeEvent(styleSheetContents);
+    if (this.#resources.isLoaded(styleSheetContents)) {
       resourceLoadListener?.onLoad(event);
       return;
     }
-    if (this.resources.addListener(styleSheetContents, resourceLoadListener)) {
+    if (this.#resources.addListener(styleSheetContents, resourceLoadListener)) {
       const styleElement = document.createElement('style');
       styleElement.textContent = styleSheetContents;
       styleElement.type = 'text/css';
       if (dependencyId !== null) {
         styleElement.setAttribute('data-id', dependencyId);
       }
-      this.addCssLoadHandler(styleSheetContents, event, styleElement);
-      this.addInHeadBeforeComment(styleElement, 'Stylesheet end');
+      this.#addCssLoadHandler(styleSheetContents, event, styleElement);
+      this.#addInHeadBeforeComment(styleElement, 'Stylesheet end');
     }
   }
 
-  private addCssLoadHandler(
-    styleSheetContents: string,
-    event: ResourceLoadEvent,
-    styleElement: HTMLStyleElement
-  ): void {
+  #addCssLoadHandler(styleSheetContents: string, event: ResourceLoadEvent, styleElement: HTMLStyleElement): void {
     if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
       // Safari and Opera fire no events for style elements; assume done after 5s.
       setTimeout(() => {
-        if (this.resources.isLoaded(styleSheetContents)) {
-          this.resources.fireLoad(event);
+        if (this.#resources.isLoaded(styleSheetContents)) {
+          this.#resources.fireLoad(event);
         } else {
-          this.resources.fireError(event);
+          this.#resources.fireError(event);
         }
       }, 5000);
     } else {
       addOnloadHandler(
         styleElement,
-        () => this.resources.fireLoad(event),
-        () => this.resources.fireError(event)
+        () => this.#resources.fireLoad(event),
+        () => this.#resources.fireError(event)
       );
     }
   }
 
   // Inserts an element into <head> before the comment with the given text, or
   // appends it (with a warning) if the comment is not found.
-  private addInHeadBeforeComment(element: Element, comment: string): void {
-    const commentNode = this.findCommentInHead(comment);
+  #addInHeadBeforeComment(element: Element, comment: string): void {
+    const commentNode = this.#findCommentInHead(comment);
     if (commentNode === null) {
       Console.error(`Expected to find a '${comment}' comment inside <head> but none was found. Appending instead.`);
     }
     document.head.insertBefore(element, commentNode);
   }
 
-  private findCommentInHead(comment: string): Node | null {
+  #findCommentInHead(comment: string): Node | null {
     for (const childNode of Array.from(document.head.childNodes)) {
       if (childNode.nodeType === Node.COMMENT_NODE && childNode.nodeValue === comment) {
         return childNode;
@@ -383,6 +379,6 @@ export class ResourceLoader {
 
   /** Clears a loaded resource (and its listeners) by its dependency id. */
   clearLoadedResourceById(dependencyId: string): void {
-    this.resources.clearLoadedResourceById(dependencyId);
+    this.#resources.clearLoadedResourceById(dependencyId);
   }
 }

@@ -48,13 +48,13 @@ export type StateChangeHandler = (event: StateChangeEvent) => void;
 
 /** Manages the lifecycle state of a UI; mirrors UILifecycle.java. */
 export class UILifecycle {
-  private state: UIState = UIState.INITIALIZING;
+  #state: UIState = UIState.INITIALIZING;
 
-  private readonly handlers = new Set<StateChangeHandler>();
+  readonly #handlers = new Set<StateChangeHandler>();
 
   /** The current lifecycle state. */
   getState(): UIState {
-    return this.state;
+    return this.#state;
   }
 
   /**
@@ -63,30 +63,30 @@ export class UILifecycle {
    * event.
    */
   setState(state: UIState): void {
-    if (ORDINAL[state] !== ORDINAL[this.state] + 1) {
-      throw new Error(`Tried to move from state ${this.state} to ${state} which is not allowed`);
+    if (ORDINAL[state] !== ORDINAL[this.#state] + 1) {
+      throw new Error(`Tried to move from state ${this.#state} to ${state} which is not allowed`);
     }
-    this.state = state;
+    this.#state = state;
     const event: StateChangeEvent = { getUiLifecycle: () => this };
-    this.handlers.forEach((handler) => handler(event));
+    this.#handlers.forEach((handler) => handler(event));
   }
 
   /** Whether the state is RUNNING. */
   isRunning(): boolean {
-    return this.state === UIState.RUNNING;
+    return this.#state === UIState.RUNNING;
   }
 
   /** Whether the state is TERMINATED. */
   isTerminated(): boolean {
-    return this.state === UIState.TERMINATED;
+    return this.#state === UIState.TERMINATED;
   }
 
   /** Adds a state-change handler, returning a remover. */
   addHandler(handler: StateChangeHandler): EventRemover {
-    this.handlers.add(handler);
+    this.#handlers.add(handler);
     return {
       remove: () => {
-        this.handlers.delete(handler);
+        this.#handlers.delete(handler);
       }
     };
   }
