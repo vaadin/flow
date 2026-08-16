@@ -21,7 +21,7 @@ import { assert } from './assert';
 
 /** Map of constant values received from the server; mirrors ConstantPool.java. */
 export class ConstantPool {
-  private readonly constants = new Map<string, unknown>();
+  readonly #constants = new Map<string, unknown>();
 
   /**
    * Imports new constants into this pool from a JSON object mapping constant
@@ -29,16 +29,16 @@ export class ConstantPool {
    */
   importFromJson(json: Record<string, unknown>): void {
     for (const key of Object.keys(json)) {
-      assert(!this.constants.has(key), 'ConstantPool already contains a value for the imported key');
+      assert(!this.#constants.has(key), 'ConstantPool already contains a value for the imported key');
       const value = json[key];
       assert(value !== null && value !== undefined, 'ConstantPool constant value must not be null');
-      this.constants.set(key, value);
+      this.#constants.set(key, value);
     }
   }
 
   /** Checks whether this constant pool contains a value for the given key. */
   has(key: string): boolean {
-    return this.constants.has(key);
+    return this.#constants.has(key);
   }
 
   /**
@@ -47,6 +47,6 @@ export class ConstantPool {
    * constants as typed values.
    */
   get<T>(key: string): T {
-    return this.constants.get(key) as T;
+    return this.#constants.get(key) as T;
   }
 }
