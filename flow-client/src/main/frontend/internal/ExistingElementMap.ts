@@ -20,34 +20,34 @@
 
 /** Bidirectional mapping between server-side node ids and existing elements. */
 export class ExistingElementMap {
-  private readonly elementToId = new Map<Element, number>();
+  readonly #elementToId = new Map<Element, number>();
 
   // Indexed by id; mirrors the Java JsArray used as a Map<Integer, Element>.
-  private readonly idToElement: Array<Element | null> = [];
+  readonly #idToElement: Array<Element | null> = [];
 
   /** Gets the element added under the given id, or null if there is none. */
   getElement(id: number): Element | null {
-    return this.idToElement[id] ?? null;
+    return this.#idToElement[id] ?? null;
   }
 
   /** Gets the id the given element was added under, or null if there is none. */
   getId(element: Element): number | null {
-    const id = this.elementToId.get(element);
+    const id = this.#elementToId.get(element);
     return id === undefined ? null : id;
   }
 
   /** Removes the id and its associated element from the mapping. */
   remove(id: number): void {
-    const element = this.idToElement[id];
+    const element = this.#idToElement[id];
     if (element !== null && element !== undefined) {
-      this.idToElement[id] = null;
-      this.elementToId.delete(element);
+      this.#idToElement[id] = null;
+      this.#elementToId.delete(element);
     }
   }
 
   /** Adds the id and the element to the mapping. */
   add(id: number, element: Element): void {
-    this.idToElement[id] = element;
-    this.elementToId.set(element, id);
+    this.#idToElement[id] = element;
+    this.#elementToId.set(element, id);
   }
 }
