@@ -25,188 +25,188 @@ import { Console } from './Console';
 
 /** Holds the bootstrap configuration of a UI; mirrors ApplicationConfiguration.java. */
 export class ApplicationConfiguration {
-  private applicationId = '';
+  #applicationId = '';
 
-  private contextRootUrl = '';
+  #contextRootUrl = '';
 
-  private serviceUrl = '';
+  #serviceUrl = '';
 
-  private uiId = 0;
+  #uiId = 0;
 
-  private sessionExpiredError: unknown = null;
+  #sessionExpiredError: unknown = null;
 
-  private heartbeatInterval = 0;
+  #heartbeatInterval = 0;
 
-  private maxMessageSuspendTimeout = 0;
+  #maxMessageSuspendTimeout = 0;
 
-  private productionMode = false;
+  #productionMode = false;
 
-  private requestTiming = false;
+  #requestTiming = false;
 
-  private webComponentMode = false;
+  #webComponentMode = false;
 
-  private servletVersion = '';
+  #servletVersion = '';
 
-  private atmosphereVersion = '';
+  #atmosphereVersion = '';
 
-  private atmosphereJSVersion = '';
+  #atmosphereJSVersion = '';
 
   // Java leaves these null when absent from the bootstrap config; we default to
   // [] / '' to keep the published client API non-null (clientApi types
   // getExportedWebComponents() as string[]) and to avoid an NPE in consumers
   // that iterate exportedWebComponents (e.g. SystemErrorHandler).
-  private exportedWebComponents: string[] = [];
+  #exportedWebComponents: string[] = [];
 
-  private devToolsEnabled = false;
+  #devToolsEnabled = false;
 
-  private liveReloadUrl = '';
+  #liveReloadUrl = '';
 
-  private liveReloadBackend = '';
+  #liveReloadBackend = '';
 
-  private springBootLiveReloadPort = '';
+  #springBootLiveReloadPort = '';
 
   getApplicationId(): string {
-    return this.applicationId;
+    return this.#applicationId;
   }
 
   setApplicationId(applicationId: string): void {
-    this.applicationId = applicationId;
+    this.#applicationId = applicationId;
   }
 
   getServiceUrl(): string {
-    return this.serviceUrl;
+    return this.#serviceUrl;
   }
 
   setServiceUrl(serviceUrl: string): void {
-    this.serviceUrl = serviceUrl;
+    this.#serviceUrl = serviceUrl;
   }
 
   getContextRootUrl(): string {
-    return this.contextRootUrl;
+    return this.#contextRootUrl;
   }
 
   setContextRootUrl(contextRootUrl: string): void {
-    this.contextRootUrl = contextRootUrl;
+    this.#contextRootUrl = contextRootUrl;
   }
 
   isWebComponentMode(): boolean {
-    return this.webComponentMode;
+    return this.#webComponentMode;
   }
 
   setWebComponentMode(mode: boolean): void {
-    this.webComponentMode = mode;
+    this.#webComponentMode = mode;
   }
 
   getUIId(): number {
-    return this.uiId;
+    return this.#uiId;
   }
 
   setUIId(uiId: number): void {
-    this.uiId = uiId;
+    this.#uiId = uiId;
   }
 
   getHeartbeatInterval(): number {
-    return this.heartbeatInterval;
+    return this.#heartbeatInterval;
   }
 
   setHeartbeatInterval(heartbeatInterval: number): void {
-    this.heartbeatInterval = heartbeatInterval;
+    this.#heartbeatInterval = heartbeatInterval;
   }
 
   getMaxMessageSuspendTimeout(): number {
-    return this.maxMessageSuspendTimeout;
+    return this.#maxMessageSuspendTimeout;
   }
 
   setMaxMessageSuspendTimeout(maxMessageSuspendTimeout: number): void {
-    this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
+    this.#maxMessageSuspendTimeout = maxMessageSuspendTimeout;
   }
 
   getSessionExpiredError(): unknown {
-    return this.sessionExpiredError;
+    return this.#sessionExpiredError;
   }
 
   setSessionExpiredError(sessionExpiredError: unknown): void {
-    this.sessionExpiredError = sessionExpiredError;
+    this.#sessionExpiredError = sessionExpiredError;
   }
 
   getServletVersion(): string {
-    return this.servletVersion;
+    return this.#servletVersion;
   }
 
   setServletVersion(servletVersion: string): void {
-    this.servletVersion = servletVersion;
+    this.#servletVersion = servletVersion;
   }
 
   getAtmosphereVersion(): string {
-    return this.atmosphereVersion;
+    return this.#atmosphereVersion;
   }
 
   setAtmosphereVersion(atmosphereVersion: string): void {
-    this.atmosphereVersion = atmosphereVersion;
+    this.#atmosphereVersion = atmosphereVersion;
   }
 
   getAtmosphereJSVersion(): string {
-    return this.atmosphereJSVersion;
+    return this.#atmosphereJSVersion;
   }
 
   setAtmosphereJSVersion(atmosphereJSVersion: string): void {
-    this.atmosphereJSVersion = atmosphereJSVersion;
+    this.#atmosphereJSVersion = atmosphereJSVersion;
   }
 
   isProductionMode(): boolean {
-    return this.productionMode;
+    return this.#productionMode;
   }
 
   setProductionMode(productionMode: boolean): void {
-    this.productionMode = productionMode;
+    this.#productionMode = productionMode;
     Console.setProductionMode(productionMode);
   }
 
   isRequestTiming(): boolean {
-    return this.requestTiming;
+    return this.#requestTiming;
   }
 
   setRequestTiming(requestTiming: boolean): void {
-    this.requestTiming = requestTiming;
+    this.#requestTiming = requestTiming;
   }
 
   getExportedWebComponents(): string[] {
-    return this.exportedWebComponents;
+    return this.#exportedWebComponents;
   }
 
   setExportedWebComponents(exportedWebComponents: string[]): void {
-    this.exportedWebComponents = exportedWebComponents;
+    this.#exportedWebComponents = exportedWebComponents;
   }
 
   isDevToolsEnabled(): boolean {
-    return this.devToolsEnabled;
+    return this.#devToolsEnabled;
   }
 
   setDevToolsEnabled(devToolsEnabled: boolean): void {
-    this.devToolsEnabled = devToolsEnabled;
+    this.#devToolsEnabled = devToolsEnabled;
   }
 
   getLiveReloadUrl(): string {
-    return this.liveReloadUrl;
+    return this.#liveReloadUrl;
   }
 
   setLiveReloadUrl(liveReloadUrl: string): void {
-    this.liveReloadUrl = liveReloadUrl;
+    this.#liveReloadUrl = liveReloadUrl;
   }
 
   getLiveReloadBackend(): string {
-    return this.liveReloadBackend;
+    return this.#liveReloadBackend;
   }
 
   setLiveReloadBackend(liveReloadBackend: string): void {
-    this.liveReloadBackend = liveReloadBackend;
+    this.#liveReloadBackend = liveReloadBackend;
   }
 
   getSpringBootLiveReloadPort(): string {
-    return this.springBootLiveReloadPort;
+    return this.#springBootLiveReloadPort;
   }
 
   setSpringBootLiveReloadPort(springBootLiveReloadPort: string): void {
-    this.springBootLiveReloadPort = springBootLiveReloadPort;
+    this.#springBootLiveReloadPort = springBootLiveReloadPort;
   }
 }
