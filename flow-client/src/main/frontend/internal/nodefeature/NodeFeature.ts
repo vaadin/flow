@@ -31,21 +31,21 @@ export interface NodeFeatureNode extends MapPropertyNode {
 
 /** Base class for all state node features; mirrors NodeFeature.java. */
 export abstract class NodeFeature {
-  private readonly id: number;
+  readonly #id: number;
 
-  private readonly node: NodeFeatureNode;
+  readonly #node: NodeFeatureNode;
 
   constructor(id: number, node: NodeFeatureNode) {
-    this.id = id;
-    this.node = node;
+    this.#id = id;
+    this.#node = node;
   }
 
   getId(): number {
-    return this.id;
+    return this.#id;
   }
 
   getNode(): NodeFeatureNode {
-    return this.node;
+    return this.#node;
   }
 
   abstract getDebugJson(): JsonValue;

@@ -35,14 +35,14 @@ export interface ReactiveValue {
 
 /** Base reactive change event carrying its source; mirrors ReactiveValueChangeEvent. */
 export class ReactiveValueChangeEvent {
-  private readonly source: ReactiveValue;
+  readonly #source: ReactiveValue;
 
   constructor(source: ReactiveValue) {
-    this.source = source;
+    this.#source = source;
   }
 
   getSource(): ReactiveValue {
-    return this.source;
+    return this.#source;
   }
 }
 
@@ -51,14 +51,14 @@ export type ReactiveValueChangeListener = (event: ReactiveValueChangeEvent) => v
 
 /** Event fired when a computation is invalidated; mirrors InvalidateEvent. */
 export class InvalidateEvent {
-  private readonly source: Computation;
+  readonly #source: Computation;
 
   constructor(source: Computation) {
-    this.source = source;
+    this.#source = source;
   }
 
   getSource(): Computation {
-    return this.source;
+    return this.#source;
   }
 }
 
@@ -77,49 +77,49 @@ let flushing = false;
  * by it changes. Mirrors Computation.java (in its decoupled, callback form).
  */
 export class Computation {
-  private invalidated = false;
+  #invalidated = false;
 
-  private stopped = false;
+  #stopped = false;
 
-  private readonly dependencies: EventRemover[] = [];
+  readonly #dependencies: EventRemover[] = [];
 
-  private invalidateListeners = new Set<InvalidateListener>();
+  #invalidateListeners = new Set<InvalidateListener>();
 
-  private readonly recomputeCommand: () => void;
+  readonly #recomputeCommand: () => void;
 
   constructor(recomputeCommand: () => void) {
-    this.recomputeCommand = recomputeCommand;
+    this.#recomputeCommand = recomputeCommand;
     // Make sure a recompute is scheduled
-    this.invalidate();
+    this.#invalidate();
   }
 
   addDependency(dependency: ReactiveValue): void {
-    if (!this.stopped) {
+    if (!this.#stopped) {
       const remover = dependency.addReactiveValueChangeListener((event) => this.onValueChange(event));
-      this.dependencies.push(remover);
+      this.#dependencies.push(remover);
     }
   }
 
   onValueChange(_changeEvent: ReactiveValueChangeEvent): void {
-    if (this.invalidated || this.stopped) {
+    if (this.#invalidated || this.#stopped) {
       return;
     }
-    this.invalidate();
+    this.#invalidate();
   }
 
-  private invalidate(): void {
-    this.invalidated = true;
+  #invalidate(): void {
+    this.#invalidated = true;
 
-    this.clearDependencies();
+    this.#clearDependencies();
 
-    if (!this.stopped) {
+    if (!this.#stopped) {
       Reactive.addFlushListener(() => this.recompute());
     }
 
     // Fire invalidate events
-    if (this.invalidateListeners.size !== 0) {
-      const oldListeners = this.invalidateListeners;
-      this.invalidateListeners = new Set();
+    if (this.#invalidateListeners.size !== 0) {
+      const oldListeners = this.#invalidateListeners;
+      this.#invalidateListeners = new Set();
 
       const invalidateEvent = new InvalidateEvent(this);
 
@@ -127,42 +127,42 @@ export class Computation {
     }
   }
 
-  private clearDependencies(): void {
-    while (this.dependencies.length > 0) {
-      const remover = this.dependencies.shift();
+  #clearDependencies(): void {
+    while (this.#dependencies.length > 0) {
+      const remover = this.#dependencies.shift();
       remover?.remove();
     }
   }
 
   stop(): void {
-    this.stopped = true;
+    this.#stopped = true;
 
-    this.invalidate();
+    this.#invalidate();
 
     // Prevent firing more events
-    this.invalidateListeners.clear();
+    this.#invalidateListeners.clear();
 
     // Release memory
-    this.clearDependencies();
+    this.#clearDependencies();
   }
 
   isInvalidated(): boolean {
-    return this.invalidated;
+    return this.#invalidated;
   }
 
   recompute(): void {
-    if (this.invalidated && !this.stopped) {
+    if (this.#invalidated && !this.#stopped) {
       try {
-        Reactive.runWithComputation(this, () => this.recomputeCommand());
+        Reactive.runWithComputation(this, () => this.#recomputeCommand());
       } finally {
-        this.invalidated = false;
+        this.#invalidated = false;
       }
     }
   }
 
   onNextInvalidate(listener: InvalidateListener): void {
-    if (!this.stopped) {
-      this.invalidateListeners.add(listener);
+    if (!this.#stopped) {
+      this.#invalidateListeners.add(listener);
     }
   }
 }
@@ -257,29 +257,29 @@ export const Reactive = {
  * tracking. Mirrors ReactiveEventRouter.java (in its decoupled, callback form).
  */
 export class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
-  private readonly listeners = new Set<L>();
+  readonly #listeners = new Set<L>();
 
-  private readonly reactiveValue: ReactiveValue;
+  readonly #reactiveValue: ReactiveValue;
 
-  private readonly wrapper: (listener: ReactiveValueChangeListener) => L;
+  readonly #wrapper: (listener: ReactiveValueChangeListener) => L;
 
-  private readonly dispatcher: (listener: L, event: E) => void;
+  readonly #dispatcher: (listener: L, event: E) => void;
 
   constructor(
     reactiveValue: ReactiveValue,
     wrapper: (listener: ReactiveValueChangeListener) => L,
     dispatcher: (listener: L, event: E) => void
   ) {
-    this.reactiveValue = reactiveValue;
-    this.wrapper = wrapper;
-    this.dispatcher = dispatcher;
+    this.#reactiveValue = reactiveValue;
+    this.#wrapper = wrapper;
+    this.#dispatcher = dispatcher;
   }
 
   addListener(listener: L): EventRemover {
-    this.listeners.add(listener);
+    this.#listeners.add(listener);
     const remover: EventRemover = {
       remove: () => {
-        this.listeners.delete(listener);
+        this.#listeners.delete(listener);
       }
     };
 
@@ -292,23 +292,23 @@ export class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
   }
 
   addReactiveListener(reactiveValueChangeListener: ReactiveValueChangeListener): EventRemover {
-    return this.addListener(this.wrapper(reactiveValueChangeListener));
+    return this.addListener(this.#wrapper(reactiveValueChangeListener));
   }
 
   fireEvent(event: E): void {
-    const copy = new Set(this.listeners);
-    copy.forEach((listener) => this.dispatcher(listener, event));
+    const copy = new Set(this.#listeners);
+    copy.forEach((listener) => this.#dispatcher(listener, event));
     Reactive.notifyEventCollectors(event);
   }
 
   registerRead(): void {
     const computation = Reactive.getCurrentComputation();
     if (computation !== null) {
-      computation.addDependency(this.reactiveValue);
+      computation.addDependency(this.#reactiveValue);
     }
   }
 
   getReactiveValue(): ReactiveValue {
-    return this.reactiveValue;
+    return this.#reactiveValue;
   }
 }

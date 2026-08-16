@@ -28,20 +28,20 @@ import { NodeFeature, type JsonValue } from './NodeFeature';
 
 /** Fired when a list's structure changes; mirrors ListSpliceEvent. */
 export class ListSpliceEvent extends ReactiveValueChangeEvent {
-  private readonly index: number;
+  readonly #index: number;
 
-  private readonly remove: unknown[];
+  readonly #remove: unknown[];
 
-  private readonly add: unknown[];
+  readonly #add: unknown[];
 
-  private readonly clear: boolean;
+  readonly #clear: boolean;
 
   constructor(source: NodeList, details: { index: number; remove: unknown[]; add: unknown[]; clear: boolean }) {
     super(source);
-    this.index = details.index;
-    this.remove = details.remove;
-    this.add = details.add;
-    this.clear = details.clear;
+    this.#index = details.index;
+    this.#remove = details.remove;
+    this.#add = details.add;
+    this.#clear = details.clear;
   }
 
   override getSource(): NodeList {
@@ -49,19 +49,19 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
   }
 
   getIndex(): number {
-    return this.index;
+    return this.#index;
   }
 
   getRemove(): unknown[] {
-    return this.remove;
+    return this.#remove;
   }
 
   getAdd(): unknown[] {
-    return this.add;
+    return this.#add;
   }
 
   isClear(): boolean {
-    return this.clear;
+    return this.#clear;
   }
 }
 
@@ -70,27 +70,27 @@ export type ListSpliceListener = (event: ListSpliceEvent) => void;
 
 /** A state node feature that structures data as a list; mirrors NodeList.java. */
 export class NodeList extends NodeFeature implements ReactiveValue {
-  private readonly values: unknown[] = [];
+  readonly #values: unknown[] = [];
 
-  private hasBeenClearedState = false;
+  #hasBeenClearedState = false;
 
-  private readonly eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
+  readonly #eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
     this,
     (reactiveValueChangeListener) => reactiveValueChangeListener,
     (listener, event) => listener(event)
   );
 
   length(): number {
-    this.eventRouter.registerRead();
-    return this.values.length;
+    this.#eventRouter.registerRead();
+    return this.#values.length;
   }
 
   get(index: number): unknown {
-    return this.values[index];
+    return this.#values[index];
   }
 
   set(index: number, value: unknown): void {
-    this.values[index] = value;
+    this.#values[index] = value;
   }
 
   add(index: number, item: unknown): void {
@@ -98,19 +98,19 @@ export class NodeList extends NodeFeature implements ReactiveValue {
   }
 
   splice(index: number, remove: number, add?: unknown[]): void {
-    const removed = add === undefined ? this.values.splice(index, remove) : this.values.splice(index, remove, ...add);
-    this.eventRouter.fireEvent(new ListSpliceEvent(this, { index, remove: removed, add: add ?? [], clear: false }));
+    const removed = add === undefined ? this.#values.splice(index, remove) : this.#values.splice(index, remove, ...add);
+    this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index, remove: removed, add: add ?? [], clear: false }));
   }
 
   clear(): void {
-    this.hasBeenClearedState = true;
-    const removed = this.values.splice(0, this.values.length);
-    this.eventRouter.fireEvent(new ListSpliceEvent(this, { index: 0, remove: removed, add: [], clear: true }));
+    this.#hasBeenClearedState = true;
+    const removed = this.#values.splice(0, this.#values.length);
+    this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index: 0, remove: removed, add: [], clear: true }));
   }
 
   override getDebugJson(): JsonValue {
     const json: JsonValue[] = [];
-    for (const value of this.values) {
+    for (const value of this.#values) {
       json.push(this.getAsDebugJson(value));
     }
     return json;
@@ -118,26 +118,26 @@ export class NodeList extends NodeFeature implements ReactiveValue {
 
   override convert(converter: (value: unknown) => JsonValue): JsonValue {
     const json: JsonValue[] = [];
-    for (const value of this.values) {
+    for (const value of this.#values) {
       json.push(converter(value));
     }
     return json;
   }
 
   addSpliceListener(listener: ListSpliceListener): EventRemover {
-    return this.eventRouter.addListener(listener);
+    return this.#eventRouter.addListener(listener);
   }
 
   addReactiveValueChangeListener(reactiveValueChangeListener: ReactiveValueChangeListener): EventRemover {
-    return this.eventRouter.addReactiveListener(reactiveValueChangeListener);
+    return this.#eventRouter.addReactiveListener(reactiveValueChangeListener);
   }
 
   forEach(callback: (value: unknown) => void): void {
-    this.eventRouter.registerRead();
-    this.values.forEach((value) => callback(value));
+    this.#eventRouter.registerRead();
+    this.#values.forEach((value) => callback(value));
   }
 
   hasBeenCleared(): boolean {
-    return this.hasBeenClearedState;
+    return this.#hasBeenClearedState;
   }
 }
