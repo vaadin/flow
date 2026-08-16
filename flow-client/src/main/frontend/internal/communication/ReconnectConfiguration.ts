@@ -71,12 +71,21 @@ export class ReconnectConfiguration {
       .getProperty(key);
   }
 
-  /** The text to show in the reconnect dialog (deprecated configuration). */
+  /**
+   * The text to show in the reconnect dialog.
+   *
+   * @deprecated The API for configuring the connection indicator has changed.
+   */
   getDialogText(): string | null {
     return (this.#getProperty(DIALOG_TEXT_KEY).getValue() as string | null) ?? null;
   }
 
-  /** The text to show when no longer trying to reconnect (deprecated configuration). */
+  /**
+   * The text to show in the reconnect dialog when no longer trying to
+   * reconnect.
+   *
+   * @deprecated The API for configuring the connection indicator has changed.
+   */
   getDialogTextGaveUp(): string | null {
     return (this.#getProperty(DIALOG_TEXT_GAVE_UP_KEY).getValue() as string | null) ?? null;
   }
