@@ -140,21 +140,21 @@ interface ExecuteJsRegistry {
 
 /** Executes server-sent JavaScript invocations against the live tree; mirrors ExecuteJavaScriptProcessor.java. */
 export class ExecuteJavaScriptProcessor {
-  private readonly registry: ExecuteJsRegistry;
+  readonly #registry: ExecuteJsRegistry;
 
   constructor(registry: ExecuteJsRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Runs each invocation (an array of parameters followed by the JS expression). */
   execute(invocations: unknown[][]): void {
     for (const invocation of invocations) {
-      this.handleInvocation(invocation);
+      this.#handleInvocation(invocation);
     }
   }
 
-  private handleInvocation(invocation: unknown[]): void {
-    const tree = this.registry.getStateTree();
+  #handleInvocation(invocation: unknown[]): void {
+    const tree = this.#registry.getStateTree();
     // Last item is the script, the rest are parameters.
     const parameterCount = invocation.length - 1;
 
@@ -172,10 +172,10 @@ export class ExecuteJavaScriptProcessor {
 
       const stateNode = decodeStateNode(tree, parameterJson);
       if (stateNode !== null) {
-        if (this.isVirtualChildAwaitingInitialization(stateNode) || !this.isBound(stateNode)) {
+        if (this.#isVirtualChildAwaitingInitialization(stateNode) || !this.#isBound(stateNode)) {
           // Defer until the node's DOM is set, then retry the whole invocation.
           stateNode.addDomNodeSetListener(() => {
-            Reactive.addPostFlushListener(() => this.handleInvocation(invocation));
+            Reactive.addPostFlushListener(() => this.#handleInvocation(invocation));
             return true;
           });
           return;
@@ -185,15 +185,11 @@ export class ExecuteJavaScriptProcessor {
     }
 
     parameterNamesAndCode.push(invocation[invocation.length - 1] as string);
-    this.invoke(parameterNamesAndCode, parameters, nodeParameters);
+    this.#invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
-  private invoke(
-    parameterNamesAndCode: string[],
-    parameters: unknown[],
-    nodeParameters: Map<unknown, StateNode>
-  ): void {
-    const configuration = this.registry.getApplicationConfiguration();
+  #invoke(parameterNamesAndCode: string[], parameters: unknown[], nodeParameters: Map<unknown, StateNode>): void {
+    const configuration = this.#registry.getApplicationConfiguration();
     const getNode = (element: unknown): unknown => {
       const node = nodeParameters.get(element);
       if (node === undefined) {
@@ -201,7 +197,7 @@ export class ExecuteJavaScriptProcessor {
       }
       return node;
     };
-    const context = getContextExecutionObject(configuration.getApplicationId(), this.registry, {
+    const context = getContextExecutionObject(configuration.getApplicationId(), this.#registry, {
       getNode,
       attachExistingElement: (node, previousSibling, tagName, id) =>
         attachExistingElement(node as never, previousSibling as Element | null, tagName as string, id as number),
@@ -209,7 +205,7 @@ export class ExecuteJavaScriptProcessor {
       registerUpdatableModelProperties: (node, properties) =>
         registerUpdatableModelProperties(node as never, properties as string[]),
       stopApplication: () => {
-        const lifecycle = this.registry.getUILifecycle();
+        const lifecycle = this.#registry.getUILifecycle();
         if (!lifecycle.isTerminated()) {
           lifecycle.setState(UIState.TERMINATED);
         }
@@ -223,18 +219,18 @@ export class ExecuteJavaScriptProcessor {
 
   // A node is bound once it has a DOM node that does not need rebinding, and so
   // is each of its ancestors.
-  private isBound(node: StateNode): boolean {
+  #isBound(node: StateNode): boolean {
     const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
     const parent = node.getParent();
     if (!isNodeBound || parent === null) {
       return isNodeBound;
     }
-    return this.isBound(parent);
+    return this.#isBound(parent);
   }
 
   // A virtual child injected by id / as a sub-template is awaiting initialization
   // until its DOM node is created.
-  private isVirtualChildAwaitingInitialization(node: StateNode): boolean {
+  #isVirtualChildAwaitingInitialization(node: StateNode): boolean {
     if (node.getDomNode() !== null || node.getTree().getNode(node.getId()) === null) {
       return false;
     }

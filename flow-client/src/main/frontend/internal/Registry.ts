@@ -27,19 +27,19 @@ export type ServiceKey = unknown;
 
 /** A holder of singleton services looked up by key; mirrors Registry.java's container. */
 export class Registry {
-  private readonly lookupTable = new Map<ServiceKey, unknown>();
+  readonly #lookupTable = new Map<ServiceKey, unknown>();
 
-  private readonly resettable = new Map<ServiceKey, () => unknown>();
+  readonly #resettable = new Map<ServiceKey, () => unknown>();
 
   /**
    * Stores a (final) instance of the given type. Throws if one is already
    * registered. Mirrors Registry.set(Class, Object).
    */
   protected set<T>(type: ServiceKey, instance: T): void {
-    if (this.lookupTable.has(type)) {
+    if (this.#lookupTable.has(type)) {
       throw new Error('Registry already has a class of this type registered');
     }
-    this.lookupTable.set(type, instance);
+    this.#lookupTable.set(type, instance);
   }
 
   /**
@@ -49,7 +49,7 @@ export class Registry {
    */
   protected setResettable<T>(type: ServiceKey, instanceSupplier: () => T): void {
     this.set(type, instanceSupplier());
-    this.resettable.set(type, instanceSupplier);
+    this.#resettable.set(type, instanceSupplier);
   }
 
   /**
@@ -57,22 +57,22 @@ export class Registry {
    * registered. Mirrors Registry.get(Class).
    */
   protected get<T>(type: ServiceKey): T {
-    if (!this.lookupTable.has(type)) {
+    if (!this.#lookupTable.has(type)) {
       throw new Error('Tried to look up a type but no instance has been registered');
     }
-    return this.lookupTable.get(type) as T;
+    return this.#lookupTable.get(type) as T;
   }
 
   /** Whether an instance is registered for the given type. */
   protected has(type: ServiceKey): boolean {
-    return this.lookupTable.has(type);
+    return this.#lookupTable.has(type);
   }
 
   /** Deletes and recreates the resettable singletons. Mirrors Registry.reset. */
   reset(): void {
-    this.resettable.forEach((supplier, key) => {
-      this.lookupTable.delete(key);
-      this.lookupTable.set(key, supplier());
+    this.#resettable.forEach((supplier, key) => {
+      this.#lookupTable.delete(key);
+      this.#lookupTable.set(key, supplier());
     });
   }
 }
