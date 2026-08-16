@@ -29,14 +29,14 @@ import { NodeMap } from './nodefeature/NodeMap';
 
 /** Fired when a node is unregistered; mirrors NodeUnregisterEvent. */
 export class NodeUnregisterEvent {
-  private readonly node: StateNode;
+  readonly #node: StateNode;
 
   constructor(node: StateNode) {
-    this.node = node;
+    this.#node = node;
   }
 
   getNode(): StateNode {
-    return this.node;
+    return this.#node;
   }
 }
 
@@ -55,61 +55,61 @@ type Constructor<T> = abstract new (...args: never[]) => T;
 
 /** A client-side representation of a server-side state node; mirrors StateNode.java. */
 export class StateNode implements NodeFeatureNode {
-  private readonly tree: StateTree;
+  readonly #tree: StateTree;
 
-  private readonly id: number;
+  readonly #id: number;
 
-  private parent: StateNode | null = null;
+  #parent: StateNode | null = null;
 
-  private unregistered = false;
+  #unregistered = false;
 
-  private readonly features = new Map<number, NodeFeature>();
+  readonly #features = new Map<number, NodeFeature>();
 
-  private readonly unregisterListeners = new Set<NodeUnregisterListener>();
+  readonly #unregisterListeners = new Set<NodeUnregisterListener>();
 
-  private readonly domNodeSetListeners = new Set<(node: StateNode) => boolean>();
+  readonly #domNodeSetListeners = new Set<(node: StateNode) => boolean>();
 
-  private readonly nodeData = new Map<unknown, unknown>();
+  readonly #nodeData = new Map<unknown, unknown>();
 
-  private domNode: Node | null = null;
+  #domNode: Node | null = null;
 
   constructor(id: number, tree: StateTree) {
-    this.id = id;
-    this.tree = tree;
+    this.#id = id;
+    this.#tree = tree;
   }
 
   getTree(): StateTree {
-    return this.tree;
+    return this.#tree;
   }
 
   getId(): number {
-    return this.id;
+    return this.#id;
   }
 
   getList(id: number): NodeList {
-    let feature = this.features.get(id);
+    let feature = this.#features.get(id);
     if (feature === undefined) {
       feature = new NodeList(id, this);
-      this.features.set(id, feature);
+      this.#features.set(id, feature);
     }
     return feature as NodeList;
   }
 
   getMap(id: number): NodeMap {
-    let feature = this.features.get(id);
+    let feature = this.#features.get(id);
     if (feature === undefined) {
       feature = new NodeMap(id, this);
-      this.features.set(id, feature);
+      this.#features.set(id, feature);
     }
     return feature as NodeMap;
   }
 
   hasFeature(id: number): boolean {
-    return this.features.has(id);
+    return this.#features.has(id);
   }
 
   forEachFeature(callback: (feature: NodeFeature, id: number) => void): void {
-    this.features.forEach((feature, id) => callback(feature, id));
+    this.#features.forEach((feature, id) => callback(feature, id));
   }
 
   getDebugJson(): JsonValue {
@@ -118,7 +118,7 @@ export class StateNode implements NodeFeatureNode {
     this.forEachFeature((feature, featureId) => {
       const json = feature.getDebugJson();
       if (json !== null && json !== undefined) {
-        object[this.tree.getFeatureDebugName(featureId)] = json;
+        object[this.#tree.getFeatureDebugName(featureId)] = json;
       }
     });
 
@@ -126,74 +126,74 @@ export class StateNode implements NodeFeatureNode {
   }
 
   isUnregistered(): boolean {
-    return this.unregistered;
+    return this.#unregistered;
   }
 
   unregister(): void {
-    assert(this.tree.getNode(this.getId()) === null, 'Node should no longer be findable from the tree');
-    assert(!this.unregistered, 'Node is already unregistered');
-    this.unregistered = true;
+    assert(this.#tree.getNode(this.getId()) === null, 'Node should no longer be findable from the tree');
+    assert(!this.#unregistered, 'Node is already unregistered');
+    this.#unregistered = true;
 
     const event = new NodeUnregisterEvent(this);
 
-    const copy = new Set(this.unregisterListeners);
+    const copy = new Set(this.#unregisterListeners);
     copy.forEach((l) => l(event));
     // Don't refer to the listeners which won't be ever used again
-    this.unregisterListeners.clear();
+    this.#unregisterListeners.clear();
   }
 
   addUnregisterListener(listener: NodeUnregisterListener): EventRemover {
-    this.unregisterListeners.add(listener);
+    this.#unregisterListeners.add(listener);
     return {
       remove: () => {
-        this.unregisterListeners.delete(listener);
+        this.#unregisterListeners.delete(listener);
       }
     };
   }
 
   getDomNode(): Node | null {
-    return this.domNode;
+    return this.#domNode;
   }
 
   setDomNode(node: Node | null): void {
-    assert(this.domNode === null || node === null, 'StateNode already has a DOM node');
-    this.domNode = node;
+    assert(this.#domNode === null || node === null, 'StateNode already has a DOM node');
+    this.#domNode = node;
 
-    const copy = new Set(this.domNodeSetListeners);
+    const copy = new Set(this.#domNodeSetListeners);
     copy.forEach((listener) => {
       if (listener(this)) {
-        this.domNodeSetListeners.delete(listener);
+        this.#domNodeSetListeners.delete(listener);
       }
     });
   }
 
   addDomNodeSetListener(listener: (node: StateNode) => boolean): EventRemover {
-    this.domNodeSetListeners.add(listener);
+    this.#domNodeSetListeners.add(listener);
     return {
       remove: () => {
-        this.domNodeSetListeners.delete(listener);
+        this.#domNodeSetListeners.delete(listener);
       }
     };
   }
 
   getParent(): StateNode | null {
-    return this.parent;
+    return this.#parent;
   }
 
   setParent(parent: StateNode | null): void {
-    this.parent = parent;
+    this.#parent = parent;
   }
 
   setNodeData(object: object): void {
-    this.nodeData.set(object.constructor, object);
+    this.#nodeData.set(object.constructor, object);
   }
 
   getNodeData<T>(clazz: Constructor<T>): T | null {
-    const value = this.nodeData.get(clazz);
+    const value = this.#nodeData.get(clazz);
     return value === undefined ? null : (value as T);
   }
 
   clearNodeData(object: object): void {
-    this.nodeData.delete(object.constructor);
+    this.#nodeData.delete(object.constructor);
   }
 }
