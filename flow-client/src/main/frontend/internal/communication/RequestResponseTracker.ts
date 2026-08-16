@@ -47,34 +47,34 @@ function addListener<T>(listeners: Set<T>, listener: T): EventRemover {
 
 /** Tracks active server UIDL requests and fires their lifecycle events; mirrors RequestResponseTracker.java. */
 export class RequestResponseTracker {
-  private hasActiveRequestState = false;
+  #hasActiveRequestState = false;
 
-  private readonly registry: RequestResponseRegistry;
+  readonly #registry: RequestResponseRegistry;
 
-  private readonly requestStartingListeners = new Set<VoidListener>();
+  readonly #requestStartingListeners = new Set<VoidListener>();
 
-  private readonly responseHandlingStartedListeners = new Set<VoidListener>();
+  readonly #responseHandlingStartedListeners = new Set<VoidListener>();
 
-  private readonly responseHandlingEndedListeners = new Set<VoidListener>();
+  readonly #responseHandlingEndedListeners = new Set<VoidListener>();
 
-  private readonly reconnectionAttemptListeners = new Set<ReconnectionAttemptListener>();
+  readonly #reconnectionAttemptListeners = new Set<ReconnectionAttemptListener>();
 
   constructor(registry: RequestResponseRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Marks that a new request has started and fires the request-starting event. */
   startRequest(): void {
-    if (this.hasActiveRequestState) {
+    if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
-    this.hasActiveRequestState = true;
-    this.requestStartingListeners.forEach((listener) => listener());
+    this.#hasActiveRequestState = true;
+    this.#requestStartingListeners.forEach((listener) => listener());
   }
 
   /** Whether there is an active UIDL request. */
   hasActiveRequest(): boolean {
-    return this.hasActiveRequestState;
+    return this.#hasActiveRequestState;
   }
 
   /**
@@ -82,47 +82,47 @@ export class RequestResponseTracker {
    * and firing the response-handling-ended event.
    */
   endRequest(): void {
-    if (!this.hasActiveRequestState) {
+    if (!this.#hasActiveRequestState) {
       throw new Error('endRequest called when no request is active');
     }
     // sendInvocationsToServer() may start a new request, so clear the flag first.
-    this.hasActiveRequestState = false;
+    this.#hasActiveRequestState = false;
 
-    const messageSender = this.registry.getMessageSender();
+    const messageSender = this.#registry.getMessageSender();
     if (
-      (this.registry.getUILifecycle().isRunning() && this.registry.getServerRpcQueue().isFlushPending()) ||
+      (this.#registry.getUILifecycle().isRunning() && this.#registry.getServerRpcQueue().isFlushPending()) ||
       messageSender.getResynchronizationState() === ResynchronizationState.SEND_TO_SERVER ||
       messageSender.hasQueuedMessages()
     ) {
       messageSender.sendInvocationsToServer();
     }
 
-    this.responseHandlingEndedListeners.forEach((listener) => listener());
+    this.#responseHandlingEndedListeners.forEach((listener) => listener());
   }
 
   /** Fires the response-handling-started event (called by the message handler). */
   fireResponseHandlingStarted(): void {
-    this.responseHandlingStartedListeners.forEach((listener) => listener());
+    this.#responseHandlingStartedListeners.forEach((listener) => listener());
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */
   fireReconnectionAttempt(attempt: number): void {
-    this.reconnectionAttemptListeners.forEach((listener) => listener(attempt));
+    this.#reconnectionAttemptListeners.forEach((listener) => listener(attempt));
   }
 
   addRequestStartingHandler(handler: VoidListener): EventRemover {
-    return addListener(this.requestStartingListeners, handler);
+    return addListener(this.#requestStartingListeners, handler);
   }
 
   addResponseHandlingStartedHandler(handler: VoidListener): EventRemover {
-    return addListener(this.responseHandlingStartedListeners, handler);
+    return addListener(this.#responseHandlingStartedListeners, handler);
   }
 
   addResponseHandlingEndedHandler(handler: VoidListener): EventRemover {
-    return addListener(this.responseHandlingEndedListeners, handler);
+    return addListener(this.#responseHandlingEndedListeners, handler);
   }
 
   addReconnectionAttemptHandler(handler: ReconnectionAttemptListener): EventRemover {
-    return addListener(this.reconnectionAttemptListeners, handler);
+    return addListener(this.#reconnectionAttemptListeners, handler);
   }
 }

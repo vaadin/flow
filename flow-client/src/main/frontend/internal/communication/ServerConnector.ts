@@ -38,10 +38,10 @@ interface ServerConnectorRegistry {
 
 /** Creates and sends messages to the server via the server RPC queue; mirrors ServerConnector.java. */
 export class ServerConnector {
-  private readonly registry: ServerConnectorRegistry;
+  readonly #registry: ServerConnectorRegistry;
 
   constructor(registry: ServerConnectorRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Sends a navigation message to the server. */
@@ -56,7 +56,7 @@ export class ServerConnector {
       // Only the presence of the key is checked, so use a short value.
       message[JsonConstants.RPC_NAVIGATION_ROUTERLINK] = 1;
     }
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /**
@@ -73,7 +73,7 @@ export class ServerConnector {
     if (eventData !== null && eventData !== undefined) {
       message[JsonConstants.RPC_EVENT_DATA] = eventData;
     }
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /** Sends a template (published-server-event-handler) event message to the server. */
@@ -86,7 +86,7 @@ export class ServerConnector {
     if (promiseId !== -1) {
       message[JsonConstants.RPC_TEMPLATE_EVENT_PROMISE] = promiseId;
     }
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /** Sends a node map-property value sync message to the server. */
@@ -97,7 +97,7 @@ export class ServerConnector {
     message[JsonConstants.RPC_FEATURE] = feature;
     message[JsonConstants.RPC_PROPERTY] = key;
     message[JsonConstants.RPC_PROPERTY_VALUE] = encodeWithoutTypeInfo(value);
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /** Sends an attach-existing-element callback to the server. */
@@ -116,7 +116,7 @@ export class ServerConnector {
     message[JsonConstants.RPC_ATTACH_ASSIGNED_ID] = assignedId;
     message[JsonConstants.RPC_ATTACH_TAG_NAME] = tagName;
     message[JsonConstants.RPC_ATTACH_INDEX] = index;
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /** Sends an attach-existing-element-by-id callback to the server. */
@@ -132,7 +132,7 @@ export class ServerConnector {
     message[JsonConstants.RPC_ATTACH_REQUESTED_ID] = requestedId;
     message[JsonConstants.RPC_ATTACH_ASSIGNED_ID] = assignedId;
     message[JsonConstants.RPC_ATTACH_ID] = id;
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
   /** Sends a return-channel message to the server. */
@@ -142,17 +142,17 @@ export class ServerConnector {
     message[JsonConstants.RPC_NODE] = stateNodeId;
     message[JsonConstants.RPC_CHANNEL] = channelId;
     message[JsonConstants.RPC_CHANNEL_ARGUMENTS] = args;
-    this.sendMessage(message);
+    this.#sendMessage(message);
   }
 
-  private sendMessage(message: Record<string, unknown>): void {
-    this.registry
+  #sendMessage(message: Record<string, unknown>): void {
+    this.#registry
       .getLoadingIndicatorStateHandler()
       .processMessage(
         (message[JsonConstants.RPC_TYPE] as string | undefined) ?? null,
         (message[JsonConstants.RPC_EVENT_TYPE] as string | undefined) ?? null
       );
-    const rpcQueue = this.registry.getServerRpcQueue();
+    const rpcQueue = this.#registry.getServerRpcQueue();
     rpcQueue.add(message);
     rpcQueue.flush();
   }

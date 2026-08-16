@@ -46,22 +46,22 @@ export function isResynchronize(json: ValueMap): boolean {
  * state of MessageHandler.
  */
 export class PendingMessageQueue {
-  private lastSeenServerSyncId = UNDEFINED_SYNC_ID;
+  #lastSeenServerSyncId = UNDEFINED_SYNC_ID;
 
-  private pending: ValueMap[] = [];
+  #pending: ValueMap[] = [];
 
   /** The last seen server sync id; -1 before any response has been processed. */
   getLastSeenServerSyncId(): number {
-    return this.lastSeenServerSyncId;
+    return this.#lastSeenServerSyncId;
   }
 
   setLastSeenServerSyncId(serverId: number): void {
-    this.lastSeenServerSyncId = serverId;
+    this.#lastSeenServerSyncId = serverId;
   }
 
   /** The server id the client is currently waiting for. */
   getExpectedServerId(): number {
-    return this.lastSeenServerSyncId + 1;
+    return this.#lastSeenServerSyncId + 1;
   }
 
   /** Whether the given server id is the one currently expected (or always-ok). */
@@ -73,34 +73,34 @@ export class PendingMessageQueue {
       return true;
     }
     // The first message is always ok.
-    return this.lastSeenServerSyncId === UNDEFINED_SYNC_ID;
+    return this.#lastSeenServerSyncId === UNDEFINED_SYNC_ID;
   }
 
   /** Whether the given server id has already been seen (a stale re-send). */
   isAlreadySeen(serverId: number): boolean {
-    return serverId <= this.lastSeenServerSyncId;
+    return serverId <= this.#lastSeenServerSyncId;
   }
 
   push(json: ValueMap): void {
-    this.pending.push(json);
+    this.#pending.push(json);
   }
 
   isEmpty(): boolean {
-    return this.pending.length === 0;
+    return this.#pending.length === 0;
   }
 
   length(): number {
-    return this.pending.length;
+    return this.#pending.length;
   }
 
   clear(): void {
-    this.pending = [];
+    this.#pending = [];
   }
 
   /** The index of the next pending message that can be handled now, or -1. */
   findNextHandlable(): number {
-    for (let i = 0; i < this.pending.length; i++) {
-      if (this.isNextExpectedMessage(getServerId(this.pending[i]))) {
+    for (let i = 0; i < this.#pending.length; i++) {
+      if (this.isNextExpectedMessage(getServerId(this.#pending[i]))) {
         return i;
       }
     }
@@ -109,15 +109,15 @@ export class PendingMessageQueue {
 
   /** Removes and returns the pending message at the given index. */
   remove(index: number): ValueMap {
-    return this.pending.splice(index, 1)[0];
+    return this.#pending.splice(index, 1)[0];
   }
 
   /** Drops pending messages whose server id is older than the expected one. */
   removeOld(): void {
-    for (let i = 0; i < this.pending.length; i++) {
-      const serverId = getServerId(this.pending[i]);
+    for (let i = 0; i < this.#pending.length; i++) {
+      const serverId = getServerId(this.#pending[i]);
       if (serverId !== -1 && serverId < this.getExpectedServerId()) {
-        this.pending.splice(i, 1);
+        this.#pending.splice(i, 1);
         i--;
       }
     }

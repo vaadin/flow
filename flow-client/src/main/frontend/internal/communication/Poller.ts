@@ -39,23 +39,23 @@ interface PollerRegistry {
 
 /** Polls the server with a given interval; mirrors Poller.java. */
 export class Poller {
-  private pollHandle: ReturnType<typeof setInterval> | null = null;
+  #pollHandle: ReturnType<typeof setInterval> | null = null;
 
-  private readonly registry: PollerRegistry;
+  readonly #registry: PollerRegistry;
 
   constructor(registry: PollerRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
     registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
-        this.stop();
+        this.#stop();
       }
     });
   }
 
-  private stop(): void {
-    if (this.pollHandle !== null) {
-      clearInterval(this.pollHandle);
-      this.pollHandle = null;
+  #stop(): void {
+    if (this.#pollHandle !== null) {
+      clearInterval(this.#pollHandle);
+      this.#pollHandle = null;
     }
   }
 
@@ -64,15 +64,15 @@ export class Poller {
    * a negative interval stops it. Mirrors setInterval.
    */
   setInterval(interval: number): void {
-    this.stop();
+    this.#stop();
     if (interval >= 0) {
-      this.pollHandle = setInterval(() => this.poll(), interval);
+      this.#pollHandle = setInterval(() => this.poll(), interval);
     }
   }
 
   /** Polls the server for changes by sending a poll event on the root node. */
   poll(): void {
-    const stateTree = this.registry.getStateTree();
+    const stateTree = this.#registry.getStateTree();
     stateTree.sendEventToServer(stateTree.getRootNode(), POLL_DOM_EVENT_NAME, null);
   }
 }

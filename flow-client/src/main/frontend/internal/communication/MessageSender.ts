@@ -63,37 +63,37 @@ export interface MessageSenderRegistry {
 /** Sends messages to the server over XHR and/or push; mirrors MessageSender.java. */
 export class MessageSender {
   // Counter for the messages sent to the server. First sent message has id 0.
-  private clientToServerMessageId = 0;
+  #clientToServerMessageId = 0;
 
-  private push: PushConnection | null = null;
+  #push: PushConnection | null = null;
 
-  private readonly registry: MessageSenderRegistry;
+  readonly #registry: MessageSenderRegistry;
 
-  private readonly pushConnectionFactory: PushConnectionFactory | null;
+  readonly #pushConnectionFactory: PushConnectionFactory | null;
 
-  private resynchronizationState: ResynchronizationState = ResynchronizationState.NOT_ACTIVE;
+  #resynchronizationState: ResynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
-  private pushPendingMessage: Payload | null = null;
+  #pushPendingMessage: Payload | null = null;
 
-  private messageQueue: Payload[] = [];
+  #messageQueue: Payload[] = [];
 
-  private resendMessageTimer: ReturnType<typeof setTimeout> | null = null;
+  #resendMessageTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(registry: MessageSenderRegistry, pushConnectionFactory: PushConnectionFactory | null = null) {
-    this.registry = registry;
-    this.pushConnectionFactory = pushConnectionFactory;
-    this.registry.getRequestResponseTracker().addReconnectionAttemptHandler((attempt) => {
+    this.#registry = registry;
+    this.#pushConnectionFactory = pushConnectionFactory;
+    this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((attempt) => {
       Console.debug(`Re-sending queued messages to the server (attempt ${attempt}) ...`);
       // Try to reconnect by sending queued messages; stop the resend timer since
       // it will not make any request during reconnection anyway.
-      this.resetTimer();
-      this.doSendInvocationsToServer();
+      this.#resetTimer();
+      this.#doSendInvocationsToServer();
     });
   }
 
   sendUnloadBeacon(): void {
-    const payload = this.preparePayload([], { [UNLOAD_BEACON]: true });
-    sendBeacon(this.registry.getXhrConnection().getUri(), JSON.stringify(payload));
+    const payload = this.#preparePayload([], { [UNLOAD_BEACON]: true });
+    sendBeacon(this.#registry.getXhrConnection().getUri(), JSON.stringify(payload));
   }
 
   /**
@@ -101,73 +101,73 @@ export class MessageSender {
    * progress and the application is running.
    */
   sendInvocationsToServer(): void {
-    if (!this.registry.getUILifecycle().isRunning()) {
+    if (!this.#registry.getUILifecycle().isRunning()) {
       Console.warn('Trying to send RPC from not yet started or stopped application');
       return;
     }
 
-    const hasActiveRequest = this.registry.getRequestResponseTracker().hasActiveRequest();
-    if (hasActiveRequest || (this.push !== null && !this.push.isActive())) {
+    const hasActiveRequest = this.#registry.getRequestResponseTracker().hasActiveRequest();
+    if (hasActiveRequest || (this.#push !== null && !this.#push.isActive())) {
       // Active request, or push enabled but not active: send when the current
       // request completes or push becomes active.
       Console.debug(
         `Postpone sending invocations to server because of ${hasActiveRequest ? 'active request' : 'PUSH not active'}`
       );
     } else {
-      this.doSendInvocationsToServer();
+      this.#doSendInvocationsToServer();
     }
   }
 
-  private doSendInvocationsToServer(): void {
+  #doSendInvocationsToServer(): void {
     // If there's a stored message, resend it and postpone the rest of the queue
     // to prevent resynchronization issues.
-    if (this.pushPendingMessage !== null) {
-      const payload = this.pushPendingMessage;
-      this.pushPendingMessage = null;
-      this.sendPayload(payload);
+    if (this.#pushPendingMessage !== null) {
+      const payload = this.#pushPendingMessage;
+      this.#pushPendingMessage = null;
+      this.#sendPayload(payload);
       return;
     } else if (this.hasQueuedMessages()) {
       Console.debug('Sending queued messages to server');
-      if (this.resendMessageTimer !== null) {
-        this.resetTimer();
+      if (this.#resendMessageTimer !== null) {
+        this.#resetTimer();
       }
-      this.sendPayload(this.messageQueue[0]);
+      this.#sendPayload(this.#messageQueue[0]);
       return;
     }
 
-    const serverRpcQueue = this.registry.getServerRpcQueue();
-    if (serverRpcQueue.isEmpty() && this.resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
+    const serverRpcQueue = this.#registry.getServerRpcQueue();
+    if (serverRpcQueue.isEmpty() && this.#resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
       return;
     }
 
     const reqJson = serverRpcQueue.toJson();
     serverRpcQueue.clear();
 
-    if (reqJson.length === 0 && this.resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
+    if (reqJson.length === 0 && this.#resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
       // Nothing to send, all invocations were filtered out.
       Console.warn('All RPCs filtered out, not sending anything to the server');
       return;
     }
 
     const extraJson: Payload = {};
-    if (this.resynchronizationState === ResynchronizationState.SEND_TO_SERVER) {
-      this.resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
+    if (this.#resynchronizationState === ResynchronizationState.SEND_TO_SERVER) {
+      this.#resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
       Console.warn('Resynchronizing from server');
-      this.messageQueue = [];
-      this.resetTimer();
+      this.#messageQueue = [];
+      this.#resetTimer();
       extraJson[RESYNCHRONIZE_ID] = true;
     }
-    this.registry.getLoadingIndicatorStateHandler().startLoading();
-    this.sendRequest(reqJson, extraJson);
+    this.#registry.getLoadingIndicatorStateHandler().startLoading();
+    this.#sendRequest(reqJson, extraJson);
   }
 
-  private sendRequest(reqInvocations: unknown[], extraJson: Payload): void {
-    this.send(this.preparePayload(reqInvocations, extraJson));
+  #sendRequest(reqInvocations: unknown[], extraJson: Payload): void {
+    this.send(this.#preparePayload(reqInvocations, extraJson));
   }
 
-  private preparePayload(reqInvocations: unknown[], extraJson: Payload | null): Payload {
+  #preparePayload(reqInvocations: unknown[], extraJson: Payload | null): Payload {
     const payload: Payload = {};
-    const csrfToken = this.registry.getMessageHandler().getCsrfToken();
+    const csrfToken = this.#registry.getMessageHandler().getCsrfToken();
     if (csrfToken !== CSRF_TOKEN_DEFAULT_VALUE) {
       payload[CSRF_TOKEN] = csrfToken;
     }
@@ -189,77 +189,77 @@ export class MessageSender {
       // The server sync id is set in sendPayload. If it is already present, the
       // message has already been sent and enqueued.
       if (!(SERVER_SYNC_ID in payload)) {
-        this.messageQueue.push(payload);
+        this.#messageQueue.push(payload);
       }
       return;
     }
-    this.messageQueue.push(payload);
-    this.sendPayload(payload);
+    this.#messageQueue.push(payload);
+    this.#sendPayload(payload);
   }
 
-  private sendPayload(payload: Payload): void {
+  #sendPayload(payload: Payload): void {
     // Do not update server sync id for enqueued messages.
     if (!(SERVER_SYNC_ID in payload)) {
-      payload[SERVER_SYNC_ID] = this.registry.getMessageHandler().getLastSeenServerSyncId();
+      payload[SERVER_SYNC_ID] = this.#registry.getMessageHandler().getLastSeenServerSyncId();
     }
     // clientId should only be set if absent; if present we are resending.
     if (!(CLIENT_TO_SERVER_ID in payload)) {
-      payload[CLIENT_TO_SERVER_ID] = this.clientToServerMessageId++;
+      payload[CLIENT_TO_SERVER_ID] = this.#clientToServerMessageId++;
     }
 
-    if (!this.registry.getRequestResponseTracker().hasActiveRequest()) {
+    if (!this.#registry.getRequestResponseTracker().hasActiveRequest()) {
       // Direct calls from outside have probably not started a request.
-      this.registry.getRequestResponseTracker().startRequest();
+      this.#registry.getRequestResponseTracker().startRequest();
     }
 
-    if (this.push !== null && this.push.isBidirectional()) {
+    if (this.#push !== null && this.#push.isBidirectional()) {
       // With bidirectional transport the payload is not resent during
       // reconnection; keep a copy to resend after a reconnection until the
       // server confirms it.
-      this.pushPendingMessage = payload;
-      this.push.push(payload);
+      this.#pushPendingMessage = payload;
+      this.#push.push(payload);
     } else {
-      this.resetTimer();
-      this.registry.getXhrConnection().send(payload);
-      this.scheduleResend(payload);
+      this.#resetTimer();
+      this.#registry.getXhrConnection().send(payload);
+      this.#scheduleResend(payload);
     }
   }
 
   // Resends the last payload if a response hasn't come in; reschedules itself.
-  private scheduleResend(payload: Payload): void {
-    const timeout = this.registry.getApplicationConfiguration().getMaxMessageSuspendTimeout() + 500;
-    this.resendMessageTimer = setTimeout(() => {
-      this.scheduleResend(payload);
+  #scheduleResend(payload: Payload): void {
+    const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout() + 500;
+    this.#resendMessageTimer = setTimeout(() => {
+      this.#scheduleResend(payload);
       // Avoid re-sending while a request is still in progress; if the response
       // has not been processed, the reconnection-attempt listener resends.
-      if (!this.registry.getRequestResponseTracker().hasActiveRequest()) {
-        this.registry.getRequestResponseTracker().startRequest();
-        this.registry.getXhrConnection().send(payload);
+      if (!this.#registry.getRequestResponseTracker().hasActiveRequest()) {
+        this.#registry.getRequestResponseTracker().startRequest();
+        this.#registry.getXhrConnection().send(payload);
       }
     }, timeout);
   }
 
-  private resetTimer(): void {
-    if (this.resendMessageTimer !== null) {
-      clearTimeout(this.resendMessageTimer);
-      this.resendMessageTimer = null;
+  #resetTimer(): void {
+    if (this.#resendMessageTimer !== null) {
+      clearTimeout(this.#resendMessageTimer);
+      this.#resendMessageTimer = null;
     }
   }
 
   /** Enables or disables the push connection. */
   setPushEnabled(enabled: boolean, reEnableIfNeeded = true): void {
-    if (enabled && (this.push === null || !this.push.isActive())) {
-      this.push = this.pushConnectionFactory ? this.pushConnectionFactory(this.registry) : null;
-    } else if (!enabled && this.push !== null && this.push.isActive()) {
-      this.push.disconnect(() => {
-        this.push = null;
+    if (enabled && (this.#push === null || !this.#push.isActive())) {
+      this.#push = this.#pushConnectionFactory ? this.#pushConnectionFactory(this.#registry) : null;
+    } else if (!enabled && this.#push !== null && this.#push.isActive()) {
+      this.#push.disconnect(() => {
+        this.#push = null;
         // If push was re-enabled while waiting to disconnect, reconnect now.
-        if (reEnableIfNeeded && this.registry.getPushConfiguration().isPushEnabled()) {
+        if (reEnableIfNeeded && this.#registry.getPushConfiguration().isPushEnabled()) {
           this.setPushEnabled(true);
         }
         // Send anything enqueued while waiting for the connection to close.
-        if (this.registry.getServerRpcQueue().isFlushPending()) {
-          this.registry.getServerRpcQueue().flush();
+        if (this.#registry.getServerRpcQueue().isFlushPending()) {
+          this.#registry.getServerRpcQueue().flush();
         }
       });
     }
@@ -269,9 +269,9 @@ export class MessageSender {
   getCommunicationMethodName(): string {
     let clientToServer = 'XHR';
     let serverToClient = '-';
-    if (this.push !== null) {
-      serverToClient = this.push.getTransportType();
-      if (this.push.isBidirectional()) {
+    if (this.#push !== null) {
+      serverToClient = this.#push.getTransportType();
+      if (this.#push.isBidirectional()) {
         clientToServer = serverToClient;
       }
     }
@@ -281,60 +281,60 @@ export class MessageSender {
   /** Resynchronizes the client side from the server. */
   resynchronize(): void {
     if (this.requestResynchronize()) {
-      this.messageQueue = [];
-      this.resetTimer();
+      this.#messageQueue = [];
+      this.#resetTimer();
       this.sendInvocationsToServer();
     }
   }
 
   /** Updates the id the server expects, reconciling the queue. */
   setClientToServerMessageId(nextExpectedId: number, force: boolean): void {
-    if (nextExpectedId === this.clientToServerMessageId) {
+    if (nextExpectedId === this.#clientToServerMessageId) {
       // Remove a pending PUSH message already seen by the server.
       if (
-        this.pushPendingMessage !== null &&
-        (this.pushPendingMessage[CLIENT_TO_SERVER_ID] as number) < nextExpectedId
+        this.#pushPendingMessage !== null &&
+        (this.#pushPendingMessage[CLIENT_TO_SERVER_ID] as number) < nextExpectedId
       ) {
-        this.pushPendingMessage = null;
+        this.#pushPendingMessage = null;
       }
       if (this.hasQueuedMessages()) {
         // If the queued message is the expected one, remove it and send next.
-        if ((this.messageQueue[0][CLIENT_TO_SERVER_ID] as number) + 1 === nextExpectedId) {
-          this.messageQueue.shift();
-          this.resetTimer();
+        if ((this.#messageQueue[0][CLIENT_TO_SERVER_ID] as number) + 1 === nextExpectedId) {
+          this.#messageQueue.shift();
+          this.#resetTimer();
         }
       }
       return;
     }
     if (force) {
-      Console.debug(`Forced update of clientId to ${this.clientToServerMessageId}`);
-      this.clientToServerMessageId = nextExpectedId;
-      this.messageQueue = [];
-      this.resetTimer();
+      Console.debug(`Forced update of clientId to ${this.#clientToServerMessageId}`);
+      this.#clientToServerMessageId = nextExpectedId;
+      this.#messageQueue = [];
+      this.#resetTimer();
       return;
     }
 
-    if (nextExpectedId > this.clientToServerMessageId) {
-      if (this.clientToServerMessageId === 0) {
+    if (nextExpectedId > this.#clientToServerMessageId) {
+      if (this.#clientToServerMessageId === 0) {
         // Never sent a message, so the server knows better (e.g. a refreshed
         // @PreserveOnRefresh UI).
         Console.debug(`Updating client-to-server id to ${nextExpectedId} based on server`);
       } else {
         Console.warn(
-          `Server expects next client-to-server id to be ${nextExpectedId} but we were going to use ${this.clientToServerMessageId}. Will use ${nextExpectedId}.`
+          `Server expects next client-to-server id to be ${nextExpectedId} but we were going to use ${this.#clientToServerMessageId}. Will use ${nextExpectedId}.`
         );
       }
-      this.clientToServerMessageId = nextExpectedId;
+      this.#clientToServerMessageId = nextExpectedId;
     }
     // else the server has not yet seen all our messages; they will arrive.
   }
 
   /** Marks that a resynchronization is desired; returns whether it still needs sending. */
   requestResynchronize(): boolean {
-    switch (this.resynchronizationState) {
+    switch (this.#resynchronizationState) {
       case ResynchronizationState.NOT_ACTIVE:
         Console.debug('Resynchronize from server requested');
-        this.resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
+        this.#resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
         return true;
       case ResynchronizationState.SEND_TO_SERVER:
         // Already requested but not yet sent.
@@ -347,14 +347,14 @@ export class MessageSender {
   }
 
   clearResynchronizationState(): void {
-    this.resynchronizationState = ResynchronizationState.NOT_ACTIVE;
+    this.#resynchronizationState = ResynchronizationState.NOT_ACTIVE;
   }
 
   getResynchronizationState(): ResynchronizationState {
-    return this.resynchronizationState;
+    return this.#resynchronizationState;
   }
 
   hasQueuedMessages(): boolean {
-    return this.messageQueue.length !== 0;
+    return this.#messageQueue.length !== 0;
   }
 }

@@ -80,21 +80,21 @@ function isWebkit(): boolean {
 export class XhrConnection {
   // Webkit ignores outgoing requests while waiting for a navigation response
   // (beforeunload); when set, retry sending until there is a response.
-  private webkitMaybeIgnoringRequests = false;
+  #webkitMaybeIgnoringRequests = false;
 
-  private readonly registry: XhrConnectionRegistry;
+  readonly #registry: XhrConnectionRegistry;
 
   constructor(registry: XhrConnectionRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
     window.addEventListener(
       'beforeunload',
       () => {
-        this.webkitMaybeIgnoringRequests = true;
+        this.#webkitMaybeIgnoringRequests = true;
       },
       false
     );
-    this.registry.getRequestResponseTracker().addResponseHandlingEndedHandler(() => {
-      this.webkitMaybeIgnoringRequests = false;
+    this.#registry.getRequestResponseTracker().addResponseHandlingEndedHandler(() => {
+      this.#webkitMaybeIgnoringRequests = false;
     });
   }
 
@@ -119,10 +119,10 @@ export class XhrConnection {
     xhr.onerror = () => this.onResponseFail(xhr, payload, new Error('XHR request failed'));
     xhr.send(payloadJson);
 
-    if (this.webkitMaybeIgnoringRequests && isWebkit()) {
+    if (this.#webkitMaybeIgnoringRequests && isWebkit()) {
       const retryTimeout = 250;
       const retry = (): void => {
-        if (resendRequest(xhr) && this.webkitMaybeIgnoringRequests) {
+        if (resendRequest(xhr) && this.#webkitMaybeIgnoringRequests) {
           setTimeout(retry, retryTimeout);
         }
       };
@@ -134,11 +134,11 @@ export class XhrConnection {
   onResponseSuccess(xhr: XMLHttpRequest, payload: Payload): void {
     const json = parseJson(xhr.responseText);
     if (json === null) {
-      this.registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, payload, null));
+      this.#registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, payload, null));
       return;
     }
-    this.registry.getConnectionStateHandler().xhrOk();
-    this.registry.getMessageHandler().handleMessage(json);
+    this.#registry.getConnectionStateHandler().xhrOk();
+    this.#registry.getMessageHandler().handleMessage(json);
   }
 
   /** Routes a failed response to the connection-state handler. */
@@ -146,15 +146,15 @@ export class XhrConnection {
     const errorEvent = new XhrConnectionError(xhr, payload, error);
     if (error === null) {
       // Response other than 200.
-      this.registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
+      this.#registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
     } else {
-      this.registry.getConnectionStateHandler().xhrException(errorEvent);
+      this.#registry.getConnectionStateHandler().xhrException(errorEvent);
     }
   }
 
   /** The URI to use when sending RPCs to the server. */
   getUri(): string {
-    const configuration = this.registry.getApplicationConfiguration();
+    const configuration = this.#registry.getApplicationConfiguration();
     return addGetParameter(
       addGetParameter(configuration.getServiceUrl(), REQUEST_TYPE_PARAMETER, REQUEST_TYPE_UIDL),
       UI_ID_PARAMETER,

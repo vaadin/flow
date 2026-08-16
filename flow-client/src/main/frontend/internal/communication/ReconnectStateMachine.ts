@@ -47,41 +47,41 @@ interface ReconnectRegistry {
  * DefaultConnectionStateHandler.
  */
 export class ReconnectStateMachine {
-  private reconnectionCause: ConnectionMessageType | null = null;
+  #reconnectionCause: ConnectionMessageType | null = null;
 
-  private reconnectAttempt = 0;
+  #reconnectAttempt = 0;
 
-  private readonly registry: ReconnectRegistry;
+  readonly #registry: ReconnectRegistry;
 
   // Performs the actual reconnect retry (timer + payload re-send) — supplied by
   // the full handler; cancels any scheduled retry on resolution.
-  private readonly scheduleReconnect: (payload: unknown) => void;
+  readonly #scheduleReconnect: (payload: unknown) => void;
 
-  private readonly cancelScheduledReconnect: () => void;
+  readonly #cancelScheduledReconnect: () => void;
 
   constructor(
     registry: ReconnectRegistry,
     scheduleReconnect: (payload: unknown) => void,
     cancelScheduledReconnect: () => void = () => {}
   ) {
-    this.registry = registry;
-    this.scheduleReconnect = scheduleReconnect;
-    this.cancelScheduledReconnect = cancelScheduledReconnect;
+    this.#registry = registry;
+    this.#scheduleReconnect = scheduleReconnect;
+    this.#cancelScheduledReconnect = cancelScheduledReconnect;
   }
 
   /** Whether a reconnection is in progress. */
   isReconnecting(): boolean {
-    return this.reconnectionCause !== null;
+    return this.#reconnectionCause !== null;
   }
 
   /** The current reconnection cause, or null if not reconnecting. */
   getReconnectionCause(): ConnectionMessageType | null {
-    return this.reconnectionCause;
+    return this.#reconnectionCause;
   }
 
   /** The number of reconnection attempts made for the current cause. */
   getReconnectAttempt(): number {
-    return this.reconnectAttempt;
+    return this.#reconnectAttempt;
   }
 
   /**
@@ -90,60 +90,60 @@ export class ReconnectStateMachine {
    * handleRecoverableError.
    */
   handleRecoverableError(type: ConnectionMessageType, payload: unknown): void {
-    if (!this.registry.getUILifecycle().isRunning()) {
+    if (!this.#registry.getUILifecycle().isRunning()) {
       return;
     }
     setState(RECONNECTING);
 
     if (!this.isReconnecting()) {
       // First problem encountered.
-      this.reconnectionCause = type;
-    } else if (isHigherPriorityThan(type, this.reconnectionCause!)) {
+      this.#reconnectionCause = type;
+    } else if (isHigherPriorityThan(type, this.#reconnectionCause!)) {
       // A higher-priority failure (HEARTBEAT < PUSH < XHR) takes over; resolving
       // it implies the lower-priority one is resolved too.
-      this.reconnectionCause = type;
+      this.#reconnectionCause = type;
     }
 
-    if (this.reconnectionCause !== type) {
+    if (this.#reconnectionCause !== type) {
       return;
     }
 
-    this.reconnectAttempt++;
-    Console.debug(`Reconnect attempt ${this.reconnectAttempt} for ${type}`);
-    if (this.reconnectAttempt >= this.registry.getReconnectConfiguration().getReconnectAttempts()) {
+    this.#reconnectAttempt++;
+    Console.debug(`Reconnect attempt ${this.#reconnectAttempt} for ${type}`);
+    if (this.#reconnectAttempt >= this.#registry.getReconnectConfiguration().getReconnectAttempts()) {
       // Max attempts reached -> give up (CONNECTION_LOST).
       this.giveUp();
     } else {
-      this.scheduleReconnect(payload);
+      this.#scheduleReconnect(payload);
     }
   }
 
   /** Resolves the temporary error for the given type if it is the active cause. Mirrors resolveTemporaryError. */
   resolveTemporaryError(type: ConnectionMessageType): void {
-    if (this.reconnectionCause !== type) {
+    if (this.#reconnectionCause !== type) {
       // Waiting for some other (higher-priority) problem to be resolved.
       return;
     }
-    this.reconnectionCause = null;
-    this.reconnectAttempt = 0;
-    this.cancelScheduledReconnect();
+    this.#reconnectionCause = null;
+    this.#reconnectAttempt = 0;
+    this.#cancelScheduledReconnect();
     if (type === ConnectionMessageType.HEARTBEAT) {
       // Heartbeat has no loading indication; safe to set CONNECTED directly.
       setState(CONNECTED);
     } else {
-      this.registry.getLoadingIndicatorStateHandler().stopLoading();
+      this.#registry.getLoadingIndicatorStateHandler().stopLoading();
     }
     Console.debug('Re-established connection to server');
   }
 
   /** Stops reconnecting and goes to CONNECTION_LOST. Mirrors giveUp. */
   giveUp(): void {
-    this.reconnectionCause = null;
-    if (this.registry.getRequestResponseTracker().hasActiveRequest()) {
-      this.registry.getRequestResponseTracker().endRequest();
+    this.#reconnectionCause = null;
+    if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
+      this.#registry.getRequestResponseTracker().endRequest();
     }
     setState(CONNECTION_LOST);
     // pauseHeartbeats: 0 pauses but stays resumable (-1 means terminated).
-    this.registry.getHeartbeat().setInterval(0);
+    this.#registry.getHeartbeat().setInterval(0);
   }
 }
