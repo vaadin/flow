@@ -18,6 +18,7 @@
 // requests to the server over XHR and routes the response to the MessageHandler
 // or, on failure, to the ConnectionStateHandler.
 
+import { BrowserInfo } from './BrowserInfo';
 import { XhrConnectionError } from './communication/XhrConnectionError';
 import { parseJSONResponse } from './MessageHandler';
 import { addGetParameter } from './SharedUtil';
@@ -72,10 +73,6 @@ function parseJson(responseText: string): unknown {
   }
 }
 
-function isWebkit(): boolean {
-  return /webkit/i.test(navigator.userAgent);
-}
-
 /** Sends UIDL requests to the server over XHR; mirrors XhrConnection.java. */
 export class XhrConnection {
   // Webkit ignores outgoing requests while waiting for a navigation response
@@ -119,7 +116,7 @@ export class XhrConnection {
     xhr.onerror = () => this.onResponseFail(xhr, payload, new Error('XHR request failed'));
     xhr.send(payloadJson);
 
-    if (this.#webkitMaybeIgnoringRequests && isWebkit()) {
+    if (this.#webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
       const retryTimeout = 250;
       const retry = (): void => {
         if (resendRequest(xhr) && this.#webkitMaybeIgnoringRequests) {
