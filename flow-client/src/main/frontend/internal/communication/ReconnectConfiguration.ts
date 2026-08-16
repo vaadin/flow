@@ -49,10 +49,10 @@ interface ConfigurationListener {
 
 /** Exposes the reconnect configuration from the root node; mirrors ReconnectConfiguration.java. */
 export class ReconnectConfiguration {
-  private readonly registry: ReconnectRegistry;
+  readonly #registry: ReconnectRegistry;
 
   constructor(registry: ReconnectRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /**
@@ -63,8 +63,8 @@ export class ReconnectConfiguration {
     Reactive.runWhenDependenciesChange(() => connectionStateHandler.configurationUpdated());
   }
 
-  private getProperty(key: string): ReconnectProperty {
-    return this.registry
+  #getProperty(key: string): ReconnectProperty {
+    return this.#registry
       .getStateTree()
       .getRootNode()
       .getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
@@ -73,21 +73,21 @@ export class ReconnectConfiguration {
 
   /** The text to show in the reconnect dialog (deprecated configuration). */
   getDialogText(): string | null {
-    return (this.getProperty(DIALOG_TEXT_KEY).getValue() as string | null) ?? null;
+    return (this.#getProperty(DIALOG_TEXT_KEY).getValue() as string | null) ?? null;
   }
 
   /** The text to show when no longer trying to reconnect (deprecated configuration). */
   getDialogTextGaveUp(): string | null {
-    return (this.getProperty(DIALOG_TEXT_GAVE_UP_KEY).getValue() as string | null) ?? null;
+    return (this.#getProperty(DIALOG_TEXT_GAVE_UP_KEY).getValue() as string | null) ?? null;
   }
 
   /** The number of reconnect attempts before giving up. */
   getReconnectAttempts(): number {
-    return this.getProperty(RECONNECT_ATTEMPTS_KEY).getValueOrDefault(RECONNECT_ATTEMPTS_DEFAULT);
+    return this.#getProperty(RECONNECT_ATTEMPTS_KEY).getValueOrDefault(RECONNECT_ATTEMPTS_DEFAULT);
   }
 
   /** The interval (ms) between reconnect attempts. */
   getReconnectInterval(): number {
-    return this.getProperty(RECONNECT_INTERVAL_KEY).getValueOrDefault(RECONNECT_INTERVAL_DEFAULT);
+    return this.#getProperty(RECONNECT_INTERVAL_KEY).getValueOrDefault(RECONNECT_INTERVAL_DEFAULT);
   }
 }

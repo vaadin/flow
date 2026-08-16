@@ -65,35 +65,35 @@ function isPushModeEnabled(propertyValue: unknown): boolean {
 
 /** Exposes the push configuration and drives MessageSender; mirrors PushConfiguration.java. */
 export class PushConfiguration {
-  private readonly registry: PushConfigRegistry;
+  readonly #registry: PushConfigRegistry;
 
   constructor(registry: PushConfigRegistry) {
-    this.registry = registry;
-    this.getConfigurationMap()
+    this.#registry = registry;
+    this.#getConfigurationMap()
       .getProperty(PUSHMODE_KEY)
-      .addChangeListener((event) => this.onPushModeChange(event));
+      .addChangeListener((event) => this.#onPushModeChange(event));
   }
 
-  private onPushModeChange(event: { getOldValue(): unknown; getNewValue(): unknown }): void {
+  #onPushModeChange(event: { getOldValue(): unknown; getNewValue(): unknown }): void {
     const oldModeEnabled = isPushModeEnabled(event.getOldValue());
     const newModeEnabled = isPushModeEnabled(event.getNewValue());
 
     if (!oldModeEnabled && newModeEnabled) {
       // Switch push on, once all parts of the configuration are updated.
-      Reactive.addFlushListener(() => this.registry.getMessageSender().setPushEnabled(true));
+      Reactive.addFlushListener(() => this.#registry.getMessageSender().setPushEnabled(true));
     } else if (oldModeEnabled && !newModeEnabled) {
       // Switch push off, once all parts of the configuration are updated.
-      Reactive.addFlushListener(() => this.registry.getMessageSender().setPushEnabled(false));
+      Reactive.addFlushListener(() => this.#registry.getMessageSender().setPushEnabled(false));
     }
   }
 
-  private getConfigurationMap(): PushNodeMap {
-    return this.registry.getStateTree().getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
+  #getConfigurationMap(): PushNodeMap {
+    return this.#registry.getStateTree().getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
   }
 
   /** The push servlet mapping configured on the server, or null if none. */
   getPushServletMapping(): string | null {
-    const map = this.getConfigurationMap();
+    const map = this.#getConfigurationMap();
     if (map.hasPropertyValue(PUSH_SERVLET_MAPPING_KEY)) {
       return map.getProperty(PUSH_SERVLET_MAPPING_KEY).getValue() as string;
     }
@@ -103,12 +103,12 @@ export class PushConfiguration {
   /** Whether XHR should always be used for client→server messages even with bidirectional push. */
   isAlwaysXhrToServer(): boolean {
     // The only possible value is "true".
-    return this.getConfigurationMap().hasPropertyValue(ALWAYS_USE_XHR_TO_SERVER);
+    return this.#getConfigurationMap().hasPropertyValue(ALWAYS_USE_XHR_TO_SERVER);
   }
 
   /** All push parameters configured on the server (including transports). */
   getParameters(): Map<string, string> {
-    const parametersNode = this.getConfigurationMap().getProperty(PARAMETERS_KEY).getValue() as PushStateNode;
+    const parametersNode = this.#getConfigurationMap().getProperty(PARAMETERS_KEY).getValue() as PushStateNode;
     const parametersMap = parametersNode.getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
 
     const parameters = new Map<string, string>();
@@ -120,6 +120,6 @@ export class PushConfiguration {
 
   /** Whether push is enabled. */
   isPushEnabled(): boolean {
-    return isPushModeEnabled(this.getConfigurationMap().getProperty(PUSHMODE_KEY).getValue());
+    return isPushModeEnabled(this.#getConfigurationMap().getProperty(PUSHMODE_KEY).getValue());
   }
 }

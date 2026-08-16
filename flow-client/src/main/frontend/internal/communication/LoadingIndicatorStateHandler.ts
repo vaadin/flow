@@ -47,34 +47,34 @@ interface LoadingIndicatorRegistry {
 
 /** Manages the loading indicator from RPC activity; mirrors LoadingIndicatorStateHandler.java. */
 export class LoadingIndicatorStateHandler {
-  private readonly registry: LoadingIndicatorRegistry;
+  readonly #registry: LoadingIndicatorRegistry;
 
-  private loading = false;
+  #loading = false;
 
-  private showLoading = false;
+  #showLoading = false;
 
   constructor(registry: LoadingIndicatorRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Shows loading when a non-silent request starts. */
   startLoading(): void {
-    if (!this.showLoading) {
+    if (!this.#showLoading) {
       // The next request is muted, do not show loading.
       return;
     }
-    this.update();
+    this.#update();
   }
 
   /** Hides loading when no requests remain active (debounced). */
   stopLoading(): void {
-    if (this.registry.getRequestResponseTracker().hasActiveRequest()) {
+    if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
       // Some request is in progress, skip the current stop.
       return;
     }
-    this.showLoading = false;
+    this.#showLoading = false;
     // Debounce the update so a follow-up request keeps the indicator shown.
-    setTimeout(() => this.update(), 0);
+    setTimeout(() => this.#update(), 0);
   }
 
   /**
@@ -84,18 +84,18 @@ export class LoadingIndicatorStateHandler {
   processMessage(rpcType: string | null, eventType: string | null): void {
     const silent = rpcType === JsonConstants.RPC_TYPE_EVENT && eventType !== null && SILENT_EVENT_TYPES.has(eventType);
     if (!silent) {
-      this.showLoading = true;
+      this.#showLoading = true;
     }
   }
 
-  private update(): void {
-    if (this.showLoading === this.loading) {
+  #update(): void {
+    if (this.#showLoading === this.#loading) {
       return;
     }
-    this.loading = this.showLoading;
+    this.#loading = this.#showLoading;
     // loadingStarted/loadingFinished are preferred over setState so as not to
     // interfere with other loading parties (Flow router, Hilla requests).
-    if (this.loading) {
+    if (this.#loading) {
       loadingStarted();
     } else {
       loadingFinished();

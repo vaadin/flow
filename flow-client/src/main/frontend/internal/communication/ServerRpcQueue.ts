@@ -34,37 +34,37 @@ interface ServerRpcQueueRegistry {
 
 /** Accumulates and flushes server RPC invocations; mirrors ServerRpcQueue.java. */
 export class ServerRpcQueue {
-  private pendingInvocations: unknown[] = [];
+  #pendingInvocations: unknown[] = [];
 
-  private flushPending = false;
+  #flushPending = false;
 
-  private readonly registry: ServerRpcQueueRegistry;
+  readonly #registry: ServerRpcQueueRegistry;
 
-  private doFlushStrategy: () => void = NO_OP;
+  #doFlushStrategy: () => void = NO_OP;
 
   constructor(registry: ServerRpcQueueRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Adds an RPC invocation to the queue (ignored if the UI is not running). */
   add(invocation: unknown): void {
-    if (!this.registry.getUILifecycle().isRunning()) {
+    if (!this.#registry.getUILifecycle().isRunning()) {
       Console.warn('Trying to invoke method on not yet started or stopped application');
       return;
     }
-    this.pendingInvocations.push(invocation);
+    this.#pendingInvocations.push(invocation);
   }
 
   /** Clears the queue and cancels any scheduled flush. */
   clear(): void {
-    this.pendingInvocations = [];
-    this.flushPending = false;
-    this.doFlushStrategy = NO_OP;
+    this.#pendingInvocations = [];
+    this.#flushPending = false;
+    this.#doFlushStrategy = NO_OP;
   }
 
   /** The number of queued invocations. */
   size(): number {
-    return this.pendingInvocations.length;
+    return this.#pendingInvocations.length;
   }
 
   /** Whether the queue is empty. */
@@ -74,23 +74,23 @@ export class ServerRpcQueue {
 
   /** Triggers a deferred send of the queued invocations to the server. */
   flush(): void {
-    if (this.isFlushScheduled() || this.isEmpty()) {
+    if (this.#isFlushScheduled() || this.isEmpty()) {
       return;
     }
-    this.flushPending = true;
+    this.#flushPending = true;
 
-    this.doFlushStrategy = () => this.doFlush();
+    this.#doFlushStrategy = () => this.#doFlush();
     // Deferred so all event handlers run before the queue is flushed. Scheduled
     // through the shared TrackingScheduler (mirrors GWT's Scheduler.get()) so the
     // pending flush keeps ApplicationConnection.isActive true until the resulting
     // request completes — otherwise TestBench's waitForVaadin returns before the
     // event is even sent.
-    getScheduler().scheduleDeferred(() => this.doFlushStrategy());
+    getScheduler().scheduleDeferred(() => this.#doFlushStrategy());
   }
 
   /** Whether a flush is pending. */
   isFlushPending(): boolean {
-    return this.flushPending;
+    return this.#flushPending;
   }
 
   /** Whether a loading indicator should be shown while awaiting the response. */
@@ -100,19 +100,19 @@ export class ServerRpcQueue {
 
   /** The queued invocations as a JSON array ready to send. */
   toJson(): unknown[] {
-    return this.pendingInvocations;
+    return this.#pendingInvocations;
   }
 
-  private isFlushScheduled(): boolean {
-    return this.doFlushStrategy !== NO_OP;
+  #isFlushScheduled(): boolean {
+    return this.#doFlushStrategy !== NO_OP;
   }
 
-  private doFlush(): void {
-    this.doFlushStrategy = NO_OP;
+  #doFlush(): void {
+    this.#doFlushStrategy = NO_OP;
     if (!this.isFlushPending()) {
       // Somebody else cleared the queue before we had the chance.
       return;
     }
-    this.registry.getMessageSender().sendInvocationsToServer();
+    this.#registry.getMessageSender().sendInvocationsToServer();
   }
 }

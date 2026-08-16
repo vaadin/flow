@@ -66,10 +66,10 @@ interface URIResolverRegistry {
 
 /** Resolves Vaadin URIs against the application context root; mirrors URIResolver.java. */
 export class URIResolver {
-  private readonly registry: URIResolverRegistry;
+  readonly #registry: URIResolverRegistry;
 
   constructor(registry: URIResolverRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Translates a Vaadin URI to a browser-loadable URL. */
@@ -78,6 +78,6 @@ export class URIResolver {
   }
 
   protected getContextRootUrl(): string {
-    return this.registry.getApplicationConfiguration().getContextRootUrl();
+    return this.#registry.getApplicationConfiguration().getContextRootUrl();
   }
 }

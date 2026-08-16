@@ -44,49 +44,49 @@ interface HeartbeatRegistry {
 
 // One-shot reschedulable timer; mirrors the GWT Timer used by Heartbeat.
 class HeartbeatTimer {
-  private handle: ReturnType<typeof setTimeout> | null = null;
+  #handle: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly task: () => void;
+  readonly #task: () => void;
 
   constructor(task: () => void) {
-    this.task = task;
+    this.#task = task;
   }
 
   schedule(ms: number): void {
     this.cancel();
-    this.handle = setTimeout(() => {
-      this.handle = null;
-      this.task();
+    this.#handle = setTimeout(() => {
+      this.#handle = null;
+      this.#task();
     }, ms);
   }
 
   cancel(): void {
-    if (this.handle !== null) {
-      clearTimeout(this.handle);
-      this.handle = null;
+    if (this.#handle !== null) {
+      clearTimeout(this.#handle);
+      this.#handle = null;
     }
   }
 }
 
 /** Sends heartbeats to the server and reacts to the response; mirrors Heartbeat.java. */
 export class Heartbeat {
-  private readonly timer = new HeartbeatTimer(() => this.send());
+  readonly #timer = new HeartbeatTimer(() => this.send());
 
-  private uri = '';
+  #uri = '';
 
-  private interval = -1;
+  #interval = -1;
 
-  private readonly registry: HeartbeatRegistry;
+  readonly #registry: HeartbeatRegistry;
 
   constructor(registry: HeartbeatRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
     const configuration = registry.getApplicationConfiguration();
     this.setInterval(configuration.getHeartbeatInterval());
 
     let uri = configuration.getServiceUrl();
     uri = addGetParameter(uri, REQUEST_TYPE_PARAMETER, REQUEST_TYPE_HEARTBEAT);
     uri = addGetParameter(uri, UI_ID_PARAMETER, configuration.getUIId());
-    this.uri = uri;
+    this.#uri = uri;
 
     registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
@@ -97,8 +97,8 @@ export class Heartbeat {
 
   /** Sends a heartbeat request to the server. */
   send(): void {
-    this.timer.cancel();
-    if (this.interval < 0) {
+    this.#timer.cancel();
+    if (this.#interval < 0) {
       Console.debug('Heartbeat terminated, skipping request');
       return;
     }
@@ -106,26 +106,26 @@ export class Heartbeat {
     Console.debug('Sending heartbeat request...');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', this.uri, true);
+    xhr.open('POST', this.#uri, true);
     // Mirror Java's Xhr.post, which always sends credentials so cross-origin/CORS
     // deployments keep their cookies and authentication headers.
     xhr.withCredentials = true;
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          this.registry.getConnectionStateHandler().heartbeatOk();
-        } else if (this.interval < 0) {
+          this.#registry.getConnectionStateHandler().heartbeatOk();
+        } else if (this.#interval < 0) {
           // Heartbeat terminated before response processing (likely a session
           // expiration already handled elsewhere).
           Console.debug('Heartbeat terminated, ignoring failure.');
         } else {
-          this.registry.getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
+          this.#registry.getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
         }
         this.schedule();
       }
     };
     xhr.onerror = () => {
-      this.registry.getConnectionStateHandler().heartbeatException(xhr, new Error('Heartbeat request failed'));
+      this.#registry.getConnectionStateHandler().heartbeatException(xhr, new Error('Heartbeat request failed'));
       this.schedule();
     };
     xhr.send();
@@ -133,24 +133,24 @@ export class Heartbeat {
 
   /** The heartbeat interval in seconds. */
   getInterval(): number {
-    return this.interval;
+    return this.#interval;
   }
 
   /** Reschedules the heartbeat to match the interval; a negative interval disables it. */
   schedule(): void {
-    if (this.interval > 0) {
-      Console.debug(`Scheduling heartbeat in ${this.interval} seconds`);
-      this.timer.schedule(this.interval * 1000);
+    if (this.#interval > 0) {
+      Console.debug(`Scheduling heartbeat in ${this.#interval} seconds`);
+      this.#timer.schedule(this.#interval * 1000);
     } else {
       Console.debug('Disabling heartbeat');
-      this.timer.cancel();
+      this.#timer.cancel();
     }
   }
 
   /** Changes the heartbeat interval (seconds) at runtime and applies it. */
   setInterval(heartbeatInterval: number): void {
     Console.debug(`Setting heartbeat interval to ${heartbeatInterval}sec.`);
-    this.interval = heartbeatInterval;
+    this.#interval = heartbeatInterval;
     this.schedule();
   }
 }
