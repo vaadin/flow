@@ -43,7 +43,11 @@ export function isPolymerElement(htmlNode: Element): boolean {
   return isP2Element || isP3Element;
 }
 
-/** Whether the element could be a custom (and thus possibly Polymer) element. */
+/**
+ * Whether the element could be a custom (and thus possibly Polymer) element.
+ *
+ * @deprecated This is not in use anywhere and can be removed
+ */
 export function mayBePolymerElement(htmlNode: Element): boolean {
   return !!(window as unknown as { customElements?: unknown }).customElements && htmlNode.localName.includes('-');
 }
@@ -70,17 +74,30 @@ export function getDomRoot(templateElement: Node): Element | null {
   return (templateElement as unknown as { root?: Element }).root ?? null;
 }
 
-/** The element with the given id from the Polymer local-DOM ($) map, or null. */
+/**
+ * The element with the given id from the Polymer local-DOM ($) map, or null.
+ *
+ * @deprecated This is Polymer specific. Use {@link getElementById} from
+ *             ElementUtil for the generic version
+ */
 export function getDomElementById(shadowRootParent: Node, id: string): Element | null {
   return (shadowRootParent as unknown as { $: Record<string, Element> }).$[id] ?? null;
 }
 
-/** Finds the first element matching the CSS query inside the shadow root. */
+/**
+ * Finds the first element matching the CSS query inside the shadow root.
+ *
+ * @deprecated This is not in use anywhere and can be removed
+ */
 export function searchForElementInShadowRoot(shadowRoot: ShadowRoot, cssQuery: string): Node | null {
   return shadowRoot.querySelector(cssQuery);
 }
 
-/** Finds the element with the given id inside the shadow root. */
+/**
+ * Finds the element with the given id inside the shadow root.
+ *
+ * @deprecated This is not in use anywhere and can be removed
+ */
 export function getElementInShadowRootById(shadowRoot: ShadowRoot, id: string): Node | null {
   return shadowRoot.getElementById(id);
 }
