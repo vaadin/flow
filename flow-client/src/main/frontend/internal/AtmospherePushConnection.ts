@@ -46,36 +46,36 @@ const PUSH_ID_PARAMETER = 'v-pushId';
  * receiver can reassemble it. Mirrors AtmospherePushConnection.FragmentedMessage.
  */
 export class FragmentedMessage {
-  private readonly message: string;
+  readonly #message: string;
 
-  private index = 0;
+  #index = 0;
 
   constructor(message: string) {
-    this.message = message;
+    this.#message = message;
   }
 
   /** Whether another fragment remains to be retrieved. */
   hasNextFragment(): boolean {
-    return this.index < this.message.length;
+    return this.#index < this.#message.length;
   }
 
   /** Returns the next fragment, advancing the internal cursor. */
   getNextFragment(): string {
     let result: string;
-    if (this.index === 0) {
-      const header = `${this.message.length}${MESSAGE_DELIMITER}`;
+    if (this.#index === 0) {
+      const header = `${this.#message.length}${MESSAGE_DELIMITER}`;
       const fragmentLength = WEBSOCKET_FRAGMENT_SIZE - header.length;
-      result = header + this.getFragment(0, fragmentLength);
-      this.index += fragmentLength;
+      result = header + this.#getFragment(0, fragmentLength);
+      this.#index += fragmentLength;
     } else {
-      result = this.getFragment(this.index, this.index + WEBSOCKET_FRAGMENT_SIZE);
-      this.index += WEBSOCKET_FRAGMENT_SIZE;
+      result = this.#getFragment(this.#index, this.#index + WEBSOCKET_FRAGMENT_SIZE);
+      this.#index += WEBSOCKET_FRAGMENT_SIZE;
     }
     return result;
   }
 
-  private getFragment(begin: number, end: number): string {
-    return this.message.substring(begin, Math.min(this.message.length, end));
+  #getFragment(begin: number, end: number): string {
+    return this.#message.substring(begin, Math.min(this.#message.length, end));
   }
 }
 
@@ -226,56 +226,56 @@ interface AtmospherePushRegistry {
  * the FragmentedMessage splitter; the Registry members are contracts.
  */
 export class AtmospherePushConnection implements PushConnection {
-  private readonly registry: AtmospherePushRegistry;
+  readonly #registry: AtmospherePushRegistry;
 
-  private state: State = State.CONNECT_PENDING;
+  #state: State = State.CONNECT_PENDING;
 
-  private readonly config: Record<string, unknown>;
+  readonly #config: Record<string, unknown>;
 
-  private socket: unknown = null;
+  #socket: unknown = null;
 
-  private pushUri: string | null = null;
+  #pushUri: string | null = null;
 
-  private transport: string | null = null;
+  #transport: string | null = null;
 
-  private url = '';
+  #url = '';
 
-  private pendingDisconnectCommand: (() => void) | null = null;
+  #pendingDisconnectCommand: (() => void) | null = null;
 
   constructor(registry: AtmospherePushRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
     registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
-        if (this.state === State.DISCONNECT_PENDING || this.state === State.DISCONNECTED) {
+        if (this.#state === State.DISCONNECT_PENDING || this.#state === State.DISCONNECTED) {
           return;
         }
         this.disconnect(() => {});
       }
     });
 
-    this.config = createConfig(MESSAGE_DELIMITER.charCodeAt(0));
+    this.#config = createConfig(MESSAGE_DELIMITER.charCodeAt(0));
     // Always debug for now.
-    this.config.logLevel = 'debug';
+    this.#config.logLevel = 'debug';
 
-    this.registry
+    this.#registry
       .getPushConfiguration()
       .getParameters()
       .forEach((value, key) => {
         if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
-          this.config[key] = value.toLowerCase() === 'true';
+          this.#config[key] = value.toLowerCase() === 'true';
         } else {
-          this.config[key] = value;
+          this.#config[key] = value;
         }
       });
 
-    this.url = this.computePushUrl();
+    this.#url = this.#computePushUrl();
 
-    this.runWhenAtmosphereLoaded(() => setTimeout(() => this.connect(), 0));
+    this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
   }
 
-  private computePushUrl(): string {
-    const pushConfiguration = this.registry.getPushConfiguration();
-    const applicationConfiguration = this.registry.getApplicationConfiguration();
+  #computePushUrl(): string {
+    const pushConfiguration = this.#registry.getPushConfiguration();
+    const applicationConfiguration = this.#registry.getApplicationConfiguration();
     const pushServletMapping = pushConfiguration.getPushServletMapping();
 
     if (pushServletMapping === null || pushServletMapping.trim() === '' || pushServletMapping === '/') {
@@ -300,44 +300,44 @@ export class AtmospherePushConnection implements PushConnection {
     return contextRootUrl + mapping + PUSH_MAPPING;
   }
 
-  private getConnectionStateHandler(): PushConnectionStateHandler {
-    return this.registry.getConnectionStateHandler();
+  #getConnectionStateHandler(): PushConnectionStateHandler {
+    return this.#registry.getConnectionStateHandler();
   }
 
-  private connect(): void {
-    let pushUrl = this.registry.getURIResolver().resolveVaadinUri(this.url) ?? this.url;
+  #connect(): void {
+    let pushUrl = this.#registry.getURIResolver().resolveVaadinUri(this.#url) ?? this.#url;
     pushUrl = addGetParameter(pushUrl, REQUEST_TYPE_PARAMETER, REQUEST_TYPE_PUSH);
-    pushUrl = addGetParameter(pushUrl, UI_ID_PARAMETER, this.registry.getApplicationConfiguration().getUIId());
+    pushUrl = addGetParameter(pushUrl, UI_ID_PARAMETER, this.#registry.getApplicationConfiguration().getUIId());
 
-    const pushId = this.registry.getMessageHandler().getPushId();
+    const pushId = this.#registry.getMessageHandler().getPushId();
     if (pushId !== null) {
       pushUrl = addGetParameter(pushUrl, PUSH_ID_PARAMETER, pushId);
     }
 
-    this.pushUri = pushUrl;
-    this.socket = doConnect(pushUrl, this.config, {
-      onOpen: (response) => this.onOpen(response as AtmosphereResponse),
-      onReopen: (response) => this.onReopen(response as AtmosphereResponse),
-      onMessage: (response) => this.onMessage(response as AtmosphereResponse),
-      onError: (response) => this.onError(response as AtmosphereResponse),
-      onTransportFailure: () => this.onTransportFailure(),
-      onClose: (response) => this.onClose(response as AtmosphereResponse),
-      onReconnect: (request, response) => this.onReconnect(request, response as AtmosphereResponse),
-      onClientTimeout: (response) => this.onClientTimeout(response as AtmosphereResponse),
-      getLastSeenServerSyncId: () => this.registry.getMessageHandler().getLastSeenServerSyncId()
+    this.#pushUri = pushUrl;
+    this.#socket = doConnect(pushUrl, this.#config, {
+      onOpen: (response) => this.#onOpen(response as AtmosphereResponse),
+      onReopen: (response) => this.#onReopen(response as AtmosphereResponse),
+      onMessage: (response) => this.#onMessage(response as AtmosphereResponse),
+      onError: (response) => this.#onError(response as AtmosphereResponse),
+      onTransportFailure: () => this.#onTransportFailure(),
+      onClose: (response) => this.#onClose(response as AtmosphereResponse),
+      onReconnect: (request, response) => this.#onReconnect(request, response as AtmosphereResponse),
+      onClientTimeout: (response) => this.#onClientTimeout(response as AtmosphereResponse),
+      getLastSeenServerSyncId: () => this.#registry.getMessageHandler().getLastSeenServerSyncId()
     });
   }
 
   isActive(): boolean {
-    return this.state === State.CONNECT_PENDING || this.state === State.CONNECTED;
+    return this.#state === State.CONNECT_PENDING || this.#state === State.CONNECTED;
   }
 
   isBidirectional(): boolean {
-    if (this.transport === null || this.transport !== 'websocket') {
+    if (this.#transport === null || this.#transport !== 'websocket') {
       // Not using websockets -> send XHRs.
       return false;
     }
-    if (this.registry.getPushConfiguration().isAlwaysXhrToServer()) {
+    if (this.#registry.getPushConfiguration().isAlwaysXhrToServer()) {
       // The user has forced XHR.
       return false;
     }
@@ -347,42 +347,42 @@ export class AtmospherePushConnection implements PushConnection {
   }
 
   getTransportType(): string {
-    return this.transport ?? '';
+    return this.#transport ?? '';
   }
 
   push(message: Record<string, unknown>): void {
     if (!this.isBidirectional()) {
       throw new Error('This server to client push connection should not be used to send client to server messages');
     }
-    if (this.state === State.CONNECTED) {
+    if (this.#state === State.CONNECTED) {
       const messageJson = JSON.stringify(message);
-      if (this.transport === 'websocket') {
+      if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
         while (fragmented.hasNextFragment()) {
-          doPush(this.socket, fragmented.getNextFragment());
+          doPush(this.#socket, fragmented.getNextFragment());
         }
       } else {
-        doPush(this.socket, messageJson);
+        doPush(this.#socket, messageJson);
       }
       return;
     }
-    if (this.state === State.CONNECT_PENDING) {
-      this.getConnectionStateHandler().pushNotConnected(message);
+    if (this.#state === State.CONNECT_PENDING) {
+      this.#getConnectionStateHandler().pushNotConnected(message);
       return;
     }
     throw new Error('Can not push after disconnecting');
   }
 
   disconnect(command: () => void): void {
-    switch (this.state) {
+    switch (this.#state) {
       case State.CONNECT_PENDING:
         // Let the connection callback initiate the disconnect once connected.
-        this.state = State.DISCONNECT_PENDING;
-        this.pendingDisconnectCommand = command;
+        this.#state = State.DISCONNECT_PENDING;
+        this.#pendingDisconnectCommand = command;
         break;
       case State.CONNECTED:
-        doDisconnect(this.pushUri!);
-        this.state = State.DISCONNECTED;
+        doDisconnect(this.#pushUri!);
+        this.#state = State.DISCONNECTED;
         command();
         break;
       default:
@@ -390,35 +390,35 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
-  private onReopen(response: AtmosphereResponse): void {
-    this.onConnect(response);
+  #onReopen(response: AtmosphereResponse): void {
+    this.#onConnect(response);
   }
 
-  private onOpen(response: AtmosphereResponse): void {
-    this.onConnect(response);
+  #onOpen(response: AtmosphereResponse): void {
+    this.#onConnect(response);
   }
 
-  private onConnect(response: AtmosphereResponse): void {
-    this.transport = response.transport;
-    switch (this.state) {
+  #onConnect(response: AtmosphereResponse): void {
+    this.#transport = response.transport;
+    switch (this.#state) {
       case State.CONNECT_PENDING:
-        this.state = State.CONNECTED;
-        this.getConnectionStateHandler().pushOk(this);
+        this.#state = State.CONNECTED;
+        this.#getConnectionStateHandler().pushOk(this);
         break;
       case State.DISCONNECT_PENDING:
         // Connected so the pending disconnect can actually close the connection.
-        this.state = State.CONNECTED;
-        this.disconnect(this.pendingDisconnectCommand!);
+        this.#state = State.CONNECTED;
+        this.disconnect(this.#pendingDisconnectCommand!);
         break;
       case State.CONNECTED:
         // Some browsers open the same connection multiple times; ignore.
         break;
       default:
-        throw new Error(`Got onOpen event when connection state is ${this.state}. This should never happen.`);
+        throw new Error(`Got onOpen event when connection state is ${this.#state}. This should never happen.`);
     }
   }
 
-  private onMessage(response: AtmosphereResponse): void {
+  #onMessage(response: AtmosphereResponse): void {
     const message = response.responseBody;
     // Like MessageHandler.parseJson, treat unparseable content as null.
     let json: Record<string, unknown> | null;
@@ -428,47 +428,47 @@ export class AtmospherePushConnection implements PushConnection {
       json = null;
     }
     if (json === null) {
-      this.getConnectionStateHandler().pushInvalidContent(this, message);
+      this.#getConnectionStateHandler().pushInvalidContent(this, message);
     } else {
-      this.registry.getMessageHandler().handleMessage(json);
+      this.#registry.getMessageHandler().handleMessage(json);
     }
   }
 
-  private onTransportFailure(): void {
+  #onTransportFailure(): void {
     Console.warn('Push connection using the primary method failed. Trying the fallback transport.');
   }
 
-  private onError(response: AtmosphereResponse): void {
-    this.state = State.DISCONNECTED;
-    this.getConnectionStateHandler().pushError(this, response);
+  #onError(response: AtmosphereResponse): void {
+    this.#state = State.DISCONNECTED;
+    this.#getConnectionStateHandler().pushError(this, response);
   }
 
-  private onClose(response: AtmosphereResponse): void {
-    this.state = State.CONNECT_PENDING;
-    this.getConnectionStateHandler().pushClosed(this, response);
+  #onClose(response: AtmosphereResponse): void {
+    this.#state = State.CONNECT_PENDING;
+    this.#getConnectionStateHandler().pushClosed(this, response);
   }
 
-  private onClientTimeout(response: AtmosphereResponse): void {
-    this.state = State.DISCONNECTED;
-    this.getConnectionStateHandler().pushClientTimeout(this, response);
+  #onClientTimeout(response: AtmosphereResponse): void {
+    this.#state = State.DISCONNECTED;
+    this.#getConnectionStateHandler().pushClientTimeout(this, response);
   }
 
-  private onReconnect(_request: unknown, _response: AtmosphereResponse): void {
-    if (this.state === State.CONNECTED) {
-      this.state = State.CONNECT_PENDING;
+  #onReconnect(_request: unknown, _response: AtmosphereResponse): void {
+    if (this.#state === State.CONNECTED) {
+      this.#state = State.CONNECT_PENDING;
     }
-    this.getConnectionStateHandler().pushReconnectPending(this);
+    this.#getConnectionStateHandler().pushReconnectPending(this);
   }
 
-  private runWhenAtmosphereLoaded(command: () => void): void {
+  #runWhenAtmosphereLoaded(command: () => void): void {
     if (isAtmosphereLoaded()) {
       command();
       return;
     }
-    const pushJs = this.registry.getApplicationConfiguration().isProductionMode()
+    const pushJs = this.#registry.getApplicationConfiguration().isProductionMode()
       ? VAADIN_PUSH_JS
       : VAADIN_PUSH_DEBUG_JS;
-    const pushScriptUrl = this.registry.getApplicationConfiguration().getServiceUrl() + pushJs;
+    const pushScriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + pushJs;
     const listener: ResourceLoadListener = {
       onLoad: (event: ResourceLoadEvent) => {
         if (isAtmosphereLoaded()) {
@@ -480,10 +480,10 @@ export class AtmospherePushConnection implements PushConnection {
         }
       },
       onError: (event: ResourceLoadEvent) => {
-        this.getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
+        this.#getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
       }
     };
-    this.registry.getResourceLoader().loadScript(pushScriptUrl, listener);
+    this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
   }
 }
 

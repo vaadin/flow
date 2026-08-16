@@ -20,30 +20,30 @@
 
 /** Detail about an error during an XHR request to the server; mirrors XhrConnectionError.java. */
 export class XhrConnectionError {
-  private readonly xhr: XMLHttpRequest;
+  readonly #xhr: XMLHttpRequest;
 
-  private readonly payload: Record<string, unknown>;
+  readonly #payload: Record<string, unknown>;
 
-  private readonly error: Error | null;
+  readonly #error: Error | null;
 
   constructor(xhr: XMLHttpRequest, payload: Record<string, unknown>, error: Error | null) {
-    this.xhr = xhr;
-    this.payload = payload;
-    this.error = error;
+    this.#xhr = xhr;
+    this.#payload = payload;
+    this.#error = error;
   }
 
   /** The error that caused the problem, or null if not available. */
   getException(): Error | null {
-    return this.error;
+    return this.#error;
   }
 
   /** The request that failed to reach the server. */
   getXhr(): XMLHttpRequest {
-    return this.xhr;
+    return this.#xhr;
   }
 
   /** The payload that was sent to the server, never null. */
   getPayload(): Record<string, unknown> {
-    return this.payload;
+    return this.#payload;
   }
 }

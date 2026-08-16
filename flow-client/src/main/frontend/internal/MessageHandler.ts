@@ -126,35 +126,35 @@ interface UpdatedNode {
 
 /** Handles incoming UIDL messages and applies them to the client; mirrors MessageHandler.java. */
 export class MessageHandler {
-  private readonly registry: MessageHandlerRegistry;
+  readonly #registry: MessageHandlerRegistry;
 
   // Locks; while non-empty, response handling is suspended.
-  private readonly responseHandlingLocks = new Set<object>();
+  readonly #responseHandlingLocks = new Set<object>();
 
   // The server-sync-id ordering state + the queue of pending messages.
-  private readonly ordering = new PendingMessageQueue();
+  readonly #ordering = new PendingMessageQueue();
 
-  private csrfToken = CSRF_TOKEN_DEFAULT_VALUE;
+  #csrfToken = CSRF_TOKEN_DEFAULT_VALUE;
 
-  private pushId: string | null = null;
+  #pushId: string | null = null;
 
-  private bootstrapTime = 0;
+  #bootstrapTime = 0;
 
   // Profiling timings (ms), exposed via getProfilingData / client.getProfilingData.
-  private lastProcessingTime = 0;
+  #lastProcessingTime = 0;
 
-  private totalProcessingTime = 0;
+  #totalProcessingTime = 0;
 
-  private serverTimingInfo: number[] | null = null;
+  #serverTimingInfo: number[] | null = null;
 
-  private initialMessageHandled = false;
+  #initialMessageHandled = false;
 
-  private forceHandleMessage: ReturnType<typeof setTimeout> | null = null;
+  #forceHandleMessage: ReturnType<typeof setTimeout> | null = null;
 
-  private nextResponseSessionExpiredHandler: (() => void) | null = null;
+  #nextResponseSessionExpiredHandler: (() => void) | null = null;
 
   constructor(registry: MessageHandlerRegistry) {
-    this.registry = registry;
+    this.#registry = registry;
   }
 
   /** Handles a received UIDL message, starting the UI on the first one. */
@@ -169,25 +169,25 @@ export class MessageHandler {
       }
     }
 
-    let state = this.registry.getUILifecycle().getState();
+    let state = this.#registry.getUILifecycle().getState();
     if (state === UIState.INITIALIZING) {
       state = UIState.RUNNING;
-      this.registry.getUILifecycle().setState(state);
+      this.#registry.getUILifecycle().setState(state);
     }
     if (state === UIState.RUNNING) {
-      this.handleJSON(json);
+      this.#handleJSON(json);
     } else {
       Console.warn('Ignored received message because application has already been stopped');
     }
   }
 
-  private handleJSON(valueMap: ValueMap): void {
+  #handleJSON(valueMap: ValueMap): void {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
 
     if (
       !hasResynchronize &&
-      this.registry.getMessageSender().getResynchronizationState() === ResynchronizationState.WAITING_FOR_RESPONSE
+      this.#registry.getMessageSender().getResynchronizationState() === ResynchronizationState.WAITING_FOR_RESPONSE
     ) {
       if (UIDL_KEY_EXECUTE in valueMap) {
         const commands = valueMap[UIDL_KEY_EXECUTE] as unknown[][];
@@ -200,52 +200,52 @@ export class MessageHandler {
         }
       }
       Console.warn('Queueing message from the server as a resync request is ongoing.');
-      this.ordering.push(valueMap);
+      this.#ordering.push(valueMap);
       return;
     }
 
-    this.registry.getMessageSender().clearResynchronizationState();
+    this.#registry.getMessageSender().clearResynchronizationState();
 
-    if (hasResynchronize && !this.ordering.isNextExpectedMessage(serverId)) {
-      this.ordering.setLastSeenServerSyncId(serverId - 1);
-      this.ordering.removeOld();
+    if (hasResynchronize && !this.#ordering.isNextExpectedMessage(serverId)) {
+      this.#ordering.setLastSeenServerSyncId(serverId - 1);
+      this.#ordering.removeOld();
     }
 
-    const locked = this.responseHandlingLocks.size > 0;
-    if (locked || !this.ordering.isNextExpectedMessage(serverId)) {
+    const locked = this.#responseHandlingLocks.size > 0;
+    if (locked || !this.#ordering.isNextExpectedMessage(serverId)) {
       if (!locked) {
-        if (this.ordering.isAlreadySeen(serverId)) {
+        if (this.#ordering.isAlreadySeen(serverId)) {
           Console.warn(`Received message with server id ${serverId} but have already seen a newer one. Ignoring it`);
-          this.endRequestIfResponse(valueMap);
+          this.#endRequestIfResponse(valueMap);
           return;
         }
       }
-      this.ordering.push(valueMap);
-      if (this.forceHandleMessage === null) {
-        const timeout = this.registry.getApplicationConfiguration().getMaxMessageSuspendTimeout();
-        this.forceHandleMessage = setTimeout(() => this.forceMessageHandling(), timeout);
+      this.#ordering.push(valueMap);
+      if (this.#forceHandleMessage === null) {
+        const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout();
+        this.#forceHandleMessage = setTimeout(() => this.#forceMessageHandling(), timeout);
       }
       return;
     }
 
     if (hasResynchronize) {
       // Unregister all nodes and rebuild the state tree.
-      this.registry.getStateTree().prepareForResync();
+      this.#registry.getStateTree().prepareForResync();
     }
 
     const lock = {};
     this.suspendResponseHandling(lock);
 
-    this.registry.getRequestResponseTracker().fireResponseHandlingStarted();
+    this.#registry.getRequestResponseTracker().fireResponseHandlingStarted();
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
     if (CLIENT_TO_SERVER_ID in valueMap) {
-      this.registry
+      this.#registry
         .getMessageSender()
         .setClientToServerMessageId(valueMap[CLIENT_TO_SERVER_ID] as number, hasResynchronize);
     }
     if (serverId !== -1) {
-      this.ordering.setLastSeenServerSyncId(serverId);
+      this.#ordering.setLastSeenServerSyncId(serverId);
     }
 
     if ('redirect' in valueMap) {
@@ -254,18 +254,18 @@ export class MessageHandler {
       return;
     }
     if (UIDL_SECURITY_TOKEN_ID in valueMap) {
-      this.csrfToken = valueMap[UIDL_SECURITY_TOKEN_ID] as string;
+      this.#csrfToken = valueMap[UIDL_SECURITY_TOKEN_ID] as string;
     }
     if (UIDL_PUSH_ID in valueMap) {
-      this.pushId = valueMap[UIDL_PUSH_ID] as string;
+      this.#pushId = valueMap[UIDL_PUSH_ID] as string;
     }
 
-    this.handleDependencies(valueMap);
+    this.#handleDependencies(valueMap);
 
-    runWhenEagerDependenciesLoaded(() => this.processMessage(valueMap, lock));
+    runWhenEagerDependenciesLoaded(() => this.#processMessage(valueMap, lock));
   }
 
-  private handleDependencies(inputJson: ValueMap): void {
+  #handleDependencies(inputJson: ValueMap): void {
     const dependencies = new Map<string, unknown[]>();
     for (const loadMode of ['INLINE', 'EAGER', 'LAZY']) {
       if (loadMode in inputJson) {
@@ -273,31 +273,31 @@ export class MessageHandler {
       }
     }
     if (dependencies.size > 0) {
-      this.registry.getDependencyLoader().loadDependencies(dependencies);
+      this.#registry.getDependencyLoader().loadDependencies(dependencies);
     }
   }
 
-  private processMessage(valueMap: ValueMap, lock: object): void {
+  #processMessage(valueMap: ValueMap, lock: object): void {
     const start = performance.now();
     if ('timings' in valueMap) {
-      this.serverTimingInfo = valueMap.timings as number[];
+      this.#serverTimingInfo = valueMap.timings as number[];
     }
     try {
       if ('constants' in valueMap) {
-        this.registry.getConstantPool().importFromJson(valueMap.constants);
+        this.#registry.getConstantPool().importFromJson(valueMap.constants);
       }
       if ('changes' in valueMap) {
-        this.processChanges(valueMap);
+        this.#processChanges(valueMap);
       }
       if ('stylesheetRemovals' in valueMap) {
-        this.processStylesheetRemovals(valueMap.stylesheetRemovals as string[]);
+        this.#processStylesheetRemovals(valueMap.stylesheetRemovals as string[]);
       }
       if (UIDL_KEY_EXECUTE in valueMap) {
         // Invoke JS only after all tree changes and post-flush listeners added
         // during message processing (hence the doubly-nested post-flush).
         Reactive.addPostFlushListener(() =>
           Reactive.addPostFlushListener(() =>
-            this.registry.getExecuteJavaScriptProcessor().execute(valueMap[UIDL_KEY_EXECUTE])
+            this.#registry.getExecuteJavaScriptProcessor().execute(valueMap[UIDL_KEY_EXECUTE])
           )
         );
       }
@@ -307,19 +307,19 @@ export class MessageHandler {
       const meta = valueMap.meta as ValueMap | undefined;
       if (meta) {
         if (META_SESSION_EXPIRED in meta) {
-          if (this.nextResponseSessionExpiredHandler !== null) {
-            this.nextResponseSessionExpiredHandler();
-          } else if (this.registry.getUILifecycle().getState() !== UIState.TERMINATED) {
-            this.registry.getUILifecycle().setState(UIState.TERMINATED);
+          if (this.#nextResponseSessionExpiredHandler !== null) {
+            this.#nextResponseSessionExpiredHandler();
+          } else if (this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
+            this.#registry.getUILifecycle().setState(UIState.TERMINATED);
             // Delay so a pending redirect/reload is not cancelled.
             setTimeout(
-              () => this.registry.getSystemErrorHandler().handleSessionExpiredError(null),
+              () => this.#registry.getSystemErrorHandler().handleSessionExpiredError(null),
               SESSION_EXPIRED_HANDLING_DELAY
             );
           }
-        } else if ('appError' in meta && this.registry.getUILifecycle().getState() !== UIState.TERMINATED) {
+        } else if ('appError' in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
           const error = meta.appError as ValueMap;
-          this.registry
+          this.#registry
             .getSystemErrorHandler()
             .handleUnrecoverableError(
               error.caption as string,
@@ -328,23 +328,23 @@ export class MessageHandler {
               error.url as string,
               error.querySelector as string | null
             );
-          this.registry.getUILifecycle().setState(UIState.TERMINATED);
+          this.#registry.getUILifecycle().setState(UIState.TERMINATED);
         }
       }
-      this.nextResponseSessionExpiredHandler = null;
+      this.#nextResponseSessionExpiredHandler = null;
     } finally {
       // Mark the initial UIDL handled and end the request in finally so the UI
       // settles (ApplicationConnection.isActive returns false) even if applying
       // the message threw. In GWT the equivalent work ran inside $entry, so an
       // uncaught error never left the client perpetually "active"; here we
       // guarantee the same by not gating these on successful processing.
-      if (!this.initialMessageHandled) {
-        this.initialMessageHandled = true;
-        this.bootstrapTime = calculateBootstrapTime();
+      if (!this.#initialMessageHandled) {
+        this.#initialMessageHandled = true;
+        this.#bootstrapTime = calculateBootstrapTime();
       }
-      this.lastProcessingTime = Math.round(performance.now() - start);
-      this.totalProcessingTime += this.lastProcessingTime;
-      this.endRequestIfResponse(valueMap);
+      this.#lastProcessingTime = Math.round(performance.now() - start);
+      this.#totalProcessingTime += this.#lastProcessingTime;
+      this.#endRequestIfResponse(valueMap);
       this.resumeResponseHandling(lock);
     }
   }
@@ -355,18 +355,18 @@ export class MessageHandler {
    * getProfilingData JSNI in ApplicationConnection.java.
    */
   getProfilingData(): number[] {
-    const data = [this.lastProcessingTime, this.totalProcessingTime];
-    if (this.serverTimingInfo !== null) {
-      data.push(...this.serverTimingInfo);
+    const data = [this.#lastProcessingTime, this.#totalProcessingTime];
+    if (this.#serverTimingInfo !== null) {
+      data.push(...this.#serverTimingInfo);
     } else {
       data.push(-1, -1);
     }
-    data.push(this.bootstrapTime);
+    data.push(this.#bootstrapTime);
     return data;
   }
 
-  private processChanges(json: ValueMap): void {
-    const tree = this.registry.getStateTree();
+  #processChanges(json: ValueMap): void {
+    const tree = this.#registry.getStateTree();
     // Error/meta responses (e.g. an unrecoverable error) carry "changes":{} — an
     // empty object, not an array. GWT's JsonArray.length() treated that as zero
     // changes; here a non-array would make `for...of` throw and abort before the
@@ -375,11 +375,11 @@ export class MessageHandler {
     // The StateTree satisfies TreeChangeProcessor's contract.
     const updatedNodes = applyTreeChanges(tree as never, changes);
     Reactive.addPostFlushListener(() =>
-      setTimeout(() => updatedNodes.forEach((node) => this.afterServerUpdates(node as unknown as UpdatedNode)), 0)
+      setTimeout(() => updatedNodes.forEach((node) => this.#afterServerUpdates(node as unknown as UpdatedNode)), 0)
     );
   }
 
-  private afterServerUpdates(node: UpdatedNode): void {
+  #afterServerUpdates(node: UpdatedNode): void {
     if (!node.isUnregistered()) {
       const domNode = node.getDomNode();
       if (domNode) {
@@ -388,72 +388,72 @@ export class MessageHandler {
     }
   }
 
-  private processStylesheetRemovals(removals: string[]): void {
+  #processStylesheetRemovals(removals: string[]): void {
     for (const dependencyId of removals) {
       removeStylesheetByIdFromDom(dependencyId);
-      this.registry.getResourceLoader().clearLoadedResourceById(dependencyId);
+      this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);
     }
   }
 
-  private endRequestIfResponse(json: ValueMap): void {
-    if (this.isResponse(json)) {
-      this.registry.getRequestResponseTracker().endRequest();
-      this.registry.getLoadingIndicatorStateHandler().stopLoading();
+  #endRequestIfResponse(json: ValueMap): void {
+    if (this.#isResponse(json)) {
+      this.#registry.getRequestResponseTracker().endRequest();
+      this.#registry.getLoadingIndicatorStateHandler().stopLoading();
     }
   }
 
-  private isResponse(json: ValueMap): boolean {
+  #isResponse(json: ValueMap): boolean {
     const meta = json.meta as ValueMap | undefined;
     return !meta || !(META_ASYNC in meta);
   }
 
   /** Postpones response rendering until the lock is released. */
   suspendResponseHandling(lock: object): void {
-    this.responseHandlingLocks.add(lock);
+    this.#responseHandlingLocks.add(lock);
   }
 
   /** Resumes rendering once all locks have been removed. */
   resumeResponseHandling(lock: object): void {
-    this.responseHandlingLocks.delete(lock);
-    if (this.responseHandlingLocks.size === 0) {
-      this.resetForceHandleTimer();
-      if (!this.ordering.isEmpty()) {
-        this.handlePendingMessages();
+    this.#responseHandlingLocks.delete(lock);
+    if (this.#responseHandlingLocks.size === 0) {
+      this.#resetForceHandleTimer();
+      if (!this.#ordering.isEmpty()) {
+        this.#handlePendingMessages();
       }
     }
   }
 
-  private resetForceHandleTimer(): void {
-    if (this.forceHandleMessage !== null) {
-      clearTimeout(this.forceHandleMessage);
-      this.forceHandleMessage = null;
+  #resetForceHandleTimer(): void {
+    if (this.#forceHandleMessage !== null) {
+      clearTimeout(this.#forceHandleMessage);
+      this.#forceHandleMessage = null;
     }
   }
 
-  private forceMessageHandling(): void {
-    this.forceHandleMessage = null;
-    if (this.responseHandlingLocks.size > 0) {
+  #forceMessageHandling(): void {
+    this.#forceHandleMessage = null;
+    if (this.#responseHandlingLocks.size > 0) {
       Console.warn('WARNING: response handling was never resumed, forcibly removing locks...');
-      this.responseHandlingLocks.clear();
+      this.#responseHandlingLocks.clear();
     } else {
-      Console.warn(`Gave up waiting for message ${this.ordering.getExpectedServerId()} from the server`);
+      Console.warn(`Gave up waiting for message ${this.#ordering.getExpectedServerId()} from the server`);
     }
-    if (!this.handlePendingMessages() && !this.ordering.isEmpty()) {
+    if (!this.#handlePendingMessages() && !this.#ordering.isEmpty()) {
       // Messages remain but the next id is missing (likely lost) -> resync.
-      this.ordering.clear();
-      this.registry.getMessageSender().requestResynchronize();
-      if (this.registry.getRequestResponseTracker().hasActiveRequest()) {
-        this.registry.getRequestResponseTracker().endRequest();
+      this.#ordering.clear();
+      this.#registry.getMessageSender().requestResynchronize();
+      if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
+        this.#registry.getRequestResponseTracker().endRequest();
       }
-      this.registry.getMessageSender().resynchronize();
+      this.#registry.getMessageSender().resynchronize();
     }
   }
 
-  private handlePendingMessages(): boolean {
-    const index = this.ordering.findNextHandlable();
+  #handlePendingMessages(): boolean {
+    const index = this.#ordering.findNextHandlable();
     if (index !== -1) {
-      const message = this.ordering.remove(index);
-      this.handleJSON(message);
+      const message = this.#ordering.remove(index);
+      this.#handleJSON(message);
       return true;
     }
     return false;
@@ -461,26 +461,26 @@ export class MessageHandler {
 
   /** The last server sync id seen, or -1 before any response. */
   getLastSeenServerSyncId(): number {
-    return this.ordering.getLastSeenServerSyncId();
+    return this.#ordering.getLastSeenServerSyncId();
   }
 
   /** The CSRF token, or the default until one is received. */
   getCsrfToken(): string {
-    return this.csrfToken;
+    return this.#csrfToken;
   }
 
   /** The push connection id, or null until received. */
   getPushId(): string | null {
-    return this.pushId;
+    return this.#pushId;
   }
 
   /** Whether the initial UIDL has been handled. */
   isInitialUidlHandled(): boolean {
-    return this.bootstrapTime !== 0;
+    return this.#bootstrapTime !== 0;
   }
 
   /** Sets a one-shot handler for the next session-expiration response. */
   setNextResponseSessionExpiredHandler(handler: (() => void) | null): void {
-    this.nextResponseSessionExpiredHandler = handler;
+    this.#nextResponseSessionExpiredHandler = handler;
   }
 }
