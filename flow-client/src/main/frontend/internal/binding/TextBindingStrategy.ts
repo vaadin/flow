@@ -26,7 +26,7 @@ import type { BinderContext, BindingStrategy } from './BindingStrategy';
 /** Binding strategy for simple (non-template) text nodes; mirrors TextBindingStrategy.java. */
 export class TextBindingStrategy implements BindingStrategy<Text> {
   // Used as a weak set: only keys matter, so state nodes are weakly referenced.
-  private static readonly bound = new WeakMap<StateNode, boolean>();
+  static readonly #bound = new WeakMap<StateNode, boolean>();
 
   create(_node: StateNode): Text {
     return document.createTextNode('');
@@ -38,10 +38,10 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
 
   bind(stateNode: StateNode, htmlNode: Text, _context: BinderContext): void {
     assert(stateNode.hasFeature(NodeFeatures.TEXT_NODE), 'Node must have the text feature');
-    if (TextBindingStrategy.bound.has(stateNode)) {
+    if (TextBindingStrategy.#bound.has(stateNode)) {
       return;
     }
-    TextBindingStrategy.bound.set(stateNode, true);
+    TextBindingStrategy.#bound.set(stateNode, true);
 
     const textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
     const textProperty = textMap.getProperty(NodeProperties.TEXT);
@@ -50,11 +50,11 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
       htmlNode.data = textProperty.getValue() as string;
     });
 
-    stateNode.addUnregisterListener(() => this.unbind(stateNode, computation));
+    stateNode.addUnregisterListener(() => this.#unbind(stateNode, computation));
   }
 
-  private unbind(node: StateNode, computation: Computation): void {
+  #unbind(node: StateNode, computation: Computation): void {
     computation.stop();
-    TextBindingStrategy.bound.delete(node);
+    TextBindingStrategy.#bound.delete(node);
   }
 }
