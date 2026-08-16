@@ -21,14 +21,14 @@
 
 /** The set of model properties the server allows the client to update. */
 export class UpdatableModelProperties {
-  private readonly properties: Set<string>;
+  readonly #properties: Set<string>;
 
   constructor(properties: string[]) {
-    this.properties = new Set(properties);
+    this.#properties = new Set(properties);
   }
 
   /** Tests whether the given property is updatable. */
   isUpdatableProperty(property: string): boolean {
-    return this.properties.has(property);
+    return this.#properties.has(property);
   }
 }

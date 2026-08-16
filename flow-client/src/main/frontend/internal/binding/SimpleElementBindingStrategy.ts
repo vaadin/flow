@@ -938,21 +938,21 @@ interface NodeDataHolder {
  * the InitialPropertyUpdate inner class.
  */
 export class InitialPropertyUpdate {
-  private command: (() => void) | null = null;
+  #command: (() => void) | null = null;
 
-  private readonly node: NodeDataHolder;
+  readonly #node: NodeDataHolder;
 
   constructor(node: NodeDataHolder) {
-    this.node = node;
+    this.#node = node;
   }
 
   setCommand(command: () => void): void {
-    this.command = command;
+    this.#command = command;
   }
 
   execute(): void {
-    this.command?.();
-    this.node.clearNodeData(this);
+    this.#command?.();
+    this.#node.clearNodeData(this);
   }
 }
 
