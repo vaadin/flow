@@ -321,7 +321,9 @@ export class MessageSender {
         Console.debug(`Updating client-to-server id to ${nextExpectedId} based on server`);
       } else {
         Console.warn(
-          `Server expects next client-to-server id to be ${nextExpectedId} but we were going to use ${this.#clientToServerMessageId}. Will use ${nextExpectedId}.`
+          `Server expects next client-to-server id to be ${nextExpectedId} but we were going to use ${
+            this.#clientToServerMessageId
+          }. Will use ${nextExpectedId}.`
         );
       }
       this.#clientToServerMessageId = nextExpectedId;
