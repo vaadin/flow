@@ -61,42 +61,42 @@ export type ServerEventObjectAccess = (dom: Node) => { rejectPromises(): void } 
 
 /** A client-side representation of a server-side state tree; mirrors StateTree.java. */
 export class StateTree implements StateTreeContract {
-  private readonly idToNode = new Map<number, StateNode>();
+  readonly #idToNode = new Map<number, StateNode>();
 
-  private readonly registry: Registry;
+  readonly #registry: Registry;
 
-  private readonly serverEventObjectAccess: ServerEventObjectAccess;
+  readonly #serverEventObjectAccess: ServerEventObjectAccess;
 
-  private readonly rootNode: StateNode;
+  readonly #rootNode: StateNode;
 
-  private nodeFeatureDebugName: Map<number, string> | null = null;
+  #nodeFeatureDebugName: Map<number, string> | null = null;
 
-  private updateInProgress = false;
+  #updateInProgress = false;
 
-  private resync = false;
+  #resync = false;
 
   constructor(registry: Registry, serverEventObjectAccess: ServerEventObjectAccess = () => null) {
-    this.registry = registry;
-    this.serverEventObjectAccess = serverEventObjectAccess;
-    this.rootNode = new StateNode(1, this);
-    this.registerNode(this.rootNode);
+    this.#registry = registry;
+    this.#serverEventObjectAccess = serverEventObjectAccess;
+    this.#rootNode = new StateNode(1, this);
+    this.registerNode(this.#rootNode);
   }
 
   setUpdateInProgress(updateInProgress: boolean): void {
-    this.updateInProgress = updateInProgress;
+    this.#updateInProgress = updateInProgress;
     this.getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
   }
 
   isUpdateInProgress(): boolean {
-    return this.updateInProgress;
+    return this.#updateInProgress;
   }
 
   registerNode(node: StateNode): void {
     assert(node.getTree() === this, 'Node is not created for this tree');
     assert(!node.isUnregistered(), "Can't re-register a node");
-    assert(!this.idToNode.has(node.getId()), `Node ${node.getId()} is already registered`);
+    assert(!this.#idToNode.has(node.getId()), `Node ${node.getId()} is already registered`);
 
-    this.idToNode.set(node.getId(), node);
+    this.#idToNode.set(node.getId(), node);
 
     if (this.isUpdateInProgress()) {
       this.getRegistry().getInitialPropertiesHandler().nodeRegistered(node);
@@ -109,20 +109,20 @@ export class StateTree implements StateTreeContract {
     // registerNode, and lets an invalid resync be caught and recovered).
     assert(node.getTree() === this, 'Node is not created for this tree');
     assert(node === this.getNode(node.getId()), 'Node id is not registered with this tree');
-    assert(node !== this.rootNode, "Root node can't be unregistered");
-    this.idToNode.delete(node.getId());
+    assert(node !== this.#rootNode, "Root node can't be unregistered");
+    this.#idToNode.delete(node.getId());
     node.unregister();
   }
 
   prepareForResync(): void {
-    this.rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN).forEach((sn) => this.clearLists(sn as StateNode));
-    this.clearLists(this.rootNode);
+    this.#rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN).forEach((sn) => this.#clearLists(sn as StateNode));
+    this.#clearLists(this.#rootNode);
 
-    this.idToNode.forEach((node) => {
-      if (node !== this.rootNode) {
+    this.#idToNode.forEach((node) => {
+      if (node !== this.#rootNode) {
         const dom = node.getDomNode();
         if (dom !== null) {
-          const serverEventObject = this.serverEventObjectAccess(dom);
+          const serverEventObject = this.#serverEventObjectAccess(dom);
           if (serverEventObject !== null) {
             // reject any promise waiting on this node
             serverEventObject.rejectPromises();
@@ -136,15 +136,15 @@ export class StateTree implements StateTreeContract {
   }
 
   isResync(): boolean {
-    return this.resync;
+    return this.#resync;
   }
 
   setResync(resync: boolean): void {
-    this.resync = resync;
+    this.#resync = resync;
   }
 
   getStateNodeForDomNode(domNode: Node): StateNode | null {
-    for (const stateNode of this.idToNode.values()) {
+    for (const stateNode of this.#idToNode.values()) {
       if (domNode.isSameNode(stateNode.getDomNode())) {
         return stateNode;
       }
@@ -152,7 +152,7 @@ export class StateTree implements StateTreeContract {
     return null;
   }
 
-  private clearLists(stateNode: StateNode): void {
+  #clearLists(stateNode: StateNode): void {
     stateNode.forEachFeature((feature, featureId) => {
       if (feature instanceof NodeList) {
         if (featureId === NodeFeatures.ELEMENT_CHILDREN) {
@@ -166,7 +166,7 @@ export class StateTree implements StateTreeContract {
     });
   }
 
-  private isValidNode(node: StateNode | null): boolean {
+  #isValidNode(node: StateNode | null): boolean {
     let isValid = true;
     if (node === null) {
       Console.warn('Node is null');
@@ -182,16 +182,16 @@ export class StateTree implements StateTreeContract {
   }
 
   getNode(id: number): StateNode | null {
-    return this.idToNode.get(id) ?? null;
+    return this.#idToNode.get(id) ?? null;
   }
 
   getRootNode(): StateNode {
-    return this.rootNode;
+    return this.#rootNode;
   }
 
   sendEventToServer(node: StateNode, eventType: string, eventData: unknown): void {
-    if (this.isValidNode(node)) {
-      this.registry.getServerConnector().sendEventMessage(node, eventType, eventData);
+    if (this.#isValidNode(node)) {
+      this.#registry.getServerConnector().sendEventMessage(node, eventType, eventData);
     }
   }
 
@@ -199,18 +199,18 @@ export class StateTree implements StateTreeContract {
     const nodeMap = property.getMap() as NodeMap;
     const node = nodeMap.getNode() as StateNode;
 
-    if (this.getRegistry().getInitialPropertiesHandler().handlePropertyUpdate(property) || !this.isValidNode(node)) {
+    if (this.getRegistry().getInitialPropertiesHandler().handlePropertyUpdate(property) || !this.#isValidNode(node)) {
       return;
     }
 
-    this.registry
+    this.#registry
       .getServerConnector()
       .sendNodeSyncMessage(node, nodeMap.getId(), property.getName(), property.getValue());
   }
 
   sendTemplateEventToServer(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
-    if (this.isValidNode(node)) {
-      this.registry.getServerConnector().sendTemplateEventMessage(node, methodName, argsArray, promiseId);
+    if (this.#isValidNode(node)) {
+      this.#registry.getServerConnector().sendTemplateEventMessage(node, methodName, argsArray, promiseId);
     }
   }
 
@@ -222,7 +222,7 @@ export class StateTree implements StateTreeContract {
     tagName: string,
     index: number
   ): void {
-    this.registry
+    this.#registry
       .getServerConnector()
       .sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName, index);
   }
@@ -233,11 +233,11 @@ export class StateTree implements StateTreeContract {
     assignedId: number,
     id: string
   ): void {
-    this.registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
+    this.#registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
   }
 
   getRegistry(): Registry {
-    return this.registry;
+    return this.#registry;
   }
 
   isVisible(node: StateNode): boolean {
@@ -262,7 +262,7 @@ export class StateTree implements StateTreeContract {
   }
 
   getFeatureDebugName(id: number): string {
-    if (this.nodeFeatureDebugName === null) {
+    if (this.#nodeFeatureDebugName === null) {
       const names = new Map<number, string>();
       names.set(NodeFeatures.ELEMENT_DATA, 'elementData');
       names.set(NodeFeatures.ELEMENT_PROPERTIES, 'elementProperties');
@@ -287,8 +287,8 @@ export class StateTree implements StateTreeContract {
       names.set(NodeFeatures.ATTACH_EXISTING_ELEMENT, 'attachExistingElementFeature');
       names.set(NodeFeatures.VIRTUAL_CHILDREN, 'virtualChildrenList');
       names.set(NodeFeatures.BASIC_TYPE_VALUE, 'basicTypeValue');
-      this.nodeFeatureDebugName = names;
+      this.#nodeFeatureDebugName = names;
     }
-    return this.nodeFeatureDebugName.get(id) ?? `Unknown node feature: ${id}`;
+    return this.#nodeFeatureDebugName.get(id) ?? `Unknown node feature: ${id}`;
   }
 }
