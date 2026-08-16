@@ -32,11 +32,11 @@ const ELEMENT_PROPERTIES = 1;
 
 /** Fired when a new property is added to a map; mirrors MapPropertyAddEvent. */
 export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
-  private readonly property: MapProperty;
+  readonly #property: MapProperty;
 
   constructor(source: NodeMap, property: MapProperty) {
     super(source);
-    this.property = property;
+    this.#property = property;
   }
 
   override getSource(): NodeMap {
@@ -44,7 +44,7 @@ export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
   }
 
   getProperty(): MapProperty {
-    return this.property;
+    return this.#property;
   }
 }
 
@@ -53,28 +53,28 @@ export type MapPropertyAddListener = (event: MapPropertyAddEvent) => void;
 
 /** A state node feature that structures data as a map; mirrors NodeMap.java. */
 export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOwner {
-  private readonly properties = new Map<string, MapProperty>();
+  readonly #properties = new Map<string, MapProperty>();
 
-  private readonly eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
+  readonly #eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
     this,
     (reactiveValueChangeListener) => reactiveValueChangeListener,
     (listener, event) => listener(event)
   );
 
   getProperty(name: string): MapProperty {
-    let property = this.properties.get(name);
+    let property = this.#properties.get(name);
     if (property === undefined) {
       property = new MapProperty(name, this, name === 'innerHTML' && this.getId() === ELEMENT_PROPERTIES);
-      this.properties.set(name, property);
+      this.#properties.set(name, property);
 
-      this.eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
+      this.#eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
     }
 
     return property;
   }
 
   hasPropertyValue(name: string): boolean {
-    const property = this.properties.get(name);
+    const property = this.#properties.get(name);
     if (property === undefined) {
       return false;
     }
@@ -82,8 +82,8 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
   }
 
   forEachProperty(callback: (property: MapProperty, name: string) => void): void {
-    this.eventRouter.registerRead();
-    this.properties.forEach((property, name) => callback(property, name));
+    this.#eventRouter.registerRead();
+    this.#properties.forEach((property, name) => callback(property, name));
   }
 
   getPropertyNames(): string[] {
@@ -95,7 +95,7 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
   override getDebugJson(): JsonValue {
     const json: Record<string, JsonValue> = {};
 
-    this.properties.forEach((p, n) => {
+    this.#properties.forEach((p, n) => {
       if (p.hasValue()) {
         json[n] = this.getAsDebugJson(p.getValue());
       }
@@ -111,7 +111,7 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
   override convert(converter: (value: unknown) => JsonValue): JsonValue {
     const json: Record<string, JsonValue> = {};
 
-    this.properties.forEach((property, name) => {
+    this.#properties.forEach((property, name) => {
       if (property.hasValue()) {
         json[name] = converter(property.getValue());
       }
@@ -121,10 +121,10 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
   }
 
   addReactiveValueChangeListener(reactiveValueChangeListener: ReactiveValueChangeListener): EventRemover {
-    return this.eventRouter.addReactiveListener(reactiveValueChangeListener);
+    return this.#eventRouter.addReactiveListener(reactiveValueChangeListener);
   }
 
   addPropertyAddListener(listener: MapPropertyAddListener): EventRemover {
-    return this.eventRouter.addListener(listener);
+    return this.#eventRouter.addListener(listener);
   }
 }
