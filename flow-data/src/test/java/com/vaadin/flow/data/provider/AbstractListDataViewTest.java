@@ -1008,6 +1008,7 @@ class AbstractListDataViewTest {
         // Check that the verification is still passed during data view API
         // usage, because the default data provider is an in-memory one
         dataView.addItem("foo");
+        dataView.addFilter(item -> item.contains("test"));
     }
 
     @Test

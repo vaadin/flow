@@ -128,9 +128,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
         DataViewUtils.setComponentFilter(component, filter);
-        fireFilteringOrSortingChangeEvent(filter,
-                (SerializableComparator<T>) DataViewUtils
-                        .getComponentSortComparator(component).orElse(null));
+        filterOrSortingChanged(filter, (SerializableComparator<T>) DataViewUtils
+                .getComponentSortComparator(component).orElse(null));
         refreshAll();
         return this;
     }
@@ -140,7 +139,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView<T> setSortComparator(
             SerializableComparator<T> sortComparator) {
         DataViewUtils.setComponentSortComparator(component, sortComparator);
-        fireFilteringOrSortingChangeEvent(
+        filterOrSortingChanged(
                 (SerializablePredicate<T>) DataViewUtils
                         .getComponentFilter(component).orElse(null),
                 sortComparator);
@@ -413,9 +412,14 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.refreshAll();
     }
 
-    private void fireFilteringOrSortingChangeEvent(
-            SerializablePredicate<T> filter,
+    protected void filterOrSortingChanged(SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
-        filterOrSortingChangedCallback.accept(filter, sortComparator);
+        if (getDataProvider() instanceof DataCommunicator.EmptyDataProvider) {
+            return;
+        }
+
+        if (filterOrSortingChangedCallback != null) {
+            filterOrSortingChangedCallback.accept(filter, sortComparator);
+        }
     }
 }
