@@ -418,8 +418,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return;
         }
 
-        if (filterOrSortingChangedCallback != null) {
-            filterOrSortingChangedCallback.accept(filter, sortComparator);
-        }
+        filterOrSortingChangedCallback.accept(filter, sortComparator);
     }
 }
