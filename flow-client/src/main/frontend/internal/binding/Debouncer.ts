@@ -31,39 +31,39 @@ type Command = () => void;
 // Re-usable timer mirroring elemental.util.Timer (schedule = one-shot,
 // scheduleRepeating = interval, cancel = stop).
 class Timer {
-  private handle: ReturnType<typeof setTimeout> | null = null;
+  #handle: ReturnType<typeof setTimeout> | null = null;
 
-  private repeating = false;
+  #repeating = false;
 
-  private readonly task: () => void;
+  readonly #task: () => void;
 
   constructor(task: () => void) {
-    this.task = task;
+    this.#task = task;
   }
 
   schedule(ms: number): void {
     this.cancel();
-    this.repeating = false;
-    this.handle = setTimeout(() => {
-      this.handle = null;
-      this.task();
+    this.#repeating = false;
+    this.#handle = setTimeout(() => {
+      this.#handle = null;
+      this.#task();
     }, ms);
   }
 
   scheduleRepeating(ms: number): void {
     this.cancel();
-    this.repeating = true;
-    this.handle = setInterval(() => this.task(), ms);
+    this.#repeating = true;
+    this.#handle = setInterval(() => this.#task(), ms);
   }
 
   cancel(): void {
-    if (this.handle !== null) {
-      if (this.repeating) {
-        clearInterval(this.handle);
+    if (this.#handle !== null) {
+      if (this.#repeating) {
+        clearInterval(this.#handle);
       } else {
-        clearTimeout(this.handle);
+        clearTimeout(this.#handle);
       }
-      this.handle = null;
+      this.#handle = null;
     }
   }
 }
@@ -74,32 +74,32 @@ class Timer {
  * sequence of similar events.
  */
 export class Debouncer {
-  private static readonly debouncers = new Map<Node, Map<string, Map<number, Debouncer>>>();
+  static readonly #debouncers = new Map<Node, Map<string, Map<number, Debouncer>>>();
 
-  private readonly timeout: number;
+  readonly #timeout: number;
 
-  private readonly element: Node;
+  readonly #element: Node;
 
-  private readonly identifier: string;
+  readonly #identifier: string;
 
-  private idleTimer: Timer | null = null;
+  #idleTimer: Timer | null = null;
 
-  private intermediateTimer: Timer | null = null;
+  #intermediateTimer: Timer | null = null;
 
-  private bufferedSendCommand: SendCommand | null = null;
+  #bufferedSendCommand: SendCommand | null = null;
 
-  private bufferedCommands: Map<string, Command> | null = null;
+  #bufferedCommands: Map<string, Command> | null = null;
 
-  private previousBufferedNonExecutedCommands: Map<string, Command> | null = null;
+  #previousBufferedNonExecutedCommands: Map<string, Command> | null = null;
 
-  private potentialTrailing: SendCommand | null = null;
+  #potentialTrailing: SendCommand | null = null;
 
-  private potentialTrailingBufferedCommands: Map<string, Command> | null = null;
+  #potentialTrailingBufferedCommands: Map<string, Command> | null = null;
 
   private constructor(element: Node, identifier: string, timeout: number) {
-    this.element = element;
-    this.identifier = identifier;
-    this.timeout = timeout;
+    this.#element = element;
+    this.#identifier = identifier;
+    this.#timeout = timeout;
   }
 
   /**
@@ -110,75 +110,75 @@ export class Debouncer {
     // If "leading" events are requested and no timers created yet, this is the
     // leading event, triggered immediately and not saved.
     const triggerImmediately =
-      phases.has(EVENT_PHASE_LEADING) && this.idleTimer === null && this.intermediateTimer === null;
+      phases.has(EVENT_PHASE_LEADING) && this.#idleTimer === null && this.#intermediateTimer === null;
 
     if (!triggerImmediately && (phases.has(EVENT_PHASE_TRAILING) || phases.has(EVENT_PHASE_INTERMEDIATE))) {
       // last command is saved for timers unless this is a "leading" event
-      this.bufferedSendCommand = command;
-      this.bufferedCommands = commands;
+      this.#bufferedSendCommand = command;
+      this.#bufferedCommands = commands;
       if (
         !phases.has(EVENT_PHASE_INTERMEDIATE) &&
-        (this.idleTimer === null || this.previousBufferedNonExecutedCommands === null)
+        (this.#idleTimer === null || this.#previousBufferedNonExecutedCommands === null)
       ) {
-        this.previousBufferedNonExecutedCommands = commands;
+        this.#previousBufferedNonExecutedCommands = commands;
       }
-      this.potentialTrailing = null;
-      this.potentialTrailingBufferedCommands = null;
+      this.#potentialTrailing = null;
+      this.#potentialTrailingBufferedCommands = null;
     }
 
     if (phases.has(EVENT_PHASE_LEADING) || phases.has(EVENT_PHASE_TRAILING)) {
-      if (this.idleTimer === null) {
-        this.idleTimer = new Timer(() => {
-          if (this.bufferedSendCommand !== null) {
-            Debouncer.runCommands(
+      if (this.#idleTimer === null) {
+        this.#idleTimer = new Timer(() => {
+          if (this.#bufferedSendCommand !== null) {
+            Debouncer.#runCommands(
               EVENT_PHASE_TRAILING,
-              this.bufferedSendCommand,
-              this.bufferedCommands!,
-              this.previousBufferedNonExecutedCommands
+              this.#bufferedSendCommand,
+              this.#bufferedCommands!,
+              this.#previousBufferedNonExecutedCommands
             );
-            this.bufferedSendCommand = null;
-            this.bufferedCommands = null;
-            this.previousBufferedNonExecutedCommands = null;
-          } else if (this.potentialTrailing !== null) {
+            this.#bufferedSendCommand = null;
+            this.#bufferedCommands = null;
+            this.#previousBufferedNonExecutedCommands = null;
+          } else if (this.#potentialTrailing !== null) {
             // Both trailing & intermediate configured and e.g. typing stopped:
             // after one more timeout with no new commands, re-post the same
             // event to the server.
-            Debouncer.runCommands(
+            Debouncer.#runCommands(
               EVENT_PHASE_TRAILING,
-              this.potentialTrailing,
-              this.potentialTrailingBufferedCommands!,
+              this.#potentialTrailing,
+              this.#potentialTrailingBufferedCommands!,
               null
             );
           }
-          this.unregister(); // release memory
+          this.#unregister(); // release memory
         });
       }
-      this.idleTimer.cancel();
-      this.idleTimer.schedule(this.timeout);
+      this.#idleTimer.cancel();
+      this.#idleTimer.schedule(this.#timeout);
     }
 
-    if (this.intermediateTimer === null && phases.has(EVENT_PHASE_INTERMEDIATE)) {
-      this.intermediateTimer = new Timer(() => {
-        if (this.bufferedSendCommand !== null) {
-          Debouncer.runCommands(EVENT_PHASE_INTERMEDIATE, this.bufferedSendCommand, this.bufferedCommands!, null);
+    if (this.#intermediateTimer === null && phases.has(EVENT_PHASE_INTERMEDIATE)) {
+      this.#intermediateTimer = new Timer(() => {
+        if (this.#bufferedSendCommand !== null) {
+          Debouncer.#runCommands(EVENT_PHASE_INTERMEDIATE, this.#bufferedSendCommand, this.#bufferedCommands!, null);
           if (phases.has(EVENT_PHASE_TRAILING)) {
-            this.potentialTrailing = this.bufferedSendCommand;
-            this.potentialTrailingBufferedCommands = this.bufferedCommands;
+            this.#potentialTrailing = this.#bufferedSendCommand;
+            this.#potentialTrailingBufferedCommands = this.#bufferedCommands;
           }
-          this.bufferedSendCommand = null;
-          this.bufferedCommands = null;
+          this.#bufferedSendCommand = null;
+          this.#bufferedCommands = null;
         } else {
           // no new last command during the period, stop and unregister
-          this.unregister();
+          this.#unregister();
         }
       });
-      this.intermediateTimer.scheduleRepeating(this.timeout);
+      this.#intermediateTimer.scheduleRepeating(this.#timeout);
     }
 
     return triggerImmediately;
   }
 
-  private static runCommands(
+  static #runCommands(
     phase: string,
     sendCommand: SendCommand,
     commands: Map<string, Command>,
@@ -186,7 +186,7 @@ export class Debouncer {
   ): void {
     if (phase === EVENT_PHASE_TRAILING) {
       commands.forEach((command, property) => {
-        if (command === MapProperty.NO_OP && Debouncer.hasPreviousCommand(previousCommands, property)) {
+        if (command === MapProperty.NO_OP && Debouncer.#hasPreviousCommand(previousCommands, property)) {
           previousCommands!.get(property)!();
         } else {
           command();
@@ -198,32 +198,32 @@ export class Debouncer {
     sendCommand(phase);
   }
 
-  private static hasPreviousCommand(previousCommands: Map<string, Command> | null, property: string): boolean {
+  static #hasPreviousCommand(previousCommands: Map<string, Command> | null, property: string): boolean {
     return previousCommands !== null && previousCommands.has(property);
   }
 
-  private unregister(): void {
-    if (this.intermediateTimer !== null) {
-      this.intermediateTimer.cancel();
-      this.intermediateTimer = null;
+  #unregister(): void {
+    if (this.#intermediateTimer !== null) {
+      this.#intermediateTimer.cancel();
+      this.#intermediateTimer = null;
     }
-    if (this.idleTimer !== null) {
-      this.idleTimer.cancel();
-      this.idleTimer = null;
+    if (this.#idleTimer !== null) {
+      this.#idleTimer.cancel();
+      this.#idleTimer = null;
     }
-    const elementMap = Debouncer.debouncers.get(this.element);
+    const elementMap = Debouncer.#debouncers.get(this.#element);
     if (elementMap === undefined) {
       return;
     }
-    const identifierMap = elementMap.get(this.identifier);
+    const identifierMap = elementMap.get(this.#identifier);
     if (identifierMap === undefined) {
       return;
     }
-    identifierMap.delete(this.timeout);
+    identifierMap.delete(this.#timeout);
     if (identifierMap.size === 0) {
-      elementMap.delete(this.identifier);
+      elementMap.delete(this.#identifier);
       if (elementMap.size === 0) {
-        Debouncer.debouncers.delete(this.element);
+        Debouncer.#debouncers.delete(this.#element);
       }
     }
   }
@@ -233,10 +233,10 @@ export class Debouncer {
    * DOM node, identifier and debounce timeout.
    */
   static getOrCreate(element: Node, identifier: string, debounce: number): Debouncer {
-    let elementMap = Debouncer.debouncers.get(element);
+    let elementMap = Debouncer.#debouncers.get(element);
     if (elementMap === undefined) {
       elementMap = new Map();
-      Debouncer.debouncers.set(element, elementMap);
+      Debouncer.#debouncers.set(element, elementMap);
     }
     let identifierMap = elementMap.get(identifier);
     if (identifierMap === undefined) {
@@ -257,21 +257,21 @@ export class Debouncer {
    */
   static flushAll(): SendCommand[] {
     const executedCommands: SendCommand[] = [];
-    Debouncer.debouncers.forEach((elementMap) => {
+    Debouncer.#debouncers.forEach((elementMap) => {
       elementMap.forEach((identifierMap) => {
         identifierMap.forEach((debouncer) => {
-          if (debouncer.idleTimer !== null) {
-            if (debouncer.bufferedSendCommand !== null) {
+          if (debouncer.#idleTimer !== null) {
+            if (debouncer.#bufferedSendCommand !== null) {
               // trailing timer present: treat as an extra trailing event
-              Debouncer.runCommands(
+              Debouncer.#runCommands(
                 EVENT_PHASE_TRAILING,
-                debouncer.bufferedSendCommand,
-                debouncer.bufferedCommands!,
+                debouncer.#bufferedSendCommand,
+                debouncer.#bufferedCommands!,
                 null
               );
             }
             // else: in queue with no command, likely a leading-only subscription
-          } else if (debouncer.bufferedSendCommand !== null) {
+          } else if (debouncer.#bufferedSendCommand !== null) {
             // otherwise an extra intermediate event; comes a bit early but
             // better than out of order.
             // Deviation from Debouncer.java: Java runs runCommands here
@@ -279,21 +279,21 @@ export class Debouncer {
             // buffered command that runCommands NPEs on the null command, so we
             // guard on bufferedSendCommand and skip; the timer restart is moot
             // with nothing to fire.
-            Debouncer.runCommands(
+            Debouncer.#runCommands(
               EVENT_PHASE_INTERMEDIATE,
-              debouncer.bufferedSendCommand,
-              debouncer.bufferedCommands!,
+              debouncer.#bufferedSendCommand,
+              debouncer.#bufferedCommands!,
               null
             );
             // restart so we don't fire more than one event quicker than ordered
-            debouncer.intermediateTimer!.scheduleRepeating(debouncer.timeout);
+            debouncer.#intermediateTimer!.scheduleRepeating(debouncer.#timeout);
           }
-          if (debouncer.bufferedSendCommand !== null) {
-            executedCommands.push(debouncer.bufferedSendCommand);
+          if (debouncer.#bufferedSendCommand !== null) {
+            executedCommands.push(debouncer.#bufferedSendCommand);
             // clean so the idle timer can't fire it again
-            debouncer.bufferedSendCommand = null;
-            debouncer.bufferedCommands = null;
-            debouncer.previousBufferedNonExecutedCommands = null;
+            debouncer.#bufferedSendCommand = null;
+            debouncer.#bufferedCommands = null;
+            debouncer.#previousBufferedNonExecutedCommands = null;
           }
         });
       });
