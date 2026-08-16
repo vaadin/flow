@@ -20,7 +20,7 @@
 // and clear-by-id, as well as the stylesheet loaders (which need the
 // BrowserInfo Safari/Opera quirks).
 
-import { isChrome, isEdge, isIE, isOpera, isSafariOrIOS } from './BrowserInfo';
+import { BrowserInfo } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
 import { Console } from './Console';
@@ -262,7 +262,7 @@ export class ResourceLoader {
         linkElement.setAttribute('data-id', dependencyId);
       }
 
-      if (isSafariOrIOS()) {
+      if (BrowserInfo.get().isSafariOrIOS()) {
         // Safari fires no events for link elements; poll the stylesheet rules.
         this.pollStylesheet(url, event);
       } else {
@@ -271,7 +271,7 @@ export class ResourceLoader {
           () => {
             // Chrome, IE, Edge all fire load for errors, must check
             // stylesheet data
-            if (isChrome() || isIE() || isEdge()) {
+            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE() || BrowserInfo.get().isEdge()) {
               // Error if there's an empty stylesheet (typically a 404).
               if (getStyleSheetLength(url) === 0) {
                 this.resources.fireError(event);
@@ -282,7 +282,7 @@ export class ResourceLoader {
           },
           () => this.resources.fireError(event)
         );
-        if (isOpera()) {
+        if (BrowserInfo.get().isOpera()) {
           // Opera never fires onerror; assume error if not loaded within 5s.
           setTimeout(() => {
             if (!this.resources.isLoaded(url)) {
@@ -344,7 +344,7 @@ export class ResourceLoader {
     event: ResourceLoadEvent,
     styleElement: HTMLStyleElement
   ): void {
-    if (isSafariOrIOS() || isOpera()) {
+    if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
       // Safari and Opera fire no events for style elements; assume done after 5s.
       setTimeout(() => {
         if (this.resources.isLoaded(styleSheetContents)) {
