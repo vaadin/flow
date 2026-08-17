@@ -19,8 +19,9 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
 /**
- * Removes any CurrentInstance thread locals before running a test, preventing
- * state leakage between tests.
+ * JUnit Platform equivalent of {@link CurrentInstanceCleaner}. Removes any
+ * CurrentInstance thread locals before running a test, preventing state leakage
+ * between tests.
  * <p>
  * Registered automatically via ServiceLoader in
  * {@code META-INF/services/org.junit.platform.launcher.TestExecutionListener}.

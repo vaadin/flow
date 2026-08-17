@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -36,6 +37,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class DevModeClassCacheIT extends AbstractReloadIT {
 
     private static final Path VIEW_PATH = Path.of("com", "vaadin", "flow",

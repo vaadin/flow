@@ -155,6 +155,15 @@
     <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
     <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+    <failsafe.parallel>all</failsafe.parallel>
+    <failsafe.threadCount>2</failsafe.threadCount>
+    <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
+    <!-- The IT modules pin surefire-junit47 (see flow-tests/pom.xml), whose
+         ParallelComputerBuilder honors both the failsafe parallel settings
+         above and net.jcip.annotations.NotThreadSafe. Unit tests run through
+         JUnitPlatformProvider instead, where jcip is ignored, so that module
+         tree overrides this to skip the banned-import check. -->
+    <jcip.import.check.skip>false</jcip.import.check.skip>
   </properties>
 
   <dependencyManagement>
@@ -265,6 +274,11 @@
         <artifactId>awaitility</artifactId>
         <version>4.3.0</version>
       </dependency>
+      <dependency>
+        <groupId>org.lucee</groupId>
+        <artifactId>jcip-annotations</artifactId>
+        <version>1.0.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -292,6 +306,11 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.lucee</groupId>
+      <artifactId>jcip-annotations</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -399,9 +418,10 @@
               </goals>
               <phase>process-test-sources</phase>
               <configuration>
+                <skip>${jcip.import.check.skip}</skip>
                 <rules>
                   <RestrictImports>
-                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers, and tests run through JUnitPlatformProvider. Use @Isolated or @Execution(SAME_THREAD) instead.</reason>
+                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers. These tests run through JUnitPlatformProvider, where the annotation is ignored, so use @Isolated or @Execution(SAME_THREAD) instead. The flow-tests ITs do run on surefire-junit47 and keep using @NotThreadSafe; this check is skipped there.</reason>
                     <bannedImport>net.jcip.annotations.**</bannedImport>
                     <includeTestCode>true</includeTestCode>
                   </RestrictImports>
@@ -481,10 +501,12 @@
             <argLine>${failsafe.argLine}</argLine>
             <trimStackTrace>false</trimStackTrace>
             <enableAssertions>true</enableAssertions>
-            <!-- No parallel/threadCount here: integration tests run through
-                 JUnitPlatformProvider, which ignores them. TestBench's
-                 ParallelRunner is what runs IT methods concurrently, sized by
-                 com.vaadin.testbench.Parameters.testsInParallel. -->
+            <!-- Honored because the IT modules pin surefire-junit47; its
+                 ParallelComputerBuilder also keeps @NotThreadSafe classes on a
+                 single thread. -->
+            <parallel>${failsafe.parallel}</parallel>
+            <threadCount>${failsafe.threadCount}</threadCount>
+            <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>
             <!-- export test server port to integration tests -->
             <systemPropertyVariables>
               <serverPort>${server.port}</serverPort>

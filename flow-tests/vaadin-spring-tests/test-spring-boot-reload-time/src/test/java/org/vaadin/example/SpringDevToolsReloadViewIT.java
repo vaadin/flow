@@ -18,6 +18,7 @@ package org.vaadin.example;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import com.vaadin.testbench.parallel.Browser;
  * Class for testing reload time of tiny Vaadin app triggered by spring-boot Dev
  * Tool.
  */
+@NotThreadSafe
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     // The first reload of a run triggers a cold dev-server restart, which can

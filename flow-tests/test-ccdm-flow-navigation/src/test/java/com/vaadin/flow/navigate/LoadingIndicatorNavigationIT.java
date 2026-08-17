@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.navigate;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@NotThreadSafe
 public class LoadingIndicatorNavigationIT extends ChromeBrowserTest {
 
     @Before

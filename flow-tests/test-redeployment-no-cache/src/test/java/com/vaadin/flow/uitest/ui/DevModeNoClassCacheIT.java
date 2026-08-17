@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -24,6 +25,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class DevModeNoClassCacheIT extends ChromeBrowserTest {
 
     @Override

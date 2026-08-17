@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -26,6 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class ThemeLiveReloadWithShadowRootIT extends AbstractLiveReloadIT {
 
     private static final String ORIGINAL_COLOR = "rgba(255, 255, 255, 1)";
