@@ -1026,6 +1026,11 @@ class AbstractListDataViewTest {
         dataView.addFilter(item -> item.contains("test"));
 
         assertEquals(0, callbackInvocations.get());
+
+        dataCommunicator.setDataProvider(DataProvider.ofItems("test"), null);
+        dataView.addFilter(item -> item.startsWith("t"));
+
+        assertEquals(1, callbackInvocations.get());
     }
 
     @Test
