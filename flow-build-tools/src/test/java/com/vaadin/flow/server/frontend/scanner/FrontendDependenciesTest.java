@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +46,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.JsImportsComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsModuleOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
@@ -107,6 +109,25 @@ class FrontendDependenciesTest {
                 classFinder, false, null, true);
 
         DepsTests.assertImports(dependencies.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void jsModuleWithImports_declarationsCollectedAndExcludedFromBundleImports() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(JsImportsComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        String className = JsImportsComponent.class.getName();
+        assertEquals(List.of(
+                new JsImportsData(className, "named-imports.js",
+                        List.of("foo", "bar"), false),
+                new JsImportsData(className, "namespace-imports.js", List.of(),
+                        true)),
+                dependencies.getJsImports());
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "side-effect.js");
     }
 
     @Test

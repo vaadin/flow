@@ -53,6 +53,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.router.Route;
@@ -141,6 +142,71 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         public void configureInstance(
                 WebComponent<ThemeForCssImport> webComponent,
                 ThemeForCssImport component) {
+        }
+    }
+
+    static final String JS_IMPORTS_MODULE = "@vaadin/js-imports/index.js";
+
+    @JsModule(value = JS_IMPORTS_MODULE, imports = { "render", "html" })
+    public static class NamedJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, importAll = true)
+    public static class NamespaceJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, imports = { "render" })
+    @JsModule(value = "@vaadin/other-js-imports/index.js", imports = {
+            "render" })
+    public static class ConflictingJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, importAll = true)
+    @JsModule(value = "@vaadin/other-js-imports/index.js", imports = { "html" })
+    public static class ImportAllWithOtherJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, imports = { "render as r" })
+    public static class InvalidNameJsImports {
+    }
+
+    /**
+     * Referencing an import declaring class as a class literal is what makes it
+     * reachable for the bytecode scanner, exactly as a real
+     * {@code JsImports.of(SomeImports.class)} call would.
+     */
+    @Route("named-js-imports")
+    public static class NamedJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return NamedJsImports.class;
+        }
+    }
+
+    @Route("namespace-js-imports")
+    public static class NamespaceJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return NamespaceJsImports.class;
+        }
+    }
+
+    @Route("conflicting-js-imports")
+    public static class ConflictingJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return ConflictingJsImports.class;
+        }
+    }
+
+    @Route("import-all-with-other-js-imports")
+    public static class ImportAllWithOtherJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return ImportAllWithOtherJsImports.class;
+        }
+    }
+
+    @Route("invalid-name-js-imports")
+    public static class InvalidNameJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return InvalidNameJsImports.class;
         }
     }
 
@@ -797,6 +863,137 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @LoadDependenciesOnStartup
     static class AllEagerAppConf implements AppShellConfigurator {
 
+    }
+
+    // --- @JsModule(imports = ...) / (importAll = true) ---
+
+    @Test
+    void jsModuleWithImports_publishedInOwnChunk_notBundled() {
+        runWithJsImports(NamedJsImportsView.class, NamedJsImports.class);
+
+        String chunkId = BundleUtils.getChunkId(NamedJsImports.class.getName());
+        List<String> chunk = getJsImportsChunk(chunkId);
+
+        assertEquals(List.of(
+                "import { render as jsImport0_0 } from '" + JS_IMPORTS_MODULE
+                        + "';",
+                "import { html as jsImport0_1 } from '"
+                        + JS_IMPORTS_MODULE + "';",
+                AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT,
+                "window.Vaadin.Flow.imports['" + chunkId
+                        + "'] = { render: jsImport0_0, html: jsImport0_1 };"),
+                chunk);
+
+        // The module is reached through the registry only, so it must not be
+        // imported for its side effects anywhere else
+        assertFalse(
+                getMainImports()
+                        .contains("import '" + JS_IMPORTS_MODULE + "';"),
+                "The module must not be a side-effect import");
+    }
+
+    @Test
+    void jsModuleWithImportAll_publishesNamespace() {
+        runWithJsImports(NamespaceJsImportsView.class,
+                NamespaceJsImports.class);
+
+        String chunkId = BundleUtils
+                .getChunkId(NamespaceJsImports.class.getName());
+
+        assertEquals(List.of(
+                "import * as jsImport0 from '" + JS_IMPORTS_MODULE + "';",
+                AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT,
+                "window.Vaadin.Flow.imports['" + chunkId + "'] = jsImport0;"),
+                getJsImportsChunk(chunkId));
+    }
+
+    @Test
+    void jsModuleWithImports_chunkRequestableByDeclaringClass() {
+        runWithJsImports(NamedJsImportsView.class, NamedJsImports.class);
+
+        String chunkId = BundleUtils.getChunkId(NamedJsImports.class.getName());
+        String chunkFilename = getJsImportsChunkFile(chunkId).getName();
+        List<String> mainLines = updater.getOutput()
+                .get(updater.generatedFlowImports);
+
+        // This is what UIInternals asks loadOnDemand for before running an
+        // expression that uses the imports
+        assertTrue(mainLines.stream().anyMatch(
+                line -> line.contains("key === '" + chunkId + "'") && line
+                        .contains("import('./chunks/" + chunkFilename + "')")),
+                "loadOnDemand should load the chunk for the declaring class, was:\n"
+                        + String.join("\n", mainLines));
+        assertTrue(
+                mainLines.contains(
+                        AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT),
+                "The registry has to exist before a chunk populates it");
+    }
+
+    @Test
+    void jsModuleWithSameImportFromTwoModules_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> runWithJsImports(ConflictingJsImportsView.class,
+                        ConflictingJsImports.class));
+        assertTrue(exception.getMessage().contains("render"),
+                "The message should name the conflicting import, was: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void jsModuleWithImportAllAndOtherImports_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> runWithJsImports(ImportAllWithOtherJsImportsView.class,
+                        ImportAllWithOtherJsImports.class));
+        assertTrue(exception.getMessage().contains("importAll"),
+                "The message should mention importAll, was: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void jsModuleWithNonIdentifierImportName_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> runWithJsImports(InvalidNameJsImportsView.class,
+                        InvalidNameJsImports.class));
+        assertTrue(exception.getMessage().contains("render as r"),
+                "The message should quote the invalid name, was: "
+                        + exception.getMessage());
+    }
+
+    private void runWithJsImports(Class<?> view, Class<?> declaringClass) {
+        ClassFinder classFinder;
+        try {
+            classFinder = getClassFinder(UI.class, AllEagerAppConf.class, view,
+                    declaringClass);
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
+        updater = new UpdateImports(options
+                .withFrontendDependenciesScanner(getScanner(classFinder)));
+        updater.run();
+    }
+
+    private List<String> getJsImportsChunk(String chunkId) {
+        File chunkFile = getJsImportsChunkFile(chunkId);
+        return updater.getOutput().get(chunkFile);
+    }
+
+    private File getJsImportsChunkFile(String chunkId) {
+        String registration = "window.Vaadin.Flow.imports['" + chunkId + "']";
+        return updater.getOutput().entrySet().stream()
+                .filter(entry -> entry.getValue().stream()
+                        .anyMatch(line -> line.startsWith(registration)))
+                .map(Map.Entry::getKey).findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "No generated file registers the imports of chunk "
+                                + chunkId + ". Generated files: "
+                                + updater.getOutput().keySet()));
+    }
+
+    private List<String> getMainImports() {
+        return updater.getOutput().get(updater.generatedFlowImports);
     }
 
     @JsModule("./fake-material-theme.js")

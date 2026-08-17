@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -65,6 +66,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String DEVELOPMENT_ONLY = "developmentOnly";
     private static final String TYPE = "type";
     private static final String MODULE_TYPE = JavaScript.Type.MODULE.name();
+    private static final String IMPORTS = "imports";
+    private static final String IMPORT_ALL = "importAll";
     private static final String VERSION = "version";
     private static final String ASSETS = "assets";
 
@@ -83,6 +86,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private List<String> scriptsDevelopment;
     private List<String> modules;
     private List<String> modulesDevelopment;
+    private final List<JsImportsData> jsImports = new ArrayList<>();
 
     private final Class<?> abstractTheme;
 
@@ -207,6 +211,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     public Map<ChunkInfo, List<String>> getModulesDevelopment() {
         return Collections.singletonMap(ChunkInfo.GLOBAL,
                 Collections.unmodifiableList(modulesDevelopment));
+    }
+
+    @Override
+    public List<JsImportsData> getJsImports() {
+        // getAnnotatedClasses returns an unordered set, so sort to keep the
+        // generated chunks stable between builds
+        return jsImports.stream()
+                .sorted(Comparator.comparing(JsImportsData::getClassName)
+                        .thenComparing(JsImportsData::getModule))
+                .toList();
     }
 
     @Override
@@ -363,9 +377,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private <T extends Annotation> void collectScripts(
             LinkedHashSet<String> target, LinkedHashSet<String> targetDevOnly,
             Class<T> annotationType) {
-        // Only @JavaScript has a type attribute, reading it from @JsModule
-        // would fail
+        // Only @JavaScript has a type attribute, and only @JsModule has the
+        // imports/importAll attributes; reading either from the other one would
+        // fail
         boolean hasTypeAttribute = JavaScript.class.equals(annotationType);
+        boolean hasImportsAttributes = JsModule.class.equals(annotationType);
         try {
             Set<String> logs = new HashSet<>();
             Class<? extends Annotation> loadedAnnotation = getFinder()
@@ -389,6 +405,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                     // classes (Lumo and Material)
                                     // but should include imports only from the
                                     // active one
+                                    return;
+                                }
+
+                                if (hasImportsAttributes && collectJsImports(
+                                        clazz, ann, value)) {
+                                    // Values imported by name are published in
+                                    // the client-side imports registry by a
+                                    // dedicated chunk instead of being imported
+                                    // for their side effects only
                                     return;
                                 }
 
@@ -416,6 +441,25 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     COULD_NOT_LOAD_ERROR_MSG + annotationType.getName(),
                     exception);
         }
+    }
+
+    /**
+     * Records the declaration if the given {@code @JsModule} annotation names
+     * values to import.
+     *
+     * @return {@code true} if the annotation declares imports and its value
+     *         must therefore not be added as a side-effect import
+     */
+    private boolean collectJsImports(Class<?> clazz, Annotation ann,
+            String value) {
+        String[] names = (String[]) getAnnotationValue(ann, IMPORTS);
+        boolean importAll = getAnnotationValueAsBoolean(ann, IMPORT_ALL);
+        if (!importAll && (names == null || names.length == 0)) {
+            return false;
+        }
+        jsImports.add(new JsImportsData(clazz.getName(), value,
+                names == null ? List.of() : Arrays.asList(names), importAll));
+        return true;
     }
 
     private void debug(String label, Set<String> log) {

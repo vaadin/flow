@@ -102,6 +102,13 @@ class FullDependenciesScannerTest {
 
     }
 
+    @JsModule("side-effect.js")
+    @JsModule(value = "named-imports.js", imports = { "foo", "bar" })
+    @JsModule(value = "namespace-imports.js", importAll = true)
+    public static class JsImportsComponent extends Component {
+
+    }
+
     @BeforeEach
     void setUp() throws ClassNotFoundException {
         finder = Mockito.mock(ClassFinder.class);
@@ -320,6 +327,32 @@ class FullDependenciesScannerTest {
         // module-runtime.js is loaded at runtime as a <script type="module">,
         // so it must not end up in the generated bundle imports
         DepsTests.assertImports(scanner.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void getJsImports_declarationsCollectedAndExcludedFromBundleImports()
+            throws ClassNotFoundException {
+        Class fakeAnnotation = Object.class;
+        Mockito.when(finder.loadClass(JsModule.class.getName()))
+                .thenReturn(fakeAnnotation);
+        Mockito.when(finder.getAnnotatedClasses(fakeAnnotation))
+                .thenReturn(Collections.singleton(JsImportsComponent.class));
+
+        FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findAnnotations(type, JsModule.class),
+                null, true);
+
+        String className = JsImportsComponent.class.getName();
+        assertEquals(List.of(
+                new JsImportsData(className, "named-imports.js",
+                        List.of("foo", "bar"), false),
+                new JsImportsData(className, "namespace-imports.js", List.of(),
+                        true)),
+                scanner.getJsImports());
+
+        // Modules that only exist to be imported by name are not side-effect
+        // imports
+        DepsTests.assertImports(scanner.getModules(), "side-effect.js");
     }
 
     @Test

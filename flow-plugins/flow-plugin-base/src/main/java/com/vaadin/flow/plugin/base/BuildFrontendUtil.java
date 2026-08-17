@@ -888,6 +888,10 @@ public class BuildFrontendUtil {
         for (List<String> scripts : scanner.getScripts().values()) {
             jsAndCssImports.addAll(scripts);
         }
+        // Modules only reached through @JsModule(imports = ...) are not part of
+        // getModules(), but they are bundled just the same
+        scanner.getJsImports().forEach(
+                jsImports -> jsAndCssImports.add(jsImports.getModule()));
         for (String importPath : jsAndCssImports) {
             if (importPath.startsWith(".")) {
                 continue;

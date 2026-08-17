@@ -60,6 +60,8 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.JsImports;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -677,7 +679,33 @@ public class UIInternals implements Serializable {
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
+        triggerJsImportsChunkLoading(
+                invocation.getInvocation().getParameters());
         pendingJsInvocations.add(invocation);
+    }
+
+    /**
+     * Requests the chunks holding the JS module imports that the given
+     * invocation parameters refer to.
+     * <p>
+     * The chunks are requested as dynamic import dependencies, which the client
+     * loads before it runs any of the JavaScript invocations of the same
+     * response. The imported values are therefore published in the client-side
+     * registry by the time the expression referring to them is evaluated. The
+     * dependency list drops chunks that have already been requested, so
+     * repeated use of the same imports only loads the chunk once.
+     */
+    private void triggerJsImportsChunkLoading(List<Object> parameters) {
+        for (Object parameter : parameters) {
+            if (parameter instanceof JsImports jsImports) {
+                ui.getPage().addDynamicImport(
+                        "return window.Vaadin.Flow.loadOnDemand('"
+                                + jsImports.getChunkId() + "');");
+            } else if (parameter instanceof JsFunction jsFunction) {
+                // A function value may capture imports of its own
+                triggerJsImportsChunkLoading(jsFunction.getCaptures());
+            }
+        }
     }
 
     /**
