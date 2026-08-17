@@ -1008,7 +1008,24 @@ class AbstractListDataViewTest {
         // Check that the verification is still passed during data view API
         // usage, because the default data provider is an in-memory one
         dataView.addItem("foo");
+    }
+
+    @Test
+    void addFilter_beforeSettingDataProvider_callbackNotInvoked() {
+        DataCommunicator<String> dataCommunicator = new DataCommunicator<>(
+                (item, jsonObject) -> {
+                }, null, null, component.getElement().getNode());
+
+        AtomicInteger callbackInvocations = new AtomicInteger();
+
+        AbstractListDataView<String> dataView = new AbstractListDataView<String>(
+                dataCommunicator::getDataProvider, component,
+                (filter, sorting) -> callbackInvocations.incrementAndGet()) {
+        };
+
         dataView.addFilter(item -> item.contains("test"));
+
+        assertEquals(0, callbackInvocations.get());
     }
 
     @Test
