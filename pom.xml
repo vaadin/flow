@@ -105,6 +105,9 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
+        <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
+             repository metadata when modules install in parallel (-T). -->
+        <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <testbench.version>9.6.2</testbench.version>
         <jetty.version>12.0.27</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
@@ -526,6 +529,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.4.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven.install.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
