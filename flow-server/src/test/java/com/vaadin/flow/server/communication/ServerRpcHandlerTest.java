@@ -401,6 +401,31 @@ class ServerRpcHandlerTest {
         assertEquals("value", captor.getValue().getName());
     }
 
+    @Test
+    void handleRpc_invocationsForMissingNode_reportsEventButNotPropertySync()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        ui = new UI();
+        ui.getInternals().setSession(session);
+
+        // Node 99 does not exist, so both invocations are discarded unhandled.
+        // The event is still reported because it is observed around the routing
+        // to the handler, while the property sync is observed around a change
+        // event that is never produced.
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 99, \"event\": \"click\" },"
+                + "{\"type\": \"mSync\", \"node\" : 99, \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }],"
+                + " \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        assertEquals(JsonConstants.RPC_TYPE_EVENT, captor.getValue().getType());
+    }
+
     private void enableDau() {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(true);

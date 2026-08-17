@@ -28,16 +28,22 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * session lock while processing a request).
  * <p>
  * A single client request typically carries several invocations; the listener
- * is notified once per invocation that the framework accepts for handling. An
- * RPC targeting a node that is detached, disabled or inert is discarded before
- * any notification, so it is not reported at all.
+ * is notified once per invocation. Being notified does not mean the invocation
+ * had an effect: an RPC targeting a node that is detached, disabled or inert is
+ * reported and only then discarded unhandled by the handler it is routed to. A
+ * property synchronization is the exception, since its notifications are tied
+ * to the change event described below and are absent entirely when the update
+ * is discarded.
  * <p>
  * {@link #invocationStarted}, {@link #invocationFailed} (only when the handler
  * threw) and {@link #invocationEnded} for one invocation are delivered on the
  * same thread, in that order, with {@code invocationEnded} always delivered
  * after {@code invocationStarted} regardless of outcome, so a listener may keep
- * timing state in a {@link ThreadLocal}. Notifications never overlap: the
- * callbacks of one invocation complete before those of the next begin.
+ * timing state in a {@link ThreadLocal}. Within the handling of one request the
+ * notifications do not nest: the callbacks of one invocation complete before
+ * those of the next begin. Requests belonging to different sessions are handled
+ * concurrently, however, so a listener registered on the service must expect
+ * invocations of several sessions to be in flight on several threads at once.
  * <p>
  * Synchronized property updates ({@code mSync}) deserve two remarks, because
  * they are handled in two steps: the value of every synchronized property in
