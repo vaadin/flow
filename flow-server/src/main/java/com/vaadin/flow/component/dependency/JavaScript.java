@@ -50,12 +50,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * <p>
  * External JavaScript dependencies (e.g. "http://example.com/some.js") are
  * added in the same way as {@link Page#addJavaScript(String)} and the result is
- * just adding a classic {@code javscript} element to the page. Other paths used
- * in the {@link JavaScript#value()} method are considered as relative to
- * {@code frontend} directory and they are added to the page as a JavaScript
- * module (a {@code javscript} element with {@code type="module"}). In this case
- * a {@link JavaScript} annotation behaves exactly as a {@link JsModule}
- * annotation.
+ * just adding a classic {@code script} element to the page. Other paths used in
+ * the {@link JavaScript#value()} method are considered as relative to
+ * {@code frontend} directory and they are bundled and added to the page as a
+ * JavaScript module (a {@code script} element with {@code type="module"}). In
+ * this case a {@link JavaScript} annotation behaves exactly as a
+ * {@link JsModule} annotation.
+ * <p>
+ * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
+ * file is then always loaded at runtime as a {@code script} element with
+ * {@code type="module"}, even when the value is a bare relative path, which is
+ * resolved against the servlet context root. Use it for hand-authored or
+ * CDN-hosted ES modules that should not go through Vite; for build-time bundled
+ * ES modules use {@link JsModule} instead.
  * <p>
  * It's not possible to execute a function defined in JavaScript module via
  *
@@ -75,6 +82,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 1.0
  * @see Page#addJavaScript(String)
+ * @see Page#addJavaScript(String, LoadMode, Type)
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)

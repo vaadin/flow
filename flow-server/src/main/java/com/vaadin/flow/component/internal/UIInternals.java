@@ -1257,7 +1257,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1294,16 +1297,19 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
                 .forEach(js -> {
-                    String resolved = resolveRuntimeJavaScript(js.value());
-                    if (resolved == null) {
-                        return;
-                    }
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
                     if (js.type() == JavaScript.Type.MODULE
                             && js.loadMode() == LoadMode.INLINE) {
                         throw new IllegalArgumentException("The @JavaScript('"
                                 + js.value() + "') annotation on "
                                 + componentClass.getName()
                                 + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });

@@ -30,6 +30,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -134,10 +135,10 @@ class DependencyListTest {
 
     @Test
     void addJavaScriptDependency_typeModuleInline_throws() {
+        Page page = ui.getPage();
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> ui.getPage().addJavaScript(URL, LoadMode.INLINE,
-                        JavaScript.Type.MODULE));
+                IllegalArgumentException.class, () -> page.addJavaScript(URL,
+                        LoadMode.INLINE, JavaScript.Type.MODULE));
         assertTrue(exception.getMessage().contains(URL),
                 "Exception message should name the offending URL, was: "
                         + exception.getMessage());

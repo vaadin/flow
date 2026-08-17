@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
@@ -28,11 +31,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,6 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @NotThreadSafe
 class RuntimeJavaScriptDependencyTest {
+
+    private static final String MISSING_FROM_BUNDLE_ERROR = "was not included when creating the production bundle";
 
     @Tag("div")
     @JavaScript(value = "module.js", type = JavaScript.Type.MODULE)
@@ -85,8 +93,23 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JavaScript(value = "../outside.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.INLINE)
+    private static class InlineParentPathModule extends Component {
+    }
+
+    @Tag("div")
     @JsModule("https://example.net/module.js")
     private static class ExternalJsModule extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript(value = "not-bundled-module.js", type = JavaScript.Type.MODULE)
+    private static class ProductionRelativeModule extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("not-bundled-script.js")
+    private static class ProductionRelativeScript extends Component {
     }
 
     @AfterEach
@@ -154,6 +177,38 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
+    void inlineParentPathModule_throwsEvenThoughValueWouldBeRejected() {
+        // The unsupported load mode is a programming error regardless of
+        // whether the value itself survives normalization
+        UIInternals internals = new MockUI().getInternals();
+
+        assertThrows(IllegalArgumentException.class, () -> internals
+                .addComponentDependencies(InlineParentPathModule.class));
+    }
+
+    @Test
+    void productionMode_relativeModule_noMissingBundleImportError()
+            throws Exception {
+        String log = productionModeLog(ProductionRelativeModule.class);
+
+        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
+                "A type=MODULE value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
+                        + log);
+    }
+
+    @Test
+    void productionMode_relativeScript_stillReportsMissingBundleImport()
+            throws Exception {
+        // Control for the test above: proves the assertion there is not
+        // vacuous, i.e. that this log capture does observe the error
+        String log = productionModeLog(ProductionRelativeScript.class);
+
+        assertTrue(log.contains(MISSING_FROM_BUNDLE_ERROR),
+                "A bundled type=SCRIPT value missing from the bundle should still be reported. Log was: "
+                        + log);
+    }
+
+    @Test
     void externalJsModule_stillAddedAsRuntimeJsModule() {
         assertSingleDependency(ExternalJsModule.class,
                 Dependency.Type.JS_MODULE, "https://example.net/module.js",
@@ -175,6 +230,43 @@ class RuntimeJavaScriptDependencyTest {
                 "LoadMode mismatch");
     }
 
+    /**
+     * Runs {@link UIInternals#addComponentDependencies(Class)} in production
+     * mode against a pretend production bundle that contains neither of the
+     * test files, and returns whatever was logged while doing so.
+     */
+    private String productionModeLog(Class<? extends Component> componentType)
+            throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        UIInternals internals = new MockUI(mocks.getSession()).getInternals();
+
+        Field bundledImports = UIInternals.class
+                .getDeclaredField("bundledImports");
+        bundledImports.setAccessible(true);
+        Object originalImports = bundledImports.get(null);
+        Field warnedAboutDeps = UIInternals.class
+                .getDeclaredField("warnedAboutDeps");
+        warnedAboutDeps.setAccessible(true);
+        // Warnings are remembered statically, so clear them to keep this test
+        // independent of execution order
+        ((Set<?>) warnedAboutDeps.get(null)).clear();
+
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        try {
+            bundledImports.set(null, Set.of("some-other-import.js"));
+            System.setErr(new PrintStream(captured, true, UTF_8));
+
+            internals.addComponentDependencies(componentType);
+        } finally {
+            System.setErr(originalErr);
+            bundledImports.set(null, originalImports);
+            mocks.cleanup();
+        }
+        return captured.toString(UTF_8);
+    }
+
     private List<Dependency> runtimeDependencies(
             Class<? extends Component> componentType) {
         UIInternals internals = new MockUI().getInternals();
@@ -183,9 +275,7 @@ class RuntimeJavaScriptDependencyTest {
         Collection<Dependency> pending = internals.getDependencyList()
                 .getPendingSendToClient();
         // Chunk loading adds a dynamic import for every component class
-        return pending.stream()
-                .filter(dependency -> dependency
-                        .getType() != Dependency.Type.DYNAMIC_IMPORT)
-                .collect(Collectors.toList());
+        return pending.stream().filter(dependency -> dependency
+                .getType() != Dependency.Type.DYNAMIC_IMPORT).toList();
     }
 }
