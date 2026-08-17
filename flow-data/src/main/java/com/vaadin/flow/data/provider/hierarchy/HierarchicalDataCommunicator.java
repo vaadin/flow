@@ -209,9 +209,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * consistent with {@link TreeData#addItem(Object, Object)}). Refreshing it
      * is equivalent to {@link #reset()} / {@code refreshAll()} regardless of
      * {@code refreshChildren}: the full hierarchy cache is discarded and the
-     * viewport is re-fetched. Differentiating on {@code refreshChildren} for
-     * the virtual root was intentionally avoided as inconsistent with non-null
-     * item semantics.
+     * viewport is re-fetched.
      * <p>
      * WARNING: For non-{@code null} items this method is only supported with
      * data providers that use {@link HierarchyFormat#NESTED} when

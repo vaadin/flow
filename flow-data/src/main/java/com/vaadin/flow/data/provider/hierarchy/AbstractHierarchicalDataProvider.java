@@ -51,12 +51,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * {@inheritDoc}
      * <p>
-     * A {@code null} item represents the virtual root of the hierarchy (the
-     * parent of root-level items, consistent with APIs such as
-     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root is
-     * always equivalent to {@link #refreshAll()}, regardless of
-     * {@code refreshChildren}. Differentiating on that flag for {@code null}
-     * would be inconsistent with non-null item semantics.
+     * Passing {@code null} as item is equivalent to calling {@link #refreshAll()}.
      *
      * @throws UnsupportedOperationException
      *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
