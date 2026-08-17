@@ -37,12 +37,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * {@inheritDoc}
      * <p>
-     * A {@code null} item represents the virtual root of the hierarchy (the
-     * parent of root-level items, consistent with APIs such as
-     * {@link TreeData#addItem(Object, Object)}). Refreshing the virtual root is
-     * equivalent to {@link #refreshAll()} (full hierarchy rebuild). Call sites
-     * that use {@code refreshItem(getParent(item), true)} on a root-level item
-     * therefore pass {@code null} and get a full refresh.
+     * Passing {@code null} as item is equivalent to calling {@link #refreshAll()}.
      */
     @Override
     public void refreshItem(T item) {
