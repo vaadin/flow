@@ -103,6 +103,21 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JavaScript(value = "devtools.js", type = JavaScript.Type.MODULE, developmentOnly = true)
+    private static class DevelopmentOnlyModule extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript(value = "https://example.net/devtools.js", developmentOnly = true)
+    private static class DevelopmentOnlyExternalScript extends Component {
+    }
+
+    @Tag("div")
+    @JsModule(value = "https://example.net/devtools.js", developmentOnly = true)
+    private static class DevelopmentOnlyExternalJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript(value = "not-bundled-module.js", type = JavaScript.Type.MODULE)
     private static class ProductionRelativeModule extends Component {
     }
@@ -215,6 +230,42 @@ class RuntimeJavaScriptDependencyTest {
                 LoadMode.EAGER);
     }
 
+    @Test
+    void developmentOnlyModule_addedInDevelopmentMode() {
+        assertSingleDependency(DevelopmentOnlyModule.class,
+                Dependency.Type.JS_MODULE, "context://devtools.js",
+                LoadMode.EAGER);
+    }
+
+    @Test
+    void developmentOnlyModule_notAddedInProductionMode() throws Exception {
+        // Runtime dependencies bypass the bundle, so nothing else keeps a
+        // development only value out of a production application
+        assertEquals(List.of(),
+                productionModeDependencies(DevelopmentOnlyModule.class));
+    }
+
+    @Test
+    void developmentOnlyExternalScript_notAddedInProductionMode()
+            throws Exception {
+        assertEquals(List.of(), productionModeDependencies(
+                DevelopmentOnlyExternalScript.class));
+    }
+
+    @Test
+    void developmentOnlyExternalJsModule_notAddedInProductionMode()
+            throws Exception {
+        assertEquals(List.of(), productionModeDependencies(
+                DevelopmentOnlyExternalJsModule.class));
+    }
+
+    @Test
+    void module_stillAddedInProductionMode() throws Exception {
+        // Guards against the development only filter dropping everything
+        assertEquals(List.of("context://module.js"),
+                productionModeDependencies(RelativeModule.class));
+    }
+
     private void assertSingleDependency(
             Class<? extends Component> componentType,
             Dependency.Type expectedType, String expectedUrl,
@@ -265,6 +316,29 @@ class RuntimeJavaScriptDependencyTest {
             mocks.cleanup();
         }
         return captured.toString(UTF_8);
+    }
+
+    /**
+     * Same as {@link #runtimeDependencies(Class)} but with a session that runs
+     * in production mode, returning just the dependency URLs.
+     */
+    private List<String> productionModeDependencies(
+            Class<? extends Component> componentType) throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        try {
+            UIInternals internals = new MockUI(mocks.getSession())
+                    .getInternals();
+            internals.addComponentDependencies(componentType);
+
+            return internals.getDependencyList().getPendingSendToClient()
+                    .stream()
+                    .filter(dependency -> dependency
+                            .getType() != Dependency.Type.DYNAMIC_IMPORT)
+                    .map(Dependency::getUrl).toList();
+        } finally {
+            mocks.cleanup();
+        }
     }
 
     private List<Dependency> runtimeDependencies(

@@ -1335,6 +1335,9 @@ public class UIInternals implements Serializable {
                                 + componentClass.getName()
                                 + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
                     }
+                    if (js.developmentOnly() && isProductionMode()) {
+                        return;
+                    }
                     String resolved = resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
@@ -1343,6 +1346,7 @@ public class UIInternals implements Serializable {
                 });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
+                .filter(js -> !js.developmentOnly() || !isProductionMode())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
     }
@@ -1350,6 +1354,20 @@ public class UIInternals implements Serializable {
     private boolean isRuntimeJavaScript(JavaScript js) {
         return js.type() == JavaScript.Type.MODULE
                 || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Checks whether the session runs in production mode, treating a missing
+     * session as development mode.
+     * <p>
+     * Runtime dependencies are added to the page instead of being bundled, so
+     * unlike for bundled ones there is nothing that leaves a
+     * {@code developmentOnly} dependency out of a production application; that
+     * has to be checked when the dependency is added.
+     */
+    private boolean isProductionMode() {
+        return ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
     }
 
     /**
