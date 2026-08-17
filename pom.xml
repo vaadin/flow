@@ -158,12 +158,6 @@
     <failsafe.parallel>all</failsafe.parallel>
     <failsafe.threadCount>2</failsafe.threadCount>
     <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
-    <!-- The IT modules pin surefire-junit47 (see flow-tests/pom.xml), whose
-         ParallelComputerBuilder honors both the failsafe parallel settings
-         above and net.jcip.annotations.NotThreadSafe. Unit tests run through
-         JUnitPlatformProvider instead, where jcip is ignored, so that module
-         tree overrides this to skip the banned-import check. -->
-    <jcip.import.check.skip>false</jcip.import.check.skip>
   </properties>
 
   <dependencyManagement>
@@ -418,12 +412,12 @@
               </goals>
               <phase>process-test-sources</phase>
               <configuration>
-                <skip>${jcip.import.check.skip}</skip>
                 <rules>
                   <RestrictImports>
-                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers. These tests run through JUnitPlatformProvider, where the annotation is ignored, so use @Isolated or @Execution(SAME_THREAD) instead. The flow-tests ITs do run on surefire-junit47 and keep using @NotThreadSafe; this check is skipped there.</reason>
+                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers, and everything except the *IT classes runs through JUnitPlatformProvider, which ignores them. Use @Isolated instead: it keeps other test classes away and pins the class's own test methods to one thread. Only the ITs are excluded, because flow-tests pins surefire-junit47 for failsafe, whose ParallelComputerBuilder does honor @NotThreadSafe. (test-default runs its ITs on the platform provider, so jcip would be inert there too; nothing uses it today.)</reason>
                     <bannedImport>net.jcip.annotations.**</bannedImport>
                     <includeTestCode>true</includeTestCode>
+                    <exclusion>**.*IT</exclusion>
                   </RestrictImports>
                 </rules>
               </configuration>
@@ -480,7 +474,12 @@
                    parallelism from -T, which forks a JVM per module. Flipping
                    this to true is what activates the @Isolated markers on the
                    test classes that share process-global state, so do not
-                   enable it without checking those. -->
+                   enable it without checking those. @Isolated covers both
+                   halves on its own - no other class runs alongside it, and
+                   its own test methods stay on one thread, because the
+                   platform forces same-thread execution below the global
+                   lock - so mode.default does not need to stay same_thread
+                   for them to hold. IsolatedAnnotationTest pins that down. -->
               <configurationParameters>junit.jupiter.execution.parallel.enabled = false</configurationParameters>
             </properties>
             <enableAssertions>true</enableAssertions>

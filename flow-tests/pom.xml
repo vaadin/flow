@@ -50,11 +50,6 @@
             conflict. -->
     <failsafe.provider.artifactId>surefire-junit47</failsafe.provider.artifactId>
 
-    <!-- These ITs run on surefire-junit47, whose ParallelComputerBuilder does
-            honor net.jcip.annotations.NotThreadSafe, so the root pom's ban on
-            that import does not apply here. -->
-    <jcip.import.check.skip>true</jcip.import.check.skip>
-
     <jetty.scantrigger/>
 
     <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
