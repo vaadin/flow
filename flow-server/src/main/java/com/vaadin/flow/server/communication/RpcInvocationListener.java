@@ -23,17 +23,21 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 /**
  * Listener that is notified around the server-side handling of individual
  * client-to-server RPC invocations, enabling per-invocation observation (for
- * example to emit a tracing span showing which DOM event or
- * {@code @ClientCallable} method is consuming the time spent holding the
+ * example to emit a tracing span showing which DOM event, synchronized property
+ * or {@code @ClientCallable} method is consuming the time spent holding the
  * session lock while processing a request).
  * <p>
  * A single client request typically carries several invocations; the listener
- * is notified once per invocation. {@link #invocationStarted},
- * {@link #invocationFailed} (only when the handler threw) and
- * {@link #invocationEnded} for one invocation are delivered on the same thread,
- * in that order, with {@code invocationEnded} always delivered after
- * {@code invocationStarted} regardless of outcome, so a listener may keep
- * timing state in a {@link ThreadLocal}.
+ * is notified once per invocation. Invocations the framework discards without
+ * handling, such as an RPC for a detached or disabled node, are not reported.
+ * For a synchronized property update ({@code mSync}) the notifications surround
+ * the firing of the property change event, which is the step that runs
+ * application code, rather than the earlier step that applies the value to the
+ * state tree. {@link #invocationStarted}, {@link #invocationFailed} (only when
+ * the handler threw) and {@link #invocationEnded} for one invocation are
+ * delivered on the same thread, in that order, with {@code invocationEnded}
+ * always delivered after {@code invocationStarted} regardless of outcome, so a
+ * listener may keep timing state in a {@link ThreadLocal}.
  * <p>
  * Implementations must be fast and non-blocking: callbacks run on the request
  * thread directly around invocation handling. Exceptions thrown from a callback

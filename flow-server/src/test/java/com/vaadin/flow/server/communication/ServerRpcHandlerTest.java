@@ -27,10 +27,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -39,6 +42,7 @@ import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurity
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -320,6 +324,65 @@ class ServerRpcHandlerTest {
         assertEquals("event", event.getType());
         assertEquals("click", event.getName());
         assertEquals(1, event.getNodeId());
+    }
+
+    @Test
+    void handleRpc_mapSync_firesRpcInvocationListener_withSyncedPropertyAsName()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change", event -> {
+        });
+        ui.getElement().appendChild(input);
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        Mockito.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
+        RpcInvocationEvent event = captor.getValue();
+        assertEquals(JsonConstants.RPC_TYPE_MAP_SYNC, event.getType());
+        assertEquals("value", event.getName());
+        assertEquals(nodeId, event.getNodeId());
+    }
+
+    @Test
+    void handleRpc_mapSyncListenerThrows_firesRpcInvocationFailed_withSyncedPropertyAsName()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        Mockito.when(session.getErrorHandler())
+                .thenReturn(Mockito.mock(ErrorHandler.class));
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        RuntimeException failure = new RuntimeException("in value change");
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change", event -> {
+            throw failure;
+        });
+        ui.getElement().appendChild(input);
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationFailed(captor.capture(),
+                ArgumentMatchers.same(failure));
+        assertEquals("value", captor.getValue().getName());
     }
 
     private void enableDau() {
