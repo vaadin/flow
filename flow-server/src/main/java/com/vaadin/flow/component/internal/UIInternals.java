@@ -47,6 +47,7 @@ import com.vaadin.flow.component.HeartbeatListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.geolocation.GeolocationClient;
@@ -1346,9 +1347,17 @@ public class UIInternals implements Serializable {
                 });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
+                // A module declaring imports is reached through the imports
+                // registry only, so it must not also be loaded for its side
+                // effects
+                .filter(js -> !declaresImports(js))
                 .filter(js -> !js.developmentOnly() || !isProductionMode())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
+    }
+
+    private static boolean declaresImports(JsModule js) {
+        return js.importAll() || js.imports().length > 0;
     }
 
     private boolean isRuntimeJavaScript(JavaScript js) {

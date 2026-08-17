@@ -159,7 +159,6 @@ public interface FrontendDependenciesScanner extends Serializable {
      * receive them as a parameter.
      *
      * @return the import declarations, never {@code null}
-     * @since 25.3
      */
     default List<JsImportsData> getJsImports() {
         return List.of();

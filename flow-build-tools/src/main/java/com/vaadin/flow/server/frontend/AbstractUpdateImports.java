@@ -907,6 +907,10 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private List<String> getJsImportsChunkLines(String className,
             List<JsImportsData> declarations) {
+        declarations
+                .forEach(declaration -> validateJsImportsDeclaration(className,
+                        declaration));
+
         List<JsImportsData> importAllDeclarations = declarations.stream()
                 .filter(JsImportsData::isImportAll).toList();
         if (!importAllDeclarations.isEmpty() && declarations.size() > 1) {
@@ -976,6 +980,29 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.add(String.format("window.Vaadin.Flow.imports['%s'] = %s;",
                 BundleUtils.getChunkId(className), value));
         return lines;
+    }
+
+    /**
+     * Rejects the combinations a single {@code @JsModule} declaration cannot
+     * express, so that neither part of it is silently ignored.
+     */
+    private static void validateJsImportsDeclaration(String className,
+            JsImportsData declaration) {
+        if (declaration.isImportAll() && !declaration.getNames().isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "The class %s declares @JsModule(value = \"%s\") with both 'importAll' and 'imports' = %s. "
+                            + "The whole namespace already contains the named values, so only one of the two can be used. "
+                            + "Drop 'imports' to get the namespace, or drop 'importAll' to get only the named values.",
+                    className, declaration.getModule(),
+                    declaration.getNames()));
+        }
+        if (UrlUtil.isExternal(declaration.getModule())) {
+            throw new IllegalStateException(String.format(
+                    "The class %s declares imports from the external URL '%s'. Only modules that are part of the bundle can be imported by name, "
+                            + "since the import has to be resolved when the bundle is built. Use a module in the frontend folder or an npm package, "
+                            + "or load the URL at runtime with @JavaScript(value = \"...\", type = MODULE) and have it publish what it exports.",
+                    className, declaration.getModule()));
+        }
     }
 
     private static void validateJsImportName(String className,

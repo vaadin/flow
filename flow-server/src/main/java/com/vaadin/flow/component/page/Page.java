@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -280,17 +281,23 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. You can prefix the URL with {@code context://} to make it
-     * relative to the context path or use an absolute URL to refer to files
-     * outside the frontend directory.
-     * <p>
      * The {@code type} parameter selects the kind of {@code <script>} tag the
      * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
      * {@code <script>} element (the default of {@link #addJavaScript(String)});
      * {@link JavaScript.Type#MODULE} renders a {@code <script type="module">}
      * element, which is the recommended way to load runtime ES modules
      * (replaces the deprecated {@link #addJsModule(String)}).
+     * <p>
+     * With {@link JavaScript.Type#SCRIPT}, relative URLs are interpreted as
+     * relative to the static web resources directory. You can prefix the URL
+     * with {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
+     * <p>
+     * With {@link JavaScript.Type#MODULE}, the URL is normalized the same way
+     * as a {@link JavaScript @JavaScript} annotation value with that type: a
+     * URL with a protocol or a leading {@code /} is used as given, and a bare
+     * relative URL is resolved against the servlet context root. A URL that
+     * cannot be normalized, such as one containing {@code ..}, is rejected.
      * <p>
      * {@link JavaScript.Type#MODULE} supports {@link LoadMode#EAGER} and
      * {@link LoadMode#LAZY}, but not {@link LoadMode#INLINE}: the browser
@@ -311,7 +318,8 @@ public class Page implements Serializable {
      *            treated as {@link JavaScript.Type#SCRIPT}
      * @throws IllegalArgumentException
      *             if {@code type} is {@link JavaScript.Type#MODULE} and
-     *             {@code loadMode} is {@link LoadMode#INLINE}
+     *             {@code loadMode} is {@link LoadMode#INLINE}, or if the URL
+     *             cannot be normalized for {@link JavaScript.Type#MODULE}
      */
     public void addJavaScript(String url, LoadMode loadMode,
             JavaScript.Type type) {
@@ -321,9 +329,22 @@ public class Page implements Serializable {
                             + url
                             + "). Use LoadMode.EAGER or LoadMode.LAZY, or JavaScript.Type.SCRIPT if the contents must be inlined into the page.");
         }
+        String resolvedUrl = url;
+        if (type == JavaScript.Type.MODULE) {
+            // The method this one replaces rejected anything that the client
+            // could not resolve, so normalize rather than let a bare relative
+            // URL be requested relative to the current route. Idempotent, so
+            // callers that already normalized are unaffected.
+            resolvedUrl = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(url);
+            if (resolvedUrl == null) {
+                throw new IllegalArgumentException("The URL '" + url
+                        + "' cannot be used with JavaScript.Type.MODULE. Use a URL with a protocol, one starting with '/', or a path relative to the servlet context root without '..' segments.");
+            }
+        }
         Type dependencyType = type == JavaScript.Type.MODULE ? Type.JS_MODULE
                 : Type.JAVASCRIPT;
-        addDependency(new Dependency(dependencyType, url, loadMode));
+        addDependency(new Dependency(dependencyType, resolvedUrl, loadMode));
     }
 
     /**

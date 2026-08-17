@@ -103,6 +103,16 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JsModule(value = "https://example.net/lit-html.js", imports = { "html" })
+    private static class ExternalJsModuleWithImports extends Component {
+    }
+
+    @Tag("div")
+    @JsModule(value = "https://example.net/lit-html.js", importAll = true)
+    private static class ExternalJsModuleWithImportAll extends Component {
+    }
+
+    @Tag("div")
     @JavaScript(value = "devtools.js", type = JavaScript.Type.MODULE, developmentOnly = true)
     private static class DevelopmentOnlyModule extends Component {
     }
@@ -228,6 +238,20 @@ class RuntimeJavaScriptDependencyTest {
         assertSingleDependency(ExternalJsModule.class,
                 Dependency.Type.JS_MODULE, "https://example.net/module.js",
                 LoadMode.EAGER);
+    }
+
+    @Test
+    void externalJsModuleWithImports_notAddedAsSideEffectScript() {
+        // The values are reached through the imports registry, so loading the
+        // module for its side effects as well would run it twice
+        assertEquals(List.of(),
+                runtimeDependencies(ExternalJsModuleWithImports.class));
+    }
+
+    @Test
+    void externalJsModuleWithImportAll_notAddedAsSideEffectScript() {
+        assertEquals(List.of(),
+                runtimeDependencies(ExternalJsModuleWithImportAll.class));
     }
 
     @Test

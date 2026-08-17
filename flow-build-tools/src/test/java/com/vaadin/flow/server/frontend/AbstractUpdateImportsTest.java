@@ -171,6 +171,16 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @JsModule(value = JS_IMPORTS_MODULE, imports = {
+            "render" }, importAll = true)
+    public static class ImportAllAndNamesJsImports {
+    }
+
+    @JsModule(value = "https://cdn.example.com/lit-html.js", imports = {
+            "render" })
+    public static class ExternalJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, imports = {
             "render" }, developmentOnly = true)
     public static class DevelopmentOnlyJsImports {
     }
@@ -223,6 +233,20 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public static class InvalidNameJsImportsView extends Component {
         public Class<?> declaringClass() {
             return InvalidNameJsImports.class;
+        }
+    }
+
+    @Route("import-all-and-names-js-imports")
+    public static class ImportAllAndNamesJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return ImportAllAndNamesJsImports.class;
+        }
+    }
+
+    @Route("external-js-imports")
+    public static class ExternalJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return ExternalJsImports.class;
         }
     }
 
@@ -985,6 +1009,36 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         ImportAllWithOtherJsImports.class));
         assertTrue(exception.getMessage().contains("importAll"),
                 "The message should mention importAll, was: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void jsModuleWithImportAllAndNamesOnSameAnnotation_throws() {
+        // A single annotation, so the importAll branch would otherwise just
+        // discard the names without a word
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> runWithJsImports(ImportAllAndNamesJsImportsView.class,
+                        ImportAllAndNamesJsImports.class));
+        assertTrue(
+                exception.getMessage().contains("importAll")
+                        && exception.getMessage().contains("render"),
+                "The message should mention both parts of the combination, was: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void jsModuleWithImportsFromExternalUrl_throws() {
+        // An external URL is not in the bundle, so a named import from it can
+        // never be resolved when the bundle is built
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> runWithJsImports(ExternalJsImportsView.class,
+                        ExternalJsImports.class));
+        assertTrue(
+                exception.getMessage()
+                        .contains("https://cdn.example.com/lit-html.js"),
+                "The message should quote the offending URL, was: "
                         + exception.getMessage());
     }
 

@@ -134,6 +134,56 @@ class DependencyListTest {
     }
 
     @Test
+    void addJavaScriptDependency_typeModuleRelativeUrl_normalizedToContextRoot() {
+        // addJsModule, which this overload replaces, rejected a bare relative
+        // URL outright; normalizing keeps it from being requested relative to
+        // the current route
+        ui.getPage().addJavaScript("module.js", LoadMode.EAGER,
+                JavaScript.Type.MODULE);
+        validateDependency("context://module.js", Type.JS_MODULE,
+                LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModuleAbsolutePath_usedAsGiven() {
+        ui.getPage().addJavaScript("/module.js", LoadMode.EAGER,
+                JavaScript.Type.MODULE);
+        validateDependency("/module.js", Type.JS_MODULE, LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModuleContextUrl_usedAsGiven() {
+        // UIInternals already normalizes annotation values, so this has to be
+        // idempotent
+        ui.getPage().addJavaScript("context://module.js", LoadMode.EAGER,
+                JavaScript.Type.MODULE);
+        validateDependency("context://module.js", Type.JS_MODULE,
+                LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeScriptRelativeUrl_usedAsGiven() {
+        // Only MODULE is normalized; the pre-existing types keep their meaning
+        ui.getPage().addJavaScript("module.js", LoadMode.EAGER,
+                JavaScript.Type.SCRIPT);
+        validateDependency("module.js", Type.JAVASCRIPT, LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModuleParentPath_throws() {
+        Page page = ui.getPage();
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.addJavaScript("../outside.js", LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+        assertTrue(exception.getMessage().contains("../outside.js"),
+                "Exception message should name the offending URL, was: "
+                        + exception.getMessage());
+        assertEquals(0, deps.getPendingSendToClient().size(),
+                "No dependency should have been added");
+    }
+
+    @Test
     void addJavaScriptDependency_typeModuleInline_throws() {
         Page page = ui.getPage();
         IllegalArgumentException exception = assertThrows(

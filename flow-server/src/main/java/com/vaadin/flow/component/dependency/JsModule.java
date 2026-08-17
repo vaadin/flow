@@ -133,9 +133,16 @@ public @interface JsModule {
      * export; declare the modules on separate classes and pass both to
      * {@code executeJs} as separate parameters, or write a JavaScript module
      * that re-exports the value under the wanted name.
+     * <p>
+     * Only modules that are part of the bundle can be imported by name, since
+     * the import is resolved when the bundle is built. Declaring imports from
+     * an external URL fails the build; load such a URL at runtime with
+     * {@link JavaScript @JavaScript} and {@link JavaScript.Type#MODULE}
+     * instead.
+     * <p>
+     * Cannot be combined with {@link #importAll()} on the same annotation.
      *
      * @return the names to import from the module
-     * @since 25.3
      */
     String[] imports() default {};
 
@@ -148,10 +155,11 @@ public @interface JsModule {
      * namespace object would shadow any individually imported value, a class
      * using {@code importAll} must not declare any other imports; declare
      * additional modules on separate classes instead and pass each as its own
-     * {@code executeJs} parameter.
+     * {@code executeJs} parameter. Setting {@link #imports()} on the same
+     * annotation is likewise rejected, as the namespace already contains those
+     * values.
      *
      * @return {@code true} to import the whole module namespace
-     * @since 25.3
      */
     boolean importAll() default false;
 

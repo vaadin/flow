@@ -66,7 +66,6 @@ import com.vaadin.flow.internal.BundleUtils;
  * always available by the time the expression is evaluated.
  *
  * @author Vaadin Ltd
- * @since 25.3
  * @see JsModule#imports()
  * @see Element#executeJs(String, Object...)
  */

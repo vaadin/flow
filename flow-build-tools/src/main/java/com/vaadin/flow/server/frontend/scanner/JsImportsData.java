@@ -32,8 +32,6 @@ import java.util.Objects;
  * receive them as a parameter.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- *
- * @since 25.3
  */
 public class JsImportsData implements Serializable {
 
