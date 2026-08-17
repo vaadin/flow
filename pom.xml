@@ -414,7 +414,7 @@
               <configuration>
                 <rules>
                   <RestrictImports>
-                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers, and everything except the *IT classes runs through JUnitPlatformProvider, which ignores them. Use @Isolated instead: it keeps other test classes away and pins the class's own test methods to one thread. Only the ITs are excluded, because flow-tests pins surefire-junit47 for failsafe, whose ParallelComputerBuilder does honor @NotThreadSafe. (test-default runs its ITs on the platform provider, so jcip would be inert there too; nothing uses it today.)</reason>
+                    <reason>Only Surefire's JUnit 4 providers honor jcip annotations, and everything outside the *IT classes runs through JUnitPlatformProvider, which ignores them. Use @Isolated: it keeps other test classes away and pins the class's own test methods to one thread. The *IT exclusion exists because flow-tests pins surefire-junit47 for failsafe, whose ParallelComputerBuilder does read @NotThreadSafe. It is wider than needed, since test-default runs its ITs on the platform provider.</reason>
                     <bannedImport>net.jcip.annotations.**</bannedImport>
                     <includeTestCode>true</includeTestCode>
                     <exclusion>**.*IT</exclusion>
@@ -470,16 +470,12 @@
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <properties>
-              <!-- Unit tests run one at a time inside a module; CI gets its
-                   parallelism from -T, which forks a JVM per module. Flipping
-                   this to true is what activates the @Isolated markers on the
-                   test classes that share process-global state, so do not
-                   enable it without checking those. @Isolated covers both
-                   halves on its own - no other class runs alongside it, and
-                   its own test methods stay on one thread, because the
-                   platform forces same-thread execution below the global
-                   lock - so mode.default does not need to stay same_thread
-                   for them to hold. IsolatedAnnotationTest pins that down. -->
+              <!-- Tests inside a module run one at a time; CI parallelises
+                   with -T, which forks a JVM per module. Turning this on hands
+                   scheduling to Jupiter, where only the @Isolated classes are
+                   kept away from everything else, so check the classes that
+                   share process-global state before enabling it.
+                   IsolatedAnnotationTest covers what the marker guarantees. -->
               <configurationParameters>junit.jupiter.execution.parallel.enabled = false</configurationParameters>
             </properties>
             <enableAssertions>true</enableAssertions>
