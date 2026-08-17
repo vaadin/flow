@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-@NotThreadSafe
 public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
     // Inner scroll container has no ID — found by CSS selector to verify

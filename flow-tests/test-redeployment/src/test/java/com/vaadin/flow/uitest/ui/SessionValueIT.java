@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.testbench.TestBenchElement;
 
-@NotThreadSafe
 public class SessionValueIT extends AbstractReloadIT {
 
     @Override

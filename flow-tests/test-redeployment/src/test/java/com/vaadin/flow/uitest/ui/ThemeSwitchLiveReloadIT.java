@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -35,7 +34,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.function.SerializableSupplier;
 
-@NotThreadSafe
 public class ThemeSwitchLiveReloadIT extends AbstractReloadIT {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";

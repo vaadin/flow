@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.misc.ui;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,7 +29,6 @@ import static com.vaadin.flow.misc.ui.partial.MainLayout.RESET_ID;
 import static com.vaadin.flow.misc.ui.partial.RootLayout.ROOT_EVENT_LOG_ID;
 import static com.vaadin.flow.misc.ui.partial.SecondView.SECOND_ID;
 
-@NotThreadSafe
 public class PartialMatchRefreshIT extends ChromeBrowserTest {
 
     @Test

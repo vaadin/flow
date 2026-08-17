@@ -143,8 +143,6 @@
     <!-- to be disabled via system property in CI until they got fixed -->
     <exclude.windows.failed.tests/>
 
-    <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
-
     <!-- Extra JVM arguments for surefire forks; modules override this
          when their tests need e.g. add-opens flags. The empty default
          keeps the argLine expression resolvable everywhere. -->
@@ -157,9 +155,6 @@
     <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
     <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
-    <failsafe.parallel>all</failsafe.parallel>
-    <failsafe.threadCount>2</failsafe.threadCount>
-    <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
   </properties>
 
   <dependencyManagement>
@@ -270,11 +265,6 @@
         <artifactId>awaitility</artifactId>
         <version>4.3.0</version>
       </dependency>
-      <dependency>
-        <groupId>org.lucee</groupId>
-        <artifactId>jcip-annotations</artifactId>
-        <version>1.0.0</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -302,11 +292,6 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.lucee</groupId>
-      <artifactId>jcip-annotations</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -408,6 +393,22 @@
               </configuration>
             </execution>
             <execution>
+              <id>check-jcip-imports</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <phase>process-test-sources</phase>
+              <configuration>
+                <rules>
+                  <RestrictImports>
+                    <reason>jcip annotations are only honored by Surefire's JUnit 4 providers, and tests run through JUnitPlatformProvider. Use @Isolated or @Execution(SAME_THREAD) instead.</reason>
+                    <bannedImport>net.jcip.annotations.**</bannedImport>
+                    <includeTestCode>true</includeTestCode>
+                  </RestrictImports>
+                </rules>
+              </configuration>
+            </execution>
+            <execution>
               <id>default-cli</id>
               <goals>
                 <goal>enforce</goal>
@@ -455,19 +456,17 @@
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <properties>
-              <property>
-                <name>listener</name>
-                <value>${testListener}</value>
-              </property>
+              <!-- Unit tests run one at a time inside a module; CI gets its
+                   parallelism from -T, which forks a JVM per module. Flipping
+                   this to true is what activates the @Isolated markers on the
+                   test classes that share process-global state, so do not
+                   enable it without checking those. -->
+              <configurationParameters>junit.jupiter.execution.parallel.enabled = false</configurationParameters>
             </properties>
             <enableAssertions>true</enableAssertions>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
             </classpathDependencyExcludes>
-            <!--
-                        <parallel>classes</parallel>
-                        <threadCount>4</threadCount>
--->
             <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
               <maven.home>${maven.home}</maven.home>
@@ -482,9 +481,10 @@
             <argLine>${failsafe.argLine}</argLine>
             <trimStackTrace>false</trimStackTrace>
             <enableAssertions>true</enableAssertions>
-            <parallel>${failsafe.parallel}</parallel>
-            <threadCount>${failsafe.threadCount}</threadCount>
-            <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>
+            <!-- No parallel/threadCount here: integration tests run through
+                 JUnitPlatformProvider, which ignores them. TestBench's
+                 ParallelRunner is what runs IT methods concurrently, sized by
+                 com.vaadin.testbench.Parameters.testsInParallel. -->
             <!-- export test server port to integration tests -->
             <systemPropertyVariables>
               <serverPort>${server.port}</serverPort>

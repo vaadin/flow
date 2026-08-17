@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +39,6 @@ import org.mockito.ThrowingConsumer;
 
 import com.vaadin.testbench.TestBenchElement;
 
-@NotThreadSafe
 public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
 
     private static final String UPDATED_DIV_BG_COLOR = "rgba(0, 0, 255, 1)";

@@ -32,6 +32,7 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.router.RouteBaseData;
@@ -47,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Tests for {@link ApplicationRouteRegistry} instance .
  */
+@Isolated
 class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     private ApplicationRouteRegistry registry;

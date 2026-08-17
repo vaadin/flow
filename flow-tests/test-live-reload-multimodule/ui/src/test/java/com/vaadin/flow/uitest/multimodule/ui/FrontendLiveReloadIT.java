@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@NotThreadSafe
 public class FrontendLiveReloadIT extends ChromeBrowserTest {
 
     private Set<Runnable> cleanup = new HashSet<>();
