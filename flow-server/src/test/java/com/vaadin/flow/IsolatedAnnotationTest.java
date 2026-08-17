@@ -16,8 +16,7 @@
 package com.vaadin.flow;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.junit.platform.commons.annotation.Testable;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
@@ -56,6 +55,7 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
  * parallelism forced on. Dropping {@code @Isolated} from {@link IsolatedCase}
  * makes both scheduling assertions fail.
  */
+@Isolated
 public class IsolatedAnnotationTest {
 
     private static final long WINDOW_MS = 200;
@@ -184,6 +184,7 @@ public class IsolatedAnnotationTest {
             throws IOException, URISyntaxException {
         Path root = Path.of(getClass().getProtectionDomain().getCodeSource()
                 .getLocation().toURI());
+        List<String> isolated = new ArrayList<>();
         List<String> withoutTests = new ArrayList<>();
 
         try (Stream<Path> classFiles = Files.walk(root)) {
@@ -191,38 +192,49 @@ public class IsolatedAnnotationTest {
                     .forEach(path -> {
                         Class<?> cls = load(root, path);
                         if (cls != null
-                                && cls.isAnnotationPresent(Isolated.class)
-                                && !hasTestMethod(cls)) {
-                            withoutTests.add(cls.getName());
+                                && cls.isAnnotationPresent(Isolated.class)) {
+                            isolated.add(cls.getName());
+                            if (!yieldsTests(cls)) {
+                                withoutTests.add(cls.getName());
+                            }
                         }
                     });
         }
 
+        // Without this the walk, the name reconstruction or the class loading
+        // could all quietly fail and leave an empty scan looking like a clean
+        // one. IsolatedCase is right here in this file, so it has to turn up.
+        assertTrue(isolated.contains(IsolatedCase.class.getName()),
+                () -> "Scan is not inspecting anything: it walked " + root
+                        + " without finding " + IsolatedCase.class.getName()
+                        + ", only " + isolated);
+
         assertEquals(List.of(), withoutTests,
                 "@Isolated has no effect on a class the test engine does not "
-                        + "pick up; these classes declare no test method");
+                        + "pick up; the engine finds no test in these classes");
     }
 
-    private static boolean hasTestMethod(Class<?> cls) {
-        try {
-            // Declared, not public: Jupiter test methods here are usually
-            // package private, and inherited ones matter too
-            for (Class<?> type = cls; type != null
-                    && type != Object.class; type = type.getSuperclass()) {
-                for (Method method : type.getDeclaredMethods()) {
-                    for (Annotation annotation : method.getAnnotations()) {
-                        if (annotation.annotationType()
-                                .isAnnotationPresent(Testable.class)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } catch (Throwable e) { // NOSONAR
-            // Unresolvable signature, treat as a test class rather than fail
+    /**
+     * Asks the platform itself whether the class is one it would run, rather
+     * than looking for test annotations by hand. That keeps classes whose tests
+     * live in {@code @Nested} types, or behind a composed annotation, from
+     * being reported as untested. Abstract classes are left alone: they cannot
+     * be test classes themselves, and {@code @Isolated} is {@code @Inherited},
+     * so a marker on a base class is there for the subclasses.
+     */
+    private boolean yieldsTests(Class<?> cls) {
+        if (Modifier.isAbstract(cls.getModifiers())) {
             return true;
         }
-        return false;
+        try {
+            return LauncherFactory.create()
+                    .discover(LauncherDiscoveryRequestBuilder.request()
+                            .selectors(selectClass(cls)).build())
+                    .countTestIdentifiers(TestIdentifier::isTest) > 0;
+        } catch (Throwable e) { // NOSONAR
+            // Undiscoverable here, do not fail the build over it
+            return true;
+        }
     }
 
     private Class<?> load(Path root, Path classFile) {
