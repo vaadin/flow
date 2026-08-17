@@ -1,0 +1,108 @@
+name: Flow Gradle Validation
+on:
+  push:
+    branches: ['25.2', '25.1', '25.0', '24.10', '24.9']
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  group: gradle-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+env:
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  # PRs use github.base_ref, pushes use github.ref_name
+  JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+jobs:
+  # Single job that ALWAYS runs so the check always reports a status (it can be
+  # marked as a required check). The expensive build steps are gated on whether
+  # the Gradle plugin / plugin-base actually changed, so unrelated PRs pass
+  # immediately without doing any work.
+  gradle-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+      # GH-native change detection. For pull_request events, use the path
+      # filter; for push / merge_group / manual runs, always build.
+      - name: Detect Gradle plugin changes
+        if: github.event_name == 'pull_request'
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            gradle:
+              - 'flow-plugins/flow-gradle-plugin/**'
+              - 'flow-plugins/flow-plugin-base/**'
+      - name: Decide whether to run
+        id: decide
+        run: |
+          run=true
+          if [ "${{ github.event_name }}" = "pull_request" ] \
+             && [ "${{ steps.filter.outputs.gradle }}" != "true" ]; then
+            echo "No changes under flow-gradle-plugin / flow-plugin-base, skipping."
+            run=false
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: steps.decide.outputs.run == 'true'
+        with:
+          node-version: '24.9.0'
+      - name: Set up JDK
+        if: steps.decide.outputs.run == 'true'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set up Maven
+        if: steps.decide.outputs.run == 'true'
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: 3.8.7
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: steps.decide.outputs.run == 'true'
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: steps.decide.outputs.run == 'true'
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - name: Set flow version to temporary snapshot
+        if: steps.decide.outputs.run == 'true'
+        run: |
+          mvn versions:set -DnewVersion=1111.5.0-SNAPSHOT -B -ntp
+      # Build and install Flow so the Gradle plugin can resolve flow-plugin-base
+      # from the local repository. The Gradle plugin itself is built by Gradle,
+      # so exclude it from the Maven reactor.
+      - name: Build and Install Flow
+        if: steps.decide.outputs.run == 'true'
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -U -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 1C -q || eval $cmd
+      - name: Run Gradle build and functionalTests
+        if: steps.decide.outputs.run == 'true'
+        working-directory: flow-plugins/flow-gradle-plugin
+        run: |
+          ./gradlew build --stacktrace --no-daemon -Pvaadin.require.home.node=true
+      - name: Package test reports
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        run: |
+          find flow-plugins/flow-gradle-plugin -path '*/build/reports/tests/*' -o -name 'pom.xml' \
+            | tar -czf gradle-tests-report.tgz -T - || true
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        with:
+          name: gradle-tests-report
+          path: gradle-tests-report.tgz
+          if-no-files-found: ignore
