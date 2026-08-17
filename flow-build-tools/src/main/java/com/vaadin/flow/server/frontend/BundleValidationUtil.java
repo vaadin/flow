@@ -1005,7 +1005,7 @@ public final class BundleValidationUtil {
                     "Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
-            FileIOUtils.deleteFileQuietly(needsBuildFile);
+            FileIOUtils.deleteQuietly(needsBuildFile);
         }
     }
 

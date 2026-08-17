@@ -58,23 +58,39 @@ public class UsageTracker {
                 boolean closed = false;
 
                 {
-                    synchronized (lock) {
-                        for (Usage usage : usages) {
-                            // avoid lambda to allow proper deserialization
-                            TransientListener usageListener = new TransientListener() {
-                                @Override
-                                public boolean invoke(boolean immediate) {
-                                    return onChange(immediate);
-                                }
-                            };
-                            Registration cleanup = usage
-                                    .onNextChange(usageListener);
+                    for (Usage usage : usages) {
+                        // avoid lambda to allow proper deserialization
+                        TransientListener usageListener = new TransientListener() {
+                            @Override
+                            public boolean invoke(boolean immediate) {
+                                return onChange(immediate);
+                            }
+                        };
+                        /*
+                         * Register outside the monitor: onNextChange acquires
+                         * the dependency's SignalTree lock, and a concurrent
+                         * committer holding that lock notifies observers -- one
+                         * of which is the listener registered here -- and then
+                         * needs this monitor. Holding the monitor across
+                         * onNextChange would invert those two locks and
+                         * deadlock (ABBA). See #25166.
+                         */
+                        Registration cleanup = usage
+                                .onNextChange(usageListener);
+                        boolean removeNow;
+                        synchronized (lock) {
                             if (closed) {
-                                cleanup.remove();
-                                break;
+                                removeNow = true;
                             } else {
                                 cleanups.add(cleanup);
+                                removeNow = false;
                             }
+                        }
+                        if (removeNow) {
+                            // Removed outside the monitor: remove() also
+                            // acquires the tree lock.
+                            cleanup.remove();
+                            break;
                         }
                     }
                 }
@@ -84,12 +100,18 @@ public class UsageTracker {
                         if (closed) {
                             return false;
                         }
-                        boolean listenToNext = listener.invoke(immediate);
-                        if (!listenToNext) {
-                            close();
-                        }
-                        return listenToNext;
                     }
+                    /*
+                     * Invoke the downstream listener outside the monitor: it
+                     * may read signals or register further usages, which
+                     * acquire tree locks. Holding the monitor across the
+                     * invocation is the same inversion as above.
+                     */
+                    boolean listenToNext = listener.invoke(immediate);
+                    if (!listenToNext) {
+                        close();
+                    }
+                    return listenToNext;
                 }
 
                 private void close() {

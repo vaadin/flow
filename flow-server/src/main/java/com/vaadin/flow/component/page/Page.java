@@ -663,10 +663,7 @@ public class Page implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("URL must not be null");
         }
-        if (!UrlUtil.isSafeUrl(url)) {
-            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
-                    "URL", url, "openUnsafe(String, String)"));
-        }
+        UrlUtil.validateUrl(ui, "URL", url, "openUnsafe(String, String)");
         openInternal(url, windowName);
     }
 
