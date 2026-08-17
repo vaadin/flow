@@ -17,11 +17,14 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -331,11 +334,19 @@ class ServerRpcHandlerTest {
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        // The notifications must bracket the property change event, so that a
+        // listener timing the invocation measures the application code it runs.
+        List<String> sequence = new ArrayList<>();
+        Mockito.doAnswer(invocation -> sequence.add("started")).when(service)
+                .fireRpcInvocationStarted(ArgumentMatchers.any());
+        Mockito.doAnswer(invocation -> sequence.add("ended")).when(service)
+                .fireRpcInvocationEnded(ArgumentMatchers.any());
+
         ui = new UI();
         ui.getInternals().setSession(session);
         Element input = ElementFactory.createInput();
-        input.addPropertyChangeListener("value", "change", event -> {
-        });
+        input.addPropertyChangeListener("value", "change",
+                event -> sequence.add("changeEvent"));
         ui.getElement().appendChild(input);
         int nodeId = input.getNode().getId();
 
@@ -353,6 +364,7 @@ class ServerRpcHandlerTest {
         assertEquals(JsonConstants.RPC_TYPE_MAP_SYNC, event.getType());
         assertEquals("value", event.getName());
         assertEquals(nodeId, event.getNodeId());
+        assertEquals(List.of("started", "changeEvent", "ended"), sequence);
     }
 
     @Test
@@ -380,8 +392,12 @@ class ServerRpcHandlerTest {
 
         ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
                 .forClass(RpcInvocationEvent.class);
-        Mockito.verify(service).fireRpcInvocationFailed(captor.capture(),
+        InOrder inOrder = Mockito.inOrder(service);
+        inOrder.verify(service)
+                .fireRpcInvocationStarted(ArgumentMatchers.any());
+        inOrder.verify(service).fireRpcInvocationFailed(captor.capture(),
                 ArgumentMatchers.same(failure));
+        inOrder.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
         assertEquals("value", captor.getValue().getName());
     }
 
