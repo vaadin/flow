@@ -99,6 +99,26 @@ class JsImportsTest {
     }
 
     @Test
+    void equalsAndHashCode_basedOnDeclaringClass() {
+        JsImports imports = JsImports.of(LitImports.class);
+
+        assertEquals(imports, JsImports.of(LitImports.class));
+        assertEquals(imports.hashCode(),
+                JsImports.of(LitImports.class).hashCode());
+        assertNotEquals(imports, JsImports.of(LitNamespace.class));
+        assertNotEquals(imports, null);
+        assertNotEquals(imports, LitImports.class.getName());
+    }
+
+    @Test
+    void toString_namesTheDeclaringClass() {
+        assertTrue(
+                JsImports.of(LitImports.class).toString()
+                        .contains(LitImports.class.getName()),
+                "toString should help identify the declaration when debugging");
+    }
+
+    @Test
     void encodeWithTypeInfo_encodedAsChunkIdReference() {
         JsonNode encoded = JacksonCodec
                 .encodeWithTypeInfo(JsImports.of(LitImports.class));
