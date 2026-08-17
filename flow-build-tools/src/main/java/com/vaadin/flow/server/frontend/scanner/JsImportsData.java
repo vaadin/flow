@@ -41,6 +41,7 @@ public class JsImportsData implements Serializable {
     private final String module;
     private final List<String> names;
     private final boolean importAll;
+    private final boolean developmentOnly;
 
     /**
      * Creates a new declaration.
@@ -55,14 +56,17 @@ public class JsImportsData implements Serializable {
      *            {@code null}
      * @param importAll
      *            {@code true} to import the whole module namespace
+     * @param developmentOnly
+     *            {@code true} to import the values only in development mode
      */
     public JsImportsData(String className, String module, List<String> names,
-            boolean importAll) {
+            boolean importAll, boolean developmentOnly) {
         this.className = Objects.requireNonNull(className);
         this.module = Objects.requireNonNull(module);
         this.names = Collections.unmodifiableList(
                 new ArrayList<>(Objects.requireNonNull(names)));
         this.importAll = importAll;
+        this.developmentOnly = developmentOnly;
     }
 
     /**
@@ -104,6 +108,16 @@ public class JsImportsData implements Serializable {
         return importAll;
     }
 
+    /**
+     * Checks whether the values should only be imported when running in
+     * development mode.
+     *
+     * @return {@code true} to import the values only in development mode
+     */
+    public boolean isDevelopmentOnly() {
+        return developmentOnly;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -112,18 +126,22 @@ public class JsImportsData implements Serializable {
         if (!(obj instanceof JsImportsData other)) {
             return false;
         }
-        return importAll == other.importAll && className.equals(other.className)
+        return importAll == other.importAll
+                && developmentOnly == other.developmentOnly
+                && className.equals(other.className)
                 && module.equals(other.module) && names.equals(other.names);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(className, module, names, importAll);
+        return Objects.hash(className, module, names, importAll,
+                developmentOnly);
     }
 
     @Override
     public String toString() {
         return "JsImportsData{" + className + " -> " + module + " "
-                + (importAll ? "*" : names) + "}";
+                + (importAll ? "*" : names)
+                + (developmentOnly ? " (development only)" : "") + "}";
     }
 }

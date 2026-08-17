@@ -124,6 +124,10 @@ public @interface JsModule {
      * and it is not part of the eager bundle: it is loaded on demand the first
      * time an expression using it is sent to the browser.
      * <p>
+     * {@link #developmentOnly()} applies as usual: such a declaration is left
+     * out of a production build, so an expression using it must not run in
+     * production either.
+     * <p>
      * A name may only be declared once per class, so two modules exporting the
      * same name cannot be combined on one class. There is no way to rename an
      * export; declare the modules on separate classes and pass both to

@@ -155,7 +155,8 @@ final class FrontendClassVisitor extends ClassVisitor {
                     // imported for their side effects only.
                     classInfo.jsImports.add(new JsImportsData(
                             classInfo.className, currentModule,
-                            new ArrayList<>(currentImports), currentImportAll));
+                            new ArrayList<>(currentImports), currentImportAll,
+                            currentDevOnly));
                 } else if (!currentTypeIsModule) {
                     // type=MODULE values are loaded at runtime as <script
                     // type="module"> by UIInternals; they must not enter the

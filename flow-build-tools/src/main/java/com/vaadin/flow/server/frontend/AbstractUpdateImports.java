@@ -845,14 +845,23 @@ abstract class AbstractUpdateImports implements Runnable {
     /**
      * Groups the import declarations found by the scanner by the class that
      * declares them, preserving the scanner's order within each class.
+     * <p>
+     * Declarations marked as {@code developmentOnly} are left out of a
+     * production build, the same way a plain {@code @JsModule} marked that way
+     * is only part of the development bundle. A class whose declarations are
+     * all development only therefore gets no chunk in production.
      */
-    private static Map<String, List<JsImportsData>> groupJsImportsByClass(
+    private Map<String, List<JsImportsData>> groupJsImportsByClass(
             List<JsImportsData> jsImports) {
         Map<String, List<JsImportsData>> grouped = new LinkedHashMap<>();
         if (jsImports == null) {
             return grouped;
         }
+        boolean productionMode = options.isProductionMode();
         for (JsImportsData data : jsImports) {
+            if (productionMode && data.isDevelopmentOnly()) {
+                continue;
+            }
             grouped.computeIfAbsent(data.getClassName(),
                     key -> new ArrayList<>()).add(data);
         }
@@ -911,16 +920,25 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> importLines = new ArrayList<>();
         List<String> entries = new ArrayList<>();
         Map<String, String> nameToModule = new LinkedHashMap<>();
+        // Theme translated and transitively imported files that the same module
+        // pulls in as a plain @JsModule; kept as side-effect imports so that
+        // both spellings put the same files into the bundle
+        LinkedHashSet<String> sideEffectPaths = new LinkedHashSet<>();
+        Set<String> boundPaths = new LinkedHashSet<>();
 
         for (int i = 0; i < declarations.size(); i++) {
             JsImportsData declaration = declarations.get(i);
-            String module = resolveJsImportsModule(className, declaration);
+            List<String> paths = resolveJsImportsModule(className, declaration);
+            String module = paths.get(0);
+            boundPaths.add(module);
+            sideEffectPaths.addAll(paths.subList(1, paths.size()));
 
             if (declaration.isImportAll()) {
                 String alias = "jsImport" + i;
                 importLines.add(String.format("import * as %s from '%s';",
                         alias, module));
-                return registryLines(className, importLines, alias);
+                return registryLines(className, importLines, sideEffectPaths,
+                        boundPaths, alias);
             }
 
             for (int j = 0; j < declaration.getNames().size(); j++) {
@@ -943,13 +961,17 @@ abstract class AbstractUpdateImports implements Runnable {
             }
         }
 
-        return registryLines(className, importLines,
-                "{ " + String.join(", ", entries) + " }");
+        return registryLines(className, importLines, sideEffectPaths,
+                boundPaths, "{ " + String.join(", ", entries) + " }");
     }
 
     private static List<String> registryLines(String className,
-            List<String> importLines, String value) {
+            List<String> importLines, Set<String> sideEffectPaths,
+            Set<String> boundPaths, String value) {
         List<String> lines = new ArrayList<>(importLines);
+        sideEffectPaths.stream().filter(path -> !boundPaths.contains(path))
+                .map(path -> String.format(IMPORT_TEMPLATE, path))
+                .forEach(lines::add);
         lines.add(JS_IMPORTS_REGISTRY_INIT);
         lines.add(String.format("window.Vaadin.Flow.imports['%s'] = %s;",
                 BundleUtils.getChunkId(className), value));
@@ -968,22 +990,25 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     /**
-     * Resolves the module of an import declaration to the path to use in the
-     * generated import statement, using the same rules as for a plain
-     * {@code @JsModule} value.
+     * Resolves the module of an import declaration with the same rules as a
+     * plain {@code @JsModule} value.
+     *
+     * @return the paths a plain {@code @JsModule} with this value would import.
+     *         The first one is the module itself and is the one the named
+     *         values are bound from; it is added before {@code handleImports}
+     *         appends the theme translated and transitively imported files,
+     *         which make up the rest of the list.
      */
-    private String resolveJsImportsModule(String className,
+    private List<String> resolveJsImportsModule(String className,
             JsImportsData declaration) {
-        // The declaration's own resolved path is the first one added; any
-        // further paths come from theme handling of the same module
-        Iterator<String> paths = getUniqueEs6ImportPaths(
-                Collections.singletonList(declaration.getModule())).iterator();
-        if (!paths.hasNext()) {
+        List<String> paths = new ArrayList<>(getUniqueEs6ImportPaths(
+                Collections.singletonList(declaration.getModule())));
+        if (paths.isEmpty()) {
             throw new IllegalStateException(String.format(
                     "Failed to resolve the module '%s' declared by @JsModule on %s.",
                     declaration.getModule(), className));
         }
-        return paths.next();
+        return paths;
     }
 
     private boolean frontendFileExists(String jsImport) {

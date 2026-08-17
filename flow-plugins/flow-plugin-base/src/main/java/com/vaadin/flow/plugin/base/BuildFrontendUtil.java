@@ -889,9 +889,13 @@ public class BuildFrontendUtil {
             jsAndCssImports.addAll(scripts);
         }
         // Modules only reached through @JsModule(imports = ...) are not part of
-        // getModules(), but they are bundled just the same
-        scanner.getJsImports().forEach(
-                jsImports -> jsAndCssImports.add(jsImports.getModule()));
+        // getModules(), but they are bundled just the same. Development only
+        // ones are skipped, matching getModules() leaving those to
+        // getModulesDevelopment().
+        scanner.getJsImports().stream()
+                .filter(jsImports -> !jsImports.isDevelopmentOnly())
+                .forEach(jsImports -> jsAndCssImports
+                        .add(jsImports.getModule()));
         for (String importPath : jsAndCssImports) {
             if (importPath.startsWith(".")) {
                 continue;

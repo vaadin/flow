@@ -409,7 +409,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 }
 
                                 if (hasImportsAttributes && collectJsImports(
-                                        clazz, ann, value)) {
+                                        clazz, ann, value, developmentOnly)) {
                                     // Values imported by name are published in
                                     // the client-side imports registry by a
                                     // dedicated chunk instead of being imported
@@ -451,14 +451,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *         must therefore not be added as a side-effect import
      */
     private boolean collectJsImports(Class<?> clazz, Annotation ann,
-            String value) {
+            String value, boolean developmentOnly) {
         String[] names = (String[]) getAnnotationValue(ann, IMPORTS);
         boolean importAll = getAnnotationValueAsBoolean(ann, IMPORT_ALL);
         if (!importAll && (names == null || names.length == 0)) {
             return false;
         }
         jsImports.add(new JsImportsData(clazz.getName(), value,
-                names == null ? List.of() : Arrays.asList(names), importAll));
+                names == null ? List.of() : Arrays.asList(names), importAll,
+                developmentOnly));
         return true;
     }
 

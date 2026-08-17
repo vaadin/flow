@@ -170,6 +170,22 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public static class InvalidNameJsImports {
     }
 
+    @JsModule(value = JS_IMPORTS_MODULE, imports = {
+            "render" }, developmentOnly = true)
+    public static class DevelopmentOnlyJsImports {
+    }
+
+    @JsModule(value = "./generated/jar-resources/ExampleConnector.js", imports = {
+            "render" })
+    public static class TransitiveJsImports {
+    }
+
+    @JsModule(value = JS_IMPORTS_MODULE, imports = { "render" })
+    @JsModule(value = "@vaadin/other-js-imports/index.js", imports = {
+            "html" }, developmentOnly = true)
+    public static class PartlyDevelopmentOnlyJsImports {
+    }
+
     /**
      * Referencing an import declaring class as a class literal is what makes it
      * reachable for the bytecode scanner, exactly as a real
@@ -207,6 +223,27 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public static class InvalidNameJsImportsView extends Component {
         public Class<?> declaringClass() {
             return InvalidNameJsImports.class;
+        }
+    }
+
+    @Route("transitive-js-imports")
+    public static class TransitiveJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return TransitiveJsImports.class;
+        }
+    }
+
+    @Route("development-only-js-imports")
+    public static class DevelopmentOnlyJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return DevelopmentOnlyJsImports.class;
+        }
+    }
+
+    @Route("partly-development-only-js-imports")
+    public static class PartlyDevelopmentOnlyJsImportsView extends Component {
+        public Class<?> declaringClass() {
+            return PartlyDevelopmentOnlyJsImports.class;
         }
     }
 
@@ -962,7 +999,78 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         + exception.getMessage());
     }
 
+    @Test
+    void jsModuleWithImports_transitiveImportsKeptAsSideEffectImports()
+            throws IOException {
+        // Same fixture as
+        // copiedJarResources_containsImport_importFollowedAndAdded,
+        // so a plain @JsModule with this value imports both files
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/sub/example-import.js");
+        Files.writeString(resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/ExampleConnector.js").toPath(),
+                "import \"./sub/example-import.js\";");
+
+        runWithJsImports(TransitiveJsImportsView.class,
+                TransitiveJsImports.class);
+
+        String chunkId = BundleUtils
+                .getChunkId(TransitiveJsImports.class.getName());
+        assertEquals(List.of(
+                "import { render as jsImport0_0 } from 'Frontend/generated/jar-resources/ExampleConnector.js';",
+                "import 'Frontend/generated/jar-resources/sub/example-import.js';",
+                AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT,
+                "window.Vaadin.Flow.imports['" + chunkId
+                        + "'] = { render: jsImport0_0 };"),
+                getJsImportsChunk(chunkId));
+    }
+
+    @Test
+    void jsModuleWithDevelopmentOnlyImports_noChunkInProductionBuild() {
+        runWithJsImports(DevelopmentOnlyJsImportsView.class,
+                DevelopmentOnlyJsImports.class, true);
+
+        assertNoJsImportsChunk(DevelopmentOnlyJsImports.class);
+    }
+
+    @Test
+    void jsModuleWithDevelopmentOnlyImports_chunkInDevelopmentBuild() {
+        runWithJsImports(DevelopmentOnlyJsImportsView.class,
+                DevelopmentOnlyJsImports.class, false);
+
+        String chunkId = BundleUtils
+                .getChunkId(DevelopmentOnlyJsImports.class.getName());
+        assertEquals(
+                List.of("import { render as jsImport0_0 } from '"
+                        + JS_IMPORTS_MODULE + "';",
+                        AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT,
+                        "window.Vaadin.Flow.imports['" + chunkId
+                                + "'] = { render: jsImport0_0 };"),
+                getJsImportsChunk(chunkId));
+    }
+
+    @Test
+    void jsModuleWithPartlyDevelopmentOnlyImports_onlyTheOtherOneInProduction() {
+        runWithJsImports(PartlyDevelopmentOnlyJsImportsView.class,
+                PartlyDevelopmentOnlyJsImports.class, true);
+
+        String chunkId = BundleUtils
+                .getChunkId(PartlyDevelopmentOnlyJsImports.class.getName());
+        assertEquals(
+                List.of("import { render as jsImport0_0 } from '"
+                        + JS_IMPORTS_MODULE + "';",
+                        AbstractUpdateImports.JS_IMPORTS_REGISTRY_INIT,
+                        "window.Vaadin.Flow.imports['" + chunkId
+                                + "'] = { render: jsImport0_0 };"),
+                getJsImportsChunk(chunkId));
+    }
+
     private void runWithJsImports(Class<?> view, Class<?> declaringClass) {
+        runWithJsImports(view, declaringClass, true);
+    }
+
+    private void runWithJsImports(Class<?> view, Class<?> declaringClass,
+            boolean productionMode) {
         ClassFinder classFinder;
         try {
             classFinder = getClassFinder(UI.class, AllEagerAppConf.class, view,
@@ -970,9 +1078,24 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }
+        options.withProductionMode(productionMode);
         updater = new UpdateImports(options
                 .withFrontendDependenciesScanner(getScanner(classFinder)));
         updater.run();
+    }
+
+    private void assertNoJsImportsChunk(Class<?> declaringClass) {
+        String registration = "window.Vaadin.Flow.imports['"
+                + BundleUtils.getChunkId(declaringClass.getName()) + "']";
+        assertTrue(
+                updater.getOutput().values().stream().flatMap(List::stream)
+                        .noneMatch(line -> line.startsWith(registration)),
+                "No generated file should register the imports of "
+                        + declaringClass.getSimpleName());
+        assertFalse(
+                getMainImports()
+                        .contains("import '" + JS_IMPORTS_MODULE + "';"),
+                "The development only module must not be bundled either");
     }
 
     private List<String> getJsImportsChunk(String chunkId) {

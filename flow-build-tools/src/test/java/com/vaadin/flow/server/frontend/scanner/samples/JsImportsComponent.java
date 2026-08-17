@@ -23,5 +23,7 @@ import com.vaadin.flow.router.Route;
 @JsModule("side-effect.js")
 @JsModule(value = "named-imports.js", imports = { "foo", "bar" })
 @JsModule(value = "namespace-imports.js", importAll = true)
+@JsModule(value = "dev-only-imports.js", imports = {
+        "baz" }, developmentOnly = true)
 public class JsImportsComponent extends Component {
 }

@@ -119,11 +119,13 @@ class FrontendDependenciesTest {
                 classFinder, false, null, true);
 
         String className = JsImportsComponent.class.getName();
-        assertEquals(List.of(
-                new JsImportsData(className, "named-imports.js",
-                        List.of("foo", "bar"), false),
-                new JsImportsData(className, "namespace-imports.js", List.of(),
-                        true)),
+        assertEquals(
+                List.of(new JsImportsData(className, "named-imports.js",
+                        List.of("foo", "bar"), false, false),
+                        new JsImportsData(className, "namespace-imports.js",
+                                List.of(), true, false),
+                        new JsImportsData(className, "dev-only-imports.js",
+                                List.of("baz"), false, true)),
                 dependencies.getJsImports());
 
         DepsTests.assertImportsExcludingUI(dependencies.getModules(),

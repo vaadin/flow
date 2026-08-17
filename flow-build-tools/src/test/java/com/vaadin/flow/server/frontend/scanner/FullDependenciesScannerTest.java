@@ -105,6 +105,8 @@ class FullDependenciesScannerTest {
     @JsModule("side-effect.js")
     @JsModule(value = "named-imports.js", imports = { "foo", "bar" })
     @JsModule(value = "namespace-imports.js", importAll = true)
+    @JsModule(value = "dev-only-imports.js", imports = {
+            "baz" }, developmentOnly = true)
     public static class JsImportsComponent extends Component {
 
     }
@@ -343,11 +345,14 @@ class FullDependenciesScannerTest {
                 null, true);
 
         String className = JsImportsComponent.class.getName();
+        // Sorted by module, so the development only declaration comes first
         assertEquals(List.of(
+                new JsImportsData(className, "dev-only-imports.js",
+                        List.of("baz"), false, true),
                 new JsImportsData(className, "named-imports.js",
-                        List.of("foo", "bar"), false),
+                        List.of("foo", "bar"), false, false),
                 new JsImportsData(className, "namespace-imports.js", List.of(),
-                        true)),
+                        true, false)),
                 scanner.getJsImports());
 
         // Modules that only exist to be imported by name are not side-effect
