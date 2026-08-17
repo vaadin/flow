@@ -292,6 +292,12 @@ public class Page implements Serializable {
      * element, which is the recommended way to load runtime ES modules
      * (replaces the deprecated {@link #addJsModule(String)}).
      * <p>
+     * {@link JavaScript.Type#MODULE} supports {@link LoadMode#EAGER} and
+     * {@link LoadMode#LAZY}, but not {@link LoadMode#INLINE}: the browser
+     * cannot be given the contents of a module without also losing the module's
+     * identity, so use {@link JavaScript.Type#SCRIPT} if the contents must be
+     * inlined into the page.
+     * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
      *
@@ -303,9 +309,18 @@ public class Page implements Serializable {
      * @param type
      *            the kind of {@code <script>} tag to render; {@code null} is
      *            treated as {@link JavaScript.Type#SCRIPT}
+     * @throws IllegalArgumentException
+     *             if {@code type} is {@link JavaScript.Type#MODULE} and
+     *             {@code loadMode} is {@link LoadMode#INLINE}
      */
     public void addJavaScript(String url, LoadMode loadMode,
             JavaScript.Type type) {
+        if (type == JavaScript.Type.MODULE && loadMode == LoadMode.INLINE) {
+            throw new IllegalArgumentException(
+                    "Inline load mode is not supported for JavaScript.Type.MODULE ("
+                            + url
+                            + "). Use LoadMode.EAGER or LoadMode.LAZY, or JavaScript.Type.SCRIPT if the contents must be inlined into the page.");
+        }
         Type dependencyType = type == JavaScript.Type.MODULE ? Type.JS_MODULE
                 : Type.JAVASCRIPT;
         addDependency(new Dependency(dependencyType, url, loadMode));
@@ -326,7 +341,7 @@ public class Page implements Serializable {
      *             also accepts a {@link LoadMode}.
      * @since 2.0
      */
-    @Deprecated
+    @Deprecated(since = "25.3")
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
             addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));

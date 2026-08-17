@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -36,6 +37,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
@@ -104,6 +106,43 @@ class DependencyListTest {
     void addJavaScriptDependency_inline() {
         ui.getPage().addJavaScript(URL, LoadMode.INLINE);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeScript_addedAsJavaScript() {
+        ui.getPage().addJavaScript(URL, LoadMode.EAGER, JavaScript.Type.SCRIPT);
+        validateDependency(URL, Type.JAVASCRIPT, LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModule_addedAsJsModule() {
+        ui.getPage().addJavaScript(URL, LoadMode.EAGER, JavaScript.Type.MODULE);
+        validateDependency(URL, Type.JS_MODULE, LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModuleLazy_addedAsJsModule() {
+        ui.getPage().addJavaScript(URL, LoadMode.LAZY, JavaScript.Type.MODULE);
+        validateDependency(URL, Type.JS_MODULE, LoadMode.LAZY);
+    }
+
+    @Test
+    void addJavaScriptDependency_nullType_addedAsJavaScript() {
+        ui.getPage().addJavaScript(URL, LoadMode.EAGER, null);
+        validateDependency(URL, Type.JAVASCRIPT, LoadMode.EAGER);
+    }
+
+    @Test
+    void addJavaScriptDependency_typeModuleInline_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ui.getPage().addJavaScript(URL, LoadMode.INLINE,
+                        JavaScript.Type.MODULE));
+        assertTrue(exception.getMessage().contains(URL),
+                "Exception message should name the offending URL, was: "
+                        + exception.getMessage());
+        assertEquals(0, deps.getPendingSendToClient().size(),
+                "No dependency should have been added");
     }
 
     private void validateDependency(String url, Type dependencyType,

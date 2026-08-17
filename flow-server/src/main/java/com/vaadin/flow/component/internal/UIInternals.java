@@ -1187,7 +1187,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addExternalDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1288,14 +1288,22 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addExternalDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
                 .forEach(js -> {
-                    String resolved = FrontendDependencyUrlResolver
-                            .resolveToContextRoot(js.value());
+                    String resolved = resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
+                    }
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
@@ -1308,6 +1316,25 @@ public class UIInternals implements Serializable {
     private boolean isRuntimeJavaScript(JavaScript js) {
         return js.type() == JavaScript.Type.MODULE
                 || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**

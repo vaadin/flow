@@ -101,6 +101,11 @@ public @interface JavaScript {
          * path. Use this for hand-authored or CDN-hosted modules that should
          * not go through Vite. For build-time bundled ES modules use
          * {@link JsModule} instead.
+         * <p>
+         * {@link LoadMode#EAGER} and {@link LoadMode#LAZY} are supported;
+         * {@link LoadMode#INLINE} is not, as the browser cannot be given the
+         * contents of a module without also losing the module's identity. Use
+         * {@link #SCRIPT} if the contents must be inlined into the page.
          */
         MODULE
     }
@@ -158,6 +163,10 @@ public @interface JavaScript {
     /**
      * Determines the dependency load mode. Refer to {@link LoadMode} for the
      * details.
+     * <p>
+     * {@link LoadMode#INLINE} cannot be combined with {@link Type#MODULE}; such
+     * a combination is rejected with an {@link IllegalArgumentException} when
+     * the dependency is added to the page.
      *
      * @return load mode for the dependency
      */
