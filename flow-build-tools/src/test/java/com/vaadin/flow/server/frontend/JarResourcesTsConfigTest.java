@@ -204,6 +204,26 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
                         + "with a dangling 'extends' in the project");
     }
 
+    @Test
+    void jarResourcesTsConfig_isRemoved_whenTheFolderIsNotConfigured()
+            throws Exception {
+        // The production build creates the clean up task from options that
+        // only know the frontend directory
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
+                new MockOptions(getClassFinder(), npmFolder)
+                        .withFrontendDirectory(frontendFolder));
+        generateTsConfigs();
+        File tsConfig = new File(jarResourcesFolder, "tsconfig.json");
+        assertTrue(tsConfig.exists(), "tsconfig.json should be generated");
+
+        cleanTask.execute();
+
+        assertFalse(tsConfig.exists(),
+                "The configuration of the add-on sources should be cleaned up "
+                        + "along with the project one it extends, also when the "
+                        + "options do not configure its folder");
+    }
+
     /**
      * Generates the project tsconfig, which the one of the add-on sources
      * extends, and then the one of the add-on sources.

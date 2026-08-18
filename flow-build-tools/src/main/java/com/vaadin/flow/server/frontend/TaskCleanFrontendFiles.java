@@ -47,7 +47,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     private File projectRoot;
 
-    private File jarResourcesFolder;
+    private File jarResourcesTsConfig;
 
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
@@ -70,7 +70,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      */
     public TaskCleanFrontendFiles(Options options) {
         this.projectRoot = options.getNpmFolder();
-        this.jarResourcesFolder = options.getJarFrontendResourcesFolder();
+        this.jarResourcesTsConfig = TaskGenerateJarResourcesTsConfig
+                .getTsConfigFile(options);
 
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
@@ -110,21 +111,12 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         }
         if (filesToRemove.stream().anyMatch(file -> file.getName()
                 .equals(TaskGenerateTsConfig.TSCONFIG_JSON))) {
-            // The tsconfig.json of the add-on sources extends the project one,
-            // so it is broken for the IDE and for manual bundler runs once the
-            // project one is gone
-            removeJarResourcesTsConfig();
+            // The configuration of the frontend sources of add-ons extends the
+            // project one, so removing only the latter would leave behind a
+            // configuration that no longer resolves
+            log().debug("Removing file {}", jarResourcesTsConfig);
+            FileIOUtils.deleteQuietly(jarResourcesTsConfig);
         }
-    }
-
-    private void removeJarResourcesTsConfig() {
-        if (jarResourcesFolder == null) {
-            return;
-        }
-        File tsConfig = new File(jarResourcesFolder,
-                TaskGenerateTsConfig.TSCONFIG_JSON);
-        log().debug("Removing file {}", tsConfig);
-        FileIOUtils.deleteQuietly(tsConfig);
     }
 
     private Logger log() {

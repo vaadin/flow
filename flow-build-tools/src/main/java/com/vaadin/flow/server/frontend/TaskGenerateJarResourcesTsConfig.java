@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 
 /**
@@ -71,13 +72,33 @@ class TaskGenerateJarResourcesTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(options.getJarFrontendResourcesFolder(),
-                TaskGenerateTsConfig.TSCONFIG_JSON);
+        return getTsConfigFile(options);
     }
 
     @Override
     protected boolean shouldGenerate() {
         return options.getJarFrontendResourcesFolder() != null;
+    }
+
+    /**
+     * Gets the configuration file this task generates.
+     * <p>
+     * It extends the project <code>tsconfig.json</code>, so it cannot outlive
+     * that file: a configuration whose <code>extends</code> does not resolve
+     * makes bundlers and the TypeScript compiler fail outright.
+     *
+     * @param options
+     *            the options of the project, which do not have to configure the
+     *            folder for the frontend sources of add-ons explicitly
+     * @return the configuration file of the frontend sources of add-ons
+     */
+    static File getTsConfigFile(Options options) {
+        File jarResourcesFolder = options.getJarFrontendResourcesFolder();
+        if (jarResourcesFolder == null) {
+            jarResourcesFolder = FrontendUtils
+                    .getJarResourcesFolder(options.getFrontendDirectory());
+        }
+        return new File(jarResourcesFolder, TaskGenerateTsConfig.TSCONFIG_JSON);
     }
 
     /**
