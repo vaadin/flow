@@ -143,6 +143,8 @@
     <!-- to be disabled via system property in CI until they got fixed -->
     <exclude.windows.failed.tests/>
 
+    <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
+
     <!-- Extra JVM arguments for surefire forks; modules override this
          when their tests need e.g. add-opens flags. The empty default
          keeps the argLine expression resolvable everywhere. -->
@@ -406,23 +408,6 @@
               </configuration>
             </execution>
             <execution>
-              <id>check-jcip-imports</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <phase>process-test-sources</phase>
-              <configuration>
-                <rules>
-                  <RestrictImports>
-                    <reason>Only Surefire's JUnit 4 providers honor jcip annotations, and everything outside the *IT classes runs through JUnitPlatformProvider, which ignores them. Use @Isolated: it keeps other test classes away and pins the class's own test methods to one thread. The *IT exclusion exists because flow-tests pins surefire-junit47 for failsafe, whose ParallelComputerBuilder does read @NotThreadSafe. It is wider than needed, since test-default runs its ITs on the platform provider.</reason>
-                    <bannedImport>net.jcip.annotations.**</bannedImport>
-                    <includeTestCode>true</includeTestCode>
-                    <exclusion>**.*IT</exclusion>
-                  </RestrictImports>
-                </rules>
-              </configuration>
-            </execution>
-            <execution>
               <id>default-cli</id>
               <goals>
                 <goal>enforce</goal>
@@ -470,18 +455,19 @@
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <properties>
-              <!-- Tests inside a module run one at a time; CI parallelises
-                   with -T, which forks a JVM per module. Turning this on hands
-                   scheduling to Jupiter, where only the @Isolated classes are
-                   kept away from everything else, so check the classes that
-                   share process-global state before enabling it.
-                   IsolatedAnnotationTest covers what the marker guarantees. -->
-              <configurationParameters>junit.jupiter.execution.parallel.enabled = false</configurationParameters>
+              <property>
+                <name>listener</name>
+                <value>${testListener}</value>
+              </property>
             </properties>
             <enableAssertions>true</enableAssertions>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
             </classpathDependencyExcludes>
+            <!--
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+-->
             <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
               <maven.home>${maven.home}</maven.home>
@@ -496,9 +482,6 @@
             <argLine>${failsafe.argLine}</argLine>
             <trimStackTrace>false</trimStackTrace>
             <enableAssertions>true</enableAssertions>
-            <!-- Honored because the IT modules pin surefire-junit47; its
-                 ParallelComputerBuilder also keeps @NotThreadSafe classes on a
-                 single thread. -->
             <parallel>${failsafe.parallel}</parallel>
             <threadCount>${failsafe.threadCount}</threadCount>
             <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>

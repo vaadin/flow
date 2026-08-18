@@ -59,13 +59,6 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- Base class for MavenPluginIsolatedClassesTest -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-test-generic</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>

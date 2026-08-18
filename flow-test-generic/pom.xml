@@ -13,11 +13,6 @@
 
   <properties>
     <flow.apicmp.skip>true</flow.apicmp.skip>
-    <!-- Test support code, run from the tests of the modules that depend on
-         it. JaCoCo reports are per module, so coverage of these classes is
-         only ever recorded against those modules and never against this one.
-         flow-test-util and flow-tests opt out for the same reason. -->
-    <sonar.skip>true</sonar.skip>
   </properties>
 
   <dependencies>
