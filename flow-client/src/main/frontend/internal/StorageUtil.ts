@@ -16,22 +16,42 @@
 
 // HTML Storage helpers migrated from StorageUtil.java.
 
-/** Gets an item value from the local storage, or null if absent. */
+/**
+ * Gets an item value from the local storage, or null if absent.
+ *
+ * @param key the item key
+ * @return the value of the item
+ */
 export function getLocalItem(key: string): string | null {
   return window.localStorage.getItem(key);
 }
 
-/** Sets an item value in the local storage. */
+/**
+ * Sets an item value in the local storage.
+ *
+ * @param key the item key
+ * @param value the item value
+ */
 export function setLocalItem(key: string, value: string): void {
   window.localStorage.setItem(key, value);
 }
 
-/** Gets an item value from the session storage, or null if absent. */
+/**
+ * Gets an item value from the session storage, or null if absent.
+ *
+ * @param key the item key
+ * @return the value of the item
+ */
 export function getSessionItem(key: string): string | null {
   return window.sessionStorage.getItem(key);
 }
 
-/** Sets an item value in the session storage. */
+/**
+ * Sets an item value in the session storage.
+ *
+ * @param key the item key
+ * @param value the item value
+ */
 export function setSessionItem(key: string, value: string): void {
   window.sessionStorage.setItem(key, value);
 }

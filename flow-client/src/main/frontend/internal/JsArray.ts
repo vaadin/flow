@@ -37,6 +37,10 @@
 /**
  * Appends every value (spread) onto the array, returning the new length.
  * Mirrors the public JsArray.pushArray overlay.
+ *
+ * @param array the array to operate on
+ * @param values the new values to add
+ * @return the new length of the array
  */
 export function pushArray(array: unknown[], values: unknown[]): number {
   return array.push(...values);
@@ -46,6 +50,12 @@ export function pushArray(array: unknown[], values: unknown[]): number {
  * Splices the array at index, removing `remove` elements and inserting the
  * `add` values (spread), returning the removed elements. Mirrors the public
  * JsArray.spliceArray overlay.
+ *
+ * @param array the array to operate on
+ * @param index the index at which do do the operation
+ * @param remove the number of items to remove
+ * @param add new items to add
+ * @return an array of removed items
  */
 export function spliceArray(array: unknown[], index: number, remove: number, add: unknown[]): unknown[] {
   return array.splice(index, remove, ...add);
@@ -54,6 +64,9 @@ export function spliceArray(array: unknown[], index: number, remove: number, add
 /**
  * Empties the array and returns it, mirroring the public JsArray.clear overlay
  * (which returns the cleared array).
+ *
+ * @param array the array to operate on
+ * @return the cleared array
  */
 export function clear(array: unknown[]): unknown[] {
   array.length = 0;
@@ -63,6 +76,9 @@ export function clear(array: unknown[]): unknown[] {
 /**
  * Checks if the array is empty (length === 0). Mirrors the public
  * JsArray.isEmpty overlay.
+ *
+ * @param array the array to operate on
+ * @return true if the array is empty, false otherwise
  */
 export function isEmpty(array: unknown[]): boolean {
   return array.length === 0;
@@ -71,6 +87,10 @@ export function isEmpty(array: unknown[]): boolean {
 /**
  * Removes the item at the given index and returns it. Mirrors the public
  * JsArray.remove(int index) overlay (which is `splice(index, 1).get(0)`).
+ *
+ * @param array the array to operate on
+ * @param index the index to remove
+ * @return the remove item
  */
 export function remove(array: unknown[], index: number): unknown {
   return array.splice(index, 1)[0];
@@ -82,6 +102,10 @@ export function remove(array: unknown[], index: number): unknown {
  * to the by-value Java overload JsArray.remove(T toRemove); it is named
  * `removeItem` here because TypeScript cannot overload `remove` on a single
  * argument whose type may itself be a number.
+ *
+ * @param array the array to operate on
+ * @param toRemove the item to remove
+ * @return `true` if the item was found and removed from the array, `false` otherwise
  */
 export function removeItem(array: unknown[], toRemove: unknown): boolean {
   for (let i = 0; i < array.length; i++) {
