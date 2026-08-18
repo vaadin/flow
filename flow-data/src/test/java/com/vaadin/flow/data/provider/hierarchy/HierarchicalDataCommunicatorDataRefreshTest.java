@@ -98,15 +98,16 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    void refreshNullItem_callsReset_regardlessOfRefreshChildren() {
-        // Virtual root (null) always maps to reset()/refreshAll() (#19377).
-        // refreshChildren is ignored to avoid inconsistent dual semantics.
+    void refreshNullItem_onlyRefreshChildrenCallsReset() {
+        // The virtual root (null) with refreshChildren maps to reset()
+        // (#19377). Without refreshChildren it has no effect, as the root
+        // itself is not a rendered item.
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
         Mockito.clearInvocations(dataCommunicatorSpy);
 
         dataCommunicatorSpy.refresh(null, false);
-        Mockito.verify(dataCommunicatorSpy).reset();
+        Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
 
         Mockito.clearInvocations(dataCommunicatorSpy);
         dataCommunicatorSpy.refresh(null, true);
@@ -115,8 +116,8 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     void refreshNullItem_fullHierarchyRefresh() {
-        // refresh(null) is equivalent to reset(): cache discarded, viewport
-        // re-fetched. Expansion state is preserved by reset() (same as
+        // refresh(null, true) is equivalent to reset(): cache discarded,
+        // viewport re-fetched. Expansion state is preserved by reset() (same as
         // refreshAll), so still-expanded roots reappear with children.
         populateTreeData(treeData, 2, 1);
         dataCommunicator.expand(new Item("Item 0"));
@@ -131,7 +132,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
         treeData.addItem(null, new Item("Item 2"));
         treeData.getRootItems().forEach(item -> item.setState("refreshed"));
-        dataCommunicator.refresh(null, false);
+        dataCommunicator.refresh(null, true);
         fakeClientCommunication();
 
         // 3 roots + Item 0 still expanded → 4 flattened rows
@@ -170,15 +171,14 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    void refreshItemNullThroughDataProvider_callsReset() {
+    void refreshItemNullThroughDataProvider_onlyRefreshChildrenCallsReset() {
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
         Mockito.clearInvocations(dataCommunicatorSpy);
 
         treeDataProvider.refreshItem(null);
-        Mockito.verify(dataCommunicatorSpy).reset();
+        Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
 
-        Mockito.clearInvocations(dataCommunicatorSpy);
         treeDataProvider.refreshItem(null, true);
         Mockito.verify(dataCommunicatorSpy).reset();
     }

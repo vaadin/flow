@@ -37,37 +37,19 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * {@inheritDoc}
      * <p>
-     * Passing {@code null} as item is equivalent to calling {@link #refreshAll()}.
-     */
-    @Override
-    public void refreshItem(T item) {
-        if (item == null) {
-            refreshAll();
-            return;
-        }
-        super.refreshItem(item);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Passing {@code null} as item is equivalent to calling {@link #refreshAll()}.
+     * Passing {@code null} as item, i.e. the virtual root (parent of root-level
+     * items), together with {@code refreshChildren} set to {@code true} is
+     * equivalent to calling {@link #refreshAll()}.
      *
      * @throws UnsupportedOperationException
-     *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
-     *             and {@code item} is not {@code null} while
-     *             {@code refreshChildren} is {@code true}
+     *             if {@code item} is not {@code null}, {@code refreshChildren}
+     *             is {@code true}, and the hierarchy format is not
+     *             {@link HierarchyFormat#NESTED}
      * @since 25.0
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {
-        if (item == null) {
-            // Virtual root: always full hierarchy refresh. refreshChildren is
-            // intentionally ignored (same as HierarchicalDataCommunicator).
-            refreshAll();
-            return;
-        }
-        if (refreshChildren
+        if (item != null && refreshChildren
                 && !getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
             throw new UnsupportedOperationException(
                     """
