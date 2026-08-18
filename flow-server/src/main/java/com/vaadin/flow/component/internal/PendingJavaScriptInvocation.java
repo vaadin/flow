@@ -60,6 +60,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
         this.owner = owner;
         this.invocation = invocation;
+
+        PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     /**
@@ -122,6 +124,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return false;
         }
         canceled = true;
+        PendingJavaScriptInvocationUtil.invocationDelivered(this);
 
         if (errorHandler != null) {
             errorHandler.accept(EXECUTION_CANCELED);
@@ -139,6 +142,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     void setSentToBrowser() {
         assert !sentToBrowser;
         sentToBrowser = true;
+        PendingJavaScriptInvocationUtil.invocationDelivered(this);
     }
 
     @Override
