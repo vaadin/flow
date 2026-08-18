@@ -43,11 +43,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
@@ -313,15 +313,28 @@ public class UidlWriter implements Serializable {
     }
 
     private static ReturnChannelRegistration createReturnValueChannel(
-            StateNode owner, List<ReturnChannelRegistration> registrations,
+            PendingJavaScriptInvocation invocation,
+            List<ReturnChannelRegistration> registrations,
             SerializableConsumer<JsonNode> action) {
-        ReturnChannelRegistration channel = owner
+        ReturnChannelRegistration channel = invocation.getOwner()
                 .getFeature(ReturnChannelMap.class)
                 .registerChannel(arguments -> {
                     registrations.forEach(ReturnChannelRegistration::remove);
 
                     action.accept(arguments.get(0));
                 });
+
+        if (!invocation.isSubscribedByApplication()) {
+            /*
+             * Nothing in the application is waiting for the outcome: the
+             * channels are needed only so that the framework learns that the
+             * invocation is done and can stop tracking it. Letting that
+             * bookkeeping run also for a disabled node keeps the channels from
+             * piling up, and avoids warning about an update that no application
+             * code would have received anyway.
+             */
+            channel.setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        }
 
         registrations.add(channel);
 
@@ -337,14 +350,12 @@ public class UidlWriter implements Serializable {
         String expression = invocation.getInvocation().getExpression();
 
         if (invocation.isSubscribed()) {
-            StateNode owner = invocation.getOwner();
-
             List<ReturnChannelRegistration> channels = new ArrayList<>();
 
             ReturnChannelRegistration successChannel = createReturnValueChannel(
-                    owner, channels, invocation::complete);
+                    invocation, channels, invocation::complete);
             ReturnChannelRegistration errorChannel = createReturnValueChannel(
-                    owner, channels, invocation::completeExceptionally);
+                    invocation, channels, invocation::completeExceptionally);
 
             // Inject both channels as new parameters
             parameters = Stream.concat(parameters,

@@ -54,7 +54,10 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .get(JsonConstants.RPC_CHANNEL_ARGUMENTS);
 
         if (!node.hasFeature(ReturnChannelMap.class)) {
-            getLogger().warn("Node has no return channels: {}", invocationJson);
+            getLogger().warn(
+                    "Ignoring update for a node that has no return channels."
+                            + " Target: {}. Payload: {}",
+                    describeTarget(node), invocationJson);
             return Optional.empty();
         }
 
@@ -63,13 +66,24 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .map(map -> map.get(channelId)).orElse(null);
 
         if (channel == null) {
-            getLogger().warn("Return channel not found: {}", invocationJson);
+            getLogger().warn(
+                    "Return channel {} not found, it has most likely already"
+                            + " been removed, for example because the return"
+                            + " value of the JavaScript execution that"
+                            + " registered it was already handled. Target: {}."
+                            + " Payload: {}",
+                    channelId, describeTarget(node), invocationJson);
             return Optional.empty();
         }
 
         if (!node.isEnabled() && channel
                 .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
-            getLogger().warn("Ignoring update for disabled return channel: {}",
+            getLogger().warn(
+                    "Ignoring update for disabled return channel {}, the value"
+                            + " sent by the client is dropped and the callback"
+                            + " waiting for it is not run. Target: {}. {}."
+                            + " Payload: {}",
+                    channelId, describeTarget(node), describeDisabledBy(node),
                     invocationJson);
             return Optional.empty();
         }
@@ -77,6 +91,23 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         channel.invoke(arguments);
 
         return Optional.empty();
+    }
+
+    /**
+     * Describes which node in the hierarchy is actually disabled, since a node
+     * is also disabled when one of its ancestors is.
+     */
+    private static String describeDisabledBy(StateNode node) {
+        StateNode disabledNode = node;
+        while (disabledNode != null && disabledNode.isEnabledSelf()) {
+            disabledNode = disabledNode.getParent();
+        }
+
+        if (disabledNode == null || disabledNode == node) {
+            return "The target itself is disabled";
+        }
+        return "The target is disabled through its ancestor "
+                + describeTarget(disabledNode);
     }
 
     @Override

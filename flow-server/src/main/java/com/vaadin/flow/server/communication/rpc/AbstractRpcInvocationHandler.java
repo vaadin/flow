@@ -82,30 +82,49 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private void logHandlingIgnoredMessage(StateNode node, String reason) {
-        StringBuilder targetInfo = new StringBuilder();
-        if (node != null && node.hasFeature(ElementData.class)) {
-            Element element = Element.get(node);
-            Optional<Component> component = element.getComponent();
-            targetInfo.append(" element with tag").append("'")
-                    .append(element.getTag()).append("'");
-            if (component.isPresent()) {
-                targetInfo.append(" Component: ").append("'")
-                        .append(component.get().getClass().getName())
-                        .append("'");
-                Optional<Component> routeComponent = ComponentUtil
-                        .getRouteComponent(component.get());
-                if (routeComponent.isPresent()) {
-                    targetInfo.append(" Route: ").append("'")
-                            .append(routeComponent.get().getClass()
-                                    .getAnnotation(Route.class).value())
-                            .append("'");
-                }
-            }
-        }
         getLogger().info(
                 "Ignored RPC for invocation handler '{}' from "
-                        + "the client side for an {} node id='{}'{}",
-                getClass().getName(), reason, node.getId(), targetInfo);
+                        + "the client side for an {} {}",
+                getClass().getName(), reason, describeTarget(node));
+    }
+
+    /**
+     * Describes the target of an RPC invocation so that an application
+     * developer can tell which part of the application it relates to. In
+     * addition to the state node id, the description contains the element tag
+     * and, when available, the component class and the route that the component
+     * is used in.
+     *
+     * @param node
+     *            the target node, may be {@code null}
+     * @return a description of the target, not {@code null}
+     * @since 25.3
+     */
+    protected static String describeTarget(StateNode node) {
+        if (node == null) {
+            return "unknown node";
+        }
+
+        StringBuilder targetInfo = new StringBuilder("node id=")
+                .append(node.getId());
+        if (node.hasFeature(ElementData.class)) {
+            Element element = Element.get(node);
+            targetInfo.append(", element with tag '").append(element.getTag())
+                    .append("'");
+            Optional<Component> component = element.getComponent();
+            if (component.isPresent()) {
+                targetInfo.append(", component '")
+                        .append(component.get().getClass().getName())
+                        .append("'");
+                ComponentUtil.getRouteComponent(component.get())
+                        .ifPresent(routeComponent -> targetInfo
+                                .append(", route '")
+                                .append(routeComponent.getClass()
+                                        .getAnnotation(Route.class).value())
+                                .append("'"));
+            }
+        }
+        return targetInfo.toString();
     }
 
     /**

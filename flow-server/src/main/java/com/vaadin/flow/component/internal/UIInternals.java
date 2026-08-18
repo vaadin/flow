@@ -62,7 +62,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
@@ -743,7 +742,6 @@ public class UIInternals implements Serializable {
         pendingJsInvocations.clear();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void registerDetachListenerForPendingInvocation(
             PendingJavaScriptInvocation invocation) {
 
@@ -757,9 +755,8 @@ public class UIInternals implements Serializable {
                     return detachListener;
                 });
         if (listener.invocationList.add(invocation)) {
-            SerializableConsumer callback = unused -> listener
-                    .onInvocationCompleted(invocation);
-            invocation.then(callback, callback);
+            invocation.addCompletionHandler(
+                    () -> listener.onInvocationCompleted(invocation));
         }
     }
 
