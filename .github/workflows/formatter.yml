@@ -3,8 +3,11 @@ name: Formatter
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    # spotless available in 25.x
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are checked too, not only those targeting main. Spotless
+    # is only configured in 25.x, which is all this copy of the workflow can
+    # ever run against: PRs against an older maintenance branch use that
+    # branch's own copy of this file.
   merge_group:
 
 # Cancel previous runs if a new one is triggered
@@ -15,6 +18,7 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   JAVA_VERSION: '21'
+  MAVEN_VERSION: '3.9.16'
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 permissions:
@@ -41,6 +45,11 @@ jobs:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
           cache: 'maven'
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
+        with:
+          maven-version: "${{ env.MAVEN_VERSION }}"
 
       - name: Run formatter
         id: formatter
