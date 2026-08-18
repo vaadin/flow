@@ -179,7 +179,6 @@ public class StateNode implements Serializable {
     private boolean isInitialChanges = true;
 
     private ArrayList<StateTree.BeforeClientResponseEntry> beforeClientResponseEntries;
-
     private boolean enabled = true;
 
     /**
