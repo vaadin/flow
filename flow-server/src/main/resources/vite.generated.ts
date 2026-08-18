@@ -12,7 +12,7 @@ import * as net from 'net';
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import { addFunctionComponentSourceLocationBabel } from '#buildFolder#/plugins/react-function-location-plugin/react-function-location-plugin.js';
-import settings from '#settingsImport#';
+import settings from '#settingsImport#' with { type: 'json' };
 import {
   AssetInfo,
   ChunkInfo,
@@ -28,7 +28,7 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 //#serviceWorkerPluginImport#
-export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
+export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components/index.ts';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
@@ -37,27 +37,32 @@ import babel from '@rolldown/plugin-babel';
 
 //#vitePluginFileSystemRouterImport#
 
-const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
+// The folder holding this config, which is also the project root. Vite loads
+// the config as an ES module, so the CommonJS __dirname global is not
+// available.
+const dirname = import.meta.dirname;
+
+const frontendFolder = path.resolve(dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
-const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
-const devBundleFolder = path.resolve(__dirname, settings.devBundleOutput);
+const frontendBundleFolder = path.resolve(dirname, settings.frontendBundleOutput);
+const devBundleFolder = path.resolve(dirname, settings.devBundleOutput);
 const devBundle = !!process.env.devBundle;
-const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
-const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
-const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
+const jarResourcesFolder = path.resolve(dirname, settings.jarResourcesFolder);
+const themeResourceFolder = path.resolve(dirname, settings.themeResourceFolder);
+const projectPackageJsonFile = path.resolve(dirname, 'package.json');
 
 const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
-const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
+const statsFolder = path.resolve(dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
-const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
-const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
+const i18nFolder = path.resolve(dirname, settings.i18nOutput);
+const nodeModulesFolder = path.resolve(dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
 // Resolved by the Java side: points at the user's frontend/index.html when
 // they have one, otherwise at the default copy generated into the frontend
 // generated/ folder.
-const projectIndexHtml = path.resolve(__dirname, settings.clientIndexHtmlSource);
+const projectIndexHtml = path.resolve(dirname, settings.clientIndexHtmlSource);
 // Path of the index.html relative to the vite root (frontendFolder). Used
 // to identify the HTML in `transformIndexHtml` and to normalize the
 // emitted asset back to `index.html` when the source lives in a subfolder.
@@ -67,8 +72,8 @@ const indexHtmlRelativePath = path
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
 const projectStaticAssetsFolders = [
-  path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
-  path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
+  path.resolve(dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
+  path.resolve(dirname, 'src', 'main', 'resources', 'static'),
   frontendFolder
 ];
 
@@ -84,10 +89,10 @@ const themeOptions = {
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: devBundle
     ? path.resolve(devBundleFolder, '../assets')
-    : path.resolve(__dirname, settings.staticOutput),
+    : path.resolve(dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder),
-  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput),
-  javaResourceFolder: settings.javaResourceFolder ? path.resolve(__dirname, settings.javaResourceFolder) : ''
+  projectStaticOutput:  path.resolve(dirname, settings.staticOutput),
+  javaResourceFolder: settings.javaResourceFolder ? path.resolve(dirname, settings.javaResourceFolder) : ''
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
@@ -571,7 +576,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
-        cwd: __dirname,
+        cwd: dirname,
         meta: {
           output: {
             dir: i18nFolder,
