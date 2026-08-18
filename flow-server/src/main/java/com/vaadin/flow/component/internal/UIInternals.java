@@ -200,6 +200,13 @@ public class UIInternals implements Serializable {
      */
     private long lastUpdateSentTimestamp = System.currentTimeMillis();
 
+    /**
+     * The number of JavaScript invocations that have been scheduled for the
+     * related UI without being sent to the client. Kept here instead of on the
+     * individual state nodes to avoid growing the size of every node.
+     */
+    private int undeliveredJsInvocations;
+
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
@@ -461,6 +468,39 @@ public class UIInternals implements Serializable {
      */
     public long getLastUpdateSentTimestamp() {
         return lastUpdateSentTimestamp;
+    }
+
+    /**
+     * Records that a JavaScript invocation has been scheduled for the related
+     * UI and is waiting to be sent to the client.
+     *
+     * @return the number of scheduled invocations that have not been sent yet,
+     *         including the one just recorded
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    int incrementUndeliveredJsInvocations() {
+        return ++undeliveredJsInvocations;
+    }
+
+    /**
+     * Records that a JavaScript invocation is no longer waiting to be sent to
+     * the client, either because it has been sent or because it has been
+     * canceled.
+     */
+    void decrementUndeliveredJsInvocations() {
+        assert undeliveredJsInvocations > 0;
+        undeliveredJsInvocations--;
+    }
+
+    /**
+     * Gets the number of JavaScript invocations that have been scheduled for
+     * the related UI without being sent to the client.
+     *
+     * @return the number of undelivered JavaScript invocations
+     */
+    // Non-private for testing purposes
+    int getUndeliveredJsInvocations() {
+        return undeliveredJsInvocations;
     }
 
     /**

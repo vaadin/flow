@@ -180,8 +180,6 @@ public class StateNode implements Serializable {
 
     private ArrayList<StateTree.BeforeClientResponseEntry> beforeClientResponseEntries;
 
-    private int undeliveredJavaScriptInvocations;
-
     private boolean enabled = true;
 
     /**
@@ -1214,37 +1212,6 @@ public class StateNode implements Serializable {
         beforeClientResponseEntries = null;
 
         return !entries.isEmpty() ? entries : Collections.emptyList();
-    }
-
-    /**
-     * Records that a JavaScript invocation has been scheduled for this node and
-     * is waiting to be sent to the browser.
-     *
-     * @return the number of scheduled invocations that have not been sent to
-     *         the browser yet, including the one just recorded
-     */
-    public int incrementUndeliveredJavaScriptInvocations() {
-        return ++undeliveredJavaScriptInvocations;
-    }
-
-    /**
-     * Records that a JavaScript invocation scheduled for this node is no longer
-     * waiting to be sent to the browser, either because it has been sent or
-     * because it has been canceled.
-     */
-    public void decrementUndeliveredJavaScriptInvocations() {
-        assert undeliveredJavaScriptInvocations > 0;
-        undeliveredJavaScriptInvocations--;
-    }
-
-    /**
-     * Gets the number of JavaScript invocations that have been scheduled for
-     * this node without being sent to the browser.
-     *
-     * @return the number of undelivered JavaScript invocations
-     */
-    public int getUndeliveredJavaScriptInvocations() {
-        return undeliveredJavaScriptInvocations;
     }
 
     /**

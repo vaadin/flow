@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.InitParameters;
@@ -66,33 +66,59 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void scheduleInvocation_countedUntilSentToBrowser() {
-        StateNode node = new StateNode(ElementData.class);
+    void scheduleInvocation_countedInUIUntilSentToBrowser() {
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        StateNode node = attachedNode(ui);
 
         PendingJavaScriptInvocation invocation = createInvocation(node);
-        assertEquals(1, node.getUndeliveredJavaScriptInvocations(),
+        assertEquals(1, internals.getUndeliveredJsInvocations(),
                 "a scheduled invocation should be counted");
 
         createInvocation(node);
-        assertEquals(2, node.getUndeliveredJavaScriptInvocations());
+        assertEquals(2, internals.getUndeliveredJsInvocations());
 
         invocation.setSentToBrowser();
-        assertEquals(1, node.getUndeliveredJavaScriptInvocations(),
+        assertEquals(1, internals.getUndeliveredJsInvocations(),
                 "a sent invocation should no longer be counted");
     }
 
     @Test
     void cancelInvocation_notCountedAndNotCountedTwice() {
-        StateNode node = new StateNode(ElementData.class);
-        PendingJavaScriptInvocation invocation = createInvocation(node);
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        PendingJavaScriptInvocation invocation = createInvocation(
+                attachedNode(ui));
 
         assertTrue(invocation.cancelExecution());
-        assertEquals(0, node.getUndeliveredJavaScriptInvocations(),
+        assertEquals(0, internals.getUndeliveredJsInvocations(),
                 "a canceled invocation should no longer be counted");
 
         assertFalse(invocation.cancelExecution(),
                 "canceling twice should have no effect");
-        assertEquals(0, node.getUndeliveredJavaScriptInvocations());
+        assertEquals(0, internals.getUndeliveredJsInvocations());
+    }
+
+    @Test
+    void scheduleInvocationForDetachedOwner_countedInCurrentUI() {
+        MockUI ui = new MockUI();
+        StateNode detachedNode = new StateNode(ElementData.class);
+
+        createInvocation(detachedNode);
+
+        assertEquals(1, ui.getInternals().getUndeliveredJsInvocations(),
+                "an invocation for a detached owner should be counted in the UI that scheduled it");
+    }
+
+    @Test
+    void scheduleInvocationWithoutAnyUI_notCounted() {
+        CurrentInstance.clearAll();
+        StateNode detachedNode = new StateNode(ElementData.class);
+
+        PendingJavaScriptInvocation invocation = createInvocation(detachedNode);
+
+        assertTrue(invocation.cancelExecution(),
+                "an uncounted invocation should still be cancelable");
     }
 
     @Test
@@ -101,7 +127,10 @@ class PendingJavaScriptInvocationUtilTest {
         String message = buildWarningMessage(createInvocation(node), 1000,
                 DEFAULT_WARNING_THRESHOLD);
 
-        assertTrue(message.startsWith("1000 JavaScript invocations"), message);
+        assertTrue(
+                message.startsWith(
+                        "1000 JavaScript invocations scheduled for this UI"),
+                message);
         assertTrue(message.contains("'return $0;'"),
                 "the scheduled expression should be included: " + message);
         assertTrue(message.contains("OutOfMemoryError"), message);
@@ -178,31 +207,25 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void executeJsOnDetachedElement_countedOnOwnerNode() {
-        Element element = new Element("div");
-
-        element.executeJs("this.foo = $0", "bar");
-        element.executeJs("this.foo = $0", "baz");
-
-        assertEquals(2, element.getNode().getUndeliveredJavaScriptInvocations(),
-                "invocations scheduled for a detached element should be counted");
-    }
-
-    @Test
     void executeJsSentToBrowser_countIsReset() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
         ui.add(component);
-        StateNode node = component.getElement().getNode();
 
         component.getElement().executeJs("this.foo = $0", "bar");
-        assertEquals(1, node.getUndeliveredJavaScriptInvocations());
+        assertEquals(1, ui.getInternals().getUndeliveredJsInvocations());
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().dumpPendingJavaScriptInvocations();
 
-        assertEquals(0, node.getUndeliveredJavaScriptInvocations(),
+        assertEquals(0, ui.getInternals().getUndeliveredJsInvocations(),
                 "invocations sent to the browser should not be counted");
+    }
+
+    private static StateNode attachedNode(MockUI ui) {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        return component.getElement().getNode();
     }
 
     private static PendingJavaScriptInvocation createInvocation(

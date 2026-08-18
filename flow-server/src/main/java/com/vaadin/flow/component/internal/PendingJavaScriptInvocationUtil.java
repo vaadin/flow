@@ -64,44 +64,50 @@ final class PendingJavaScriptInvocationUtil {
 
     /**
      * Records that the given invocation has been scheduled, and logs a warning
-     * if its owner has an alarming number of undelivered invocations.
+     * if its UI has an alarming number of undelivered invocations.
+     * <p>
+     * The count is kept per UI rather than per state node, since a running
+     * application has far more state nodes than UIs and even a single field on
+     * every node adds up.
      *
      * @param invocation
      *            the scheduled invocation, not <code>null</code>
+     * @return the UI internals the invocation was counted in, or
+     *         <code>null</code> if no UI could be resolved for it
      */
-    static void invocationScheduled(PendingJavaScriptInvocation invocation) {
-        StateNode owner = invocation.getOwner();
-        int count = owner.incrementUndeliveredJavaScriptInvocations();
-
-        if (count % CHECK_GRANULARITY != 0) {
-            return;
+    static UIInternals invocationScheduled(
+            PendingJavaScriptInvocation invocation) {
+        UIInternals internals = findInternals(invocation.getOwner());
+        if (internals == null) {
+            // Nothing to count in: the owner is detached and there is no
+            // current UI, so the invocation is tracked once it reaches a UI
+            return null;
         }
 
-        int threshold = getWarningThreshold();
-        if (!shouldWarn(count, threshold)) {
-            return;
+        int count = internals.incrementUndeliveredJsInvocations();
+        if (count % CHECK_GRANULARITY == 0) {
+            int threshold = getWarningThreshold();
+            if (shouldWarn(count, threshold)) {
+                Logger logger = getLogger();
+                logger.warn(buildWarningMessage(invocation, count, threshold));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Call site of the JavaScript invocation that triggered the warning above",
+                            new Throwable("executeJs call site"));
+                }
+            }
         }
-
-        Logger logger = getLogger();
-        logger.warn(buildWarningMessage(invocation, count, threshold));
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                    "Call site of the JavaScript invocation that triggered the warning above",
-                    new Throwable("executeJs call site"));
-        }
+        return internals;
     }
 
-    /**
-     * Records that the given invocation will not be waiting to be sent any
-     * longer, either because it has been sent to the browser or because it has
-     * been canceled.
-     *
-     * @param invocation
-     *            the invocation that is no longer waiting, not
-     *            <code>null</code>
-     */
-    static void invocationDelivered(PendingJavaScriptInvocation invocation) {
-        invocation.getOwner().decrementUndeliveredJavaScriptInvocations();
+    private static UIInternals findInternals(StateNode owner) {
+        UI ui = getUI(owner);
+        if (ui == null) {
+            // An invocation scheduled for a detached owner is counted in the UI
+            // that scheduled it, since that is the UI whose code keeps it alive
+            ui = UI.getCurrent();
+        }
+        return ui == null ? null : ui.getInternals();
     }
 
     /**
@@ -163,8 +169,8 @@ final class PendingJavaScriptInvocationUtil {
         StateNode owner = invocation.getOwner();
 
         return String.format(
-                "%d JavaScript invocations scheduled for %s have not been sent to the browser yet. "
-                        + "The most recent expression is: %s. %s "
+                "%d JavaScript invocations scheduled for this UI have not been sent to the browser yet. "
+                        + "The most recent one was scheduled for %s with the expression %s. %s "
                         + "Undelivered invocations are kept in memory until they are sent, so a growing number of them eventually causes an OutOfMemoryError. "
                         + "If only the latest value is relevant for the client, for example a progress value or the current time, do not schedule a new invocation for every update: "
                         + "either keep the PendingJavaScriptResult returned by executeJs and call cancelExecution() on it before scheduling the next one, "
