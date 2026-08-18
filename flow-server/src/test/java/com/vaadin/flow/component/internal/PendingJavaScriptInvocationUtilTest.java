@@ -109,9 +109,11 @@ class PendingJavaScriptInvocationUtilTest {
                 "the message should explain how to keep only the last value: "
                         + message);
         assertTrue(message.contains("element.setProperty(...)"), message);
-        assertTrue(
-                message.contains(
-                        InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD),
+        assertTrue(message.contains("UI.getLastUpdateSentTimestamp()"),
+                "the message should point to the API for detecting that updates are not delivered: "
+                        + message);
+        assertTrue(message.contains(
+                InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD),
                 "the message should tell how to configure the threshold: "
                         + message);
     }

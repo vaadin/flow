@@ -56,7 +56,7 @@ final class PendingJavaScriptInvocationUtil {
      */
     private static final int CHECK_GRANULARITY = 100;
 
-    private static final int MAX_LOGGED_EXPRESSION_LENGTH = 200;
+    private static final int MAX_LOGGED_EXPRESSION_LENGTH = 120;
 
     private PendingJavaScriptInvocationUtil() {
         // Only static helpers
@@ -164,13 +164,13 @@ final class PendingJavaScriptInvocationUtil {
 
         return String.format(
                 "%d JavaScript invocations scheduled for %s have not been sent to the browser yet. "
-                        + "The most recently scheduled expression is: %s. %s "
-                        + "Undelivered invocations are kept in memory until they are sent, so a number that keeps growing will eventually cause an OutOfMemoryError. "
-                        + "If only the latest value is relevant for the client, for example when pushing a progress value or the current time, do not schedule a new invocation for every update: "
+                        + "The most recent expression is: %s. %s "
+                        + "Undelivered invocations are kept in memory until they are sent, so a growing number of them eventually causes an OutOfMemoryError. "
+                        + "If only the latest value is relevant for the client, for example a progress value or the current time, do not schedule a new invocation for every update: "
                         + "either keep the PendingJavaScriptResult returned by executeJs and call cancelExecution() on it before scheduling the next one, "
-                        + "or set an element property instead (element.setProperty(...)), since property values are collected into the same update and only the last value is sent. "
-                        + "This warning is logged again when the number of undelivered invocations grows tenfold. "
-                        + "Enable debug logging for %s to also log the call site, or set the %s configuration property to change the threshold of %d (0 disables the warning).",
+                        + "or set an element property instead (element.setProperty(...)), since only the last value of a property is sent. "
+                        + "A background task can also compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
+                        + "This warning repeats when the count grows tenfold. Enable debug logging for %s to log the call site, or set the %s configuration property to change the threshold of %d (0 disables the warning).",
                 count, describeOwner(owner),
                 describeExpression(invocation.getInvocation().getExpression()),
                 describeState(owner),
@@ -209,8 +209,7 @@ final class PendingJavaScriptInvocationUtil {
 
     private static String describeState(StateNode owner) {
         if (!owner.isAttached()) {
-            return "The owner is not attached to a UI, and invocations for a detached owner are held until it is attached again. "
-                    + "Check that server code is not updating components that have been discarded.";
+            return "The owner is not attached to a UI, and invocations for a detached owner are held until it is attached again, so check that server code is not updating discarded components.";
         }
         if (!owner.isVisible()) {
             return "The owner is currently invisible, and invocations for an invisible owner are retained until it becomes visible again.";

@@ -392,6 +392,36 @@ public class UI extends Component
     }
 
     /**
+     * Gets the timestamp of when the updates pending for this UI were last
+     * purged into a response for the client, or the timestamp of when this UI
+     * was created if that has not happened yet.
+     * <p>
+     * Changes and JavaScript invocations that are scheduled for a UI are kept
+     * in memory until a response is written for the client, which requires
+     * either a request from the client or an open push connection. A background
+     * task that updates a UI at a regular interval can compare this timestamp
+     * against the current time to detect that its updates are only piling up,
+     * and stop scheduling new ones until the client catches up:
+     *
+     * <pre>
+     * if (System.currentTimeMillis()
+     *         - ui.getLastUpdateSentTimestamp() &lt; STALE_THRESHOLD) {
+     *     ui.access(() -&gt; binder.readBean(updatedBean));
+     * }
+     * </pre>
+     * <p>
+     * Note that this timestamp only tells when the updates were written towards
+     * the client, not that the client received them.
+     *
+     * @return the time the pending updates were last purged, in milliseconds
+     *         since the epoch
+     * @since 25.3
+     */
+    public long getLastUpdateSentTimestamp() {
+        return getInternals().getLastUpdateSentTimestamp();
+    }
+
+    /**
      * Returns whether this UI is marked as closed and is to be detached.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care

@@ -194,6 +194,12 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
+    /**
+     * Timestamp for keeping track of when the updates pending for the related
+     * UI were last purged into a response for the client.
+     */
+    private long lastUpdateSentTimestamp = System.currentTimeMillis();
+
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
@@ -443,6 +449,18 @@ public class UIInternals implements Serializable {
      */
     public long getLastHeartbeatTimestamp() {
         return lastHeartbeatTimestamp;
+    }
+
+    /**
+     * Gets the timestamp of when the updates pending for the related UI were
+     * last purged into a response for the client.
+     *
+     * @return the time the pending updates were last purged, in milliseconds
+     *         since the epoch
+     * @see UI#getLastUpdateSentTimestamp()
+     */
+    public long getLastUpdateSentTimestamp() {
+        return lastUpdateSentTimestamp;
     }
 
     /**
@@ -704,6 +722,7 @@ public class UIInternals implements Serializable {
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         session.checkHasLock();
         pendingTitleUpdateCanceler = null;
+        lastUpdateSentTimestamp = System.currentTimeMillis();
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();

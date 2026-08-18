@@ -647,6 +647,47 @@ class UIInternalsTest {
     }
 
     @Test
+    void lastUpdateSentTimestamp_initializedOnCreation() {
+        long before = System.currentTimeMillis();
+        UIInternals freshInternals = new UIInternals(ui);
+
+        assertTrue(freshInternals.getLastUpdateSentTimestamp() >= before,
+                "a UI that has not sent anything yet should report its creation time");
+        assertTrue(freshInternals.getLastUpdateSentTimestamp() <= System
+                .currentTimeMillis());
+    }
+
+    @Test
+    void dumpPendingJavaScriptInvocations_updatesLastUpdateSentTimestamp()
+            throws InterruptedException {
+        long initialTimestamp = internals.getLastUpdateSentTimestamp();
+        // The timestamp has millisecond resolution, so the purge needs to
+        // happen in another millisecond than the initialization to be visible
+        Thread.sleep(2);
+
+        internals.dumpPendingJavaScriptInvocations();
+
+        assertTrue(internals.getLastUpdateSentTimestamp() > initialTimestamp,
+                "purging the pending invocations should update the timestamp");
+        assertTrue(internals.getLastUpdateSentTimestamp() <= System
+                .currentTimeMillis());
+    }
+
+    @Test
+    void pendingJsInvocationNotPurged_lastUpdateSentTimestampNotUpdated()
+            throws InterruptedException {
+        long initialTimestamp = internals.getLastUpdateSentTimestamp();
+        Thread.sleep(2);
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                internals.getStateTree().getRootNode(),
+                new UIInternals.JavaScriptInvocation("")));
+
+        assertEquals(initialTimestamp, internals.getLastUpdateSentTimestamp(),
+                "scheduling an invocation should not update the timestamp");
+    }
+
+    @Test
     void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
         internals.setTitle("new title");
         assertEquals("new title", internals.getTitle());
