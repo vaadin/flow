@@ -49,8 +49,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
      */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {
-        if (refreshChildren
-                && !getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+        if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
             throw new UnsupportedOperationException(
                     """
                             Refreshing children of an item is only supported when the data provider \
