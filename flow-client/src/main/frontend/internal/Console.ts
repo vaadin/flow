@@ -31,6 +31,8 @@ let isProductionMode = false;
  *
  * Private in Console.java, so module-local here; exercised through the public
  * logging methods rather than imported directly.
+ *
+ * @return true if the flag is set to "true", false otherwise
  */
 function isLocalStorageFlagEnabled(): boolean {
   try {
@@ -45,6 +47,8 @@ function isLocalStorageFlagEnabled(): boolean {
  * Whether logging to the browser console should be enabled: true if either not
  * in production mode, or the `vaadin.browserLog` override flag is set. Mirrors
  * Console.shouldLogToBrowserConsole.
+ *
+ * @return true if browser console logging should be enabled
  */
 function shouldLogToBrowserConsole(): boolean {
   if (!isProductionMode) {
@@ -64,33 +68,51 @@ export const Console = {
   /**
    * Changes logger behavior, making it skip all browser logging for production
    * mode. Mirrors Console.setProductionMode.
+   *
+   * @param productionMode if an application is in the production mode or not
    */
   setProductionMode(productionMode: boolean): void {
     isProductionMode = productionMode;
   },
 
-  /** Logs the message using the debug log level, unless suppressed. */
+  /**
+   * Logs the message using the debug log level, unless suppressed.
+   *
+   * @param message the message to log
+   */
   debug(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
       console.debug(message);
     }
   },
 
-  /** Logs the message using the info log level, unless suppressed. */
+  /**
+   * Logs the message using the info log level, unless suppressed.
+   *
+   * @param message the message to log
+   */
   log(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
       console.log(message);
     }
   },
 
-  /** Logs the message using the warning log level, unless suppressed. */
+  /**
+   * Logs the message using the warning log level, unless suppressed.
+   *
+   * @param message the message to log
+   */
   warn(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
       console.warn(message);
     }
   },
 
-  /** Logs the message using the error log level, unless suppressed. */
+  /**
+   * Logs the message using the error log level, unless suppressed.
+   *
+   * @param message the message to log
+   */
   error(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
       console.error(message);
@@ -105,6 +127,8 @@ export const Console = {
    * bypass GWT's own uncaught-exception handling, which has no equivalent here,
    * so a plain deferred rethrow is the faithful port. Not gated by production
    * mode, matching Console.java.
+   *
+   * @param exception the exception for which
    */
   reportStacktrace(exception: unknown): void {
     window.setTimeout(() => {
