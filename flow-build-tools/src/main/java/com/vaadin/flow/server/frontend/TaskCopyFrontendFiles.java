@@ -130,17 +130,22 @@ public class TaskCopyFrontendFiles
                                 WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
-        existingFiles.removeAll(handledFiles);
-        existingFiles.forEach(filename -> FileIOUtils
-                .deleteQuietly(new File(targetDirectory, filename)));
-        if (handledFiles.contains(TaskGenerateTsConfig.TSCONFIG_JSON)) {
+        if (handledFiles.remove(TaskGenerateTsConfig.TSCONFIG_JSON)) {
+            // The generated configuration owns this folder, see
+            // TaskGenerateJarResourcesTsConfig, so a copied one must not take
+            // its place
+            FileIOUtils.deleteQuietly(new File(targetDirectory,
+                    TaskGenerateTsConfig.TSCONFIG_JSON));
             log().warn(
                     "An add-on ships a '{}' among its frontend sources. It is "
-                            + "ignored, as the file name is reserved for the "
+                            + "discarded, as the file name is reserved for the "
                             + "configuration Vaadin generates to compile those "
                             + "sources.",
                     TaskGenerateTsConfig.TSCONFIG_JSON);
         }
+        existingFiles.removeAll(handledFiles);
+        existingFiles.forEach(filename -> FileIOUtils
+                .deleteQuietly(new File(targetDirectory, filename)));
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);

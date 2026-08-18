@@ -95,8 +95,12 @@ class TaskGenerateJarResourcesTsConfig extends AbstractTaskClientGenerator {
     static File getTsConfigFile(Options options) {
         File jarResourcesFolder = options.getJarFrontendResourcesFolder();
         if (jarResourcesFolder == null) {
-            jarResourcesFolder = FrontendUtils
-                    .getJarResourcesFolder(options.getFrontendDirectory());
+            // The configured frontend directory is not necessarily the one in
+            // use, as a project can still keep its frontend files in the
+            // legacy location
+            jarResourcesFolder = FrontendUtils.getJarResourcesFolder(
+                    FrontendUtils.getFrontendFolder(options.getNpmFolder(),
+                            options.getFrontendDirectory()));
         }
         return new File(jarResourcesFolder, TaskGenerateTsConfig.TSCONFIG_JSON);
     }

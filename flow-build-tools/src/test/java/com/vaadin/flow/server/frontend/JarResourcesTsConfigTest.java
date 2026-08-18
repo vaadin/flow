@@ -27,11 +27,13 @@ import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -222,6 +224,69 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
                 "The configuration of the add-on sources should be cleaned up "
                         + "along with the project one it extends, also when the "
                         + "options do not configure its folder");
+    }
+
+    @Test
+    void jarResourcesTsConfig_isRemoved_whenTheLegacyFrontendFolderIsUsed()
+            throws Exception {
+        // A project can still keep its frontend files in the legacy location,
+        // which the configured frontend directory does not reflect
+        File legacyProject = Files
+                .createTempDirectory(temporaryFolder.toPath(), "legacy")
+                .toFile();
+        File legacyJarResources = new File(legacyProject,
+                FrontendUtils.LEGACY_FRONTEND_DIR + "/generated/jar-resources");
+        Files.createDirectories(legacyJarResources.toPath());
+        Options legacyOptions = new MockOptions(getClassFinder(), legacyProject)
+                .withFrontendDirectory(new File(legacyProject,
+                        FrontendUtils.LEGACY_FRONTEND_DIR))
+                .withJarFrontendResourcesFolder(legacyJarResources);
+
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
+                new MockOptions(getClassFinder(), legacyProject)
+                        .withFrontendDirectory(new File(legacyProject,
+                                FrontendUtils.DEFAULT_FRONTEND_DIR)));
+        new TaskGenerateTsConfig(legacyOptions).execute();
+        new TaskGenerateJarResourcesTsConfig(legacyOptions).execute();
+        File tsConfig = new File(legacyJarResources, "tsconfig.json");
+        assertTrue(tsConfig.exists(), "tsconfig.json should be generated");
+
+        cleanTask.execute();
+
+        assertFalse(tsConfig.exists(),
+                "The configuration of the add-on sources should be cleaned up "
+                        + "along with the project one it extends, also for a "
+                        + "project using the legacy frontend folder");
+    }
+
+    @Test
+    void tsConfigShippedByAnAddOn_isDiscarded() throws Exception {
+        File addOn = Files
+                .createTempDirectory(temporaryFolder.toPath(), "addon")
+                .toFile();
+        File addOnFrontend = new File(addOn, RESOURCES_FRONTEND_DEFAULT);
+        Files.createDirectories(addOnFrontend.toPath());
+        Files.writeString(new File(addOnFrontend, "tsconfig.json").toPath(),
+                "{ \"compilerOptions\": { \"experimentalDecorators\": false } }");
+        Files.writeString(
+                new File(addOnFrontend, "addon-component.ts").toPath(), "");
+
+        options.copyResources(Set.of(addOn));
+        new TaskCopyFrontendFiles(options).execute();
+
+        assertFalse(new File(jarResourcesFolder, "tsconfig.json").exists(),
+                "A tsconfig.json shipped by an add-on must not take the place "
+                        + "of the generated one, which owns the folder");
+        assertTrue(new File(jarResourcesFolder, "addon-component.ts").exists(),
+                "The other frontend sources of the add-on should be copied");
+
+        generateTsConfigs();
+
+        assertEquals(true,
+                resolveCompilerOptions(
+                        new File(jarResourcesFolder, "tsconfig.json"))
+                        .get("experimentalDecorators").asBoolean(),
+                "The generated configuration should be the one in place");
     }
 
     /**
