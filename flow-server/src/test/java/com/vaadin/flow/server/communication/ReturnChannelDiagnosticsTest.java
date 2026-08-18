@@ -37,11 +37,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -111,6 +114,9 @@ class ReturnChannelDiagnosticsTest {
         assertEquals(1, warnings.size(),
                 () -> "Dropping a value the application is waiting for should "
                         + "still be warned about, got: " + warnings);
+        assertTrue(warnings.get(0).contains("dropped"),
+                () -> "The warning should tell that the value is dropped: "
+                        + warnings.get(0));
         assertNull(returnValue.get(),
                 "The return value should not be delivered while disabled");
     }
@@ -137,6 +143,12 @@ class ReturnChannelDiagnosticsTest {
         assertTrue(warning.contains("orders"),
                 () -> "The warning should name the route the component is in: "
                         + warning);
+        assertTrue(warning.contains("The target itself is disabled"),
+                () -> "The warning should tell that the target itself is the "
+                        + "disabled one: " + warning);
+        assertFalse(warning.contains(OrdersView.class.getName()),
+                () -> "The enclosing view is not the disabled one, so it "
+                        + "should not be blamed: " + warning);
     }
 
     @Test
@@ -157,6 +169,42 @@ class ReturnChannelDiagnosticsTest {
         assertTrue(warning.contains(OrdersView.class.getName()),
                 () -> "The warning should name the ancestor that is actually "
                         + "disabled: " + warning);
+    }
+
+    @Test
+    void nodeWithoutReturnChannels_warningIdentifiesTarget() {
+        MockUI ui = new MockUI();
+        StateNode nodeWithoutChannels = new StateNode();
+        ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
+                nodeWithoutChannels);
+
+        String warning = handleChannelMessage(ui, nodeWithoutChannels).get(0);
+
+        assertTrue(warning.contains("no return channels"),
+                () -> "Unexpected warning: " + warning);
+        assertTrue(warning.contains("node id=" + nodeWithoutChannels.getId()),
+                () -> "The warning should identify the node: " + warning);
+    }
+
+    @Test
+    void alreadyHandledChannel_warningIdentifiesTarget() {
+        MockUI ui = new MockUI();
+        Widget widget = new Widget();
+        ui.getElement().appendChild(widget.getElement());
+
+        sendSubscribedJs(ui, widget, "return this.getSomething()", value -> {
+        });
+
+        assertEquals(List.of(), handleChannelMessage(ui, widget),
+                "Handling the return value while enabled should not warn");
+
+        // The channel is removed once the return value has been handled
+        String warning = handleChannelMessage(ui, widget).get(0);
+
+        assertTrue(warning.contains("not found"),
+                () -> "Unexpected warning: " + warning);
+        assertTrue(warning.contains("my-widget"),
+                () -> "The warning should name the element tag: " + warning);
     }
 
     /**
@@ -201,14 +249,17 @@ class ReturnChannelDiagnosticsTest {
      * given component's element and returns the warnings that were logged.
      */
     private List<String> handleChannelMessage(MockUI ui, Component component) {
+        return handleChannelMessage(ui, component.getElement().getNode());
+    }
+
+    private List<String> handleChannelMessage(MockUI ui, StateNode node) {
         ArrayNode arguments = JacksonUtils.createArrayNode();
         arguments.addNull();
 
         ObjectNode invocationJson = JacksonUtils.createObjectNode();
         invocationJson.put(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_TYPE_CHANNEL);
-        invocationJson.put(JsonConstants.RPC_NODE,
-                component.getElement().getNode().getId());
+        invocationJson.put(JsonConstants.RPC_NODE, node.getId());
         invocationJson.put(JsonConstants.RPC_CHANNEL, 0);
         invocationJson.set(JsonConstants.RPC_CHANNEL_ARGUMENTS, arguments);
 

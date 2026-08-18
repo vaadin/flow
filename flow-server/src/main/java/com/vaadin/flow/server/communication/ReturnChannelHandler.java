@@ -79,10 +79,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         if (!node.isEnabled() && channel
                 .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
             getLogger().warn(
-                    "Ignoring update for disabled return channel {}, the value"
-                            + " sent by the client is dropped and the callback"
-                            + " waiting for it is not run. Target: {}. {}."
-                            + " Payload: {}",
+                    "Ignoring update for disabled return channel {}, the"
+                            + " value sent by the client is dropped. Target:"
+                            + " {}. {}. Payload: {}",
                     channelId, describeTarget(node), describeDisabledBy(node),
                     invocationJson);
             return Optional.empty();
