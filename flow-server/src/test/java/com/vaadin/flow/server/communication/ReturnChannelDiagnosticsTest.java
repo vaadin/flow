@@ -69,6 +69,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ReturnChannelDiagnosticsTest {
 
+    /**
+     * Stands for whatever the application happened to read from the browser,
+     * which can be data that doesn't belong in a log file.
+     */
+    private static final String RETURN_VALUE = "account-FI7654321000000";
+
     @Tag("div")
     @Route("orders")
     private static class OrdersView extends Component {
@@ -87,7 +93,7 @@ class ReturnChannelDiagnosticsTest {
         sendJsQueuedWhileInvisible(ui, widget, "this.doSomething()");
         widget.getElement().setEnabled(false);
 
-        List<String> warnings = handleChannelMessage(ui, widget);
+        List<String> warnings = handleChannelMessage(ui, widget).warnings();
 
         assertEquals(1, warnings.size(),
                 () -> "A plain executeJs with no return value callback should "
@@ -109,7 +115,7 @@ class ReturnChannelDiagnosticsTest {
                 returnValue::set);
         widget.getElement().setEnabled(false);
 
-        List<String> warnings = handleChannelMessage(ui, widget);
+        List<String> warnings = handleChannelMessage(ui, widget).warnings();
 
         assertEquals(1, warnings.size(),
                 () -> "Dropping a value the application is waiting for should "
@@ -133,7 +139,7 @@ class ReturnChannelDiagnosticsTest {
         });
         widget.getElement().setEnabled(false);
 
-        String warning = handleChannelMessage(ui, widget).get(0);
+        String warning = handleChannelMessage(ui, widget).warnings().get(0);
 
         assertTrue(warning.contains("my-widget"),
                 () -> "The warning should name the element tag: " + warning);
@@ -164,7 +170,7 @@ class ReturnChannelDiagnosticsTest {
         // The widget itself is enabled, it is the view that is disabled
         view.getElement().setEnabled(false);
 
-        String warning = handleChannelMessage(ui, widget).get(0);
+        String warning = handleChannelMessage(ui, widget).warnings().get(0);
 
         assertTrue(warning.contains(OrdersView.class.getName()),
                 () -> "The warning should name the ancestor that is actually "
@@ -178,7 +184,8 @@ class ReturnChannelDiagnosticsTest {
         ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
                 nodeWithoutChannels);
 
-        String warning = handleChannelMessage(ui, nodeWithoutChannels).get(0);
+        String warning = handleChannelMessage(ui, nodeWithoutChannels)
+                .warnings().get(0);
 
         assertTrue(warning.contains("no return channels"),
                 () -> "Unexpected warning: " + warning);
@@ -195,16 +202,38 @@ class ReturnChannelDiagnosticsTest {
         sendSubscribedJs(ui, widget, "return this.getSomething()", value -> {
         });
 
-        assertEquals(List.of(), handleChannelMessage(ui, widget),
+        assertEquals(List.of(), handleChannelMessage(ui, widget).warnings(),
                 "Handling the return value while enabled should not warn");
 
         // The channel is removed once the return value has been handled
-        String warning = handleChannelMessage(ui, widget).get(0);
+        String warning = handleChannelMessage(ui, widget).warnings().get(0);
 
         assertTrue(warning.contains("not found"),
                 () -> "Unexpected warning: " + warning);
         assertTrue(warning.contains("my-widget"),
                 () -> "The warning should name the element tag: " + warning);
+    }
+
+    @Test
+    void disabledTarget_clientValuesLoggedOnlyOnDebugLevel() {
+        MockUI ui = new MockUI();
+        Widget widget = new Widget();
+        ui.getElement().appendChild(widget.getElement());
+
+        sendSubscribedJs(ui, widget, "return this.getSomething()", value -> {
+        });
+        widget.getElement().setEnabled(false);
+
+        LoggedMessages logged = handleChannelMessage(ui, widget);
+
+        assertFalse(logged.warnings().get(0).contains(RETURN_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + logged.warnings().get(0));
+        assertTrue(
+                logged.debugMessages().stream()
+                        .anyMatch(message -> message.contains(RETURN_VALUE)),
+                () -> "The payload should still be available on debug level: "
+                        + logged.debugMessages());
     }
 
     /**
@@ -244,17 +273,22 @@ class ReturnChannelDiagnosticsTest {
         UidlWriter.encodeExecuteJavaScriptList(invocations);
     }
 
+    private record LoggedMessages(List<String> warnings,
+            List<String> debugMessages) {
+    }
+
     /**
      * Simulates the browser calling the first return channel registered for the
-     * given component's element and returns the warnings that were logged.
+     * given component's element and returns what was logged.
      */
-    private List<String> handleChannelMessage(MockUI ui, Component component) {
+    private LoggedMessages handleChannelMessage(MockUI ui,
+            Component component) {
         return handleChannelMessage(ui, component.getElement().getNode());
     }
 
-    private List<String> handleChannelMessage(MockUI ui, StateNode node) {
+    private LoggedMessages handleChannelMessage(MockUI ui, StateNode node) {
         ArrayNode arguments = JacksonUtils.createArrayNode();
-        arguments.addNull();
+        arguments.add(RETURN_VALUE);
 
         ObjectNode invocationJson = JacksonUtils.createObjectNode();
         invocationJson.put(JsonConstants.RPC_TYPE,
@@ -264,8 +298,9 @@ class ReturnChannelDiagnosticsTest {
         invocationJson.set(JsonConstants.RPC_CHANNEL_ARGUMENTS, arguments);
 
         List<String> warnings = new ArrayList<>();
+        List<String> debugMessages = new ArrayList<>();
         Logger logger = Mockito.mock(Logger.class,
-                invocation -> recordWarning(invocation, warnings));
+                invocation -> record(invocation, warnings, debugMessages));
 
         try (MockedStatic<LoggerFactory> loggerFactory = Mockito
                 .mockStatic(LoggerFactory.class)) {
@@ -277,21 +312,24 @@ class ReturnChannelDiagnosticsTest {
             new ReturnChannelHandler().handle(ui, invocationJson);
         }
 
-        return warnings;
+        return new LoggedMessages(warnings, debugMessages);
     }
 
-    private static Object recordWarning(InvocationOnMock invocation,
-            List<String> warnings) throws Throwable {
-        if ("warn".equals(invocation.getMethod().getName())) {
+    private static Object record(InvocationOnMock invocation,
+            List<String> warnings, List<String> debugMessages)
+            throws Throwable {
+        String method = invocation.getMethod().getName();
+        if ("warn".equals(method) || "debug".equals(method)) {
             Object[] arguments = invocation.getArguments();
             Object[] parameters = Arrays.stream(arguments).skip(1)
                     .flatMap(argument -> argument instanceof Object[] array
                             ? Arrays.stream(array)
                             : Stream.of(argument))
                     .toArray();
-            warnings.add(MessageFormatter
+            String message = MessageFormatter
                     .arrayFormat((String) arguments[0], parameters)
-                    .getMessage());
+                    .getMessage();
+            ("warn".equals(method) ? warnings : debugMessages).add(message);
         }
         return Mockito.RETURNS_DEFAULTS.answer(invocation);
     }

@@ -56,8 +56,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         if (!node.hasFeature(ReturnChannelMap.class)) {
             getLogger().warn(
                     "Ignoring update for a node that has no return channels."
-                            + " Target: {}. Payload: {}",
-                    describeTarget(node), invocationJson);
+                            + " Target: {}",
+                    describeTarget(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
@@ -70,9 +71,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                     "Return channel {} not found, it has most likely already"
                             + " been removed, for example because the return"
                             + " value of the JavaScript execution that"
-                            + " registered it was already handled. Target: {}."
-                            + " Payload: {}",
-                    channelId, describeTarget(node), invocationJson);
+                            + " registered it was already handled. Target: {}",
+                    channelId, describeTarget(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
@@ -81,15 +82,25 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
             getLogger().warn(
                     "Ignoring update for disabled return channel {}, the"
                             + " value sent by the client is dropped. Target:"
-                            + " {}. {}. Payload: {}",
-                    channelId, describeTarget(node), describeDisabledBy(node),
-                    invocationJson);
+                            + " {}. {}",
+                    channelId, describeTarget(node), describeDisabledBy(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
         channel.invoke(arguments);
 
         return Optional.empty();
+    }
+
+    /**
+     * Logs the payload of an ignored invocation separately from the warning
+     * about it, since the values that the client passed to the channel can be
+     * anything the application reads from the browser, and log files are
+     * typically available to a wider audience than the data itself.
+     */
+    private static void logIgnoredPayload(JsonNode invocationJson) {
+        getLogger().debug("Ignored payload:\n{}", invocationJson);
     }
 
     /**
