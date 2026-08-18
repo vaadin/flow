@@ -177,7 +177,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .getFrontendDependenciesScanner().getPwaConfiguration();
         if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
             return template.replace("//#serviceWorkerPluginImport#",
-                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")
+                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker/index.ts';")
                     .replace("//#serviceWorkerPlugin#",
                             "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),");
         }

@@ -275,7 +275,7 @@ class TaskUpdateViteTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(template.contains(
-                "import serviceWorkerPlugin from './build/plugins/vite-plugin-service-worker'"),
+                "import serviceWorkerPlugin from './build/plugins/vite-plugin-service-worker/index.ts'"),
                 "serviceWorkerPlugin import should be included when PWA offline is enabled");
         assertTrue(template.contains(
                 "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),"),
