@@ -37,28 +37,29 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests for what happens when the return value of a JavaScript execution
- * arrives while its target is disabled, and for the information that the
- * "Ignoring update for disabled return channel" warning gives to an application
- * developer about which part of the application caused it.
+ * Tests for the information that the "Ignoring update for disabled return
+ * channel" warning gives to an application developer about which part of the
+ * application caused it.
  * <p>
- * JavaScript queued for an invisible element is retained in the invocation
- * queue, and retaining it makes the framework track the completion of the
- * invocation so that it can be released if the node is detached. That tracking
- * needs return channels even when the application isn't interested in the
- * return value, which is how applications end up seeing warnings about return
- * channels they never registered themselves.
+ * The warning is not always about a return channel that the application
+ * registered itself: JavaScript queued for an invisible element is retained in
+ * the invocation queue, and retaining it makes the framework track the
+ * completion of the invocation so that it can be released if the node is
+ * detached. That tracking needs return channels even for a plain
+ * fire-and-forget {@code executeJs}, which is how applications end up seeing
+ * the warning without using {@code @ClientCallable}, a {@code LitRenderer} or a
+ * return value callback of their own. How those cleanups are handled is to be
+ * refactored separately, so these tests only cover what the warning tells about
+ * its target.
  *
  * @see <a href="https://github.com/vaadin/flow/issues/20464">#20464</a>
  * @see <a href="https://github.com/vaadin/flow/issues/20961">#20961</a>
@@ -75,7 +76,7 @@ class ReturnChannelDiagnosticsTest {
     }
 
     @Test
-    void frameworkTrackedJs_targetDisabledWhenCompleted_cleanedUpSilently() {
+    void frameworkTrackedJs_targetDisabledWhenCompleted_warnsAboutTarget() {
         MockUI ui = new MockUI();
         Widget widget = new Widget();
         ui.getElement().appendChild(widget.getElement());
@@ -85,12 +86,13 @@ class ReturnChannelDiagnosticsTest {
 
         List<String> warnings = handleChannelMessage(ui, widget);
 
-        assertEquals(List.of(), warnings,
-                "Releasing the framework's own tracking should not warn the "
-                        + "application about anything");
-        assertFalse(hasChannels(widget),
-                "The return channels of the completed invocation should have "
-                        + "been removed");
+        assertEquals(1, warnings.size(),
+                () -> "A plain executeJs with no return value callback should "
+                        + "be enough to get the warning, got: " + warnings);
+        assertTrue(warnings.get(0).contains(Widget.class.getName()),
+                () -> "The warning should name the component even though the "
+                        + "application registered no channel itself: "
+                        + warnings.get(0));
     }
 
     @Test
@@ -192,12 +194,6 @@ class ReturnChannelDiagnosticsTest {
         assertEquals(1, invocations.size(),
                 "Exactly one invocation should be sent to the browser");
         UidlWriter.encodeExecuteJavaScriptList(invocations);
-    }
-
-    private boolean hasChannels(Component component) {
-        return component.getElement().getNode()
-                .getFeatureIfInitialized(ReturnChannelMap.class)
-                .map(ReturnChannelMap::hasChannels).orElse(false);
     }
 
     /**

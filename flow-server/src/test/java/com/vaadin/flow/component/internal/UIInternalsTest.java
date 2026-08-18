@@ -42,7 +42,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
@@ -450,8 +450,9 @@ class UIInternalsTest {
 
         Mockito.verify(node, Mockito.times(1))
                 .addDetachListener(ArgumentMatchers.any());
-        Mockito.verify(invocation, Mockito.times(1)).addCompletionHandler(
-                ArgumentMatchers.any(SerializableRunnable.class));
+        Mockito.verify(invocation, Mockito.times(1)).then(
+                ArgumentMatchers.any(SerializableConsumer.class),
+                ArgumentMatchers.any(SerializableConsumer.class));
 
         node.setParent(null);
         assertEquals(0, internals.getPendingJavaScriptInvocations().count());

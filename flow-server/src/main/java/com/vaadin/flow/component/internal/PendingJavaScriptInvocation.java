@@ -22,7 +22,6 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -41,7 +40,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     private SerializableConsumer<JsonNode> successHandler;
     private SerializableConsumer<String> errorHandler;
-    private SerializableRunnable completionHandler;
 
     private boolean sentToBrowser = false;
     private boolean canceled = false;
@@ -75,54 +73,13 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     /**
      * Checks if there are any subscribers for the return value of this
-     * expression, either the application through
-     * {@link #then(SerializableConsumer, SerializableConsumer)} or the
-     * framework through {@link #addCompletionHandler(SerializableRunnable)}.
+     * expression.
      *
      * @return <code>true</code> if the return value should be passed back from
      *         the client, <code>false</code> if the return value can be ignored
      */
     public boolean isSubscribed() {
-        return successHandler != null || completionHandler != null;
-    }
-
-    /**
-     * Checks if the application has subscribed to the return value of this
-     * expression, as opposed to only the framework tracking when the invocation
-     * is done.
-     *
-     * @return <code>true</code> if the return value is passed to a handler
-     *         registered by the application
-     * @since 25.3
-     */
-    public boolean isSubscribedByApplication() {
         return successHandler != null;
-    }
-
-    /**
-     * Adds a handler that is run when this invocation is done, regardless of
-     * whether it succeeded, failed or was canceled.
-     * <p>
-     * This is meant for the framework's own bookkeeping. Unlike
-     * {@link #then(SerializableConsumer, SerializableConsumer)}, it doesn't
-     * count as the application subscribing to the return value, but the outcome
-     * still has to be passed back from the client for the handler to be run, so
-     * this invocation becomes {@link #isSubscribed() subscribed}.
-     *
-     * @param handler
-     *            the handler to run when the invocation is done, not
-     *            <code>null</code>
-     * @since 25.3
-     */
-    public void addCompletionHandler(SerializableRunnable handler) {
-        assert handler != null;
-
-        if (canceled) {
-            handler.run();
-            return;
-        }
-
-        completionHandler = combineHandlers(completionHandler, handler);
     }
 
     /**
@@ -136,10 +93,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     public void complete(JsonNode value) {
         assert isSubscribed();
 
-        if (successHandler != null) {
-            successHandler.accept(value);
-        }
-        runCompletionHandler();
+        successHandler.accept(value);
     }
 
     /**
@@ -160,7 +114,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         } else {
             getLogger().debug("Ignored error from JavaScript: {}", message);
         }
-        runCompletionHandler();
     }
 
     @Override
@@ -173,7 +126,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         if (errorHandler != null) {
             errorHandler.accept(EXECUTION_CANCELED);
         }
-        runCompletionHandler();
 
         return true;
     }
@@ -213,25 +165,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         this.successHandler = combineHandlers(this.successHandler,
                 successHandler);
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
-    }
-
-    private void runCompletionHandler() {
-        if (completionHandler != null) {
-            SerializableRunnable handler = completionHandler;
-            completionHandler = null;
-            handler.run();
-        }
-    }
-
-    private static SerializableRunnable combineHandlers(
-            SerializableRunnable first, SerializableRunnable second) {
-        if (first == null) {
-            return second;
-        }
-        return () -> {
-            first.run();
-            second.run();
-        };
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
