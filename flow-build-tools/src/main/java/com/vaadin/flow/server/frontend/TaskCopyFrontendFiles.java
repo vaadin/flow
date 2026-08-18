@@ -133,6 +133,14 @@ public class TaskCopyFrontendFiles
         existingFiles.removeAll(handledFiles);
         existingFiles.forEach(filename -> FileIOUtils
                 .deleteQuietly(new File(targetDirectory, filename)));
+        if (handledFiles.contains(TaskGenerateTsConfig.TSCONFIG_JSON)) {
+            log().warn(
+                    "An add-on ships a '{}' among its frontend sources. It is "
+                            + "ignored, as the file name is reserved for the "
+                            + "configuration Vaadin generates to compile those "
+                            + "sources.",
+                    TaskGenerateTsConfig.TSCONFIG_JSON);
+        }
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);

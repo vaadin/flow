@@ -84,6 +84,7 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskCopyNpmAssetsFiles.class,
+            TaskGenerateJarResourcesTsConfig.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -328,6 +329,10 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 options);
         commands.add(taskGenerateTsDefinitions);
+
+        // Ordered after the tasks that empty the folder the add-on sources are
+        // copied to, see TaskGenerateJarResourcesTsConfig
+        commands.add(new TaskGenerateJarResourcesTsConfig(options));
 
     }
 

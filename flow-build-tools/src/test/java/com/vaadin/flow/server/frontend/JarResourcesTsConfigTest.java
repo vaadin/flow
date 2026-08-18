@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,9 +28,11 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -84,7 +87,7 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
 
     @Test
     void projectTsConfig_excludesJarResources() throws Exception {
-        new TaskGenerateTsConfig(options).execute();
+        generateTsConfigs();
 
         assertTrue(
                 readTsConfig(new File(npmFolder, "tsconfig.json"))
@@ -96,7 +99,7 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
 
     @Test
     void jarResourcesTsConfig_isGenerated() throws Exception {
-        new TaskGenerateTsConfig(options).execute();
+        generateTsConfigs();
 
         assertTrue(new File(jarResourcesFolder, "tsconfig.json").exists(),
                 "Add-on sources in the jar-resources folder are excluded from "
@@ -106,7 +109,7 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
 
     @Test
     void jarResourcesTsConfig_ownsTheFolderContents() throws Exception {
-        new TaskGenerateTsConfig(options).execute();
+        generateTsConfigs();
         ObjectNode tsConfig = readTsConfig(
                 new File(jarResourcesFolder, "tsconfig.json"));
 
@@ -128,7 +131,7 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
     @Test
     void jarResourcesTsConfig_keepsDecoratorAndClassFieldSemantics()
             throws Exception {
-        new TaskGenerateTsConfig(options).execute();
+        generateTsConfigs();
         JsonNode compilerOptions = resolveCompilerOptions(
                 new File(jarResourcesFolder, "tsconfig.json"));
 
@@ -144,7 +147,7 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
 
     @Test
     void jarResourcesTsConfig_survivesFrontendFileCopying() throws Exception {
-        new TaskGenerateTsConfig(options).execute();
+        generateTsConfigs();
         File tsConfig = new File(jarResourcesFolder, "tsconfig.json");
         assertTrue(tsConfig.exists(), "tsconfig.json should be generated");
 
@@ -156,6 +159,75 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
         assertTrue(tsConfig.exists(),
                 "Copying add-on frontend resources must not delete the "
                         + "generated jar-resources tsconfig.json");
+    }
+
+    @Test
+    void jarResourcesTsConfig_isKept_whenNpmFilesAreCleaned() throws Exception {
+        // Cleaning npm files empties the folder that add-on sources are
+        // copied to, in the middle of the same build that then bundles them
+        runNodeTasks(options -> options.enableNpmFileCleaning(true));
+
+        assertTrue(new File(jarResourcesFolder, "tsconfig.json").exists(),
+                "The bundle is built later in the same run, so the tsconfig of "
+                        + "the add-on sources must be in place once the "
+                        + "frontend tasks are done");
+    }
+
+    @Test
+    void jarResourcesTsConfig_isKept_whenFrontendFilesAreCopied()
+            throws Exception {
+        runNodeTasks(options -> options);
+
+        assertTrue(new File(jarResourcesFolder, "tsconfig.json").exists(),
+                "Copying add-on frontend resources must not delete the "
+                        + "generated tsconfig of the add-on sources");
+    }
+
+    @Test
+    void jarResourcesTsConfig_isRemoved_whenProjectTsConfigIsCleanedUp()
+            throws Exception {
+        // The clean task records the files the project had before the build,
+        // and removes the ones generated on top of them afterwards
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
+        generateTsConfigs();
+        File tsConfig = new File(jarResourcesFolder, "tsconfig.json");
+        assertTrue(tsConfig.exists(), "tsconfig.json should be generated");
+
+        cleanTask.execute();
+
+        assertFalse(new File(npmFolder, "tsconfig.json").exists(),
+                "The project tsconfig is expected to be cleaned up here");
+
+        assertFalse(tsConfig.exists(),
+                "The tsconfig of the add-on sources extends the project one, "
+                        + "so leaving it behind would leave a configuration "
+                        + "with a dangling 'extends' in the project");
+    }
+
+    /**
+     * Generates the project tsconfig, which the one of the add-on sources
+     * extends, and then the one of the add-on sources.
+     */
+    private void generateTsConfigs() throws ExecutionFailedException {
+        new TaskGenerateTsConfig(options).execute();
+        new TaskGenerateJarResourcesTsConfig(options).execute();
+    }
+
+    private void runNodeTasks(UnaryOperator<Options> customizer)
+            throws ExecutionFailedException {
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                getClass().getClassLoader());
+        Options nodeTaskOptions = new MockOptions(classFinder, npmFolder)
+                .withBuildDirectory(TARGET)
+                .withFrontendDirectory(frontendFolder)
+                .withJarFrontendResourcesFolder(jarResourcesFolder)
+                .withBuildResultFolders(npmFolder, npmFolder)
+                .withEmbeddableWebComponents(false).enableImportsUpdate(true)
+                .createMissingPackageJson(true).withRunNpmInstall(false)
+                .enablePackagesUpdate(true).withBundleBuild(true)
+                .copyResources(Set.of(
+                        TestUtils.getTestJar("jar-with-modern-frontend.jar")));
+        new NodeTasks(customizer.apply(nodeTaskOptions)).execute();
     }
 
     /**
