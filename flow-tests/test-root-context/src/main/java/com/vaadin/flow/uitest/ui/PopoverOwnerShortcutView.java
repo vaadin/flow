@@ -39,6 +39,7 @@ public class PopoverOwnerShortcutView extends Div {
 
     public static final String EVENT_LOG_ID = "event-log";
     public static final String OPEN_BUTTON = "open-popover";
+    public static final String OUTSIDE_FIELD_ID = "outside-field";
     public static final String POPOVER_ID = "popover";
     public static final String FIELD_ID = "field";
     public static final String SAVED = "saved";
@@ -65,7 +66,14 @@ public class PopoverOwnerShortcutView extends Div {
                 e -> popover.getElement().executeJs("this.showPopover();"));
         open.setId(OPEN_BUTTON);
 
-        add(open, popover, eventLog);
+        // Focusable element outside the popover. Reproduces #25213: with focus
+        // here (a scope shallower than the owner's popover scope, mirroring a
+        // modal Dialog host whose overlay lives in shadow DOM) the shortcut must
+        // still fire, because the event scope is an ancestor of the owner scope.
+        final Input outsideField = new Input();
+        outsideField.setId(OUTSIDE_FIELD_ID);
+
+        add(open, outsideField, popover, eventLog);
         setId("main-div");
     }
 

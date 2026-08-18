@@ -53,4 +53,20 @@ public class PopoverOwnerShortcutIT extends ChromeBrowserTest {
                 .anyMatch(e -> e.getText()
                         .contains(PopoverOwnerShortcutView.SAVED)));
     }
+
+    @Test
+    public void focusOutsidePopover_shortcutFires() {
+        // Regression test for #25213: the keydown originates in a scope
+        // shallower than the owner's popover scope (mirroring a modal Dialog
+        // host whose overlay lives in shadow DOM). The shortcut must still fire
+        // because the event scope is an ancestor of the owner's scope.
+        $(InputTextElement.class).id(PopoverOwnerShortcutView.OUTSIDE_FIELD_ID)
+                .focus();
+        $(InputTextElement.class).id(PopoverOwnerShortcutView.OUTSIDE_FIELD_ID)
+                .sendKeys(Keys.ENTER);
+
+        waitUntil(driver -> eventLog.findElements(By.tagName("div")).stream()
+                .anyMatch(e -> e.getText()
+                        .contains(PopoverOwnerShortcutView.SAVED)));
+    }
 }

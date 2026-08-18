@@ -998,11 +998,12 @@ public class ShortcutRegistration implements Registration, Serializable {
      * shortcut's lifecycle owner, i.e. when the shortcut is allowed to fire.
      * <p>
      * It finds the nearest open popover/modal ancestor of the event target (the
-     * event's "scope") and fires only if that scope also contains the lifecycle
-     * owner element (located via its {@link #SHORTCUT_OWNER_ATTRIBUTE} marker).
-     * An event outside any popover fires; an event in a popover that does not
-     * contain the owner is treated as originating from a foreign or nested
-     * scope and is ignored.
+     * event's "scope") and fires when that scope is the lifecycle owner's own
+     * popover/modal scope or any ancestor of it (the owner is located via its
+     * {@link #SHORTCUT_OWNER_ATTRIBUTE} marker). An event outside any popover
+     * (document root) always fires, as does an event from a scope that contains
+     * the owner. Only an event from a popover/modal nested deeper than, or
+     * disjoint from, the owner's scope is treated as foreign and ignored.
      *
      * @return the guard expression
      */

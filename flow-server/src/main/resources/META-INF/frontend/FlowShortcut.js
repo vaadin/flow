@@ -24,17 +24,19 @@ window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
 
 window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
-  // Nearest open popover/modal ancestor of the given node in the flattened
-  // (composed) tree, so slotted light-DOM content resolves to the overlay in a
-  // component's shadow root.
-  _scopeOf: function (node) {
+  // Open popover/modal ancestors of the given node in the flattened (composed)
+  // tree, ordered nearest-first, so slotted light-DOM content resolves to the
+  // overlay in a component's shadow root. The document root (null) is an
+  // implicit ancestor of every entry in the chain.
+  _scopeChainOf: function (node) {
+    const chain = [];
     while (node) {
       if (node.nodeType === 1 && node.matches && (node.matches(':popover-open') || node.matches(':modal'))) {
-        return node;
+        chain.push(node);
       }
       node = node.assignedSlot || node.parentNode || node.host || null;
     }
-    return null;
+    return chain;
   },
 
   // Nearest open popover/modal ancestor of the event target.
@@ -71,9 +73,17 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
     }
   },
 
-  // Normal path: fire only when the event and the shortcut owner (located via
-  // the given attribute selector) share the same popover/modal scope. Returns
-  // true when the shortcut is allowed to fire. Fails open on error.
+  // Normal path: fire when the event originates in the shortcut owner's own
+  // popover/modal scope or any ancestor of it (including the document root).
+  // The owner is located via the given attribute selector. Returns true when
+  // the shortcut is allowed to fire. Fails open on error.
+  //
+  // Containment rather than strict equality: an event from a scope that is
+  // shallower than the owner's (e.g. a keydown on the modal dialog host itself,
+  // whose overlay lives in shadow DOM, while the owner is slotted into that
+  // overlay) still fires. Only events from a scope deeper than or disjoint from
+  // the owner's scope are suppressed (#24974: a nested dialog's keydown must not
+  // trigger a shortcut owned in a shallower scope).
   //
   // A relayed clone (see registerKeydownDelegate) carries the real origin scope
   // in _vaadinShortcutOriginScope, because its own composedPath points at the
@@ -88,7 +98,12 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
         '_vaadinShortcutOriginScope' in event
           ? event._vaadinShortcutOriginScope
           : window.Vaadin.Flow.shortcut._eventScope(event);
-      return eventScope === window.Vaadin.Flow.shortcut._scopeOf(owner);
+      // The document root (null) is an ancestor of every scope.
+      if (eventScope === null) {
+        return true;
+      }
+      const ownerChain = window.Vaadin.Flow.shortcut._scopeChainOf(owner);
+      return ownerChain.indexOf(eventScope) !== -1;
     } catch (e) {
       return true;
     }
