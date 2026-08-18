@@ -49,7 +49,11 @@ describe('SharedUtil', () => {
       'http://demo.vaadin.com/foo?f',
       'http://demo.vaadin.com/foo?f=1',
       'http://demo.vaadin.com:1234/foo?a',
-      'http://demo.vaadin.com:1234/foo#frag?fakeparam'
+      'http://demo.vaadin.com:1234/foo#frag?fakeparam',
+      // Jetspeed
+      'http://localhost:8080/jetspeed/portal/_ns:Z3RlbXBsYXRlLXRvcDJfX3BhZ2UtdGVtcGxhdGVfX2RwLTFfX1AtMTJjNTRkYjdlYjUtMTAwMDJ8YzB8ZDF8aVVJREx8Zg__',
+      // Liferay generated url
+      'http://vaadin.com/directory?p_p_id=Directory_WAR_Directory&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=UIDL&p_p_cacheability=cacheLevelPage&p_p_col_id=row-1&p_p_col_count=1'
     ];
     const withParams = [
       'http://demo.vaadin.com/?a=b&c=d',
@@ -58,7 +62,9 @@ describe('SharedUtil', () => {
       'http://demo.vaadin.com/foo?f&a=b&c=d',
       'http://demo.vaadin.com/foo?f=1&a=b&c=d',
       'http://demo.vaadin.com:1234/foo?a&a=b&c=d',
-      'http://demo.vaadin.com:1234/foo?a=b&c=d#frag?fakeparam'
+      'http://demo.vaadin.com:1234/foo?a=b&c=d#frag?fakeparam',
+      'http://localhost:8080/jetspeed/portal/_ns:Z3RlbXBsYXRlLXRvcDJfX3BhZ2UtdGVtcGxhdGVfX2RwLTFfX1AtMTJjNTRkYjdlYjUtMTAwMDJ8YzB8ZDF8aVVJREx8Zg__?a=b&c=d',
+      'http://vaadin.com/directory?p_p_id=Directory_WAR_Directory&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=UIDL&p_p_cacheability=cacheLevelPage&p_p_col_id=row-1&p_p_col_count=1&a=b&c=d'
     ];
     const withParamsAndFragment = [
       'http://demo.vaadin.com/?a=b&c=d#fragment',
@@ -67,7 +73,9 @@ describe('SharedUtil', () => {
       'http://demo.vaadin.com/foo?f&a=b&c=d#fragment',
       'http://demo.vaadin.com/foo?f=1&a=b&c=d#fragment',
       'http://demo.vaadin.com:1234/foo?a&a=b&c=d#fragment',
-      '' // not applicable: URI already has a fragment, so adding "#fragment" cannot add a second one
+      '', // not applicable: URI already has a fragment, so adding "#fragment" cannot add a second one
+      'http://localhost:8080/jetspeed/portal/_ns:Z3RlbXBsYXRlLXRvcDJfX3BhZ2UtdGVtcGxhdGVfX2RwLTFfX1AtMTJjNTRkYjdlYjUtMTAwMDJ8YzB8ZDF8aVVJREx8Zg__?a=b&c=d#fragment',
+      'http://vaadin.com/directory?p_p_id=Directory_WAR_Directory&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=UIDL&p_p_cacheability=cacheLevelPage&p_p_col_id=row-1&p_p_col_count=1&a=b&c=d#fragment'
     ];
 
     uris.forEach((uri, i) => {
@@ -82,30 +90,58 @@ describe('SharedUtil', () => {
   });
 
   it('trims trailing slashes', () => {
+    expect(trimTrailingSlashes('/path/')).to.equal('/path');
+    expect(trimTrailingSlashes('/path')).to.equal('/path');
+    expect(trimTrailingSlashes('/path///')).to.equal('/path');
+    expect(trimTrailingSlashes('')).to.equal('');
+    expect(trimTrailingSlashes('/')).to.equal('');
     expect(trimTrailingSlashes('foo')).to.equal('foo');
     expect(trimTrailingSlashes('foo/')).to.equal('foo');
     expect(trimTrailingSlashes('foo///')).to.equal('foo');
-    expect(trimTrailingSlashes('/')).to.equal('');
   });
 
   it('splits camelCase into words with casing preserved', () => {
+    expect(splitCamelCase('firstName')).to.deep.equal(['first', 'Name']);
+    expect(splitCamelCase('fooBar')).to.deep.equal(['foo', 'Bar']);
+    expect(splitCamelCase('fBar')).to.deep.equal(['f', 'Bar']);
+    expect(splitCamelCase('FBar')).to.deep.equal(['F', 'Bar']);
+    expect(splitCamelCase('MYCdi')).to.deep.equal(['MY', 'Cdi']);
+    expect(splitCamelCase('MyCDIUI')).to.deep.equal(['My', 'CDIUI']);
+    expect(splitCamelCase('MyCDIUITwo')).to.deep.equal(['My', 'CDIUI', 'Two']);
+    expect(splitCamelCase('first name')).to.deep.equal(['first', 'name']);
     expect(splitCamelCase('MyBeanContainer')).to.deep.equal(['My', 'Bean', 'Container']);
     expect(splitCamelCase('AwesomeURLFactory')).to.deep.equal(['Awesome', 'URL', 'Factory']);
     expect(splitCamelCase('SomeUriAction')).to.deep.equal(['Some', 'Uri', 'Action']);
   });
 
   it('converts camelCase to a human friendly format', () => {
+    expect(camelCaseToHumanFriendly('firstName')).to.equal('First Name');
+    expect(camelCaseToHumanFriendly('first name')).to.equal('First Name');
+    expect(camelCaseToHumanFriendly('firstName2')).to.equal('First Name2');
+    expect(camelCaseToHumanFriendly('first')).to.equal('First');
+    expect(camelCaseToHumanFriendly('First')).to.equal('First');
+    expect(camelCaseToHumanFriendly('SomeXYZAbbreviation')).to.equal('Some XYZ Abbreviation');
     expect(camelCaseToHumanFriendly('MyBeanContainer')).to.equal('My Bean Container');
     expect(camelCaseToHumanFriendly('AwesomeURLFactory')).to.equal('Awesome URL Factory');
     expect(camelCaseToHumanFriendly('SomeUriAction')).to.equal('Some Uri Action');
   });
 
   it('joins parts with a separator', () => {
+    const s1 = 'foo-bar-baz';
+    const s2 = 'foo--bar';
+    expect(join(s1.split('-'), '')).to.equal('foobarbaz');
+    expect(join(s1.split('-'), '!')).to.equal('foo!bar!baz');
+    expect(join(s1.split('-'), '!!')).to.equal('foo!!bar!!baz');
+    expect(join(s2.split('-'), '#')).to.equal('foo##bar');
     expect(join(['a', 'b', 'c'], '-')).to.equal('a-b-c');
     expect(join(['x'], '-')).to.equal('x');
   });
 
   it('capitalizes the first character', () => {
+    // Java exercises this under the Turkish locale (capitalize must be
+    // locale-independent); JavaScript upper-casing of ASCII already is.
+    expect(capitalize('integer')).to.equal('Integer');
+    expect(capitalize('i')).to.equal('I');
     expect(capitalize('foo')).to.equal('Foo');
     expect(capitalize('a')).to.equal('A');
     expect(capitalize('')).to.equal('');
@@ -126,28 +162,37 @@ describe('SharedUtil', () => {
   });
 
   it('converts dash separated strings to camelCase', () => {
+    expect(dashSeparatedToCamelCase(null)).to.equal(null);
+    expect(dashSeparatedToCamelCase('')).to.equal('');
     expect(dashSeparatedToCamelCase('foo')).to.equal('foo');
     expect(dashSeparatedToCamelCase('foo-bar')).to.equal('fooBar');
     expect(dashSeparatedToCamelCase('foo--bar')).to.equal('fooBar');
-    expect(dashSeparatedToCamelCase(null)).to.equal(null);
+    expect(dashSeparatedToCamelCase('foo-bar-baz')).to.equal('fooBarBaz');
+    expect(dashSeparatedToCamelCase('foo-Bar-Baz')).to.equal('fooBarBaz');
   });
 
   it('converts camelCase strings to dash separated', () => {
+    expect(camelCaseToDashSeparated(null)).to.equal(null);
+    expect(camelCaseToDashSeparated('')).to.equal('');
     expect(camelCaseToDashSeparated('foo')).to.equal('foo');
     expect(camelCaseToDashSeparated('fooBar')).to.equal('foo-bar');
+    expect(camelCaseToDashSeparated('foo--bar')).to.equal('foo--bar');
+    expect(camelCaseToDashSeparated('fooBarBaz')).to.equal('foo-bar-baz');
     expect(camelCaseToDashSeparated('MyBeanContainer')).to.equal('-my-bean-container');
     expect(camelCaseToDashSeparated('AwesomeURLFactory')).to.equal('-awesome-uRL-factory');
     expect(camelCaseToDashSeparated('someUriAction')).to.equal('some-uri-action');
-    expect(camelCaseToDashSeparated(null)).to.equal(null);
   });
 
   it('converts UpperCamelCase strings to dash separated lowercase', () => {
+    expect(upperCamelCaseToDashSeparatedLowerCase(null)).to.equal(null);
+    expect(upperCamelCaseToDashSeparatedLowerCase('')).to.equal('');
     expect(upperCamelCaseToDashSeparatedLowerCase('foo')).to.equal('foo');
     expect(upperCamelCaseToDashSeparatedLowerCase('fooBar')).to.equal('foo-bar');
+    expect(upperCamelCaseToDashSeparatedLowerCase('foo--bar')).to.equal('foo--bar');
+    expect(upperCamelCaseToDashSeparatedLowerCase('fooBarBaz')).to.equal('foo-bar-baz');
     expect(upperCamelCaseToDashSeparatedLowerCase('MyBeanContainer')).to.equal('my-bean-container');
     expect(upperCamelCaseToDashSeparatedLowerCase('AwesomeURLFactory')).to.equal('awesome-url-factory');
     expect(upperCamelCaseToDashSeparatedLowerCase('someUriAction')).to.equal('some-uri-action');
-    expect(upperCamelCaseToDashSeparatedLowerCase(null)).to.equal(null);
   });
 
   it('prefixes only relative urls without a protocol', () => {
