@@ -81,8 +81,8 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
             getLogger().warn(
                     "Ignoring update for disabled return channel {}, the"
-                            + " value sent by the client is dropped. Target:"
-                            + " {}. {}",
+                            + " message from the client is not passed to the"
+                            + " channel handler. Target: {}. {}",
                     channelId, describeTarget(node), describeDisabledBy(node));
             logIgnoredPayload(invocationJson);
             return Optional.empty();
@@ -113,8 +113,13 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
             disabledNode = disabledNode.getParent();
         }
 
-        if (disabledNode == null || disabledNode == node) {
+        if (disabledNode == node) {
             return "The target itself is disabled";
+        }
+        if (disabledNode == null) {
+            // Not expected, since a node is disabled either by itself or by one
+            // of its ancestors
+            return "The disabled node could not be determined";
         }
         return "The target is disabled through its ancestor "
                 + describeTarget(disabledNode);

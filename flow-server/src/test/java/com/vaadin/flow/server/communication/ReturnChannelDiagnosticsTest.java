@@ -98,6 +98,10 @@ class ReturnChannelDiagnosticsTest {
         assertEquals(1, warnings.size(),
                 () -> "A plain executeJs with no return value callback should "
                         + "be enough to get the warning, got: " + warnings);
+        assertTrue(warnings.get(0).contains("disabled return channel"),
+                () -> "The channel should exist and be the disabled one, so "
+                        + "that this covers the disabled case: "
+                        + warnings.get(0));
         assertTrue(warnings.get(0).contains(Widget.class.getName()),
                 () -> "The warning should name the component even though the "
                         + "application registered no channel itself: "
@@ -105,7 +109,7 @@ class ReturnChannelDiagnosticsTest {
     }
 
     @Test
-    void applicationSubscribedJs_targetDisabled_valueDroppedWithWarning() {
+    void applicationSubscribedJs_targetDisabled_valueNotDeliveredAndWarned() {
         MockUI ui = new MockUI();
         Widget widget = new Widget();
         ui.getElement().appendChild(widget.getElement());
@@ -120,8 +124,9 @@ class ReturnChannelDiagnosticsTest {
         assertEquals(1, warnings.size(),
                 () -> "Dropping a value the application is waiting for should "
                         + "still be warned about, got: " + warnings);
-        assertTrue(warnings.get(0).contains("dropped"),
-                () -> "The warning should tell that the value is dropped: "
+        assertTrue(
+                warnings.get(0).contains("not passed to the channel handler"),
+                () -> "The warning should tell what did not happen: "
                         + warnings.get(0));
         assertNull(returnValue.get(),
                 "The return value should not be delivered while disabled");
@@ -302,8 +307,11 @@ class ReturnChannelDiagnosticsTest {
         Logger logger = Mockito.mock(Logger.class,
                 invocation -> record(invocation, warnings, debugMessages));
 
+        // Only the handler's own logger is mocked. Invoking a channel runs
+        // application and framework code that may log or cache a logger of its
+        // own, so everything else keeps using the real logger factory.
         try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
             loggerFactory
                     .when(() -> LoggerFactory
                             .getLogger(ReturnChannelHandler.class.getName()))
