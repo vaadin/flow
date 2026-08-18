@@ -210,8 +210,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * with {@code refreshChildren} set to {@code true} refreshes the whole
      * hierarchy and is equivalent to {@link #reset()}: the full hierarchy cache
      * is discarded and the viewport is re-fetched. Passing it with
-     * {@code refreshChildren} set to {@code false} has no effect, since the
-     * virtual root itself is not a rendered item.
+     * {@code refreshChildren} set to {@code false} is not supported and throws
+     * an {@link IllegalArgumentException}, since the virtual root itself is not
+     * a rendered item.
      * <p>
      * WARNING: For non-{@code null} items this method is only supported with
      * data providers that use {@link HierarchyFormat#NESTED} when
@@ -228,7 +229,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param refreshChildren
      *            whether or not to refresh child items. When {@code item} is
      *            {@code null}, {@code true} is equivalent to {@link #reset()}
-     *            and {@code false} has no effect
+     *            and {@code false} is not supported
+     * @throws IllegalArgumentException
+     *             if {@code item} is {@code null} and {@code refreshChildren}
+     *             is {@code false}
      * @throws UnsupportedOperationException
      *             if {@code refreshChildren} is true, {@code item} is not
      *             {@code null}, and the data provider's hierarchy format is not
@@ -236,13 +240,18 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public void refresh(T item, boolean refreshChildren) {
         if (item == null) {
-            if (refreshChildren) {
-                // Refreshing the virtual root's children means refreshing the
-                // whole hierarchy, which is equivalent to a full reset.
-                reset();
+            if (!refreshChildren) {
+                throw new IllegalArgumentException(
+                        """
+                                Refreshing the virtual root (a null item) requires refreshChildren \
+                                to be true, which refreshes the whole hierarchy and is equivalent to \
+                                reset(). Refreshing the virtual root without its children has no \
+                                effect, since the root itself is not a rendered item.
+                                """);
             }
-            // Refreshing the virtual root without its children has no effect,
-            // since the root itself is not a rendered item.
+            // Refreshing the virtual root's children means refreshing the
+            // whole hierarchy, which is equivalent to a full reset.
+            reset();
             return;
         }
 

@@ -30,6 +30,7 @@ import com.vaadin.flow.data.provider.DataKeyMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HierarchicalDataCommunicatorDataRefreshTest
@@ -98,15 +99,16 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    void refreshNullItem_onlyRefreshChildrenCallsReset() {
+    void refreshNullItem_refreshChildrenCallsReset_withoutRefreshChildrenThrows() {
         // The virtual root (null) with refreshChildren maps to reset()
-        // (#19377). Without refreshChildren it has no effect, as the root
+        // (#19377). Without refreshChildren it is not supported, as the root
         // itself is not a rendered item.
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
         Mockito.clearInvocations(dataCommunicatorSpy);
 
-        dataCommunicatorSpy.refresh(null, false);
+        assertThrows(IllegalArgumentException.class,
+                () -> dataCommunicatorSpy.refresh(null, false));
         Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
 
         Mockito.clearInvocations(dataCommunicatorSpy);
@@ -171,12 +173,13 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    void refreshItemNullThroughDataProvider_onlyRefreshChildrenCallsReset() {
+    void refreshItemNullThroughDataProvider_refreshChildrenCallsReset_withoutRefreshChildrenThrows() {
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
         Mockito.clearInvocations(dataCommunicatorSpy);
 
-        treeDataProvider.refreshItem(null);
+        assertThrows(IllegalArgumentException.class,
+                () -> treeDataProvider.refreshItem(null));
         Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
 
         treeDataProvider.refreshItem(null, true);
