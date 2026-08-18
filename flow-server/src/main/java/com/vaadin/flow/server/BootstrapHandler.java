@@ -819,8 +819,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
-         * Writes the push id (and generates one if needed) to the given JSON
-         * object.
+         * Writes the push id to the given JSON object.
          *
          * @param response
          *            the response JSON object to write security key into
@@ -1535,8 +1534,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Writes the push id (and generates one if needed) to the given JSON
-     * object.
+     * Writes the push id to the given JSON object.
      *
      * @param response
      *            the response JSON object to write security key into

@@ -1124,11 +1124,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the push connection identifier for this session. Used when
      * establishing a push connection with the client.
+     * <p>
+     * The push id is an immutable, safely-published value, so this method is
+     * safe to call without holding the session lock.
      *
      * @return the push connection identifier string
      */
     public String getPushId() {
-        checkHasLock();
+        // No checkHasLock() here: pushId is a final field assigned once at
+        // construction and never mutated. The Java Memory Model guarantees it
+        // is safely published, so any thread that can see this VaadinSession
+        // sees the fully-initialized value. Requiring the session lock would
+        // only add complexity for callers (e.g. during push-connection setup)
+        // without providing any memory-visibility or data-integrity benefit.
         return pushId;
     }
 

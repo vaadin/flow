@@ -699,6 +699,23 @@ class VaadinSessionTest {
     }
 
     @Test
+    void getPushId_doesNotRequireLock() {
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+        configuration.setProductionMode(true);
+        // THROW would make any checkHasLock() call fail immediately
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
+        session.unlock();
+        assumeFalse(session.hasLock());
+
+        // pushId is a final, safely-published field, so the getter must work
+        // without holding the session lock
+        assertNotNull(session.getPushId());
+    }
+
+    @Test
     void checkHasLock_log() {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
