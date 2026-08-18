@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -51,6 +52,9 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String COMPILER_OPTIONS = "compilerOptions";
 
     static final String TSCONFIG_JSON = "tsconfig.json";
+
+    private static final String JAR_RESOURCES_TSCONFIG_TEMPLATE = "jar-resources-tsconfig.json";
+    private static final String PROJECT_TSCONFIG_PLACEHOLDER = "%PROJECT_TSCONFIG%";
 
     private static final String OLD_VERSION_KEY = "flow_version";
     private static final String VERSION = "_version";
@@ -120,6 +124,55 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             overrideIfObsolete();
             ensureTarget(getDefaultEsTargetVersion());
         }
+        // The project tsconfig.json is in place at this point, so the config
+        // generated for the add-on sources can safely extend it
+        generateJarResourcesTsConfig();
+    }
+
+    /**
+     * Writes a <code>tsconfig.json</code> into the folder that frontend sources
+     * of add-ons are copied to.
+     * <p>
+     * The project <code>tsconfig.json</code> excludes that folder so that the
+     * type checking rules of the project are not enforced on add-on sources.
+     * Bundlers apply <code>compilerOptions</code> only from a configuration
+     * that owns the file, and a file excluded from the project configuration is
+     * owned by none of them, so add-on sources would be transformed with no
+     * compiler options at all: TypeScript decorators would be left as raw
+     * syntax that browsers cannot parse. The generated configuration takes
+     * ownership of the folder and inherits the compiler options of the project,
+     * while turning its type checking rules off for the add-on sources.
+     */
+    private void generateJarResourcesTsConfig()
+            throws ExecutionFailedException {
+        File jarResourcesFolder = options.getJarFrontendResourcesFolder();
+        if (jarResourcesFolder == null) {
+            return;
+        }
+        File tsConfigFile = new File(jarResourcesFolder, TSCONFIG_JSON);
+        try (InputStream template = getClass()
+                .getResourceAsStream(JAR_RESOURCES_TSCONFIG_TEMPLATE)) {
+            writeIfChanged(tsConfigFile,
+                    StringUtil.toUTF8String(template).replace(
+                            PROJECT_TSCONFIG_PLACEHOLDER,
+                            relativeProjectTsConfigPath(jarResourcesFolder)));
+        } catch (IOException e) {
+            throw new ExecutionFailedException(
+                    String.format("Error writing '%s'", tsConfigFile), e);
+        }
+    }
+
+    /**
+     * Resolves the project <code>tsconfig.json</code> as a path relative to the
+     * given folder, as the folder that add-on sources are copied to is not at a
+     * fixed depth below the project folder.
+     */
+    private String relativeProjectTsConfigPath(File jarResourcesFolder) {
+        Path from = jarResourcesFolder.toPath().toAbsolutePath().normalize();
+        Path projectTsConfig = new File(options.getNpmFolder(), TSCONFIG_JSON)
+                .toPath().toAbsolutePath().normalize();
+        return from.relativize(projectTsConfig).toString().replaceAll("\\\\",
+                "/");
     }
 
     private void ensureTarget(String esVersion) {

@@ -33,6 +33,7 @@ import com.vaadin.flow.testutil.TestUtils;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FrontendResourcesAreCopiedAfterCleaningTest {
 
@@ -55,11 +56,29 @@ class FrontendResourcesAreCopiedAfterCleaningTest {
         assertCopiedFrontendFileAmount(17);
     }
 
+    @Test
+    void jarResourcesTsConfig_should_beKept_when_frontendResourcesAreCopied()
+            throws ExecutionFailedException {
+        copyResources();
+
+        assertTrue(
+                new File(getJarFrontendResourcesFolder(),
+                        TaskGenerateTsConfig.TSCONFIG_JSON).exists(),
+                "The tsconfig.json that gives the copied add-on sources their "
+                        + "compiler options should not be removed as a "
+                        + "leftover file while copying");
+    }
+
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
         File dir = getJarFrontendResourcesFolder();
         FileUtils.forceMkdir(dir);
-        List<String> files = TestUtils.listFilesRecursively(dir);
+        // The tsconfig.json generated for the copied add-on sources is not
+        // itself a copied resource
+        List<String> files = TestUtils.listFilesRecursively(dir).stream()
+                .filter(file -> !file
+                        .endsWith(TaskGenerateTsConfig.TSCONFIG_JSON))
+                .toList();
 
         assertEquals(fileCount, files.size(), "Should have frontend files");
     }
