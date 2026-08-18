@@ -93,6 +93,24 @@ class TaskUpdateViteTest {
     }
 
     @Test
+    void unmodifiedOutdatedConfigFile_replacedWithCurrentDefault()
+            throws IOException {
+        File configFile = new File(temporaryFolder, FrontendUtils.VITE_CONFIG);
+        String previousDefault = IOUtils.toString(
+                TaskUpdateVite.class.getResource("vite.config-v25.2.ts"),
+                StandardCharsets.UTF_8);
+        FileUtils.write(configFile, previousDefault, StandardCharsets.UTF_8);
+
+        new TaskUpdateVite(options, null).execute();
+
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        assertTrue(template.contains("from './vite.generated.ts'"),
+                "Unmodified config from a previous version should have been replaced with the current default");
+    }
+
+    @Test
     void generatedConfigFileExists_alwaysOverwritten() throws IOException {
         File generatedConfigFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
