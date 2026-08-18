@@ -101,12 +101,20 @@ export class Node {
 
   #maxTime = 0;
 
-  /** Creates a new node with the given name. */
+  /**
+   * Creates a new node with the given name.
+   *
+   * @param name the name of the node
+   */
   constructor(name: string | null) {
     this.#name = name;
   }
 
-  /** Gets the name of the node. */
+  /**
+   * Gets the name of the node.
+   *
+   * @return the name of the node
+   */
   getName(): string | null {
     return this.#name;
   }
@@ -114,6 +122,10 @@ export class Node {
   /**
    * Creates a new child node or retrieves an existing child and updates its
    * total time and hit count.
+   *
+   * @param name the name of the child
+   * @param timestamp the timestamp for when the node is entered
+   * @return the child node object
    */
   enterChild(name: string, timestamp: number): Node {
     let child = this.#children.get(name);
@@ -126,27 +138,47 @@ export class Node {
     return child;
   }
 
-  /** Gets the total time spent in this node, including sub nodes, in ms. */
+  /**
+   * Gets the total time spent in this node, including sub nodes, in ms.
+   *
+   * @return the total time spent, in milliseconds
+   */
   getTimeSpent(): number {
     return this.#time;
   }
 
-  /** Gets the minimum time spent for one invocation, including sub nodes, in ms. */
+  /**
+   * Gets the minimum time spent for one invocation, including sub nodes, in ms.
+   *
+   * @return the time spent for the fastest invocation, in milliseconds
+   */
   getMinTimeSpent(): number {
     return this.#minTime;
   }
 
-  /** Gets the maximum time spent for one invocation, including sub nodes, in ms. */
+  /**
+   * Gets the maximum time spent for one invocation, including sub nodes, in ms.
+   *
+   * @return the time spent for the slowest invocation, in milliseconds
+   */
   getMaxTimeSpent(): number {
     return this.#maxTime;
   }
 
-  /** Gets the number of times this node has been entered. */
+  /**
+   * Gets the number of times this node has been entered.
+   *
+   * @return the number of times the node has been entered
+   */
   getCount(): number {
     return this.#count;
   }
 
-  /** Gets the total time spent in this node, excluding sub nodes, in ms. */
+  /**
+   * Gets the total time spent in this node, excluding sub nodes, in ms.
+   *
+   * @return the total time spent, in milliseconds
+   */
   getOwnTime(): number {
     let time = this.getTimeSpent();
     for (const node of this.#children.values()) {
@@ -155,7 +187,11 @@ export class Node {
     return time;
   }
 
-  /** Gets the child nodes of this node. */
+  /**
+   * Gets the child nodes of this node.
+   *
+   * @return a collection of child nodes
+   */
   getChildren(): Node[] {
     return Array.from(this.#children.values());
   }
@@ -205,7 +241,11 @@ export class Node {
     }
   }
 
-  /** Marks the time spent in the child node. */
+  /**
+   * Marks the time spent in the child node.
+   *
+   * @param timestamp the timestamp for when the node was left
+   */
   leave(timestamp: number): void {
     const elapsed = timestamp - this.#enterTime;
     this.#time += elapsed;
@@ -326,7 +366,11 @@ export function setEnabled(enabled: boolean): void {
   profilingEnabled = enabled;
 }
 
-/** Whether the profiling data gathering is enabled. Mirrors Profiler.isEnabled. */
+/**
+ * Whether the profiling data gathering is enabled. Mirrors Profiler.isEnabled.
+ *
+ * @return `true` if the profiling is enabled, else `false`
+ */
 export function isEnabled(): boolean {
   return profilingEnabled;
 }
@@ -334,6 +378,8 @@ export function isEnabled(): boolean {
 /**
  * Enters a named block. There should always be a matching invocation of
  * {@link leave} when leaving the block.
+ *
+ * @param name the name of the entered block
  */
 export function enter(name: string): void {
   if (isEnabled()) {
@@ -344,6 +390,8 @@ export function enter(name: string): void {
 /**
  * Leaves a named block. There should always be a matching invocation of
  * {@link enter} when entering the block.
+ *
+ * @param name the name of the left block
  */
 export function leave(name: string): void {
   if (isEnabled()) {
@@ -355,6 +403,8 @@ export function leave(name: string): void {
  * Returns time relative to the particular page load time. The value should not
  * be used directly but rather the difference between two values returned by
  * this method should be used to compare measurements.
+ *
+ * @return the relative time in milliseconds
  */
 export function getRelativeTimeMillis(): number {
   return relativeTimeSupplier();
@@ -543,6 +593,9 @@ export function logBootstrapTimings(): void {
 /**
  * Returns a string containing the number of milliseconds which have elapsed
  * since the given reference time.
+ *
+ * @param reference the reference time, as returned by {@link getRelativeTimeMillis}
+ * @return a string containing the number of ms elapsed since the reference time
  */
 export function getRelativeTimeString(reference: number): string {
   return `${round(getRelativeTimeMillis() - reference, 3)}`;
@@ -554,6 +607,8 @@ export function getRelativeTimeString(reference: number): string {
  * <p>
  * <b>Warning!</b> This is internal API and should not be used by applications
  * or add-ons.
+ *
+ * @param profilerResultConsumer the consumer that gets profiler data
  */
 export function setProfilerResultConsumer(profilerResultConsumer: ProfilerResultConsumer): void {
   if (consumer !== null) {

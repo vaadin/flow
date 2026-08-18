@@ -88,7 +88,15 @@ function safeSubstring(value: string, beginIndex: number, endIndex: number): str
   return value.slice(trimmedStart, trimmedEnd);
 }
 
-/** Gets the length of the version substring up to the next space. */
+/**
+ * Gets the length of the version substring up to the next space.
+ *
+ * @param userAgent
+ *            user agent string
+ * @param startIndex
+ *            index for version string start
+ * @return length of version number
+ */
 function getVersionStringLength(userAgent: string, startIndex: number): number {
   const versionSubString = userAgent.substring(startIndex);
   let versionBreak = versionSubString.indexOf(' ');
