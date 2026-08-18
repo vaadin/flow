@@ -35,6 +35,7 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 25.1
  */
 public class ResourceContentHash {
 

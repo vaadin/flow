@@ -32,6 +32,7 @@ import com.vaadin.flow.signals.Signal;
  * @param <T>
  *            the computed value type
  * @see Signal#computed(SignalComputation)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SignalComputation<T extends @Nullable Object>

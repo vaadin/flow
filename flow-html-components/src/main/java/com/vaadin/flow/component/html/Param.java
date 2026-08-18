@@ -32,6 +32,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 @Tag(Tag.PARAM)
 public class Param extends HtmlComponent {

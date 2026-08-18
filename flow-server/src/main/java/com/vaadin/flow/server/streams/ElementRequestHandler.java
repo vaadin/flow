@@ -27,6 +27,8 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Request handler callback for handing client-server or server-client data
  * transfer scoped to a specific (owner) element.
+ * 
+ * @since 24.8
  */
 @FunctionalInterface
 public interface ElementRequestHandler extends Serializable {

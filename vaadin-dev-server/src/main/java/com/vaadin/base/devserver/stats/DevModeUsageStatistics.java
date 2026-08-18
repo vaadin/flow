@@ -39,6 +39,7 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 24.3.22
  */
 public class DevModeUsageStatistics {
 
@@ -151,14 +152,7 @@ public class DevModeUsageStatistics {
             }
 
             // Update basic project statistics and save
-            projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
-                    Version.getFullVersion());
-            projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
-                    ServerInfo.fetchVaadinVersion());
-            projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
-                    ServerInfo.fetchHillaVersion());
-            projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
-                    ProjectHelpers.getProjectSource(projectFolder));
+            populateProjectData(projectData);
             projectData.increment(
                     StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
         });
@@ -166,10 +160,53 @@ public class DevModeUsageStatistics {
     }
 
     /**
+     * Populates the static identity data (versions and source id) of the
+     * current project.
+     *
+     * @param projectData
+     *            the project specific data to populate
+     */
+    private void populateProjectData(StatisticsContainer projectData) {
+        projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
+                Version.getFullVersion());
+        projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
+                ServerInfo.fetchVaadinVersion());
+        projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
+                ServerInfo.fetchHillaVersion());
+        projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
+                ProjectHelpers.getProjectSource(projectFolder));
+    }
+
+    /**
+     * Makes sure the current project entry carries its identity data.
+     * <p>
+     * The statistics file is shared by all dev servers running on the machine,
+     * and after a successful upload the whole projects array is cleared (see
+     * {@link StatisticsSender}). That clear also wipes the data of other dev
+     * servers that did not trigger the upload. Any subsequent event from a
+     * still-running session (live reload, browser data, ...) would otherwise
+     * recreate the project entry with only that event's field and no version
+     * information, leading to reports with empty {@code flowVersion} and
+     * {@code devModeStarts == 0}. Re-asserting the identity data when it is
+     * missing lets a continued session repair its own entry before the next
+     * report is sent.
+     *
+     * @param projectData
+     *            the project specific data to verify and repair
+     */
+    private void ensureProjectData(StatisticsContainer projectData) {
+        if (!projectData
+                .containsField(StatisticsConstants.FIELD_FLOW_VERSION)) {
+            populateProjectData(projectData);
+        }
+    }
+
+    /**
      * Stores telemetry data received from the browser.
      *
      * @param data
      *            the data from the browser
+     * @since 24.8
      */
     public static void handleBrowserData(JsonNode data) {
         getLogger().debug("Received client usage statistics from the browser");
@@ -179,6 +216,7 @@ public class DevModeUsageStatistics {
         }
 
         get().storage.update((global, project) -> {
+            get().ensureProjectData(project);
             try {
                 String json = data.get("browserData").toString();
                 JsonNode clientData = JsonHelpers.getJsonMapper()
@@ -218,7 +256,10 @@ public class DevModeUsageStatistics {
         }
 
         try {
-            get().storage.update((global, project) -> project.increment(name));
+            get().storage.update((global, project) -> {
+                get().ensureProjectData(project);
+                project.increment(name);
+            });
         } catch (Exception e) {
             getLogger().debug("Failed to log '" + name + "'", e);
         }
@@ -240,8 +281,10 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            get().storage.update(
-                    (global, project) -> project.aggregate(name, value));
+            get().storage.update((global, project) -> {
+                get().ensureProjectData(project);
+                project.aggregate(name, value);
+            });
         } catch (Exception e) {
             getLogger().debug("Failed to collect event '" + name + "'", e);
         }
@@ -260,7 +303,10 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            storage.update((global, project) -> project.setValue(name, value));
+            storage.update((global, project) -> {
+                ensureProjectData(project);
+                project.setValue(name, value);
+            });
         } catch (Exception e) {
             getLogger().debug("Failed to set  '" + name + "'", e);
         }

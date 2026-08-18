@@ -37,6 +37,7 @@ import java.io.Serializable;
  * }
  * </pre>
  *
+ * @since 4.0
  */
 @FunctionalInterface
 public interface ItemCountChangeListener extends Serializable {

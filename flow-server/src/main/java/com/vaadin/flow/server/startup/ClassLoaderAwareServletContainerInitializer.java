@@ -36,6 +36,7 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.0.3
  */
 public interface ClassLoaderAwareServletContainerInitializer
         extends ServletContainerInitializer {
@@ -127,6 +128,7 @@ public interface ClassLoaderAwareServletContainerInitializer
      * Whether this initializer requires lookup or not.
      *
      * @return whether this initializer requires lookup
+     * @since 6.0
      */
     default boolean requiresLookup() {
         return true;

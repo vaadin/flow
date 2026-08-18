@@ -8,6 +8,7 @@
   },
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
+  "type": "module",
   "files": [
     "react-function-location-plugin.js"
   ]

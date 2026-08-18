@@ -5,7 +5,9 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are validated too, not only those targeting main.
+    # PRs against a maintenance branch run that branch's own copy of this file.
   merge_group:
 permissions:
   contents: read
@@ -21,6 +23,8 @@ env:
   _PR_NUMBER: ${{ github.event.number }}
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+  # Defined once so every job builds with the same Maven
+  MAVEN_VERSION: '3.9.16'
 jobs:
   build:
     timeout-minutes: 30
@@ -43,16 +47,16 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.19.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
         with:
-          maven-version: 3.8.7
+          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -74,7 +78,7 @@ jobs:
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
           tar rf workspace.tar $(find . -d -name target)
-      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: saved-workspace
           path: workspace.tar
@@ -96,9 +100,9 @@ jobs:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
         with:
-          maven-version: 3.8.7
+          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -107,7 +111,7 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -135,13 +139,30 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C $ARGS"
+          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
           LOG=mvn-unit-tests-${{matrix.current}}.out
           $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Package coverage reports
+        # Some modules (see moduleSplits in computeMatrix.js) run their tests
+        # split over several matrix jobs, each producing a partial
+        # target/site/jacoco/jacoco.xml for the same module. Rename the
+        # reports with the matrix index so the Sonar job can extract all
+        # archives without them overwriting each other; Sonar merges the
+        # partial reports.
+        run: |
+          find . -path '*/target/site/jacoco/jacoco.xml' | while read -r f; do
+            mv "$f" "${f%/jacoco.xml}/jacoco-unit-${{matrix.current}}.xml"
+          done
+          find . -path '*/target/site/jacoco/jacoco-unit-*.xml' \
+            | tar -czf coverage-unit-${{matrix.current}}.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-unit-${{ matrix.current }}
+          path: coverage-unit-*.tgz
       - name: Convert Javadoc errors to JUnit XML
         if: ${{ failure() }}
         run: |
@@ -160,7 +181,7 @@ jobs:
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ failure() || success() }}
         with:
           name: tests-output-unit-${{ matrix.current }}
@@ -179,10 +200,10 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
-      - uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+          node-version: '24.19.0'
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.0.8'
+          version: '11.21.0'
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
@@ -192,9 +213,9 @@ jobs:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
         with:
-          maven-version: 3.8.7
+          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -203,7 +224,7 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -259,11 +280,93 @@ jobs:
       - name: Package test-report files
         if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
+  sonar-analysis:
+    name: Sonar Analysis
+    # Runs after the unit tests so the analysis can reuse their JaCoCo
+    # coverage reports instead of running the tests a second time.
+    needs: unit-tests
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
+        with:
+          maven-version: "${{ env.MAVEN_VERSION }}"
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The saved workspace was built as 999.99-SNAPSHOT; the poms must
+        # match it for the restored target directories and .m2 artifacts
+        # to be picked up.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        # Reuse the classes compiled by the build job instead of recompiling.
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Download coverage reports
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: coverage-unit-*
+          merge-multiple: true
+      - name: Extract coverage reports
+        run: |
+          for i in coverage-unit-*.tgz; do tar xzf "$i"; done
+      - name: Run Sonar analysis
+        # flow-gradle-plugin is excluded because the build job does not
+        # compile it, so the workspace has no classes for it.
+        #
+        # Pull requests are analyzed in pull-request mode; pushes to a
+        # tracked branch (e.g. 25.2, 24.10) are analyzed as that branch.
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            SCOPE="-Dsonar.branch.name=$GITHUB_REF_NAME"
+          else
+            SCOPE="-Dsonar.pullrequest.key=$_PR_NUMBER \
+              -Dsonar.pullrequest.base=$_BASE_REF \
+              -Dsonar.pullrequest.branch=$_HEAD_REF"
+          fi
+          mvn sonar:sonar \
+            -ntp -B -e -V \
+            -pl '!flow-plugins/flow-gradle-plugin' \
+            -Dsonar.projectKey=vaadin_flow \
+            -Dsonar.organization=vaadin \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/*.xml \
+            $SCOPE
   test-results:
     permissions:
       actions: write
@@ -279,12 +382,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tests-output
           pattern: tests-output-*
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: tests-output
       - name: extract downloaded files
@@ -294,10 +397,6 @@ jobs:
         with:
           junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
-        with:
-          name: |
-            saved-workspace
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
@@ -306,9 +405,23 @@ jobs:
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
+  cleanup-artifacts:
+    permissions:
+      actions: write
+    # The saved-workspace artifact can only be deleted once every job that
+    # restores it has run: deleting it in test-results could race with the
+    # Sonar analysis, which starts as soon as the unit tests finish.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
+    needs: [test-results, sonar-analysis]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
+        with:
+          name: |
+            saved-workspace
   auto-merge:
     needs: api-diff-labeling
-    if: github.event_name == 'pull_request' && github.base_ref != 'main'
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     runs-on: ubuntu-24.04
     permissions:
@@ -322,7 +435,7 @@ jobs:
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.19.0'
       - name: Auto-merge PR
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
@@ -348,9 +461,9 @@ jobs:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
         with:
-          maven-version: 3.9.2
+          maven-version: "${{ env.MAVEN_VERSION }}"
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
@@ -404,7 +517,7 @@ jobs:
             fi
           done
       - name: Upload API diff artifacts
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: apidiff-reports
           path: apidiff/

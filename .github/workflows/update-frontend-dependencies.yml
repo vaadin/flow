@@ -40,7 +40,7 @@ jobs:
           if [ "${{ matrix.branch }}" = "main" ]; then
             echo "UPDATE_DESC=All new versions (major, minor, patch)" >> $GITHUB_ENV
           else
-            echo "UPDATE_DESC=Patch releases only" >> $GITHUB_ENV
+            echo "UPDATE_DESC=Minor and patch releases (no major)" >> $GITHUB_ENV
           fi
 
       - name: Create Pull Request

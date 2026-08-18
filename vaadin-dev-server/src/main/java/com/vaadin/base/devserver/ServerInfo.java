@@ -28,11 +28,15 @@ import com.vaadin.flow.server.Version;
 
 /**
  * Data for a info message to the debug window.
+ * 
+ * @since 24.3.22
  */
 public class ServerInfo implements Serializable {
 
     /**
      * Known container runtime types that can be detected.
+     * 
+     * @since 25.1
      */
     public enum ContainerInfo {
         DOCKER("docker"),
@@ -75,6 +79,8 @@ public class ServerInfo implements Serializable {
         }
     }
 
+    /**
+     */
     public record NameAndVersion(String name,
             String version) implements Serializable {
     };
@@ -129,6 +135,7 @@ public class ServerInfo implements Serializable {
      *
      * @return the detected container runtime, or {@link ContainerInfo#NONE} if
      *         no container is detected
+     * @since 25.1
      */
     public static ContainerInfo fetchContainerInfo() {
         // Docker creates this file inside containers

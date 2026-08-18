@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * <code>gwt-shared</code>. See the documentation for
  * <code>com.google.gwt.core.shared.GwtIncompatible</code> for more information.
  *
+ * @since 3.1
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR,

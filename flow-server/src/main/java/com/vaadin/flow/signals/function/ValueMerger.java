@@ -55,6 +55,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @param <I>
  *            the inner (mapped) signal value type
  * @see ValueSignal#updater(ValueMerger)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface ValueMerger<O extends @Nullable Object, I extends @Nullable Object>
