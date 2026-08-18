@@ -413,6 +413,17 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.refreshAll();
     }
 
+    /**
+     * Fires the filter or sorting change callback when a data provider is
+     * initialized. The callback is skipped when the data view still uses the
+     * default {@link DataCommunicator.EmptyDataProvider}, as there is no data
+     * provider callback to invoke in that state.
+     *
+     * @param filter
+     *            the filter to apply
+     * @param sortComparator
+     *            the sort comparator to apply
+     */
     private void fireFilteringOrSortingChangeEvent(
             SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
