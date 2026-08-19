@@ -53,6 +53,7 @@ import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
 import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
@@ -208,7 +209,7 @@ public class UIInternals implements Serializable {
 
     private String appShellTitle;
 
-    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
+    private PendingJavaScriptResult pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
@@ -840,12 +841,9 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                generateTitleScript().stripIndent(), title);
 
-        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
-                getStateTree().getRootNode(), invocation);
-        addJavaScriptInvocation(pendingTitleUpdateCanceler);
+        pendingTitleUpdateCanceler = ui.getPage()
+                .executeJs(generateTitleScript().stripIndent(), title);
 
         this.title = title;
     }
