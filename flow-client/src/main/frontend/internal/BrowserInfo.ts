@@ -265,6 +265,8 @@ export class BrowserInfo {
   /**
    * Returns the browser minor version e.g., 5 for Firefox 3.5.
    *
+   * @see {@link getBrowserMajorVersion}
+   *
    * @return The minor version of the browser, or -1 if not known/parsed.
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
