@@ -221,9 +221,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the item to refresh, or {@code null} for the virtual root
      *            (parent of root-level items)
      * @param refreshChildren
-     *            whether or not to refresh child items. When {@code item} is
-     *            {@code null}, {@code true} is equivalent to {@link #reset()}
-     *            (nested format only) and {@code false} is not supported
+     *            whether or not to refresh child items
      * @throws IllegalArgumentException
      *             if {@code item} is {@code null} and {@code refreshChildren}
      *             is {@code false}

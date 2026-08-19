@@ -42,9 +42,7 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
      * is equivalent to calling {@link #refreshAll()}.
      *
      * @throws UnsupportedOperationException
-     *             if {@code item} is not {@code null}, {@code refreshChildren}
-     *             is {@code true}, and the hierarchy format is not
-     *             {@link HierarchyFormat#NESTED}
+     *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
      * @since 25.0
      */
     @Override
