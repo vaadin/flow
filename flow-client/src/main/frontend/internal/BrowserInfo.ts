@@ -61,6 +61,8 @@ function isIos(): boolean {
  *
  * Browser details are detected only once and those are stored in this singleton
  * class.
+ *
+ * @since 1.0
  */
 export class BrowserInfo {
   static readonly ENGINE_GECKO = 'gecko';

@@ -14,15 +14,25 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.Profiler: a lightweight profiling tool
-// that collects timing data with zero overhead unless enabled. The public
-// surface (isEnabled/enter/leave/reset/initialize/logTimings/
-// logBootstrapTimings/getRelativeTimeMillis/getRelativeTimeString/
-// setProfilerResultConsumer plus the Node tree and ProfilerResultConsumer) is
-// exported; the private native helpers of Profiler.java (logGwtEvent,
-// ensureLogger, ensureNoLogger, getGwtStatsEvents, clearEventsList,
-// getPerformanceTiming, hasHighPrecisionTime, round, the relative-time
-// suppliers and the GwtStatsEvent reader) are non-exported module-local.
+/**
+ * Lightweight profiling tool that can be used to collect profiling data with
+ * zero overhead unless enabled. To enable profiling, add
+ * `<set-property name="vaadin.profiler" value="true" />` to your .gwt.xml file.
+ *
+ * TypeScript port of com.vaadin.client.Profiler. The public surface
+ * (isEnabled/enter/leave/reset/initialize/logTimings/
+ * logBootstrapTimings/getRelativeTimeMillis/getRelativeTimeString/
+ * setProfilerResultConsumer plus the Node tree and ProfilerResultConsumer) is
+ * exported; the private native helpers of Profiler.java (logGwtEvent,
+ * ensureLogger, ensureNoLogger, getGwtStatsEvents, clearEventsList,
+ * getPerformanceTiming, hasHighPrecisionTime, round, the relative-time
+ * suppliers and the GwtStatsEvent reader) are non-exported module-local. GWT
+ * enabled profiling at compile time via deferred binding on the
+ * `vaadin.profiler` property; the TypeScript engine has no deferred binding, so
+ * the bootstrap toggles it at runtime through setEnabled().
+ *
+ * @since 1.0
+ */
 
 import { Console } from './Console';
 
@@ -58,6 +68,8 @@ function gwtWindow(): GwtStatsWindow {
  * Profiler.ProfilerResultConsumer.
  * <p>
  * <b>Warning!</b> This interface is most likely to change in the future.
+ *
+ * @since 1.0
  */
 export interface ProfilerResultConsumer {
   addProfilerData(rootNode: Node, totals: Node[]): void;
