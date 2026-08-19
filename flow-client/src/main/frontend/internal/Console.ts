@@ -29,7 +29,7 @@ let isProductionMode = false;
  * in production mode, or the `vaadin.browserLog` override flag is set. Mirrors
  * Console.shouldLogToBrowserConsole.
  *
- * @return true if browser console logging should be enabled
+ * @returns true if browser console logging should be enabled
  */
 function shouldLogToBrowserConsole(): boolean {
   if (!isProductionMode) {
@@ -47,7 +47,7 @@ function shouldLogToBrowserConsole(): boolean {
  * Private in Console.java, so module-local here; exercised through the public
  * logging methods rather than imported directly.
  *
- * @return true if the flag is set to "true", false otherwise
+ * @returns true if the flag is set to "true", false otherwise
  */
 function isLocalStorageFlagEnabled(): boolean {
   try {
@@ -72,7 +72,7 @@ export const Console = {
    * Changes logger behavior, making it skip all browser logging for production
    * mode. Mirrors Console.setProductionMode.
    *
-   * @param productionMode if an application is in the production mode or not
+   * @param productionMode - if an application is in the production mode or not
    */
   setProductionMode(productionMode: boolean): void {
     isProductionMode = productionMode;
@@ -81,7 +81,7 @@ export const Console = {
   /**
    * Logs the message using the debug log level, unless suppressed.
    *
-   * @param message the message to log
+   * @param message - the message to log
    */
   debug(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
@@ -92,7 +92,7 @@ export const Console = {
   /**
    * Logs the message using the info log level, unless suppressed.
    *
-   * @param message the message to log
+   * @param message - the message to log
    */
   log(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
@@ -103,7 +103,7 @@ export const Console = {
   /**
    * Logs the message using the warning log level, unless suppressed.
    *
-   * @param message the message to log
+   * @param message - the message to log
    */
   warn(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
@@ -114,7 +114,7 @@ export const Console = {
   /**
    * Logs the message using the error log level, unless suppressed.
    *
-   * @param message the message to log
+   * @param message - the message to log
    */
   error(message: unknown): void {
     if (shouldLogToBrowserConsole()) {
@@ -131,7 +131,7 @@ export const Console = {
    * so a plain deferred rethrow is the faithful port. Not gated by production
    * mode, matching Console.java.
    *
-   * @param exception the exception for which
+   * @param exception - the exception for which
    */
   reportStacktrace(exception: unknown): void {
     window.setTimeout(() => {

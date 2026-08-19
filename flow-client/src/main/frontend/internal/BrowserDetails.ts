@@ -83,11 +83,9 @@ function splitDroppingTrailingEmpty(value: string, separator: string): string[] 
 /**
  * Gets the length of the version substring up to the next space.
  *
- * @param userAgent
- *            user agent string
- * @param startIndex
- *            index for version string start
- * @return length of version number
+ * @param userAgent - user agent string
+ * @param startIndex - index for version string start
+ * @returns length of version number
  */
 function getVersionStringLength(userAgent: string, startIndex: number): number {
   const versionSubString = userAgent.substring(startIndex);
@@ -100,7 +98,7 @@ function getVersionStringLength(userAgent: string, startIndex: number): number {
 
 /**
  * Substring that clamps out-of-range indices instead of throwing, mirroring the
- * Java {@code safeSubstring} helper. Uses slice (which never swaps arguments) so
+ * Java `safeSubstring` helper. Uses slice (which never swaps arguments) so
  * a start past the end yields an empty string, matching how the Java version's
  * downstream parsing degrades.
  */
@@ -147,8 +145,7 @@ export class BrowserDetails {
   /**
    * Create an instance based on the given user agent.
    *
-   * @param userAgentString
-   *            User agent as provided by the browser.
+   * @param userAgentString - User agent as provided by the browser.
    */
   constructor(userAgentString: string) {
     this.#userAgent = userAgentString.toLowerCase();
@@ -536,7 +533,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Firefox.
    *
-   * @return true if it is Firefox, false otherwise
+   * @returns true if it is Firefox, false otherwise
    */
   isFirefox(): boolean {
     if (this.#browserName === undefined) {
@@ -548,7 +545,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is using the Gecko engine.
    *
-   * @return true if it is Gecko, false otherwise
+   * @returns true if it is Gecko, false otherwise
    */
   isGecko(): boolean {
     if (this.#browserEngine === undefined) {
@@ -560,7 +557,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is using the WebKit engine.
    *
-   * @return true if it is WebKit, false otherwise
+   * @returns true if it is WebKit, false otherwise
    */
   isWebKit(): boolean {
     if (this.#browserEngine === undefined) {
@@ -572,7 +569,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is using the Presto engine.
    *
-   * @return true if it is Presto, false otherwise
+   * @returns true if it is Presto, false otherwise
    */
   isPresto(): boolean {
     if (this.#browserEngine === undefined) {
@@ -584,7 +581,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is using the Trident engine.
    *
-   * @return true if it is Trident, false otherwise
+   * @returns true if it is Trident, false otherwise
    */
   isTrident(): boolean {
     if (this.#browserEngine === undefined) {
@@ -596,7 +593,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Safari.
    *
-   * @return true if it is Safari, false otherwise
+   * @returns true if it is Safari, false otherwise
    */
   isSafari(): boolean {
     if (this.#browserName === undefined) {
@@ -608,7 +605,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Chrome.
    *
-   * @return true if it is Chrome, false otherwise
+   * @returns true if it is Chrome, false otherwise
    */
   isChrome(): boolean {
     if (this.#browserName === undefined) {
@@ -620,7 +617,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Opera.
    *
-   * @return true if it is Opera, false otherwise
+   * @returns true if it is Opera, false otherwise
    */
   isOpera(): boolean {
     if (this.#browserName === undefined) {
@@ -632,7 +629,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Internet Explorer.
    *
-   * @return true if it is Internet Explorer, false otherwise
+   * @returns true if it is Internet Explorer, false otherwise
    */
   isIE(): boolean {
     if (this.#browserName === undefined) {
@@ -644,7 +641,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is Edge.
    *
-   * @return true if it is Edge, false otherwise
+   * @returns true if it is Edge, false otherwise
    */
   isEdge(): boolean {
     if (this.#browserName === undefined) {
@@ -657,7 +654,7 @@ export class BrowserDetails {
    * Returns the version of the browser engine. For WebKit this is an integer
    * e.g., 532.0. For gecko it is a float e.g., 1.8 or 1.9.
    *
-   * @return The version of the browser engine
+   * @returns The version of the browser engine
    */
   getBrowserEngineVersion(): number {
     if (this.#browserEngineVersion === NOT_PARSED) {
@@ -670,7 +667,7 @@ export class BrowserDetails {
    * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome
    * 4, 8 for Internet Explorer 8.
    *
-   * @return The major version of the browser.
+   * @returns The major version of the browser.
    */
   getBrowserMajorVersion(): number {
     if (this.#browserMajorVersion === NOT_PARSED) {
@@ -684,7 +681,7 @@ export class BrowserDetails {
    *
    * @see {@link getBrowserMajorVersion}
    *
-   * @return The minor version of the browser, or -1 if not known/parsed.
+   * @returns The minor version of the browser, or -1 if not known/parsed.
    */
   getBrowserMinorVersion(): number {
     if (this.#browserMinorVersion === NOT_PARSED) {
@@ -705,7 +702,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Windows.
    *
-   * @return true if run on Windows, false otherwise
+   * @returns true if run on Windows, false otherwise
    */
   isWindows(): boolean {
     return this.#getOs() === OperatingSystem.WINDOWS;
@@ -714,7 +711,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Windows Phone.
    *
-   * @return true if run on Windows Phone, false otherwise
+   * @returns true if run on Windows Phone, false otherwise
    */
   isWindowsPhone(): boolean {
     return this.#windowsPhone;
@@ -723,7 +720,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Mac OSX.
    *
-   * @return true if run on Mac OSX, false otherwise
+   * @returns true if run on Mac OSX, false otherwise
    */
   isMacOSX(): boolean {
     return this.#getOs() === OperatingSystem.MACOSX;
@@ -732,7 +729,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Linux.
    *
-   * @return true if run on Linux, false otherwise
+   * @returns true if run on Linux, false otherwise
    */
   isLinux(): boolean {
     return this.#getOs() === OperatingSystem.LINUX;
@@ -741,7 +738,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Android.
    *
-   * @return true if run on Android, false otherwise
+   * @returns true if run on Android, false otherwise
    */
   isAndroid(): boolean {
     return this.#getOs() === OperatingSystem.ANDROID;
@@ -750,7 +747,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on iPhone.
    *
-   * @return true if run on iPhone, false otherwise
+   * @returns true if run on iPhone, false otherwise
    */
   isIPhone(): boolean {
     if (this.#os === undefined) {
@@ -762,7 +759,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on iPad.
    *
-   * @return true if run on iPad, false otherwise
+   * @returns true if run on iPad, false otherwise
    */
   isIPad(): boolean {
     if (this.#os === undefined) {
@@ -774,7 +771,7 @@ export class BrowserDetails {
   /**
    * Tests if the browser is run on Chrome OS (e.g. a Chromebook).
    *
-   * @return true if run on Chrome OS, false otherwise
+   * @returns true if run on Chrome OS, false otherwise
    */
   isChromeOS(): boolean {
     if (this.#os === undefined) {
@@ -787,7 +784,7 @@ export class BrowserDetails {
    * Returns the major version of the operating system. Currently only
    * supported for mobile devices (iOS/Android)
    *
-   * @return The major version or -1 if unknown
+   * @returns The major version or -1 if unknown
    */
   getOperatingSystemMajorVersion(): number {
     if (this.#os === undefined) {
@@ -800,7 +797,7 @@ export class BrowserDetails {
    * Returns the minor version of the operating system. Currently only
    * supported for mobile devices (iOS/Android)
    *
-   * @return The minor version or -1 if unknown
+   * @returns The minor version or -1 if unknown
    */
   getOperatingSystemMinorVersion(): number {
     if (this.#os === undefined) {
@@ -812,7 +809,7 @@ export class BrowserDetails {
   /**
    * Checks if the browser is so old that it simply won't work.
    *
-   * @return true if the browser won't work, false if not the browser is
+   * @returns true if the browser won't work, false if not the browser is
    *         supported or might work
    */
   isTooOldToFunctionProperly(): boolean {

@@ -25,8 +25,8 @@
 /**
  * Trims trailing slashes (if any) from a string.
  *
- * @param value The string value to be trimmed. Cannot be null.
- * @return String value without trailing slashes.
+ * @param value - The string value to be trimmed. Cannot be null.
+ * @returns String value without trailing slashes.
  */
 export function trimTrailingSlashes(value: string): string {
   return value.replace(/\/*$/, '');
@@ -64,8 +64,8 @@ function splitRemovingTrailingEmpty(value: string, separator: string): string[] 
 /**
  * Splits a camelCaseString into an array of words with the casing preserved.
  *
- * @param camelCaseString The input string in camelCase format
- * @return An array with one entry per word in the input string
+ * @param camelCaseString - The input string in camelCase format
+ * @returns An array with one entry per word in the input string
  */
 export function splitCamelCase(camelCaseString: string): string[] {
   let sb = '';
@@ -105,8 +105,8 @@ function isWordComplete(camelCaseString: string, i: number): boolean {
  * `MyBeanContainer` becomes `My Bean Container`, `AwesomeURLFactory` becomes
  * `Awesome URL Factory`, `SomeUriAction` becomes `Some Uri Action`.
  *
- * @param camelCaseString The input string in camelCase format
- * @return A human friendly version of the input
+ * @param camelCaseString - The input string in camelCase format
+ * @returns A human friendly version of the input
  */
 export function camelCaseToHumanFriendly(camelCaseString: string): string {
   const parts = splitCamelCase(camelCaseString);
@@ -120,9 +120,9 @@ export function camelCaseToHumanFriendly(camelCaseString: string): string {
  * Joins the words in the input array together into a single string by
  * inserting the separator string between each word.
  *
- * @param parts The array of words
- * @param separator The separator string to use between words
- * @return The constructed string of words and separators
+ * @param parts - The array of words
+ * @param separator - The separator string to use between words
+ * @returns The constructed string of words and separators
  */
 export function join(parts: string[], separator: string): string {
   let sb = '';
@@ -137,8 +137,8 @@ export function join(parts: string[], separator: string): string {
  * Capitalizes the first character in the given string in a way suitable for
  * use in code (methods, properties etc).
  *
- * @param string The string to capitalize
- * @return The capitalized string
+ * @param string - The string to capitalize
+ * @returns The capitalized string
  */
 export function capitalize(string: string | null): string | null {
   if (string === null) {
@@ -156,8 +156,8 @@ export function capitalize(string: string | null): string | null {
  * Changes the first character in the given string to lower case in a way
  * suitable for use in code (methods, properties etc).
  *
- * @param string The string to change
- * @return The string with initial character turned into lower case
+ * @param string - The string to change
+ * @returns The string with initial character turned into lower case
  */
 export function firstToLower(string: string | null): string | null {
   if (string === null) {
@@ -176,8 +176,8 @@ export function firstToLower(string: string | null): string | null {
  * properties by only considering the last part, e.g. "address.streetName" is
  * equal to "streetName" for this method.
  *
- * @param propertyId The propertyId to format
- * @return A human friendly version of the property id
+ * @param propertyId - The propertyId to format
+ * @returns A human friendly version of the property id
  */
 export function propertyIdToHumanFriendly(propertyId: unknown): string {
   let string = String(propertyId);
@@ -198,10 +198,10 @@ export function propertyIdToHumanFriendly(propertyId: unknown): string {
  * Adds a single `parameter=value` query parameter to a URI. Mirrors
  * SharedUtil.addGetParameter.
  *
- * @param uri the URI to which the parameter should be added.
- * @param parameter the name of the parameter
- * @param value the value of the parameter
- * @return The modified URI with the parameter added
+ * @param uri - the URI to which the parameter should be added.
+ * @param parameter - the name of the parameter
+ * @param value - the value of the parameter
+ * @returns The modified URI with the parameter added
  */
 export function addGetParameter(uri: string, parameter: string, value: string | number): string {
   return addGetParameters(uri, `${parameter}=${value}`);
@@ -211,9 +211,9 @@ export function addGetParameter(uri: string, parameter: string, value: string | 
  * Adds the given query parameters to a URI, before any fragment. Mirrors
  * SharedUtil.addGetParameters.
  *
- * @param uri The uri to which the parameters should be added.
- * @param extraParams One or more parameters in the format "a=b" or "c=d&e=f". An empty string is allowed but will not modify the url.
- * @return The modified URI with the get parameters in extraParams added.
+ * @param uri - The uri to which the parameters should be added.
+ * @param extraParams - One or more parameters in the format "a=b" or "c=d&e=f". An empty string is allowed but will not modify the url.
+ * @returns The modified URI with the get parameters in extraParams added.
  */
 export function addGetParameters(uri: string, extraParams: string | null): string {
   if (extraParams === null || extraParams.length === 0) {
@@ -241,8 +241,8 @@ export function addGetParameters(uri: string, extraParams: string | null): strin
  * Converts a dash ("-") separated string into camelCase. Examples: `foo`
  * becomes `foo`, `foo-bar` becomes `fooBar`, `foo--bar` becomes `fooBar`.
  *
- * @param dashSeparated The dash separated string to convert
- * @return a camelCase version of the input string
+ * @param dashSeparated - The dash separated string to convert
+ * @returns a camelCase version of the input string
  */
 export function dashSeparatedToCamelCase(dashSeparated: string | null): string | null {
   if (dashSeparated === null) {
@@ -262,8 +262,8 @@ export function dashSeparatedToCamelCase(dashSeparated: string | null): string |
  * `-my-bean-container`, `AwesomeURLFactory` becomes `-awesome-uRL-factory`,
  * `someUriAction` becomes `some-uri-action`.
  *
- * @param camelCaseString The input string in camelCase format
- * @return A dash separated version of the input
+ * @param camelCaseString - The input string in camelCase format
+ * @returns A dash separated version of the input
  */
 export function camelCaseToDashSeparated(camelCaseString: string | null): string | null {
   if (camelCaseString === null) {
@@ -286,8 +286,8 @@ export function camelCaseToDashSeparated(camelCaseString: string | null): string
  * `MyBeanContainer` becomes `my-bean-container`, `AwesomeURLFactory` becomes
  * `awesome-url-factory`, `someUriAction` becomes `some-uri-action`.
  *
- * @param upperCamelCaseString The input string in UpperCamelCase format
- * @return A dash separated lowercase version of the input
+ * @param upperCamelCaseString - The input string in UpperCamelCase format
+ * @returns A dash separated lowercase version of the input
  */
 export function upperCamelCaseToDashSeparatedLowerCase(upperCamelCaseString: string | null): string | null {
   if (upperCamelCaseString === null) {
@@ -300,9 +300,9 @@ export function upperCamelCaseToDashSeparatedLowerCase(upperCamelCaseString: str
  * Prepend the given url with the prefix if it is not absolute and doesn't have
  * a protocol.
  *
- * @param url url to check
- * @param prefix prefix to add to url
- * @return prefixed url or url if absolute or has a protocol
+ * @param url - url to check
+ * @param prefix - prefix to add to url
+ * @returns prefixed url or url if absolute or has a protocol
  */
 export function prefixIfRelative(url: string, prefix: string): string {
   // Absolute

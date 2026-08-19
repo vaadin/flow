@@ -85,7 +85,7 @@ export class BrowserInfo {
   /**
    * Singleton method to get BrowserInfo object.
    *
-   * @return instance of BrowserInfo object
+   * @returns instance of BrowserInfo object
    */
   static get(): BrowserInfo {
     if (BrowserInfo.#instance === undefined) {
@@ -97,7 +97,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is IE.
    *
-   * @return true if the browser is IE, false otherwise
+   * @returns true if the browser is IE, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isIE(): boolean {
@@ -107,7 +107,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is Edge.
    *
-   * @return true if the browser is Edge, false otherwise
+   * @returns true if the browser is Edge, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isEdge(): boolean {
@@ -117,7 +117,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is Firefox.
    *
-   * @return true if the browser is Firefox, false otherwise
+   * @returns true if the browser is Firefox, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isFirefox(): boolean {
@@ -127,7 +127,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is Safari.
    *
-   * @return true if the browser is Safari, false otherwise
+   * @returns true if the browser is Safari, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isSafari(): boolean {
@@ -138,7 +138,7 @@ export class BrowserInfo {
    * Checks if the browser is Safari or runs on iOS (covering also Chrome on
    * iOS).
    *
-   * @return true if the browser is Safari or running on iOS, false otherwise
+   * @returns true if the browser is Safari or running on iOS, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isSafariOrIOS(): boolean {
@@ -148,7 +148,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is Chrome.
    *
-   * @return true if the browser is Chrome, false otherwise
+   * @returns true if the browser is Chrome, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isChrome(): boolean {
@@ -158,7 +158,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser using the Gecko engine.
    *
-   * @return true if the browser is using Gecko, false otherwise
+   * @returns true if the browser is using Gecko, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isGecko(): boolean {
@@ -168,7 +168,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser using the Webkit engine.
    *
-   * @return true if the browser is using Webkit, false otherwise
+   * @returns true if the browser is using Webkit, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isWebkit(): boolean {
@@ -179,7 +179,7 @@ export class BrowserInfo {
    * Returns the Gecko version if the browser is Gecko based. The Gecko version
    * for Firefox 2 is 1.8 and 1.9 for Firefox 3.
    *
-   * @return The Gecko version or -1 if the browser is not Gecko based
+   * @returns The Gecko version or -1 if the browser is not Gecko based
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getGeckoVersion(): number {
@@ -193,7 +193,7 @@ export class BrowserInfo {
    * Returns the WebKit version if the browser is WebKit based. The WebKit
    * version returned is the major version e.g., 523.
    *
-   * @return The WebKit version or -1 if the browser is not WebKit based
+   * @returns The WebKit version or -1 if the browser is not WebKit based
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getWebkitVersion(): number {
@@ -206,7 +206,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is Opera.
    *
-   * @return true if the browser is Opera, false otherwise
+   * @returns true if the browser is Opera, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isOpera(): boolean {
@@ -216,7 +216,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser runs on a touch capable device.
    *
-   * @return true if the browser runs on a touch based device, false otherwise
+   * @returns true if the browser runs on a touch based device, false otherwise
    */
   isTouchDevice(): boolean {
     return this.#touchDevice;
@@ -225,7 +225,7 @@ export class BrowserInfo {
   /**
    * Checks if the browser is run on Android.
    *
-   * @return true if the browser is run on Android, false otherwise
+   * @returns true if the browser is run on Android, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   isAndroid(): boolean {
@@ -236,7 +236,7 @@ export class BrowserInfo {
    * Tests if this is an Android devices with a broken scrollTop
    * implementation.
    *
-   * @return true if scrollTop cannot be trusted on this device, false otherwise
+   * @returns true if scrollTop cannot be trusted on this device, false otherwise
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    *             and check version against known issues.
    */
@@ -255,7 +255,7 @@ export class BrowserInfo {
    * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome
    * 4, 8 for Internet Explorer 8.
    *
-   * @return The major version of the browser.
+   * @returns The major version of the browser.
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getBrowserMajorVersion(): number {
@@ -267,7 +267,7 @@ export class BrowserInfo {
    *
    * @see {@link getBrowserMajorVersion}
    *
-   * @return The minor version of the browser, or -1 if not known/parsed.
+   * @returns The minor version of the browser, or -1 if not known/parsed.
    * @deprecated use a parsing library like ua-parser-js to parse the user agent
    */
   getBrowserMinorVersion(): number {
