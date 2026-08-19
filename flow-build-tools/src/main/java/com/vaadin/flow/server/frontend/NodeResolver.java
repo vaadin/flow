@@ -293,6 +293,8 @@ class NodeResolver implements java.io.Serializable {
                 if (normalizedInstalled.equals(normalizedRequested)) {
                     getLogger().debug("Node {} is already installed in {}",
                             nodeVersion, alternativeDir);
+                    NodeInstallations.markUsed(getInstallationDirectory(
+                            alternativeDirFile, versionToUse));
                     return createActiveInstallation(nodeExecutable,
                             versionToUse, alternativeDirFile);
                 }
@@ -325,6 +327,8 @@ class NodeResolver implements java.io.Serializable {
                 String normalizedRequested = normalizeVersion(nodeVersion);
 
                 if (normalizedInstalled.equals(normalizedRequested)) {
+                    NodeInstallations.markUsed(getInstallationDirectory(
+                            alternativeDirFile, versionToUse));
                     return createActiveInstallation(nodeExecutable,
                             versionToUse, alternativeDirFile);
                 }
@@ -343,6 +347,11 @@ class NodeResolver implements java.io.Serializable {
             nodeInstaller.install();
             nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
                     nodeVersion);
+            File installation = getInstallationDirectory(alternativeDirFile,
+                    nodeVersion);
+            NodeInstallations.markUsed(installation);
+            NodeInstallations.removeUnusedInstallations(alternativeDirFile,
+                    installation);
             return createActiveInstallation(nodeExecutable, nodeVersion,
                     alternativeDirFile);
         } catch (InstallationException e) {
@@ -498,12 +507,25 @@ class NodeResolver implements java.io.Serializable {
      * @return the File pointing to the node executable
      */
     private File getNodeExecutableForVersion(File installDir, String version) {
-        String versionedPath = "node-v"
-                + (version.startsWith("v") ? version.substring(1) : version);
         boolean isWindows = FrontendUtils.isWindows();
-        String nodeExecutable = isWindows ? versionedPath + "\\node.exe"
-                : versionedPath + "/bin/node";
-        return new File(installDir, nodeExecutable);
+        String nodeExecutable = isWindows ? "node.exe" : "bin/node";
+        return new File(getInstallationDirectory(installDir, version),
+                nodeExecutable);
+    }
+
+    /**
+     * Gets the directory a specific version is installed into.
+     *
+     * @param installDir
+     *            the installation directory
+     * @param version
+     *            the version string (e.g., "v24.10.0")
+     * @return the File pointing to the versioned installation directory
+     */
+    private static File getInstallationDirectory(File installDir,
+            String version) {
+        return new File(installDir, NodeInstallations.INSTALLATION_PREFIX
+                + normalizeVersion(version));
     }
 
     /**
