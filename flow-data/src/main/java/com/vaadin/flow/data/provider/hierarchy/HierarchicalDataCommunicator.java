@@ -207,20 +207,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * <p>
      * A {@code null} item is the virtual root (parent of root-level items,
      * consistent with {@link TreeData#addItem(Object, Object)}). Passing it
-     * with {@code refreshChildren} set to {@code true} refreshes the whole
-     * hierarchy and is equivalent to {@link #reset()}: the full hierarchy cache
-     * is discarded and the viewport is re-fetched. Passing it with
-     * {@code refreshChildren} set to {@code false} is not supported and throws
-     * an {@link IllegalArgumentException}, since the virtual root itself is not
-     * a rendered item.
+     * with {@code refreshChildren} set to {@code true} and a data provider that
+     * uses {@link HierarchyFormat#NESTED} refreshes the whole hierarchy and is
+     * equivalent to {@link #reset()}: the full hierarchy cache is discarded and
+     * the viewport is re-fetched. Passing it with {@code refreshChildren} set
+     * to {@code false} is not supported and throws an
+     * {@link IllegalArgumentException}, since the virtual root itself is not a
+     * rendered item.
      * <p>
-     * WARNING: For non-{@code null} items this method is only supported with
-     * data providers that use {@link HierarchyFormat#NESTED} when
-     * {@code refreshChildren} is {@code true}, and may cause visible range
-     * shift if the refreshed item contains <i>expanded</i> descendants. In such
-     * cases, they might not be re-fetched immediately if they are not visible.
-     * This can affect the flattened hierarchy size and result in the viewport
-     * range pointing to a different set of items than before the refresh.
+     * WARNING: When {@code refreshChildren} is {@code true} this method is only
+     * supported with data providers that use {@link HierarchyFormat#NESTED},
+     * and for non-{@code null} items may cause visible range shift if the
+     * refreshed item contains <i>expanded</i> descendants. In such cases, they
+     * might not be re-fetched immediately if they are not visible. This can
+     * affect the flattened hierarchy size and result in the viewport range
+     * pointing to a different set of items than before the refresh.
      *
      * @since 25.0
      * @param item
@@ -229,13 +230,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param refreshChildren
      *            whether or not to refresh child items. When {@code item} is
      *            {@code null}, {@code true} is equivalent to {@link #reset()}
-     *            and {@code false} is not supported
+     *            (nested format only) and {@code false} is not supported
      * @throws IllegalArgumentException
      *             if {@code item} is {@code null} and {@code refreshChildren}
      *             is {@code false}
      * @throws UnsupportedOperationException
-     *             if {@code refreshChildren} is true, {@code item} is not
-     *             {@code null}, and the data provider's hierarchy format is not
+     *             if {@code refreshChildren} is {@code true} and the data
+     *             provider's hierarchy format is not
      *             {@link HierarchyFormat#NESTED}
      */
     public void refresh(T item, boolean refreshChildren) {
@@ -248,10 +249,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                                 reset()), or refreshAll() to refresh the data provider.
                                 """);
             }
-            // Refreshing the virtual root's children means refreshing the
-            // whole hierarchy, which is equivalent to a full reset.
-            reset();
-            return;
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+                // Refreshing the virtual root's children means refreshing the
+                // whole hierarchy, which is equivalent to a full reset.
+                reset();
+                return;
+            }
+            // For non-nested formats refreshing children is not supported, so
+            // fall through to the format check below, which throws.
         }
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
