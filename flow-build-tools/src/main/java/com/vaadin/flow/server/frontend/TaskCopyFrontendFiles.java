@@ -130,19 +130,8 @@ public class TaskCopyFrontendFiles
                                 WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
-        if (handledFiles.remove(TaskGenerateTsConfig.TSCONFIG_JSON)) {
-            // The generated configuration owns this folder, see
-            // TaskGenerateJarResourcesTsConfig, so a copied one must not take
-            // its place
-            FileIOUtils.deleteQuietly(new File(targetDirectory,
-                    TaskGenerateTsConfig.TSCONFIG_JSON));
-            log().warn(
-                    "An add-on ships a '{}' among its frontend sources. It is "
-                            + "discarded, as the file name is reserved for the "
-                            + "configuration Vaadin generates to compile those "
-                            + "sources.",
-                    TaskGenerateTsConfig.TSCONFIG_JSON);
-        }
+        TaskGenerateJarResourcesTsConfig.discardCopiedTsConfigs(targetDirectory,
+                handledFiles);
         existingFiles.removeAll(handledFiles);
         existingFiles.forEach(filename -> FileIOUtils
                 .deleteQuietly(new File(targetDirectory, filename)));

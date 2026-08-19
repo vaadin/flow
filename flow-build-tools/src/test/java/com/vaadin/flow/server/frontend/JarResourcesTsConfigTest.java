@@ -260,6 +260,26 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    void jarResourcesTsConfig_isKept_whenTheProjectHasItsOwnTsConfig()
+            throws Exception {
+        // The project keeps its tsconfig.json under version control, as the
+        // generated one recommends, so the clean up leaves it in place and the
+        // configuration extending it stays valid
+        new TaskGenerateTsConfig(options).execute();
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
+        new TaskGenerateJarResourcesTsConfig(options).execute();
+
+        cleanTask.execute();
+
+        assertTrue(new File(npmFolder, "tsconfig.json").exists(),
+                "The project tsconfig is expected to be kept here");
+        assertTrue(new File(jarResourcesFolder, "tsconfig.json").exists(),
+                "The configuration of the add-on sources should be kept as "
+                        + "long as the project one it extends is, otherwise "
+                        + "those sources are compiled with no compiler options");
+    }
+
+    @Test
     void tsConfigShippedByAnAddOn_isDiscarded() throws Exception {
         File addOn = Files
                 .createTempDirectory(temporaryFolder.toPath(), "addon")
@@ -270,6 +290,14 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
                 "{ \"compilerOptions\": { \"experimentalDecorators\": false } }");
         Files.writeString(
                 new File(addOnFrontend, "addon-component.ts").toPath(), "");
+        // A bundler resolves the configuration of a file from the closest
+        // folder that has one, so a nested one takes over just as well
+        File addOnSubFolder = new File(addOnFrontend, "sub");
+        Files.createDirectories(addOnSubFolder.toPath());
+        Files.writeString(new File(addOnSubFolder, "tsconfig.json").toPath(),
+                "{ \"extends\": \"../../tsconfig.base.json\" }");
+        Files.writeString(
+                new File(addOnSubFolder, "nested-component.ts").toPath(), "");
 
         options.copyResources(Set.of(addOn));
         new TaskCopyFrontendFiles(options).execute();
@@ -277,8 +305,17 @@ class JarResourcesTsConfigTest extends NodeUpdateTestUtil {
         assertFalse(new File(jarResourcesFolder, "tsconfig.json").exists(),
                 "A tsconfig.json shipped by an add-on must not take the place "
                         + "of the generated one, which owns the folder");
+        assertFalse(new File(jarResourcesFolder, "sub/tsconfig.json").exists(),
+                "A tsconfig.json shipped in a sub folder of an add-on must not "
+                        + "take the sources next to it back from the generated "
+                        + "one");
         assertTrue(new File(jarResourcesFolder, "addon-component.ts").exists(),
                 "The other frontend sources of the add-on should be copied");
+        assertTrue(
+                new File(jarResourcesFolder, "sub/nested-component.ts")
+                        .exists(),
+                "The other nested frontend sources of the add-on should be "
+                        + "copied");
 
         generateTsConfigs();
 

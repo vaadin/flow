@@ -19,7 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 
@@ -103,6 +108,47 @@ class TaskGenerateJarResourcesTsConfig extends AbstractTaskClientGenerator {
                             options.getFrontendDirectory()));
         }
         return new File(jarResourcesFolder, TaskGenerateTsConfig.TSCONFIG_JSON);
+    }
+
+    /**
+     * Discards the TypeScript configurations that were copied along with the
+     * frontend sources of add-ons.
+     * <p>
+     * Bundlers resolve the configuration of a file from the closest folder that
+     * has one, so a copied configuration takes the sources next to it back from
+     * the generated one, at any depth. On top of that its <code>extends</code>
+     * refers to the project it was copied from and no longer resolves, which
+     * makes the bundler fail outright.
+     *
+     * @param targetDirectory
+     *            the folder the frontend sources of add-ons are copied to
+     * @param copiedFiles
+     *            the paths of the copied files relative to that folder, the
+     *            discarded ones are removed from it
+     */
+    static void discardCopiedTsConfigs(File targetDirectory,
+            Set<String> copiedFiles) {
+        List<String> tsConfigs = copiedFiles.stream()
+                .filter(TaskGenerateJarResourcesTsConfig::isTsConfig).toList();
+        if (tsConfigs.isEmpty()) {
+            return;
+        }
+        tsConfigs.forEach(path -> {
+            copiedFiles.remove(path);
+            FileIOUtils.deleteQuietly(new File(targetDirectory, path));
+        });
+        LoggerFactory.getLogger(TaskGenerateJarResourcesTsConfig.class).warn(
+                "Discarded the TypeScript configuration files {} that came "
+                        + "with the frontend sources of add-ons. Those sources "
+                        + "are compiled with the options of the configuration "
+                        + "Vaadin generates for them.",
+                tsConfigs);
+    }
+
+    private static boolean isTsConfig(String relativePath) {
+        String path = relativePath.replace('\\', '/');
+        return path.equals(TaskGenerateTsConfig.TSCONFIG_JSON)
+                || path.endsWith("/" + TaskGenerateTsConfig.TSCONFIG_JSON);
     }
 
     /**
