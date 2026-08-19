@@ -30,8 +30,6 @@
  * enabled profiling at compile time via deferred binding on the
  * `vaadin.profiler` property; the TypeScript engine has no deferred binding, so
  * the bootstrap toggles it at runtime through setEnabled().
- *
- * @since 1.0
  */
 
 import { Console } from './Console';
@@ -68,8 +66,6 @@ function gwtWindow(): GwtStatsWindow {
  * Profiler.ProfilerResultConsumer.
  * <p>
  * <b>Warning!</b> This interface is most likely to change in the future.
- *
- * @since 1.0
  */
 export interface ProfilerResultConsumer {
   addProfilerData(rootNode: Node, totals: Node[]): void;
