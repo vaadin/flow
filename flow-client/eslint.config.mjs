@@ -1,6 +1,7 @@
 import prettier from 'eslint-config-vaadin/prettier';
 import typescript from 'eslint-config-vaadin/typescript';
 import globals from 'globals';
+import tsdoc from 'eslint-plugin-tsdoc';
 
 export default [
   {
@@ -8,6 +9,18 @@ export default [
   },
   ...typescript,
   ...prettier,
+  {
+    // Validate the TSDoc/JSDoc syntax of doc comments in the migrated modules so
+    // ported Javadoc tags stay well-formed (e.g. @param/@returns/@typeParam and
+    // {@link} references) as the series grows. Scoped to the ported engine
+    // modules under internal/; the pre-existing files above this directory still
+    // carry Java-style @code Javadoc and are out of scope for this migration.
+    files: ['src/main/frontend/internal/**/*.ts'],
+    plugins: { tsdoc },
+    rules: {
+      'tsdoc/syntax': 'error'
+    }
+  },
   {
     languageOptions: {
       parserOptions: {
