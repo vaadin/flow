@@ -312,9 +312,13 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * method won't be retained when a new {@link DataProvider} is set to the
      * component.
      * <p>
+     * If no data provider or items have been set on the component yet (the
+     * component still uses the default empty data provider), the filter is
+     * stored but the component is not notified until a real data provider or
+     * items are set.
+     * <p>
      * Refreshes all items of the component after setting the filter, i.e. runs
      * {@link DataView#refreshAll()}.
-     *
      *
      * @param filter
      *            filter to be set, or <code>null</code> to clear any previously
@@ -324,6 +328,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @see #addFilter(SerializablePredicate)
      * @see #removeFilters()
      */
+
     V setFilter(SerializablePredicate<T> filter);
 
     /**
@@ -335,6 +340,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * filter through data view of another component. A filter set by this
      * method won't be retained when a new {@link DataProvider} is set to the
      * component.
+     * <p>
+     * If no data provider or items have been set on the component yet (the
+     * component still uses the default empty data provider), the filter is
+     * stored but the component is not notified until a real data provider or
+     * items are set.
      * <p>
      * Refreshes all items of the component after adding the filter, i.e. runs
      * {@link DataView#refreshAll()}.
