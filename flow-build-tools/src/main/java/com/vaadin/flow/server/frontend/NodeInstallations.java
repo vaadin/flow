@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,8 @@ final class NodeInstallations {
 
     /**
      * Prefix shared by all auto-installed Node.js directories, e.g.
-     * {@code node-v24.10.0}.
+     * {@code node-v24.10.0}, and by their archives, e.g.
+     * {@code node-v24.10.0-linux-x64.tar.gz}.
      */
     static final String INSTALLATION_PREFIX = "node-v";
 
@@ -58,6 +61,16 @@ final class NodeInstallations {
      * new Node.js version is installed.
      */
     static final int UNUSED_RETENTION_MONTHS = 6;
+
+    /**
+     * Archives younger than this are left alone, so that an archive another
+     * process is downloading right now is never deleted from under it. Archives
+     * left behind by older Flow versions are always much older than this.
+     */
+    private static final Duration ARCHIVE_GRACE_PERIOD = Duration.ofDays(1);
+
+    private static final List<String> ARCHIVE_EXTENSIONS = List.of(".tar.gz",
+            ".tar.xz", ".zip", ".msi");
 
     private NodeInstallations() {
         // Static helpers only
@@ -88,12 +101,19 @@ final class NodeInstallations {
 
     /**
      * Removes the Node.js installations in {@code rootDirectory} that have not
-     * been used for the last {@value #UNUSED_RETENTION_MONTHS} months, together
-     * with any archive left over from installing them.
+     * been used for the last {@value #UNUSED_RETENTION_MONTHS} months, and any
+     * archive left over from installing a Node.js version.
+     * <p>
+     * Only directories and archives following the {@value #INSTALLATION_PREFIX}
+     * naming of an auto-installed Node.js are touched; anything else in the
+     * directory is left alone.
      * <p>
      * The installation currently in use is never removed, and neither is the
      * last remaining installation, so the directory always keeps at least one
-     * Node.js version.
+     * Node.js version. An installation without a usable
+     * {@value #LAST_USED_FILE} marker is not removed either: nothing is known
+     * about when it was last used, so it gets a marker and the retention period
+     * starts from now.
      *
      * @param rootDirectory
      *            the directory holding the Node.js installations, typically
@@ -104,6 +124,8 @@ final class NodeInstallations {
      */
     static void removeUnusedInstallations(File rootDirectory,
             File installationInUse) {
+        removeLeftoverArchives(rootDirectory);
+
         File[] installations = rootDirectory
                 .listFiles(file -> file.isDirectory()
                         && file.getName().startsWith(INSTALLATION_PREFIX));
@@ -119,7 +141,16 @@ final class NodeInstallations {
             if (isSameDirectory(installation, installationInUse)) {
                 continue;
             }
-            if (lastUsed(installation).isBefore(threshold)) {
+            Optional<Instant> lastUsed = lastUsed(installation);
+            if (lastUsed.isEmpty()) {
+                // Installed by a Flow version that did not write the marker,
+                // so there is no way to tell whether it is in active use.
+                // Start the retention period now instead of assuming stale.
+                getLogger().debug(
+                        "Node.js installation {} has no {} marker, starting its retention period now",
+                        installation, LAST_USED_FILE);
+                markUsed(installation);
+            } else if (lastUsed.get().isBefore(threshold)) {
                 unused.add(installation);
             }
         }
@@ -127,7 +158,9 @@ final class NodeInstallations {
         // Never remove the last version in the folder, even if every
         // installation looks stale
         if (unused.size() == installations.length) {
-            unused.sort(Comparator.comparing(NodeInstallations::lastUsed));
+            unused.sort(
+                    Comparator.comparing(installation -> lastUsed(installation)
+                            .orElse(Instant.MIN)));
             unused.remove(unused.size() - 1);
         }
 
@@ -144,21 +177,21 @@ final class NodeInstallations {
             getLogger().warn(
                     "Could not remove the unused Node.js installation {}. It can be deleted manually to free up disk space.",
                     installation);
-            return;
         }
-        removeLeftoverArchives(installation);
     }
 
     /**
-     * Removes archives left behind by older Flow versions, which did not delete
-     * the archive after unpacking it. The archive of {@code node-v24.10.0} is
-     * named e.g. {@code node-v24.10.0-linux-x64.tar.xz}.
+     * Removes the Node.js archives left behind by Flow versions that did not
+     * delete the archive after unpacking it. The archive of
+     * {@code node-v24.10.0} is named e.g.
+     * {@code node-v24.10.0-linux-x64.tar.gz} and is of no use once it has been
+     * unpacked, whether or not its installation is still around.
      */
-    private static void removeLeftoverArchives(File installation) {
-        String archivePrefix = installation.getName() + "-";
-        File[] archives = installation.getParentFile()
-                .listFiles(file -> file.isFile()
-                        && file.getName().startsWith(archivePrefix));
+    private static void removeLeftoverArchives(File rootDirectory) {
+        Instant youngest = Instant.now().minus(ARCHIVE_GRACE_PERIOD);
+        File[] archives = rootDirectory.listFiles(file -> file.isFile()
+                && isArchiveName(file.getName()) && Instant
+                        .ofEpochMilli(file.lastModified()).isBefore(youngest));
         if (archives == null) {
             return;
         }
@@ -168,24 +201,30 @@ final class NodeInstallations {
         }
     }
 
+    private static boolean isArchiveName(String name) {
+        return name.startsWith(INSTALLATION_PREFIX) && ARCHIVE_EXTENSIONS
+                .stream().anyMatch(extension -> name.endsWith(extension));
+    }
+
     /**
-     * Resolves when the given installation was last used, falling back to the
-     * modification time of the directory for installations created before the
-     * marker file was introduced.
+     * Resolves when the given installation was last used, or an empty optional
+     * if it has no usable marker, which is the case for installations created
+     * before the marker was introduced.
      */
-    private static Instant lastUsed(File installation) {
+    private static Optional<Instant> lastUsed(File installation) {
         File marker = new File(installation, LAST_USED_FILE);
-        if (marker.isFile()) {
-            try {
-                return Instant.parse(Files
-                        .readString(marker.toPath(), StandardCharsets.UTF_8)
-                        .trim());
-            } catch (IOException | UncheckedIOException
-                    | DateTimeParseException e) {
-                getLogger().debug("Could not read {}", marker, e);
-            }
+        if (!marker.isFile()) {
+            return Optional.empty();
         }
-        return Instant.ofEpochMilli(installation.lastModified());
+        try {
+            return Optional.of(Instant.parse(
+                    Files.readString(marker.toPath(), StandardCharsets.UTF_8)
+                            .trim()));
+        } catch (IOException | UncheckedIOException
+                | DateTimeParseException e) {
+            getLogger().debug("Could not read {}", marker, e);
+            return Optional.empty();
+        }
     }
 
     private static boolean isSameDirectory(File one, File other) {

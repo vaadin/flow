@@ -350,6 +350,35 @@ class FrontendToolsTest {
                 "The newly installed version should have been kept");
     }
 
+    @Test
+    void resolveExistingInstallation_lastUsedMarkerIsRefreshed()
+            throws Exception {
+        String testVersion = "v12.10.0";
+
+        settings.setNodeDownloadRoot(new File(baseDir).toURI());
+        settings.setNodeVersion(testVersion);
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+        prepareNodeDownloadableZipAt(baseDir, testVersion);
+        tools.getNodeExecutable();
+
+        // Pretend the installation was last used a long time ago and resolve
+        // again, which now has to reuse the existing installation
+        File marker = new File(vaadinHomeDir,
+                "node-" + testVersion + "/" + NodeInstallations.LAST_USED_FILE);
+        Instant longAgo = Instant.now().minus(Duration.ofDays(400));
+        Files.writeString(marker.toPath(), longAgo.toString());
+
+        resetFrontendToolsNodeCache();
+        tools = new FrontendTools(settings);
+        tools.getNodeExecutable();
+
+        assertTrue(
+                Instant.parse(Files.readString(marker.toPath()))
+                        .isAfter(longAgo),
+                "Reusing an existing installation should refresh its last-used marker");
+    }
+
     private String getVersionedNpmBinPath(String nodeVersion) {
         return FrontendUtils.isWindows()
                 ? "node-" + nodeVersion + "/node_modules/npm/bin/"
