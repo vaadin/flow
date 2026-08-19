@@ -34,6 +34,11 @@
 
 import { Console } from './Console';
 
+// Supplies a time relative to page load, in ms. initialize() upgrades this to
+// performance.now() when available; the default low-resolution supplier keeps
+// getRelativeTimeMillis() usable before initialize() is called.
+let relativeTimeSupplier: () => number = () => Date.now();
+
 const EVT_GROUP = 'VaadinProfiler';
 
 // GWT.getModuleName() has no TypeScript-engine equivalent, so the payload
@@ -41,24 +46,23 @@ const EVT_GROUP = 'VaadinProfiler';
 // existing __gwtStatsEvent listeners.
 const MODULE_NAME = '';
 
-interface GwtStatsEvent {
-  evtGroup?: string;
-  moduleName?: string;
-  millis?: number;
-  sessionId?: unknown;
-  subSystem?: string;
-  type?: string;
-  relativeMillis?: number;
-}
+let consumer: ProfilerResultConsumer | null = null;
 
-interface GwtStatsWindow {
-  Vaadin: { Flow: { gwtStatsEvents?: GwtStatsEvent[] } };
-  __gwtStatsEvent?: (event?: GwtStatsEvent) => boolean;
-  performance?: { timing?: Record<string, number>; now?: () => number };
-}
+// Whether profiling data gathering is enabled. In the GWT client this was a
+// compile-time choice made by deferred binding on the `vaadin.profiler`
+// property (Profiler.EnabledProfiler); the TypeScript engine has no deferred
+// binding, so the bootstrap toggles it at runtime through setEnabled(). It
+// defaults to disabled, matching a standard (non-profiling) build.
+let profilingEnabled = false;
 
-function gwtWindow(): GwtStatsWindow {
-  return window as unknown as GwtStatsWindow;
+/**
+ * Enables or disables profiling data gathering. Replaces the GWT deferred
+ * binding on the `vaadin.profiler` property (Profiler.EnabledProfiler); the
+ * engine bootstrap calls this to select the profiling build at runtime. There
+ * is no compile-time equivalent in the TypeScript engine.
+ */
+export function setEnabled(enabled: boolean): void {
+  profilingEnabled = enabled;
 }
 
 /**
@@ -267,92 +271,24 @@ export class Node {
   }
 }
 
-// Whether profiling data gathering is enabled. In the GWT client this was a
-// compile-time choice made by deferred binding on the `vaadin.profiler`
-// property (Profiler.EnabledProfiler); the TypeScript engine has no deferred
-// binding, so the bootstrap toggles it at runtime through setEnabled(). It
-// defaults to disabled, matching a standard (non-profiling) build.
-let profilingEnabled = false;
-
-// Supplies a time relative to page load, in ms. initialize() upgrades this to
-// performance.now() when available; the default low-resolution supplier keeps
-// getRelativeTimeMillis() usable before initialize() is called.
-let relativeTimeSupplier: () => number = () => Date.now();
-
-let consumer: ProfilerResultConsumer | null = null;
-
-/** Reports a profiler event to the __gwtStatsEvent logger. Private in Profiler.java. */
-function logGwtEvent(name: string, type: string): void {
-  gwtWindow().__gwtStatsEvent?.({
-    evtGroup: EVT_GROUP,
-    moduleName: MODULE_NAME,
-    millis: Date.now(),
-    sessionId: undefined,
-    subSystem: name,
-    type,
-    relativeMillis: getRelativeTimeMillis()
-  });
+interface GwtStatsEvent {
+  evtGroup?: string;
+  moduleName?: string;
+  millis?: number;
+  sessionId?: unknown;
+  subSystem?: string;
+  type?: string;
+  relativeMillis?: number;
 }
 
-/** The named window.performance.timing value, or 0 if unavailable. */
-function getPerformanceTiming(name: string): number {
-  const timing = gwtWindow().performance?.timing;
-  return timing && timing[name] ? timing[name] : 0;
+interface GwtStatsWindow {
+  Vaadin: { Flow: { gwtStatsEvents?: GwtStatsEvent[] } };
+  __gwtStatsEvent?: (event?: GwtStatsEvent) => boolean;
+  performance?: { timing?: Record<string, number>; now?: () => number };
 }
 
-/** The collected GWT stats events, or an empty array. */
-function getGwtStatsEvents(): GwtStatsEvent[] {
-  return gwtWindow().Vaadin.Flow.gwtStatsEvents || [];
-}
-
-/** Resets the collected GWT stats events list. */
-function clearEventsList(): void {
-  gwtWindow().Vaadin.Flow.gwtStatsEvents = [];
-}
-
-/**
- * Installs the __gwtStatsEvent logger (collecting events into the events list)
- * if it is not already present, initializing the events list if needed.
- */
-function ensureLogger(): void {
-  const w = gwtWindow();
-  if (typeof w.__gwtStatsEvent !== 'function') {
-    if (typeof w.Vaadin.Flow.gwtStatsEvents !== 'object') {
-      w.Vaadin.Flow.gwtStatsEvents = [];
-    }
-    w.__gwtStatsEvent = function (event?: GwtStatsEvent): boolean {
-      w.Vaadin.Flow.gwtStatsEvents!.push(event!);
-      return true;
-    };
-  }
-}
-
-/**
- * Removes the events list and neutralizes the logger function if it looks like
- * the one installed by ensureLogger.
- */
-function ensureNoLogger(): void {
-  const w = gwtWindow();
-  if (typeof w.Vaadin.Flow.gwtStatsEvents === 'object') {
-    delete w.Vaadin.Flow.gwtStatsEvents;
-    if (typeof w.__gwtStatsEvent === 'function') {
-      w.__gwtStatsEvent = function (): boolean {
-        return true;
-      };
-    }
-  }
-}
-
-/** Whether the browser provides a high-precision performance.now() clock. */
-function hasHighPrecisionTime(): boolean {
-  const perf = gwtWindow().performance;
-  return !!perf && typeof perf.now === 'function';
-}
-
-/** Rounds the number up to the given number of decimal positions. */
-function round(num: number, exp: number): number {
-  const rounded = Math.round(Number(`${num}e+${exp}`));
-  return Number(`${rounded}e-${exp}`);
+function gwtWindow(): GwtStatsWindow {
+  return window as unknown as GwtStatsWindow;
 }
 
 /** The event name, resolving the profiler group to just its subsystem name. */
@@ -362,16 +298,6 @@ function getEventName(event: GwtStatsEvent): string {
     return event.subSystem ?? '';
   }
   return `${group}.${event.subSystem}`;
-}
-
-/**
- * Enables or disables profiling data gathering. Replaces the GWT deferred
- * binding on the `vaadin.profiler` property (Profiler.EnabledProfiler); the
- * engine bootstrap calls this to select the profiling build at runtime. There
- * is no compile-time equivalent in the TypeScript engine.
- */
-export function setEnabled(enabled: boolean): void {
-  profilingEnabled = enabled;
 }
 
 /**
@@ -416,6 +342,19 @@ export function leave(name: string): void {
  */
 export function getRelativeTimeMillis(): number {
   return relativeTimeSupplier();
+}
+
+/** Reports a profiler event to the __gwtStatsEvent logger. Private in Profiler.java. */
+function logGwtEvent(name: string, type: string): void {
+  gwtWindow().__gwtStatsEvent?.({
+    evtGroup: EVT_GROUP,
+    moduleName: MODULE_NAME,
+    millis: Date.now(),
+    sessionId: undefined,
+    subSystem: name,
+    type,
+    relativeMillis: getRelativeTimeMillis()
+  });
 }
 
 /** Resets the collected profiler data. No-op unless profiling is enabled. */
@@ -598,15 +537,53 @@ export function logBootstrapTimings(): void {
   }
 }
 
+/** The named window.performance.timing value, or 0 if unavailable. */
+function getPerformanceTiming(name: string): number {
+  const timing = gwtWindow().performance?.timing;
+  return timing && timing[name] ? timing[name] : 0;
+}
+
+/** The collected GWT stats events, or an empty array. */
+function getGwtStatsEvents(): GwtStatsEvent[] {
+  return gwtWindow().Vaadin.Flow.gwtStatsEvents || [];
+}
+
 /**
- * Returns a string containing the number of milliseconds which have elapsed
- * since the given reference time.
- *
- * @param reference the reference time, as returned by {@link getRelativeTimeMillis}
- * @return a string containing the number of ms elapsed since the reference time
+ * Installs the __gwtStatsEvent logger (collecting events into the events list)
+ * if it is not already present, initializing the events list if needed.
  */
-export function getRelativeTimeString(reference: number): string {
-  return `${round(getRelativeTimeMillis() - reference, 3)}`;
+function ensureLogger(): void {
+  const w = gwtWindow();
+  if (typeof w.__gwtStatsEvent !== 'function') {
+    if (typeof w.Vaadin.Flow.gwtStatsEvents !== 'object') {
+      w.Vaadin.Flow.gwtStatsEvents = [];
+    }
+    w.__gwtStatsEvent = function (event?: GwtStatsEvent): boolean {
+      w.Vaadin.Flow.gwtStatsEvents!.push(event!);
+      return true;
+    };
+  }
+}
+
+/**
+ * Removes the events list and neutralizes the logger function if it looks like
+ * the one installed by ensureLogger.
+ */
+function ensureNoLogger(): void {
+  const w = gwtWindow();
+  if (typeof w.Vaadin.Flow.gwtStatsEvents === 'object') {
+    delete w.Vaadin.Flow.gwtStatsEvents;
+    if (typeof w.__gwtStatsEvent === 'function') {
+      w.__gwtStatsEvent = function (): boolean {
+        return true;
+      };
+    }
+  }
+}
+
+/** Resets the collected GWT stats events list. */
+function clearEventsList(): void {
+  gwtWindow().Vaadin.Flow.gwtStatsEvents = [];
 }
 
 /**
@@ -623,4 +600,27 @@ export function setProfilerResultConsumer(profilerResultConsumer: ProfilerResult
     throw new Error('The consumer has already been set');
   }
   consumer = profilerResultConsumer;
+}
+
+/** Whether the browser provides a high-precision performance.now() clock. */
+function hasHighPrecisionTime(): boolean {
+  const perf = gwtWindow().performance;
+  return !!perf && typeof perf.now === 'function';
+}
+
+/**
+ * Returns a string containing the number of milliseconds which have elapsed
+ * since the given reference time.
+ *
+ * @param reference the reference time, as returned by {@link getRelativeTimeMillis}
+ * @return a string containing the number of ms elapsed since the reference time
+ */
+export function getRelativeTimeString(reference: number): string {
+  return `${round(getRelativeTimeMillis() - reference, 3)}`;
+}
+
+/** Rounds the number up to the given number of decimal positions. */
+function round(num: number, exp: number): number {
+  const rounded = Math.round(Number(`${num}e+${exp}`));
+  return Number(`${rounded}e-${exp}`);
 }

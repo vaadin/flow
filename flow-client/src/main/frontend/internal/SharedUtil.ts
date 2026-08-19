@@ -23,46 +23,13 @@
  */
 
 /**
- * Adds the given query parameters to a URI, before any fragment. Mirrors
- * SharedUtil.addGetParameters.
+ * Trims trailing slashes (if any) from a string.
  *
- * @param uri The uri to which the parameters should be added.
- * @param extraParams One or more parameters in the format "a=b" or "c=d&e=f". An empty string is allowed but will not modify the url.
- * @return The modified URI with the get parameters in extraParams added.
+ * @param value The string value to be trimmed. Cannot be null.
+ * @return String value without trailing slashes.
  */
-export function addGetParameters(uri: string, extraParams: string | null): string {
-  if (extraParams === null || extraParams.length === 0) {
-    return uri;
-  }
-  // RFC 3986: the query starts at the first "?" and ends at "#" or the URI end.
-  let base = uri;
-  let fragment: string | null = null;
-  const hashPosition = base.indexOf('#');
-  if (hashPosition !== -1) {
-    fragment = base.substring(hashPosition);
-    base = base.substring(0, hashPosition);
-  }
-
-  base += base.includes('?') ? '&' : '?';
-  base += extraParams;
-
-  if (fragment !== null) {
-    base += fragment;
-  }
-  return base;
-}
-
-/**
- * Adds a single `parameter=value` query parameter to a URI. Mirrors
- * SharedUtil.addGetParameter.
- *
- * @param uri the URI to which the parameter should be added.
- * @param parameter the name of the parameter
- * @param value the value of the parameter
- * @return The modified URI with the parameter added
- */
-export function addGetParameter(uri: string, parameter: string, value: string | number): string {
-  return addGetParameters(uri, `${parameter}=${value}`);
+export function trimTrailingSlashes(value: string): string {
+  return value.replace(/\/*$/, '');
 }
 
 /**
@@ -95,13 +62,21 @@ function splitRemovingTrailingEmpty(value: string, separator: string): string[] 
 }
 
 /**
- * Trims trailing slashes (if any) from a string.
+ * Splits a camelCaseString into an array of words with the casing preserved.
  *
- * @param value The string value to be trimmed. Cannot be null.
- * @return String value without trailing slashes.
+ * @param camelCaseString The input string in camelCase format
+ * @return An array with one entry per word in the input string
  */
-export function trimTrailingSlashes(value: string): string {
-  return value.replace(/\/*$/, '');
+export function splitCamelCase(camelCaseString: string): string[] {
+  let sb = '';
+  for (let i = 0; i < camelCaseString.length; i++) {
+    const c = camelCaseString.charAt(i);
+    if (isUpperCase(c) && isWordComplete(camelCaseString, i)) {
+      sb += ' ';
+    }
+    sb += c;
+  }
+  return splitRemovingTrailingEmpty(sb, ' ');
 }
 
 /**
@@ -124,21 +99,21 @@ function isWordComplete(camelCaseString: string, i: number): boolean {
 }
 
 /**
- * Splits a camelCaseString into an array of words with the casing preserved.
+ * Converts a camelCaseString to a human friendly format (Camel case string).
+ * In general splits words when the casing changes but also handles special
+ * cases such as consecutive upper case characters. Examples:
+ * `MyBeanContainer` becomes `My Bean Container`, `AwesomeURLFactory` becomes
+ * `Awesome URL Factory`, `SomeUriAction` becomes `Some Uri Action`.
  *
  * @param camelCaseString The input string in camelCase format
- * @return An array with one entry per word in the input string
+ * @return A human friendly version of the input
  */
-export function splitCamelCase(camelCaseString: string): string[] {
-  let sb = '';
-  for (let i = 0; i < camelCaseString.length; i++) {
-    const c = camelCaseString.charAt(i);
-    if (isUpperCase(c) && isWordComplete(camelCaseString, i)) {
-      sb += ' ';
-    }
-    sb += c;
+export function camelCaseToHumanFriendly(camelCaseString: string): string {
+  const parts = splitCamelCase(camelCaseString);
+  for (let i = 0; i < parts.length; i++) {
+    parts[i] = capitalize(parts[i]) as string;
   }
-  return splitRemovingTrailingEmpty(sb, ' ');
+  return join(parts, ' ');
 }
 
 /**
@@ -197,24 +172,6 @@ export function firstToLower(string: string | null): string | null {
 }
 
 /**
- * Converts a camelCaseString to a human friendly format (Camel case string).
- * In general splits words when the casing changes but also handles special
- * cases such as consecutive upper case characters. Examples:
- * `MyBeanContainer` becomes `My Bean Container`, `AwesomeURLFactory` becomes
- * `Awesome URL Factory`, `SomeUriAction` becomes `Some Uri Action`.
- *
- * @param camelCaseString The input string in camelCase format
- * @return A human friendly version of the input
- */
-export function camelCaseToHumanFriendly(camelCaseString: string): string {
-  const parts = splitCamelCase(camelCaseString);
-  for (let i = 0; i < parts.length; i++) {
-    parts[i] = capitalize(parts[i]) as string;
-  }
-  return join(parts, ' ');
-}
-
-/**
  * Converts a property id to a human friendly format. Handles nested
  * properties by only considering the last part, e.g. "address.streetName" is
  * equal to "streetName" for this method.
@@ -235,6 +192,49 @@ export function propertyIdToHumanFriendly(propertyId: unknown): string {
   }
 
   return camelCaseToHumanFriendly(string);
+}
+
+/**
+ * Adds a single `parameter=value` query parameter to a URI. Mirrors
+ * SharedUtil.addGetParameter.
+ *
+ * @param uri the URI to which the parameter should be added.
+ * @param parameter the name of the parameter
+ * @param value the value of the parameter
+ * @return The modified URI with the parameter added
+ */
+export function addGetParameter(uri: string, parameter: string, value: string | number): string {
+  return addGetParameters(uri, `${parameter}=${value}`);
+}
+
+/**
+ * Adds the given query parameters to a URI, before any fragment. Mirrors
+ * SharedUtil.addGetParameters.
+ *
+ * @param uri The uri to which the parameters should be added.
+ * @param extraParams One or more parameters in the format "a=b" or "c=d&e=f". An empty string is allowed but will not modify the url.
+ * @return The modified URI with the get parameters in extraParams added.
+ */
+export function addGetParameters(uri: string, extraParams: string | null): string {
+  if (extraParams === null || extraParams.length === 0) {
+    return uri;
+  }
+  // RFC 3986: the query starts at the first "?" and ends at "#" or the URI end.
+  let base = uri;
+  let fragment: string | null = null;
+  const hashPosition = base.indexOf('#');
+  if (hashPosition !== -1) {
+    fragment = base.substring(hashPosition);
+    base = base.substring(0, hashPosition);
+  }
+
+  base += base.includes('?') ? '&' : '?';
+  base += extraParams;
+
+  if (fragment !== null) {
+    base += fragment;
+  }
+  return base;
 }
 
 /**
