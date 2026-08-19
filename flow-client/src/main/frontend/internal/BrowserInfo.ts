@@ -24,11 +24,6 @@
 
 import { BrowserDetails } from './BrowserDetails';
 
-/** Returns the browser's user-agent string. */
-function getBrowserString(): string {
-  return window.navigator.userAgent;
-}
-
 /** Detects whether the browser runs on a touch-capable device. */
 function checkForTouchDevice(): boolean {
   const nav = navigator as unknown as { maxTouchPoints?: number; msMaxTouchPoints?: number };
@@ -47,6 +42,11 @@ function checkForTouchDevice(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Returns the browser's user-agent string. */
+function getBrowserString(): string {
+  return window.navigator.userAgent;
 }
 
 /** Detects whether the browser runs on iOS (including iPadOS desktop mode). */

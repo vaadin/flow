@@ -75,6 +75,19 @@ export function spliceArray<T>(array: T[], index: number, remove: number, add: r
 }
 
 /**
+ * Removes the item at the given index and returns it. Mirrors the public
+ * JsArray.remove(int index) overlay (which is `splice(index, 1).get(0)`).
+ *
+ * @typeParam T the type of the array items
+ * @param array the array to operate on
+ * @param index the index to remove
+ * @return the remove item
+ */
+export function remove<T>(array: T[], index: number): T {
+  return array.splice(index, 1)[0];
+}
+
+/**
  * Empties the array and returns it, mirroring the public JsArray.clear overlay
  * (which returns the cleared array).
  *
@@ -96,19 +109,6 @@ export function clear<T>(array: T[]): T[] {
  */
 export function isEmpty(array: unknown[]): boolean {
   return array.length === 0;
-}
-
-/**
- * Removes the item at the given index and returns it. Mirrors the public
- * JsArray.remove(int index) overlay (which is `splice(index, 1).get(0)`).
- *
- * @typeParam T the type of the array items
- * @param array the array to operate on
- * @param index the index to remove
- * @return the remove item
- */
-export function remove<T>(array: T[], index: number): T {
-  return array.splice(index, 1)[0];
 }
 
 /**

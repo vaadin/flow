@@ -72,14 +72,30 @@ export function isAbsoluteUrl(url: string): boolean {
 }
 
 /**
- * Retrieves the value of a JavaScript property.
+ * Converts a value to an indented JSON string, skipping the GWT hashCode field
+ * ($H) that may be present on objects.
  *
- * @param object the target object
- * @param name the property name
- * @return the value
+ * @param value the JSON value to stringify
+ * @return the JSON string
  */
-export function getJsProperty(object: Record<string, unknown>, name: string): unknown {
-  return object[name];
+export function toPrettyJson(value: unknown): string {
+  return JSON.stringify(value, (key, val) => (key === '$H' ? undefined : val), 4);
+}
+
+/**
+ * Sets the given attribute to the value on the element, or removes it when the
+ * value is null. Mirrors WidgetUtil.updateAttribute.
+ *
+ * @param element the DOM element owning attribute
+ * @param attribute the attribute to update
+ * @param value the value to update
+ */
+export function updateAttribute(element: Element, attribute: string, value: string | null): void {
+  if (value === null) {
+    element.removeAttribute(attribute);
+  } else {
+    element.setAttribute(attribute, value);
+  }
 }
 
 /**
@@ -91,6 +107,17 @@ export function getJsProperty(object: Record<string, unknown>, name: string): un
  */
 export function setJsProperty(object: Record<string, unknown>, name: string, value: unknown): void {
   object[name] = value;
+}
+
+/**
+ * Retrieves the value of a JavaScript property.
+ *
+ * @param object the target object
+ * @param name the property name
+ * @return the value
+ */
+export function getJsProperty(object: Record<string, unknown>, name: string): unknown {
+  return object[name];
 }
 
 /**
@@ -132,22 +159,6 @@ export function isUndefined(value: unknown): boolean {
 }
 
 /**
- * Sets the given attribute to the value on the element, or removes it when the
- * value is null. Mirrors WidgetUtil.updateAttribute.
- *
- * @param element the DOM element owning attribute
- * @param attribute the attribute to update
- * @param value the value to update
- */
-export function updateAttribute(element: Element, attribute: string, value: string | null): void {
-  if (value === null) {
-    element.removeAttribute(attribute);
-  } else {
-    element.setAttribute(attribute, value);
-  }
-}
-
-/**
  * Removes a JavaScript property from an object.
  *
  * @param object the object from which to remove the property
@@ -157,6 +168,25 @@ export function deleteJsProperty(object: Record<string, unknown>, name: string):
   // Dynamic delete is intentional: this helper removes an arbitrary property.
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete object[name];
+}
+
+/**
+ * Creates a new object without any JavaScript prototype. Relevant only for
+ * objects displayed through the browser console.
+ *
+ * @return a new json object
+ */
+export function createJsonObjectWithoutPrototype(): object {
+  return Object.create(null) as object;
+}
+
+/**
+ * Creates a new object with the default JavaScript prototype.
+ *
+ * @return a new json object
+ */
+export function createJsonObject(): object {
+  return {};
 }
 
 /**
@@ -180,22 +210,21 @@ export function getKeys(value: object): string[] {
 }
 
 /**
- * Creates a new object with the default JavaScript prototype.
+ * Serializes a JSON object, throwing if it contains a DOM node reference: such
+ * references must not be sent to the server and can cause cyclic dependencies.
  *
- * @return a new json object
+ * @param payload JsonObject to stringify
+ * @return json string of given object
  */
-export function createJsonObject(): object {
-  return {};
-}
-
-/**
- * Creates a new object without any JavaScript prototype. Relevant only for
- * objects displayed through the browser console.
- *
- * @return a new json object
- */
-export function createJsonObjectWithoutPrototype(): object {
-  return Object.create(null) as object;
+export function stringify(payload: object): string {
+  return JSON.stringify(payload, (_key, value) => {
+    if (value instanceof Node) {
+      throw new Error(
+        'Message JsonObject contained a dom node reference which should not be sent to the server and can cause a cyclic dependecy.'
+      );
+    }
+    return value;
+  });
 }
 
 /**
@@ -225,33 +254,4 @@ export function equals(obj1: unknown, obj2: unknown): boolean {
 export function equalsInJS(obj1: unknown, obj2: unknown): boolean {
   // Loose equality is intentional here; that is the contract of this helper.
   return obj1 == obj2;
-}
-
-/**
- * Converts a value to an indented JSON string, skipping the GWT hashCode field
- * ($H) that may be present on objects.
- *
- * @param value the JSON value to stringify
- * @return the JSON string
- */
-export function toPrettyJson(value: unknown): string {
-  return JSON.stringify(value, (key, val) => (key === '$H' ? undefined : val), 4);
-}
-
-/**
- * Serializes a JSON object, throwing if it contains a DOM node reference: such
- * references must not be sent to the server and can cause cyclic dependencies.
- *
- * @param payload JsonObject to stringify
- * @return json string of given object
- */
-export function stringify(payload: object): string {
-  return JSON.stringify(payload, (_key, value) => {
-    if (value instanceof Node) {
-      throw new Error(
-        'Message JsonObject contained a dom node reference which should not be sent to the server and can cause a cyclic dependecy.'
-      );
-    }
-    return value;
-  });
 }
