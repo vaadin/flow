@@ -36,8 +36,6 @@ export enum OperatingSystem {
 
 /**
  * Detected browser families.
- *
- * @since 25.0
  */
 export enum BrowserName {
   UNKNOWN = 0,
@@ -51,8 +49,6 @@ export enum BrowserName {
 
 /**
  * Detected browser rendering engines.
- *
- * @since 25.0
  */
 export enum BrowserEngine {
   UNKNOWN = 0,
@@ -118,7 +114,6 @@ function getVersionStringLength(userAgent: string, startIndex: number): number {
  * Parses the user agent string from the browser and provides information about
  * the browser.
  *
- * @since 1.0.
  * @deprecated For browser information users should parse the user-agent using a
  *             parsing library like ua-parser/uap-java
  */
@@ -766,7 +761,6 @@ export class BrowserDetails {
    * Tests if the browser is run on iPad.
    *
    * @return true if run on iPad, false otherwise
-   * @since 24.6
    */
   isIPad(): boolean {
     if (this.#os === undefined) {

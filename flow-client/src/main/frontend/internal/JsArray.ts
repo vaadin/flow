@@ -43,8 +43,6 @@
  * depends on it (`pushArray`, `spliceArray`, `clear`, `remove`, `removeItem`);
  * it is omitted from `isEmpty`, where the element type appears only once in a
  * single argument and a generic would add nothing.
- *
- * @since 1.0
  */
 
 /**

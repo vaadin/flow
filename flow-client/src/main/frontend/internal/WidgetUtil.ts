@@ -26,8 +26,6 @@
  * GWT-compiler-only artifacts whose sole purpose is to make the Java compiler
  * accept an unchecked cast. TypeScript casts are erased at runtime and its type
  * system needs no such trick, so they have no runtime or type-system equivalent.
- *
- * @since 1.0
  */
 
 /** Refreshes the browser. */
