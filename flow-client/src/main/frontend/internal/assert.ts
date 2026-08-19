@@ -17,9 +17,8 @@
 // Mirrors Java's `assert condition : message`. The flow-client TypeScript port
 // keeps these as always-on runtime guards. GWT strips assertions from
 // production, so this is intentionally stricter than the original Java
-// production behaviour: invariant violations surface immediately (as in the
-// Registry container port) rather than corrupting state or emitting malformed
-// output silently.
+// production behaviour: invariant violations surface immediately rather than
+// corrupting state or emitting malformed output silently.
 
 /** Throws an Error with the given message when the condition is falsy. */
 export function assert(condition: unknown, message: string): asserts condition {
