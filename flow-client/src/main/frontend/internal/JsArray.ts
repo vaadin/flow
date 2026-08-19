@@ -33,16 +33,23 @@
 //
 // The private `JsniHelper` statics behind the Java `@JsOverlay` methods are not
 // ported.
+//
+// Java's `JsArray<T>` carried a `@param <T> the type of the array items`. That
+// type parameter is preserved on the helpers whose item argument or return type
+// depends on it (`pushArray`, `spliceArray`, `clear`, `remove`, `removeItem`);
+// it is omitted from `isEmpty`, where the element type appears only once in a
+// single argument and a generic would add nothing.
 
 /**
  * Appends every value (spread) onto the array, returning the new length.
  * Mirrors the public JsArray.pushArray overlay.
  *
+ * @typeParam T the type of the array items
  * @param array the array to operate on
  * @param values the new values to add
  * @return the new length of the array
  */
-export function pushArray(array: unknown[], values: unknown[]): number {
+export function pushArray<T>(array: T[], values: readonly T[]): number {
   return array.push(...values);
 }
 
@@ -51,13 +58,14 @@ export function pushArray(array: unknown[], values: unknown[]): number {
  * `add` values (spread), returning the removed elements. Mirrors the public
  * JsArray.spliceArray overlay.
  *
+ * @typeParam T the type of the array items
  * @param array the array to operate on
  * @param index the index at which do do the operation
  * @param remove the number of items to remove
  * @param add new items to add
  * @return an array of removed items
  */
-export function spliceArray(array: unknown[], index: number, remove: number, add: unknown[]): unknown[] {
+export function spliceArray<T>(array: T[], index: number, remove: number, add: readonly T[]): T[] {
   return array.splice(index, remove, ...add);
 }
 
@@ -65,10 +73,11 @@ export function spliceArray(array: unknown[], index: number, remove: number, add
  * Empties the array and returns it, mirroring the public JsArray.clear overlay
  * (which returns the cleared array).
  *
+ * @typeParam T the type of the array items
  * @param array the array to operate on
  * @return the cleared array
  */
-export function clear(array: unknown[]): unknown[] {
+export function clear<T>(array: T[]): T[] {
   array.length = 0;
   return array;
 }
@@ -88,11 +97,12 @@ export function isEmpty(array: unknown[]): boolean {
  * Removes the item at the given index and returns it. Mirrors the public
  * JsArray.remove(int index) overlay (which is `splice(index, 1).get(0)`).
  *
+ * @typeParam T the type of the array items
  * @param array the array to operate on
  * @param index the index to remove
  * @return the remove item
  */
-export function remove(array: unknown[], index: number): unknown {
+export function remove<T>(array: T[], index: number): T {
   return array.splice(index, 1)[0];
 }
 
@@ -103,11 +113,12 @@ export function remove(array: unknown[], index: number): unknown {
  * `removeItem` here because TypeScript cannot overload `remove` on a single
  * argument whose type may itself be a number.
  *
+ * @typeParam T the type of the array items
  * @param array the array to operate on
  * @param toRemove the item to remove
  * @return `true` if the item was found and removed from the array, `false` otherwise
  */
-export function removeItem(array: unknown[], toRemove: unknown): boolean {
+export function removeItem<T>(array: T[], toRemove: T): boolean {
   for (let i = 0; i < array.length; i++) {
     if (array[i] === toRemove) {
       array.splice(i, 1);
