@@ -20,8 +20,6 @@
  * TypeScript port of the full public API of
  * com.vaadin.flow.shared.util.SharedUtil, built alongside the Java version.
  * Java-private helpers are kept as non-exported module-local functions.
- *
- * @since 1.0
  */
 
 /**
@@ -290,7 +288,6 @@ export function camelCaseToDashSeparated(camelCaseString: string | null): string
  *
  * @param upperCamelCaseString The input string in UpperCamelCase format
  * @return A dash separated lowercase version of the input
- * @since 24.1.1
  */
 export function upperCamelCaseToDashSeparatedLowerCase(upperCamelCaseString: string | null): string | null {
   if (upperCamelCaseString === null) {

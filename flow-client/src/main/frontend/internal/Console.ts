@@ -66,8 +66,6 @@ function shouldLogToBrowserConsole(): boolean {
  * are no-ops in production mode unless the `vaadin.browserLog` localStorage flag
  * is set, so that a production application does not write to the browser
  * console.
- *
- * @since 1.0
  */
 export const Console = {
   /**
