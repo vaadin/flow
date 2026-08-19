@@ -31,7 +31,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -92,8 +91,8 @@ public abstract class AbstractRpcInvocationHandler
      * Describes the target of an RPC invocation so that an application
      * developer can tell which part of the application it relates to. In
      * addition to the state node id, the description contains the element tag
-     * and, when available, the component class and the route that the component
-     * is used in.
+     * and, when available, the component class and the routing target that the
+     * component is used in.
      *
      * @param node
      *            the target node, may be {@code null}
@@ -115,11 +114,17 @@ public abstract class AbstractRpcInvocationHandler
                 targetInfo.append(", component '")
                         .append(component.get().getClass().getName())
                         .append("'");
-                ComponentUtil.getRouteComponent(component.get())
+                /*
+                 * The class of the routing target rather than its path, since
+                 * the path in the annotation is not the whole story: it
+                 * defaults to a naming convention placeholder and doesn't
+                 * account for the prefixes of parent layouts.
+                 */
+                ComponentUtil.getRouteComponent(component.get()).filter(
+                        routeComponent -> routeComponent != component.get())
                         .ifPresent(routeComponent -> targetInfo
-                                .append(", route '")
-                                .append(routeComponent.getClass()
-                                        .getAnnotation(Route.class).value())
+                                .append(", used in '")
+                                .append(routeComponent.getClass().getName())
                                 .append("'"));
             }
         }

@@ -54,10 +54,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .get(JsonConstants.RPC_CHANNEL_ARGUMENTS);
 
         if (!node.hasFeature(ReturnChannelMap.class)) {
-            getLogger().warn(
-                    "Ignoring update for a node that has no return channels."
-                            + " Target: {}",
-                    describeTarget(node));
+            getLogger()
+                    .warn("Ignoring update for a node that cannot have return"
+                            + " channels. Target: {}", describeTarget(node));
             logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
@@ -68,10 +67,11 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
         if (channel == null) {
             getLogger().warn(
-                    "Return channel {} not found, it has most likely already"
-                            + " been removed, for example because the return"
-                            + " value of the JavaScript execution that"
-                            + " registered it was already handled. Target: {}",
+                    "Return channel {} not found, it has either already been"
+                            + " removed, for example after the return value of"
+                            + " the JavaScript execution that registered it was"
+                            + " handled, or it was never registered."
+                            + " Target: {}",
                     channelId, describeTarget(node));
             logIgnoredPayload(invocationJson);
             return Optional.empty();
@@ -112,14 +112,11 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         while (disabledNode != null && disabledNode.isEnabledSelf()) {
             disabledNode = disabledNode.getParent();
         }
+        assert disabledNode != null : "A disabled node is disabled either by "
+                + "itself or by one of its ancestors";
 
-        if (disabledNode == node) {
+        if (disabledNode == node || disabledNode == null) {
             return "The target itself is disabled";
-        }
-        if (disabledNode == null) {
-            // Not expected, since a node is disabled either by itself or by one
-            // of its ancestors
-            return "The disabled node could not be determined";
         }
         return "The target is disabled through its ancestor "
                 + describeTarget(disabledNode);

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -54,6 +53,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReturnChannelHandlerTest {
+    /**
+     * Stands for whatever the application reads from the browser, which can be
+     * data that doesn't belong in a log file.
+     */
+    private static final String CLIENT_VALUE = "account-FI7654321000000";
+
     private MockUI ui = new MockUI();
 
     private AtomicReference<JsonNode> observedArguments = new AtomicReference<>();
@@ -173,15 +178,15 @@ class ReturnChannelHandlerTest {
         assertTrue(warning.contains(Widget.class.getName()),
                 () -> "The warning should name the component class: "
                         + warning);
-        assertTrue(warning.contains("orders"),
-                () -> "The warning should name the route the component is in: "
-                        + warning);
+        assertTrue(warning.contains(OrdersView.class.getName()),
+                () -> "The warning should name the routing target the "
+                        + "component is used in: " + warning);
         assertTrue(warning.contains("The target itself is disabled"),
                 () -> "The warning should tell that the target itself is the "
                         + "disabled one: " + warning);
-        assertFalse(warning.contains(OrdersView.class.getName()),
-                () -> "The enclosing view is not the disabled one, so it "
-                        + "should not be blamed: " + warning);
+        assertFalse(warning.contains("through its ancestor"),
+                () -> "No ancestor is disabled, so none should be blamed: "
+                        + warning);
     }
 
     @Test
@@ -194,7 +199,9 @@ class ReturnChannelHandlerTest {
 
         String warning = getOnlyWarning(registration);
 
-        assertTrue(warning.contains(OrdersView.class.getName()),
+        assertTrue(
+                warning.contains("through its ancestor")
+                        && warning.contains(OrdersView.class.getName()),
                 () -> "The warning should name the ancestor that is actually "
                         + "disabled: " + warning);
     }
@@ -204,20 +211,20 @@ class ReturnChannelHandlerTest {
         Widget widget = addWidgetToOrdersView();
         ReturnChannelRegistration registration = registerChannel(widget);
 
-        // Stands for whatever the application reads from the browser, which
-        // can be data that doesn't belong in a log file
-        args.add("account-FI7654321000000");
+        args.add(CLIENT_VALUE);
         widget.getElement().setEnabled(false);
 
         LoggedMessages logged = handleMessageCapturingLogs(registration);
 
-        assertFalse(
-                logged.warnings().get(0).contains("account-FI7654321000000"),
+        assertEquals(1, logged.warnings().size(),
+                () -> "Exactly one warning expected, got: "
+                        + logged.warnings());
+        assertFalse(logged.warnings().get(0).contains(CLIENT_VALUE),
                 () -> "The warning should not contain what the client sent: "
                         + logged.warnings().get(0));
         assertTrue(
-                logged.debugMessages().stream().anyMatch(
-                        message -> message.contains("account-FI7654321000000")),
+                logged.debugMessages().stream()
+                        .anyMatch(message -> message.contains(CLIENT_VALUE)),
                 () -> "The payload should still be available on debug level: "
                         + logged.debugMessages());
     }
@@ -228,13 +235,17 @@ class ReturnChannelHandlerTest {
 
         ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
                 nodeWithoutMap);
+        args.add(CLIENT_VALUE);
 
         String warning = getOnlyWarning(nodeWithoutMap.getId(), 0);
 
-        assertTrue(warning.contains("no return channels"),
+        assertTrue(warning.contains("cannot have return channels"),
                 () -> "Unexpected warning: " + warning);
         assertTrue(warning.contains("node id=" + nodeWithoutMap.getId()),
                 () -> "The warning should identify the node: " + warning);
+        assertFalse(warning.contains(CLIENT_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + warning);
     }
 
     @Test
@@ -242,6 +253,7 @@ class ReturnChannelHandlerTest {
         Widget widget = addWidgetToOrdersView();
         ReturnChannelRegistration registration = registerChannel(widget);
         registration.remove();
+        args.add(CLIENT_VALUE);
 
         String warning = getOnlyWarning(registration);
 
@@ -249,6 +261,9 @@ class ReturnChannelHandlerTest {
                 () -> "Unexpected warning: " + warning);
         assertTrue(warning.contains("my-widget"),
                 () -> "The warning should name the element tag: " + warning);
+        assertFalse(warning.contains(CLIENT_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + warning);
     }
 
     private Widget addWidgetToOrdersView() {
@@ -315,15 +330,17 @@ class ReturnChannelHandlerTest {
             List<String> warnings, List<String> debugMessages)
             throws Throwable {
         String method = invocation.getMethod().getName();
+        if (method.startsWith("is") && method.endsWith("Enabled")) {
+            // All levels are enabled, so that a level check doesn't make the
+            // handler skip logging something that these tests are looking for
+            return true;
+        }
         if ("warn".equals(method) || "debug".equals(method)) {
+            // Mockito has already expanded the varargs of the logging method
             Object[] arguments = invocation.getArguments();
-            Object[] parameters = Arrays.stream(arguments).skip(1)
-                    .flatMap(argument -> argument instanceof Object[] array
-                            ? Arrays.stream(array)
-                            : Stream.of(argument))
-                    .toArray();
             String message = MessageFormatter
-                    .arrayFormat((String) arguments[0], parameters)
+                    .arrayFormat((String) arguments[0],
+                            Arrays.copyOfRange(arguments, 1, arguments.length))
                     .getMessage();
             ("warn".equals(method) ? warnings : debugMessages).add(message);
         }
