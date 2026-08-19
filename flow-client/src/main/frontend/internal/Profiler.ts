@@ -68,7 +68,7 @@ export function setEnabled(enabled: boolean): void {
 /**
  * Consumer that receives the profiler results, mirroring
  * Profiler.ProfilerResultConsumer.
- * <p>
+ *
  * <b>Warning!</b> This interface is most likely to change in the future.
  */
 export interface ProfilerResultConsumer {
@@ -95,7 +95,7 @@ function roundToSignificantFigures(num: number): number {
 /**
  * A hierarchical representation of the time spent running a named block of
  * code. Mirrors Profiler.Node.
- * <p>
+ *
  * <b>Warning!</b> This class is most likely to change in the future.
  */
 export class Node {
@@ -373,7 +373,7 @@ export function reset(): void {
  * Initializes the profiler. This should be done before calling any other
  * function in this class. This method has no side effects if the initialization
  * has already been done.
- * <p>
+ *
  * Should be called even if the profiler is not enabled, because it then removes
  * a logger function that might have been included in the HTML page and that
  * would otherwise leak memory.
@@ -589,7 +589,7 @@ function clearEventsList(): void {
 /**
  * Sets the profiler result consumer that is used to output the profiler data to
  * the user.
- * <p>
+ *
  * <b>Warning!</b> This is internal API and should not be used by applications
  * or add-ons.
  *
