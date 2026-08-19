@@ -233,6 +233,7 @@ public class NodeInstaller {
                     userName, password);
 
             extractFile(data.getArchive(), data.getTmpDirectory());
+            deleteUnpackedArchive(data.getArchive());
         } catch (DownloadException e) {
             throw new InstallationException(
                     "Node.js download failed. This may be due to loss of internet connection.\n"
@@ -413,6 +414,23 @@ public class NodeInstaller {
             }
 
             throw e;
+        }
+    }
+
+    /**
+     * Removes an archive that has been successfully unpacked. The extracted
+     * content is all that is needed from this point on, so keeping the archive
+     * would only waste disk space in the install directory.
+     *
+     * @param archive
+     *            the archive that was unpacked
+     */
+    private static void deleteUnpackedArchive(File archive) {
+        getLogger().debug("Removing unpacked archive {}", archive);
+        if (!FileIOUtils.deleteQuietly(archive)) {
+            getLogger().warn(
+                    "Could not remove the unpacked Node.js archive {}. It can be deleted manually to free up disk space.",
+                    archive);
         }
     }
 
