@@ -28,14 +28,4 @@ import com.vaadin.flow.component.dependency.JsModule;
 public class DecoratorElement extends Component {
 
     public static final String TAG = "decorator-element";
-
-    /**
-     * Sets the label rendered by the element, as a Lit reactive property.
-     *
-     * @param label
-     *            the label to render
-     */
-    public void setLabel(String label) {
-        getElement().setProperty("label", label);
-    }
 }

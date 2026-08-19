@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.todo.DecoratorElement;
@@ -39,7 +38,11 @@ import com.vaadin.flow.todo.DecoratorElement;
  * those sources need a configuration of their own, see
  * {@code TaskGenerateJarResourcesTsConfig}. Without it they are transformed
  * with no compiler options at all, which breaks them in two ways this test
- * covers against the bundle the build actually produces.
+ * covers against the bundle the build actually produces. The behaviour they
+ * break is covered from the browser by the add-on component of
+ * {@code TemplateIT}, this test pins down the transformation itself so that a
+ * regression names its cause instead of failing as an application that does not
+ * start.
  *
  * @see <a href=
  *      "https://github.com/vaadin/flow/issues/24982">vaadin/flow#24982</a>
@@ -50,23 +53,6 @@ public class AddonDecoratorIT extends ChromeBrowserTest {
     // "(@customElement("decorator-element") class extends LitElement {"
     private static final Pattern RAW_DECORATOR = Pattern
             .compile("@\\w+\\([^)]*\\)\\s*class\\b");
-
-    @Test
-    public void addonDecoratorSource_isTranspiled_andRendersUpdates() {
-        open();
-        waitForElementPresent(By.tagName(DecoratorElement.TAG));
-
-        // A raw decorator makes the whole chunk fail to parse, so reaching the
-        // shadow root at all already tells the decorators were transpiled
-        Assert.assertEquals("Default", getRenderedLabel());
-
-        findElement(By.id(AddonDecoratorView.UPDATE_BUTTON_ID)).click();
-
-        // A native class field shadows the accessor Lit installs for the
-        // reactive property, so the update never reaches the DOM
-        waitUntil(driver -> AddonDecoratorView.UPDATED_LABEL
-                .equals(getRenderedLabel()));
-    }
 
     @Test
     public void addonDecoratorSource_isTranspiledInTheBundle()
@@ -115,10 +101,5 @@ public class AddonDecoratorIT extends ChromeBrowserTest {
         }
         throw new AssertionError("No built chunk of the dev bundle contains '"
                 + tag + "', looked at " + chunks);
-    }
-
-    private String getRenderedLabel() {
-        return $(DecoratorElement.TAG).first().$(SpanElement.class).first()
-                .getText();
     }
 }

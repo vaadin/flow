@@ -16,7 +16,6 @@
 package com.vaadin.flow.frontend;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.todo.DecoratorElement;
 
@@ -27,16 +26,7 @@ import com.vaadin.flow.todo.DecoratorElement;
 @Route("com.vaadin.flow.frontend.AddonDecoratorView")
 public class AddonDecoratorView extends Div {
 
-    static final String UPDATE_BUTTON_ID = "update-decorator-label";
-    static final String UPDATED_LABEL = "Updated";
-
     public AddonDecoratorView() {
-        DecoratorElement element = new DecoratorElement();
-        add(element);
-
-        NativeButton update = new NativeButton("Update label",
-                event -> element.setLabel(UPDATED_LABEL));
-        update.setId(UPDATE_BUTTON_ID);
-        add(update);
+        add(new DecoratorElement());
     }
 }
