@@ -14,31 +14,38 @@
  * the License.
  */
 
-// JsArray operations migrated from JsArray.java. `JsArray<T>` was a native JS
-// Array wrapper, so a plain TypeScript array already is the thing it wrapped.
-// The full public Java API maps as follows:
-//
-//   Native TypeScript array syntax (intentionally NOT wrapped here):
-//     get(index)                -> array[index]
-//     set(index, value)         -> array[index] = value
-//     push(...values)           -> array.push(...values)
-//     length()                  -> array.length
-//     splice(index, remove, ...add) -> array.splice(index, remove, ...add)
-//     shift()                   -> array.shift()
-//     forEach(callback)         -> array.forEach(callback)
-//
-//   Exported free-function helpers (below), because they are genuinely more
-//   than a native operation or bundle several native calls:
-//     pushArray, spliceArray, clear, isEmpty, remove, removeItem
-//
-// The private `JsniHelper` statics behind the Java `@JsOverlay` methods are not
-// ported.
-//
-// Java's `JsArray<T>` carried a `@param <T> the type of the array items`. That
-// type parameter is preserved on the helpers whose item argument or return type
-// depends on it (`pushArray`, `spliceArray`, `clear`, `remove`, `removeItem`);
-// it is omitted from `isEmpty`, where the element type appears only once in a
-// single argument and a generic would add nothing.
+/**
+ * Native JS Array interface with an alternative implementation for JRE usage.
+ * Use {@link JsCollections#array()} to create an appropriate instance.
+ *
+ * JsArray operations migrated from JsArray.java. `JsArray<T>` was a native JS
+ * Array wrapper, so a plain TypeScript array already is the thing it wrapped.
+ * The full public Java API maps as follows:
+ *
+ *   Native TypeScript array syntax (intentionally NOT wrapped here):
+ *     get(index)                -> array[index]
+ *     set(index, value)         -> array[index] = value
+ *     push(...values)           -> array.push(...values)
+ *     length()                  -> array.length
+ *     splice(index, remove, ...add) -> array.splice(index, remove, ...add)
+ *     shift()                   -> array.shift()
+ *     forEach(callback)         -> array.forEach(callback)
+ *
+ *   Exported free-function helpers (below), because they are genuinely more
+ *   than a native operation or bundle several native calls:
+ *     pushArray, spliceArray, clear, isEmpty, remove, removeItem
+ *
+ * The private `JsniHelper` statics behind the Java `@JsOverlay` methods are not
+ * ported.
+ *
+ * Java's `JsArray<T>` carried a `@param <T> the type of the array items`. That
+ * type parameter is preserved on the helpers whose item argument or return type
+ * depends on it (`pushArray`, `spliceArray`, `clear`, `remove`, `removeItem`);
+ * it is omitted from `isEmpty`, where the element type appears only once in a
+ * single argument and a generic would add nothing.
+ *
+ * @since 1.0
+ */
 
 /**
  * Appends every value (spread) onto the array, returning the new length.

@@ -59,10 +59,15 @@ function shouldLogToBrowserConsole(): boolean {
 }
 
 /**
+ * Helper class for using window.console. Does not log anything except
+ * JavaScript exception traces to console if production mode is enabled.
+ *
  * The engine's logging facade; mirrors the static Console.java. The log methods
  * are no-ops in production mode unless the `vaadin.browserLog` localStorage flag
  * is set, so that a production application does not write to the browser
  * console.
+ *
+ * @since 1.0
  */
 export const Console = {
   /**
