@@ -16,8 +16,8 @@
 
 /**
  * Lightweight profiling tool that can be used to collect profiling data with
- * zero overhead unless enabled. To enable profiling, add
- * `<set-property name="vaadin.profiler" value="true" />` to your .gwt.xml file.
+ * zero overhead unless enabled. Profiling is enabled by calling
+ * {@link setEnabled} from the engine bootstrap; it defaults to disabled.
  *
  * TypeScript port of com.vaadin.client.Profiler. The public surface
  * (isEnabled/enter/leave/reset/initialize/logTimings/
