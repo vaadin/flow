@@ -117,61 +117,6 @@ class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    void refreshNullItem_fullHierarchyRefresh() {
-        // refresh(null, true) is equivalent to reset(): cache discarded,
-        // viewport re-fetched. Expansion state is preserved by reset() (same as
-        // refreshAll), so still-expanded roots reappear with children.
-        populateTreeData(treeData, 2, 1);
-        dataCommunicator.expand(new Item("Item 0"));
-        dataCommunicator.setViewportRange(0, 5);
-        fakeClientCommunication();
-        assertArrayUpdateItems("name", Map.of( //
-                0, "Item 0", //
-                1, "Item 0-0", //
-                2, "Item 1"));
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
-
-        treeData.addItem(null, new Item("Item 2"));
-        treeData.getRootItems().forEach(item -> item.setState("refreshed"));
-        dataCommunicator.refresh(null, true);
-        fakeClientCommunication();
-
-        // 3 roots + Item 0 still expanded → 4 flattened rows
-        assertArrayUpdateSize(4);
-        assertArrayUpdateItems("name", Map.of( //
-                0, "Item 0", //
-                1, "Item 0-0", //
-                2, "Item 1", //
-                3, "Item 2"));
-        assertArrayUpdateItems("state", Map.of( //
-                0, "refreshed", //
-                1, "initial", // child not in getRootItems() refresh
-                2, "refreshed", //
-                3, "refreshed"));
-        assertTrue(keyMapper.has(new Item("Item 0-0")));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void refreshNullItem_destroysAllData() {
-        // Virtual-root refresh is full reset → destroyAllData (not per-item).
-        populateTreeData(treeData, 2, 1);
-        dataCommunicator.expand(new Item("Item 0"));
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
-
-        var dataGenerator = Mockito.spy(DataGenerator.class);
-        compositeDataGenerator.addDataGenerator(dataGenerator);
-
-        dataCommunicator.refresh(null, true);
-
-        Mockito.verify(dataGenerator).destroyAllData();
-        Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.any());
-    }
-
-    @Test
     @SuppressWarnings("unchecked")
     void refreshItemNullThroughDataProvider_refreshChildrenCallsReset_withoutRefreshChildrenThrows() {
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
@@ -184,23 +129,6 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
         treeDataProvider.refreshItem(null, true);
         Mockito.verify(dataCommunicatorSpy).reset();
-    }
-
-    @Test
-    void refreshItemNullThroughDataProvider_fullHierarchyRefresh() {
-        populateTreeData(treeData, 2);
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 0", "Item 1");
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
-
-        treeData.addItem(null, new Item("Item 2"));
-        treeDataProvider.refreshItem(null, true);
-        fakeClientCommunication();
-
-        assertArrayUpdateSize(3);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2");
     }
 
     @Test

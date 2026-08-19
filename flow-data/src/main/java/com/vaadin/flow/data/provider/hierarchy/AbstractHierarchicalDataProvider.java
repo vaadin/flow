@@ -37,9 +37,9 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
     /**
      * {@inheritDoc}
      * <p>
-     * Passing {@code null} as item, i.e. the virtual root (parent of root-level
-     * items), together with {@code refreshChildren} set to {@code true} is
-     * equivalent to calling {@link #refreshAll()}.
+     * Passing {@code null} as item together with {@code refreshChildren} set to
+     * {@code true} is treated as a request to refresh the whole hierarchy, and
+     * is equivalent to calling {@link #refreshAll()}.
      *
      * @throws UnsupportedOperationException
      *             if {@code item} is not {@code null}, {@code refreshChildren}

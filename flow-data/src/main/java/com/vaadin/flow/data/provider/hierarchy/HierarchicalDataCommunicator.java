@@ -205,19 +205,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * item's sub-hierarchy is cleared from the cache and scheduled to be
      * re-fetched from the data provider once visible.
      * <p>
-     * A {@code null} item is the virtual root (parent of root-level items,
-     * consistent with {@link TreeData#addItem(Object, Object)}). Passing it
-     * with {@code refreshChildren} set to {@code true} and a data provider that
-     * uses {@link HierarchyFormat#NESTED} refreshes the whole hierarchy and is
-     * equivalent to {@link #reset()}: the full hierarchy cache is discarded and
-     * the viewport is re-fetched. Passing it with {@code refreshChildren} set
-     * to {@code false} is not supported and throws an
-     * {@link IllegalArgumentException}, since the virtual root itself is not a
-     * rendered item.
+     * Passing a {@code null} item with {@code refreshChildren} set to
+     * {@code true} is treated as a request to refresh the whole hierarchy, and
+     * is equivalent to calling {@link #reset()}.
      * <p>
-     * WARNING: When {@code refreshChildren} is {@code true} this method is only
-     * supported with data providers that use {@link HierarchyFormat#NESTED},
-     * and for non-{@code null} items may cause visible range shift if the
+     * WARNING: This method is only supported with data providers that use
+     * {@link HierarchyFormat#NESTED} and may cause visible range shift if the
      * refreshed item contains <i>expanded</i> descendants. In such cases, they
      * might not be re-fetched immediately if they are not visible. This can
      * affect the flattened hierarchy size and result in the viewport range
@@ -244,9 +237,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (!refreshChildren) {
                 throw new IllegalArgumentException(
                         """
-                                Refreshing a null item (the virtual root) is not supported. Use \
-                                refresh(null, true) to refresh the whole hierarchy (equivalent to \
-                                reset()), or refreshAll() to refresh the data provider.
+                                Refreshing a null item is only supported when the data provider \
+                                uses HierarchyFormat#NESTED and refreshChildren is set to true. \
+                                For other formats, use reset() instead.
                                 """);
             }
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
