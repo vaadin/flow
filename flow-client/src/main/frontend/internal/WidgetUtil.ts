@@ -97,6 +97,8 @@ export function setJsProperty(object: Record<string, unknown>, name: string, val
  * Checks whether the object itself has a JavaScript property with the given
  * name. Inherited properties are not taken into account.
  *
+ * @see {@link hasJsProperty}
+ *
  * @param object the target object
  * @param name the name of the property
  * @return `true` if the object itself has the named property; `false` if it doesn't have the property of if the property is inherited
@@ -108,6 +110,8 @@ export function hasOwnJsProperty(object: object, name: string): boolean {
 /**
  * Checks whether the object has or inherits a JavaScript property with the
  * given name.
+ *
+ * @see {@link hasOwnJsProperty}
  *
  * @param object the target object
  * @param name the name of the property
@@ -203,6 +207,8 @@ export function createJsonObjectWithoutPrototype(): object {
  * @param obj1 an object
  * @param obj2 an object to be compared with `a` for deep equality
  * @return `true` if the arguments are equal to each other and `false` otherwise
+ *
+ * @see {@link equalsInJS}
  */
 export function equals(obj1: unknown, obj2: unknown): boolean {
   return obj1 === obj2 || equalsInJS(obj1, obj2);
