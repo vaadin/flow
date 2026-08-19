@@ -14,7 +14,11 @@
  * the License.
  */
 
-// HTML Storage helpers migrated from StorageUtil.java.
+/**
+ * Includes utility methods to interact with HTML storage API.
+ *
+ * HTML Storage helpers migrated from StorageUtil.java.
+ */
 
 /**
  * Gets an item value from the local storage, or null if absent.

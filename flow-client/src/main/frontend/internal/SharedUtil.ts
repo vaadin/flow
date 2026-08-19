@@ -14,9 +14,15 @@
  * the License.
  */
 
-// TypeScript port of the full public API of
-// com.vaadin.flow.shared.util.SharedUtil, built alongside the Java version.
-// Java-private helpers are kept as non-exported module-local functions.
+/**
+ * Misc internal utility methods used by both the server and the client package.
+ *
+ * TypeScript port of the full public API of
+ * com.vaadin.flow.shared.util.SharedUtil, built alongside the Java version.
+ * Java-private helpers are kept as non-exported module-local functions.
+ *
+ * @since 1.0
+ */
 
 /**
  * Adds the given query parameters to a URI, before any fragment. Mirrors
@@ -284,6 +290,7 @@ export function camelCaseToDashSeparated(camelCaseString: string | null): string
  *
  * @param upperCamelCaseString The input string in UpperCamelCase format
  * @return A dash separated lowercase version of the input
+ * @since 24.1.1
  */
 export function upperCamelCaseToDashSeparatedLowerCase(upperCamelCaseString: string | null): string | null {
   if (upperCamelCaseString === null) {

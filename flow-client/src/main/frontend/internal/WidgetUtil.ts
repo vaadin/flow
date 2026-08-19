@@ -14,15 +14,21 @@
  * the License.
  */
 
-// Implementations migrated from WidgetUtil.java, registered on
-// window.Vaadin.Flow.internal.WidgetUtil by registerInternals; the Java methods
-// delegate here. This module is also bundled to ES5 for the (old) HtmlUnit used
-// by GwtTests, so it avoids newer syntax and the unicode regex flag.
-//
-// WidgetUtil.crazyJsCast and crazyJsoCast are intentionally not ported: they are
-// GWT-compiler-only artifacts whose sole purpose is to make the Java compiler
-// accept an unchecked cast. TypeScript casts are erased at runtime and its type
-// system needs no such trick, so they have no runtime or type-system equivalent.
+/**
+ * Utility methods which are related to client side code only.
+ *
+ * Implementations migrated from WidgetUtil.java, registered on
+ * window.Vaadin.Flow.internal.WidgetUtil by registerInternals; the Java methods
+ * delegate here. This module is also bundled to ES5 for the (old) HtmlUnit used
+ * by GwtTests, so it avoids newer syntax and the unicode regex flag.
+ *
+ * WidgetUtil.crazyJsCast and crazyJsoCast are intentionally not ported: they are
+ * GWT-compiler-only artifacts whose sole purpose is to make the Java compiler
+ * accept an unchecked cast. TypeScript casts are erased at runtime and its type
+ * system needs no such trick, so they have no runtime or type-system equivalent.
+ *
+ * @since 1.0
+ */
 
 /** Refreshes the browser. */
 export function refresh(): void {
