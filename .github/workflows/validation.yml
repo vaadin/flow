@@ -69,7 +69,11 @@ jobs:
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C -q || eval $cmd
+          cleanup_metadata() {
+            rm -f ~/.m2/repository/com/vaadin/maven-metadata*.xml*
+          }
+          cleanup_metadata
+          eval $cmd -T 2C -q || { cleanup_metadata && eval $cmd; }
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
@@ -122,7 +126,11 @@ jobs:
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C -q || eval $cmd
+          cleanup_metadata() {
+            rm -f ~/.m2/repository/com/vaadin/maven-metadata*.xml*
+          }
+          cleanup_metadata
+          eval $cmd -T 2C -q || { cleanup_metadata && eval $cmd; }
       - name: Set TB License
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
@@ -332,7 +340,11 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C -q || eval $cmd
+          cleanup_metadata() {
+            rm -f ~/.m2/repository/com/vaadin/maven-metadata*.xml*
+          }
+          cleanup_metadata
+          eval $cmd -T 2C -q || { cleanup_metadata && eval $cmd; }
       - name: Download coverage reports
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
