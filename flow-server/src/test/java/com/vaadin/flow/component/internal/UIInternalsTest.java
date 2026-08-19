@@ -38,6 +38,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
@@ -149,6 +150,8 @@ class UIInternalsTest {
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
         Mockito.when(ui.getInternals()).thenReturn(internals);
+        Page page = new Page(ui);
+        Mockito.when(ui.getPage()).thenReturn(page);
     }
 
     @Test
