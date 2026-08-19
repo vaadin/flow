@@ -79,7 +79,10 @@ public class TaskCopyFrontendFiles
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         Set<String> existingFiles;
         try {
-            existingFiles = getFilesInDirectory(targetDirectory);
+            // The tsconfig.json generated for the copied add-on sources is not
+            // copied from a jar, so it must not be seen as a leftover file
+            existingFiles = getFilesInDirectory(targetDirectory,
+                    TaskGenerateTsConfig.TSCONFIG_JSON);
         } catch (IOException e) {
             // If we do not find the existing files, we will not delete anything
             existingFiles = new HashSet<>();
@@ -126,6 +129,8 @@ public class TaskCopyFrontendFiles
                                 WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
+        TaskGenerateJarResourcesTsConfig.discardCopiedTsConfigs(targetDirectory,
+                handledFiles);
         existingFiles.removeAll(handledFiles);
         existingFiles.forEach(
                 filename -> new File(targetDirectory, filename).delete());

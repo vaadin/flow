@@ -46,6 +46,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     private File projectRoot;
 
+    private File jarResourcesTsConfig;
+
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
@@ -67,6 +69,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      */
     public TaskCleanFrontendFiles(Options options) {
         this.projectRoot = options.getNpmFolder();
+        this.jarResourcesTsConfig = TaskGenerateJarResourcesTsConfig
+                .getTsConfigFile(options);
 
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
@@ -109,6 +113,14 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
                         ioe.getMessage());
                 log().debug("Failed to remove file", ioe);
             }
+        }
+        if (filesToRemove.stream().anyMatch(file -> file.getName()
+                .equals(TaskGenerateTsConfig.TSCONFIG_JSON))) {
+            // The configuration of the frontend sources of add-ons extends the
+            // project one, so removing only the latter would leave behind a
+            // configuration that no longer resolves
+            log().debug("Removing file {}", jarResourcesTsConfig);
+            FileIOUtils.deleteQuietly(jarResourcesTsConfig);
         }
     }
 

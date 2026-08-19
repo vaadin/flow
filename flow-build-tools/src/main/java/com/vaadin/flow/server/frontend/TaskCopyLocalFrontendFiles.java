@@ -71,6 +71,8 @@ public class TaskCopyLocalFrontendFiles
             log().info("Copying project local frontend resources.");
             Set<String> files = copyLocalResources(localResourcesFolder,
                     target);
+            TaskGenerateJarResourcesTsConfig.discardCopiedTsConfigs(target,
+                    files);
             track(files.stream()
                     .map(path -> target.toPath().resolve(path).toFile())
                     .toList());
