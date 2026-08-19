@@ -243,10 +243,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (!refreshChildren) {
                 throw new IllegalArgumentException(
                         """
-                                Refreshing the virtual root (a null item) requires refreshChildren \
-                                to be true, which refreshes the whole hierarchy and is equivalent to \
-                                reset(). Refreshing the virtual root without its children has no \
-                                effect, since the root itself is not a rendered item.
+                                Refreshing a null item (the virtual root) is not supported. Use \
+                                refresh(null, true) to refresh the whole hierarchy (equivalent to \
+                                reset()), or refreshAll() to refresh the data provider.
                                 """);
             }
             // Refreshing the virtual root's children means refreshing the
