@@ -25,6 +25,21 @@
 let isProductionMode = false;
 
 /**
+ * Whether logging to the browser console should be enabled: true if either not
+ * in production mode, or the `vaadin.browserLog` override flag is set. Mirrors
+ * Console.shouldLogToBrowserConsole.
+ *
+ * @return true if browser console logging should be enabled
+ */
+function shouldLogToBrowserConsole(): boolean {
+  if (!isProductionMode) {
+    return true;
+  }
+  // Check localStorage for the override flag in production mode.
+  return isLocalStorageFlagEnabled();
+}
+
+/**
  * Whether the localStorage override flag `vaadin.browserLog` is set to "true".
  * Used to force browser-console logging on in production mode. Returns false if
  * localStorage is unavailable or inaccessible.
@@ -41,21 +56,6 @@ function isLocalStorageFlagEnabled(): boolean {
     // localStorage might not be available or accessible
     return false;
   }
-}
-
-/**
- * Whether logging to the browser console should be enabled: true if either not
- * in production mode, or the `vaadin.browserLog` override flag is set. Mirrors
- * Console.shouldLogToBrowserConsole.
- *
- * @return true if browser console logging should be enabled
- */
-function shouldLogToBrowserConsole(): boolean {
-  if (!isProductionMode) {
-    return true;
-  }
-  // Check localStorage for the override flag in production mode.
-  return isLocalStorageFlagEnabled();
 }
 
 /**

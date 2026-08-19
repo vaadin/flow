@@ -23,6 +23,16 @@
 // straight to the console rather than through the engine logging facade, so the
 // module stays a leaf with no imports.
 
+const CHROME = ' chrome/';
+const HEADLESSCHROME = ' headlesschrome/';
+const OS_MAJOR = 'OS major';
+const OS_MINOR = 'OS minor';
+const BROWSER_MAJOR = 'Browser major';
+const BROWSER_MINOR = 'Browser minor';
+
+// Sentinel matching Java's -10 "not parsed yet" markers.
+const NOT_PARSED = -10;
+
 /** Detected operating systems. */
 export enum OperatingSystem {
   UNKNOWN = 0,
@@ -58,16 +68,6 @@ export enum BrowserEngine {
   TRIDENT = 4
 }
 
-const CHROME = ' chrome/';
-const HEADLESSCHROME = ' headlesschrome/';
-const OS_MAJOR = 'OS major';
-const OS_MINOR = 'OS minor';
-const BROWSER_MAJOR = 'Browser major';
-const BROWSER_MINOR = 'Browser minor';
-
-// Sentinel matching Java's -10 "not parsed yet" markers.
-const NOT_PARSED = -10;
-
 /**
  * Splits a string like Java's `String.split(regex)` with the default limit,
  * which drops trailing empty strings (JavaScript's split keeps them).
@@ -78,18 +78,6 @@ function splitDroppingTrailingEmpty(value: string, separator: string): string[] 
     parts.pop();
   }
   return parts;
-}
-
-/**
- * Substring that clamps out-of-range indices instead of throwing, mirroring the
- * Java {@code safeSubstring} helper. Uses slice (which never swaps arguments) so
- * a start past the end yields an empty string, matching how the Java version's
- * downstream parsing degrades.
- */
-function safeSubstring(value: string, beginIndex: number, endIndex: number): string {
-  const trimmedStart = beginIndex < 0 ? 0 : beginIndex;
-  const trimmedEnd = endIndex < 0 || endIndex > value.length ? value.length : endIndex;
-  return value.slice(trimmedStart, trimmedEnd);
 }
 
 /**
@@ -108,6 +96,18 @@ function getVersionStringLength(userAgent: string, startIndex: number): number {
     versionBreak = versionSubString.length;
   }
   return versionBreak;
+}
+
+/**
+ * Substring that clamps out-of-range indices instead of throwing, mirroring the
+ * Java {@code safeSubstring} helper. Uses slice (which never swaps arguments) so
+ * a start past the end yields an empty string, matching how the Java version's
+ * downstream parsing degrades.
+ */
+function safeSubstring(value: string, beginIndex: number, endIndex: number): string {
+  const trimmedStart = beginIndex < 0 ? 0 : beginIndex;
+  const trimmedEnd = endIndex < 0 || endIndex > value.length ? value.length : endIndex;
+  return value.slice(trimmedStart, trimmedEnd);
 }
 
 /**
