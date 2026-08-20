@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -648,36 +649,33 @@ class UIInternalsTest {
 
     @Test
     void lastUpdateSentTimestamp_initializedOnCreation() {
-        long before = System.currentTimeMillis();
+        Instant before = Instant.now();
         UIInternals freshInternals = new UIInternals(ui);
 
-        assertTrue(freshInternals.getLastUpdateSentTimestamp() >= before,
+        assertFalse(
+                freshInternals.getLastUpdateSentTimestamp().isBefore(before),
                 "a UI that has not sent anything yet should report its creation time");
-        assertTrue(freshInternals.getLastUpdateSentTimestamp() <= System
-                .currentTimeMillis());
+        assertFalse(freshInternals.getLastUpdateSentTimestamp()
+                .isAfter(Instant.now()));
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_updatesLastUpdateSentTimestamp()
-            throws InterruptedException {
-        long initialTimestamp = internals.getLastUpdateSentTimestamp();
-        // The timestamp has millisecond resolution, so the purge needs to
-        // happen in another millisecond than the initialization to be visible
-        Thread.sleep(2);
+    void dumpPendingJavaScriptInvocations_updatesLastUpdateSentTimestamp() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
 
         internals.dumpPendingJavaScriptInvocations();
 
-        assertTrue(internals.getLastUpdateSentTimestamp() > initialTimestamp,
+        assertTrue(
+                internals.getLastUpdateSentTimestamp()
+                        .isAfter(initialTimestamp),
                 "purging the pending invocations should update the timestamp");
-        assertTrue(internals.getLastUpdateSentTimestamp() <= System
-                .currentTimeMillis());
+        assertFalse(
+                internals.getLastUpdateSentTimestamp().isAfter(Instant.now()));
     }
 
     @Test
-    void pendingJsInvocationNotPurged_lastUpdateSentTimestampNotUpdated()
-            throws InterruptedException {
-        long initialTimestamp = internals.getLastUpdateSentTimestamp();
-        Thread.sleep(2);
+    void pendingJsInvocationNotPurged_lastUpdateSentTimestampNotUpdated() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
 
         internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
                 internals.getStateTree().getRootNode(),

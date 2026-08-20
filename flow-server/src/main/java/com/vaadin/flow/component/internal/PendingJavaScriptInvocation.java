@@ -155,7 +155,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     private void stopCounting() {
         if (countedIn != null) {
-            countedIn.decrementUndeliveredJsInvocations();
+            countedIn.addUndeliveredJsInvocations(-1);
             countedIn = null;
         }
     }

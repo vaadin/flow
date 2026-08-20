@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -404,8 +405,8 @@ public class UI extends Component
      * and stop scheduling new ones until the client catches up:
      *
      * <pre>
-     * if (System.currentTimeMillis()
-     *         - ui.getLastUpdateSentTimestamp() &lt; STALE_THRESHOLD) {
+     * if (Duration.between(ui.getLastUpdateSentTimestamp(), Instant.now())
+     *         .compareTo(STALE_THRESHOLD) &lt; 0) {
      *     ui.access(() -&gt; binder.readBean(updatedBean));
      * }
      * </pre>
@@ -413,11 +414,10 @@ public class UI extends Component
      * Note that this timestamp only tells when the updates were written towards
      * the client, not that the client received them.
      *
-     * @return the time the pending updates were last purged, in milliseconds
-     *         since the epoch
+     * @return the time the pending updates were last purged
      * @since 25.3
      */
-    public long getLastUpdateSentTimestamp() {
+    public Instant getLastUpdateSentTimestamp() {
         return getInternals().getLastUpdateSentTimestamp();
     }
 

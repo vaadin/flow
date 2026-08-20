@@ -24,14 +24,12 @@ import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.PushConnection;
 
 /**
- * Keeps track of how many JavaScript invocations have been scheduled for a
- * state node without being sent to the browser, and logs a warning when the
- * number keeps growing.
+ * Keeps track of how many JavaScript invocations have been scheduled for a UI
+ * without being sent to the browser, and logs a warning when there are too many
+ * of them.
  * <p>
  * Invocations are retained in memory until they are sent to the browser, so an
  * application that schedules invocations that are never delivered - typically
@@ -43,18 +41,11 @@ import com.vaadin.flow.server.communication.PushConnection;
 final class PendingJavaScriptInvocationUtil {
 
     /**
-     * The number of undelivered invocations for one owner that triggers the
-     * first warning, unless configured with
-     * {@link InitParameters#PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD}.
+     * The number of undelivered invocations for one UI that triggers the
+     * warning. A number this high means that something is wrong regardless of
+     * what the application does, so it is not made configurable.
      */
-    static final int DEFAULT_WARNING_THRESHOLD = 1000;
-
-    /**
-     * Invocation counts are only inspected at multiples of this value to keep
-     * the scheduling path cheap, which means that a configured threshold is in
-     * practice rounded up to a multiple of it.
-     */
-    private static final int CHECK_GRANULARITY = 100;
+    static final int WARNING_THRESHOLD = 1000;
 
     private static final int MAX_LOGGED_EXPRESSION_LENGTH = 120;
 
@@ -84,17 +75,17 @@ final class PendingJavaScriptInvocationUtil {
             return null;
         }
 
-        int count = internals.incrementUndeliveredJsInvocations();
-        if (count % CHECK_GRANULARITY == 0) {
-            int threshold = getWarningThreshold();
-            if (shouldWarn(count, threshold)) {
-                Logger logger = getLogger();
-                logger.warn(buildWarningMessage(invocation, count, threshold));
-                if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            "Call site of the JavaScript invocation that triggered the warning above",
-                            new Throwable("executeJs call site"));
-                }
+        int count = internals.addUndeliveredJsInvocations(1);
+        if (count == WARNING_THRESHOLD
+                && internals.markUndeliveredJsInvocationsWarningLogged()) {
+            Logger logger = getLogger();
+            if (logger.isWarnEnabled()) {
+                logger.warn(buildWarningMessage(invocation, count));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Call site of the JavaScript invocation that triggered the warning above",
+                        new Throwable("executeJs call site"));
             }
         }
         return internals;
@@ -110,62 +101,9 @@ final class PendingJavaScriptInvocationUtil {
         return ui == null ? null : ui.getInternals();
     }
 
-    /**
-     * Checks whether the given number of undelivered invocations should be
-     * warned about. The first warning is logged when the threshold is reached
-     * and repeated whenever the count grows tenfold, so that a leaking
-     * application logs a handful of warnings instead of thousands.
-     *
-     * @param count
-     *            the number of undelivered invocations
-     * @param threshold
-     *            the configured warning threshold, or a non-positive value if
-     *            warnings are disabled
-     * @return <code>true</code> if a warning should be logged
-     */
-    // Non-private for testing purposes
-    static boolean shouldWarn(int count, int threshold) {
-        if (threshold <= 0 || count < threshold || count % threshold != 0) {
-            return false;
-        }
-        return isPowerOfTen(count / threshold);
-    }
-
-    private static boolean isPowerOfTen(int value) {
-        int remaining = value;
-        while (remaining > 1 && remaining % 10 == 0) {
-            remaining /= 10;
-        }
-        return remaining == 1;
-    }
-
-    private static int getWarningThreshold() {
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return DEFAULT_WARNING_THRESHOLD;
-        }
-        String configured = service.getDeploymentConfiguration()
-                .getStringProperty(
-                        InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD,
-                        null);
-        if (configured == null) {
-            return DEFAULT_WARNING_THRESHOLD;
-        }
-        try {
-            return Integer.parseInt(configured.trim());
-        } catch (NumberFormatException e) {
-            getLogger().warn(
-                    "Ignoring the value '{}' of the {} configuration property since it is not a number. Using the default of {}.",
-                    configured,
-                    InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD,
-                    DEFAULT_WARNING_THRESHOLD);
-            return DEFAULT_WARNING_THRESHOLD;
-        }
-    }
-
     // Non-private for testing purposes
     static String buildWarningMessage(PendingJavaScriptInvocation invocation,
-            int count, int threshold) {
+            int count) {
         StateNode owner = invocation.getOwner();
 
         return String.format(
@@ -176,13 +114,11 @@ final class PendingJavaScriptInvocationUtil {
                         + "either keep the PendingJavaScriptResult returned by executeJs and call cancelExecution() on it before scheduling the next one, "
                         + "or set an element property instead (element.setProperty(...)), since only the last value of a property is sent. "
                         + "A background task can also compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
-                        + "This warning repeats when the count grows tenfold. Enable debug logging for %s to log the call site, or set the %s configuration property to change the threshold of %d (0 disables the warning).",
+                        + "This is logged once per UI. Enable debug logging for %s to also log the call site of the invocation, or turn that logger off to silence the warning.",
                 count, describeOwner(owner),
                 describeExpression(invocation.getInvocation().getExpression()),
                 describeState(owner),
-                PendingJavaScriptInvocationUtil.class.getName(),
-                InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD,
-                threshold);
+                PendingJavaScriptInvocationUtil.class.getName());
     }
 
     private static String describeOwner(StateNode owner) {

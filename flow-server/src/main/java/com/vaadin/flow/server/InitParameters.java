@@ -446,16 +446,4 @@ public class InitParameters implements Serializable {
     @Deprecated
     public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
 
-    /**
-     * Configuration name for the number of JavaScript invocations that can be
-     * scheduled for a single component without being sent to the browser before
-     * a warning is logged. Set to 0 to disable the warning.
-     * <p>
-     * Defaults to 1000. The warning is repeated whenever the number of
-     * undelivered invocations grows tenfold.
-     *
-     * @since 25.3
-     */
-    public static final String PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD = "pendingJavaScriptInvocationsWarningThreshold";
-
 }

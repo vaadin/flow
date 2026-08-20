@@ -23,12 +23,10 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.tests.util.MockUI;
 
-import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.DEFAULT_WARNING_THRESHOLD;
+import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.WARNING_THRESHOLD;
 import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.buildWarningMessage;
-import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.shouldWarn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,29 +38,45 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void shouldWarn_firstWarningAtThresholdAndThenTenfold() {
-        assertFalse(shouldWarn(999, 1000), "below the threshold");
-        assertTrue(shouldWarn(1000, 1000), "at the threshold");
-        assertFalse(shouldWarn(2000, 1000),
-                "twice the threshold should not warn again");
-        assertFalse(shouldWarn(9000, 1000));
-        assertTrue(shouldWarn(10000, 1000), "tenfold the threshold");
-        assertFalse(shouldWarn(20000, 1000));
-        assertTrue(shouldWarn(100000, 1000), "hundredfold the threshold");
+    void warningLoggedOncePerUI_evenIfTheCountKeepsCrossingTheThreshold() {
+        UIInternals internals = new MockUI().getInternals();
+
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should be logged when the threshold is first exceeded");
+        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should not be logged again for the same UI");
     }
 
     @Test
-    void shouldWarn_customThreshold_warningsFollowTheThreshold() {
-        assertFalse(shouldWarn(200, 300));
-        assertTrue(shouldWarn(300, 300));
-        assertFalse(shouldWarn(600, 300));
-        assertTrue(shouldWarn(3000, 300));
+    void invocationsBelowTheThreshold_noWarningLogged() {
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        StateNode node = attachedNode(ui);
+
+        for (int i = 0; i < WARNING_THRESHOLD - 1; i++) {
+            createInvocation(node);
+        }
+
+        assertEquals(WARNING_THRESHOLD - 1,
+                internals.addUndeliveredJsInvocations(0));
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "no warning should have been logged below the threshold");
     }
 
     @Test
-    void shouldWarn_zeroOrNegativeThreshold_neverWarns() {
-        assertFalse(shouldWarn(1000000, 0), "0 should disable the warning");
-        assertFalse(shouldWarn(1000000, -1));
+    void invocationsReachingTheThreshold_warningLogged() {
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        StateNode node = attachedNode(ui);
+
+        for (int i = 0; i < WARNING_THRESHOLD; i++) {
+            createInvocation(node);
+        }
+
+        assertEquals(WARNING_THRESHOLD,
+                internals.addUndeliveredJsInvocations(0));
+        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should have been logged when reaching the threshold");
     }
 
     @Test
@@ -72,14 +86,14 @@ class PendingJavaScriptInvocationUtilTest {
         StateNode node = attachedNode(ui);
 
         PendingJavaScriptInvocation invocation = createInvocation(node);
-        assertEquals(1, internals.getUndeliveredJsInvocations(),
+        assertEquals(1, internals.addUndeliveredJsInvocations(0),
                 "a scheduled invocation should be counted");
 
         createInvocation(node);
-        assertEquals(2, internals.getUndeliveredJsInvocations());
+        assertEquals(2, internals.addUndeliveredJsInvocations(0));
 
         invocation.setSentToBrowser();
-        assertEquals(1, internals.getUndeliveredJsInvocations(),
+        assertEquals(1, internals.addUndeliveredJsInvocations(0),
                 "a sent invocation should no longer be counted");
     }
 
@@ -91,12 +105,12 @@ class PendingJavaScriptInvocationUtilTest {
                 attachedNode(ui));
 
         assertTrue(invocation.cancelExecution());
-        assertEquals(0, internals.getUndeliveredJsInvocations(),
+        assertEquals(0, internals.addUndeliveredJsInvocations(0),
                 "a canceled invocation should no longer be counted");
 
         assertFalse(invocation.cancelExecution(),
                 "canceling twice should have no effect");
-        assertEquals(0, internals.getUndeliveredJsInvocations());
+        assertEquals(0, internals.addUndeliveredJsInvocations(0));
     }
 
     @Test
@@ -106,7 +120,7 @@ class PendingJavaScriptInvocationUtilTest {
 
         createInvocation(detachedNode);
 
-        assertEquals(1, ui.getInternals().getUndeliveredJsInvocations(),
+        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
                 "an invocation for a detached owner should be counted in the UI that scheduled it");
     }
 
@@ -124,8 +138,7 @@ class PendingJavaScriptInvocationUtilTest {
     @Test
     void warningMessage_containsCauseAndAdvice() {
         StateNode node = new StateNode(ElementData.class);
-        String message = buildWarningMessage(createInvocation(node), 1000,
-                DEFAULT_WARNING_THRESHOLD);
+        String message = buildWarningMessage(createInvocation(node), 1000);
 
         assertTrue(
                 message.startsWith(
@@ -141,17 +154,14 @@ class PendingJavaScriptInvocationUtilTest {
         assertTrue(message.contains("UI.getLastUpdateSentTimestamp()"),
                 "the message should point to the API for detecting that updates are not delivered: "
                         + message);
-        assertTrue(message.contains(
-                InitParameters.PENDING_JAVASCRIPT_INVOCATIONS_WARNING_THRESHOLD),
-                "the message should tell how to configure the threshold: "
-                        + message);
+        assertTrue(message.contains("logged once per UI"),
+                "the message should tell that it is not repeated: " + message);
     }
 
     @Test
     void warningMessage_detachedOwner_explainsThatOwnerIsDetached() {
         StateNode node = new StateNode(ElementData.class);
-        String message = buildWarningMessage(createInvocation(node), 1000,
-                DEFAULT_WARNING_THRESHOLD);
+        String message = buildWarningMessage(createInvocation(node), 1000);
 
         assertTrue(message.contains("not attached to a UI"), message);
     }
@@ -164,8 +174,7 @@ class PendingJavaScriptInvocationUtilTest {
         component.setVisible(false);
 
         String message = buildWarningMessage(
-                createInvocation(component.getElement().getNode()), 1000,
-                DEFAULT_WARNING_THRESHOLD);
+                createInvocation(component.getElement().getNode()), 1000);
 
         assertTrue(message.contains("invisible"), message);
     }
@@ -177,8 +186,7 @@ class PendingJavaScriptInvocationUtilTest {
         ui.add(component);
 
         StateNode node = component.getElement().getNode();
-        String message = buildWarningMessage(createInvocation(node), 1000,
-                DEFAULT_WARNING_THRESHOLD);
+        String message = buildWarningMessage(createInvocation(node), 1000);
 
         assertTrue(message.contains("no open push connection"), message);
         assertTrue(
@@ -193,10 +201,8 @@ class PendingJavaScriptInvocationUtilTest {
         String expression = "return (async function() {\n    this.invalid = $0;\n"
                 + "x".repeat(500) + "\n}).apply($1)";
 
-        String message = buildWarningMessage(
-                new PendingJavaScriptInvocation(node,
-                        new JavaScriptInvocation(expression)),
-                1000, DEFAULT_WARNING_THRESHOLD);
+        String message = buildWarningMessage(new PendingJavaScriptInvocation(
+                node, new JavaScriptInvocation(expression)), 1000);
 
         assertFalse(message.contains("\n"),
                 "the expression should be logged on a single line: " + message);
@@ -213,12 +219,12 @@ class PendingJavaScriptInvocationUtilTest {
         ui.add(component);
 
         component.getElement().executeJs("this.foo = $0", "bar");
-        assertEquals(1, ui.getInternals().getUndeliveredJsInvocations());
+        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().dumpPendingJavaScriptInvocations();
 
-        assertEquals(0, ui.getInternals().getUndeliveredJsInvocations(),
+        assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
                 "invocations sent to the browser should not be counted");
     }
 
