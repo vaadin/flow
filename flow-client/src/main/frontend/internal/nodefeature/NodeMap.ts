@@ -30,10 +30,18 @@ import { NodeFeature, type JsonValue } from './NodeFeature';
 // com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_PROPERTIES
 const ELEMENT_PROPERTIES = 1;
 
-/** Fired when a new property is added to a map; mirrors MapPropertyAddEvent. */
+/**
+ * Event fired when a property is added to a {@link NodeMap}.
+ */
 export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
   readonly #property: MapProperty;
 
+  /**
+   * Creates a new property add event.
+   *
+   * @param source - the changed map
+   * @param property - the newly added property
+   */
   constructor(source: NodeMap, property: MapProperty) {
     super(source);
     this.#property = property;
@@ -43,15 +51,35 @@ export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
     return super.getSource() as NodeMap;
   }
 
+  /**
+   * Gets the added property.
+   *
+   * @returns the added property
+   */
   getProperty(): MapProperty {
     return this.#property;
   }
 }
 
-/** Listener for property additions; mirrors MapPropertyAddListener. */
+/**
+ * Listener notified when a property is added to a {@link NodeMap}.
+ *
+ * Invoked when a property is added.
+ *
+ * @param event - the property add event
+ */
 export type MapPropertyAddListener = (event: MapPropertyAddEvent) => void;
 
-/** A state node feature that structures data as a map; mirrors NodeMap.java. */
+/**
+ * A state node feature that structures data as a map.
+ *
+ * The feature works as a reactive value with regards to the set of available
+ * properties. A {@link Computation} will get a dependency on this feature by
+ * iterating the properties. Accessing a property by name does not create a
+ * dependency. The `Computation` is invalidated when a property is
+ * added (properties are never removed). It is not invalidated when the value of
+ * a property changes since the property is a reactive values of its own.
+ */
 export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOwner {
   readonly #properties = new Map<string, MapProperty>();
 
@@ -61,6 +89,15 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
     (listener, event) => listener(event)
   );
 
+  /**
+   * Gets the property with a given name, creating it if necessary.
+   *
+   * A {@link MapPropertyAddEvent} is fired if a new property instance is
+   * created.
+   *
+   * @param name - the name of the property
+   * @returns the property instance
+   */
   getProperty(name: string): MapProperty {
     let property = this.#properties.get(name);
     if (property === undefined) {
@@ -73,6 +110,12 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
     return property;
   }
 
+  /**
+   * Checks if the given property is present and has a value.
+   *
+   * @param name - the name of the property to check
+   * @returns true if the property exists and has a value, false otherwise
+   */
   hasPropertyValue(name: string): boolean {
     const property = this.#properties.get(name);
     if (property === undefined) {
@@ -81,17 +124,33 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
     return property.hasValue();
   }
 
+  /**
+   * Iterates all properties in this map.
+   *
+   * @param callback - the callback to invoke for each property
+   */
   forEachProperty(callback: (property: MapProperty, name: string) => void): void {
     this.#eventRouter.registerRead();
     this.#properties.forEach((property, name) => callback(property, name));
   }
 
+  /**
+   * Gets all property names in this map.
+   *
+   * @returns a list with the property names, never `null`
+   */
   getPropertyNames(): string[] {
     const list: string[] = [];
     this.forEachProperty((_property, name) => list.push(name));
     return list;
   }
 
+  /**
+   * Gets a JSON object representing the contents of this feature. Only
+   * intended for debugging purposes.
+   *
+   * @returns a JSON representation
+   */
   override getDebugJson(): JsonValue {
     const json: Record<string, JsonValue> = {};
 
@@ -108,6 +167,14 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
     return json;
   }
 
+  /**
+   * Convert the feature values into a {@link JsonValue} using provided
+   * `converter` for the values stored in the feature (i.e. primitive
+   * types, StateNodes).
+   *
+   * @param converter - converter to convert values stored in the feature
+   * @returns resulting converted value
+   */
   override convert(converter: (value: unknown) => JsonValue): JsonValue {
     const json: Record<string, JsonValue> = {};
 
@@ -120,10 +187,24 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
     return json;
   }
 
+  /**
+   * Adds a listener that has a dependency to this value, and should be
+   * notified when this value changes.
+   *
+   * @param reactiveValueChangeListener - the listener to add
+   * @returns an event remover that can be used for removing the added listener
+   */
   addReactiveValueChangeListener(reactiveValueChangeListener: ReactiveValueChangeListener): EventRemover {
     return this.#eventRouter.addReactiveListener(reactiveValueChangeListener);
   }
 
+  /**
+   * Adds a listener that is informed whenever a new property is added to this
+   * map.
+   *
+   * @param listener - the property add listener
+   * @returns an event remover that can be used for removing the added listener
+   */
   addPropertyAddListener(listener: MapPropertyAddListener): EventRemover {
     return this.#eventRouter.addListener(listener);
   }
