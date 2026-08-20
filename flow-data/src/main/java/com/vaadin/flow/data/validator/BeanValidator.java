@@ -121,7 +121,8 @@ public class BeanValidator implements Validator<Object> {
      * @throws IllegalStateException
      *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
      *             false
-     * @since 25.3
+     * @throws IllegalArgumentException
+     *             if any of the given validation groups is not an interface
      */
     public BeanValidator(Class<?> beanType, String propertyName,
             Class<?>... validationGroups) {
@@ -145,7 +146,6 @@ public class BeanValidator implements Validator<Object> {
      * @throws IllegalStateException
      *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
      *             false
-     * @since 25.3
      */
     public BeanValidator(Class<?> beanType, String propertyName,
             SerializableSupplier<Class<?>[]> validationGroupsSupplier) {
@@ -166,8 +166,19 @@ public class BeanValidator implements Validator<Object> {
 
     private static SerializableSupplier<Class<?>[]> groupsSupplier(
             Class<?>[] validationGroups) {
-        Class<?>[] groups = validationGroups == null ? NO_GROUPS
-                : validationGroups.clone();
+        if (validationGroups == null || validationGroups.length == 0) {
+            return () -> NO_GROUPS;
+        }
+        Class<?>[] groups = validationGroups.clone();
+        for (Class<?> group : groups) {
+            Objects.requireNonNull(group, "validation group cannot be null");
+            if (!group.isInterface()) {
+                throw new IllegalArgumentException("The validation group "
+                        + group.getName() + " is not an interface. "
+                        + "A validation group has to be an interface, "
+                        + "see the Jakarta Bean Validation specification.");
+            }
+        }
         return () -> groups;
     }
 
@@ -176,7 +187,6 @@ public class BeanValidator implements Validator<Object> {
      * array means that the {@linkplain Default default group} is used.
      *
      * @return the validation groups, not null
-     * @since 25.3
      */
     public Class<?>[] getValidationGroups() {
         return validationGroups().clone();

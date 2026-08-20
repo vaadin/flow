@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.binder;
 
+import jakarta.validation.GroupSequence;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.Default;
@@ -31,6 +32,7 @@ import com.vaadin.flow.data.validator.BeanValidator;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -54,6 +56,13 @@ class BeanValidationGroupsTest {
      * validates the constraints of the Publish group.
      */
     public interface FinalPublish extends Publish {
+    }
+
+    /**
+     * Group sequence that refers to the Draft and Publish groups.
+     */
+    @GroupSequence({ Draft.class, Publish.class })
+    public interface FullPublish {
     }
 
     public static class Article implements Serializable {
@@ -366,6 +375,135 @@ class BeanValidationGroupsTest {
                 new BeanValidationBinder<>(Article.class, Publish.class));
 
         BinderTestBase.testSerialization(binder);
+    }
+
+    @Test
+    void requiredIndicator_groupSequenceIsExpanded() {
+        bind(new BeanValidationBinder<>(Article.class, FullPublish.class));
+
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "a constraint of a group of the sequence should mark the "
+                        + "field required");
+    }
+
+    @Test
+    void configuredGroups_groupSequenceIsValidated() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, FullPublish.class));
+
+        titleField.setValue("Flow 25");
+        summaryField.setValue("");
+        bodyField.setValue("A long enough body");
+
+        assertFalse(binder.isValid(),
+                "the constraints of the groups of the sequence should be "
+                        + "validated");
+    }
+
+    @Test
+    void requiredIndicator_isUpdatedWhenGroupsAreConfiguredAfterBinding() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+
+        assertTrue(titleField.isRequiredIndicatorVisible());
+        assertFalse(summaryField.isRequiredIndicatorVisible());
+
+        binder.setValidationGroups(Publish.class);
+
+        assertFalse(titleField.isRequiredIndicatorVisible(),
+                "the Default group is no longer validated");
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "the Publish group is now validated");
+
+        binder.setValidationGroups();
+
+        assertTrue(titleField.isRequiredIndicatorVisible(),
+                "the Default group is validated again");
+        assertFalse(summaryField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    void requiredIndicator_setByApplicationIsNotOverridden() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+        titleField.setRequiredIndicatorVisible(false);
+        summaryField.setRequiredIndicatorVisible(true);
+
+        binder.setValidationGroups(Publish.class);
+
+        assertFalse(titleField.isRequiredIndicatorVisible(),
+                "an indicator hidden by the application should stay hidden");
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "an indicator shown by the application should stay visible");
+    }
+
+    @Test
+    void invalidValidationGroup_failsFast() {
+        BeanValidationBinder<Article> binder = new BeanValidationBinder<>(
+                Article.class);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> binder.setValidationGroups(Article.class));
+        assertTrue(exception.getMessage().contains("not an interface"),
+                exception.getMessage());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new BeanValidationBinder<>(Article.class, Article.class));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BeanValidator(Article.class, "summary",
+                        Article.class));
+        assertThrows(IllegalArgumentException.class,
+                () -> binder.validate(Article.class));
+        assertThrows(NullPointerException.class,
+                () -> binder.setValidationGroups(Publish.class, null));
+    }
+
+    @Test
+    void nestedOneShotValidation_restoresTheOuterGroups() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+        List<Class<?>[]> groupsAfterNestedValidation = new ArrayList<>();
+        binder.setValidationStatusHandler(status -> {
+            if (groupsAfterNestedValidation.isEmpty()) {
+                // Nested validation triggered while the outer one is running
+                binder.isValid(Draft.class);
+                groupsAfterNestedValidation.add(binder.getValidationGroups());
+            }
+        });
+
+        binder.validate(Publish.class);
+
+        assertArrayEquals(new Class<?>[] { Publish.class },
+                groupsAfterNestedValidation.get(0),
+                "the groups of the outer validation should be restored");
+        assertEquals(0, binder.getValidationGroups().length);
+    }
+
+    @Test
+    void isValidWithGroups_doesNotShowTheValidationResults() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+
+        assertFalse(binder.isValid(Draft.class),
+                "the Draft group should be violated by the too short body");
+        assertFalse(bodyField.isInvalid(),
+                "isValid should not mark the field invalid");
+
+        assertFalse(binder.validate(Draft.class).isOk());
+        assertTrue(bodyField.isInvalid(),
+                "validate should mark the field invalid");
+    }
+
+    @Test
+    void nestedScanningConstructor_usesTheGivenGroups() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class, true, Publish.class));
+
+        assertArrayEquals(new Class<?>[] { Publish.class },
+                binder.getValidationGroups());
+        assertTrue(summaryField.isRequiredIndicatorVisible());
+        assertFalse(binder.isValid());
     }
 
     private <T extends BeanValidationBinder<Article>> T bind(T binder) {
