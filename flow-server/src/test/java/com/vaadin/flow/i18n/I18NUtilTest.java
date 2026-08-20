@@ -17,6 +17,7 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -288,6 +289,48 @@ class I18NUtilTest {
                 .getDefaultTranslationLocales(urlClassLoader);
         assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // A jar nested inside another archive, as in a Spring Boot executable jar,
+    // is not a file on disk, and only the connection of the resource can reach
+    // it. The translations must be read through that connection.
+    // https://github.com/vaadin/flow/issues/25269
+    @Test
+    void nestedJarServedThroughItsOwnConnection_findsLanguages()
+            throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        URLStreamHandler nestedJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                return new JarURLConnection(url) {
+                    @Override
+                    public JarFile getJarFile() throws IOException {
+                        return new JarFile(path.toFile());
+                    }
+
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:file:/app.jar!/BOOT-INF/lib/fake.jar!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                nestedJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a nested jar should be resolved");
 
         assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");
