@@ -1,12 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import type { MapProperty } from '../../main/frontend/internal/nodefeature/MapProperty';
-import type { MapPropertyChangeEvent } from '../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
-import { NodeMap } from '../../main/frontend/internal/nodefeature/NodeMap';
-import type { MapPropertyAddEvent } from '../../main/frontend/internal/nodefeature/MapPropertyAddEvent';
-import type { NodeFeatureNode } from '../../main/frontend/internal/nodefeature/NodeFeature';
-import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
+import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
+import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
+import type { MapProperty } from '../../../../main/frontend/internal/nodefeature/MapProperty';
+import type { MapPropertyChangeEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
+import { NodeMap } from '../../../../main/frontend/internal/nodefeature/NodeMap';
+import type { MapPropertyAddEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyAddEvent';
+import type { NodeFeatureNode } from '../../../../main/frontend/internal/nodefeature/NodeFeature';
+import { NodeFeatures } from '../../../../main/frontend/internal/nodefeature/NodeFeatures';
 
 // Minimal StateNode stand-in; node-feature tests do not reach into the tree.
 const node: NodeFeatureNode = {

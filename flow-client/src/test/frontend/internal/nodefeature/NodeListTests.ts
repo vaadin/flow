@@ -1,9 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { NodeList } from '../../main/frontend/internal/nodefeature/NodeList';
-import type { ListSpliceEvent } from '../../main/frontend/internal/nodefeature/ListSpliceEvent';
-import type { NodeFeatureNode } from '../../main/frontend/internal/nodefeature/NodeFeature';
+import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
+import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
+import { NodeList } from '../../../../main/frontend/internal/nodefeature/NodeList';
+import type { ListSpliceEvent } from '../../../../main/frontend/internal/nodefeature/ListSpliceEvent';
+import type { NodeFeatureNode } from '../../../../main/frontend/internal/nodefeature/NodeFeature';
 
 const node: NodeFeatureNode = {
   getTree: () => {
