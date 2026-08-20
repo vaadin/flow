@@ -26,7 +26,9 @@ import {
 } from '../reactive/reactive';
 import { NodeFeature, type JsonValue } from './NodeFeature';
 
-/** Fired when a list's structure changes; mirrors ListSpliceEvent. */
+/**
+ * Event fired when the structure of a {@link NodeList} changes.
+ */
 export class ListSpliceEvent extends ReactiveValueChangeEvent {
   readonly #index: number;
 
@@ -48,27 +50,63 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
     return super.getSource() as NodeList;
   }
 
+  /**
+   * Gets the start index of the changes.
+   *
+   * @returns the start index of the changes
+   */
   getIndex(): number {
     return this.#index;
   }
 
+  /**
+   * Gets an array of removed items.
+   *
+   * @returns array of removed items, not `null`
+   */
   getRemove(): unknown[] {
     return this.#remove;
   }
 
+  /**
+   * Gets an array of added items.
+   *
+   * @returns array of added items, not `null`
+   */
   getAdd(): unknown[] {
     return this.#add;
   }
 
+  /**
+   * Gets whether this event is a `clear` event.
+   *
+   * @returns `true` if the event was triggered after a full clear,
+   *         `false` otherwise.
+   */
   isClear(): boolean {
     return this.#clear;
   }
 }
 
-/** Listener for list structure changes; mirrors ListSpliceListener. */
+/**
+ * Listener notified when the structure of a node list changes.
+ *
+ * @param event - the list splice event
+ */
 export type ListSpliceListener = (event: ListSpliceEvent) => void;
 
-/** A state node feature that structures data as a list; mirrors NodeList.java. */
+/**
+ * A state node feature that structures data as a list.
+ *
+ * The list works as a reactive value with regards to its structure. A
+ * {@link Computation} will get a dependency on this list for any read operation
+ * that depends on the list structure, such as querying the length, iterating
+ * the list or finding the index of an item. Accessing an item by index does not
+ * create a dependency. The `Computation` is invalidated when items
+ * are added, removed, reordered or replaced. It is not invalidated when the
+ * contents of an item is updated since all items are expected to be either
+ * immutable or reactive values of their own.
+ */
 export class NodeList extends NodeFeature implements ReactiveValue {
   readonly #values: unknown[] = [];
 
@@ -80,34 +118,83 @@ export class NodeList extends NodeFeature implements ReactiveValue {
     (listener, event) => listener(event)
   );
 
+  /**
+   * Gets the number of items in this list.
+   *
+   * @returns the number of items
+   */
   length(): number {
     this.#eventRouter.registerRead();
     return this.#values.length;
   }
 
+  /**
+   * Gets the item at the given index.
+   *
+   * @param index - the index
+   * @returns the item at the index
+   */
   get(index: number): unknown {
     return this.#values[index];
   }
 
+  /**
+   * Sets the value at the given index.
+   *
+   * @param index - the index
+   * @param value - the value to set
+   */
   set(index: number, value: unknown): void {
     this.#values[index] = value;
   }
 
+  /**
+   * Shorthand for adding the given item at the given index. This method
+   * delegates to {@link splice} which updates the list
+   * contents and fires the appropriate event.
+   *
+   * @param index - the index where the item should be added
+   * @param item - the new item to add
+   */
   add(index: number, item: unknown): void {
     this.splice(index, 0, [item]);
   }
 
+  /**
+   * Removes and adds a number of items at the given index.
+   *
+   * This causes a {@link ListSpliceEvent} to be fired.
+   *
+   * Port deviation: merges the Java `splice(int, int)` and
+   * `splice(int, int, JsArray)` overloads into one method with an optional
+   * `add` argument; omitting `add` removes items without adding any.
+   *
+   * @param index - the index at which do do the operation
+   * @param remove - the number of items to remove
+   * @param add - an array of new items to add
+   */
   splice(index: number, remove: number, add?: unknown[]): void {
     const removed = add === undefined ? this.#values.splice(index, remove) : this.#values.splice(index, remove, ...add);
     this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index, remove: removed, add: add ?? [], clear: false }));
   }
 
+  /**
+   * Removes all the nodes from the list. This causes a
+   * {@link ListSpliceEvent} to be fired, with
+   * {@link ListSpliceEvent.isClear} as `true`.
+   */
   clear(): void {
     this.#hasBeenClearedState = true;
     const removed = this.#values.splice(0, this.#values.length);
     this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index: 0, remove: removed, add: [], clear: true }));
   }
 
+  /**
+   * Gets a JSON object representing the contents of this feature. Only
+   * intended for debugging purposes.
+   *
+   * @returns a JSON representation
+   */
   override getDebugJson(): JsonValue {
     const json: JsonValue[] = [];
     for (const value of this.#values) {
@@ -116,6 +203,14 @@ export class NodeList extends NodeFeature implements ReactiveValue {
     return json;
   }
 
+  /**
+   * Convert the feature values into a {@link JsonValue} using provided
+   * `converter` for the values stored in the feature (i.e. primitive
+   * types, StateNodes).
+   *
+   * @param converter - converter to convert values stored in the feature
+   * @returns resulting converted value
+   */
   override convert(converter: (value: unknown) => JsonValue): JsonValue {
     const json: JsonValue[] = [];
     for (const value of this.#values) {
@@ -124,6 +219,12 @@ export class NodeList extends NodeFeature implements ReactiveValue {
     return json;
   }
 
+  /**
+   * Adds a listener that will be notified when the list structure changes.
+   *
+   * @param listener - the list change listener
+   * @returns an event remover that can be used for removing the added listener
+   */
   addSpliceListener(listener: ListSpliceListener): EventRemover {
     return this.#eventRouter.addListener(listener);
   }
@@ -132,11 +233,21 @@ export class NodeList extends NodeFeature implements ReactiveValue {
     return this.#eventRouter.addReactiveListener(reactiveValueChangeListener);
   }
 
+  /**
+   * Iterates all values in this list.
+   *
+   * @param callback - the callback to invoke for each value
+   */
   forEach(callback: (value: unknown) => void): void {
     this.#eventRouter.registerRead();
     this.#values.forEach((value) => callback(value));
   }
 
+  /**
+   * Returns `true` if the list instance has been cleared at some point.
+   *
+   * @returns `true` if the list instance has been cleared
+   */
   hasBeenCleared(): boolean {
     return this.#hasBeenClearedState;
   }

@@ -14,7 +14,14 @@
  * the License.
  */
 
-// Node feature ids, mirroring com.vaadin.flow.internal.nodefeature.NodeFeatures.
+/**
+ * Registry of node feature id numbers and map keys shared between server and
+ * client.
+ *
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeFeatures.
+ */
 export const NodeFeatures = {
   ELEMENT_DATA: 0,
   ELEMENT_PROPERTIES: 1,
@@ -44,9 +51,14 @@ export const NodeFeatures = {
   SIGNAL_BINDING: 27
 } as const;
 
-// Reserved node property names, mirroring
-// com.vaadin.flow.internal.nodefeature.NodeProperties (only the entries the
-// ported client code needs so far).
+/**
+ * Various node properties' ids.
+ *
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeProperties,
+ * containing only the entries the ported client code needs so far.
+ */
 export const NodeProperties = {
   TAG: 'tag',
   NAMESPACE: 'namespace',
