@@ -6,7 +6,10 @@ import type { ReactiveValueChangeListener } from '../../main/frontend/internal/r
 // Mirrors the Java TestReactiveEventRouter test helper: a router whose source
 // routes change registrations back to itself, with an invalidate() that fires a
 // change event.
-export class TestReactiveEventRouter extends ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> {
+export class TestReactiveEventRouter extends ReactiveEventRouter<
+  ReactiveValueChangeListener,
+  ReactiveValueChangeEvent
+> {
   constructor() {
     const source: ReactiveValue = {
       addReactiveValueChangeListener: () => {
