@@ -21,7 +21,7 @@
 // changes (reactively).
 
 import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { Reactive } from '../reactive/reactive';
+import { Reactive } from '../reactive/Reactive';
 
 // com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap
 const DIALOG_TEXT_KEY = 'dialogText';
