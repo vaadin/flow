@@ -23,8 +23,6 @@ env:
   _PR_NUMBER: ${{ github.event.number }}
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
-  # Defined once so every job builds with the same Maven
-  MAVEN_VERSION: '3.9.16'
 jobs:
   build:
     timeout-minutes: 30
@@ -53,10 +51,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -99,10 +93,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -212,10 +202,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -305,10 +291,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
       - name: Set flow version to 999.99-SNAPSHOT
         # The saved workspace was built as 999.99-SNAPSHOT; the poms must
         # match it for the restored target directories and .m2 artifacts
@@ -460,10 +442,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
