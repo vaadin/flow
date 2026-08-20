@@ -1,13 +1,13 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
+import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
+import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
 import {
   MapProperty,
   type MapPropertyNode,
   type MapPropertyOwner,
   type MapPropertyTree
-} from '../../main/frontend/internal/nodefeature/MapProperty';
-import type { MapPropertyChangeEvent } from '../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
+} from '../../../../main/frontend/internal/nodefeature/MapProperty';
+import type { MapPropertyChangeEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
 
 // Builds a MapProperty backed by mock state-tree contracts, recording the
 // properties synced to the server.

@@ -25,6 +25,10 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
+          // Test files use the default project. They mirror the ported modules'
+          // directory layout, so each test subdirectory is listed here (the
+          // typescript-eslint allowDefaultProject globs do not support the `**`
+          // multi-level wildcard, hence one entry per level).
           allowDefaultProject: [
             'src/test/frontend/*',
             'src/test/frontend/client/*',
@@ -71,7 +75,7 @@ export default [
     }
   },
   {
-    files: ['src/test/frontend/*.ts'],
+    files: ['src/test/frontend/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.mocha
