@@ -135,7 +135,7 @@ final class NodeInstallations {
                 .minusMonths(UNUSED_RETENTION_MONTHS).toInstant();
         List<NodeInstallation> unused = new ArrayList<>();
         for (NodeInstallation installation : installations) {
-            if (installation.isSameAs(installationInUse)) {
+            if (installation.equals(installationInUse)) {
                 continue;
             }
             Optional<Instant> lastUsed = installation.getLastUsed();

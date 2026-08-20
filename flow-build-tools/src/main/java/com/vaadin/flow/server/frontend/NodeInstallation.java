@@ -61,6 +61,12 @@ final class NodeInstallation {
     private final File directory;
 
     /**
+     * The canonical form of {@link #directory}, resolved once so that equality
+     * is not affected by symbolic links or by how the path was spelled.
+     */
+    private final File canonicalDirectory;
+
+    /**
      * Creates a handle for the installation in the given directory. The
      * directory does not have to exist.
      *
@@ -69,6 +75,16 @@ final class NodeInstallation {
      */
     NodeInstallation(File directory) {
         this.directory = Objects.requireNonNull(directory);
+        this.canonicalDirectory = canonicalize(directory);
+    }
+
+    private static File canonicalize(File directory) {
+        try {
+            return directory.getCanonicalFile();
+        } catch (IOException e) {
+            getLogger().debug("Could not canonicalize {}", directory, e);
+            return directory.getAbsoluteFile();
+        }
     }
 
     /**
@@ -205,28 +221,19 @@ final class NodeInstallation {
     }
 
     /**
-     * Checks whether the other installation lives in the same directory as this
-     * one.
-     *
-     * @param other
-     *            the installation to compare against, may be {@code null}
-     * @return {@code true} if both point at the same directory
+     * Two installations are the same when they live in the same directory,
+     * which also means they are the same Node.js version, as the directory is
+     * named after it.
      */
-    boolean isSameAs(NodeInstallation other) {
-        if (other == null) {
-            return false;
-        }
-        try {
-            return Files.isSameFile(directory.toPath(),
-                    other.directory.toPath());
-        } catch (IOException e) {
-            // Thrown when either directory does not exist, in which case
-            // comparing the paths is the best that can be done
-            getLogger().debug("Could not compare {} and {}", directory,
-                    other.directory, e);
-            return directory.getAbsoluteFile()
-                    .equals(other.directory.getAbsoluteFile());
-        }
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof NodeInstallation other
+                && canonicalDirectory.equals(other.canonicalDirectory);
+    }
+
+    @Override
+    public int hashCode() {
+        return canonicalDirectory.hashCode();
     }
 
     @Override

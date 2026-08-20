@@ -31,6 +31,7 @@ import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NodeInstallationTest {
@@ -135,25 +136,38 @@ class NodeInstallationTest {
     }
 
     @Test
-    void isSameAs_comparesDirectories() throws IOException {
+    void equals_sameDirectory_isEqual() throws IOException {
         NodeInstallation installation = create("node-v24.10.0");
         NodeInstallation other = create("node-v22.0.0");
+        NodeInstallation same = NodeInstallation.forVersion(vaadinHome,
+                "24.10.0");
 
-        assertTrue(installation
-                .isSameAs(NodeInstallation.forVersion(vaadinHome, "24.10.0")));
-        assertFalse(installation.isSameAs(other));
-        assertFalse(installation.isSameAs(null));
+        assertEquals(installation, same);
+        assertEquals(installation.hashCode(), same.hashCode());
+        assertNotEquals(installation, other);
+        assertNotEquals(installation, null);
     }
 
     @Test
-    void isSameAs_missingDirectories_comparesPaths() {
+    void equals_missingDirectories_isEqual() {
         NodeInstallation installation = NodeInstallation.forVersion(vaadinHome,
                 "v24.10.0");
 
-        assertTrue(installation
-                .isSameAs(NodeInstallation.forVersion(vaadinHome, "v24.10.0")));
-        assertFalse(installation
-                .isSameAs(NodeInstallation.forVersion(vaadinHome, "v22.0.0")));
+        assertEquals(installation,
+                NodeInstallation.forVersion(vaadinHome, "v24.10.0"));
+        assertNotEquals(installation,
+                NodeInstallation.forVersion(vaadinHome, "v22.0.0"));
+    }
+
+    @Test
+    void equals_directoryReachedThroughAnotherPath_isEqual()
+            throws IOException {
+        NodeInstallation installation = create("node-v24.10.0");
+        NodeInstallation viaDetour = new NodeInstallation(
+                new File(vaadinHome, "node-v22.0.0/../node-v24.10.0"));
+
+        assertEquals(installation, viaDetour);
+        assertEquals(installation.hashCode(), viaDetour.hashCode());
     }
 
     @Test

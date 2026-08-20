@@ -325,12 +325,16 @@ class NodeResolver implements java.io.Serializable {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
+        File installDirectory = installation.getDirectory().getParentFile();
         try {
-            String installedVersion = installation.getInstalledVersion()
-                    .getFullVersion();
+            // The directory name is only a claim, so compare the installation
+            // the binary actually is against the requested one
+            NodeInstallation reported = NodeInstallation.forVersion(
+                    installDirectory,
+                    installation.getInstalledVersion().getFullVersion());
 
-            if (NodeInstallation.normalizeVersion(installedVersion)
-                    .equals(NodeInstallation.normalizeVersion(nodeVersion))) {
+            if (reported.equals(NodeInstallation.forVersion(installDirectory,
+                    nodeVersion))) {
                 installation.markUsed();
                 return createActiveInstallation(installation,
                         installation.getVersion());
