@@ -14,86 +14,16 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.nodefeature.NodeList (and its
-// splice event/listener), on top of the TS reactive core.
+// TypeScript port of com.vaadin.client.flow.nodefeature.NodeList, on top of the
+// TS reactive core.
 
-import {
-  ReactiveEventRouter,
-  ReactiveValueChangeEvent,
-  type EventRemover,
-  type ReactiveValue,
-  type ReactiveValueChangeListener
-} from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
+import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
+import type { ReactiveValue } from '../reactive/ReactiveValue';
+import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
+import { ListSpliceEvent } from './ListSpliceEvent';
+import type { ListSpliceListener } from './ListSpliceListener';
 import { NodeFeature, type JsonValue } from './NodeFeature';
-
-/**
- * Event fired when the structure of a {@link NodeList} changes.
- */
-export class ListSpliceEvent extends ReactiveValueChangeEvent {
-  readonly #index: number;
-
-  readonly #remove: unknown[];
-
-  readonly #add: unknown[];
-
-  readonly #clear: boolean;
-
-  constructor(source: NodeList, details: { index: number; remove: unknown[]; add: unknown[]; clear: boolean }) {
-    super(source);
-    this.#index = details.index;
-    this.#remove = details.remove;
-    this.#add = details.add;
-    this.#clear = details.clear;
-  }
-
-  override getSource(): NodeList {
-    return super.getSource() as NodeList;
-  }
-
-  /**
-   * Gets the start index of the changes.
-   *
-   * @returns the start index of the changes
-   */
-  getIndex(): number {
-    return this.#index;
-  }
-
-  /**
-   * Gets an array of removed items.
-   *
-   * @returns array of removed items, not `null`
-   */
-  getRemove(): unknown[] {
-    return this.#remove;
-  }
-
-  /**
-   * Gets an array of added items.
-   *
-   * @returns array of added items, not `null`
-   */
-  getAdd(): unknown[] {
-    return this.#add;
-  }
-
-  /**
-   * Gets whether this event is a `clear` event.
-   *
-   * @returns `true` if the event was triggered after a full clear,
-   *         `false` otherwise.
-   */
-  isClear(): boolean {
-    return this.#clear;
-  }
-}
-
-/**
- * Listener notified when the structure of a node list changes.
- *
- * @param event - the list splice event
- */
-export type ListSpliceListener = (event: ListSpliceEvent) => void;
 
 /**
  * A state node feature that structures data as a list.

@@ -14,19 +14,17 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.nodefeature.MapProperty (and its
-// change event/listener), on top of the TS reactive core. The thin slice of the
-// state-tree classes it touches is declared here as contracts that NodeMap,
-// StateNode and StateTree satisfy.
+// TypeScript port of com.vaadin.client.flow.nodefeature.MapProperty, on top of
+// the TS reactive core. The thin slice of the state-tree classes it touches is
+// declared here as contracts that NodeMap, StateNode and StateTree satisfy.
 
-import {
-  Reactive,
-  ReactiveEventRouter,
-  ReactiveValueChangeEvent,
-  type EventRemover,
-  type ReactiveValue,
-  type ReactiveValueChangeListener
-} from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
+import { Reactive } from '../reactive/Reactive';
+import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
+import type { ReactiveValue } from '../reactive/ReactiveValue';
+import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
+import { MapPropertyChangeEvent } from './MapPropertyChangeEvent';
+import type { MapPropertyChangeListener } from './MapPropertyChangeListener';
 
 /**
  * Port deviation: the slice of `StateTree` that `MapProperty` uses. This
@@ -55,57 +53,6 @@ export interface MapPropertyNode {
 export interface MapPropertyOwner {
   getNode(): MapPropertyNode;
 }
-
-/**
- * Event fired when the value of a map property changes.
- */
-export class MapPropertyChangeEvent extends ReactiveValueChangeEvent {
-  readonly #oldValue: unknown;
-
-  readonly #newValue: unknown;
-
-  /**
-   * Creates a new map property change event.
-   *
-   * @param source - the changed map property
-   * @param oldValue - the old value
-   * @param newValue - the new value
-   */
-  constructor(source: MapProperty, oldValue: unknown, newValue: unknown) {
-    super(source);
-    this.#oldValue = oldValue;
-    this.#newValue = newValue;
-  }
-
-  override getSource(): MapProperty {
-    return super.getSource() as MapProperty;
-  }
-
-  /**
-   * Gets the old property value.
-   *
-   * @returns the old value
-   */
-  getOldValue(): unknown {
-    return this.#oldValue;
-  }
-
-  /**
-   * Gets the new property value.
-   *
-   * @returns the new value
-   */
-  getNewValue(): unknown {
-    return this.#newValue;
-  }
-}
-
-/**
- * Listener notified when the value of a {@link MapProperty} changes.
- *
- * @param event - the property change event
- */
-export type MapPropertyChangeListener = (event: MapPropertyChangeEvent) => void;
 
 /**
  * A property in a node map.

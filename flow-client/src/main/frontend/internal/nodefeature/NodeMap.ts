@@ -14,59 +14,18 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.nodefeature.NodeMap (and its
-// property-add event/listener), on top of the TS reactive core and MapProperty.
+// TypeScript port of com.vaadin.client.flow.nodefeature.NodeMap, on top of the
+// TS reactive core and MapProperty.
 
-import {
-  ReactiveEventRouter,
-  ReactiveValueChangeEvent,
-  type EventRemover,
-  type ReactiveValue,
-  type ReactiveValueChangeListener
-} from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
+import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
+import type { ReactiveValue } from '../reactive/ReactiveValue';
+import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
 import { MapProperty, type MapPropertyOwner } from './MapProperty';
+import { MapPropertyAddEvent } from './MapPropertyAddEvent';
+import type { MapPropertyAddListener } from './MapPropertyAddListener';
 import { NodeFeature, type JsonValue } from './NodeFeature';
 import { NodeFeatures } from './NodeFeatures';
-
-/**
- * Event fired when a property is added to a {@link NodeMap}.
- */
-export class MapPropertyAddEvent extends ReactiveValueChangeEvent {
-  readonly #property: MapProperty;
-
-  /**
-   * Creates a new property add event.
-   *
-   * @param source - the changed map
-   * @param property - the newly added property
-   */
-  constructor(source: NodeMap, property: MapProperty) {
-    super(source);
-    this.#property = property;
-  }
-
-  override getSource(): NodeMap {
-    return super.getSource() as NodeMap;
-  }
-
-  /**
-   * Gets the added property.
-   *
-   * @returns the added property
-   */
-  getProperty(): MapProperty {
-    return this.#property;
-  }
-}
-
-/**
- * Listener notified when a property is added to a {@link NodeMap}.
- *
- * Invoked when a property is added.
- *
- * @param event - the property add event
- */
-export type MapPropertyAddListener = (event: MapPropertyAddEvent) => void;
 
 /**
  * A state node feature that structures data as a map.
