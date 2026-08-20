@@ -41,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -292,6 +293,26 @@ class I18NUtilTest {
                 "Finnish locale translation should have been found");
         assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
                 "Japan locale translation should have been found");
+    }
+
+    // A Spring Boot executable jar exposes its classpath through Spring's
+    // 'nested:' scheme, backed by a file system provider of its own.
+    // Resolving such a jar must not fail servlet init. 'jrt:' is a
+    // JDK-provided stand-in for any non-default file system.
+    // https://github.com/vaadin/flow/issues/25269
+    @Test
+    void jarOnNonDefaultFileSystem_doesNotFailResourceLookup()
+            throws IOException {
+        URL resource = new URL("jar:jrt:/java.base!/"
+                + DefaultI18NProvider.BUNDLE_FOLDER + "/");
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = assertDoesNotThrow(
+                () -> I18NUtil.getDefaultTranslationLocales(mockLoader),
+                "A jar that does not live on the default file system should not fail the lookup");
+        assertTrue(defaultTranslationLocales.isEmpty(),
+                "No locales are expected from a jar that cannot be read");
     }
 
     public static class MockVirtualFile {
