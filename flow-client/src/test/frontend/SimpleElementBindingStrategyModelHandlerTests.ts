@@ -6,7 +6,7 @@ import {
   handlePropertyChange,
   InitialPropertyUpdate
 } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import {
   BindGuardStateNode,
   type CollectingTree,

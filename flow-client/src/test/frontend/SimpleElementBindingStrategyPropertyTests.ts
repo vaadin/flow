@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { updateProperty } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
 
 function fakeProperty(config: { name: string; hasValue: boolean; value?: unknown; previousDomValue?: unknown }) {

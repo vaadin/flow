@@ -30,7 +30,8 @@ import { assert } from '../assert';
 import { getElementById, getElementByName, hasTag } from '../ElementUtil';
 import { isLitElement, whenRendered } from '../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
-import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
+import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import { NodeProperties } from '../nodefeature/NodeProperties';
 import { createModelTree } from '../PolymerModelTree';
 import {
   addReadyListener,
@@ -41,7 +42,9 @@ import {
   isReady
 } from '../PolymerUtils';
 import { addReadyCallback, isInitialized } from '../ReactUtils';
-import { Reactive, type Computation, type EventRemover } from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
+import type { Computation } from '../reactive/Computation';
+import { Reactive } from '../reactive/Reactive';
 import { bindPolymerModelProperties } from '../SimpleElementBindingStrategy';
 import { StateNode } from '../StateNode';
 import {
