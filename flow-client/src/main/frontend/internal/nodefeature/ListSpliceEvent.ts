@@ -31,6 +31,20 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
 
   readonly #clear: boolean;
 
+  /**
+   * Creates a new list splice event.
+   *
+   * @param source - the changed list
+   * @param details - the changes. The Java constructor takes these as
+   *   positional parameters; the port bundles them into an object (a port
+   *   deviation):
+   *
+   *   - `index` — the start index of the changes
+   *   - `remove` — the removed items, not `null`
+   *   - `add` — the added items, not `null`
+   *   - `clear` — `true` when this is an event triggered upon removing all the
+   *     nodes of the given list, `false` otherwise
+   */
   constructor(source: NodeList, details: { index: number; remove: unknown[]; add: unknown[]; clear: boolean }) {
     super(source);
     this.#index = details.index;
