@@ -1,4 +1,4 @@
-import { Computation } from '../../main/frontend/internal/reactive/Computation';
+import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
 
 // Mirrors the Java CountingComputation helper: counts recomputations and runs a
 // reader on each.

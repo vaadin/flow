@@ -1,7 +1,7 @@
-import { ReactiveEventRouter } from '../../main/frontend/internal/reactive/ReactiveEventRouter';
-import { ReactiveValueChangeEvent } from '../../main/frontend/internal/reactive/ReactiveValueChangeEvent';
-import type { ReactiveValue } from '../../main/frontend/internal/reactive/ReactiveValue';
-import type { ReactiveValueChangeListener } from '../../main/frontend/internal/reactive/ReactiveValueChangeListener';
+import { ReactiveEventRouter } from '../../../../main/frontend/internal/reactive/ReactiveEventRouter';
+import { ReactiveValueChangeEvent } from '../../../../main/frontend/internal/reactive/ReactiveValueChangeEvent';
+import type { ReactiveValue } from '../../../../main/frontend/internal/reactive/ReactiveValue';
+import type { ReactiveValueChangeListener } from '../../../../main/frontend/internal/reactive/ReactiveValueChangeListener';
 
 // Mirrors the Java TestReactiveEventRouter test helper: a router whose source
 // routes change registrations back to itself, with an invalidate() that fires a

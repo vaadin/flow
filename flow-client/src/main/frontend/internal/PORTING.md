@@ -56,6 +56,18 @@ They consolidate the review feedback from the migration PR stack (#24933,
    (e.g. `EventRemover`, mirroring `elemental.events.EventRemover`) lives as a
    standalone elemental-primitive module at the `internal/` root, next to the
    other elemental-style ports such as `JsArray`.
+   - **Tests mirror this layout too.** A `*Tests.ts` (and its helper modules)
+     lives in the same package-path subdirectory under `src/test/frontend/` as
+     the module under test does under `src/main/frontend/`, e.g.
+     `com.vaadin.client.flow.reactive.ComputationTest` →
+     `src/test/frontend/internal/reactive/ComputationTests.ts`, and
+     `…flow.nodefeature.MapPropertyTest` →
+     `src/test/frontend/internal/nodefeature/MapPropertyTests.ts`. The test
+     runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
+     `eslint.config.mjs` lists each test subdirectory in
+     `projectService.allowDefaultProject` (its globs do not support the `**`
+     multi-level wildcard, so add one entry per level when introducing a new
+     test subdirectory).
 
 ## Visibility parity
 
