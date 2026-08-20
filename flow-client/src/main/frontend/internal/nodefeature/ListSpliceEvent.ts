@@ -35,22 +35,18 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
    * Creates a new list splice event.
    *
    * @param source - the changed list
-   * @param details - the changes. The Java constructor takes these as
-   *   positional parameters; the port bundles them into an object (a port
-   *   deviation):
-   *
-   *   - `index` — the start index of the changes
-   *   - `remove` — the removed items, not `null`
-   *   - `add` — the added items, not `null`
-   *   - `clear` — `true` when this is an event triggered upon removing all the
-   *     nodes of the given list, `false` otherwise
+   * @param index - the start index of the changes
+   * @param remove - the removed items, not `null`
+   * @param add - the added items, not `null`
+   * @param clear - `true` when this is an event triggered upon removing all the
+   *   nodes of the given list, `false` otherwise
    */
-  constructor(source: NodeList, details: { index: number; remove: unknown[]; add: unknown[]; clear: boolean }) {
+  constructor(source: NodeList, index: number, remove: unknown[], add: unknown[], clear: boolean) {
     super(source);
-    this.#index = details.index;
-    this.#remove = details.remove;
-    this.#add = details.add;
-    this.#clear = details.clear;
+    this.#index = index;
+    this.#remove = remove;
+    this.#add = add;
+    this.#clear = clear;
   }
 
   override getSource(): NodeList {
