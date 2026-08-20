@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class TaskUpdatePackagesNpmTest {
 
     private static final String PLATFORM_DIALOG_VERSION = "2.5.2";
