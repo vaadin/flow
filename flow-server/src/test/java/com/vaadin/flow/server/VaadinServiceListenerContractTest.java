@@ -22,8 +22,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationEvent;
+import com.vaadin.flow.server.communication.RpcInvocationFailedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationListener;
+import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -180,6 +183,71 @@ public class VaadinServiceListenerContractTest {
         Assert.assertEquals(1, events.size());
         Assert.assertSame(ui, events.get(0).getUI());
         Assert.assertSame(service, events.get(0).getSource());
+    }
+
+    @Test
+    public void multipleThrowingServiceDestroyListeners_firstFailureRethrownWithOthersSuppressed() {
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+        RuntimeException third = new RuntimeException("third");
+        service.addServiceDestroyListener(event -> {
+            throw first;
+        });
+        service.addServiceDestroyListener(event -> {
+            throw second;
+        });
+        service.addServiceDestroyListener(event -> {
+            throw third;
+        });
+
+        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
+                service::destroy);
+
+        Assert.assertSame(first, thrown);
+        Assert.assertArrayEquals(new Throwable[] { second, third },
+                thrown.getSuppressed());
+    }
+
+    @Test
+    public void listenersRegisteredWithTheTypedApis_areNotifiedByTheEventBus() {
+        List<String> calls = new ArrayList<>();
+        service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"));
+        service.addSessionLockListener(new SessionLockListener() {
+            @Override
+            public void lockAcquired(SessionLockEvent event) {
+                calls.add("lock-acquired");
+            }
+        });
+        service.addUIInitListener(event -> calls.add("ui-init"));
+
+        UI ui = new UI();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(new RpcInvocationStartedEvent(ui, "event", 1, "x"));
+        eventBus.fireEvent(new RpcInvocationFailedEvent(ui, "event", 1, "x",
+                new RuntimeException("boom")));
+        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "x"));
+        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
+        eventBus.fireEvent(new UIInitEvent(ui, service));
+
+        Assert.assertEquals(List.of("rpc-started", "rpc-failed", "rpc-ended",
+                "lock-acquired", "ui-init"), calls);
+    }
+
+    @Test
+    public void removedTypedListener_isRemovedFromAllItsEventTypes() {
+        List<String> calls = new ArrayList<>();
+        service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"))
+                .remove();
+
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        Assert.assertFalse(
+                eventBus.hasListener(RpcInvocationStartedEvent.class));
+        Assert.assertFalse(
+                eventBus.hasListener(RpcInvocationFailedEvent.class));
+        Assert.assertFalse(eventBus.hasListener(RpcInvocationEndedEvent.class));
+
+        service.fireRpcInvocationStarted(rpcEvent());
+        Assert.assertTrue(calls.isEmpty());
     }
 
     private static RpcInvocationListener recordingRpcListener(

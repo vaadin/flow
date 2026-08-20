@@ -46,6 +46,7 @@ import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.flow.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
@@ -628,13 +629,17 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        VaadinService service = ui.getSession().getService();
-        RpcInvocationEvent event = service.hasRpcInvocationListeners()
-                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
-                        invocationName(type, invocationJson))
-                : null;
-        if (event != null) {
-            service.fireRpcInvocationStarted(event);
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        boolean observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
+                || eventBus.hasListener(RpcInvocationFailedEvent.class)
+                || eventBus.hasListener(RpcInvocationEndedEvent.class);
+        // Details are extracted once and shared by the phase events
+        int nodeId = observed ? nodeId(invocationJson) : -1;
+        String name = observed ? invocationName(type, invocationJson) : null;
+        if (observed) {
+            fireRpcInvocationEvent(eventBus,
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
@@ -642,15 +647,27 @@ public class ServerRpcHandler implements Serializable {
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
-            if (event != null) {
-                service.fireRpcInvocationFailed(event, throwable);
+            if (observed) {
+                fireRpcInvocationEvent(eventBus, new RpcInvocationFailedEvent(
+                        ui, type, nodeId, name, throwable));
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
-            if (event != null) {
-                service.fireRpcInvocationEnded(event);
+            if (observed) {
+                fireRpcInvocationEvent(eventBus,
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
             }
         }
+    }
+
+    private static void fireRpcInvocationEvent(VaadinServiceEventBus eventBus,
+            RpcInvocationEvent event) {
+        // A listener that throws must not disrupt the RPC handling
+        eventBus.fireEvent(event,
+                (firedEvent, error) -> getLogger().error(
+                        "Error in a listener " + "for "
+                                + firedEvent.getClass().getSimpleName(),
+                        error));
     }
 
     private static int nodeId(JsonNode invocationJson) {
