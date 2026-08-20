@@ -53,6 +53,12 @@ final class NodeInstallation {
     static final String DIRECTORY_PREFIX = "node-v";
 
     /**
+     * Prefix given to an installation directory that is being removed, so that
+     * it is no longer seen as an installation while it is deleted.
+     */
+    static final String REMOVED_PREFIX = ".removed-";
+
+    /**
      * Name of the marker file that records when the installation was last taken
      * into use.
      */
@@ -210,13 +216,25 @@ final class NodeInstallation {
 
     /**
      * Removes the installation and everything in it.
+     * <p>
+     * The directory is renamed out of the way first. Deleting a tree stops at
+     * the first file it cannot remove, and a half-deleted
+     * {@value #DIRECTORY_PREFIX} directory would be picked up as an
+     * installation by the next build and fail it. Under its new name the
+     * remains are ignored by {@link NodeInstallations#findAll(File)} and
+     * cleaned up on a later run instead.
      */
     void remove() {
         getLogger().info("Removing the Node.js installation in {}", directory);
-        if (!FileIOUtils.deleteQuietly(directory)) {
+        File beingRemoved = new File(directory.getParentFile(),
+                REMOVED_PREFIX + directory.getName());
+        File toDelete = directory.renameTo(beingRemoved) ? beingRemoved
+                : directory;
+
+        if (!FileIOUtils.deleteQuietly(toDelete)) {
             getLogger().warn(
                     "Could not remove the unused Node.js installation {}. It can be deleted manually to free up disk space.",
-                    directory);
+                    toDelete);
         }
     }
 

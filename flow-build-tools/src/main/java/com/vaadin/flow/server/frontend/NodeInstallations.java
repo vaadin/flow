@@ -129,6 +129,10 @@ final class NodeInstallations {
             getLogger().debug("Removing leftover Node.js archive {}", archive);
             FileIOUtils.deleteQuietly(archive);
         });
+        findInterruptedRemovals(installDirectory).forEach(remains -> {
+            getLogger().debug("Removing the remains of {}", remains);
+            FileIOUtils.deleteQuietly(remains);
+        });
 
         List<NodeInstallation> installations = findAll(installDirectory);
         Instant threshold = ZonedDateTime.now()
@@ -161,6 +165,16 @@ final class NodeInstallations {
         }
 
         unused.forEach(NodeInstallation::remove);
+    }
+
+    /**
+     * Finds what a previous removal left behind because it could not delete
+     * every file, see {@link NodeInstallation#remove()}.
+     */
+    private static List<File> findInterruptedRemovals(File installDirectory) {
+        File[] remains = installDirectory.listFiles(file -> file.isDirectory()
+                && file.getName().startsWith(NodeInstallation.REMOVED_PREFIX));
+        return remains == null ? List.of() : Arrays.asList(remains);
     }
 
     private static boolean isArchiveName(String name) {

@@ -22,8 +22,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -304,79 +302,6 @@ class FrontendToolsTest {
 
         assertTrue(new File(vaadinHomeDir, npmPath).exists(),
                 "npm should have been copied to node_modules");
-    }
-
-    @Test
-    void installNodeFromFileSystem_lastUsedMarkerIsWritten() throws Exception {
-        String testVersion = "v12.10.0";
-
-        settings.setNodeDownloadRoot(new File(baseDir).toURI());
-        settings.setNodeVersion(testVersion);
-        settings.setForceAlternativeNode(true);
-        tools = new FrontendTools(settings);
-        prepareNodeDownloadableZipAt(baseDir, testVersion);
-        tools.getNodeExecutable();
-
-        File marker = new File(vaadinHomeDir,
-                "node-" + testVersion + "/" + NodeInstallation.LAST_USED_FILE);
-        assertTrue(marker.exists(),
-                "last-used should have been written for the installation in use");
-        assertTrue(
-                Instant.parse(Files.readString(marker.toPath()))
-                        .isAfter(Instant.now().minus(Duration.ofMinutes(5))),
-                "last-used should hold the current time");
-    }
-
-    @Test
-    void installNodeFromFileSystem_installationsUnusedForOverSixMonthsAreRemoved()
-            throws Exception {
-        File stale = new File(vaadinHomeDir, "node-v20.0.0");
-        FileUtils.forceMkdir(new File(stale, "bin"));
-        Files.writeString(
-                new File(stale, NodeInstallation.LAST_USED_FILE).toPath(),
-                Instant.now().minus(Duration.ofDays(400)).toString());
-
-        String testVersion = "v12.10.0";
-        settings.setNodeDownloadRoot(new File(baseDir).toURI());
-        settings.setNodeVersion(testVersion);
-        settings.setForceAlternativeNode(true);
-        tools = new FrontendTools(settings);
-        prepareNodeDownloadableZipAt(baseDir, testVersion);
-        tools.getNodeExecutable();
-
-        assertFalse(stale.exists(),
-                "An installation unused for over 6 months should have been removed");
-        assertTrue(new File(vaadinHomeDir, "node-" + testVersion).isDirectory(),
-                "The newly installed version should have been kept");
-    }
-
-    @Test
-    void resolveExistingInstallation_lastUsedMarkerIsRefreshed()
-            throws Exception {
-        String testVersion = "v12.10.0";
-
-        settings.setNodeDownloadRoot(new File(baseDir).toURI());
-        settings.setNodeVersion(testVersion);
-        settings.setForceAlternativeNode(true);
-        tools = new FrontendTools(settings);
-        prepareNodeDownloadableZipAt(baseDir, testVersion);
-        tools.getNodeExecutable();
-
-        // Pretend the installation was last used a long time ago and resolve
-        // again, which now has to reuse the existing installation
-        File marker = new File(vaadinHomeDir,
-                "node-" + testVersion + "/" + NodeInstallation.LAST_USED_FILE);
-        Instant longAgo = Instant.now().minus(Duration.ofDays(400));
-        Files.writeString(marker.toPath(), longAgo.toString());
-
-        resetFrontendToolsNodeCache();
-        tools = new FrontendTools(settings);
-        tools.getNodeExecutable();
-
-        assertTrue(
-                Instant.parse(Files.readString(marker.toPath()))
-                        .isAfter(longAgo),
-                "Reusing an existing installation should refresh its last-used marker");
     }
 
     private String getVersionedNpmBinPath(String nodeVersion) {

@@ -51,6 +51,8 @@ class NodeInstallationsTest {
         assertTrue(new File(vaadinHome, "pnpm").mkdirs());
         assertTrue(new File(vaadinHome, "node-v22.0.0-linux-x64.tar.gz")
                 .createNewFile());
+        // What a removal that could not delete every file left behind
+        assertTrue(new File(vaadinHome, ".removed-node-v18.0.0/bin").mkdirs());
 
         assertEquals(List.of("node-v20.0.0", "node-v24.19.0"),
                 NodeInstallations.findAll(vaadinHome).stream()
@@ -174,6 +176,19 @@ class NodeInstallationsTest {
         assertFalse(exists(stale));
         assertTrue(downloading.exists(),
                 "An archive that another process may still be downloading should be kept");
+    }
+
+    @Test
+    void removeUnused_remainsOfAnInterruptedRemoval_areDeleted()
+            throws IOException {
+        NodeInstallation inUse = installation("node-v24.19.0", Instant.now());
+        File remains = new File(vaadinHome, ".removed-node-v18.0.0");
+        assertTrue(new File(remains, "bin").mkdirs());
+
+        NodeInstallations.removeUnused(vaadinHome, inUse);
+
+        assertFalse(remains.exists(),
+                "The remains of an earlier removal should be cleaned up");
     }
 
     @Test
