@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
@@ -37,6 +40,21 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 24.4
  */
 public class ExclusionFilter implements Serializable {
+
+    /**
+     * Packages that are part of a package Flow manages the version of, mapped
+     * to the package that owns them.
+     * <p>
+     * The owning package is released together with the packages it is built
+     * from and only works with the versions it was released with, so a version
+     * declared for one of them elsewhere cannot be honoured. Pinning them
+     * separately resolves the owning package against packages it was never
+     * combined with, which leaves the application with two implementations of
+     * the same API.
+     */
+    private static final Map<String, String> OWNED_PACKAGES = Map.of(
+            "lit-element", "lit", "lit-html", "lit", "@lit/reactive-element",
+            "lit");
 
     private final ClassFinder finder;
 
@@ -76,7 +94,8 @@ public class ExclusionFilter implements Serializable {
 
     /**
      * Exclude dependencies from the given map based on the
-     * vaadin-*versions.json files.
+     * vaadin-*versions.json files, and dependencies that are part of a package
+     * Flow manages the version of.
      *
      * @param dependencies
      *            the dependencies to filter
@@ -89,8 +108,27 @@ public class ExclusionFilter implements Serializable {
         var exclusions = getExclusions();
         return dependencies.entrySet().stream()
                 .filter(entry -> !exclusions.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        Map.Entry::getValue));
+                .filter(this::isVersionUsable).collect(Collectors
+                        .toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private boolean isVersionUsable(Map.Entry<String, String> dependency) {
+        String owner = OWNED_PACKAGES.get(dependency.getKey());
+        if (owner == null) {
+            return true;
+        }
+        getLogger().warn(
+                """
+                        Ignoring the version '{}' declared for '{}', which is part of '{}' and comes with it.
+                        Declaring a version for it resolves '{}' against packages it was not released with.
+                        Remove the @NpmPackage annotation for '{}' from the add-on or application declaring it.""",
+                dependency.getValue(), dependency.getKey(), owner, owner,
+                dependency.getKey());
+        return false;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ExclusionFilter.class);
     }
 
     private List<String> getExclusions() throws IOException {
