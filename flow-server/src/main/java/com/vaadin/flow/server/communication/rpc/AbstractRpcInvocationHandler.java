@@ -115,10 +115,11 @@ public abstract class AbstractRpcInvocationHandler
                         .append(component.get().getClass().getName())
                         .append("'");
                 /*
-                 * The class of the routing target rather than its path, since
-                 * the path in the annotation is not the whole story: it
-                 * defaults to a naming convention placeholder and doesn't
-                 * account for the prefixes of parent layouts.
+                 * The routing target is identified by its class since the path
+                 * in its annotation is not necessarily the path it is served
+                 * from: the path may be a placeholder for a name derived from
+                 * the class, and it doesn't include the prefixes that parent
+                 * layouts contribute.
                  */
                 ComponentUtil.getRouteComponent(component.get()).filter(
                         routeComponent -> routeComponent != component.get())

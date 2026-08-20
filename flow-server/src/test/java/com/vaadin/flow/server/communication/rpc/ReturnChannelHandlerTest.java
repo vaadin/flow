@@ -165,13 +165,13 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    void disabledElement_warningIdentifiesElementComponentAndRoute() {
+    void disabledElement_warningIdentifiesElementComponentAndRoutingTarget() {
         Widget widget = addWidgetToOrdersView();
         ReturnChannelRegistration registration = registerChannel(widget);
 
         widget.getElement().setEnabled(false);
 
-        String warning = getOnlyWarning(registration);
+        String warning = handleMessageAndGetOnlyWarning(registration);
 
         assertTrue(warning.contains("my-widget"),
                 () -> "The warning should name the element tag: " + warning);
@@ -197,7 +197,7 @@ class ReturnChannelHandlerTest {
         // The widget itself is enabled, it is the view that is disabled
         widget.getParent().orElseThrow().getElement().setEnabled(false);
 
-        String warning = getOnlyWarning(registration);
+        String warning = handleMessageAndGetOnlyWarning(registration);
 
         assertTrue(
                 warning.contains("through its ancestor")
@@ -237,7 +237,8 @@ class ReturnChannelHandlerTest {
                 nodeWithoutMap);
         args.add(CLIENT_VALUE);
 
-        String warning = getOnlyWarning(nodeWithoutMap.getId(), 0);
+        String warning = handleMessageAndGetOnlyWarning(nodeWithoutMap.getId(),
+                0);
 
         assertTrue(warning.contains("cannot have return channels"),
                 () -> "Unexpected warning: " + warning);
@@ -255,7 +256,7 @@ class ReturnChannelHandlerTest {
         registration.remove();
         args.add(CLIENT_VALUE);
 
-        String warning = getOnlyWarning(registration);
+        String warning = handleMessageAndGetOnlyWarning(registration);
 
         assertTrue(warning.contains("not found"),
                 () -> "Unexpected warning: " + warning);
@@ -282,12 +283,13 @@ class ReturnChannelHandlerTest {
                 .registerChannel(observingConsumer);
     }
 
-    private String getOnlyWarning(ReturnChannelRegistration registration) {
-        return getOnlyWarning(registration.getStateNodeId(),
+    private String handleMessageAndGetOnlyWarning(
+            ReturnChannelRegistration registration) {
+        return handleMessageAndGetOnlyWarning(registration.getStateNodeId(),
                 registration.getChannelId());
     }
 
-    private String getOnlyWarning(int nodeId, int channelId) {
+    private String handleMessageAndGetOnlyWarning(int nodeId, int channelId) {
         List<String> warnings = handleMessageCapturingLogs(nodeId, channelId)
                 .warnings();
 
