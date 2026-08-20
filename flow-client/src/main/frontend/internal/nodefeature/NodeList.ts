@@ -105,7 +105,7 @@ export class NodeList extends NodeFeature implements ReactiveValue {
    */
   splice(index: number, remove: number, add?: unknown[]): void {
     const removed = add === undefined ? this.#values.splice(index, remove) : this.#values.splice(index, remove, ...add);
-    this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index, remove: removed, add: add ?? [], clear: false }));
+    this.#eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, add ?? [], false));
   }
 
   /**
@@ -116,7 +116,7 @@ export class NodeList extends NodeFeature implements ReactiveValue {
   clear(): void {
     this.#hasBeenClearedState = true;
     const removed = this.#values.splice(0, this.#values.length);
-    this.#eventRouter.fireEvent(new ListSpliceEvent(this, { index: 0, remove: removed, add: [], clear: true }));
+    this.#eventRouter.fireEvent(new ListSpliceEvent(this, 0, removed, [], true));
   }
 
   /**
