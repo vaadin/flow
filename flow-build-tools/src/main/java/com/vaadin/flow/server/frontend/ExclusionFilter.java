@@ -108,14 +108,16 @@ public class ExclusionFilter implements Serializable {
         var exclusions = getExclusions();
         return dependencies.entrySet().stream()
                 .filter(entry -> !exclusions.contains(entry.getKey()))
-                .filter(this::isVersionUsable).collect(Collectors
-                        .toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .filter(entry -> !comesWithOwningPackage(entry))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        Map.Entry::getValue));
     }
 
-    private boolean isVersionUsable(Map.Entry<String, String> dependency) {
+    private boolean comesWithOwningPackage(
+            Map.Entry<String, String> dependency) {
         String owner = OWNED_PACKAGES.get(dependency.getKey());
         if (owner == null) {
-            return true;
+            return false;
         }
         getLogger().warn(
                 """
@@ -124,7 +126,7 @@ public class ExclusionFilter implements Serializable {
                         Remove the @NpmPackage annotation for '{}' from the add-on or application declaring it.""",
                 dependency.getValue(), dependency.getKey(), owner, owner,
                 dependency.getKey());
-        return false;
+        return true;
     }
 
     private static Logger getLogger() {

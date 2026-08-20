@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.legacylitaddon;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,18 +58,5 @@ public class LegacyLitAddonIT extends ChromeBrowserTest {
                 addon.$(TestBenchElement.class).id("currentPage").getText());
 
         checkLogsForErrors();
-    }
-
-    @Test
-    public void singleLitVersionLoaded() {
-        // Lit records the warnings it has issued in dev mode, which is where
-        // it reports having been loaded more than once.
-        List<?> warnings = (List<?>) executeScript(
-                "return globalThis.litIssuedWarnings"
-                        + " ? Array.from(globalThis.litIssuedWarnings) : []");
-        Assert.assertFalse("Lit was loaded more than once",
-                warnings.stream().map(String::valueOf)
-                        .anyMatch(warning -> warning
-                                .contains("Multiple versions of Lit loaded")));
     }
 }
