@@ -60,7 +60,8 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> calls.add("first"));
         eventBus.addListener(TestEvent.class, event -> calls.add("second"));
 
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
 
         Assert.assertEquals(List.of("first", "second"), calls);
     }
@@ -72,14 +73,16 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(SubTestEvent.class, event -> calls.add("sub"));
         eventBus.addListener(OtherEvent.class, event -> calls.add("other"));
 
-        eventBus.fireEvent(new SubTestEvent(service));
+        eventBus.fireEvent(new SubTestEvent(service),
+                VaadinServiceEventBus.logErrors());
 
         Assert.assertEquals(List.of("sub"), calls);
     }
 
     @Test
     public void firingEventWithoutListeners_doesNothing() {
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
     }
 
     @Test
@@ -106,7 +109,8 @@ public class VaadinServiceEventBusTest {
         registration.remove();
         // Removal is idempotent and must not drop the other listener
         registration.remove();
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
 
         Assert.assertEquals(List.of("kept"), calls);
     }
@@ -118,13 +122,15 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, listener);
         Registration second = eventBus.addListener(TestEvent.class, listener);
 
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
         Assert.assertEquals(List.of("call", "call"), calls);
 
         // Removing one registration leaves the other one in place
         calls.clear();
         second.remove();
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
         Assert.assertEquals(List.of("call"), calls);
     }
 
@@ -141,25 +147,58 @@ public class VaadinServiceEventBusTest {
     }
 
     @Test
-    public void withoutErrorHandler_listenerExceptionPropagatesAndStopsDelivery() {
+    public void rethrowingErrorHandler_propagatesAndStopsDelivery() {
         List<String> calls = new ArrayList<>();
         eventBus.addListener(TestEvent.class, event -> {
             throw new IllegalStateException("boom");
         });
         eventBus.addListener(TestEvent.class, event -> calls.add("second"));
 
-        IllegalStateException thrown = Assert.assertThrows(
-                IllegalStateException.class,
-                () -> eventBus.fireEvent(new TestEvent(service)));
+        IllegalStateException thrown = Assert
+                .assertThrows(IllegalStateException.class, () -> eventBus
+                        .fireEvent(new TestEvent(service), (event, error) -> {
+                            throw (RuntimeException) error;
+                        }));
 
         Assert.assertEquals("boom", thrown.getMessage());
         Assert.assertTrue(calls.isEmpty());
     }
 
     @Test
+    public void firingWithoutErrorHandler_isRejected() {
+        Assert.assertThrows(NullPointerException.class,
+                () -> eventBus.fireEvent(new TestEvent(service), null));
+        Assert.assertThrows(NullPointerException.class, () -> eventBus
+                .fireEventInReverseOrder(new TestEvent(service), null));
+    }
+
+    @Test
+    public void errorHandler_receivesCheckedExceptionThrownByListener() {
+        List<Exception> errors = new ArrayList<>();
+        List<String> calls = new ArrayList<>();
+        Exception checked = new Exception("checked");
+        eventBus.addListener(TestEvent.class, event -> {
+            sneakyThrow(checked);
+        });
+        eventBus.addListener(TestEvent.class, event -> calls.add("second"));
+
+        eventBus.fireEvent(new TestEvent(service),
+                (event, error) -> errors.add(error));
+
+        Assert.assertEquals(List.of(checked), errors);
+        Assert.assertEquals(List.of("second"), calls);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable> void sneakyThrow(Throwable throwable)
+            throws E {
+        throw (E) throwable;
+    }
+
+    @Test
     public void withErrorHandler_failingListenerDoesNotStopDelivery() {
         List<String> calls = new ArrayList<>();
-        List<RuntimeException> errors = new ArrayList<>();
+        List<Exception> errors = new ArrayList<>();
         eventBus.addListener(TestEvent.class, event -> {
             throw new IllegalStateException("boom");
         });
@@ -183,7 +222,8 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> calls.add("second"));
         eventBus.addListener(TestEvent.class, event -> calls.add("third"));
 
-        eventBus.fireEventInReverseOrder(new TestEvent(service), null);
+        eventBus.fireEventInReverseOrder(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
 
         Assert.assertEquals(List.of("third", "second", "first"), calls);
     }
@@ -194,7 +234,8 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> eventBus
                 .addListener(TestEvent.class, nested -> calls.add("nested")));
 
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
 
         Assert.assertTrue(calls.isEmpty());
     }
@@ -274,7 +315,8 @@ public class VaadinServiceEventBusTest {
         Assert.assertEquals(threads * perThread,
                 eventBus.getListeners(TestEvent.class).size());
 
-        eventBus.fireEvent(new TestEvent(service));
+        eventBus.fireEvent(new TestEvent(service),
+                VaadinServiceEventBus.logErrors());
         Assert.assertEquals(threads * perThread, notified.get());
     }
 }

@@ -826,7 +826,8 @@ public abstract class VaadinService implements Serializable {
      *
      * <pre>
      * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
-     * service.getEventBus().fireEvent(new MyEvent(service));
+     * service.getEventBus().fireEvent(new MyEvent(service),
+     *         VaadinServiceEventBus.logErrors());
      * </pre>
      *
      * @return the event bus of this service, not {@code null}
@@ -961,18 +962,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void fireRpcInvocationEvent(RpcInvocationEvent event) {
-        eventBus.fireEvent(event, logListenerError());
-    }
-
-    /**
-     * Creates an error handler that logs and swallows exceptions thrown by
-     * listeners, so that one misbehaving listener cannot disrupt the framework
-     * operation the event was fired from.
-     */
-    private static SerializableBiConsumer<EventObject, RuntimeException> logListenerError() {
-        return (event, error) -> getLogger().error(
-                "Error in a listener for " + event.getClass().getSimpleName(),
-                error);
+        eventBus.fireEvent(event, VaadinServiceEventBus.logErrors());
     }
 
     /**
@@ -983,7 +973,7 @@ public abstract class VaadinService implements Serializable {
      * an API for using some other handler for session init and destroy
      * listeners.
      */
-    private static SerializableBiConsumer<EventObject, RuntimeException> sessionErrorHandler(
+    private static SerializableBiConsumer<EventObject, Exception> sessionErrorHandler(
             VaadinSession session) {
         return (event, error) -> session.getErrorHandler()
                 .error(new ErrorEvent(error));
@@ -1019,7 +1009,7 @@ public abstract class VaadinService implements Serializable {
             return;
         }
         eventBus.fireEvent(new SessionLockRequestedEvent(this),
-                logListenerError());
+                VaadinServiceEventBus.logErrors());
     }
 
     void fireSessionLockAcquired() {
@@ -1027,7 +1017,7 @@ public abstract class VaadinService implements Serializable {
             return;
         }
         eventBus.fireEvent(new SessionLockAcquiredEvent(this),
-                logListenerError());
+                VaadinServiceEventBus.logErrors());
     }
 
     void fireSessionLockReleased() {
@@ -1038,7 +1028,7 @@ public abstract class VaadinService implements Serializable {
         // are nested: a listener's lockReleased runs before the lockReleased
         // of the listeners that were notified before it on lockAcquired.
         eventBus.fireEventInReverseOrder(new SessionLockReleasedEvent(this),
-                logListenerError());
+                VaadinServiceEventBus.logErrors());
     }
 
     /**
@@ -2618,14 +2608,17 @@ public abstract class VaadinService implements Serializable {
         }
         // All listeners are notified even if some of them throw; the first
         // failure is rethrown with the later ones suppressed
-        AtomicReference<RuntimeException> failure = new AtomicReference<>();
+        AtomicReference<Exception> failure = new AtomicReference<>();
         eventBus.fireEvent(event, (destroyEvent, error) -> {
             if (!failure.compareAndSet(null, error)) {
                 failure.get().addSuppressed(error);
             }
         });
-        if (failure.get() != null) {
-            throw failure.get();
+        Exception error = failure.get();
+        if (error instanceof RuntimeException runtimeException) {
+            throw runtimeException;
+        } else if (error != null) {
+            throw new RuntimeException(error);
         }
     }
 
@@ -2784,7 +2777,13 @@ public abstract class VaadinService implements Serializable {
      *            the initialized {@link UI}
      */
     void fireUIInitEvent(UI ui) {
-        eventBus.fireEvent(new UIInitEvent(ui, this));
+        // A failing UI init listener aborts the initialization instead of
+        // letting a half-initialized UI through
+        eventBus.fireEvent(new UIInitEvent(ui, this), (event, error) -> {
+            throw error instanceof RuntimeException runtimeException
+                    ? runtimeException
+                    : new RuntimeException(error);
+        });
     }
 
     /**

@@ -638,8 +638,9 @@ public class ServerRpcHandler implements Serializable {
         int nodeId = observed ? nodeId(invocationJson) : -1;
         String name = observed ? invocationName(type, invocationJson) : null;
         if (observed) {
-            fireRpcInvocationEvent(eventBus,
-                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
+            eventBus.fireEvent(
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name),
+                    VaadinServiceEventBus.logErrors());
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
@@ -648,26 +649,18 @@ public class ServerRpcHandler implements Serializable {
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
             if (observed) {
-                fireRpcInvocationEvent(eventBus, new RpcInvocationFailedEvent(
-                        ui, type, nodeId, name, throwable));
+                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
+                        nodeId, name, throwable),
+                        VaadinServiceEventBus.logErrors());
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
             if (observed) {
-                fireRpcInvocationEvent(eventBus,
-                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
+                eventBus.fireEvent(
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name),
+                        VaadinServiceEventBus.logErrors());
             }
         }
-    }
-
-    private static void fireRpcInvocationEvent(VaadinServiceEventBus eventBus,
-            RpcInvocationEvent event) {
-        // A listener that throws must not disrupt the RPC handling
-        eventBus.fireEvent(event,
-                (firedEvent, error) -> getLogger().error(
-                        "Error in a listener " + "for "
-                                + firedEvent.getClass().getSimpleName(),
-                        error));
     }
 
     private static int nodeId(JsonNode invocationJson) {

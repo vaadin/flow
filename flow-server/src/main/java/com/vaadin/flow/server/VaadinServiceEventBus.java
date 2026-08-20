@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
@@ -41,7 +43,8 @@ import com.vaadin.flow.shared.Registration;
  *
  * <pre>
  * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
- * service.getEventBus().fireEvent(new MyEvent(service));
+ * service.getEventBus().fireEvent(new MyEvent(service),
+ *         VaadinServiceEventBus.logErrors());
  * </pre>
  * <p>
  * The API mirrors {@link com.vaadin.flow.component.ComponentEventBus}, but
@@ -55,6 +58,12 @@ import com.vaadin.flow.shared.Registration;
  * @see VaadinService#getEventBus()
  */
 public class VaadinServiceEventBus implements Serializable {
+
+    private static final SerializableBiConsumer<EventObject, Exception> LOG_ERRORS = (
+            event, error) -> LoggerFactory
+                    .getLogger(VaadinServiceEventBus.class)
+                    .error("Error in a listener for "
+                            + event.getClass().getSimpleName(), error);
 
     private final VaadinService service;
 
@@ -165,28 +174,26 @@ public class VaadinServiceEventBus implements Serializable {
     }
 
     /**
-     * Fires an event to the listeners registered for its exact type, in
-     * registration order.
+     * Creates an error handler that logs the exception and lets the listeners
+     * that have not been notified yet still receive the event.
      * <p>
-     * An exception thrown by a listener is propagated to the caller and the
-     * remaining listeners are not notified. Use
-     * {@link #fireEvent(EventObject, SerializableBiConsumer)} to keep notifying
-     * the other listeners instead.
+     * This is what a framework operation fires with: a listener must not be
+     * able to disrupt it, nor to hide the event from the other listeners.
      *
-     * @param event
-     *            the event to fire, not {@code null}
+     * @return an error handler that logs and swallows listener exceptions
      */
-    public void fireEvent(EventObject event) {
-        fireEvent(event, null);
+    public static SerializableBiConsumer<EventObject, Exception> logErrors() {
+        return LOG_ERRORS;
     }
 
     /**
      * Fires an event to the listeners registered for its exact type, in
-     * registration order, handing a listener that threw to the given error
-     * handler.
+     * registration order.
      * <p>
-     * The remaining listeners are notified even if one of them throws, so one
-     * misbehaving listener cannot hide the event from the others.
+     * Every listener is notified even if a previous one threw; deciding what
+     * happens to that exception is up to the error handler, which is why there
+     * is no way of firing an event without one. Use {@link #logErrors()} unless
+     * the caller has a reason to do something else, such as rethrowing.
      *
      * @param <E>
      *            the event type
@@ -194,12 +201,12 @@ public class VaadinServiceEventBus implements Serializable {
      *            the event to fire, not {@code null}
      * @param errorHandler
      *            invoked with the event and the exception when a listener
-     *            throws a {@link RuntimeException}, or {@code null} to let the
-     *            exception propagate to the caller
+     *            throws, not {@code null}
      */
     public <E extends EventObject> void fireEvent(E event,
-            SerializableBiConsumer<? super E, RuntimeException> errorHandler) {
+            SerializableBiConsumer<? super E, Exception> errorHandler) {
         Objects.requireNonNull(event, "Event cannot be null");
+        Objects.requireNonNull(errorHandler, "Error handler cannot be null");
         for (SerializableConsumer<E> listener : listenersFor(event)) {
             notifyListener(listener, event, errorHandler);
         }
@@ -219,12 +226,12 @@ public class VaadinServiceEventBus implements Serializable {
      *            the event to fire, not {@code null}
      * @param errorHandler
      *            invoked with the event and the exception when a listener
-     *            throws a {@link RuntimeException}, or {@code null} to let the
-     *            exception propagate to the caller
+     *            throws, not {@code null}
      */
     public <E extends EventObject> void fireEventInReverseOrder(E event,
-            SerializableBiConsumer<? super E, RuntimeException> errorHandler) {
+            SerializableBiConsumer<? super E, Exception> errorHandler) {
         Objects.requireNonNull(event, "Event cannot be null");
+        Objects.requireNonNull(errorHandler, "Error handler cannot be null");
         List<SerializableConsumer<E>> registered = listenersFor(event);
         ListIterator<SerializableConsumer<E>> iterator = registered
                 .listIterator(registered.size());
@@ -244,14 +251,10 @@ public class VaadinServiceEventBus implements Serializable {
 
     private <E extends EventObject> void notifyListener(
             SerializableConsumer<E> listener, E event,
-            SerializableBiConsumer<? super E, RuntimeException> errorHandler) {
-        if (errorHandler == null) {
-            listener.accept(event);
-            return;
-        }
+            SerializableBiConsumer<? super E, Exception> errorHandler) {
         try {
             listener.accept(event);
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             errorHandler.accept(event, e);
         }
     }
