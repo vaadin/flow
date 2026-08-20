@@ -27,12 +27,15 @@
 // Polymer element (or the plain payload object when the host is not Polymer).
 
 import type { JsonValue, NodeFeature } from './nodefeature/NodeFeature';
-import { NodeFeatures, NodeProperties } from './nodefeature/NodeFeatures';
+import { NodeFeatures } from './nodefeature/NodeFeatures';
+import { NodeProperties } from './nodefeature/NodeProperties';
 import { MapProperty } from './nodefeature/MapProperty';
-import type { NodeList, ListSpliceEvent } from './nodefeature/NodeList';
+import type { NodeList } from './nodefeature/NodeList';
+import type { ListSpliceEvent } from './nodefeature/ListSpliceEvent';
 import type { NodeMap } from './nodefeature/NodeMap';
 import { isPolymerElement, setProperty, splice } from './PolymerUtils';
-import { Reactive, type EventRemover } from './reactive/reactive';
+import type { EventRemover } from './EventRemover';
+import { Reactive } from './reactive/Reactive';
 import { StateNode } from './StateNode';
 import { setJsProperty } from './WidgetUtil';
 import { Console } from './Console';

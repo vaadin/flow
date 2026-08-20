@@ -18,8 +18,10 @@
 // alongside the Java version on top of the TS reactive core and state node.
 
 import { assert } from '../assert';
-import { Reactive, type Computation } from '../reactive/reactive';
-import { NodeFeatures, NodeProperties } from '../nodefeature/NodeFeatures';
+import type { Computation } from '../reactive/Computation';
+import { Reactive } from '../reactive/Reactive';
+import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import { NodeProperties } from '../nodefeature/NodeProperties';
 import type { StateNode } from '../StateNode';
 import type { BinderContext, BindingStrategy } from './BindingStrategy';
 

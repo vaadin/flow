@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { bindClassList, updateStyleProperty } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
 
 function fakeStyleProperty(name: string, value: unknown, hasValue = true) {

@@ -19,7 +19,7 @@
 // from a node feature onto the element's $server object and keeps them in sync
 // as the feature's list changes.
 
-import type { EventRemover } from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
 import { NodeFeatures } from '../nodefeature/NodeFeatures';
 import { defineMethod, get, removeMethod, type ServerEventNode, type ServerObject } from '../ServerEventObject';
 
