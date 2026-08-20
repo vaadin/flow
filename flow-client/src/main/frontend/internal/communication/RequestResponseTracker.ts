@@ -19,7 +19,7 @@
 // request-starting / response-handling-started/ended and reconnection-attempt
 // events. The GWT EventBus is replaced by per-event-type listener sets.
 
-import type { EventRemover } from '../reactive/reactive';
+import type { EventRemover } from '../EventRemover';
 import { ResynchronizationState } from './ResynchronizationState';
 
 /** The slice of Registry that RequestResponseTracker uses. */
