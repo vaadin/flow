@@ -23,17 +23,22 @@ import java.io.Serializable;
  * <p>
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
  * and have a {@link PageTitle} annotation.
- * <p>
- * Since this is resolved from the navigation target instance, it can only
- * produce a title for a route that is actually shown. To resolve a title
- * <em>without</em> an instance &mdash; for example for routes that are not
- * shown, such as the entries of a breadcrumb trail or a menu &mdash; use the
- * instance-free counterpart {@link DynamicPageTitle} together with a
- * {@link PageTitleGenerator}.
  *
  * @author Vaadin Ltd
  * @since 1.0.
+ * @deprecated Prefer {@link DynamicPageTitle} together with a
+ *             {@link PageTitleGenerator} instead. Because
+ *             {@link #getPageTitle()} is an instance method, it can only
+ *             produce a title for a route that is actually shown, while a
+ *             {@link PageTitleGenerator} resolves the title from the navigation
+ *             target class and its {@link RouteParameters} without an instance.
+ *             That makes it usable for routes that are not (and should not be)
+ *             instantiated, such as the entries of a breadcrumb trail or a
+ *             menu, so the same title logic also applies to those navigation
+ *             aids. Use this interface only when the title genuinely needs to
+ *             reflect the live state of an already shown view.
  */
+@Deprecated(since = "25.3")
 @FunctionalInterface
 public interface HasDynamicTitle extends Serializable {
 

@@ -93,6 +93,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 && clazz.getAnnotation(Route.class).registerAtStartup();
     }
 
+    @SuppressWarnings("deprecation")
     private void checkForConflictingAnnotations(VaadinContext context,
             Class<?> route) {
         if (route.isAnnotationPresent(RouteAlias.class)
