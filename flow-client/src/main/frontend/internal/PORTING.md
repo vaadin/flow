@@ -74,12 +74,20 @@ They consolidate the review feedback from the migration PR stack (#24933,
 
 ## Javadoc / TSDoc
 
-6. **Carry Javadoc over verbatim**, including *member* Javadoc on constants —
-   class descriptions, `@param`/`@returns`, `@deprecated`, `@see` as
-   `{@link …}`. Preserve the source wording (including typos); do not silently
-   reword. Convert `<p>` → blank lines and `<code>`/`{@code}` → backticks.
+6. **Carry Javadoc over verbatim**, including *member* Javadoc on constants and
+   *constructor* Javadoc — class descriptions, `@param`/`@returns`,
+   `@deprecated`, `@see` as `{@link …}`. Every parameter documented in the Java
+   source keeps its `@param` in the port; a constructor is not exempt. Preserve
+   the source wording (including typos); do not silently reword. Convert `<p>` →
+   blank lines and `<code>`/`{@code}` → backticks.
 7. **Do not carry `@since` or `@author`.**
-8. Document any deviation from the original at the site where it occurs.
+8. Document any deviation from the original at the site where it occurs. In
+   particular, when the port bundles several positional Java parameters into a
+   single object parameter (e.g. `ListSpliceEvent`'s `details`), do **not** drop
+   their docs: document the object parameter, note the deviation, and carry each
+   original `@param`'s wording as a field entry in that parameter's description.
+   Do not use dotted `@param obj.field` names — the `tsdoc/syntax` lint rule
+   rejects them; describe the fields in prose (a Markdown list) instead.
 
 ## Cross-referencing constants (no magic values)
 
