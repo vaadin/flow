@@ -53,20 +53,6 @@ public class RpcInvocationFailedEvent extends RpcInvocationEvent {
     }
 
     /**
-     * Creates a new event with the same invocation details as the given event.
-     *
-     * @param event
-     *            the event to copy the invocation details from, not
-     *            {@code null}
-     * @param error
-     *            the throwable raised by the invocation handler
-     */
-    public RpcInvocationFailedEvent(RpcInvocationEvent event, Throwable error) {
-        this(event.getUI(), event.getType(), event.getNodeId(), event.getName(),
-                error);
-    }
-
-    /**
      * Gets the throwable raised by the invocation handler.
      *
      * @return the throwable

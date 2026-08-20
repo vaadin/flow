@@ -45,16 +45,4 @@ public class RpcInvocationEndedEvent extends RpcInvocationEvent {
             String name) {
         super(ui, type, nodeId, name);
     }
-
-    /**
-     * Creates a new event with the same invocation details as the given event.
-     *
-     * @param event
-     *            the event to copy the invocation details from, not
-     *            {@code null}
-     */
-    public RpcInvocationEndedEvent(RpcInvocationEvent event) {
-        super(event.getUI(), event.getType(), event.getNodeId(),
-                event.getName());
-    }
 }

@@ -43,8 +43,18 @@ public class VaadinServiceListenerContractTest {
 
     private final MockVaadinServletService service = new MockVaadinServletService();
 
-    private static RpcInvocationEvent rpcEvent() {
-        return new RpcInvocationEvent(new UI(), "event", 1, "click");
+    private void fireRpcInvocationPhases() {
+        UI ui = new UI();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(
+                new RpcInvocationStartedEvent(ui, "event", 1, "click"),
+                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(
+                new RpcInvocationFailedEvent(ui, "event", 1, "click",
+                        new RuntimeException("boom")),
+                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "click"),
+                VaadinServiceEventBus.logErrors());
     }
 
     @Test
@@ -53,10 +63,7 @@ public class VaadinServiceListenerContractTest {
         service.addRpcInvocationListener(recordingRpcListener(calls, "first"));
         service.addRpcInvocationListener(recordingRpcListener(calls, "second"));
 
-        RpcInvocationEvent event = rpcEvent();
-        service.fireRpcInvocationStarted(event);
-        service.fireRpcInvocationFailed(event, new RuntimeException("boom"));
-        service.fireRpcInvocationEnded(event);
+        fireRpcInvocationPhases();
 
         Assert.assertEquals(List.of("first-started", "second-started",
                 "first-failed", "second-failed", "first-ended", "second-ended"),
@@ -85,10 +92,7 @@ public class VaadinServiceListenerContractTest {
         });
         service.addRpcInvocationListener(recordingRpcListener(calls, "second"));
 
-        RpcInvocationEvent event = rpcEvent();
-        service.fireRpcInvocationStarted(event);
-        service.fireRpcInvocationFailed(event, new RuntimeException("boom"));
-        service.fireRpcInvocationEnded(event);
+        fireRpcInvocationPhases();
 
         Assert.assertEquals(
                 List.of("second-started", "second-failed", "second-ended"),
@@ -96,16 +100,22 @@ public class VaadinServiceListenerContractTest {
     }
 
     @Test
-    public void hasRpcInvocationListeners_tracksRegistrations() {
-        Assert.assertFalse(service.hasRpcInvocationListeners());
+    public void rpcInvocationListenerRegistration_tracksAllPhases() {
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        Assert.assertFalse(
+                eventBus.hasListener(RpcInvocationStartedEvent.class));
 
         Registration registration = service
                 .addRpcInvocationListener(new RpcInvocationListener() {
                 });
-        Assert.assertTrue(service.hasRpcInvocationListeners());
+        Assert.assertTrue(
+                eventBus.hasListener(RpcInvocationStartedEvent.class));
+        Assert.assertTrue(eventBus.hasListener(RpcInvocationFailedEvent.class));
+        Assert.assertTrue(eventBus.hasListener(RpcInvocationEndedEvent.class));
 
         registration.remove();
-        Assert.assertFalse(service.hasRpcInvocationListeners());
+        Assert.assertFalse(
+                eventBus.hasListener(RpcInvocationStartedEvent.class));
     }
 
     @Test
@@ -252,7 +262,7 @@ public class VaadinServiceListenerContractTest {
                 eventBus.hasListener(RpcInvocationFailedEvent.class));
         Assert.assertFalse(eventBus.hasListener(RpcInvocationEndedEvent.class));
 
-        service.fireRpcInvocationStarted(rpcEvent());
+        fireRpcInvocationPhases();
         Assert.assertTrue(calls.isEmpty());
     }
 

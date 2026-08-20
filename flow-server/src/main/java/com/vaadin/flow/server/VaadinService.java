@@ -84,7 +84,6 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
-import com.vaadin.flow.server.communication.RpcInvocationEvent;
 import com.vaadin.flow.server.communication.RpcInvocationFailedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationListener;
 import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
@@ -873,88 +872,6 @@ public abstract class VaadinService implements Serializable {
                                 event.getError())),
                 eventBus.addListener(RpcInvocationEndedEvent.class,
                         listener::invocationEnded));
-    }
-
-    /**
-     * Tells whether any {@link RpcInvocationListener} is registered, so callers
-     * can skip building per-invocation events when nobody is observing.
-     *
-     * @return {@code true} if at least one listener is registered
-     * @since 25.2
-     * @deprecated use {@link VaadinServiceEventBus#hasListener(Class)} through
-     *             {@link #getEventBus()} instead
-     */
-    @Deprecated(since = "25.3", forRemoval = true)
-    public boolean hasRpcInvocationListeners() {
-        return eventBus.hasListener(RpcInvocationStartedEvent.class)
-                || eventBus.hasListener(RpcInvocationFailedEvent.class)
-                || eventBus.hasListener(RpcInvocationEndedEvent.class);
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation is about
-     * to start. For internal use by the RPC handling machinery.
-     * <p>
-     * The listeners are notified of a {@link RpcInvocationStartedEvent} built
-     * from the given event, so any state a subclass of
-     * {@link RpcInvocationEvent} carries is not passed on to them.
-     *
-     * @param event
-     *            the invocation event
-     * @since 25.2
-     * @deprecated fire a {@link RpcInvocationStartedEvent} through
-     *             {@link #getEventBus()} instead
-     */
-    @Deprecated(since = "25.3", forRemoval = true)
-    public void fireRpcInvocationStarted(RpcInvocationEvent event) {
-        fireRpcInvocationEvent(new RpcInvocationStartedEvent(event));
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation threw.
-     * For internal use by the RPC handling machinery.
-     *
-     * <p>
-     * The listeners are notified of a {@link RpcInvocationFailedEvent} built
-     * from the given event, so any state a subclass of
-     * {@link RpcInvocationEvent} carries is not passed on to them.
-     *
-     * @param event
-     *            the invocation event
-     * @param error
-     *            the throwable raised by the invocation handler
-     * @since 25.2
-     * @deprecated fire a {@link RpcInvocationFailedEvent} through
-     *             {@link #getEventBus()} instead
-     */
-    @Deprecated(since = "25.3", forRemoval = true)
-    public void fireRpcInvocationFailed(RpcInvocationEvent event,
-            Throwable error) {
-        fireRpcInvocationEvent(new RpcInvocationFailedEvent(event, error));
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation has
-     * finished, whether normally or via an exception. For internal use by the
-     * RPC handling machinery.
-     * <p>
-     * The listeners are notified of a {@link RpcInvocationEndedEvent} built
-     * from the given event, so any state a subclass of
-     * {@link RpcInvocationEvent} carries is not passed on to them.
-     *
-     * @param event
-     *            the invocation event
-     * @since 25.2
-     * @deprecated fire a {@link RpcInvocationEndedEvent} through
-     *             {@link #getEventBus()} instead
-     */
-    @Deprecated(since = "25.3", forRemoval = true)
-    public void fireRpcInvocationEnded(RpcInvocationEvent event) {
-        fireRpcInvocationEvent(new RpcInvocationEndedEvent(event));
-    }
-
-    private void fireRpcInvocationEvent(RpcInvocationEvent event) {
-        eventBus.fireEvent(event, VaadinServiceEventBus.logErrors());
     }
 
     /**
