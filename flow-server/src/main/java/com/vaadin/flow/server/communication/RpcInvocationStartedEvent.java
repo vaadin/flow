@@ -23,7 +23,6 @@ import com.vaadin.flow.server.VaadinService;
  * immediately before an RPC invocation is handled.
  *
  * @see RpcInvocationListener#invocationStarted(RpcInvocationEvent)
- * @since 25.3
  */
 public class RpcInvocationStartedEvent extends RpcInvocationEvent {
 

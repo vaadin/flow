@@ -35,6 +35,12 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * {@code invocationStarted} regardless of outcome, so a listener may keep
  * timing state in a {@link ThreadLocal}.
  * <p>
+ * Each callback receives its own event instance, of the
+ * {@link RpcInvocationStartedEvent}, {@link RpcInvocationFailedEvent} or
+ * {@link RpcInvocationEndedEvent} type, describing the same invocation. The
+ * callbacks of one invocation are correlated through the thread they are
+ * delivered on, not through the identity of the event.
+ * <p>
  * Implementations must be fast and non-blocking: callbacks run on the request
  * thread directly around invocation handling. Exceptions thrown from a callback
  * are logged and suppressed so they cannot disrupt RPC processing.

@@ -20,7 +20,6 @@ package com.vaadin.flow.server;
  * when a session lock has been acquired.
  *
  * @see SessionLockListener#lockAcquired(SessionLockEvent)
- * @since 25.3
  */
 public class SessionLockAcquiredEvent extends SessionLockEvent {
 

@@ -270,4 +270,61 @@ public class VaadinServiceListenerContractTest {
             }
         };
     }
+
+    @Test
+    public void sessionInitListenerThrowsCheckedException_originalGoesToSessionErrorHandler() {
+        MockVaadinSession session = new MockVaadinSession(service);
+        List<Throwable> errors = new ArrayList<>();
+        ServiceException failure = new ServiceException("checked");
+        service.addSessionInitListener(event -> {
+            throw failure;
+        });
+
+        // The session is locked while init listeners are notified
+        session.lock();
+        try {
+            session.setErrorHandler(event -> errors.add(event.getThrowable()));
+            service.getEventBus()
+                    .fireEvent(new SessionInitEvent(service, session, null));
+        } finally {
+            session.unlock();
+        }
+
+        // The listener exception must reach the handler as-is, not wrapped
+        Assert.assertEquals(1, errors.size());
+        Assert.assertSame(failure, errors.get(0));
+    }
+
+    @Test
+    public void rpcInvocationPhases_areDistinctEventsDescribingTheSameInvocation() {
+        List<RpcInvocationEvent> events = new ArrayList<>();
+        service.addRpcInvocationListener(new RpcInvocationListener() {
+            @Override
+            public void invocationStarted(RpcInvocationEvent event) {
+                events.add(event);
+            }
+
+            @Override
+            public void invocationEnded(RpcInvocationEvent event) {
+                events.add(event);
+            }
+        });
+
+        UI ui = new UI();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(
+                new RpcInvocationStartedEvent(ui, "event", 7, "click"));
+        eventBus.fireEvent(
+                new RpcInvocationEndedEvent(ui, "event", 7, "click"));
+
+        Assert.assertEquals(2, events.size());
+        // Phases are correlated by thread, not by event identity
+        Assert.assertNotSame(events.get(0), events.get(1));
+        for (RpcInvocationEvent event : events) {
+            Assert.assertSame(ui, event.getUI());
+            Assert.assertEquals("event", event.getType());
+            Assert.assertEquals(7, event.getNodeId());
+            Assert.assertEquals("click", event.getName());
+        }
+    }
 }

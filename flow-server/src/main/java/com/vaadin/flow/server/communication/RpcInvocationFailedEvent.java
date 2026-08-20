@@ -25,7 +25,6 @@ import com.vaadin.flow.server.VaadinService;
  * independently of this event.
  *
  * @see RpcInvocationListener#invocationFailed(RpcInvocationEvent, Throwable)
- * @since 25.3
  */
 public class RpcInvocationFailedEvent extends RpcInvocationEvent {
 

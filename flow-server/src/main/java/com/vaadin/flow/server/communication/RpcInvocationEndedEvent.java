@@ -24,7 +24,6 @@ import com.vaadin.flow.server.VaadinService;
  * threw.
  *
  * @see RpcInvocationListener#invocationEnded(RpcInvocationEvent)
- * @since 25.3
  */
 public class RpcInvocationEndedEvent extends RpcInvocationEvent {
 

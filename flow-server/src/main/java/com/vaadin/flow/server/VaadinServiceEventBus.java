@@ -53,7 +53,6 @@ import com.vaadin.flow.shared.Registration;
  * a supertype is not notified of subtype events.
  *
  * @see VaadinService#getEventBus()
- * @since 25.3
  */
 public class VaadinServiceEventBus implements Serializable {
 
@@ -100,8 +99,16 @@ public class VaadinServiceEventBus implements Serializable {
         Objects.requireNonNull(eventType, "Event type cannot be null");
         Objects.requireNonNull(listener, "Listener cannot be null");
 
-        listeners.computeIfAbsent(eventType,
-                type -> new CopyOnWriteArrayList<>()).add(listener);
+        // The list is created and appended to inside the same atomic map
+        // operation, so that a concurrent removal can't detach it from the map
+        // in between and leave the listener registered in an orphaned list
+        listeners.compute(eventType, (type, registered) -> {
+            CopyOnWriteArrayList<SerializableConsumer<?>> updated = registered == null
+                    ? new CopyOnWriteArrayList<>()
+                    : registered;
+            updated.add(listener);
+            return updated;
+        });
 
         return Registration.once(() -> removeListener(eventType, listener));
     }

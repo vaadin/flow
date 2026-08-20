@@ -809,7 +809,9 @@ public abstract class VaadinService implements Serializable {
             try {
                 listener.sessionInit(event);
             } catch (ServiceException e) {
-                throw new ListenerInvocationException(e);
+                // The event bus only deals in unchecked exceptions, so the
+                // checked one is routed to the same place here
+                event.getSession().getErrorHandler().error(new ErrorEvent(e));
             }
         });
     }
@@ -828,7 +830,6 @@ public abstract class VaadinService implements Serializable {
      * </pre>
      *
      * @return the event bus of this service, not {@code null}
-     * @since 25.3
      */
     public VaadinServiceEventBus getEventBus() {
         return eventBus;
@@ -896,6 +897,12 @@ public abstract class VaadinService implements Serializable {
      * @param event
      *            the invocation event
      * @since 25.2
+     *        <p>
+     *        The event is re-created as a {@link RpcInvocationStartedEvent}
+     *        unless it already is one, so any state a subclass of
+     *        {@link RpcInvocationEvent} carries is not passed on to the
+     *        listeners.
+     *
      * @deprecated fire a {@link RpcInvocationStartedEvent} through
      *             {@link #getEventBus()} instead
      */
@@ -915,6 +922,11 @@ public abstract class VaadinService implements Serializable {
      * @param error
      *            the throwable raised by the invocation handler
      * @since 25.2
+     *        <p>
+     *        The event is re-created as a {@link RpcInvocationFailedEvent}, so
+     *        any state a subclass of {@link RpcInvocationEvent} carries is not
+     *        passed on to the listeners.
+     *
      * @deprecated fire a {@link RpcInvocationFailedEvent} through
      *             {@link #getEventBus()} instead
      */
@@ -932,6 +944,12 @@ public abstract class VaadinService implements Serializable {
      * @param event
      *            the invocation event
      * @since 25.2
+     *        <p>
+     *        The event is re-created as a {@link RpcInvocationEndedEvent}
+     *        unless it already is one, so any state a subclass of
+     *        {@link RpcInvocationEvent} carries is not passed on to the
+     *        listeners.
+     *
      * @deprecated fire a {@link RpcInvocationEndedEvent} through
      *             {@link #getEventBus()} instead
      */
@@ -967,26 +985,8 @@ public abstract class VaadinService implements Serializable {
      */
     private static SerializableBiConsumer<EventObject, RuntimeException> sessionErrorHandler(
             VaadinSession session) {
-        return (event, error) -> session.getErrorHandler().error(new ErrorEvent(
-                ListenerInvocationException.unwrapCheckedException(error)));
-    }
-
-    /**
-     * Wrapper used to pass a checked exception thrown by a listener through the
-     * event bus, which only deals in unchecked exceptions.
-     */
-    private static class ListenerInvocationException extends RuntimeException {
-
-        private ListenerInvocationException(Exception cause) {
-            super(cause);
-        }
-
-        private static Throwable unwrapCheckedException(
-                RuntimeException error) {
-            return error instanceof ListenerInvocationException
-                    ? error.getCause()
-                    : error;
-        }
+        return (event, error) -> session.getErrorHandler()
+                .error(new ErrorEvent(error));
     }
 
     /**
@@ -2773,6 +2773,17 @@ public abstract class VaadinService implements Serializable {
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public void fireUIInitListeners(UI ui) {
+        fireUIInitEvent(ui);
+    }
+
+    /**
+     * Fires a {@link UIInitEvent} for the given UI on the event bus of this
+     * service.
+     *
+     * @param ui
+     *            the initialized {@link UI}
+     */
+    void fireUIInitEvent(UI ui) {
         eventBus.fireEvent(new UIInitEvent(ui, this));
     }
 
