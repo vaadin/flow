@@ -255,8 +255,8 @@ class I18NUtilTest {
         URLStreamHandler wsjarMockHandler = new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL url) throws IOException {
-                url = new URL("jar", url.getPath(), url.getFile());
-                return url.openConnection();
+                // The file of a wsjar URL is a jar URL without its protocol
+                return new URL("jar:" + url.getFile()).openConnection();
             }
         };
         URLStreamHandlerFactory wsjarMockHandlerFactory = protocol -> {
@@ -289,6 +289,82 @@ class I18NUtilTest {
                 .getDefaultTranslationLocales(urlClassLoader);
         assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // A jar connection hands out an instance shared with everything else
+    // reading that jar while its cache is on, and closing that instance would
+    // break the other readers.
+    @Test
+    void jarOpenedThroughConnection_sharedJarIsLeftOpen() throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+        JarFile sharedJar = new JarFile(path.toFile());
+
+        URLStreamHandler cachingJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                return new JarURLConnection(url) {
+                    @Override
+                    public JarFile getJarFile() throws IOException {
+                        return getUseCaches() ? sharedJar
+                                : new JarFile(path.toFile());
+                    }
+
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                cachingJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        assertEquals(2,
+                I18NUtil.getDefaultTranslationLocales(mockLoader).size(),
+                "Translation files inside the jar should be resolved");
+
+        assertDoesNotThrow(
+                () -> sharedJar
+                        .getEntry(DefaultI18NProvider.BUNDLE_FOLDER + "/"),
+                "The jar shared through the connection cache should still be open");
+        sharedJar.close();
+    }
+
+    // Where the connection gives no jar to work with, the location is resolved
+    // as a file, and it is percent-encoded just like any other URL, so a space
+    // in a parent folder arrives as %20 and must be decoded.
+    @Test
+    void connectionWithoutJar_jarPathContainsSpace_findsLanguages()
+            throws IOException {
+        Path spacedFolder = Files.createDirectory(
+                temporaryFolder.resolve("jar in a spaced folder"));
+        Path path = generateZipArchive(spacedFolder);
+
+        URLStreamHandler noJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                throw new IOException("No connection for this jar");
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                noJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a JAR should be resolved even though the path contains a space");
 
         assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");
