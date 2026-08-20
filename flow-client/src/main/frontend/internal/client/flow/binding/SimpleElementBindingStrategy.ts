@@ -430,8 +430,8 @@ export function updateAttribute(mapProperty: AttributeMapProperty, element: Elem
 // --- element creation & identity ---------------------------------------------
 // The standalone, BindingContext-free parts of the strategy: creating the DOM
 // element for a state node, the applicability/tag/visibility checks and the
-// rebind check. They are assembled into the BindingStrategy<Element> class once
-// bind() (and its DOM-structure/event machinery) is ported.
+// rebind check. The BindingStrategy<Element> class at the end of the file
+// assembles them together with bind() and its DOM-structure/event machinery.
 
 /** The slice of StateNode that creation & identity read. */
 interface CreationNode {
@@ -506,13 +506,13 @@ export function isVisible(node: CreationNode): boolean {
   return tree !== null && tree.isVisible(node);
 }
 
-// --- visibility binding ------------------------------------------------------
+// --- visibility helpers ------------------------------------------------------
 // The element-visibility helpers of bind(): they capture the element's initial
 // hidden attribute and inline display once, hide an invisible element, restore
 // the captured state when it becomes visible again, and apply structural
 // attributes (the "slot") even while invisible. The bindVisibility/
-// updateVisibility wiring (which needs BindingContext, remove and doBind) lands
-// with the bind() core.
+// updateVisibility wiring that drives them (and needs BindingContext, remove and
+// doBind) is in the "visibility binding" section further down.
 
 /** The slice of MapProperty the visibility helpers read and write. */
 interface VisibilityProperty {
@@ -601,9 +601,9 @@ export function applyStructuralAttributes(stateNode: StructuralAttributesNode, e
 
 // --- DOM event listeners -----------------------------------------------------
 // Binds the ELEMENT_LISTENERS feature to real DOM event listeners and dispatches
-// fired events to the server. handleDomEvent ties together the slice-1 filter/
-// debounce resolution, the slice-2 closest-node lookups and the event-expression
-// cache. This is the first slice that needs the BindingContext.
+// fired events to the server. handleDomEvent ties together the event-data filter/
+// debounce resolution, the closest-state-node lookups and the event-expression
+// cache. This is the first section that needs the BindingContext.
 
 /** The slice of MapProperty the event/visibility clusters read. */
 interface EventMapProperty {
@@ -1354,8 +1354,8 @@ export function bindShadowRoot(context: BindingContext): EventRemover {
 // The bind/unbind lifecycle glue: the weak set of already-bound nodes, the
 // re-bind helper that re-fires the dom-node-set event, the deferred initial
 // property update, and the teardown that stops computations and removes
-// listeners. bindVisibility/updateVisibility and bind() itself follow at class
-// assembly, once the per-slice node contracts are unified.
+// listeners. bindVisibility/updateVisibility and bind() itself are further down,
+// in the sections that unify the narrow per-helper node contracts.
 
 // Used as a weak set: only the keys (bound state nodes) matter; mirrors the
 // static boundNodes JsWeakMap.
@@ -1630,9 +1630,8 @@ function verifyAttachedElement(
 // --- visibility binding ------------------------------------------------------
 // Binds the node's visibility: tracks the bound state, hides invisible nodes
 // (preserving their initial hidden/display state), and rebinds an initially
-// invisible node once it becomes visible. The cross-slice helper calls cast the
-// rich binding node to each helper's narrower contract (unified at class
-// assembly).
+// invisible node once it becomes visible. The calls into the visibility helpers
+// cast the rich binding node to each helper's narrower contract.
 
 function updateVisibility(
   listeners: EventRemover[],
@@ -1687,8 +1686,8 @@ export function bindVisibility(
 // visible node), or just the structural attributes (for an invisible one), then
 // binds visibility and schedules the initial property update. The class exposes
 // create/isApplicable/bind as the BindingStrategy<Element>. The incoming
-// concrete StateNode is cast to each slice's narrower contract here (the
-// per-slice contracts are intentionally narrow; this is their unification point).
+// concrete StateNode is cast to each helper's narrower contract here (those
+// contracts are intentionally narrow; this is their unification point).
 
 function bindClientCallableMethods(context: BindingContext): EventRemover {
   return bindServerEventHandlerNames(context.htmlNode as Element, context.node as unknown as ServerEventHandlerNode);
