@@ -265,8 +265,15 @@ public class VaadinServiceEventBusTest {
                     AtomicBoolean notified = new AtomicBoolean();
                     Registration registration = eventBus.addListener(
                             TestEvent.class, event -> notified.set(true));
-                    eventBus.fireEvent(new TestEvent(service),
-                            VaadinServiceEventBus.logErrors());
+                    // Both directions, since they walk the listeners
+                    // differently
+                    if (round % 2 == 0) {
+                        eventBus.fireEvent(new TestEvent(service),
+                                VaadinServiceEventBus.logErrors());
+                    } else {
+                        eventBus.fireEventInReverseOrder(new TestEvent(service),
+                                VaadinServiceEventBus.logErrors());
+                    }
                     registration.remove();
                     if (!notified.get()) {
                         throw new AssertionError(

@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -221,15 +220,18 @@ public class VaadinServiceEventBus implements Serializable {
      *            invoked with the event and the exception when a listener
      *            throws, not {@code null}
      */
+    @SuppressWarnings("unchecked")
     public <E extends EventObject> void fireEventInReverseOrder(E event,
             SerializableBiConsumer<? super E, Exception> errorHandler) {
         Objects.requireNonNull(event, "Event cannot be null");
         Objects.requireNonNull(errorHandler, "Error handler cannot be null");
-        List<SerializableConsumer<E>> registered = listenersFor(event);
-        ListIterator<SerializableConsumer<E>> iterator = registered
-                .listIterator(registered.size());
-        while (iterator.hasPrevious()) {
-            notifyListener(iterator.previous(), event, errorHandler);
+        // Taken as one snapshot, since reading the size and then iterating
+        // down from it would be two reads of a list that another thread can be
+        // removing listeners from
+        Object[] registered = listenersFor(event).toArray();
+        for (int i = registered.length - 1; i >= 0; i--) {
+            notifyListener((SerializableConsumer<E>) registered[i], event,
+                    errorHandler);
         }
     }
 
