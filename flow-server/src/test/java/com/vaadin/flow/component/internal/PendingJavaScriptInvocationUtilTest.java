@@ -191,7 +191,7 @@ class PendingJavaScriptInvocationUtilTest {
         assertTrue(message.contains("no open push connection"), message);
         assertTrue(
                 message.contains(TestComponent.class.getName())
-                        && message.contains("state node " + node.getId()),
+                        && message.contains("node id=" + node.getId()),
                 "the owner component should be identified: " + message);
     }
 

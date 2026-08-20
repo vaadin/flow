@@ -20,10 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateNodeUtil;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.communication.PushConnection;
 
 /**
@@ -122,22 +124,22 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     private static String describeOwner(StateNode owner) {
-        Component component = owner.hasFeature(ComponentMapping.class)
-                ? ComponentMapping.getComponent(owner).orElse(null)
+        String description = StateNodeUtil.describeTarget(owner);
+
+        Component component = BasicElementStateProvider.get().supports(owner)
+                ? Element.get(owner).getComponent().orElse(null)
                 : null;
         if (component == null) {
-            return "state node " + owner.getId();
+            return description;
         }
-
-        String description = component.getClass().getName() + " (state node "
-                + owner.getId() + ")";
         ComponentTracker.Location location = ComponentTracker
                 .findCreate(component);
-        if (location != null) {
-            return description + " created at " + location.filename() + ":"
-                    + location.lineNumber();
+        if (location == null) {
+            // Component tracking is only enabled in development mode
+            return description;
         }
-        return description;
+        return description + ", created at " + location.filename() + ":"
+                + location.lineNumber();
     }
 
     private static String describeExpression(String expression) {
