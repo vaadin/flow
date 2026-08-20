@@ -22,7 +22,7 @@
 // MessageSender are contracts satisfied at cutover.
 
 import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { Reactive } from '../reactive/reactive';
+import { Reactive } from '../reactive/Reactive';
 
 // com.vaadin.flow.internal.nodefeature.PushConfigurationMap
 const PUSHMODE_KEY = 'pushMode';

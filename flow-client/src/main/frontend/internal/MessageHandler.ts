@@ -28,7 +28,7 @@
 import { getServerId, isResynchronize, PendingMessageQueue } from './communication/MessageOrdering';
 import { ResynchronizationState } from './communication/ResynchronizationState';
 import { runWhenEagerDependenciesLoaded } from './EagerDependencyTracker';
-import { Reactive } from './reactive/reactive';
+import { Reactive } from './reactive/Reactive';
 import { processChanges as applyTreeChanges } from './TreeChangeProcessor';
 import { UIState } from './UILifecycle';
 import { Console } from './Console';
