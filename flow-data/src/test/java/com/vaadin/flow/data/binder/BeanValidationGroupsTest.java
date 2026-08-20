@@ -104,6 +104,40 @@ class BeanValidationGroupsTest {
         }
     }
 
+    /**
+     * Bean that redefines its default group with a group sequence.
+     */
+    @GroupSequence({ Draft.class, Draftable.class })
+    public static class Draftable implements Serializable {
+
+        @NotEmpty(groups = Draft.class)
+        private String title;
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+    }
+
+    /**
+     * Bean with a nested property that has group scoped constraints.
+     */
+    public static class Publication implements Serializable {
+
+        private Article article = new Article();
+
+        public Article getArticle() {
+            return article;
+        }
+
+        public void setArticle(Article article) {
+            this.article = article;
+        }
+    }
+
     private final TestTextField titleField = new TestTextField();
     private final TestTextField summaryField = new TestTextField();
     private final TestTextField bodyField = new TestTextField();
@@ -504,6 +538,61 @@ class BeanValidationGroupsTest {
                 binder.getValidationGroups());
         assertTrue(summaryField.isRequiredIndicatorVisible());
         assertFalse(binder.isValid());
+    }
+
+    /**
+     * A group sequence on the bean type redefines the default group of that
+     * type, so its constraints are validated, and marked as required, whenever
+     * the default group is validated.
+     */
+    @Test
+    void requiredIndicator_defaultGroupRedefinitionIsExpanded() {
+        BeanValidationBinder<Draftable> binder = new BeanValidationBinder<>(
+                Draftable.class);
+        binder.bind(titleField, "title");
+        binder.setBean(new Draftable());
+
+        assertFalse(binder.isValid(),
+                "the redefined default group should be validated");
+        assertTrue(titleField.isRequiredIndicatorVisible(),
+                "a constraint of the redefined default group should mark the "
+                        + "field required");
+    }
+
+    @Test
+    void nestedProperty_usesTheConfiguredGroups() {
+        BeanValidationBinder<Publication> binder = new BeanValidationBinder<>(
+                Publication.class, true, Publish.class);
+        binder.bind(summaryField, "article.summary");
+        binder.bind(bodyField, "article.body");
+        binder.setBean(new Publication());
+
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "the constraint of the nested property should be taken from "
+                        + "the type declaring it");
+        assertFalse(binder.isValid(),
+                "the empty nested summary should violate the Publish group");
+
+        summaryField.setValue("A summary");
+        bodyField.setValue("A long enough body");
+
+        assertTrue(binder.isValid());
+    }
+
+    @Test
+    void removedBinding_requiredIndicatorIsNoLongerUpdated() {
+        BeanValidationBinder<Article> binder = bind(
+                new BeanValidationBinder<>(Article.class));
+
+        assertTrue(titleField.isRequiredIndicatorVisible());
+
+        binder.removeBinding(titleField);
+        binder.setValidationGroups(Publish.class);
+
+        assertTrue(titleField.isRequiredIndicatorVisible(),
+                "the indicator of an unbound field should be left alone");
+        assertTrue(summaryField.isRequiredIndicatorVisible(),
+                "the indicators of the bound fields should still be updated");
     }
 
     private <T extends BeanValidationBinder<Article>> T bind(T binder) {

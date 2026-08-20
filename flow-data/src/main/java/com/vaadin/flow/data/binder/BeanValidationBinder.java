@@ -81,11 +81,15 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      */
     private static class RequiredConstraints implements Serializable {
 
+        private final Class<?> propertyHolderType;
+
         private final List<Set<Class<?>>> constraintGroups;
 
         private boolean indicatorVisible;
 
-        private RequiredConstraints(List<Set<Class<?>>> constraintGroups) {
+        private RequiredConstraints(Class<?> propertyHolderType,
+                List<Set<Class<?>>> constraintGroups) {
+            this.propertyHolderType = propertyHolderType;
             this.constraintGroups = constraintGroups;
         }
 
@@ -423,12 +427,22 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
             return;
         }
         RequiredConstraints constraints = new RequiredConstraints(
-                constraintGroups);
+                propertyHolderType, constraintGroups);
         requiredConstraints.put(binding.getField(), constraints);
-        if (constraints.appliesTo(getExpandedValidationGroups())) {
+        if (constraints
+                .appliesTo(getExpandedValidationGroups(propertyHolderType))) {
             constraints.indicatorVisible = true;
             binding.getField().setRequiredIndicatorVisible(true);
         }
+    }
+
+    @Override
+    protected void removeBindingInternal(Binding<BEAN, ?> binding) {
+        // The required indicator bookkeeping of a field is not needed after the
+        // field has been unbound, and keeping it would also keep the field
+        // itself from being garbage collected
+        requiredConstraints.remove(binding.getField());
+        super.removeBindingInternal(binding);
     }
 
     /**
@@ -443,13 +457,10 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
         if (requiredConstraints.isEmpty()) {
             return;
         }
-        Set<HasValue<?, ?>> boundFields = getBindings().stream()
-                .map(Binding::getField).collect(Collectors.toSet());
-        requiredConstraints.keySet().retainAll(boundFields);
-
-        Set<Class<?>> groups = getExpandedValidationGroups();
         requiredConstraints.forEach((field, constraints) -> {
-            boolean indicatorVisible = constraints.appliesTo(groups);
+            boolean indicatorVisible = constraints
+                    .appliesTo(getExpandedValidationGroups(
+                            constraints.propertyHolderType));
             if (indicatorVisible != constraints.indicatorVisible && field
                     .isRequiredIndicatorVisible() == constraints.indicatorVisible) {
                 field.setRequiredIndicatorVisible(indicatorVisible);
@@ -464,6 +475,10 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * groups together with the groups of the {@link GroupSequence} definitions
      * they refer to.
      * <p>
+     * The {@link GroupSequence} of the type declaring the property is expanded
+     * as well when the {@linkplain Default default group} is validated, since
+     * that is how the default group of a type is redefined.
+     * <p>
      * A constraint applies to one of these groups also when the group inherits
      * from a group declared by the constraint, which is why the groups are
      * compared with {@link Class#isAssignableFrom(Class)}.
@@ -473,9 +488,12 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * ongoing one-shot validation: the required indicator follows the groups
      * that are validated while the user is editing.
      *
+     * @param propertyHolderType
+     *            the type declaring the property of the bound field
      * @return the validation groups used for the required indicator
      */
-    private Set<Class<?>> getExpandedValidationGroups() {
+    private Set<Class<?>> getExpandedValidationGroups(
+            Class<?> propertyHolderType) {
         Set<Class<?>> expandedGroups = new LinkedHashSet<>();
         // Default.class is deliberately only referenced from inside a method:
         // the class must stay loadable when no Bean Validation implementation
@@ -490,6 +508,10 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
                 // Already expanded, also guards against a cyclic sequence
                 continue;
             }
+            if (Default.class.equals(group)) {
+                expandDefaultGroupRedefinition(propertyHolderType,
+                        groupsToExpand);
+            }
             GroupSequence groupSequence = group
                     .getAnnotation(GroupSequence.class);
             if (groupSequence != null) {
@@ -497,6 +519,33 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
             }
         }
         return expandedGroups;
+    }
+
+    /**
+     * Adds the groups of the {@link GroupSequence} of the given type, if any,
+     * to the groups to expand. A group sequence on a type redefines the default
+     * group of that type, so its constraints are validated whenever the default
+     * group is.
+     *
+     * @param propertyHolderType
+     *            the type declaring the property of the bound field
+     * @param groupsToExpand
+     *            the groups that are still to be expanded
+     */
+    private static void expandDefaultGroupRedefinition(
+            Class<?> propertyHolderType, Deque<Class<?>> groupsToExpand) {
+        GroupSequence defaultGroupRedefinition = propertyHolderType
+                .getAnnotation(GroupSequence.class);
+        if (defaultGroupRedefinition == null) {
+            return;
+        }
+        for (Class<?> group : defaultGroupRedefinition.value()) {
+            // The type itself stands for its own default group constraints,
+            // which are covered by the default group already
+            if (!group.equals(propertyHolderType)) {
+                groupsToExpand.add(group);
+            }
+        }
     }
 
     /**
