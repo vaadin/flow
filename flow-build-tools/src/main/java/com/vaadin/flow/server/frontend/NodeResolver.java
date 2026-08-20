@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -275,63 +274,28 @@ class NodeResolver implements java.io.Serializable {
         }
 
         // First, check if the exact requested version is already installed
-        String versionToUse = nodeVersion;
-        File nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
-                versionToUse);
-
-        if (nodeExecutable.exists()) {
-            try {
-                String installedVersion = FrontendUtils
-                        .getVersion("node", List.of(
-                                nodeExecutable.getAbsolutePath(), "--version"))
-                        .getFullVersion();
-
-                // Normalize versions for comparison
-                String normalizedInstalled = normalizeVersion(installedVersion);
-                String normalizedRequested = normalizeVersion(nodeVersion);
-
-                if (normalizedInstalled.equals(normalizedRequested)) {
-                    getLogger().debug("Node {} is already installed in {}",
-                            nodeVersion, alternativeDir);
-                    return createActiveInstallation(nodeExecutable,
-                            versionToUse, alternativeDirFile);
-                }
-            } catch (UnknownVersionException e) {
-                getLogger().debug(
-                        "Could not verify version of existing node installation",
-                        e);
-            }
+        ActiveNodeInstallation active = tryUseInstalled(
+                NodeInstallation.forVersion(alternativeDirFile, nodeVersion),
+                nodeVersion);
+        if (active != null) {
+            getLogger().debug("Node {} is already installed in {}", nodeVersion,
+                    alternativeDir);
+            return active;
         }
 
-        // Check if any other compatible version is available
+        // Check if any other compatible version is available. Note that the
+        // installed binary still has to report the configured version, so a
+        // fallback of a different version ends up being installed below.
         String fallbackVersion = findCompatibleInstalledVersion(
                 alternativeDirFile);
         if (fallbackVersion != null) {
-            getLogger().debug("Using existing Node {} instead of installing {}",
-                    fallbackVersion, nodeVersion);
-            versionToUse = fallbackVersion;
-            nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
-                    versionToUse);
-
-            // Also validate that found alternative actually works.
-            try {
-                String installedVersion = FrontendUtils
-                        .getVersion("node", List.of(
-                                nodeExecutable.getAbsolutePath(), "--version"))
-                        .getFullVersion();
-
-                // Normalize versions for comparison
-                String normalizedInstalled = normalizeVersion(installedVersion);
-                String normalizedRequested = normalizeVersion(nodeVersion);
-
-                if (normalizedInstalled.equals(normalizedRequested)) {
-                    return createActiveInstallation(nodeExecutable,
-                            versionToUse, alternativeDirFile);
-                }
-            } catch (UnknownVersionException e) {
+            active = tryUseInstalled(NodeInstallation.forVersion(
+                    alternativeDirFile, fallbackVersion), nodeVersion);
+            if (active != null) {
                 getLogger().debug(
-                        "Could not verify version of existing node installation",
-                        e);
+                        "Using existing Node {} instead of installing {}",
+                        fallbackVersion, nodeVersion);
+                return active;
             }
         }
 
@@ -341,41 +305,71 @@ class NodeResolver implements java.io.Serializable {
         try {
             nodeInstaller.setNodeVersion(nodeVersion);
             nodeInstaller.install();
-            nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
-                    nodeVersion);
-            return createActiveInstallation(nodeExecutable, nodeVersion,
-                    alternativeDirFile);
+            return createActiveInstallation(NodeInstallation
+                    .forVersion(alternativeDirFile, nodeVersion), nodeVersion);
         } catch (InstallationException e) {
             throw new IllegalStateException("Failed to install Node", e);
         }
     }
 
-    private ActiveNodeInstallation createActiveInstallation(File nodeExecutable,
-            String version, File installDir) {
-        if (!nodeExecutable.exists()) {
+    /**
+     * Takes an already installed Node.js into use, provided that its binary
+     * really reports the required version.
+     *
+     * @param installation
+     *            the installation to try, which does not have to exist
+     * @param requiredVersion
+     *            the version the installed binary has to report
+     * @return the active node installation, or {@code null} if the installation
+     *         cannot be used
+     */
+    private ActiveNodeInstallation tryUseInstalled(
+            NodeInstallation installation, String requiredVersion) {
+        if (!installation.hasNodeExecutable()) {
+            return null;
+        }
+        File installDirectory = installation.getDirectory().getParentFile();
+        try {
+            // The directory name is only a claim, so compare the installation
+            // the binary actually is against the required one
+            NodeInstallation reported = NodeInstallation.forVersion(
+                    installDirectory,
+                    installation.getInstalledVersion().getFullVersion());
+
+            if (reported.equals(NodeInstallation.forVersion(installDirectory,
+                    requiredVersion))) {
+                return createActiveInstallation(installation,
+                        installation.getVersion());
+            }
+        } catch (UnknownVersionException e) {
+            getLogger().debug(
+                    "Could not verify version of existing node installation",
+                    e);
+        }
+        return null;
+    }
+
+    private ActiveNodeInstallation createActiveInstallation(
+            NodeInstallation installation, String version) {
+        if (!installation.hasNodeExecutable()) {
             throw new IllegalStateException(
                     "Node installation failed - executable not found at "
-                            + nodeExecutable);
+                            + installation.getNodeExecutable());
         }
 
         try {
-            ActiveNodeInstallation installation = tryResolveFromExecutable(
-                    nodeExecutable, installDir, version);
+            ActiveNodeInstallation active = tryResolveFromExecutable(
+                    installation.getNodeExecutable(),
+                    installation.getDirectory(), version);
 
-            if (installation == null) {
-                String versionedPath = "node-v" + normalizeVersion(version);
-                boolean isWindows = FrontendUtils.isWindows();
-                String expectedNpmPath = isWindows
-                        ? versionedPath + "\\node_modules\\npm\\bin\\npm-cli.js"
-                        : versionedPath
-                                + "/lib/node_modules/npm/bin/npm-cli.js";
-                File expectedNpmFile = new File(installDir, expectedNpmPath);
+            if (active == null) {
                 throw new IllegalStateException(
                         "npm-cli.js not found at expected location: "
-                                + expectedNpmFile.getAbsolutePath());
+                                + installation.getNpmCliScript()
+                                        .getAbsolutePath());
             }
 
-            return installation;
+            return active;
         } catch (UnknownVersionException e) {
             throw new IllegalStateException("Failed to verify node version", e);
         }
@@ -420,24 +414,12 @@ class NodeResolver implements java.io.Serializable {
      *         version, or null if none found
      */
     private String findCompatibleInstalledVersion(File installDir) {
-        if (!installDir.exists() || !installDir.isDirectory()) {
-            return null;
-        }
-
-        File[] nodeDirs = installDir.listFiles(file -> file.isDirectory()
-                && file.getName().startsWith("node-v"));
-
-        if (nodeDirs == null || nodeDirs.length == 0) {
-            return null;
-        }
-
         FrontendVersion bestVersion = null;
         String bestVersionString = null;
 
-        for (File nodeDir : nodeDirs) {
-            String dirName = nodeDir.getName();
-            // Extract version from directory name (node-v24.10.0 -> v24.10.0)
-            String versionString = dirName.substring("node-".length());
+        for (NodeInstallation installation : NodeInstallations
+                .findAll(installDir)) {
+            String versionString = installation.getVersion();
 
             try {
                 FrontendVersion version = new FrontendVersion(versionString);
@@ -465,12 +447,10 @@ class NodeResolver implements java.io.Serializable {
                 }
 
                 // Verify the node executable actually exists
-                File nodeExecutable = getNodeExecutableForVersion(installDir,
-                        versionString);
-                if (!nodeExecutable.exists()) {
+                if (!installation.hasNodeExecutable()) {
                     getLogger().debug(
                             "Skipping {} - executable not found at {}",
-                            versionString, nodeExecutable);
+                            versionString, installation.getNodeExecutable());
                     continue;
                 }
 
@@ -481,29 +461,11 @@ class NodeResolver implements java.io.Serializable {
                 }
             } catch (NumberFormatException e) {
                 getLogger().debug("Could not parse version from directory: {}",
-                        dirName);
+                        installation.getDirectory().getName());
             }
         }
 
         return bestVersionString;
-    }
-
-    /**
-     * Gets the node executable path for a specific version.
-     *
-     * @param installDir
-     *            the installation directory
-     * @param version
-     *            the version string (e.g., "v24.10.0")
-     * @return the File pointing to the node executable
-     */
-    private File getNodeExecutableForVersion(File installDir, String version) {
-        String versionedPath = "node-v"
-                + (version.startsWith("v") ? version.substring(1) : version);
-        boolean isWindows = FrontendUtils.isWindows();
-        String nodeExecutable = isWindows ? versionedPath + "\\node.exe"
-                : versionedPath + "/bin/node";
-        return new File(installDir, nodeExecutable);
     }
 
     /**
@@ -532,9 +494,10 @@ class NodeResolver implements java.io.Serializable {
 
         // Validate version if expected version provided
         if (expectedVersion != null) {
-            String normalizedActual = normalizeVersion(
-                    actualVersion.getFullVersion());
-            String normalizedExpected = normalizeVersion(expectedVersion);
+            String normalizedActual = NodeInstallation
+                    .normalizeVersion(actualVersion.getFullVersion());
+            String normalizedExpected = NodeInstallation
+                    .normalizeVersion(expectedVersion);
 
             if (!normalizedActual.equals(normalizedExpected)) {
                 throw new IllegalStateException(
@@ -543,12 +506,7 @@ class NodeResolver implements java.io.Serializable {
             }
         }
 
-        // Find npm-cli.js (try with and without version)
-        String npmCliScript = findNpmCliScript(installDir,
-                actualVersion.getFullVersion());
-        if (npmCliScript == null) {
-            npmCliScript = findNpmCliScript(installDir, null);
-        }
+        String npmCliScript = findNpmCliScript(installDir);
 
         if (npmCliScript == null) {
             return null;
@@ -559,36 +517,22 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
-     * Tries to find npm-cli.js in a node installation folder.
+     * Tries to find npm-cli.js in a folder holding a node installation, such as
+     * the folder of a globally installed node or an explicitly configured node
+     * folder. For an auto-installed Node.js the layout is known up front, see
+     * {@link NodeInstallation#getNpmCliScript()}.
      *
      * @param nodeFolder
      *            the folder containing the node installation
-     * @param nodeVersion
-     *            optional version string for versioned paths (e.g. "v24.12.0")
      * @return absolute path to npm-cli.js, or null if not found
      */
-    private String findNpmCliScript(File nodeFolder, String nodeVersion) {
-        boolean isWindows = FrontendUtils.isWindows();
-        List<String> searchPaths = new ArrayList<>();
-
-        // Try version-specific path first if version provided
-        if (nodeVersion != null) {
-            String normalizedVersion = normalizeVersion(nodeVersion);
-            String versionedPath = "node-v" + normalizedVersion;
-            searchPaths.add(isWindows
-                    ? versionedPath + "\\node_modules\\npm\\bin\\npm-cli.js"
-                    : versionedPath + "/lib/node_modules/npm/bin/npm-cli.js");
-        }
-
-        // Try standard global/custom folder paths
-        if (isWindows) {
-            searchPaths.add("node_modules\\npm\\bin\\npm-cli.js");
-            searchPaths.add("npm\\bin\\npm-cli.js");
-        } else {
-            searchPaths.add("lib/node_modules/npm/bin/npm-cli.js");
-            searchPaths.add("../lib/node_modules/npm/bin/npm-cli.js");
-            searchPaths.add("node_modules/npm/bin/npm-cli.js");
-        }
+    private String findNpmCliScript(File nodeFolder) {
+        List<String> searchPaths = FrontendUtils.isWindows()
+                ? List.of("node_modules\\npm\\bin\\npm-cli.js",
+                        "npm\\bin\\npm-cli.js")
+                : List.of("lib/node_modules/npm/bin/npm-cli.js",
+                        "../lib/node_modules/npm/bin/npm-cli.js",
+                        "node_modules/npm/bin/npm-cli.js");
 
         for (String path : searchPaths) {
             File npmCliScript = new File(nodeFolder, path);
@@ -598,18 +542,6 @@ class NodeResolver implements java.io.Serializable {
         }
 
         return null;
-    }
-
-    /**
-     * Normalizes a node version string by removing leading "v" if present.
-     *
-     * @param version
-     *            the version string to normalize
-     * @return the normalized version string
-     */
-    private static String normalizeVersion(String version) {
-        return version != null && version.startsWith("v") ? version.substring(1)
-                : version;
     }
 
     private Logger getLogger() {
