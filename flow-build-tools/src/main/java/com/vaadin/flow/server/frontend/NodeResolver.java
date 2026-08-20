@@ -275,22 +275,26 @@ class NodeResolver implements java.io.Serializable {
 
         // First, check if the exact requested version is already installed
         ActiveNodeInstallation active = tryUseInstalled(
-                NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
+                NodeInstallation.forVersion(alternativeDirFile, nodeVersion),
+                nodeVersion);
         if (active != null) {
             getLogger().debug("Node {} is already installed in {}", nodeVersion,
                     alternativeDir);
             return active;
         }
 
-        // Check if any other compatible version is available
+        // Check if any other compatible version is available. Note that the
+        // installed binary still has to report the configured version, so a
+        // fallback of a different version ends up being installed below.
         String fallbackVersion = findCompatibleInstalledVersion(
                 alternativeDirFile);
         if (fallbackVersion != null) {
-            getLogger().debug("Using existing Node {} instead of installing {}",
-                    fallbackVersion, nodeVersion);
-            active = tryUseInstalled(NodeInstallation
-                    .forVersion(alternativeDirFile, fallbackVersion));
+            active = tryUseInstalled(NodeInstallation.forVersion(
+                    alternativeDirFile, fallbackVersion), nodeVersion);
             if (active != null) {
+                getLogger().debug(
+                        "Using existing Node {} instead of installing {}",
+                        fallbackVersion, nodeVersion);
                 return active;
             }
         }
@@ -313,28 +317,30 @@ class NodeResolver implements java.io.Serializable {
 
     /**
      * Takes an already installed Node.js into use, provided that its binary
-     * really is the requested version.
+     * really reports the required version.
      *
      * @param installation
      *            the installation to try, which does not have to exist
+     * @param requiredVersion
+     *            the version the installed binary has to report
      * @return the active node installation, or {@code null} if the installation
      *         cannot be used
      */
     private ActiveNodeInstallation tryUseInstalled(
-            NodeInstallation installation) {
+            NodeInstallation installation, String requiredVersion) {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
         File installDirectory = installation.getDirectory().getParentFile();
         try {
             // The directory name is only a claim, so compare the installation
-            // the binary actually is against the requested one
+            // the binary actually is against the required one
             NodeInstallation reported = NodeInstallation.forVersion(
                     installDirectory,
                     installation.getInstalledVersion().getFullVersion());
 
             if (reported.equals(NodeInstallation.forVersion(installDirectory,
-                    nodeVersion))) {
+                    requiredVersion))) {
                 installation.markUsed();
                 return createActiveInstallation(installation,
                         installation.getVersion());
