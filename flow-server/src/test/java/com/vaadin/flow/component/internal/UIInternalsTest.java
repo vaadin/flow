@@ -418,9 +418,9 @@ class UIInternalsTest {
         closedInternals.setSession(null);
 
         assertEquals(0, pendingInvocations(closedInternals).size(),
-                "Closing the UI should discard retained invocations");
+                "Detaching the UI should discard the retained invocations");
         assertEquals(0, retainedOwners(closedInternals).size(),
-                "Closing the UI should stop tracking retained invocation owners");
+                "Detaching the UI should stop tracking the retained owners");
     }
 
     @Test

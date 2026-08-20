@@ -525,7 +525,6 @@ public class UIInternals implements Serializable {
                     getLogger().warn("Error detaching closed UI {} ",
                             ui.getUIId(), e);
                 }
-                releasePendingJavaScriptInvocations();
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -748,18 +747,6 @@ public class UIInternals implements Serializable {
             pendingJsInvocations.removeIf(
                     invocation -> invocation.getOwner() == detachedNode);
         }
-    }
-
-    /**
-     * Discards the JavaScript invocations still queued for the related UI.
-     * <p>
-     * Detaching the UI already discards the invocations retained for each of
-     * its nodes, but invocations added after the last dump are not tracked per
-     * node and a closed UI can no longer send them.
-     */
-    private void releasePendingJavaScriptInvocations() {
-        pendingJsInvocations.clear();
-        retainedJsInvocationOwners.clear();
     }
 
     /**
