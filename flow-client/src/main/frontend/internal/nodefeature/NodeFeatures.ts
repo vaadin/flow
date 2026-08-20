@@ -21,60 +21,140 @@
  * For internal use only. May be renamed or removed in a future release.
  *
  * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeFeatures.
+ *
+ * TODO(flow-client-ts): each id's Javadoc below references the server-side
+ * feature class it identifies (e.g. `ElementData`), none of which are ported to
+ * TypeScript yet. They are kept as code spans for now; restore them as
+ * `{@link ...}` links once those classes are available in follow-up PRs.
  */
 export const NodeFeatures = {
+  /**
+   * Id for `ElementData`.
+   */
   ELEMENT_DATA: 0,
-  ELEMENT_PROPERTIES: 1,
-  ELEMENT_CHILDREN: 2,
-  ELEMENT_ATTRIBUTES: 3,
-  ELEMENT_LISTENERS: 4,
-  UI_PUSHCONFIGURATION: 5,
-  UI_PUSHCONFIGURATION_PARAMETERS: 6,
-  TEXT_NODE: 7,
-  POLL_CONFIGURATION: 8,
-  RECONNECT_DIALOG_CONFIGURATION: 9,
-  LOADING_INDICATOR_CONFIGURATION: 10,
-  CLASS_LIST: 11,
-  ELEMENT_STYLE_PROPERTIES: 12,
-  COMPONENT_MAPPING: 15,
-  TEMPLATE_MODELLIST: 16,
-  POLYMER_SERVER_EVENT_HANDLERS: 17,
-  POLYMER_EVENT_LISTENERS: 18,
-  CLIENT_DELEGATE_HANDLERS: 19,
-  SHADOW_ROOT_DATA: 20,
-  SHADOW_ROOT_HOST: 21,
-  ATTACH_EXISTING_ELEMENT: 22,
-  BASIC_TYPE_VALUE: 23,
-  VIRTUAL_CHILDREN: 24,
-  RETURN_CHANNEL_MAP: 25,
-  INERT_DATA: 26,
-  SIGNAL_BINDING: 27
-} as const;
 
-/**
- * Various node properties' ids.
- *
- * For internal use only. May be renamed or removed in a future release.
- *
- * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeProperties,
- * containing only the entries the ported client code needs so far.
- */
-export const NodeProperties = {
-  TAG: 'tag',
-  NAMESPACE: 'namespace',
-  VISIBLE: 'visible',
-  TEXT: 'text',
-  VALUE: 'value',
-  SHADOW_ROOT: 'shadowRoot',
-  URI_ATTRIBUTE: 'uri',
-  VISIBILITY_BOUND_PROPERTY: 'bound',
-  VISIBILITY_HIDDEN_PROPERTY: 'hidden',
-  VISIBILITY_STYLE_DISPLAY_PROPERTY: 'styleDisplay',
-  SLOT_ATTRIBUTE: 'slot',
-  TYPE: 'type',
-  PAYLOAD: 'payload',
-  IN_MEMORY_CHILD: 'inMemory',
-  INJECT_BY_ID: '@id',
-  INJECT_BY_NAME: '@name',
-  TEMPLATE_IN_TEMPLATE: 'subTemplate'
+  /**
+   * Id for `ElementPropertyMap`.
+   */
+  ELEMENT_PROPERTIES: 1,
+
+  /**
+   * Id for `ElementChildrenList`.
+   */
+  ELEMENT_CHILDREN: 2,
+
+  /**
+   * Id for `ElementAttributeMap`.
+   */
+  ELEMENT_ATTRIBUTES: 3,
+
+  /**
+   * Id for `ElementListenerMap`.
+   */
+  ELEMENT_LISTENERS: 4,
+
+  /**
+   * Id for `PushConfigurationMap`.
+   */
+  UI_PUSHCONFIGURATION: 5,
+
+  /**
+   * Id for `PushConfigurationParametersMap`.
+   */
+  UI_PUSHCONFIGURATION_PARAMETERS: 6,
+
+  /**
+   * Id for `TextNodeMap`.
+   */
+  TEXT_NODE: 7,
+
+  /**
+   * Id for `PollConfigurationMap`.
+   */
+  POLL_CONFIGURATION: 8,
+
+  /**
+   * Id for `ReconnectDialogConfigurationMap`.
+   */
+  RECONNECT_DIALOG_CONFIGURATION: 9,
+
+  /**
+   * Id for `ReconnectDialogConfigurationMap`.
+   */
+  LOADING_INDICATOR_CONFIGURATION: 10,
+
+  /**
+   * Id for `ElementClassList`.
+   */
+  CLASS_LIST: 11,
+
+  /**
+   * Id for `ElementStylePropertyMap`.
+   */
+  ELEMENT_STYLE_PROPERTIES: 12,
+
+  /**
+   * Id for `ComponentMapping`.
+   */
+  COMPONENT_MAPPING: 15,
+
+  /**
+   * Id for `ModelList`.
+   */
+  TEMPLATE_MODELLIST: 16,
+
+  /**
+   * Id for `PolymerServerEventHandlers`.
+   */
+  POLYMER_SERVER_EVENT_HANDLERS: 17,
+
+  /**
+   * Id for `PolymerEventListenerMap`.
+   */
+  POLYMER_EVENT_LISTENERS: 18,
+
+  /**
+   * Id for `ClientCallableHandlers`.
+   */
+  CLIENT_DELEGATE_HANDLERS: 19,
+
+  /**
+   * Id for `ShadowRootData`.
+   */
+  SHADOW_ROOT_DATA: 20,
+
+  /**
+   * Id for `ShadowRootHost`.
+   */
+  SHADOW_ROOT_HOST: 21,
+
+  /**
+   * Id for `AttachExistingElementFeature`.
+   */
+  ATTACH_EXISTING_ELEMENT: 22,
+
+  /**
+   * Id for `BasicTypeValue`.
+   */
+  BASIC_TYPE_VALUE: 23,
+
+  /**
+   * Id for `VirtualChildrenList`.
+   */
+  VIRTUAL_CHILDREN: 24,
+
+  /**
+   * Id for `ReturnChannelMap`.
+   */
+  RETURN_CHANNEL_MAP: 25,
+
+  /**
+   * Id for `InertData`.
+   */
+  INERT_DATA: 26,
+
+  /**
+   * Id for `SignalBindingFeature`.
+   */
+  SIGNAL_BINDING: 27
 } as const;
