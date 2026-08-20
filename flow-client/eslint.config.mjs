@@ -25,9 +25,11 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
+          // Test files use the default project. They mirror the ported modules'
+          // directory layout, so each test subdirectory is listed here (the
+          // typescript-eslint allowDefaultProject globs do not support the `**`
+          // multi-level wildcard, hence one entry per level).
           allowDefaultProject: [
-            // typescript-eslint allowDefaultProject globs do not support the `**`
-            // multi-level wildcard, hence one entry per level.
             'src/test/frontend/*',
             'src/test/frontend/internal/client/*',
             'src/test/frontend/internal/client/flow/collection/*',
