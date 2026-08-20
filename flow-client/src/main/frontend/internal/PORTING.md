@@ -24,16 +24,38 @@ They consolidate the review feedback from the migration PR stack (#24933,
 
 ## Module layout
 
-1. **One Java class → one TypeScript module.** Do not collapse multiple Java
-   classes into a single `.ts` file. This applies to production code **and to
-   tests** (one Java `*Test` → one `*Tests.ts`). Example: `NodeFeatures` and
-   `NodeProperties` are separate Java classes, so they are `NodeFeatures.ts`
-   and `NodeProperties.ts`, not one shared file.
-   - A closely-related nested type declared *inside* its owner in Java (e.g. a
-     class's own change-event/listener) stays in the same module as its owner,
-     matching the Java file it lives in.
-2. **Mirror the Java package path** under `internal/` (e.g.
-   `com.vaadin.client.flow.reactive` → `internal/reactive`).
+1. **One Java *source file* → one TypeScript module.** The split follows the
+   Java *file* boundary, not the logical grouping: every top-level Java class,
+   interface or `@FunctionalInterface` that lives in its own `.java` file
+   becomes its own `.ts` module. Do not collapse several `.java` files into a
+   single `.ts` file — this applies to production code **and to tests** (one
+   Java `*Test` → one `*Tests.ts`; shared test helpers such as
+   `CountingComputation` / `TestReactiveEventRouter` are their own helper
+   modules too, and the test runner treats any non-`*Tests.ts` file under
+   `src/test/frontend` as a helper rather than a suite). Examples:
+   - `NodeFeatures` and `NodeProperties` are separate `.java` files, so they
+     are `NodeFeatures.ts` and `NodeProperties.ts`.
+   - The `com.vaadin.client.flow.reactive` package (`Reactive`, `Computation`,
+     `ReactiveEventRouter`, `ReactiveValue`, `ReactiveValueChangeEvent`,
+     `ReactiveValueChangeListener`, `InvalidateEvent`, `InvalidateListener`,
+     `FlushListener`) is nine `.java` files, so it is nine `.ts` modules — not
+     one `reactive.ts`.
+   - A change-event / listener pair (e.g. `ListSpliceEvent` /
+     `ListSpliceListener`, `MapPropertyChangeEvent` /
+     `MapPropertyChangeListener`, `MapPropertyAddEvent` /
+     `MapPropertyAddListener`) is a *separate* `.java` file from its owner
+     feature in this codebase, so each gets its own module — it is **not**
+     merged into the owner's module.
+   - The **only** exception is a type that is genuinely nested *inside* its
+     owner's `.java` file (a Java inner/nested class): it has no file of its
+     own, so it stays in the owner's module. None of the currently ported
+     reactive / node-feature event/listener types are nested this way.
+2. **Mirror the Java package path** under `internal/`, e.g.
+   `com.vaadin.client.flow.reactive` → `internal/reactive`. A type that has no
+   `com.vaadin` counterpart because it comes from the GWT `elemental` library
+   (e.g. `EventRemover`, mirroring `elemental.events.EventRemover`) lives as a
+   standalone elemental-primitive module at the `internal/` root, next to the
+   other elemental-style ports such as `JsArray`.
 
 ## Visibility parity
 
