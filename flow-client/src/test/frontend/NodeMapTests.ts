@@ -94,12 +94,21 @@ describe('NodeMap', () => {
     });
   });
 
-  it('hasPropertyValue reflects whether the property has a value', () => {
+  it('hasPropertyValue is false for an existing property without a value', () => {
     map.getProperty('foo');
     expect(map.hasPropertyValue('foo')).to.equal(false);
+  });
+
+  it('hasPropertyValue is true for an existing property with a value', () => {
     map.getProperty('foo').setValue('bar');
     expect(map.hasPropertyValue('foo')).to.equal(true);
-    map.getProperty('foo').removeValue();
+  });
+
+  it('hasPropertyValue is false after removing the value', () => {
+    const p = map.getProperty('foo');
+    p.setValue('bar');
+    expect(map.hasPropertyValue('foo')).to.equal(true);
+    p.removeValue();
     expect(map.hasPropertyValue('foo')).to.equal(false);
   });
 

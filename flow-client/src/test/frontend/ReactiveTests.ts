@@ -39,10 +39,17 @@ describe('reactive core: Reactive', () => {
     expect(count).to.equal(2);
   });
 
-  it('post flush listener is invoked during flush and removed after', () => {
+  it('post flush listener is invoked during flush', () => {
     let count = 0;
     Reactive.addPostFlushListener(() => count++);
     expect(count).to.equal(0);
+    Reactive.flush();
+    expect(count).to.equal(1);
+  });
+
+  it('post flush listener is removed after flush', () => {
+    let count = 0;
+    Reactive.addPostFlushListener(() => count++);
     Reactive.flush();
     expect(count).to.equal(1);
     Reactive.flush();
