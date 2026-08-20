@@ -285,7 +285,7 @@ export class SystemErrorHandler {
 
   /**
    * Shows an error notification for an unrecoverable error. With no caption,
-   * message or details, redirects to {@code url} (reloads when null) instead.
+   * message or details, redirects to `url` (reloads when null) instead.
    * Clicking the notification or pressing Escape performs that same redirect.
    * Mirrors SystemErrorHandler.handleUnrecoverableError.
    */

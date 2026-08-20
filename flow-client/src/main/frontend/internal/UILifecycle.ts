@@ -59,7 +59,7 @@ export class UILifecycle {
 
   /**
    * Advances the state. Only single-step forward transitions
-   * (INITIALIZING -> RUNNING -> TERMINATED) are allowed; fires a state-change
+   * (INITIALIZING -\> RUNNING -\> TERMINATED) are allowed; fires a state-change
    * event.
    */
   setState(state: UIState): void {
