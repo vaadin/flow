@@ -24,7 +24,8 @@ import { assert } from './assert';
 import type { MapProperty } from './nodefeature/MapProperty';
 import { NodeList } from './nodefeature/NodeList';
 import type { NodeMap } from './nodefeature/NodeMap';
-import { NodeFeatures, NodeProperties } from './nodefeature/NodeFeatures';
+import { NodeFeatures } from './nodefeature/NodeFeatures';
+import { NodeProperties } from './nodefeature/NodeProperties';
 import { StateNode, type StateTree as StateTreeContract } from './StateNode';
 import { Console } from './Console';
 
