@@ -26,7 +26,7 @@
 // cutover; this is the real implementation of the InitialPropertiesHandler
 // contract that StateTree.ts already declares.
 
-import { Reactive } from './reactive/reactive';
+import { Reactive } from './reactive/Reactive';
 import { NodeFeatures } from './nodefeature/NodeFeatures';
 
 /** The slice of MapProperty the handler reads and resets. */

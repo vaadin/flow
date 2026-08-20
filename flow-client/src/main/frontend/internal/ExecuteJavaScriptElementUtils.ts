@@ -32,7 +32,7 @@ export function isPropertyDefined(node: Node, property: string): boolean {
 // StateNode is a contract (addUnregisterListener / setNodeData).
 
 import { getTag, invokeWhenDefined } from './PolymerUtils';
-import { Reactive } from './reactive/reactive';
+import { Reactive } from './reactive/Reactive';
 import { getJsProperty } from './WidgetUtil';
 import { UpdatableModelProperties } from './model/UpdatableModelProperties';
 import { Console } from './Console';
