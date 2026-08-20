@@ -20,7 +20,7 @@
  * are registered on `window.Vaadin.Flow.internal.ElementUtil`.
  */
 
-/** Checks whether the {@code node} has the required {@code tag}. */
+/** Checks whether the `node` has the required `tag`. */
 export function hasTag(node: Node, tag: string): boolean {
   return node instanceof Element && node.tagName.toLowerCase() === tag.toLowerCase();
 }
@@ -49,7 +49,7 @@ export function getElementById(context: Node, id: string): Element | null {
   return Array.from(ctx.querySelectorAll('[id]') as NodeListOf<Element>).find((e) => e.id === id) ?? null;
 }
 
-/** Searches the context for an element with the given {@code name} attribute. */
+/** Searches the context for an element with the given `name` attribute. */
 export function getElementByName(context: Node, name: string): Element | null {
   return (
     Array.from((context as Element).querySelectorAll('[name]')).find((e) => e.getAttribute('name') === name) ?? null
