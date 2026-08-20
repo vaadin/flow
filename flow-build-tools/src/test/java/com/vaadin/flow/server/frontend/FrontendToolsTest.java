@@ -318,7 +318,7 @@ class FrontendToolsTest {
         tools.getNodeExecutable();
 
         File marker = new File(vaadinHomeDir,
-                "node-" + testVersion + "/" + NodeInstallations.LAST_USED_FILE);
+                "node-" + testVersion + "/" + NodeInstallation.LAST_USED_FILE);
         assertTrue(marker.exists(),
                 "last-used should have been written for the installation in use");
         assertTrue(
@@ -333,7 +333,7 @@ class FrontendToolsTest {
         File stale = new File(vaadinHomeDir, "node-v20.0.0");
         FileUtils.forceMkdir(new File(stale, "bin"));
         Files.writeString(
-                new File(stale, NodeInstallations.LAST_USED_FILE).toPath(),
+                new File(stale, NodeInstallation.LAST_USED_FILE).toPath(),
                 Instant.now().minus(Duration.ofDays(400)).toString());
 
         String testVersion = "v12.10.0";
@@ -365,7 +365,7 @@ class FrontendToolsTest {
         // Pretend the installation was last used a long time ago and resolve
         // again, which now has to reuse the existing installation
         File marker = new File(vaadinHomeDir,
-                "node-" + testVersion + "/" + NodeInstallations.LAST_USED_FILE);
+                "node-" + testVersion + "/" + NodeInstallation.LAST_USED_FILE);
         Instant longAgo = Instant.now().minus(Duration.ofDays(400));
         Files.writeString(marker.toPath(), longAgo.toString());
 

@@ -21,12 +21,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import static com.vaadin.flow.server.frontend.NodeInstallations.LAST_USED_FILE;
+import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,148 +43,127 @@ class NodeInstallationsTest {
             .minus(Duration.ofDays(3));
 
     @Test
-    void markUsed_writesParseableTimestamp() throws IOException {
-        File installation = installation("node-v24.10.0");
+    void findAll_onlyVersionedInstallationDirectories() throws IOException {
+        installation("node-v24.19.0", RECENTLY);
+        installation("node-v20.0.0", RECENTLY);
+        // The legacy unversioned installation folder and other neighbours
+        assertTrue(new File(vaadinHome, "node/bin").mkdirs());
+        assertTrue(new File(vaadinHome, "pnpm").mkdirs());
+        assertTrue(new File(vaadinHome, "node-v22.0.0-linux-x64.tar.gz")
+                .createNewFile());
 
-        Instant before = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-        NodeInstallations.markUsed(installation);
-
-        File marker = new File(installation, LAST_USED_FILE);
-        assertTrue(marker.isFile(), "last-used should have been written");
-        Instant written = Instant.parse(
-                Files.readString(marker.toPath(), StandardCharsets.UTF_8));
-        assertFalse(written.isBefore(before),
-                "last-used should hold the current time");
+        assertEquals(List.of("node-v20.0.0", "node-v24.19.0"),
+                NodeInstallations.findAll(vaadinHome).stream()
+                        .map(found -> found.getDirectory().getName()).sorted()
+                        .toList());
     }
 
     @Test
-    void markUsed_overwritesPreviousTimestamp() throws IOException {
-        File installation = installation("node-v24.10.0");
-        markUsed(installation, LONG_AGO);
-
-        NodeInstallations.markUsed(installation);
-
-        assertTrue(readLastUsed(installation).isAfter(LONG_AGO),
-                "last-used should have been refreshed");
+    void findAll_emptyDirectory_isEmpty() {
+        assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty());
     }
 
     @Test
-    void markUsed_missingDirectory_doesNotFail() {
-        File installation = new File(vaadinHome, "node-v24.10.0");
-        assertDoesNotThrow(() -> NodeInstallations.markUsed(installation));
-        assertFalse(new File(installation, LAST_USED_FILE).exists());
+    void findLeftoverArchives_onlyOldNodeArchives() throws IOException {
+        archive("node-v20.0.0-darwin-arm64.tar.xz", LONG_AGO);
+        archive("node-v22.0.0-win-x64.zip", LONG_AGO);
+        archive("node-v24.19.0-linux-x64.tar.gz", LONG_AGO);
+        // A download that another process may still be writing
+        archive("node-v24.20.0-linux-x64.tar.gz", Instant.now());
+        // Neighbours that are not Node.js archives
+        archive("node-SHASUMS256.txt", LONG_AGO);
+        archive("node-v20.0.0-notes.txt", LONG_AGO);
+        assertTrue(new File(vaadinHome, "offlineKey").createNewFile());
+
+        assertEquals(List.of("node-v20.0.0-darwin-arm64.tar.xz",
+                "node-v22.0.0-win-x64.zip", "node-v24.19.0-linux-x64.tar.gz"),
+                NodeInstallations.findLeftoverArchives(vaadinHome).stream()
+                        .map(File::getName).sorted().toList());
     }
 
     @Test
-    void removeUnusedInstallations_removesOnlyLongUnusedOnes()
-            throws IOException {
-        File inUse = installation("node-v24.19.0");
-        markUsed(inUse, Instant.now());
-        File stale = installation("node-v20.0.0");
-        markUsed(stale, LONG_AGO);
-        File recent = installation("node-v22.0.0");
-        markUsed(recent, RECENTLY);
+    void removeUnused_removesOnlyLongUnusedInstallations() throws IOException {
+        NodeInstallation inUse = installation("node-v24.19.0", Instant.now());
+        NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
+        NodeInstallation recent = installation("node-v22.0.0", RECENTLY);
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
+        NodeInstallations.removeUnused(vaadinHome, inUse);
 
-        assertTrue(inUse.isDirectory(),
-                "The installation in use should be kept");
-        assertTrue(recent.isDirectory(),
+        assertTrue(exists(inUse), "The installation in use should be kept");
+        assertTrue(exists(recent),
                 "A recently used installation should be kept");
-        assertFalse(stale.exists(),
+        assertFalse(exists(stale),
                 "An installation unused for over 6 months should be removed");
     }
 
     @Test
-    void removeUnusedInstallations_neverRemovesTheInstallationInUse()
-            throws IOException {
-        File inUse = installation("node-v24.19.0");
-        markUsed(inUse, LONG_AGO);
-        File stale = installation("node-v20.0.0");
-        markUsed(stale, LONG_AGO);
+    void removeUnused_neverRemovesTheInstallationInUse() throws IOException {
+        NodeInstallation inUse = installation("node-v24.19.0", LONG_AGO);
+        NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
+        NodeInstallations.removeUnused(vaadinHome, inUse);
 
-        assertTrue(inUse.isDirectory(),
+        assertTrue(exists(inUse),
                 "The installation in use should be kept even when stale");
-        assertFalse(stale.exists());
+        assertFalse(exists(stale));
     }
 
     @Test
-    void removeUnusedInstallations_singleStaleInstallation_isKept()
-            throws IOException {
-        File only = installation("node-v20.0.0");
-        markUsed(only, LONG_AGO);
+    void removeUnused_singleStaleInstallation_isKept() throws IOException {
+        NodeInstallation only = installation("node-v20.0.0", LONG_AGO);
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, null);
+        NodeInstallations.removeUnused(vaadinHome, null);
 
-        assertTrue(only.isDirectory(),
+        assertTrue(exists(only),
                 "The last version in the folder should never be removed");
     }
 
     @Test
-    void removeUnusedInstallations_allStaleAndNoneInUse_keepsMostRecentlyUsed()
+    void removeUnused_allStaleAndNoneInUse_keepsMostRecentlyUsed()
             throws IOException {
-        File older = installation("node-v20.0.0");
-        markUsed(older, LONG_AGO);
-        File newer = installation("node-v22.0.0");
-        markUsed(newer, LONG_AGO.plus(Duration.ofDays(10)));
+        NodeInstallation older = installation("node-v20.0.0", LONG_AGO);
+        NodeInstallation newer = installation("node-v22.0.0",
+                LONG_AGO.plus(Duration.ofDays(10)));
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, null);
+        NodeInstallations.removeUnused(vaadinHome, null);
 
-        assertFalse(older.exists());
-        assertTrue(newer.isDirectory(),
+        assertFalse(exists(older));
+        assertTrue(exists(newer),
                 "The last version in the folder should never be removed");
     }
 
     @Test
-    void removeUnusedInstallations_noMarker_isKeptAndItsRetentionStartsNow()
+    void removeUnused_unknownLastUse_isKeptAndItsRetentionStartsNow()
             throws IOException {
-        File inUse = installation("node-v24.19.0");
-        File legacy = installation("node-v20.0.0");
-        assertTrue(legacy.setLastModified(LONG_AGO.toEpochMilli()),
+        NodeInstallation inUse = installation("node-v24.19.0", Instant.now());
+        NodeInstallation legacy = installation("node-v20.0.0", null);
+        assertTrue(
+                legacy.getDirectory().setLastModified(LONG_AGO.toEpochMilli()),
                 "Test setup should be able to backdate the directory");
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
+        NodeInstallations.removeUnused(vaadinHome, inUse);
 
-        assertTrue(legacy.isDirectory(),
+        assertTrue(exists(legacy),
                 "An installation installed before the marker existed may still be in daily use and must be kept");
-        assertTrue(readLastUsed(legacy).isAfter(RECENTLY),
+        assertTrue(legacy.getLastUsed().orElseThrow().isAfter(RECENTLY),
                 "The installation should have been marked so its retention period starts now");
     }
 
     @Test
-    void removeUnusedInstallations_unparseableMarker_isKeptAndRewritten()
+    void removeUnused_removesLeftoverArchivesOfEveryVersion()
             throws IOException {
-        File inUse = installation("node-v24.19.0");
-        File broken = installation("node-v20.0.0");
-        Files.writeString(new File(broken, LAST_USED_FILE).toPath(),
-                "not a timestamp", StandardCharsets.UTF_8);
-
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
-
-        assertTrue(broken.isDirectory(),
-                "A broken marker should not make an installation look stale");
-        assertTrue(readLastUsed(broken).isAfter(RECENTLY),
-                "The broken marker should have been rewritten");
-    }
-
-    @Test
-    void removeUnusedInstallations_removesLeftoverArchivesOfEveryVersion()
-            throws IOException {
-        File inUse = installation("node-v24.19.0");
-        markUsed(inUse, Instant.now());
-        File recent = installation("node-v22.0.0");
-        markUsed(recent, RECENTLY);
-        File stale = installation("node-v20.0.0");
-        markUsed(stale, LONG_AGO);
+        NodeInstallation inUse = installation("node-v24.19.0", Instant.now());
+        installation("node-v22.0.0", RECENTLY);
+        NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
 
         File inUseArchive = archive("node-v24.19.0-linux-x64.tar.gz", LONG_AGO);
         File recentArchive = archive("node-v22.0.0-win-x64.zip", LONG_AGO);
         File staleArchive = archive("node-v20.0.0-darwin-arm64.tar.xz",
                 LONG_AGO);
+        File downloading = archive("node-v24.20.0-linux-x64.tar.gz",
+                Instant.now());
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
+        NodeInstallations.removeUnused(vaadinHome, inUse);
 
         assertFalse(inUseArchive.exists(),
                 "An unpacked archive is dead weight even when its installation is kept");
@@ -192,28 +171,16 @@ class NodeInstallationsTest {
                 "An unpacked archive is dead weight even when its installation is kept");
         assertFalse(staleArchive.exists(),
                 "The archive of a removed installation should be removed too");
-    }
-
-    @Test
-    void removeUnusedInstallations_freshArchive_isKept() throws IOException {
-        File inUse = installation("node-v24.19.0");
-        installation("node-v22.0.0");
-        File downloading = archive("node-v24.19.0-linux-x64.tar.gz",
-                Instant.now());
-
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
-
+        assertFalse(exists(stale));
         assertTrue(downloading.exists(),
                 "An archive that another process may still be downloading should be kept");
     }
 
     @Test
-    void removeUnusedInstallations_unrelatedFilesAndFolders_areNotTouched()
+    void removeUnused_unrelatedFilesAndFolders_areNotTouched()
             throws IOException {
-        File inUse = installation("node-v24.19.0");
-        markUsed(inUse, Instant.now());
-        File stale = installation("node-v20.0.0");
-        markUsed(stale, LONG_AGO);
+        NodeInstallation inUse = installation("node-v24.19.0", Instant.now());
+        NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
 
         // The legacy unversioned installation folder and other caches living
         // next to the versioned installations in ~/.vaadin
@@ -225,16 +192,12 @@ class NodeInstallationsTest {
         pnpmCache.setLastModified(LONG_AGO.toEpochMilli());
         File offlineKey = new File(vaadinHome, "offlineKey");
         assertTrue(offlineKey.createNewFile());
-        File shaSums = new File(vaadinHome, "node-SHASUMS256.txt");
-        assertTrue(shaSums.createNewFile());
-        shaSums.setLastModified(LONG_AGO.toEpochMilli());
-        File notAnArchive = new File(vaadinHome, "node-v20.0.0-notes.txt");
-        assertTrue(notAnArchive.createNewFile());
-        notAnArchive.setLastModified(LONG_AGO.toEpochMilli());
+        File shaSums = archive("node-SHASUMS256.txt", LONG_AGO);
+        File notAnArchive = archive("node-v20.0.0-notes.txt", LONG_AGO);
 
-        NodeInstallations.removeUnusedInstallations(vaadinHome, inUse);
+        NodeInstallations.removeUnused(vaadinHome, inUse);
 
-        assertFalse(stale.exists(), "The stale installation should be removed");
+        assertFalse(exists(stale), "The stale installation should be removed");
         assertTrue(legacyNodeFolder.isDirectory(),
                 "The legacy unversioned node folder should not be touched");
         assertTrue(pnpmCache.isDirectory(),
@@ -248,17 +211,26 @@ class NodeInstallationsTest {
     }
 
     @Test
-    void removeUnusedInstallations_emptyDirectory_doesNotFail() {
-        assertDoesNotThrow(() -> NodeInstallations
-                .removeUnusedInstallations(vaadinHome, null));
+    void removeUnused_emptyDirectory_doesNotFail() {
+        assertDoesNotThrow(
+                () -> NodeInstallations.removeUnused(vaadinHome, null));
         assertEquals(0, vaadinHome.listFiles().length);
     }
 
-    private File installation(String name) {
-        File installation = new File(vaadinHome, name);
-        assertTrue(new File(installation, "bin").mkdirs(),
+    /**
+     * Creates an installation directory, marked as last used at the given time
+     * or without a marker at all when {@code lastUsed} is {@code null}.
+     */
+    private NodeInstallation installation(String name, Instant lastUsed)
+            throws IOException {
+        File directory = new File(vaadinHome, name);
+        assertTrue(new File(directory, "bin").mkdirs(),
                 "Test setup should be able to create " + name);
-        return installation;
+        if (lastUsed != null) {
+            Files.writeString(new File(directory, LAST_USED_FILE).toPath(),
+                    lastUsed.toString(), StandardCharsets.UTF_8);
+        }
+        return new NodeInstallation(directory);
     }
 
     private File archive(String name, Instant modified) throws IOException {
@@ -270,15 +242,7 @@ class NodeInstallationsTest {
         return archive;
     }
 
-    private static void markUsed(File installation, Instant when)
-            throws IOException {
-        Files.writeString(new File(installation, LAST_USED_FILE).toPath(),
-                when.toString(), StandardCharsets.UTF_8);
-    }
-
-    private static Instant readLastUsed(File installation) throws IOException {
-        return Instant.parse(Files.readString(
-                new File(installation, LAST_USED_FILE).toPath(),
-                StandardCharsets.UTF_8));
+    private static boolean exists(NodeInstallation installation) {
+        return installation.getDirectory().isDirectory();
     }
 }
