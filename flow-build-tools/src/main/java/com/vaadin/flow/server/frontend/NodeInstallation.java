@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.internal.FrontendVersion;
 
 /**
  * A single Node.js version installed by Flow into the alternative install
@@ -131,6 +134,20 @@ final class NodeInstallation {
      */
     boolean hasNodeExecutable() {
         return getNodeExecutable().exists();
+    }
+
+    /**
+     * Runs the Node.js binary of this installation to find out which version it
+     * really is, which is not necessarily the version the directory is named
+     * after.
+     *
+     * @return the version the installed binary reports
+     * @throws UnknownVersionException
+     *             if the version cannot be determined
+     */
+    FrontendVersion getInstalledVersion() throws UnknownVersionException {
+        return FrontendUtils.getVersion("node",
+                List.of(getNodeExecutable().getAbsolutePath(), "--version"));
     }
 
     /**

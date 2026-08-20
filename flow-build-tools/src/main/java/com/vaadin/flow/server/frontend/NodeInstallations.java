@@ -131,11 +131,6 @@ final class NodeInstallations {
         });
 
         List<NodeInstallation> installations = findAll(installDirectory);
-        if (installations.size() < 2) {
-            // The only installation is always kept
-            return;
-        }
-
         Instant threshold = ZonedDateTime.now()
                 .minusMonths(UNUSED_RETENTION_MONTHS).toInstant();
         List<NodeInstallation> unused = new ArrayList<>();
@@ -159,7 +154,7 @@ final class NodeInstallations {
 
         // Never remove the last version in the folder, even if every
         // installation looks stale
-        if (unused.size() == installations.size()) {
+        if (!unused.isEmpty() && unused.size() == installations.size()) {
             unused.sort(Comparator.comparing(installation -> installation
                     .getLastUsed().orElse(Instant.MIN)));
             unused.remove(unused.size() - 1);
