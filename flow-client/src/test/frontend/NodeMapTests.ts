@@ -3,6 +3,7 @@ import { Computation, Reactive } from '../../main/frontend/internal/reactive/rea
 import type { MapProperty, MapPropertyChangeEvent } from '../../main/frontend/internal/nodefeature/MapProperty';
 import { NodeMap, type MapPropertyAddEvent } from '../../main/frontend/internal/nodefeature/NodeMap';
 import type { NodeFeatureNode } from '../../main/frontend/internal/nodefeature/NodeFeature';
+import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
 
 // Minimal StateNode stand-in; node-feature tests do not reach into the tree.
 const node: NodeFeatureNode = {
@@ -100,7 +101,7 @@ describe('NodeMap', () => {
   });
 
   it('innerHTML on the element-properties map always updates the value', () => {
-    const elementProperties = new NodeMap(1, node);
+    const elementProperties = new NodeMap(NodeFeatures.ELEMENT_PROPERTIES, node);
     const property = elementProperties.getProperty('innerHTML');
 
     const capture: { value: MapPropertyChangeEvent | null } = { value: null };
