@@ -26,9 +26,7 @@ import {
 } from '../reactive/reactive';
 import { MapProperty, type MapPropertyOwner } from './MapProperty';
 import { NodeFeature, type JsonValue } from './NodeFeature';
-
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_PROPERTIES
-const ELEMENT_PROPERTIES = 1;
+import { NodeFeatures } from './NodeFeatures';
 
 /**
  * Event fired when a property is added to a {@link NodeMap}.
@@ -101,7 +99,7 @@ export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOw
   getProperty(name: string): MapProperty {
     let property = this.#properties.get(name);
     if (property === undefined) {
-      property = new MapProperty(name, this, name === 'innerHTML' && this.getId() === ELEMENT_PROPERTIES);
+      property = new MapProperty(name, this, name === 'innerHTML' && this.getId() === NodeFeatures.ELEMENT_PROPERTIES);
       this.#properties.set(name, property);
 
       this.#eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
