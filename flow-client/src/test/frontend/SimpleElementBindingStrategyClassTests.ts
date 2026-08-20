@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { StateNode } from '../../main/frontend/internal/StateNode';
 import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
 import { SimpleElementBindingStrategy } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';

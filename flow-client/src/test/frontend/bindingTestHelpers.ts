@@ -9,7 +9,8 @@ import { bind } from '../../main/frontend/internal/binding/Binder';
 import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
 import { StateNode } from '../../main/frontend/internal/StateNode';
 import { StateTree } from '../../main/frontend/internal/StateTree';
-import { NodeFeatures, NodeProperties } from '../../main/frontend/internal/nodefeature/NodeFeatures';
+import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../main/frontend/internal/nodefeature/NodeProperties';
 
 // Arguments collected by the sendExistingElementWithIdAttachToServer RPC; mirrors
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.

@@ -3,7 +3,7 @@ import {
   BindingContext,
   bindDomEventListeners
 } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { Debouncer } from '../../main/frontend/internal/binding/Debouncer';
 import { BindGuardStateNode, NodeFeatures, StateNode, bind, makeCollectingTree } from './bindingTestHelpers';
 

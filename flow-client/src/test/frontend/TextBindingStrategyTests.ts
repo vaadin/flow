@@ -1,7 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { StateNode, type StateTree } from '../../main/frontend/internal/StateNode';
-import { NodeFeatures, NodeProperties } from '../../main/frontend/internal/nodefeature/NodeFeatures';
+import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../main/frontend/internal/nodefeature/NodeProperties';
 import { TextBindingStrategy } from '../../main/frontend/internal/binding/TextBindingStrategy';
 import type { BinderContext, BindingStrategy } from '../../main/frontend/internal/binding/BindingStrategy';
 import { BindGuardStateNode, bind, makeCollectingTree } from './bindingTestHelpers';

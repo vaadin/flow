@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/reactive';
+import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
 import { bindVisibility, BindingContext } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
 
 // A stateful MapProperty stand-in.
