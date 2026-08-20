@@ -93,7 +93,12 @@ They consolidate the review feedback from the migration PR stack (#24933,
    language leaves no faithful equivalent — e.g. merging Java method overloads
    into one method with an optional parameter, as in `NodeList.splice` — keep it
    minimal and document it at the site where it occurs. Prefer matching the Java
-   API over deviating.
+   API over deviating. When a lint rule fires on a signature that faithfully
+   mirrors the Java one — e.g. `@typescript-eslint/max-params` on a constructor
+   with more than the allowed number of positional parameters — disable the rule
+   at that line with an `eslint-disable-next-line` comment and a note that the
+   parameters deliberately match the Java original, rather than reshaping the API
+   to satisfy the linter.
 
 ## Cross-referencing constants (no magic values)
 
