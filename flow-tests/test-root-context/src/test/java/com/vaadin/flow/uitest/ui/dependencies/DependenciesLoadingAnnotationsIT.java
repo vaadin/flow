@@ -163,8 +163,11 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                         jsUrl, both(not(containsString("eager")))
                                 .and(not(containsString("lazy"))));
 
-                if (jsUrl.endsWith(".cache.js")
-                        && jsUrl.contains("static/client/client-")) {
+                // The Flow client entry point separates the framework
+                // dependencies from the user ones. It used to be the GWT
+                // engine (VAADIN/static/client/client-*.cache.js); with the
+                // TypeScript client it is FlowClient.
+                if (jsUrl.contains("FlowClient")) {
                     foundClientEngine = true;
                 }
             }
