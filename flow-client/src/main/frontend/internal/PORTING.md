@@ -81,13 +81,19 @@ They consolidate the review feedback from the migration PR stack (#24933,
    the source wording (including typos); do not silently reword. Convert `<p>` →
    blank lines and `<code>`/`{@code}` → backticks.
 7. **Do not carry `@since` or `@author`.**
-8. Document any deviation from the original at the site where it occurs. In
-   particular, when the port bundles several positional Java parameters into a
-   single object parameter (e.g. `ListSpliceEvent`'s `details`), do **not** drop
-   their docs: document the object parameter, note the deviation, and carry each
-   original `@param`'s wording as a field entry in that parameter's description.
-   Do not use dotted `@param obj.field` names — the `tsdoc/syntax` lint rule
-   rejects them; describe the fields in prose (a Markdown list) instead.
+8. **Match the Java API — including constructor signatures.** Do **not** deviate
+   from the Java parameter list; in particular, do not bundle several positional
+   Java parameters into a single object parameter. A Java constructor such as
+   `ListSpliceEvent(source, index, remove, add, clear)` ports to the same
+   positional parameters `constructor(source, index, remove, add, clear)`, not a
+   `constructor(source, details)` object, and each parameter keeps its own
+   `@param` with the original wording. (This reverses an earlier, now-forbidden
+   deviation that folded `ListSpliceEvent`'s four positional params into a
+   `details` object.) Where a deviation is genuinely unavoidable because the
+   language leaves no faithful equivalent — e.g. merging Java method overloads
+   into one method with an optional parameter, as in `NodeList.splice` — keep it
+   minimal and document it at the site where it occurs. Prefer matching the Java
+   API over deviating.
 
 ## Cross-referencing constants (no magic values)
 
