@@ -41,7 +41,7 @@ import {
   registerInitializer,
   registerUpdatableModelProperties
 } from './ExecuteJavaScriptElementUtils';
-import { Reactive } from './reactive/reactive';
+import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
 import type { StateTree } from './StateTree';
 import { UIState } from './UILifecycle';

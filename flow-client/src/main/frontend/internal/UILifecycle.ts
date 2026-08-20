@@ -19,7 +19,7 @@
 // firing a state-change event on each transition. The GWT EventBus is replaced by
 // a listener set.
 
-import type { EventRemover } from './reactive/reactive';
+import type { EventRemover } from './EventRemover';
 
 /** The lifecycle state of a UI; the order defines the allowed forward transitions. */
 export const UIState = {
