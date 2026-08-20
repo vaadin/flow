@@ -731,11 +731,14 @@ public class UIInternals implements Serializable {
 
     /**
      * Discards the pending JavaScript invocations that a previous dump has
-     * retained for the given node, if there are any. An invocation for a
-     * detached node can never be delivered, so keeping it in the queue would
+     * retained for the given node, if there are any. An invocation retained for
+     * a detached node can never be delivered, so keeping it in the queue would
      * only leak the node.
      * <p>
-     * Called by {@link StateTree} for every node that is detached.
+     * Called by {@link StateTree} for every node that is detached. Only the
+     * invocations retained by the last dump are tracked per node, so an
+     * invocation that is added and then detached before the next dump is not
+     * discarded here.
      *
      * @param detachedNode
      *            the node that was detached, not <code>null</code>

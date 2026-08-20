@@ -314,28 +314,38 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_ownerDetached_invocationsDiscarded()
+    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded()
             throws Exception {
-        StateNode node = new StateNode(ElementData.class);
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
+        ElementChildrenList children = internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class);
 
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
-                new UIInternals.JavaScriptInvocation("1")));
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
-                new UIInternals.JavaScriptInvocation("2")));
+        StateNode detachedNode = new StateNode(ElementData.class);
+        detachedNode.getFeature(ElementData.class).setVisible(false);
+        children.add(0, detachedNode);
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                detachedNode, new UIInternals.JavaScriptInvocation("1")));
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                detachedNode, new UIInternals.JavaScriptInvocation("2")));
+
+        StateNode otherNode = new StateNode(ElementData.class);
+        otherNode.getFeature(ElementData.class).setVisible(false);
+        children.add(1, otherNode);
+        PendingJavaScriptInvocation otherInvocation = new PendingJavaScriptInvocation(
+                otherNode, new UIInternals.JavaScriptInvocation("3"));
+        internals.addJavaScriptInvocation(otherInvocation);
+
         internals.dumpPendingJavaScriptInvocations();
 
-        assertEquals(2, internals.getPendingJavaScriptInvocations().count(),
-                "Invocations of an invisible component should be retained");
+        assertEquals(3, internals.getPendingJavaScriptInvocations().count(),
+                "Invocations of invisible components should be retained");
 
-        node.setParent(null);
+        detachedNode.setParent(null);
 
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count(),
-                "Detaching the owner should discard its retained invocations");
-        assertEquals(0, retainedOwners(internals).size(),
-                "Detaching the owner should stop tracking it");
+        assertEquals(List.of(otherInvocation),
+                internals.getPendingJavaScriptInvocations().toList(),
+                "Only the invocations of the detached owner should be discarded");
+        assertEquals(List.of(otherNode), List.copyOf(retainedOwners(internals)),
+                "Only the detached owner should stop being tracked");
     }
 
     @Test
