@@ -894,40 +894,36 @@ public abstract class VaadinService implements Serializable {
     /**
      * Notifies registered listeners that handling of an RPC invocation is about
      * to start. For internal use by the RPC handling machinery.
+     * <p>
+     * The listeners are notified of a {@link RpcInvocationStartedEvent} built
+     * from the given event, so any state a subclass of
+     * {@link RpcInvocationEvent} carries is not passed on to them.
      *
      * @param event
      *            the invocation event
      * @since 25.2
-     *        <p>
-     *        The event is re-created as a {@link RpcInvocationStartedEvent}
-     *        unless it already is one, so any state a subclass of
-     *        {@link RpcInvocationEvent} carries is not passed on to the
-     *        listeners.
-     *
      * @deprecated fire a {@link RpcInvocationStartedEvent} through
      *             {@link #getEventBus()} instead
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public void fireRpcInvocationStarted(RpcInvocationEvent event) {
-        fireRpcInvocationEvent(
-                event instanceof RpcInvocationStartedEvent started ? started
-                        : new RpcInvocationStartedEvent(event));
+        fireRpcInvocationEvent(new RpcInvocationStartedEvent(event));
     }
 
     /**
      * Notifies registered listeners that handling of an RPC invocation threw.
      * For internal use by the RPC handling machinery.
      *
+     * <p>
+     * The listeners are notified of a {@link RpcInvocationFailedEvent} built
+     * from the given event, so any state a subclass of
+     * {@link RpcInvocationEvent} carries is not passed on to them.
+     *
      * @param event
      *            the invocation event
      * @param error
      *            the throwable raised by the invocation handler
      * @since 25.2
-     *        <p>
-     *        The event is re-created as a {@link RpcInvocationFailedEvent}, so
-     *        any state a subclass of {@link RpcInvocationEvent} carries is not
-     *        passed on to the listeners.
-     *
      * @deprecated fire a {@link RpcInvocationFailedEvent} through
      *             {@link #getEventBus()} instead
      */
@@ -941,24 +937,20 @@ public abstract class VaadinService implements Serializable {
      * Notifies registered listeners that handling of an RPC invocation has
      * finished, whether normally or via an exception. For internal use by the
      * RPC handling machinery.
+     * <p>
+     * The listeners are notified of a {@link RpcInvocationEndedEvent} built
+     * from the given event, so any state a subclass of
+     * {@link RpcInvocationEvent} carries is not passed on to them.
      *
      * @param event
      *            the invocation event
      * @since 25.2
-     *        <p>
-     *        The event is re-created as a {@link RpcInvocationEndedEvent}
-     *        unless it already is one, so any state a subclass of
-     *        {@link RpcInvocationEvent} carries is not passed on to the
-     *        listeners.
-     *
      * @deprecated fire a {@link RpcInvocationEndedEvent} through
      *             {@link #getEventBus()} instead
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public void fireRpcInvocationEnded(RpcInvocationEvent event) {
-        fireRpcInvocationEvent(
-                event instanceof RpcInvocationEndedEvent ended ? ended
-                        : new RpcInvocationEndedEvent(event));
+        fireRpcInvocationEvent(new RpcInvocationEndedEvent(event));
     }
 
     private void fireRpcInvocationEvent(RpcInvocationEvent event) {

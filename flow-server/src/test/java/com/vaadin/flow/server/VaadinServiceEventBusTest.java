@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -22,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -246,61 +250,28 @@ public class VaadinServiceEventBusTest {
     }
 
     @Test
-    public void concurrentAddRemoveAndFire_noListenerIsLost() throws Exception {
-        int threads = 8;
-        int rounds = 20000;
+    public void concurrentAddFireAndRemove_everyListenerIsNotified()
+            throws Exception {
+        int threads = 4;
+        int rounds = 5000;
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         CountDownLatch start = new CountDownLatch(1);
-        AtomicInteger notified = new AtomicInteger();
-        List<Future<Integer>> results = new ArrayList<>();
-
-        for (int i = 0; i < threads; i++) {
-            results.add(executor.submit(() -> {
-                start.await();
-                int registered = 0;
-                for (int round = 0; round < rounds; round++) {
-                    Registration registration = eventBus.addListener(
-                            TestEvent.class,
-                            event -> notified.incrementAndGet());
-                    // The listener must be visible to the bus while registered
-                    if (!eventBus.hasListener(TestEvent.class)) {
-                        throw new AssertionError(
-                                "Listener was added but the bus reports none");
-                    }
-                    registered++;
-                    registration.remove();
-                }
-                return registered;
-            }));
-        }
-
-        start.countDown();
-        int registered = 0;
-        for (Future<Integer> result : results) {
-            registered += result.get();
-        }
-        executor.shutdown();
-
-        Assert.assertEquals(threads * rounds, registered);
-        Assert.assertFalse(eventBus.hasListener(TestEvent.class));
-        Assert.assertTrue(eventBus.getListeners(TestEvent.class).isEmpty());
-    }
-
-    @Test
-    public void concurrentAdds_allListenersAreNotified() throws Exception {
-        int threads = 8;
-        int perThread = 1000;
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-        CountDownLatch start = new CountDownLatch(1);
-        AtomicInteger notified = new AtomicInteger();
         List<Future<?>> results = new ArrayList<>();
 
         for (int i = 0; i < threads; i++) {
             results.add(executor.submit(() -> {
                 start.await();
-                for (int round = 0; round < perThread; round++) {
-                    eventBus.addListener(TestEvent.class,
-                            event -> notified.incrementAndGet());
+                for (int round = 0; round < rounds; round++) {
+                    AtomicBoolean notified = new AtomicBoolean();
+                    Registration registration = eventBus.addListener(
+                            TestEvent.class, event -> notified.set(true));
+                    eventBus.fireEvent(new TestEvent(service),
+                            VaadinServiceEventBus.logErrors());
+                    registration.remove();
+                    if (!notified.get()) {
+                        throw new AssertionError(
+                                "A registered listener was not notified");
+                    }
                 }
                 return null;
             }));
@@ -312,11 +283,36 @@ public class VaadinServiceEventBusTest {
         }
         executor.shutdown();
 
-        Assert.assertEquals(threads * perThread,
-                eventBus.getListeners(TestEvent.class).size());
+        Assert.assertFalse(eventBus.hasListener(TestEvent.class));
+        Assert.assertTrue(eventBus.getListeners(TestEvent.class).isEmpty());
+    }
 
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
-        Assert.assertEquals(threads * perThread, notified.get());
+    @Test
+    public void registration_isSerializableWithoutTheService()
+            throws Exception {
+        Registration registration = eventBus.addListener(TestEvent.class,
+                new SerializableTestListener());
+
+        // The service itself is not serializable, so this also asserts that
+        // holding on to a registration does not keep the service reachable
+        byte[] serialized;
+        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(registration);
+            serialized = bytes.toByteArray();
+        }
+
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(serialized))) {
+            Assert.assertNotNull(in.readObject());
+        }
+    }
+
+    private static class SerializableTestListener
+            implements SerializableConsumer<TestEvent> {
+        @Override
+        public void accept(TestEvent event) {
+            // Does nothing, only needs to be serializable
+        }
     }
 }

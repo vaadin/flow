@@ -108,28 +108,17 @@ public class VaadinServiceEventBus implements Serializable {
         Objects.requireNonNull(eventType, "Event type cannot be null");
         Objects.requireNonNull(listener, "Listener cannot be null");
 
-        // The list is created and appended to inside the same atomic map
-        // operation, so that a concurrent removal can't detach it from the map
-        // in between and leave the listener registered in an orphaned list
-        listeners.compute(eventType, (type, registered) -> {
-            CopyOnWriteArrayList<SerializableConsumer<?>> updated = registered == null
-                    ? new CopyOnWriteArrayList<>()
-                    : registered;
-            updated.add(listener);
-            return updated;
-        });
+        // An event type keeps its list once it has one, so that a concurrent
+        // removal can't detach the list from the map and leave this listener
+        // registered in an orphaned copy of it
+        List<SerializableConsumer<?>> registered = listeners.computeIfAbsent(
+                eventType, type -> new CopyOnWriteArrayList<>());
+        registered.add(listener);
 
-        return Registration.once(() -> removeListener(eventType, listener));
-    }
-
-    private void removeListener(Class<? extends EventObject> eventType,
-            SerializableConsumer<?> listener) {
-        // Drop the whole entry once the last listener is gone so that
-        // hasListener stays cheap and accurate
-        listeners.computeIfPresent(eventType, (type, registered) -> {
-            registered.remove(listener);
-            return registered.isEmpty() ? null : registered;
-        });
+        // The registration closes over the list of listeners for this one
+        // event type rather than over the bus, so that holding on to it does
+        // not keep the whole service reachable
+        return Registration.once(() -> registered.remove(listener));
     }
 
     /**
@@ -146,7 +135,8 @@ public class VaadinServiceEventBus implements Serializable {
      */
     public boolean hasListener(Class<? extends EventObject> eventType) {
         Objects.requireNonNull(eventType, "Event type cannot be null");
-        return listeners.containsKey(eventType);
+        List<SerializableConsumer<?>> registered = listeners.get(eventType);
+        return registered != null && !registered.isEmpty();
     }
 
     /**
@@ -190,10 +180,13 @@ public class VaadinServiceEventBus implements Serializable {
      * Fires an event to the listeners registered for its exact type, in
      * registration order.
      * <p>
-     * Every listener is notified even if a previous one threw; deciding what
-     * happens to that exception is up to the error handler, which is why there
-     * is no way of firing an event without one. Use {@link #logErrors()} unless
-     * the caller has a reason to do something else, such as rethrowing.
+     * A listener that throws is handed to the error handler, and the listeners
+     * that have not been notified yet are notified next unless the error
+     * handler itself throws, in which case that exception is propagated to the
+     * caller and the remaining listeners are skipped. Deciding between the two
+     * is the whole point of the error handler, which is why there is no way of
+     * firing an event without one; use {@link #logErrors()} unless the caller
+     * has a reason to do something else.
      *
      * @param <E>
      *            the event type
