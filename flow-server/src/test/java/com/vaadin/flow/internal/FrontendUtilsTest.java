@@ -23,6 +23,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.internal.FrontendUtils.AnsiColor;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FrontendUtilsTest {
@@ -44,9 +46,9 @@ class FrontendUtilsTest {
 
     @Test
     void console_wrapsMessageWithColorAndReset() {
-        FrontendUtils.console(FrontendUtils.GREEN, "hello");
+        FrontendUtils.console(AnsiColor.GREEN, "hello");
 
-        assertEquals(FrontendUtils.GREEN + "hello" + FrontendUtils.ANSI_RESET,
+        assertEquals(AnsiColor.GREEN.wrap("hello"),
                 capturedOut.toString(StandardCharsets.UTF_8));
     }
 
@@ -54,9 +56,9 @@ class FrontendUtilsTest {
     void console_preservesNewlinesInMessage() {
         String message = "\nline one\nline two\n";
 
-        FrontendUtils.console(FrontendUtils.RED, message);
+        FrontendUtils.console(AnsiColor.RED, message);
 
-        assertEquals(FrontendUtils.RED + message + FrontendUtils.ANSI_RESET,
+        assertEquals(AnsiColor.RED.wrap(message),
                 capturedOut.toString(StandardCharsets.UTF_8));
     }
 
@@ -64,9 +66,21 @@ class FrontendUtilsTest {
     void console_messageWithPercentSpecifiers_printedLiterally() {
         String message = "100%s done, %c %n code, literal %";
 
-        FrontendUtils.console(FrontendUtils.YELLOW, message);
+        FrontendUtils.console(AnsiColor.YELLOW, message);
 
-        assertEquals(FrontendUtils.YELLOW + message + FrontendUtils.ANSI_RESET,
+        assertEquals(AnsiColor.YELLOW.wrap(message),
                 capturedOut.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void console_appendsResetExactlyOnce() {
+        FrontendUtils.console(AnsiColor.BRIGHT_BLUE, "hi");
+
+        String output = capturedOut.toString(StandardCharsets.UTF_8);
+        int firstIndex = output.indexOf("[0m");
+        int lastIndex = output.lastIndexOf("[0m");
+
+        assertEquals(firstIndex, lastIndex);
+        assertEquals(output.length() - "[0m".length(), firstIndex);
     }
 }

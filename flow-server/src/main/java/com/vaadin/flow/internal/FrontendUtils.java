@@ -355,19 +355,37 @@ public class FrontendUtils {
     public static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     public static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    public static final String YELLOW = "\u001b[38;5;111m";
-
-    public static final String RED = "\u001b[38;5;196m";
-
-    public static final String GREEN = "\u001b[38;5;35m";
-
-    public static final String BRIGHT_BLUE = "\u001b[94m";
-
     /**
-     * ANSI escape sequence that resets the color applied by {@link #YELLOW},
-     * {@link #RED}, {@link #GREEN} or {@link #BRIGHT_BLUE}.
+     * ANSI foreground colors usable with {@link #console(AnsiColor, String)}.
      */
-    public static final String ANSI_RESET = "\u001b[0m";
+    public enum AnsiColor {
+        YELLOW("\u001b[38;5;220m"),
+        RED("\u001b[38;5;196m"),
+        GREEN("\u001b[38;5;35m"),
+        BRIGHT_BLUE("\u001b[94m");
+
+        private static final String RESET = "\u001b[0m";
+
+        private final String code;
+
+        AnsiColor(String code) {
+            this.code = code;
+        }
+
+        /**
+         * Wraps {@code message} with this color's ANSI escape sequence and the
+         * reset sequence. The message is never interpreted as a
+         * {@link String#format(String, Object...)} format string.
+         *
+         * @param message
+         *            the message to wrap, printed literally
+         * @return the message prefixed with this color's escape sequence and
+         *         suffixed with the reset sequence
+         */
+        String wrap(String message) {
+            return code + message + RESET;
+        }
+    }
 
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
@@ -1145,14 +1163,13 @@ public class FrontendUtils {
      * {@link String#format(String, Object...)} format string.
      *
      * @param ansiColor
-     *            one of the ANSI color constants defined in this class, e.g.
-     *            {@link #GREEN} or {@link #RED}
+     *            the ANSI color to wrap the message with
      * @param message
      *            the message to show, printed literally
      */
     @SuppressWarnings("squid:S106")
-    public static void console(String ansiColor, String message) {
-        System.out.print(ansiColor + message + ANSI_RESET);
+    public static void console(AnsiColor ansiColor, String message) {
+        System.out.print(ansiColor.wrap(message));
     }
 
     /**
