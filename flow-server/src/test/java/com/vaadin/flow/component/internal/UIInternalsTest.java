@@ -314,8 +314,7 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded()
-            throws Exception {
+    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded() {
         ElementChildrenList children = internals.getStateTree().getRootNode()
                 .getFeature(ElementChildrenList.class);
 
@@ -344,8 +343,22 @@ class UIInternalsTest {
         assertEquals(List.of(otherInvocation),
                 internals.getPendingJavaScriptInvocations().toList(),
                 "Only the invocations of the detached owner should be discarded");
-        assertEquals(List.of(otherNode), List.copyOf(retainedOwners(internals)),
-                "Only the detached owner should stop being tracked");
+    }
+
+    @Test
+    void addJavaScriptInvocation_ownerDetachedBeforeDump_invocationDiscarded() {
+        StateNode node = new StateNode(ElementData.class);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("")));
+
+        node.setParent(null);
+
+        assertEquals(0, internals.dumpPendingJavaScriptInvocations().size(),
+                "An invocation that never reached a dump should be discarded "
+                        + "as well, since the client does not know the node");
     }
 
     @Test
@@ -363,6 +376,30 @@ class UIInternalsTest {
         invocation.cancelExecution();
 
         assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    void executeJs_elementMovedBeforeDump_invocationStillSent() {
+        UI realUI = new UI();
+        UIInternals realInternals = realUI.getInternals();
+        realInternals.setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element first = new Element("div");
+        Element second = new Element("div");
+        realUI.getElement().appendChild(first, second);
+
+        Element child = new Element("span");
+        first.appendChild(child);
+        child.executeJs("this.foo = $0", "bar");
+
+        // Moving the child detaches it from one parent before attaching it to
+        // the other, which happens before the invocation reaches the queue
+        second.appendChild(child);
+
+        realInternals.getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals(1, realInternals.dumpPendingJavaScriptInvocations().size(),
+                "Moving an element should not drop its pending JavaScript");
     }
 
     @Test
@@ -419,8 +456,6 @@ class UIInternalsTest {
 
         assertEquals(0, pendingInvocations(closedInternals).size(),
                 "Detaching the UI should discard the retained invocations");
-        assertEquals(0, retainedOwners(closedInternals).size(),
-                "Detaching the UI should stop tracking the retained owners");
     }
 
     @Test
@@ -462,12 +497,6 @@ class UIInternalsTest {
     private static Collection<?> pendingInvocations(UIInternals internals)
             throws Exception {
         return (Collection<?>) readField(internals, "pendingJsInvocations");
-    }
-
-    private static Collection<?> retainedOwners(UIInternals internals)
-            throws Exception {
-        return (Collection<?>) readField(internals,
-                "retainedJsInvocationOwners");
     }
 
     private static Object readField(UIInternals internals, String name)
