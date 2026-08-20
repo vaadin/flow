@@ -21,7 +21,7 @@
 // function.
 
 import { assert } from './assert';
-import type { EventRemover } from './reactive/reactive';
+import type { EventRemover } from './EventRemover';
 import type { MapProperty } from './nodefeature/MapProperty';
 import type { JsonValue, NodeFeature, NodeFeatureNode } from './nodefeature/NodeFeature';
 import { NodeList } from './nodefeature/NodeList';
