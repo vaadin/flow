@@ -63,7 +63,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
@@ -91,7 +90,6 @@ import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -196,7 +194,12 @@ public class UIInternals implements Serializable {
 
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
-    private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
+    /**
+     * The owners of the invocations that the last dump has left in
+     * {@link #pendingJsInvocations}. Makes it cheap to find out whether a
+     * detached node has any retained invocations that should be discarded.
+     */
+    private Set<StateNode> retainedJsInvocationOwners = new HashSet<>();
 
     /**
      * The related UI.
@@ -716,90 +719,44 @@ public class UIInternals implements Serializable {
         List<PendingJavaScriptInvocation> readyToSend = partition.get(true);
         readyToSend.forEach(PendingJavaScriptInvocation::setSentToBrowser);
 
+        List<PendingJavaScriptInvocation> retained = partition.get(false);
         // ensure collection is mutable
-        pendingJsInvocations = new LinkedHashSet<>(partition.get(false));
-        pendingJsInvocations
-                .forEach(this::registerDetachListenerForPendingInvocation);
+        pendingJsInvocations = new LinkedHashSet<>(retained);
+        retainedJsInvocationOwners = retained.stream()
+                .map(PendingJavaScriptInvocation::getOwner)
+                .collect(Collectors.toCollection(HashSet::new));
+
         return readyToSend;
     }
 
     /**
-     * Discards the JavaScript invocations still queued for the related UI and
-     * unregisters the detach listeners tracking them.
+     * Discards the pending JavaScript invocations that a previous dump has
+     * retained for the given node, if there are any. An invocation for a
+     * detached node can never be delivered, so keeping it in the queue would
+     * only leak the node.
      * <p>
-     * Detaching the UI normally runs those detach listeners, which release the
-     * invocations they track. A listener that throws prevents the remaining
-     * ones on the same node from running, so the invocations are released here
-     * as well. This is called while the session is still available, since
-     * releasing an invocation requires the session lock.
+     * Called by {@link StateTree} for every node that is detached.
+     *
+     * @param detachedNode
+     *            the node that was detached, not <code>null</code>
+     */
+    public void discardPendingJavaScriptInvocations(StateNode detachedNode) {
+        if (retainedJsInvocationOwners.remove(detachedNode)) {
+            pendingJsInvocations.removeIf(
+                    invocation -> invocation.getOwner() == detachedNode);
+        }
+    }
+
+    /**
+     * Discards the JavaScript invocations still queued for the related UI.
+     * <p>
+     * Detaching the UI already discards the invocations retained for each of
+     * its nodes, but invocations added after the last dump are not tracked per
+     * node and a closed UI can no longer send them.
      */
     private void releasePendingJavaScriptInvocations() {
-        session.checkHasLock();
-        // Copied because releasing an invocation unregisters its listener,
-        // which removes it from the map
-        List.copyOf(pendingJsInvocationDetachListeners.values())
-                .forEach(PendingJavaScriptInvocationDetachListener::execute);
-        // Invocations added after the last dump have no detach listener yet,
-        // and a closed UI can no longer send them
         pendingJsInvocations.clear();
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void registerDetachListenerForPendingInvocation(
-            PendingJavaScriptInvocation invocation) {
-
-        PendingJavaScriptInvocationDetachListener listener = pendingJsInvocationDetachListeners
-                .computeIfAbsent(invocation.getOwner(), node -> {
-                    PendingJavaScriptInvocationDetachListener detachListener = new PendingJavaScriptInvocationDetachListener();
-                    detachListener.registration = Registration.combine(
-                            () -> pendingJsInvocationDetachListeners
-                                    .remove(node),
-                            node.addDetachListener(detachListener));
-                    return detachListener;
-                });
-        if (listener.invocationList.add(invocation)) {
-            SerializableConsumer callback = unused -> listener
-                    .onInvocationCompleted(invocation);
-            invocation.then(callback, callback);
-        }
-    }
-
-    private class PendingJavaScriptInvocationDetachListener implements Command {
-        private final Set<PendingJavaScriptInvocation> invocationList = new HashSet<>();
-
-        private Registration registration;
-
-        @Override
-        public void execute() {
-            if (!invocationList.isEmpty()) {
-                List<PendingJavaScriptInvocation> copy = new ArrayList<>(
-                        invocationList);
-                invocationList.clear();
-                copy.forEach(this::removePendingInvocation);
-            }
-        }
-
-        private void removePendingInvocation(
-                PendingJavaScriptInvocation invocation) {
-            if (session == null) {
-                // The UI has been closed, so its invocation queue has already
-                // been released. The handler this runs from stays attached to
-                // the invocation, so a component reusing the invocation in
-                // another UI can still reach this point.
-                return;
-            }
-            session.checkHasLock();
-            UIInternals.this.pendingJsInvocations.remove(invocation);
-            if (invocationList.isEmpty() && registration != null) {
-                registration.remove();
-                registration = null;
-            }
-        }
-
-        void onInvocationCompleted(PendingJavaScriptInvocation invocation) {
-            invocationList.remove(invocation);
-            removePendingInvocation(invocation);
-        }
+        retainedJsInvocationOwners.clear();
     }
 
     /**
