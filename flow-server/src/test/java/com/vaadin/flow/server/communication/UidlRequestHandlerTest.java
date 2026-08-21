@@ -41,6 +41,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.dau.DAUUtils;
@@ -556,6 +557,8 @@ class UidlRequestHandlerTest {
      */
     private static UI getUi() {
         VaadinService service = mock(VaadinService.class);
+        when(service.getEventBus())
+                .thenReturn(new VaadinServiceEventBus(service));
         VaadinSession session = new VaadinSession(service) {
             @Override
             public boolean hasLock() {
