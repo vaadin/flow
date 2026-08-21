@@ -46,6 +46,23 @@ public class FrontendStubs {
     }
 
     /**
+     * Makes a stub executable, failing loudly if it cannot be, since a stub
+     * that cannot be run only surfaces much later as a confusing "cannot
+     * execute" failure inside the code under test.
+     *
+     * @param stub
+     *            the stub file to make executable
+     * @throws IOException
+     *             if the file cannot be made executable
+     */
+    private static void makeExecutable(File stub) throws IOException {
+        if (!stub.setExecutable(true)) {
+            throw new IOException(
+                    "Could not make the stub " + stub + " executable");
+        }
+    }
+
+    /**
      * Creates stub versions of `node` and `npm` in a versioned installation
      * directory, i.e. in {@code <baseDir>/node-<version>}, as the installer of
      * Flow does. The node stub outputs the given version when it is called with
@@ -73,10 +90,7 @@ public class FrontendStubs {
                 node, ToolStubInfo.builder(Tool.NODE)
                         .withVersion(normalizedVersion).build().getScript(),
                 StandardCharsets.UTF_8);
-        if (!node.setExecutable(true)) {
-            throw new IOException("Could not make the node stub " + node
-                    + " executable, so it cannot be run");
-        }
+        makeExecutable(node);
 
         File npmCli = new File(installation,
                 IS_WINDOWS ? "node_modules/npm/bin/npm-cli.js"
@@ -127,8 +141,8 @@ public class FrontendStubs {
             FileUtils.forceMkdir(nodeDir);
             File node = new File(baseDir,
                     IS_WINDOWS ? "node/node.exe" : "node/node");
-            node.createNewFile();
-            node.setExecutable(true);
+            FileUtils.touch(node);
+            makeExecutable(node);
             if (IS_WINDOWS) {
                 // Commented out until a node.exe is created that is not flagged
                 // by Windows defender.
@@ -228,8 +242,8 @@ public class FrontendStubs {
             boolean enableListening) throws IOException {
         FileUtils.forceMkdirParent(serverFile);
 
-        serverFile.createNewFile();
-        serverFile.setExecutable(true);
+        FileUtils.touch(serverFile);
+        makeExecutable(serverFile);
 
         StringBuilder sb = new StringBuilder();
         sb.append("#!/user/bin/env node\n");
