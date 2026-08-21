@@ -17,7 +17,7 @@ import {
   stringify,
   toPrettyJson,
   updateAttribute
-} from '../../../main/frontend/internal/client/WidgetUtil';
+} from '../../../../main/frontend/internal/client/WidgetUtil';
 
 describe('WidgetUtil', () => {
   it('getAbsoluteUrl resolves a relative URL against the document', () => {

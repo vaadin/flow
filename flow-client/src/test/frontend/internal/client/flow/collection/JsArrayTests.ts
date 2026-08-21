@@ -6,7 +6,7 @@ import {
   remove,
   removeItem,
   spliceArray
-} from '../../../../../main/frontend/internal/client/flow/collection/JsArray';
+} from '../../../../../../main/frontend/internal/client/flow/collection/JsArray';
 
 describe('JsArray helpers', () => {
   // Cases beyond the Java suite: GwtJsArrayTest covers the JsArray type

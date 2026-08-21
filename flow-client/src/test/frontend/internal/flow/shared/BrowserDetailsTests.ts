@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { BrowserDetails } from '../../../../main/frontend/internal/flow/shared/BrowserDetails';
+import { BrowserDetails } from '../../../../../main/frontend/internal/flow/shared/BrowserDetails';
 
 // User-agent strings and expected values taken verbatim from
 // BrowserDetailsTest.java. Every @Test case from the Java suite is ported here,
