@@ -1,5 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { bindClassList, updateStyleProperty } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import {
+  bindClassList,
+  updateStyleProperty
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './client/flow/model/bindingTestHelpers';
 

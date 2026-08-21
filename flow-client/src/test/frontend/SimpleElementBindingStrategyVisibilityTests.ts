@@ -4,7 +4,7 @@ import {
   restoreInitialHiddenAttribute,
   setElementInvisible,
   storeInitialHiddenAttribute
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 const ELEMENT_ATTRIBUTES = 3;
 

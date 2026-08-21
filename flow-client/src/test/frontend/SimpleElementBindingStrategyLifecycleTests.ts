@@ -6,7 +6,7 @@ import {
   InitialPropertyUpdate,
   remove,
   scheduleInitialExecution
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 describe('SimpleElementBindingStrategy bind lifecycle', () => {
   it('doBind re-sets the DOM node and rebinds', () => {

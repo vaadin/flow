@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
 import { Console } from '../../../main/frontend/internal/client/Console';
 
 type Level = 'debug' | 'log' | 'warn' | 'error';

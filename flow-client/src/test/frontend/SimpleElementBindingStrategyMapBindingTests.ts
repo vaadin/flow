@@ -4,7 +4,7 @@ import {
   bindMap,
   bindProperty,
   createComputations
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 // A NodeMap stand-in over a fixed set of named properties, with a hook to fire a
 // property-add event.

@@ -6,7 +6,7 @@ import {
   getStateNodeForElement,
   resolveDebounces,
   resolveFilters
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 // com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_CHILDREN
 const ELEMENT_CHILDREN = 2;

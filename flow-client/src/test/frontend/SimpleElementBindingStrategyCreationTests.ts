@@ -7,7 +7,7 @@ import {
   isApplicable,
   isVisible,
   needsRebind
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 const ELEMENT_DATA = 0;
 const SVG_NS = 'http://www.w3.org/2000/svg';
