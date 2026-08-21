@@ -78,12 +78,12 @@ They consolidate the review feedback from the migration PR stack (#24933,
      `ResourceRegistry` out of `ResourceLoader`, `MessageOrdering` out of
      `MessageHandler`) lives in the package of the class it was split from.
    - **Tests mirror this layout too.** A `*Tests.ts` (and its helper modules)
-     lives in the same package-path subdirectory under `src/test/frontend/` as
-     the module under test does under `src/main/frontend/internal/`, e.g.
+     lives under `src/test/frontend/` at the same path — `internal/` prefix
+     included — as the module under test does under `src/main/frontend/`, e.g.
      `com.vaadin.client.flow.reactive.ComputationTest` →
-     `src/test/frontend/client/flow/reactive/ComputationTests.ts`, and
+     `src/test/frontend/internal/client/flow/reactive/ComputationTests.ts`, and
      `…flow.nodefeature.MapPropertyTest` →
-     `src/test/frontend/client/flow/nodefeature/MapPropertyTests.ts`. The test
+     `src/test/frontend/internal/client/flow/nodefeature/MapPropertyTests.ts`. The test
      runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
      `eslint.config.mjs` lists each test subdirectory in
      `projectService.allowDefaultProject` (its globs do not support the `**`
