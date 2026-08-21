@@ -43,6 +43,47 @@ public class FrontendStubs {
     }
 
     /**
+     * Creates stub versions of `node` and `npm` in a versioned installation
+     * directory, i.e. in `<baseDir>/node-<version>`, as the Node.js installer
+     * of Flow does. The node stub outputs the given version when it is called
+     * with '-v' or '--version'.
+     *
+     * @param version
+     *            the Node.js version to stub, e.g. `v24.19.0`
+     * @param baseDir
+     *            parent to create the versioned node directory in
+     * @return the created installation directory
+     * @throws IOException
+     *             when a file operation fails
+     */
+    public static File createStubVersionedNode(String version, String baseDir)
+            throws IOException {
+        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+        String normalizedVersion = version.startsWith("v")
+                ? version.substring(1)
+                : version;
+        File installation = new File(baseDir, "node-v" + normalizedVersion);
+
+        File node = new File(installation, isWindows ? "node.exe" : "bin/node");
+        FileUtils.forceMkdir(node.getParentFile());
+        FileUtils.write(
+                node, ToolStubInfo.builder(Tool.NODE)
+                        .withVersion(normalizedVersion).build().getScript(),
+                StandardCharsets.UTF_8);
+        node.setExecutable(true);
+
+        File npmCli = new File(installation,
+                isWindows ? "node_modules/npm/bin/npm-cli.js"
+                        : "lib/node_modules/npm/bin/npm-cli.js");
+        FileUtils.forceMkdir(npmCli.getParentFile());
+        FileUtils.write(npmCli,
+                ToolStubInfo.builder(Tool.NPM).build().getScript(),
+                StandardCharsets.UTF_8);
+
+        return installation;
+    }
+
+    /**
      * Creates stub versions of `node` and `npm` in the ./node folder as
      * frontend-maven-plugin does.
      *

@@ -184,28 +184,9 @@ class NodeResolverTest {
         tar.closeArchiveEntry();
     }
 
-    /**
-     * Creates an installation whose node binary reports the given version and
-     * which has an npm-cli.js where the versioned layout expects it.
-     */
     private NodeInstallation stubInstallation(String version)
             throws IOException {
-        NodeInstallation installation = NodeInstallation.forVersion(vaadinHome,
-                version);
-
-        File nodeExecutable = installation.getNodeExecutable();
-        assertTrue(nodeExecutable.getParentFile().mkdirs());
-        Files.writeString(nodeExecutable.toPath(),
-                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NODE)
-                        .withVersion(NodeInstallation.normalizeVersion(version))
-                        .build().getScript(),
-                StandardCharsets.UTF_8);
-        assertTrue(nodeExecutable.setExecutable(true));
-
-        File npmCliScript = installation.getNpmCliScript();
-        assertTrue(npmCliScript.getParentFile().mkdirs());
-        Files.writeString(npmCliScript.toPath(), "", StandardCharsets.UTF_8);
-
-        return installation;
+        return new NodeInstallation(FrontendStubs.createStubVersionedNode(
+                version, vaadinHome.getAbsolutePath()));
     }
 }

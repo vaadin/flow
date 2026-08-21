@@ -338,8 +338,9 @@ class NodeResolver implements java.io.Serializable {
         }
         File installDirectory = installation.getDirectory().getParentFile();
         try {
-            // The directory name is only a claim, so compare the installation
-            // the binary actually is against the required one
+            // Running the binary both validates that the installation
+            // actually works and tells which version it really is, as the
+            // directory name is only a claim
             NodeInstallation reported = NodeInstallation.forVersion(
                     installDirectory,
                     installation.getInstalledVersion().getFullVersion());
