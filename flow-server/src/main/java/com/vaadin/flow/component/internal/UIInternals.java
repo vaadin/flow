@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,6 +194,17 @@ public class UIInternals implements Serializable {
      * or UIDL request from the client for the related UI.
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
+
+    private volatile Instant lastUpdateSentTimestamp = Instant.now();
+
+    /**
+     * The number of JavaScript invocations that have been scheduled for the
+     * related UI without being sent to the client. Kept here instead of on the
+     * individual state nodes to avoid growing the size of every node.
+     */
+    private int undeliveredJsInvocations;
+
+    private boolean undeliveredJsInvocationsWarningLogged;
 
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
@@ -443,6 +455,56 @@ public class UIInternals implements Serializable {
      */
     public long getLastHeartbeatTimestamp() {
         return lastHeartbeatTimestamp;
+    }
+
+    /**
+     * Gets the time when the updates pending for the related UI were last
+     * purged into a response for the client.
+     * <p>
+     * The value is held in a volatile field, so it can be read from a
+     * background thread without holding the session lock.
+     *
+     * @return the time the pending updates were last purged
+     * @see UI#getLastUpdateSentTimestamp()
+     */
+    public Instant getLastUpdateSentTimestamp() {
+        return lastUpdateSentTimestamp;
+    }
+
+    /**
+     * Changes the number of JavaScript invocations that have been scheduled for
+     * the related UI without being sent to the client by the given delta. A
+     * delta of 0 reads the current number without changing it.
+     *
+     * @param delta
+     *            the number of invocations to add to the count, negative for
+     *            invocations that are no longer waiting to be sent
+     * @return the number of undelivered JavaScript invocations after the change
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    int addUndeliveredJsInvocations(int delta) {
+        session.checkHasLock();
+        undeliveredJsInvocations += delta;
+        assert undeliveredJsInvocations >= 0;
+        return undeliveredJsInvocations;
+    }
+
+    /**
+     * Marks the warning about undelivered JavaScript invocations as logged for
+     * the related UI, so that it is logged only once even if the number of
+     * undelivered invocations keeps crossing the threshold.
+     *
+     * @return <code>true</code> if the warning had not been logged for the
+     *         related UI before
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    boolean markUndeliveredJsInvocationsWarningLogged() {
+        session.checkHasLock();
+        if (undeliveredJsInvocationsWarningLogged) {
+            return false;
+        }
+        undeliveredJsInvocationsWarningLogged = true;
+        return true;
     }
 
     /**
@@ -704,6 +766,7 @@ public class UIInternals implements Serializable {
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         session.checkHasLock();
         pendingTitleUpdateCanceler = null;
+        lastUpdateSentTimestamp = Instant.now();
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
