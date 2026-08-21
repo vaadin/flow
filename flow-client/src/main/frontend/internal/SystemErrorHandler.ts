@@ -16,7 +16,7 @@
 
 // Implementations migrated from SystemErrorHandler.java.
 
-import { addGetParameters } from './SharedUtil';
+import { addGetParameters } from './shared/util/SharedUtil';
 import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
 import { redirect } from './WidgetUtil';
