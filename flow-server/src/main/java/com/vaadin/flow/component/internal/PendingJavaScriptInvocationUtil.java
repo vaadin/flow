@@ -18,13 +18,9 @@ package com.vaadin.flow.component.internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateNodeUtil;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.communication.PushConnection;
 
@@ -72,8 +68,9 @@ final class PendingJavaScriptInvocationUtil {
             PendingJavaScriptInvocation invocation) {
         UIInternals internals = findInternals(invocation.getOwner());
         if (internals == null) {
-            // Nothing to count in: the owner is detached and there is no
-            // current UI, so the invocation is tracked once it reaches a UI
+            // Invocations scheduled for a detached owner outside of any UI
+            // are not counted at all, which is accepted to keep this simple:
+            // they are only reachable through the owner that holds them
             return null;
         }
 
@@ -117,29 +114,10 @@ final class PendingJavaScriptInvocationUtil {
                         + "or set an element property instead (element.setProperty(...)), since only the last value of a property is sent. "
                         + "A background task can also compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
                         + "This is logged once per UI. Enable debug logging for %s to also log the call site of the invocation, or turn that logger off to silence the warning.",
-                count, describeOwner(owner),
+                count, owner.describe(),
                 describeExpression(invocation.getInvocation().getExpression()),
                 describeState(owner),
                 PendingJavaScriptInvocationUtil.class.getName());
-    }
-
-    private static String describeOwner(StateNode owner) {
-        String description = StateNodeUtil.describeTarget(owner);
-
-        Component component = BasicElementStateProvider.get().supports(owner)
-                ? Element.get(owner).getComponent().orElse(null)
-                : null;
-        if (component == null) {
-            return description;
-        }
-        ComponentTracker.Location location = ComponentTracker
-                .findCreate(component);
-        if (location == null) {
-            // Component tracking is only enabled in development mode
-            return description;
-        }
-        return description + ", created at " + location.filename() + ":"
-                + location.lineNumber();
     }
 
     private static String describeExpression(String expression) {
@@ -166,7 +144,7 @@ final class PendingJavaScriptInvocationUtil {
         PushConnection pushConnection = ui.getInternals().getPushConnection();
         if (pushConnection == null || !pushConnection.isConnected()) {
             return String.format(
-                    "There is no open push connection for the UI (push mode %s), so nothing can be delivered until the browser sends a request. "
+                    "There is no open push connection for the UI (push mode %s), so nothing is delivered until the browser sends a request of its own, for example when polling is enabled or when the user interacts with the application. "
                             + "A closed browser tab whose session has not expired yet, or a push connection that was never established, look exactly like this.",
                     ui.getPushConfiguration().getPushMode());
         }

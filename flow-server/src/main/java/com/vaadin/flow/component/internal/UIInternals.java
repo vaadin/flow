@@ -195,7 +195,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private Instant lastUpdateSentTimestamp = Instant.now();
+    private volatile Instant lastUpdateSentTimestamp = Instant.now();
 
     /**
      * The number of JavaScript invocations that have been scheduled for the
@@ -460,6 +460,9 @@ public class UIInternals implements Serializable {
     /**
      * Gets the time when the updates pending for the related UI were last
      * purged into a response for the client.
+     * <p>
+     * The value is held in a volatile field, so it can be read from a
+     * background thread without holding the session lock.
      *
      * @return the time the pending updates were last purged
      * @see UI#getLastUpdateSentTimestamp()
@@ -480,6 +483,7 @@ public class UIInternals implements Serializable {
      */
     // Package private: only used through PendingJavaScriptInvocationUtil
     int addUndeliveredJsInvocations(int delta) {
+        session.checkHasLock();
         undeliveredJsInvocations += delta;
         assert undeliveredJsInvocations >= 0;
         return undeliveredJsInvocations;
@@ -495,6 +499,7 @@ public class UIInternals implements Serializable {
      */
     // Package private: only used through PendingJavaScriptInvocationUtil
     boolean markUndeliveredJsInvocationsWarningLogged() {
+        session.checkHasLock();
         if (undeliveredJsInvocationsWarningLogged) {
             return false;
         }

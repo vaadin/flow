@@ -154,10 +154,15 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     private void stopCounting() {
-        if (countedIn != null) {
-            countedIn.addUndeliveredJsInvocations(-1);
-            countedIn = null;
+        if (countedIn == null) {
+            return;
         }
+        if (countedIn.getSession() != null) {
+            countedIn.addUndeliveredJsInvocations(-1);
+        }
+        // A closed UI has no session to lock and its count is discarded with
+        // it, so there is nothing to update for one
+        countedIn = null;
     }
 
     @Override

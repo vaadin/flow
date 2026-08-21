@@ -27,7 +27,6 @@ import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateNodeUtil;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -81,22 +80,7 @@ public abstract class AbstractRpcInvocationHandler
         getLogger().info(
                 "Ignored RPC for invocation handler '{}' from "
                         + "the client side for an {} {}",
-                getClass().getName(), reason, describeTarget(node));
-    }
-
-    /**
-     * Describes the target of an RPC invocation so that an application
-     * developer can tell which part of the application it relates to. In
-     * addition to the state node id, the description contains the element tag
-     * and, when available, the component class and the routing target that the
-     * component is used in.
-     *
-     * @param node
-     *            the target node, may be {@code null}
-     * @return a description of the target, not {@code null}
-     */
-    protected static String describeTarget(StateNode node) {
-        return StateNodeUtil.describeTarget(node);
+                getClass().getName(), reason, node.describe());
     }
 
     /**

@@ -413,9 +413,12 @@ public class UI extends Component
      * <p>
      * Note that this timestamp only tells when the updates were written towards
      * the client, not that the client received them.
+     * <p>
+     * This method can be called from a background thread without holding the
+     * session lock, so that the thread can decide whether to update the UI
+     * before acquiring the lock.
      *
      * @return the time the pending updates were last purged
-     * @since 25.3
      */
     public Instant getLastUpdateSentTimestamp() {
         return getInternals().getLastUpdateSentTimestamp();
