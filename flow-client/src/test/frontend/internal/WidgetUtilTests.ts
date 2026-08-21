@@ -17,7 +17,7 @@ import {
   stringify,
   toPrettyJson,
   updateAttribute
-} from '../../main/frontend/internal/WidgetUtil';
+} from '../../../main/frontend/internal/WidgetUtil';
 
 describe('WidgetUtil', () => {
   it('updateAttribute sets a value and removes it on null', () => {
