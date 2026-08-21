@@ -14,9 +14,9 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.binding.Debouncer, built alongside
-// the Java version. The GWT elemental Timer is mapped to setTimeout (one-shot,
-// schedule) / setInterval (scheduleRepeating).
+// TypeScript port of com.vaadin.client.flow.binding.Debouncer. The GWT elemental
+// Timer of the original is mapped to setTimeout (one-shot, schedule) /
+// setInterval (scheduleRepeating).
 
 import { MapProperty } from '../nodefeature/MapProperty';
 

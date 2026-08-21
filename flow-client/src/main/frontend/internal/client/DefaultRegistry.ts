@@ -15,11 +15,10 @@
  */
 
 // TypeScript port of com.vaadin.client.DefaultRegistry — the concrete service
-// assembly used by ApplicationConnection. It instantiates the ported TS services
-// in dependency order (initialization order matters: later constructors read
-// earlier services via the getters) and exposes the typed getters every service
-// resolves its collaborators through. This is the cutover-assembly step that
-// takes the build-alongside TS engine into use.
+// assembly used by ApplicationConnection. It instantiates the services in
+// dependency order (initialization order matters: later constructors read earlier
+// services via the getters) and exposes the typed getters every service resolves
+// its collaborators through.
 //
 // Push is wired via the AtmospherePushConnection factory, so setPushEnabled(true)
 // creates a real Atmosphere connection (loading vaadinPush.js on demand).

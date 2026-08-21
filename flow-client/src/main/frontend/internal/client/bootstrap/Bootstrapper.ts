@@ -109,7 +109,7 @@ function atmosphereJsVersion(): string {
 
 /**
  * Wraps the raw bootstrap config object as a JsoConfiguration. getConfigInteger
- * and getAtmosphereJSVersion are inlined here (they stay Java-native in the GWT
+ * and getAtmosphereJSVersion are inlined here (they were Java-native in the GWT
  * build for deferred-binding reasons; see JsoConfiguration.ts).
  */
 function toJsoConfiguration(rawConfig: unknown): JsoConfiguration {
@@ -175,8 +175,7 @@ export function startApplicationImmediately(): boolean {
 
 /**
  * Defers starting the application until the WebComponents polyfill signals it
- * is ready, by running the (already $entry-wrapped) callback on the
- * WebComponentsReady event.
+ * is ready, by running the callback on the WebComponentsReady event.
  */
 export function deferStartApplication(callback: () => void): void {
   window.addEventListener('WebComponentsReady', callback);

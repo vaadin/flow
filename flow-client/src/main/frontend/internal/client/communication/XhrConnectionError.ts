@@ -14,9 +14,8 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.communication.XhrConnectionError, built
-// alongside the Java version. A data holder describing an error during an XHR
-// request to the server.
+// TypeScript port of com.vaadin.client.communication.XhrConnectionError. A data
+// holder describing an error during an XHR request to the server.
 
 /** Detail about an error during an XHR request to the server; mirrors XhrConnectionError.java. */
 export class XhrConnectionError {

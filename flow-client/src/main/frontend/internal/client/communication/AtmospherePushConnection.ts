@@ -84,10 +84,10 @@ interface Atmosphere {
   unsubscribeUrl: (url: string) => void;
 }
 
-// The Atmosphere connection callbacks, supplied from the Java side already
-// wrapped in $entry (so uncaught exceptions reach GWT's handler). The
-// getLastSeenServerSyncId value supplier is deliberately not $entry-wrapped, to
-// mirror the original JSNI.
+// The Atmosphere connection callbacks. The Java version wrapped these in $entry
+// so that uncaught exceptions reached GWT's handler, except for the
+// getLastSeenServerSyncId value supplier; here they are plain functions and
+// exceptions surface through the browser.
 interface AtmosphereCallbacks {
   onOpen: (response: unknown) => void;
   onReopen: (response: unknown) => void;

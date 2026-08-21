@@ -15,10 +15,10 @@
  */
 
 // TypeScript port of the binding-layer contracts
-// com.vaadin.client.flow.binding.BindingStrategy and BinderContext, built
-// alongside the Java versions. They reference each other, so they live in one
-// module. The Java BindingStrategy.getTag default routes through PolymerUtils
-// (not ported yet), so it is optional here and wired at cutover.
+// com.vaadin.client.flow.binding.BindingStrategy and BinderContext. They
+// reference each other, so they live in one module. The Java
+// BindingStrategy.getTag default routes through PolymerUtils, so it is optional
+// here and supplied by the implementing strategies.
 
 import type { StateNode } from '../StateNode';
 
