@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>test-frontend</artifactId>
+    <version>25.3-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-npm-legacy-lit-addon</artifactId>
+
+  <packaging>war</packaging>
+  <name>Flow tests for add-ons pinning legacy Lit packages</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- npm hoists one lit-element to the root and nests the other, which is
+         what makes a conflicting pin observable. pnpm's hoisted linker
+         collapses the two copies and hides the conflict. -->
+    <vaadin.pnpm.enable>false</vaadin.pnpm.enable>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <defaultGoal>jetty:run</defaultGoal>
+    <plugins>
+      <!-- The add-on pins conflicting versions on purpose, so the resolved
+           node_modules must not be reused between runs. -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}</directory>
+              <includes>
+                <include>package.json</include>
+                <include>package-lock.json</include>
+                <include>types.d.ts</include>
+                <include>tsconfig.json</include>
+                <include>node_modules/**</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+        <executions>
+          <execution>
+            <id>auto-clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
