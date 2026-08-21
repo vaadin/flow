@@ -2,7 +2,7 @@ import { expect } from '@open-wc/testing';
 import {
   updateAttribute,
   updateAttributeValue
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 function fakeConfiguration(webComponentMode: boolean, serviceUrl = '') {
   return {

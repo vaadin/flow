@@ -1,5 +1,9 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+<<<<<<< HEAD
+=======
+import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
+>>>>>>> 8404a57de9b (refactor(flow-client): mirror the Java package path verbatim)
 import { Console } from '../../../main/frontend/internal/client/Console';
 
 type Level = 'debug' | 'log' | 'warn' | 'error';

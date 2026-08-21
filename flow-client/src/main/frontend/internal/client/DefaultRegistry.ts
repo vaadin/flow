@@ -25,13 +25,13 @@
 // creates a real Atmosphere connection (loading vaadinPush.js on demand).
 
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
-import { atmospherePushConnectionFactory } from './AtmospherePushConnection';
-import { ConstantPool } from './ConstantPool';
+import { atmospherePushConnectionFactory } from './communication/AtmospherePushConnection';
+import { ConstantPool } from './flow/ConstantPool';
 import { DependencyLoader } from './DependencyLoader';
 import { DefaultConnectionStateHandler } from './communication/DefaultConnectionStateHandler';
 import { Heartbeat } from './communication/Heartbeat';
 import { LoadingIndicatorStateHandler } from './communication/LoadingIndicatorStateHandler';
-import { MessageHandler } from './MessageHandler';
+import { MessageHandler } from './communication/MessageHandler';
 import { MessageSender } from './communication/MessageSender';
 import { Poller } from './communication/Poller';
 import { PushConfiguration } from './communication/PushConfiguration';
@@ -41,15 +41,15 @@ import { RequestResponseTracker } from './communication/RequestResponseTracker';
 import { ResourceLoader } from './ResourceLoader';
 import { ServerConnector } from './communication/ServerConnector';
 import { ServerRpcQueue } from './communication/ServerRpcQueue';
-import { ExecuteJavaScriptProcessor } from './ExecuteJavaScriptProcessor';
+import { ExecuteJavaScriptProcessor } from './flow/ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from './ExistingElementMap';
 import { InitialPropertiesHandler } from './InitialPropertiesHandler';
-import { getServerEventObjectForResync } from './ServerEventObject';
-import { StateTree } from './StateTree';
+import { getServerEventObjectForResync } from './flow/binding/ServerEventObject';
+import { StateTree } from './flow/StateTree';
 import { SystemErrorHandler } from './SystemErrorHandler';
 import { UILifecycle } from './UILifecycle';
 import { URIResolver } from './URIResolver';
-import { XhrConnection } from './XhrConnection';
+import { XhrConnection } from './communication/XhrConnection';
 
 // Service lookup tokens (one per registered singleton).
 const TOKEN = {
