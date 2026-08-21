@@ -25,7 +25,7 @@ const toFile = 'FlowClient.js';
 // callback so the server bootstrap can start the application, which assembles and
 // starts the TypeScript engine (ApplicationConnection). This replaces the former
 // GWT engine bundle that used to be inlined here.
-const clientSource = `import { onModuleLoad } from './internal/Bootstrapper';
+const clientSource = `import { onModuleLoad } from './internal/client/bootstrap/Bootstrapper';
 
 export function init() {
   onModuleLoad();
