@@ -317,7 +317,8 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded() {
+    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded()
+            throws Exception {
         ElementChildrenList children = internals.getStateTree().getRootNode()
                 .getFeature(ElementChildrenList.class);
 
@@ -346,6 +347,9 @@ class UIInternalsTest {
         assertEquals(List.of(otherInvocation),
                 internals.getPendingJavaScriptInvocations().toList(),
                 "Only the invocations of the detached owner should be discarded");
+        assertEquals(List.of(otherNode),
+                List.copyOf(invocationOwners(internals)),
+                "Only the detached owner should stop being tracked");
     }
 
     @Test
