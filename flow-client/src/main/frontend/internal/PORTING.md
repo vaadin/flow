@@ -78,12 +78,12 @@ They consolidate the review feedback from the migration PR stack (#24933,
      `ResourceRegistry` out of `ResourceLoader`, `MessageOrdering` out of
      `MessageHandler`) lives in the package of the class it was split from.
    - **Tests mirror this layout too.** A `*Tests.ts` (and its helper modules)
-     lives in the same package-path subdirectory under `src/test/frontend/` as
-     the module under test does under `src/main/frontend/internal/`, e.g.
+     lives under `src/test/frontend/` at the same path — `internal/` prefix
+     included — as the module under test does under `src/main/frontend/`, e.g.
      `com.vaadin.client.flow.reactive.ComputationTest` →
-     `src/test/frontend/client/flow/reactive/ComputationTests.ts`, and
+     `src/test/frontend/internal/client/flow/reactive/ComputationTests.ts`, and
      `…flow.nodefeature.MapPropertyTest` →
-     `src/test/frontend/client/flow/nodefeature/MapPropertyTests.ts`. The test
+     `src/test/frontend/internal/client/flow/nodefeature/MapPropertyTests.ts`. The test
      runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
      `eslint.config.mjs` lists each test subdirectory in
      `projectService.allowDefaultProject` (its globs do not support the `**`
@@ -204,3 +204,14 @@ They consolidate the review feedback from the migration PR stack (#24933,
        → `"setValue: update from server is applied, syncToServer updates
        value"`), and keep the `it()` blocks in the same order as the Java
        `@Test` methods.
+    8. **Import shared test helpers — never re-declare them.** When a Java test
+       reuses a helper from another test (e.g. `MapPropertyTest`, `NodeMapTest`
+       and `NodeListTest` all `import
+       com.vaadin.client.flow.reactive.CountingComputation`), the port imports
+       the same helper module (`import { countingComputation } from
+       '../reactive/CountingComputation'`) rather than copying an inline
+       equivalent into each suite. A helper lives in one module — the one that
+       mirrors its Java package (rule 1) — and every suite that needs it imports
+       it from there, even across package directories. (Regression this
+       prevents: `MapPropertyTests`, `NodeMapTests` and `NodeListTests` each
+       carried their own `countingComputation` copy instead of the shared one.)
