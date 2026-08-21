@@ -141,10 +141,11 @@ They consolidate the review feedback from the migration PR stack (#24933,
     assertions. This is the rule most often broken in this stack (missing
     cases, merged cases, under-asserting cases); the sub-rules below spell out
     what "1:1" means so the mismatches don't recur.
-    1. **One Java `@Test` → exactly one TypeScript `it()`.** The number of
-       `it()` blocks in a `*Tests.ts` file must equal the number of `@Test`
-       methods in its Java counterpart. Verify the counts match before opening
-       the PR.
+    1. **One Java `@Test` → at least one TypeScript `it()`.** Every `@Test`
+       method in the Java counterpart is accounted for by an `it()`. This is a
+       floor, not a ceiling: a module may carry *extra* cases beyond the Java
+       set (see 13.6). Verify before opening the PR that no Java case is
+       missing.
     2. **Never drop a case.** Port *every* `@Test`, including the intricate
        ones. A missing `it()` means "not in the Java test", never "skipped for
        brevity". (Regression this prevents: `MapPropertyTest.java`'s 9
@@ -158,15 +159,25 @@ They consolidate the review feedback from the migration PR stack (#24933,
        Java suite provides (a regression in one branch would be masked by the
        other's assertions). If cases share setup, repeat it (or use a
        `beforeEach`/helper) rather than combining the assertions.
-    4. **Never split a case either.** Do not expand one `@Test` into multiple
-       `it()` blocks; keep the mapping exactly one-to-one in both directions.
+    4. **Do not split a ported case.** Do not expand one `@Test` into multiple
+       `it()` blocks — that loses the mapping back to the Java case. Adding a
+       genuinely new case is different, and is covered by 13.6.
     5. **Match assertion strength — do not under-assert.** Port *all* of a
        case's assertions, not just the easy one. If the Java test asserts four
        things (e.g. property not sent **and** a change event fired **and**
        `getNewValue()` is null **and** a registered flush listener ran), the
        `it()` asserts the same four. Dropping assertions silently narrows
        coverage of exactly the behavior the production port implements.
-    6. **Keep the Java case's name and order.** Name each `it()` after the Java
+    6. **Extra cases are allowed where Java has no equivalent.** Several
+       ported modules have thin or absent Java coverage — `GwtWidgetUtilTest`
+       has a single case for the whole of `WidgetUtil`, and `BrowserInfo`,
+       `Console`, `Profiler` and `StorageUtil` have no Java test at all.
+       Holding those to a strict count would mean deleting real coverage, so
+       additional `it()` blocks are welcome there. Group them under a
+       `describe('beyond the Java suite')` (or mark them individually) so the
+       ported-vs-added split stays obvious and 13.1 remains checkable. Rules
+       13.2, 13.3 and 13.5 still apply in full to the cases that *are* ported.
+    7. **Keep the Java case's name and order.** Name each `it()` after the Java
        method it ports (a readable rephrasing is fine — keep the mapping
        obvious, e.g. `setValue_updateFromServerIsApplied_syncToServerUpdatesValue`
        → `"setValue: update from server is applied, syncToServer updates
