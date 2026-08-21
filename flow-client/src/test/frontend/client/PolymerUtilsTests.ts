@@ -13,7 +13,7 @@ import {
   setProperty,
   splice,
   storeNodeId
-} from '../../main/frontend/internal/PolymerUtils';
+} from '../../../main/frontend/internal/client/PolymerUtils';
 
 describe('PolymerUtils', () => {
   it('isPolymerElement detects a Polymer 3 element and rejects a plain one', () => {

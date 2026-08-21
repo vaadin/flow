@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { addReadyCallback } from '../../main/frontend/internal/ReactUtils';
+import { addReadyCallback } from '../../../main/frontend/internal/client/ReactUtils';
 
 describe('ReactUtils', () => {
   it('addReadyCallback forwards to the element when supported', () => {

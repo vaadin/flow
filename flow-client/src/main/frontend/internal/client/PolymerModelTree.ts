@@ -26,17 +26,17 @@
 // registering reactive change handlers that push later model changes into the
 // Polymer element (or the plain payload object when the host is not Polymer).
 
-import type { JsonValue, NodeFeature } from './nodefeature/NodeFeature';
-import { NodeFeatures } from './nodefeature/NodeFeatures';
-import { NodeProperties } from './nodefeature/NodeProperties';
-import { MapProperty } from './nodefeature/MapProperty';
-import type { NodeList } from './nodefeature/NodeList';
-import type { ListSpliceEvent } from './nodefeature/ListSpliceEvent';
-import type { NodeMap } from './nodefeature/NodeMap';
+import type { JsonValue, NodeFeature } from './flow/nodefeature/NodeFeature';
+import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
+import { MapProperty } from './flow/nodefeature/MapProperty';
+import type { NodeList } from './flow/nodefeature/NodeList';
+import type { ListSpliceEvent } from './flow/nodefeature/ListSpliceEvent';
+import type { NodeMap } from './flow/nodefeature/NodeMap';
 import { isPolymerElement, setProperty, splice } from './PolymerUtils';
-import type { EventRemover } from './EventRemover';
-import { Reactive } from './reactive/Reactive';
-import { StateNode } from './StateNode';
+import type { EventRemover } from '../EventRemover';
+import { Reactive } from './flow/reactive/Reactive';
+import { StateNode } from './flow/StateNode';
 import { setJsProperty } from './WidgetUtil';
 import { Console } from './Console';
 

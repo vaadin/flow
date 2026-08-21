@@ -5,12 +5,12 @@
 // StateTree, so this harness builds that same stack instead of the per-function
 // fakes used by the unit-level binding tests.
 
-import { bind } from '../../main/frontend/internal/binding/Binder';
-import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
-import { StateNode } from '../../main/frontend/internal/StateNode';
-import { StateTree } from '../../main/frontend/internal/StateTree';
-import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
-import { NodeProperties } from '../../main/frontend/internal/nodefeature/NodeProperties';
+import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 
 // Arguments collected by the sendExistingElementWithIdAttachToServer RPC; mirrors
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.

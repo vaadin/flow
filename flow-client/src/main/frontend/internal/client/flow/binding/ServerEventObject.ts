@@ -28,7 +28,7 @@
 // as a plain function and exceptions surface through the browser. The handler
 // reads `this`/`arguments`, so it must stay a regular `function`, not an arrow.
 
-import { NodeFeatures } from './nodefeature/NodeFeatures';
+import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).

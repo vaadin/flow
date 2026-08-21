@@ -1,8 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { bind } from '../../main/frontend/internal/binding/Binder';
-import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { StateNode } from '../../main/frontend/internal/StateNode';
+import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 
 const ELEMENT_DATA = 0;
 const TEXT_NODE = 7;

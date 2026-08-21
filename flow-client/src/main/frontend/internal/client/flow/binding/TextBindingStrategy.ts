@@ -17,11 +17,11 @@
 // TypeScript port of com.vaadin.client.flow.binding.TextBindingStrategy, built
 // alongside the Java version on top of the TS reactive core and state node.
 
-import { assert } from '../assert';
+import { assert } from '../../../assert';
 import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { NodeProperties } from '../nodefeature/NodeProperties';
+import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../flow/internal/nodefeature/NodeProperties';
 import type { StateNode } from '../StateNode';
 import type { BinderContext, BindingStrategy } from './BindingStrategy';
 

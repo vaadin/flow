@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
-import { createModelTree } from '../../main/frontend/internal/PolymerModelTree';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { StateNode } from '../../main/frontend/internal/StateNode';
+import { createModelTree } from '../../../main/frontend/internal/client/PolymerModelTree';
+import { Reactive } from '../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { StateNode } from '../../../main/frontend/internal/client/flow/StateNode';
 
 const ELEMENT_PROPERTIES = 1;
 const TEMPLATE_MODELLIST = 16;

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { getElementById, getElementByName, hasTag } from '../../main/frontend/internal/ElementUtil';
+import { getElementById, getElementByName, hasTag } from '../../../main/frontend/internal/client/ElementUtil';
 
 describe('ElementUtil', () => {
   it('hasTag matches the tag name case-insensitively', () => {

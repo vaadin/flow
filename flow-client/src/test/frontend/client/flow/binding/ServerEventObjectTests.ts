@@ -10,7 +10,7 @@ import {
   initPromiseHandler,
   rejectPromises,
   removeMethod
-} from '../../main/frontend/internal/ServerEventObject';
+} from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 
 // com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME
 const NAME = '}p';

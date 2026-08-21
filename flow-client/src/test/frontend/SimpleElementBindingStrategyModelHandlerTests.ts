@@ -1,12 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { UpdatableModelProperties } from '../../main/frontend/internal/model/UpdatableModelProperties';
+import { UpdatableModelProperties } from '../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 import {
   handleListItemPropertyChange,
   handlePropertiesChanged,
   handlePropertyChange,
   InitialPropertyUpdate
 } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
   BindGuardStateNode,
   type CollectingTree,
@@ -15,7 +15,7 @@ import {
   StateNode,
   bind,
   makeCollectingTree
-} from './bindingTestHelpers';
+} from './client/flow/model/bindingTestHelpers';
 
 const ELEMENT_PROPERTIES = 1;
 

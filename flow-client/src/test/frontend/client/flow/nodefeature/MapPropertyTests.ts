@@ -1,23 +1,13 @@
 import { expect } from '@open-wc/testing';
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/nodefeature/MapPropertyTests.ts
 import { Computation } from '../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-========
-import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
->>>>>>>> 6a9bb40c361 (refactor(flow-client): mirror module directory layout in test files):flow-client/src/test/frontend/internal/nodefeature/MapPropertyTests.ts
 import {
   MapProperty,
   type MapPropertyNode,
   type MapPropertyOwner,
   type MapPropertyTree
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/nodefeature/MapPropertyTests.ts
 } from '../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
 import type { MapPropertyChangeEvent } from '../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyChangeEvent';
-========
-} from '../../../../main/frontend/internal/nodefeature/MapProperty';
-import type { MapPropertyChangeEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
->>>>>>>> 6a9bb40c361 (refactor(flow-client): mirror module directory layout in test files):flow-client/src/test/frontend/internal/nodefeature/MapPropertyTests.ts
 
 // Builds a MapProperty backed by mock state-tree contracts, recording the
 // properties synced to the server.

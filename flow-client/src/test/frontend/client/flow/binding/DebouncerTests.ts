@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Debouncer } from '../../main/frontend/internal/binding/Debouncer';
+import { Debouncer } from '../../../../../main/frontend/internal/client/flow/binding/Debouncer';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { bindServerEventHandlerNames } from '../../main/frontend/internal/binding/ServerEventHandlerBinder';
+import { bindServerEventHandlerNames } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventHandlerBinder';
 
 // com.vaadin.flow.internal.nodefeature.NodeFeatures.CLIENT_DELEGATE_HANDLERS
 const CLIENT_DELEGATE_HANDLERS = 19;

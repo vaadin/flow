@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import { bindVirtualChildren, BindingContext } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
 import {
   type CollectingTree,
@@ -8,7 +8,7 @@ import {
   StateNode,
   bind,
   makeCollectingTree
-} from './bindingTestHelpers';
+} from './client/flow/model/bindingTestHelpers';
 
 const ELEMENT_DATA = 0;
 const VIRTUAL_CHILDREN = 24;

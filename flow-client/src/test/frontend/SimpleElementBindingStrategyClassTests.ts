@@ -1,9 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { StateNode } from '../../main/frontend/internal/StateNode';
-import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
+import { StateNode } from '../../main/frontend/internal/client/flow/StateNode';
+import { ConstantPool } from '../../main/frontend/internal/client/flow/ConstantPool';
 import { SimpleElementBindingStrategy } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
+import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './client/flow/model/bindingTestHelpers';
 
 const ELEMENT_DATA = 0;
 const TAG = 'tag';

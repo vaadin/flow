@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { addReadyListener, fireReadyEvent, getCustomElement } from '../../main/frontend/internal/PolymerUtils';
-import { isInitialized } from '../../main/frontend/internal/ReactUtils';
+import { addReadyListener, fireReadyEvent, getCustomElement } from '../../main/frontend/internal/client/PolymerUtils';
+import { isInitialized } from '../../main/frontend/internal/client/ReactUtils';
 
 describe('PolymerUtils attach helpers', () => {
   it('addReadyListener / fireReadyEvent runs listeners once then clears them', () => {

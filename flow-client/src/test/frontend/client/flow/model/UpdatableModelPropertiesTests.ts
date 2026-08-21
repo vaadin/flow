@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { UpdatableModelProperties } from '../../main/frontend/internal/model/UpdatableModelProperties';
+import { UpdatableModelProperties } from '../../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 
 describe('UpdatableModelProperties', () => {
   it('reports the given properties as updatable and others as not', () => {

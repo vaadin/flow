@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
   bindMap,
   bindProperty,

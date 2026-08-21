@@ -19,7 +19,7 @@
 // BinderContext implementation passed to the strategies so they can create and
 // bind child nodes without knowing the other strategies.
 
-import { assert } from '../assert';
+import { assert } from '../../../assert';
 import type { StateNode } from '../StateNode';
 import type { BinderContext, BindingStrategy } from './BindingStrategy';
 import { SimpleElementBindingStrategy } from './SimpleElementBindingStrategy';

@@ -26,13 +26,13 @@
 // internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
 // at cutover.
 
-import { assert } from '../assert';
-import { getElementById, getElementByName, hasTag } from '../ElementUtil';
-import { isLitElement, whenRendered } from '../LitUtils';
+import { assert } from '../../../assert';
+import { getElementById, getElementByName, hasTag } from '../../ElementUtil';
+import { isLitElement, whenRendered } from '../../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { NodeProperties } from '../nodefeature/NodeProperties';
-import { createModelTree } from '../PolymerModelTree';
+import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../flow/internal/nodefeature/NodeProperties';
+import { createModelTree } from '../../PolymerModelTree';
 import {
   addReadyListener,
   fireReadyEvent,
@@ -40,12 +40,12 @@ import {
   getDomRoot,
   isInShadowRoot,
   isReady
-} from '../PolymerUtils';
-import { addReadyCallback, isInitialized } from '../ReactUtils';
-import type { EventRemover } from '../EventRemover';
+} from '../../PolymerUtils';
+import { addReadyCallback, isInitialized } from '../../ReactUtils';
+import type { EventRemover } from '../../../EventRemover';
 import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
-import { bindPolymerModelProperties } from '../SimpleElementBindingStrategy';
+import { bindPolymerModelProperties } from '../../../SimpleElementBindingStrategy';
 import { StateNode } from '../StateNode';
 import {
   deleteJsProperty,
@@ -57,11 +57,11 @@ import {
   isUndefined,
   setJsProperty,
   updateAttribute as setElementAttribute
-} from '../WidgetUtil';
+} from '../../WidgetUtil';
 import type { BinderContext, BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames, type ServerEventHandlerNode } from './ServerEventHandlerBinder';
-import { Console } from '../Console';
+import { Console } from '../../Console';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';

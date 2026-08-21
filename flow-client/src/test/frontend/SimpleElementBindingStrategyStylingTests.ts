@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { bindClassList, updateStyleProperty } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
+import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './client/flow/model/bindingTestHelpers';
 
 function fakeStyleProperty(name: string, value: unknown, hasValue = true) {
   return {

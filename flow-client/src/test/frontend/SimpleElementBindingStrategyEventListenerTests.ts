@@ -3,9 +3,15 @@ import {
   BindingContext,
   bindDomEventListeners
 } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
-import { Debouncer } from '../../main/frontend/internal/binding/Debouncer';
-import { BindGuardStateNode, NodeFeatures, StateNode, bind, makeCollectingTree } from './bindingTestHelpers';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
+import { Debouncer } from '../../main/frontend/internal/client/flow/binding/Debouncer';
+import {
+  BindGuardStateNode,
+  NodeFeatures,
+  StateNode,
+  bind,
+  makeCollectingTree
+} from './client/flow/model/bindingTestHelpers';
 
 const ELEMENT_LISTENERS = 4;
 

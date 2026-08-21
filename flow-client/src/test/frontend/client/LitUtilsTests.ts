@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { isLitElement, whenRendered } from '../../main/frontend/internal/LitUtils';
+import { isLitElement, whenRendered } from '../../../main/frontend/internal/client/LitUtils';
 
 describe('LitUtils', () => {
   it('isLitElement recognizes a LitElement by its API', () => {
