@@ -107,26 +107,46 @@ class InstrumentedReentrantLock extends ReentrantLock {
     public void unlock() {
         boolean ultimateRelease = getHoldCount() == 1;
         super.unlock();
-        if (ultimateRelease && service != null) {
-            // Released is fired in reverse registration order so that the
-            // listeners nest: a listener notified first of the acquisition is
-            // notified last of the release
-            service.getEventBus().fireEventInReverseOrder(
-                    new SessionLockReleasedEvent(service));
+        if (ultimateRelease) {
+            fireLockReleased();
         }
     }
 
+    /*
+     * Locking is hot enough that the events are only built when somebody is
+     * there to receive them: an application that observes nothing pays for
+     * nothing.
+     */
+
     private void fireLockRequested() {
-        if (service != null) {
-            service.getEventBus()
-                    .fireEvent(new SessionLockRequestedEvent(service));
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockRequestedEvent.class)) {
+            eventBus.fireEvent(new SessionLockRequestedEvent(service));
         }
     }
 
     private void fireLockAcquired() {
-        if (service != null) {
-            service.getEventBus()
-                    .fireEvent(new SessionLockAcquiredEvent(service));
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockAcquiredEvent.class)) {
+            eventBus.fireEvent(new SessionLockAcquiredEvent(service));
         }
+    }
+
+    private void fireLockReleased() {
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockReleasedEvent.class)) {
+            // Released is fired in reverse registration order so that the
+            // listeners nest: a listener notified first of the acquisition is
+            // notified last of the release
+            eventBus.fireEventInReverseOrder(
+                    new SessionLockReleasedEvent(service));
+        }
+    }
+
+    private VaadinServiceEventBus eventBus() {
+        return service == null ? null : service.getEventBus();
     }
 }

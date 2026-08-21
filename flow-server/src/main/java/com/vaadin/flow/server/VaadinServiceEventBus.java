@@ -223,6 +223,10 @@ public class VaadinServiceEventBus implements Serializable {
      * Fires an event to the listeners registered for its exact type in reverse
      * registration order, handing a listener that threw to the given error
      * handler instead of logging it.
+     * <p>
+     * The listeners that have not been notified yet are notified next unless
+     * the error handler itself throws, in which case that exception is
+     * propagated to the caller and the remaining listeners are skipped.
      *
      * @param <E>
      *            the event type
