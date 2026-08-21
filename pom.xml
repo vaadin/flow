@@ -414,7 +414,16 @@
               </goals>
               <configuration>
                 <rules>
-                  <dependencyConvergence/>
+                  <dependencyConvergence>
+                    <excludes>
+                      <!-- Spring Boot brings in jspecify 1.0.1 while Selenium
+                           and JUnit still depend on 1.0.0. The releases differ
+                           only in documentation, so the split is harmless.
+                           Remove once the transitive dependencies have caught
+                           up. -->
+                      <exclude>org.jspecify:jspecify</exclude>
+                    </excludes>
+                  </dependencyConvergence>
                 </rules>
               </configuration>
             </execution>
