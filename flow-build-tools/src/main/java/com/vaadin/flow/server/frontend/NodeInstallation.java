@@ -38,9 +38,9 @@ import com.vaadin.flow.internal.FrontendVersion;
  * A single Node.js version installed by Flow into the alternative install
  * directory, i.e. a {@code node-v24.10.0} directory under {@code ~/.vaadin}.
  * <p>
- * Knows where the executables of the installation are, when it was last used,
- * and how to remove it. Use {@link NodeInstallations} to find the installations
- * of an install directory.
+ * Knows where the executables of the installation are, which version it is,
+ * when it was last used and how to remove it. Use {@link NodeInstallations} to
+ * find the installations of an install directory.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
