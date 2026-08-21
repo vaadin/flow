@@ -44,9 +44,9 @@ public class FrontendStubs {
 
     /**
      * Creates stub versions of `node` and `npm` in a versioned installation
-     * directory, i.e. in `<baseDir>/node-<version>`, as the Node.js installer
-     * of Flow does. The node stub outputs the given version when it is called
-     * with '-v' or '--version'.
+     * directory, i.e. in {@code <baseDir>/node-<version>}, as the installer of
+     * Flow does. The node stub outputs the given version when it is called with
+     * '-v' or '--version'.
      *
      * @param version
      *            the Node.js version to stub, e.g. `v24.19.0`
