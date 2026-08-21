@@ -597,13 +597,9 @@ public class ServerRpcHandler implements Serializable {
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
                 mapSyncHandler.handle(ui, invocationJson)
-                        .ifPresent(runnable -> pendingChangeEvents.add(() -> {
-                            try {
-                                runnable.run();
-                            } catch (Throwable throwable) {
-                                callErrorHandler(ui, invocationJson, throwable);
-                            }
-                        }));
+                        .ifPresent(runnable -> pendingChangeEvents
+                                .add(() -> runPropertyChangeEvent(ui,
+                                        invocationJson, runnable)));
             } else {
                 data.add(invocationJson);
             }
@@ -621,6 +617,40 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
+    /**
+     * Runs the deferred change event of a {@code mSync} invocation, notifying
+     * {@link RpcInvocationListener}s around it.
+     * <p>
+     * A property synchronization is handled in two steps: the value is first
+     * applied to the state node for every {@code mSync} invocation in the
+     * request, and only then are the change events fired, so that application
+     * code sees a fully updated state tree. This second step is the one that
+     * runs application code, so it is the one the invocation is observed
+     * around; see {@link RpcInvocationListener} for what that means for a
+     * property whose update produces no change event.
+     */
+    private void runPropertyChangeEvent(UI ui, JsonNode invocationJson,
+            Runnable changeEvent) {
+        VaadinService service = ui.getSession().getService();
+        RpcInvocationEvent event = createInvocationEvent(ui,
+                JsonConstants.RPC_TYPE_MAP_SYNC, invocationJson);
+        if (event != null) {
+            service.fireRpcInvocationStarted(event);
+        }
+        try {
+            changeEvent.run();
+        } catch (Throwable throwable) {
+            if (event != null) {
+                service.fireRpcInvocationFailed(event, throwable);
+            }
+            callErrorHandler(ui, invocationJson, throwable);
+        } finally {
+            if (event != null) {
+                service.fireRpcInvocationEnded(event);
+            }
+        }
+    }
+
     private void handleInvocationData(UI ui, JsonNode invocationJson) {
         String type = invocationJson.get(JsonConstants.RPC_TYPE).asString();
         RpcInvocationHandler handler = getInvocationHandlers().get(type);
@@ -629,10 +659,8 @@ public class ServerRpcHandler implements Serializable {
                     "Unsupported event type: " + type);
         }
         VaadinService service = ui.getSession().getService();
-        RpcInvocationEvent event = service.hasRpcInvocationListeners()
-                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
-                        invocationName(type, invocationJson))
-                : null;
+        RpcInvocationEvent event = createInvocationEvent(ui, type,
+                invocationJson);
         if (event != null) {
             service.fireRpcInvocationStarted(event);
         }
@@ -653,6 +681,14 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
+    private static RpcInvocationEvent createInvocationEvent(UI ui, String type,
+            JsonNode invocationJson) {
+        return ui.getSession().getService().hasRpcInvocationListeners()
+                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
+                        invocationName(type, invocationJson))
+                : null;
+    }
+
     private static int nodeId(JsonNode invocationJson) {
         JsonNode node = invocationJson.get(JsonConstants.RPC_NODE);
         return node != null ? node.intValue() : -1;
@@ -662,7 +698,12 @@ public class ServerRpcHandler implements Serializable {
      * Extracts a human-readable identifier for an invocation so observers can
      * label it without parsing the protocol JSON: the DOM event name for
      * {@code event}, the invoked method for {@code publishedEventHandler}, the
-     * location for {@code navigation}, the channel id for {@code channel}.
+     * location for {@code navigation}, the channel id for {@code channel}, the
+     * synchronized property name for {@code mSync}.
+     * <p>
+     * Only identifiers are extracted, never the payload they carry: the
+     * property name of a synchronization is included, the property value is
+     * not.
      */
     private static String invocationName(String type, JsonNode invocationJson) {
         String key = switch (type) {
@@ -672,6 +713,7 @@ public class ServerRpcHandler implements Serializable {
         case JsonConstants.RPC_TYPE_NAVIGATION ->
             JsonConstants.RPC_NAVIGATION_LOCATION;
         case JsonConstants.RPC_TYPE_CHANNEL -> JsonConstants.RPC_CHANNEL;
+        case JsonConstants.RPC_TYPE_MAP_SYNC -> JsonConstants.RPC_PROPERTY;
         default -> null;
         };
         if (key == null) {

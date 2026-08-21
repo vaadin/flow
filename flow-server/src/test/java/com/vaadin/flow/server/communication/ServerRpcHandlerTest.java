@@ -17,20 +17,26 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -39,6 +45,7 @@ import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurity
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -320,6 +327,103 @@ class ServerRpcHandlerTest {
         assertEquals("event", event.getType());
         assertEquals("click", event.getName());
         assertEquals(1, event.getNodeId());
+    }
+
+    @Test
+    void handleRpc_mapSync_firesRpcInvocationListener_withSyncedPropertyAsName()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        // The notifications must bracket the property change event, so that a
+        // listener timing the invocation measures the application code it runs.
+        List<String> sequence = new ArrayList<>();
+        Mockito.doAnswer(invocation -> sequence.add("started")).when(service)
+                .fireRpcInvocationStarted(ArgumentMatchers.any());
+        Mockito.doAnswer(invocation -> sequence.add("ended")).when(service)
+                .fireRpcInvocationEnded(ArgumentMatchers.any());
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change",
+                event -> sequence.add("changeEvent"));
+        ui.getElement().appendChild(input);
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        Mockito.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
+        RpcInvocationEvent event = captor.getValue();
+        assertEquals(JsonConstants.RPC_TYPE_MAP_SYNC, event.getType());
+        assertEquals("value", event.getName());
+        assertEquals(nodeId, event.getNodeId());
+        assertEquals(List.of("started", "changeEvent", "ended"), sequence);
+    }
+
+    @Test
+    void handleRpc_mapSyncListenerThrows_firesRpcInvocationFailed_withSyncedPropertyAsName()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        Mockito.when(session.getErrorHandler())
+                .thenReturn(Mockito.mock(ErrorHandler.class));
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        RuntimeException failure = new RuntimeException("in value change");
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change", event -> {
+            throw failure;
+        });
+        ui.getElement().appendChild(input);
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        InOrder inOrder = Mockito.inOrder(service);
+        inOrder.verify(service)
+                .fireRpcInvocationStarted(ArgumentMatchers.any());
+        inOrder.verify(service).fireRpcInvocationFailed(captor.capture(),
+                ArgumentMatchers.same(failure));
+        inOrder.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
+        assertEquals("value", captor.getValue().getName());
+    }
+
+    @Test
+    void handleRpc_invocationsForMissingNode_reportsEventButNotPropertySync()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        ui = new UI();
+        ui.getInternals().setSession(session);
+
+        // Node 99 does not exist, so both invocations are discarded unhandled.
+        // The event is still reported because it is observed around the routing
+        // to the handler, while the property sync is observed around a change
+        // event that is never produced.
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 99, \"event\": \"click\" },"
+                + "{\"type\": \"mSync\", \"node\" : 99, \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }],"
+                + " \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
+                .forClass(RpcInvocationEvent.class);
+        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        assertEquals(JsonConstants.RPC_TYPE_EVENT, captor.getValue().getType());
     }
 
     private void enableDau() {
