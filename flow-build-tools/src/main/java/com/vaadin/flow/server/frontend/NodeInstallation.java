@@ -17,12 +17,19 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
@@ -31,8 +38,9 @@ import com.vaadin.flow.internal.FrontendVersion;
  * A single Node.js version installed by Flow into the alternative install
  * directory, i.e. a {@code node-v24.10.0} directory under {@code ~/.vaadin}.
  * <p>
- * Knows where the executables of the installation are and which version it is.
- * The installation directory does not have to exist.
+ * Knows where the executables of the installation are, which version it is,
+ * when it was last used and how to remove it. Use {@link NodeInstallations} to
+ * find the installations of an install directory.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -43,6 +51,18 @@ final class NodeInstallation {
      * were unpacked from.
      */
     static final String DIRECTORY_PREFIX = "node-v";
+
+    /**
+     * Prefix given to an installation directory that is being removed, so that
+     * it is no longer seen as an installation while it is deleted.
+     */
+    static final String REMOVED_PREFIX = ".removed-";
+
+    /**
+     * Name of the marker file that records when the installation was last taken
+     * into use.
+     */
+    static final String LAST_USED_FILE = "last-used";
 
     private final File directory;
 
@@ -150,6 +170,91 @@ final class NodeInstallation {
     FrontendVersion getInstalledVersion() throws UnknownVersionException {
         return FrontendUtils.getVersion("node",
                 List.of(getNodeExecutable().getAbsolutePath(), "--version"));
+    }
+
+    /**
+     * Records the current time as the moment this installation was last used.
+     * <p>
+     * Failures are logged and otherwise ignored, as not being able to write the
+     * marker must never break the build.
+     */
+    void markUsed() {
+        if (!directory.isDirectory()) {
+            return;
+        }
+        File marker = new File(directory, LAST_USED_FILE);
+        try {
+            Files.writeString(marker.toPath(), Instant.now().toString(),
+                    StandardCharsets.UTF_8);
+        } catch (IOException | UncheckedIOException e) {
+            getLogger().debug("Could not update {}", marker, e);
+        }
+    }
+
+    /**
+     * Gets when this installation was last used, or an empty optional if that
+     * is unknown, which is the case for installations created before the marker
+     * was introduced and for markers that cannot be read.
+     *
+     * @return when the installation was last used
+     */
+    Optional<Instant> getLastUsed() {
+        File marker = new File(directory, LAST_USED_FILE);
+        if (!marker.isFile()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(Instant.parse(
+                    Files.readString(marker.toPath(), StandardCharsets.UTF_8)
+                            .trim()));
+        } catch (IOException | UncheckedIOException
+                | DateTimeParseException e) {
+            getLogger().debug("Could not read {}", marker, e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Removes the installation and everything in it.
+     * <p>
+     * The directory is renamed out of the way first. Deleting a tree stops at
+     * the first file it cannot remove, and a half-deleted
+     * {@value #DIRECTORY_PREFIX} directory would be picked up as an
+     * installation by the next build and fail it. Under its new name the
+     * remains are ignored by {@link NodeInstallations#findAll(File)} and
+     * cleaned up on a later run instead.
+     */
+    void remove() {
+        getLogger().info("Removing the Node.js installation in {}", directory);
+        File toDelete = moveAside();
+
+        if (!FileIOUtils.deleteQuietly(toDelete)) {
+            getLogger().warn(
+                    "Could not remove the unused Node.js installation {}. It can be deleted manually to free up disk space.",
+                    toDelete);
+        }
+    }
+
+    /**
+     * Renames the installation directory to a name that is not an installation
+     * any more, falling back to the directory itself if even that does not
+     * work.
+     *
+     * @return the directory to delete
+     */
+    private File moveAside() {
+        // The name is made unique so that the remains of an earlier removal of
+        // the same version can never be in the way
+        File beingRemoved = new File(directory.getParentFile(),
+                REMOVED_PREFIX + directory.getName() + "-" + System.nanoTime());
+        if (directory.renameTo(beingRemoved)) {
+            return beingRemoved;
+        }
+
+        getLogger().debug(
+                "Could not move {} aside, deleting it where it is instead",
+                directory);
+        return directory;
     }
 
     /**
