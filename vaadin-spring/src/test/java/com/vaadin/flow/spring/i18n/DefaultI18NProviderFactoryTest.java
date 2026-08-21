@@ -27,12 +27,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.Properties;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @Import(VaadinApplicationConfiguration.class)
-@NotThreadSafe
+@Isolated
 class DefaultI18NProviderFactoryTest {
 
     @Autowired

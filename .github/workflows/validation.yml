@@ -51,10 +51,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -97,10 +93,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -210,10 +202,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -303,10 +291,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         # The saved workspace was built as 999.99-SNAPSHOT; the poms must
         # match it for the restored target directories and .m2 artifacts
@@ -458,10 +442,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.9.2
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |

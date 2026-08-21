@@ -81,6 +81,13 @@ public class CachedSignal<T extends @Nullable Object>
      */
     private long generation = 0;
 
+    /*
+     * Guards dependentCount, dependencyRegistration and generation. A leaf lock
+     * so that the invariant "never hold it while calling into a signal tree" is
+     * enforced (see LeafLock and #25166).
+     */
+    private final LeafLock lock = new LeafLock("CachedSignal");
+
     /**
      * Creates a new cached signal with the provided inner signal.
      *
@@ -112,7 +119,7 @@ public class CachedSignal<T extends @Nullable Object>
     private void revalidateAndListen() {
         Registration staleRegistration;
         long myGeneration;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             if (dependentCount == 0) {
                 // Nobody is listening anymore; the un-count path owns teardown.
                 return;
@@ -153,7 +160,7 @@ public class CachedSignal<T extends @Nullable Object>
                 .onNextChange(usageListener);
 
         boolean superseded;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             // Discard if nobody is listening anymore or a newer attempt
             // superseded this one. Removing the listener we just registered
             // avoids leaking it on the dependency trees.
@@ -175,7 +182,7 @@ public class CachedSignal<T extends @Nullable Object>
      */
     private Registration countActiveExternalListener() {
         boolean startListening;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             startListening = dependentCount++ == 0;
         }
         // Start listening outside the monitor: revalidateAndListen acquires
@@ -197,7 +204,7 @@ public class CachedSignal<T extends @Nullable Object>
                  * SignalTree lock (see #25166).
                  */
                 Registration toRemove = null;
-                synchronized (CachedSignal.this) {
+                try (var ignored = lock.lock()) {
                     if (--dependentCount == 0) {
                         // Supersede any revalidation in flight so it discards
                         // its registration instead of installing it.

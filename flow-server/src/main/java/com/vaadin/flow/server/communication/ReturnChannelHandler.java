@@ -54,7 +54,10 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .get(JsonConstants.RPC_CHANNEL_ARGUMENTS);
 
         if (!node.hasFeature(ReturnChannelMap.class)) {
-            getLogger().warn("Node has no return channels: {}", invocationJson);
+            getLogger()
+                    .warn("Ignoring update for a node that cannot have return"
+                            + " channels. Target: {}", describeTarget(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
@@ -63,20 +66,60 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .map(map -> map.get(channelId)).orElse(null);
 
         if (channel == null) {
-            getLogger().warn("Return channel not found: {}", invocationJson);
+            getLogger().warn(
+                    "Return channel {} not found, it has either already been"
+                            + " removed, for example after the return value of"
+                            + " the JavaScript execution that registered it was"
+                            + " handled, or it was never registered."
+                            + " Target: {}",
+                    channelId, describeTarget(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
         if (!node.isEnabled() && channel
                 .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
-            getLogger().warn("Ignoring update for disabled return channel: {}",
-                    invocationJson);
+            getLogger().warn(
+                    "Ignoring update for disabled return channel {}, the"
+                            + " message from the client is not passed to the"
+                            + " channel handler. Target: {}. {}",
+                    channelId, describeTarget(node), describeDisabledBy(node));
+            logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
 
         channel.invoke(arguments);
 
         return Optional.empty();
+    }
+
+    /**
+     * Logs the payload of an ignored invocation separately from the warning
+     * about it, since the values that the client passed to the channel can be
+     * anything the application reads from the browser, and log files are
+     * typically available to a wider audience than the data itself.
+     */
+    private static void logIgnoredPayload(JsonNode invocationJson) {
+        getLogger().debug("Ignored payload:\n{}", invocationJson);
+    }
+
+    /**
+     * Describes which node in the hierarchy is actually disabled, since a node
+     * is also disabled when one of its ancestors is.
+     */
+    private static String describeDisabledBy(StateNode node) {
+        StateNode disabledNode = node;
+        while (disabledNode != null && disabledNode.isEnabledSelf()) {
+            disabledNode = disabledNode.getParent();
+        }
+        assert disabledNode != null : "A disabled node is disabled either by "
+                + "itself or by one of its ancestors";
+
+        if (disabledNode == node || disabledNode == null) {
+            return "The target itself is disabled";
+        }
+        return "The target is disabled through its ancestor "
+                + describeTarget(disabledNode);
     }
 
     @Override

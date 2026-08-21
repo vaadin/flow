@@ -13,33 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.flow.dom;
+package com.vaadin.flow.frontend;
 
-import elemental.dom.Node;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.todo.DecoratorElement;
 
 /**
- * Access point for DOM API. All operations and interactions with DOM nodes and
- * elements should go through this class.
- *
- * @author Vaadin Ltd
- * @since 1.0
+ * Uses an add-on element whose TypeScript source relies on experimental
+ * decorators, so that the dev bundle build has to transpile it.
  */
-public class DomApi {
+@Route("com.vaadin.flow.frontend.AddonDecoratorView")
+public class AddonDecoratorView extends Div {
 
-    private DomApi() {
-        // NOOP
+    public AddonDecoratorView() {
+        add(new DecoratorElement());
     }
-
-    /**
-     * Wraps the given DOM node to make it safe to invoke any of the methods
-     * from {@link DomNode} or {@link DomElement}.
-     *
-     * @param node
-     *            the node to wrap
-     * @return a wrapped element
-     */
-    public static DomElement wrap(Node node) {
-        return (DomElement) node;
-    }
-
 }
