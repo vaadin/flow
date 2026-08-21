@@ -57,7 +57,7 @@ export default [
     // is set). Calling `console` directly bypasses that, so it is an error here;
     // the few deliberately ungated sites carry an inline disable comment.
     files: ['src/main/frontend/internal/**/*.ts'],
-    ignores: ['src/main/frontend/internal/Console.ts'],
+    ignores: ['src/main/frontend/internal/client/Console.ts'],
     rules: {
       'no-console': 'error'
     }
