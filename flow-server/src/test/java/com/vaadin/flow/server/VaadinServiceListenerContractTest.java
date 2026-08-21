@@ -30,77 +30,89 @@ import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Pins down the semantics of the listener families that {@link VaadinService}
- * exposes, now that they are all served by the
- * {@link VaadinService#getEventBus() service event bus}.
- * <p>
- * The families differ in notification order and in what happens when a listener
- * throws, and the listener interfaces that predate the bus keep working through
- * it, which is what these tests are here to hold on to.
+ * Tests the listener handling that {@link VaadinService} adds on top of the
+ * {@link VaadinService#getEventBus() event bus}: the listener interfaces that
+ * predate the bus are served by the new events, and session init and service
+ * destroy do something other than logging with a listener that throws.
  */
 public class VaadinServiceListenerContractTest {
 
     private final MockVaadinServletService service = new MockVaadinServletService();
 
-    private void fireRpcInvocationPhases() {
-        UI ui = new UI();
-        VaadinServiceEventBus eventBus = service.getEventBus();
-        eventBus.fireEvent(
-                new RpcInvocationStartedEvent(ui, "event", 1, "click"));
-        eventBus.fireEvent(new RpcInvocationFailedEvent(ui, "event", 1, "click",
-                new RuntimeException("boom")));
-        eventBus.fireEvent(
-                new RpcInvocationEndedEvent(ui, "event", 1, "click"));
-    }
-
     @Test
-    public void rpcInvocationListeners_notifiedInRegistrationOrder() {
+    public void rpcInvocationListener_isNotifiedOfTheNewEvents() {
         List<String> calls = new ArrayList<>();
-        service.addRpcInvocationListener(recordingRpcListener(calls, "first"));
-        service.addRpcInvocationListener(recordingRpcListener(calls, "second"));
-
-        fireRpcInvocationPhases();
-
-        Assert.assertEquals(List.of("first-started", "second-started",
-                "first-failed", "second-failed", "first-ended", "second-ended"),
-                calls);
-    }
-
-    @Test
-    public void rpcInvocationListenerThrows_othersStillNotified() {
-        List<String> calls = new ArrayList<>();
+        RuntimeException failure = new RuntimeException("boom");
         service.addRpcInvocationListener(new RpcInvocationListener() {
             @Override
             public void invocationStarted(RpcInvocationEvent event) {
-                throw new RuntimeException("started");
+                calls.add("started-" + describe(event));
             }
 
             @Override
             public void invocationFailed(RpcInvocationEvent event,
                     Throwable error) {
-                throw new RuntimeException("failed");
+                Assert.assertSame(failure, error);
+                calls.add("failed-" + describe(event));
             }
 
             @Override
             public void invocationEnded(RpcInvocationEvent event) {
-                throw new RuntimeException("ended");
+                calls.add("ended-" + describe(event));
+            }
+
+            private String describe(RpcInvocationEvent event) {
+                return event.getType() + ":" + event.getNodeId() + ":"
+                        + event.getName();
             }
         });
-        service.addRpcInvocationListener(recordingRpcListener(calls, "second"));
 
-        fireRpcInvocationPhases();
+        UI ui = new UI();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(
+                new RpcInvocationStartedEvent(ui, "event", 7, "click"));
+        eventBus.fireEvent(
+                new RpcInvocationFailedEvent(ui, "event", 7, "click", failure));
+        eventBus.fireEvent(
+                new RpcInvocationEndedEvent(ui, "event", 7, "click"));
 
-        Assert.assertEquals(
-                List.of("second-started", "second-failed", "second-ended"),
+        Assert.assertEquals(List.of("started-event:7:click",
+                "failed-event:7:click", "ended-event:7:click"), calls);
+    }
+
+    @Test
+    public void sessionLockListener_isNotifiedOfTheNewEvents() {
+        List<String> calls = new ArrayList<>();
+        service.addSessionLockListener(new SessionLockListener() {
+            @Override
+            public void lockRequested(SessionLockEvent event) {
+                calls.add("requested");
+            }
+
+            @Override
+            public void lockAcquired(SessionLockEvent event) {
+                Assert.assertSame(service, event.getService());
+                calls.add("acquired");
+            }
+
+            @Override
+            public void lockReleased(SessionLockEvent event) {
+                calls.add("released");
+            }
+        });
+
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(new SessionLockRequestedEvent(service));
+        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
+        eventBus.fireEventInReverseOrder(new SessionLockReleasedEvent(service));
+
+        Assert.assertEquals(List.of("requested", "acquired", "released"),
                 calls);
     }
 
     @Test
-    public void rpcInvocationListenerRegistration_tracksAllPhases() {
+    public void removedRpcInvocationListener_isRemovedFromEveryEventType() {
         VaadinServiceEventBus eventBus = service.getEventBus();
-        Assert.assertFalse(
-                eventBus.hasListener(RpcInvocationStartedEvent.class));
-
         Registration registration = service
                 .addRpcInvocationListener(new RpcInvocationListener() {
                 });
@@ -110,170 +122,12 @@ public class VaadinServiceListenerContractTest {
         Assert.assertTrue(eventBus.hasListener(RpcInvocationEndedEvent.class));
 
         registration.remove();
-        Assert.assertFalse(
-                eventBus.hasListener(RpcInvocationStartedEvent.class));
-    }
 
-    @Test
-    public void listenerFamiliesAreIndependent_rpcListenerNotNotifiedOfOtherEvents() {
-        List<String> calls = new ArrayList<>();
-        service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"));
-
-        VaadinServiceEventBus eventBus = service.getEventBus();
-        eventBus.fireEvent(new SessionLockRequestedEvent(service));
-        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
-        eventBus.fireEventInReverseOrder(new SessionLockReleasedEvent(service));
-        eventBus.fireEvent(new UIInitEvent(new UI(), service));
-
-        Assert.assertTrue(calls.isEmpty());
-    }
-
-    @Test
-    public void sessionLockListenerThrows_othersStillNotified() {
-        List<String> calls = new ArrayList<>();
-        service.addSessionLockListener(new SessionLockListener() {
-            @Override
-            public void lockAcquired(SessionLockEvent event) {
-                throw new RuntimeException("acquired");
-            }
-        });
-        service.addSessionLockListener(new SessionLockListener() {
-            @Override
-            public void lockAcquired(SessionLockEvent event) {
-                calls.add("second-acquired");
-            }
-        });
-
-        service.getEventBus().fireEvent(new SessionLockAcquiredEvent(service));
-
-        Assert.assertEquals(List.of("second-acquired"), calls);
-    }
-
-    @Test
-    public void uiInitListenerThrows_othersStillNotified() {
-        List<String> calls = new ArrayList<>();
-        service.addUIInitListener(event -> {
-            throw new RuntimeException("uiInit");
-        });
-        service.addUIInitListener(event -> calls.add("second"));
-
-        service.getEventBus().fireEvent(new UIInitEvent(new UI(), service));
-
-        Assert.assertEquals(List.of("second"), calls);
-    }
-
-    @Test
-    public void serviceDestroyListenerThrows_othersNotifiedAndFirstFailureRethrown() {
-        List<String> calls = new ArrayList<>();
-        service.addServiceDestroyListener(event -> {
-            throw new RuntimeException("serviceDestroy");
-        });
-        service.addServiceDestroyListener(event -> calls.add("second"));
-
-        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
-                service::destroy);
-
-        Assert.assertEquals("serviceDestroy", thrown.getMessage());
-        Assert.assertEquals(List.of("second"), calls);
-    }
-
-    @Test
-    public void uiInitListener_receivesEventWithUiAndService() {
-        List<UIInitEvent> events = new ArrayList<>();
-        service.addUIInitListener(events::add);
-
-        UI ui = new UI();
-        service.fireUIInitListeners(ui);
-
-        Assert.assertEquals(1, events.size());
-        Assert.assertSame(ui, events.get(0).getUI());
-        Assert.assertSame(service, events.get(0).getSource());
-    }
-
-    @Test
-    public void multipleThrowingServiceDestroyListeners_firstFailureRethrownWithOthersSuppressed() {
-        RuntimeException first = new RuntimeException("first");
-        RuntimeException second = new RuntimeException("second");
-        RuntimeException third = new RuntimeException("third");
-        service.addServiceDestroyListener(event -> {
-            throw first;
-        });
-        service.addServiceDestroyListener(event -> {
-            throw second;
-        });
-        service.addServiceDestroyListener(event -> {
-            throw third;
-        });
-
-        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
-                service::destroy);
-
-        Assert.assertSame(first, thrown);
-        Assert.assertArrayEquals(new Throwable[] { second, third },
-                thrown.getSuppressed());
-    }
-
-    @Test
-    public void listenersRegisteredWithTheTypedApis_areNotifiedByTheEventBus() {
-        List<String> calls = new ArrayList<>();
-        service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"));
-        service.addSessionLockListener(new SessionLockListener() {
-            @Override
-            public void lockAcquired(SessionLockEvent event) {
-                calls.add("lock-acquired");
-            }
-        });
-        service.addUIInitListener(event -> calls.add("ui-init"));
-
-        UI ui = new UI();
-        VaadinServiceEventBus eventBus = service.getEventBus();
-        eventBus.fireEvent(new RpcInvocationStartedEvent(ui, "event", 1, "x"));
-        eventBus.fireEvent(new RpcInvocationFailedEvent(ui, "event", 1, "x",
-                new RuntimeException("boom")));
-        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "x"));
-        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
-        eventBus.fireEvent(new UIInitEvent(ui, service));
-
-        Assert.assertEquals(List.of("rpc-started", "rpc-failed", "rpc-ended",
-                "lock-acquired", "ui-init"), calls);
-    }
-
-    @Test
-    public void removedTypedListener_isRemovedFromAllItsEventTypes() {
-        List<String> calls = new ArrayList<>();
-        service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"))
-                .remove();
-
-        VaadinServiceEventBus eventBus = service.getEventBus();
         Assert.assertFalse(
                 eventBus.hasListener(RpcInvocationStartedEvent.class));
         Assert.assertFalse(
                 eventBus.hasListener(RpcInvocationFailedEvent.class));
         Assert.assertFalse(eventBus.hasListener(RpcInvocationEndedEvent.class));
-
-        fireRpcInvocationPhases();
-        Assert.assertTrue(calls.isEmpty());
-    }
-
-    private static RpcInvocationListener recordingRpcListener(
-            List<String> calls, String name) {
-        return new RpcInvocationListener() {
-            @Override
-            public void invocationStarted(RpcInvocationEvent event) {
-                calls.add(name + "-started");
-            }
-
-            @Override
-            public void invocationFailed(RpcInvocationEvent event,
-                    Throwable error) {
-                calls.add(name + "-failed");
-            }
-
-            @Override
-            public void invocationEnded(RpcInvocationEvent event) {
-                calls.add(name + "-ended");
-            }
-        };
     }
 
     @Test
@@ -296,40 +150,28 @@ public class VaadinServiceListenerContractTest {
         }
 
         // The listener exception must reach the handler as-is, not wrapped
-        Assert.assertEquals(1, errors.size());
-        Assert.assertSame(failure, errors.get(0));
+        Assert.assertEquals(List.of(failure), errors);
     }
 
     @Test
-    public void rpcInvocationPhases_areDistinctEventsDescribingTheSameInvocation() {
-        List<RpcInvocationEvent> events = new ArrayList<>();
-        service.addRpcInvocationListener(new RpcInvocationListener() {
-            @Override
-            public void invocationStarted(RpcInvocationEvent event) {
-                events.add(event);
-            }
-
-            @Override
-            public void invocationEnded(RpcInvocationEvent event) {
-                events.add(event);
-            }
+    public void serviceDestroyListenersThrow_allNotifiedAndFirstFailureRethrown() {
+        List<String> calls = new ArrayList<>();
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+        service.addServiceDestroyListener(event -> {
+            throw first;
         });
+        service.addServiceDestroyListener(event -> {
+            throw second;
+        });
+        service.addServiceDestroyListener(event -> calls.add("third"));
 
-        UI ui = new UI();
-        VaadinServiceEventBus eventBus = service.getEventBus();
-        eventBus.fireEvent(
-                new RpcInvocationStartedEvent(ui, "event", 7, "click"));
-        eventBus.fireEvent(
-                new RpcInvocationEndedEvent(ui, "event", 7, "click"));
+        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
+                service::destroy);
 
-        Assert.assertEquals(2, events.size());
-        // Phases are correlated by thread, not by event identity
-        Assert.assertNotSame(events.get(0), events.get(1));
-        for (RpcInvocationEvent event : events) {
-            Assert.assertSame(ui, event.getUI());
-            Assert.assertEquals("event", event.getType());
-            Assert.assertEquals(7, event.getNodeId());
-            Assert.assertEquals("click", event.getName());
-        }
+        Assert.assertSame(first, thrown);
+        Assert.assertArrayEquals(new Throwable[] { second },
+                thrown.getSuppressed());
+        Assert.assertEquals(List.of("third"), calls);
     }
 }

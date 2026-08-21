@@ -810,8 +810,9 @@ public abstract class VaadinService implements Serializable {
             try {
                 listener.sessionInit(event);
             } catch (ServiceException e) {
-                // The event bus only deals in unchecked exceptions, so the
-                // checked one is routed to the same place here
+                // A bus listener cannot declare the checked exception that
+                // sessionInit does, so it is routed to the error handler here
+                // rather than through the one the event is fired with
                 event.getSession().getErrorHandler().error(new ErrorEvent(e));
             }
         });
@@ -863,6 +864,10 @@ public abstract class VaadinService implements Serializable {
      * @return a handle that can be used for removing the listener
      * @see RpcInvocationListener
      * @since 25.2
+     * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+     *             {@link RpcInvocationFailedEvent} and
+     *             {@link RpcInvocationEndedEvent} through
+     *             {@link #getEventBus()} instead
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public Registration addRpcInvocationListener(
@@ -914,24 +919,23 @@ public abstract class VaadinService implements Serializable {
      * @return a handle that can be used for removing the listener
      * @see SessionLockListener
      * @since 25.2
+     * @deprecated add listeners for {@link SessionLockRequestedEvent},
+     *             {@link SessionLockAcquiredEvent} and
+     *             {@link SessionLockReleasedEvent} through
+     *             {@link #getEventBus()} instead
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public Registration addSessionLockListener(SessionLockListener listener) {
         return Registration.combine(
                 eventBus.addListener(SessionLockRequestedEvent.class,
                         event -> listener.lockRequested(
-                                sessionLockEvent(event.getService()))),
+                                new SessionLockEvent(event.getService()))),
                 eventBus.addListener(SessionLockAcquiredEvent.class,
                         event -> listener.lockAcquired(
-                                sessionLockEvent(event.getService()))),
+                                new SessionLockEvent(event.getService()))),
                 eventBus.addListener(SessionLockReleasedEvent.class,
                         event -> listener.lockReleased(
-                                sessionLockEvent(event.getService()))));
-    }
-
-    @SuppressWarnings("removal")
-    private static SessionLockEvent sessionLockEvent(VaadinService service) {
-        return new SessionLockEvent(service);
+                                new SessionLockEvent(event.getService()))));
     }
 
     /**
