@@ -226,16 +226,42 @@ final class NodeInstallation {
      */
     void remove() {
         getLogger().info("Removing the Node.js installation in {}", directory);
-        File beingRemoved = new File(directory.getParentFile(),
-                REMOVED_PREFIX + directory.getName());
-        File toDelete = directory.renameTo(beingRemoved) ? beingRemoved
-                : directory;
+        File toDelete = moveAside();
 
         if (!FileIOUtils.deleteQuietly(toDelete)) {
             getLogger().warn(
                     "Could not remove the unused Node.js installation {}. It can be deleted manually to free up disk space.",
                     toDelete);
         }
+    }
+
+    /**
+     * Renames the installation directory to a name that is not an installation
+     * any more, falling back to the directory itself if even that does not
+     * work.
+     *
+     * @return the directory to delete
+     */
+    private File moveAside() {
+        File parent = directory.getParentFile();
+        String name = REMOVED_PREFIX + directory.getName();
+
+        File beingRemoved = new File(parent, name);
+        if (directory.renameTo(beingRemoved)) {
+            return beingRemoved;
+        }
+
+        // An earlier removal of the same version may not have managed to
+        // delete everything it moved aside, so make room next to it
+        beingRemoved = new File(parent, name + "-" + System.nanoTime());
+        if (directory.renameTo(beingRemoved)) {
+            return beingRemoved;
+        }
+
+        getLogger().debug(
+                "Could not move {} aside, deleting it where it is instead",
+                directory);
+        return directory;
     }
 
     /**

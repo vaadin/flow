@@ -83,11 +83,14 @@ final class NodeInstallations {
     /**
      * Finds the Node.js archives that were left behind in the given install
      * directory by Flow versions that did not delete the archive after
-     * unpacking it. An unpacked archive is of no use whether or not the
-     * installation it belongs to is still around.
+     * unpacking it.
      * <p>
-     * Archives that were modified within the last day are not reported, so that
-     * a download running in another process is never mistaken for a leftover.
+     * Only archives of a version that is installed are reported, since those
+     * are the ones that have been unpacked and are of no further use. An
+     * archive of a version that is not installed may well have been put there
+     * on purpose, for instance to install without network access. Archives
+     * modified within the last day are left alone too, so that a download
+     * running in another process is never mistaken for a leftover.
      *
      * @param installDirectory
      *            the directory holding the installations, typically
@@ -95,10 +98,17 @@ final class NodeInstallations {
      * @return the leftover archives, in no particular order
      */
     static List<File> findLeftoverArchives(File installDirectory) {
+        List<String> unpacked = findAll(installDirectory).stream().map(
+                installation -> installation.getDirectory().getName() + "-")
+                .toList();
         Instant youngest = Instant.now().minus(ARCHIVE_GRACE_PERIOD);
-        File[] archives = installDirectory.listFiles(file -> file.isFile()
-                && isArchiveName(file.getName()) && Instant
-                        .ofEpochMilli(file.lastModified()).isBefore(youngest));
+
+        File[] archives = installDirectory.listFiles(
+                file -> file.isFile() && isArchiveName(file.getName())
+                        && unpacked.stream()
+                                .anyMatch(file.getName()::startsWith)
+                        && Instant.ofEpochMilli(file.lastModified())
+                                .isBefore(youngest));
         return archives == null ? List.of() : Arrays.asList(archives);
     }
 
@@ -157,7 +167,9 @@ final class NodeInstallations {
         }
 
         // Never remove the last version in the folder, even if every
-        // installation looks stale
+        // installation looks stale. Callers that pass the installation they
+        // are using keep one that way already; this covers the ones that
+        // clean up without having taken any installation into use.
         if (!unused.isEmpty() && unused.size() == installations.size()) {
             unused.sort(Comparator.comparing(installation -> installation
                     .getLastUsed().orElse(Instant.MIN)));

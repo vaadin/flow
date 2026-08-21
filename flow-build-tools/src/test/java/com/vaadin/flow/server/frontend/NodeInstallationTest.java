@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class NodeInstallationTest {
 
@@ -158,6 +159,69 @@ class NodeInstallationTest {
         installation.remove();
 
         assertFalse(installation.getDirectory().exists());
+    }
+
+    @Test
+    void remove_deletionFails_theRemainsAreNoLongerAnInstallation()
+            throws IOException {
+        NodeInstallation installation = create("node-v24.10.0");
+        File undeletable = lockContentOf(installation);
+
+        try {
+            installation.remove();
+
+            assertFalse(installation.getDirectory().exists(),
+                    "The installation should be gone under its own name even when it cannot be deleted");
+            assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty(),
+                    "What could not be deleted must not be picked up as an installation");
+        } finally {
+            undeletable.setWritable(true);
+        }
+    }
+
+    @Test
+    void remove_earlierRemainsOfTheSameVersion_areNotInTheWay()
+            throws IOException {
+        NodeInstallation installation = create("node-v24.10.0");
+        File undeletable = lockContentOf(installation);
+
+        try {
+            installation.remove();
+            // The same version is installed again and goes stale again
+            NodeInstallation reinstalled = create("node-v24.10.0");
+            File undeletableAgain = lockContentOf(reinstalled);
+
+            try {
+                reinstalled.remove();
+
+                assertFalse(reinstalled.getDirectory().exists(),
+                        "The reinstalled version should be gone under its own name too");
+                assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty(),
+                        "Remains of an earlier removal must not force a deletion in place");
+            } finally {
+                undeletableAgain.setWritable(true);
+            }
+        } finally {
+            undeletable.setWritable(true);
+        }
+    }
+
+    /**
+     * Makes the installation impossible to delete completely, by taking away
+     * the permission to remove a file from one of its directories.
+     *
+     * @return the directory to make writable again once the test is done
+     */
+    private File lockContentOf(NodeInstallation installation)
+            throws IOException {
+        File directory = new File(installation.getDirectory(), "lib");
+        assertTrue(directory.mkdirs());
+        assertTrue(new File(directory, "kept").createNewFile());
+        assertTrue(directory.setWritable(false));
+
+        assumeFalse(directory.canWrite(),
+                "The test needs a directory that files cannot be deleted from");
+        return directory;
     }
 
     private NodeInstallation create(String directoryName) throws IOException {

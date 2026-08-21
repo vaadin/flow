@@ -66,7 +66,10 @@ class NodeInstallationsTest {
     }
 
     @Test
-    void findLeftoverArchives_onlyOldNodeArchives() throws IOException {
+    void findLeftoverArchives_onlyUnpackedOldNodeArchives() throws IOException {
+        installation("node-v20.0.0", RECENTLY);
+        installation("node-v22.0.0", RECENTLY);
+        installation("node-v24.19.0", RECENTLY);
         archive("node-v20.0.0-darwin-arm64.tar.xz", LONG_AGO);
         archive("node-v22.0.0-win-x64.zip", LONG_AGO);
         archive("node-v24.19.0-linux-x64.tar.gz", LONG_AGO);
@@ -81,6 +84,16 @@ class NodeInstallationsTest {
                 "node-v22.0.0-win-x64.zip", "node-v24.19.0-linux-x64.tar.gz"),
                 NodeInstallations.findLeftoverArchives(vaadinHome).stream()
                         .map(File::getName).sorted().toList());
+    }
+
+    @Test
+    void findLeftoverArchives_versionThatIsNotInstalled_isKept()
+            throws IOException {
+        installation("node-v24.19.0", RECENTLY);
+        archive("node-v26.0.0-linux-x64.tar.gz", LONG_AGO);
+
+        assertTrue(NodeInstallations.findLeftoverArchives(vaadinHome).isEmpty(),
+                "An archive of a version that is not installed may have been put there to install from");
     }
 
     @Test
