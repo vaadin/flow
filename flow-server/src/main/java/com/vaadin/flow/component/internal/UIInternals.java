@@ -47,6 +47,7 @@ import com.vaadin.flow.component.HeartbeatListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.geolocation.GeolocationClient;
@@ -61,6 +62,8 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.JsImports;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -98,6 +101,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -677,7 +681,33 @@ public class UIInternals implements Serializable {
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
+        triggerJsImportsChunkLoading(
+                invocation.getInvocation().getParameters());
         pendingJsInvocations.add(invocation);
+    }
+
+    /**
+     * Requests the chunks holding the JS module imports that the given
+     * invocation parameters refer to.
+     * <p>
+     * The chunks are requested as dynamic import dependencies, which the client
+     * loads before it runs any of the JavaScript invocations of the same
+     * response. The imported values are therefore published in the client-side
+     * registry by the time the expression referring to them is evaluated. The
+     * dependency list drops chunks that have already been requested, so
+     * repeated use of the same imports only loads the chunk once.
+     */
+    private void triggerJsImportsChunkLoading(List<Object> parameters) {
+        for (Object parameter : parameters) {
+            if (parameter instanceof JsImports jsImports) {
+                ui.getPage().addDynamicImport(
+                        "return window.Vaadin.Flow.loadOnDemand('"
+                                + jsImports.getChunkId() + "');");
+            } else if (parameter instanceof JsFunction jsFunction) {
+                // A function value may capture imports of its own
+                triggerJsImportsChunkLoading(jsFunction.getCaptures());
+            }
+        }
     }
 
     /**
@@ -1184,7 +1214,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addExternalDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1254,7 +1284,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1285,14 +1318,82 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addExternalDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    if (js.developmentOnly() && isProductionMode()) {
+                        return;
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                // A module declaring imports is reached through the imports
+                // registry only, so it must not also be loaded for its side
+                // effects
+                .filter(js -> !declaresImports(js))
+                .filter(js -> !js.developmentOnly() || !isProductionMode())
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+    }
+
+    private static boolean declaresImports(JsModule js) {
+        return js.importAll() || js.imports().length > 0;
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Checks whether the session runs in production mode, treating a missing
+     * session as development mode.
+     * <p>
+     * Runtime dependencies are added to the page instead of being bundled, so
+     * unlike for bundled ones there is nothing that leaves a
+     * {@code developmentOnly} dependency out of a production application; that
+     * has to be checked when the dependency is added.
+     */
+    private boolean isProductionMode() {
+        return ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**
