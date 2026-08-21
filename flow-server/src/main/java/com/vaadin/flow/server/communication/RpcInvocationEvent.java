@@ -20,22 +20,28 @@ import java.util.EventObject;
 import com.vaadin.flow.component.UI;
 
 /**
- * Base type of the events fired around the server-side handling of a single
- * client-to-server RPC invocation (a DOM event, a
+ * Event fired to {@link RpcInvocationListener}s around the server-side handling
+ * of a single client-to-server RPC invocation (a DOM event, a
  * {@code @ClientCallable}/template event handler, a server-side navigation, a
- * return channel message, and so on), describing which invocation is being
- * handled.
+ * return channel message, and so on).
  * <p>
- * A client request can carry several invocations, and each of them is reported
- * through a {@link RpcInvocationStartedEvent}, an optional
- * {@link RpcInvocationFailedEvent} and a {@link RpcInvocationEndedEvent}. The
- * events of a single invocation are fired on the same thread, so timing state
- * can be kept in a thread local.
+ * A client request can carry several invocations; one event is fired per
+ * invocation. The {@link RpcInvocationListener#invocationStarted}, (optional)
+ * {@link RpcInvocationListener#invocationFailed} and
+ * {@link RpcInvocationListener#invocationEnded} callbacks for a single
+ * invocation are delivered on the same thread, so timing state can be kept in a
+ * thread local.
  *
  * @see RpcInvocationListener
  * @since 25.2
+ * @deprecated use {@link RpcInvocationStartedEvent},
+ *             {@link RpcInvocationFailedEvent} and
+ *             {@link RpcInvocationEndedEvent} on the
+ *             {@link com.vaadin.flow.server.VaadinService#getEventBus() service
+ *             event bus} instead
  */
-public abstract class RpcInvocationEvent extends EventObject {
+@Deprecated(since = "25.3", forRemoval = true)
+public class RpcInvocationEvent extends EventObject {
 
     private final String type;
     private final int nodeId;
@@ -58,7 +64,7 @@ public abstract class RpcInvocationEvent extends EventObject {
      *            name, the invoked method name, the navigation location, ...),
      *            or {@code null} if none applies
      */
-    protected RpcInvocationEvent(UI ui, String type, int nodeId, String name) {
+    public RpcInvocationEvent(UI ui, String type, int nodeId, String name) {
         super(ui);
         this.type = type;
         this.nodeId = nodeId;

@@ -42,8 +42,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * <pre>
  * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
- * service.getEventBus().fireEvent(new MyEvent(service),
- *         VaadinServiceEventBus.logErrors());
+ * service.getEventBus().fireEvent(new MyEvent(service));
  * </pre>
  * <p>
  * The API mirrors {@link com.vaadin.flow.component.ComponentEventBus}, but
@@ -163,29 +162,30 @@ public class VaadinServiceEventBus implements Serializable {
     }
 
     /**
-     * Creates an error handler that logs the exception and lets the listeners
-     * that have not been notified yet still receive the event.
+     * Fires an event to the listeners registered for its exact type, in
+     * registration order.
      * <p>
-     * This is what a framework operation fires with: a listener must not be
-     * able to disrupt it, nor to hide the event from the other listeners.
+     * An exception thrown by a listener is logged and the remaining listeners
+     * are notified regardless, so that one misbehaving listener can neither
+     * disrupt the caller nor hide the event from the other listeners. Use
+     * {@link #fireEvent(EventObject, SerializableBiConsumer)} to handle those
+     * exceptions differently.
      *
-     * @return an error handler that logs and swallows listener exceptions
+     * @param event
+     *            the event to fire, not {@code null}
      */
-    public static SerializableBiConsumer<EventObject, Exception> logErrors() {
-        return LOG_ERRORS;
+    public void fireEvent(EventObject event) {
+        fireEvent(event, LOG_ERRORS);
     }
 
     /**
      * Fires an event to the listeners registered for its exact type, in
-     * registration order.
+     * registration order, handing a listener that threw to the given error
+     * handler instead of logging it.
      * <p>
-     * A listener that throws is handed to the error handler, and the listeners
-     * that have not been notified yet are notified next unless the error
-     * handler itself throws, in which case that exception is propagated to the
-     * caller and the remaining listeners are skipped. Deciding between the two
-     * is the whole point of the error handler, which is why there is no way of
-     * firing an event without one; use {@link #logErrors()} unless the caller
-     * has a reason to do something else.
+     * The listeners that have not been notified yet are notified next unless
+     * the error handler itself throws, in which case that exception is
+     * propagated to the caller and the remaining listeners are skipped.
      *
      * @param <E>
      *            the event type
@@ -211,6 +211,18 @@ public class VaadinServiceEventBus implements Serializable {
      * This is meant for the "closing" half of a pair of events, so that
      * listeners nest: the listener registered first is notified last, in the
      * same way that it was notified first of the "opening" event.
+     *
+     * @param event
+     *            the event to fire, not {@code null}
+     */
+    public void fireEventInReverseOrder(EventObject event) {
+        fireEventInReverseOrder(event, LOG_ERRORS);
+    }
+
+    /**
+     * Fires an event to the listeners registered for its exact type in reverse
+     * registration order, handing a listener that threw to the given error
+     * handler instead of logging it.
      *
      * @param <E>
      *            the event type

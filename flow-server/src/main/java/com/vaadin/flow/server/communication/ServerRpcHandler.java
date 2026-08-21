@@ -639,8 +639,7 @@ public class ServerRpcHandler implements Serializable {
         String name = observed ? invocationName(type, invocationJson) : null;
         if (observed) {
             eventBus.fireEvent(
-                    new RpcInvocationStartedEvent(ui, type, nodeId, name),
-                    VaadinServiceEventBus.logErrors());
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
@@ -650,15 +649,13 @@ public class ServerRpcHandler implements Serializable {
         } catch (Throwable throwable) {
             if (observed) {
                 eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
-                        nodeId, name, throwable),
-                        VaadinServiceEventBus.logErrors());
+                        nodeId, name, throwable));
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
             if (observed) {
                 eventBus.fireEvent(
-                        new RpcInvocationEndedEvent(ui, type, nodeId, name),
-                        VaadinServiceEventBus.logErrors());
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
             }
         }
     }

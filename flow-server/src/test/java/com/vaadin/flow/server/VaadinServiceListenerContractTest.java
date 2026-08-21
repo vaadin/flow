@@ -30,14 +30,13 @@ import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Pins down the semantics that {@link VaadinService} listener families have
- * today, so that they can be compared against, and preserved by, a possible
- * migration to a shared service-level event bus.
+ * Pins down the semantics of the listener families that {@link VaadinService}
+ * exposes, now that they are all served by the
+ * {@link VaadinService#getEventBus() service event bus}.
  * <p>
- * The point of these tests is that the families do <em>not</em> behave alike:
- * they differ in notification order and, most importantly, in what happens when
- * a listener throws. Any generic {@code fireEvent} needs a per-event-type
- * policy to keep these contracts intact.
+ * The families differ in notification order and in what happens when a listener
+ * throws, and the listener interfaces that predate the bus keep working through
+ * it, which is what these tests are here to hold on to.
  */
 public class VaadinServiceListenerContractTest {
 
@@ -47,14 +46,11 @@ public class VaadinServiceListenerContractTest {
         UI ui = new UI();
         VaadinServiceEventBus eventBus = service.getEventBus();
         eventBus.fireEvent(
-                new RpcInvocationStartedEvent(ui, "event", 1, "click"),
-                VaadinServiceEventBus.logErrors());
+                new RpcInvocationStartedEvent(ui, "event", 1, "click"));
+        eventBus.fireEvent(new RpcInvocationFailedEvent(ui, "event", 1, "click",
+                new RuntimeException("boom")));
         eventBus.fireEvent(
-                new RpcInvocationFailedEvent(ui, "event", 1, "click",
-                        new RuntimeException("boom")),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "click"),
-                VaadinServiceEventBus.logErrors());
+                new RpcInvocationEndedEvent(ui, "event", 1, "click"));
     }
 
     @Test
@@ -123,10 +119,11 @@ public class VaadinServiceListenerContractTest {
         List<String> calls = new ArrayList<>();
         service.addRpcInvocationListener(recordingRpcListener(calls, "rpc"));
 
-        service.fireSessionLockRequested();
-        service.fireSessionLockAcquired();
-        service.fireSessionLockReleased();
-        service.fireUIInitListeners(new UI());
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.fireEvent(new SessionLockRequestedEvent(service));
+        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
+        eventBus.fireEventInReverseOrder(new SessionLockReleasedEvent(service));
+        eventBus.fireEvent(new UIInitEvent(new UI(), service));
 
         Assert.assertTrue(calls.isEmpty());
     }
@@ -147,24 +144,22 @@ public class VaadinServiceListenerContractTest {
             }
         });
 
-        service.fireSessionLockAcquired();
+        service.getEventBus().fireEvent(new SessionLockAcquiredEvent(service));
 
         Assert.assertEquals(List.of("second-acquired"), calls);
     }
 
     @Test
-    public void uiInitListenerThrows_exceptionPropagatesAndStopsLaterListeners() {
+    public void uiInitListenerThrows_othersStillNotified() {
         List<String> calls = new ArrayList<>();
         service.addUIInitListener(event -> {
             throw new RuntimeException("uiInit");
         });
         service.addUIInitListener(event -> calls.add("second"));
 
-        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
-                () -> service.fireUIInitListeners(new UI()));
+        service.getEventBus().fireEvent(new UIInitEvent(new UI(), service));
 
-        Assert.assertEquals("uiInit", thrown.getMessage());
-        Assert.assertTrue(calls.isEmpty());
+        Assert.assertEquals(List.of("second"), calls);
     }
 
     @Test
@@ -232,18 +227,12 @@ public class VaadinServiceListenerContractTest {
 
         UI ui = new UI();
         VaadinServiceEventBus eventBus = service.getEventBus();
-        eventBus.fireEvent(new RpcInvocationStartedEvent(ui, "event", 1, "x"),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(
-                new RpcInvocationFailedEvent(ui, "event", 1, "x",
-                        new RuntimeException("boom")),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "x"),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(new SessionLockAcquiredEvent(service),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(new UIInitEvent(ui, service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new RpcInvocationStartedEvent(ui, "event", 1, "x"));
+        eventBus.fireEvent(new RpcInvocationFailedEvent(ui, "event", 1, "x",
+                new RuntimeException("boom")));
+        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 1, "x"));
+        eventBus.fireEvent(new SessionLockAcquiredEvent(service));
+        eventBus.fireEvent(new UIInitEvent(ui, service));
 
         Assert.assertEquals(List.of("rpc-started", "rpc-failed", "rpc-ended",
                 "lock-acquired", "ui-init"), calls);
@@ -300,9 +289,8 @@ public class VaadinServiceListenerContractTest {
         session.lock();
         try {
             session.setErrorHandler(event -> errors.add(event.getThrowable()));
-            service.getEventBus().fireEvent(
-                    new SessionInitEvent(service, session, null),
-                    VaadinServiceEventBus.logErrors());
+            service.getEventBus()
+                    .fireEvent(new SessionInitEvent(service, session, null));
         } finally {
             session.unlock();
         }
@@ -330,10 +318,9 @@ public class VaadinServiceListenerContractTest {
         UI ui = new UI();
         VaadinServiceEventBus eventBus = service.getEventBus();
         eventBus.fireEvent(
-                new RpcInvocationStartedEvent(ui, "event", 7, "click"),
-                VaadinServiceEventBus.logErrors());
-        eventBus.fireEvent(new RpcInvocationEndedEvent(ui, "event", 7, "click"),
-                VaadinServiceEventBus.logErrors());
+                new RpcInvocationStartedEvent(ui, "event", 7, "click"));
+        eventBus.fireEvent(
+                new RpcInvocationEndedEvent(ui, "event", 7, "click"));
 
         Assert.assertEquals(2, events.size());
         // Phases are correlated by thread, not by event identity

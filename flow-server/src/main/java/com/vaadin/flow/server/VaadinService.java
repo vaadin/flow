@@ -84,6 +84,7 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
+import com.vaadin.flow.server.communication.RpcInvocationEvent;
 import com.vaadin.flow.server.communication.RpcInvocationFailedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationListener;
 import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
@@ -862,16 +863,31 @@ public abstract class VaadinService implements Serializable {
      * @see RpcInvocationListener
      * @since 25.2
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Registration addRpcInvocationListener(
             RpcInvocationListener listener) {
         return Registration.combine(
                 eventBus.addListener(RpcInvocationStartedEvent.class,
-                        listener::invocationStarted),
+                        event -> listener.invocationStarted(
+                                rpcInvocationEvent(event.getUI(),
+                                        event.getType(), event.getNodeId(),
+                                        event.getName()))),
                 eventBus.addListener(RpcInvocationFailedEvent.class,
-                        event -> listener.invocationFailed(event,
+                        event -> listener.invocationFailed(
+                                rpcInvocationEvent(event.getUI(),
+                                        event.getType(), event.getNodeId(),
+                                        event.getName()),
                                 event.getError())),
                 eventBus.addListener(RpcInvocationEndedEvent.class,
-                        listener::invocationEnded));
+                        event -> listener.invocationEnded(rpcInvocationEvent(
+                                event.getUI(), event.getType(),
+                                event.getNodeId(), event.getName()))));
+    }
+
+    @SuppressWarnings("removal")
+    private static RpcInvocationEvent rpcInvocationEvent(UI ui, String type,
+            int nodeId, String name) {
+        return new RpcInvocationEvent(ui, type, nodeId, name);
     }
 
     /**
@@ -903,41 +919,23 @@ public abstract class VaadinService implements Serializable {
      * @see SessionLockListener
      * @since 25.2
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Registration addSessionLockListener(SessionLockListener listener) {
         return Registration.combine(
                 eventBus.addListener(SessionLockRequestedEvent.class,
-                        listener::lockRequested),
+                        event -> listener.lockRequested(
+                                sessionLockEvent(event.getService()))),
                 eventBus.addListener(SessionLockAcquiredEvent.class,
-                        listener::lockAcquired),
+                        event -> listener.lockAcquired(
+                                sessionLockEvent(event.getService()))),
                 eventBus.addListener(SessionLockReleasedEvent.class,
-                        listener::lockReleased));
+                        event -> listener.lockReleased(
+                                sessionLockEvent(event.getService()))));
     }
 
-    void fireSessionLockRequested() {
-        if (!eventBus.hasListener(SessionLockRequestedEvent.class)) {
-            return;
-        }
-        eventBus.fireEvent(new SessionLockRequestedEvent(this),
-                VaadinServiceEventBus.logErrors());
-    }
-
-    void fireSessionLockAcquired() {
-        if (!eventBus.hasListener(SessionLockAcquiredEvent.class)) {
-            return;
-        }
-        eventBus.fireEvent(new SessionLockAcquiredEvent(this),
-                VaadinServiceEventBus.logErrors());
-    }
-
-    void fireSessionLockReleased() {
-        if (!eventBus.hasListener(SessionLockReleasedEvent.class)) {
-            return;
-        }
-        // Released is fired in reverse registration order so that listeners
-        // are nested: a listener's lockReleased runs before the lockReleased
-        // of the listeners that were notified before it on lockAcquired.
-        eventBus.fireEventInReverseOrder(new SessionLockReleasedEvent(this),
-                VaadinServiceEventBus.logErrors());
+    @SuppressWarnings("removal")
+    private static SessionLockEvent sessionLockEvent(VaadinService service) {
+        return new SessionLockEvent(service);
     }
 
     /**
@@ -2675,24 +2673,7 @@ public abstract class VaadinService implements Serializable {
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public void fireUIInitListeners(UI ui) {
-        fireUIInitEvent(ui);
-    }
-
-    /**
-     * Fires a {@link UIInitEvent} for the given UI on the event bus of this
-     * service.
-     *
-     * @param ui
-     *            the initialized {@link UI}
-     */
-    void fireUIInitEvent(UI ui) {
-        // A failing UI init listener aborts the initialization instead of
-        // letting a half-initialized UI through
-        eventBus.fireEvent(new UIInitEvent(ui, this), (event, error) -> {
-            throw error instanceof RuntimeException runtimeException
-                    ? runtimeException
-                    : new RuntimeException(error);
-        });
+        eventBus.fireEvent(new UIInitEvent(ui, this));
     }
 
     /**

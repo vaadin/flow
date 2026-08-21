@@ -307,8 +307,8 @@ class ServerRpcHandlerTest {
     void handleRpc_firesRpcInvocationListener_withTypeNameAndNode()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        List<RpcInvocationEvent> started = new ArrayList<>();
-        List<RpcInvocationEvent> ended = new ArrayList<>();
+        List<RpcInvocationStartedEvent> started = new ArrayList<>();
+        List<RpcInvocationEndedEvent> ended = new ArrayList<>();
         service.getEventBus().addListener(RpcInvocationStartedEvent.class,
                 started::add);
         service.getEventBus().addListener(RpcInvocationEndedEvent.class,
@@ -323,7 +323,7 @@ class ServerRpcHandlerTest {
         assertEquals(1, started.size());
         // Ended is always fired (in a finally) so observers can close spans.
         assertEquals(1, ended.size());
-        RpcInvocationEvent event = started.get(0);
+        RpcInvocationStartedEvent event = started.get(0);
         assertEquals("event", event.getType());
         assertEquals("click", event.getName());
         assertEquals(1, event.getNodeId());

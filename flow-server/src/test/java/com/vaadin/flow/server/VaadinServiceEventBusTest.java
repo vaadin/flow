@@ -64,8 +64,7 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> calls.add("first"));
         eventBus.addListener(TestEvent.class, event -> calls.add("second"));
 
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
 
         Assert.assertEquals(List.of("first", "second"), calls);
     }
@@ -77,16 +76,14 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(SubTestEvent.class, event -> calls.add("sub"));
         eventBus.addListener(OtherEvent.class, event -> calls.add("other"));
 
-        eventBus.fireEvent(new SubTestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new SubTestEvent(service));
 
         Assert.assertEquals(List.of("sub"), calls);
     }
 
     @Test
     public void firingEventWithoutListeners_doesNothing() {
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
     }
 
     @Test
@@ -113,8 +110,7 @@ public class VaadinServiceEventBusTest {
         registration.remove();
         // Removal is idempotent and must not drop the other listener
         registration.remove();
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
 
         Assert.assertEquals(List.of("kept"), calls);
     }
@@ -126,15 +122,13 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, listener);
         Registration second = eventBus.addListener(TestEvent.class, listener);
 
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
         Assert.assertEquals(List.of("call", "call"), calls);
 
         // Removing one registration leaves the other one in place
         calls.clear();
         second.remove();
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
         Assert.assertEquals(List.of("call"), calls);
     }
 
@@ -169,7 +163,7 @@ public class VaadinServiceEventBusTest {
     }
 
     @Test
-    public void firingWithoutErrorHandler_isRejected() {
+    public void nullErrorHandler_isRejected() {
         Assert.assertThrows(NullPointerException.class,
                 () -> eventBus.fireEvent(new TestEvent(service), null));
         Assert.assertThrows(NullPointerException.class, () -> eventBus
@@ -226,8 +220,7 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> calls.add("second"));
         eventBus.addListener(TestEvent.class, event -> calls.add("third"));
 
-        eventBus.fireEventInReverseOrder(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEventInReverseOrder(new TestEvent(service));
 
         Assert.assertEquals(List.of("third", "second", "first"), calls);
     }
@@ -238,8 +231,7 @@ public class VaadinServiceEventBusTest {
         eventBus.addListener(TestEvent.class, event -> eventBus
                 .addListener(TestEvent.class, nested -> calls.add("nested")));
 
-        eventBus.fireEvent(new TestEvent(service),
-                VaadinServiceEventBus.logErrors());
+        eventBus.fireEvent(new TestEvent(service));
 
         Assert.assertTrue(calls.isEmpty());
     }
@@ -268,11 +260,10 @@ public class VaadinServiceEventBusTest {
                     // Both directions, since they walk the listeners
                     // differently
                     if (round % 2 == 0) {
-                        eventBus.fireEvent(new TestEvent(service),
-                                VaadinServiceEventBus.logErrors());
+                        eventBus.fireEvent(new TestEvent(service));
                     } else {
-                        eventBus.fireEventInReverseOrder(new TestEvent(service),
-                                VaadinServiceEventBus.logErrors());
+                        eventBus.fireEventInReverseOrder(
+                                new TestEvent(service));
                     }
                     registration.remove();
                     if (!notified.get()) {

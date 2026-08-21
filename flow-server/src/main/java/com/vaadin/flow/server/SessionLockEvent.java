@@ -18,9 +18,8 @@ package com.vaadin.flow.server;
 import java.util.EventObject;
 
 /**
- * Base type of the events fired around acquisition and release of a Vaadin
- * session lock: {@link SessionLockRequestedEvent},
- * {@link SessionLockAcquiredEvent} and {@link SessionLockReleasedEvent}.
+ * Event fired to {@link SessionLockListener}s around acquisition and release of
+ * a Vaadin session lock.
  * <p>
  * The same lock instance protects a session whether it is acquired by the
  * framework while handling a request or via {@link VaadinSession#lock()} (for
@@ -32,8 +31,13 @@ import java.util.EventObject;
  *
  * @see SessionLockListener
  * @since 25.2
+ * @deprecated use {@link SessionLockRequestedEvent},
+ *             {@link SessionLockAcquiredEvent} and
+ *             {@link SessionLockReleasedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead
  */
-public abstract class SessionLockEvent extends EventObject {
+@Deprecated(since = "25.3", forRemoval = true)
+public class SessionLockEvent extends EventObject {
 
     /**
      * Creates a new session lock event.
@@ -42,7 +46,7 @@ public abstract class SessionLockEvent extends EventObject {
      *            the Vaadin service whose session lock is being acquired or
      *            released, not {@code null}
      */
-    protected SessionLockEvent(VaadinService service) {
+    public SessionLockEvent(VaadinService service) {
         super(service);
     }
 
