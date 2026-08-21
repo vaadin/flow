@@ -811,8 +811,8 @@ public abstract class VaadinService implements Serializable {
                 listener.sessionInit(event);
             } catch (ServiceException e) {
                 // A bus listener cannot declare the checked exception that
-                // sessionInit does, so it is routed to the error handler here
-                // rather than through the one the event is fired with
+                // sessionInit does, so it is caught and handed to the session
+                // error handler here instead
                 event.getSession().getErrorHandler().error(new ErrorEvent(e));
             }
         });

@@ -131,6 +131,19 @@ public class VaadinServiceListenerContractTest {
     }
 
     @Test
+    public void uiInitListener_isNotifiedOfTheUiInitEvent() {
+        List<UIInitEvent> events = new ArrayList<>();
+        service.addUIInitListener(events::add);
+
+        UI ui = new UI();
+        service.getEventBus().fireEvent(new UIInitEvent(ui, service));
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertSame(ui, events.get(0).getUI());
+        Assert.assertSame(service, events.get(0).getSource());
+    }
+
+    @Test
     public void sessionInitListenerThrowsCheckedException_originalGoesToSessionErrorHandler() {
         MockVaadinSession session = new MockVaadinSession(service);
         List<Throwable> errors = new ArrayList<>();
