@@ -16,7 +16,7 @@
 
 // TypeScript port of com.vaadin.client.flow.reactive.Computation.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { InvalidateEvent } from './InvalidateEvent';
 import type { InvalidateListener } from './InvalidateListener';
 import { Reactive } from './Reactive';
