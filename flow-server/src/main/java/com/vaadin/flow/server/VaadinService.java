@@ -77,6 +77,7 @@ import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.communication.AbstractRpcInvocationEvent;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
@@ -868,26 +869,21 @@ public abstract class VaadinService implements Serializable {
             RpcInvocationListener listener) {
         return Registration.combine(
                 eventBus.addListener(RpcInvocationStartedEvent.class,
-                        event -> listener.invocationStarted(
-                                rpcInvocationEvent(event.getUI(),
-                                        event.getType(), event.getNodeId(),
-                                        event.getName()))),
+                        event -> listener
+                                .invocationStarted(rpcInvocationEvent(event))),
                 eventBus.addListener(RpcInvocationFailedEvent.class,
                         event -> listener.invocationFailed(
-                                rpcInvocationEvent(event.getUI(),
-                                        event.getType(), event.getNodeId(),
-                                        event.getName()),
-                                event.getError())),
+                                rpcInvocationEvent(event), event.getError())),
                 eventBus.addListener(RpcInvocationEndedEvent.class,
-                        event -> listener.invocationEnded(rpcInvocationEvent(
-                                event.getUI(), event.getType(),
-                                event.getNodeId(), event.getName()))));
+                        event -> listener
+                                .invocationEnded(rpcInvocationEvent(event))));
     }
 
     @SuppressWarnings("removal")
-    private static RpcInvocationEvent rpcInvocationEvent(UI ui, String type,
-            int nodeId, String name) {
-        return new RpcInvocationEvent(ui, type, nodeId, name);
+    private static RpcInvocationEvent rpcInvocationEvent(
+            AbstractRpcInvocationEvent event) {
+        return new RpcInvocationEvent(event.getUI(), event.getType(),
+                event.getNodeId(), event.getName());
     }
 
     /**

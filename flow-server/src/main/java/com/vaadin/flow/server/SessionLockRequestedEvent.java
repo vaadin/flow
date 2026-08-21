@@ -15,19 +15,13 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.EventObject;
-
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
  * when a Vaadin session lock is about to be requested.
- * <p>
- * The same lock instance protects a session whether it is acquired by the
- * framework while handling a request or via {@link VaadinSession#lock()} (for
- * example from {@link com.vaadin.flow.component.UI#access(Command)}). The
- * events of a given outermost lock-hold are fired on the same thread, so timing
- * state can be kept in a thread local.
+ *
+ * @see AbstractSessionLockEvent
  */
-public class SessionLockRequestedEvent extends EventObject {
+public class SessionLockRequestedEvent extends AbstractSessionLockEvent {
 
     /**
      * Creates a new event.
@@ -38,24 +32,5 @@ public class SessionLockRequestedEvent extends EventObject {
      */
     public SessionLockRequestedEvent(VaadinService service) {
         super(service);
-    }
-
-    /**
-     * Gets the Vaadin service from which this event originates.
-     *
-     * @return the Vaadin service instance
-     */
-    @Override
-    public VaadinService getSource() {
-        return (VaadinService) super.getSource();
-    }
-
-    /**
-     * Gets the Vaadin service from which this event originates.
-     *
-     * @return the Vaadin service instance
-     */
-    public VaadinService getService() {
-        return getSource();
     }
 }
