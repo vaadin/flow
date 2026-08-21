@@ -22,7 +22,7 @@
 // checkForTouchDevice, isIos) stay module-local here; only the members that were
 // public in Java are part of the class surface, with @deprecated marks preserved.
 
-import { BrowserDetails } from './shared/BrowserDetails';
+import { BrowserDetails } from '../flow/shared/BrowserDetails';
 
 /** Detects whether the browser runs on a touch-capable device. */
 function checkForTouchDevice(): boolean {

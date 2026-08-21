@@ -1,5 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { clear, isEmpty, pushArray, remove, removeItem, spliceArray } from '../../../main/frontend/internal/JsArray';
+import {
+  clear,
+  isEmpty,
+  pushArray,
+  remove,
+  removeItem,
+  spliceArray
+} from '../../../../../main/frontend/internal/client/flow/collection/JsArray';
 
 describe('JsArray helpers', () => {
   // Cases beyond the Java suite: GwtJsArrayTest covers the JsArray type

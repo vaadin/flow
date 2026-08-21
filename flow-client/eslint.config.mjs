@@ -26,12 +26,11 @@ export default [
       parserOptions: {
         projectService: {
           allowDefaultProject: [
-            // typescript-eslint allowDefaultProject globs do not support the `**`
-            // multi-level wildcard, hence one entry per level.
             'src/test/frontend/*',
-            'src/test/frontend/internal/*',
-            'src/test/frontend/internal/shared/*',
-            'src/test/frontend/internal/shared/util/*'
+            'src/test/frontend/client/*',
+            'src/test/frontend/client/flow/collection/*',
+            'src/test/frontend/flow/shared/*',
+            'src/test/frontend/flow/shared/util/*'
           ],
           // The migration adds a *Tests.ts per converted module; the test files
           // use the default project, so raise its file cap (default 8) to keep

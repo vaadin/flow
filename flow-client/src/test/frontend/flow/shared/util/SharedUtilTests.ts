@@ -13,7 +13,7 @@ import {
   splitCamelCase,
   trimTrailingSlashes,
   upperCamelCaseToDashSeparatedLowerCase
-} from '../../../../../main/frontend/internal/shared/util/SharedUtil';
+} from '../../../../../main/frontend/internal/flow/shared/util/SharedUtil';
 
 describe('SharedUtil', () => {
   // beyond the Java suite (PORTING.md 13.6)
