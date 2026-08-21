@@ -17,7 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeMap, on top of the
 // TS reactive core and MapProperty.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';
 import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
@@ -25,7 +25,7 @@ import { MapProperty, type MapPropertyOwner } from './MapProperty';
 import { MapPropertyAddEvent } from './MapPropertyAddEvent';
 import type { MapPropertyAddListener } from './MapPropertyAddListener';
 import { NodeFeature, type JsonValue } from './NodeFeature';
-import { NodeFeatures } from './NodeFeatures';
+import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 
 /**
  * A state node feature that structures data as a map.

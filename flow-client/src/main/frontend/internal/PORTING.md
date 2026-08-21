@@ -50,19 +50,40 @@ They consolidate the review feedback from the migration PR stack (#24933,
      owner's `.java` file (a Java inner/nested class): it has no file of its
      own, so it stays in the owner's module. None of the currently ported
      reactive / node-feature event/listener types are nested this way.
-2. **Mirror the Java package path** under `internal/`, e.g.
-   `com.vaadin.client.flow.reactive` → `internal/reactive`. A type that has no
-   `com.vaadin` counterpart because it comes from the GWT `elemental` library
-   (e.g. `EventRemover`, mirroring `elemental.events.EventRemover`) lives as a
-   standalone elemental-primitive module at the `internal/` root, next to the
-   other elemental-style ports such as `JsArray`.
+2. **Mirror the Java package path verbatim** under `internal/`, stripping only
+   the `com.vaadin.` prefix:
+
+   ```
+   com.vaadin.<rest>.ClassName  ->  internal/<rest with dots as slashes>/ClassName.ts
+   ```
+
+   | Java class | TypeScript module |
+   | --- | --- |
+   | `com.vaadin.client.BrowserInfo` | `internal/client/BrowserInfo.ts` |
+   | `com.vaadin.client.flow.collection.JsArray` | `internal/client/flow/collection/JsArray.ts` |
+   | `com.vaadin.client.flow.reactive.Reactive` | `internal/client/flow/reactive/Reactive.ts` |
+   | `com.vaadin.client.flow.nodefeature.NodeMap` | `internal/client/flow/nodefeature/NodeMap.ts` |
+   | `com.vaadin.flow.shared.BrowserDetails` | `internal/flow/shared/BrowserDetails.ts` |
+   | `com.vaadin.flow.shared.util.SharedUtil` | `internal/flow/shared/util/SharedUtil.ts` |
+   | `com.vaadin.flow.internal.nodefeature.NodeFeatures` | `internal/flow/internal/nodefeature/NodeFeatures.ts` |
+
+   No package segment is collapsed or renamed: `client` and `flow` are real
+   segments and stay in the path, and `com.vaadin.flow.internal` keeps its own
+   `internal` segment inside the frontend `internal/` root.
+   - A type with **no `com.vaadin` counterpart** has no package to mirror. One
+     that comes from the GWT `elemental` library (e.g. `EventRemover`,
+     mirroring `elemental.events.EventRemover`) and the local `assert` helper
+     live at the `internal/` root.
+   - A module that is a **TypeScript-only split** of a Java class (e.g.
+     `ResourceRegistry` out of `ResourceLoader`, `MessageOrdering` out of
+     `MessageHandler`) lives in the package of the class it was split from.
    - **Tests mirror this layout too.** A `*Tests.ts` (and its helper modules)
      lives in the same package-path subdirectory under `src/test/frontend/` as
-     the module under test does under `src/main/frontend/`, e.g.
+     the module under test does under `src/main/frontend/internal/`, e.g.
      `com.vaadin.client.flow.reactive.ComputationTest` →
-     `src/test/frontend/internal/reactive/ComputationTests.ts`, and
+     `src/test/frontend/client/flow/reactive/ComputationTests.ts`, and
      `…flow.nodefeature.MapPropertyTest` →
-     `src/test/frontend/internal/nodefeature/MapPropertyTests.ts`. The test
+     `src/test/frontend/client/flow/nodefeature/MapPropertyTests.ts`. The test
      runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
      `eslint.config.mjs` lists each test subdirectory in
      `projectService.allowDefaultProject` (its globs do not support the `**`

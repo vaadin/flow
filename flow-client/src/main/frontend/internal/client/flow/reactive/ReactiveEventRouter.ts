@@ -16,7 +16,7 @@
 
 // TypeScript port of com.vaadin.client.flow.reactive.ReactiveEventRouter.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { Reactive } from './Reactive';
 import type { ReactiveValue } from './ReactiveValue';
 import type { ReactiveValueChangeEvent } from './ReactiveValueChangeEvent';

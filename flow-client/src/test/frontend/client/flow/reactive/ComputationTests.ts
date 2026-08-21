@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
-import { countingComputation } from './CountingComputation';
-import { TestReactiveEventRouter } from './TestReactiveEventRouter';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { countingComputation } from '../../../internal/reactive/CountingComputation';
+import { TestReactiveEventRouter } from '../../../internal/reactive/TestReactiveEventRouter';
 
 describe('reactive core: Computation', () => {
   let router: TestReactiveEventRouter;
